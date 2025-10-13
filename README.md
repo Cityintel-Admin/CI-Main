@@ -1,6 +1,8 @@
-# CityIntel
+# CityIntel 🌍
 
-Situational Intelligence dashboard (static prototype).
+Real-time situational awareness platform for protests, risks, and security events.
+**Live site:** https://cityintel-admin.github.io/CI-Main/
+
 
 ## Structure
 - `index.html` – Dashboard
