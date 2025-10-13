@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+
+
+
+  <meta charset="utf-8"/>
+  <title>CityIntel — System Flow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{margin:0;background:#111214;color:#e9edf2;font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    .container{max-width:1000px;margin:40px auto;padding:20px}
+    h1{margin:0 0 16px;color:#D01616}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .card{grid-column:span 12;background:#16171a;border:1px solid #2e3238;border-radius:14px;padding:16px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .pill{padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-weight:700}
+    .ok{background:rgba(51,196,141,.15);color:#33c48d;border-color:rgba(51,196,141,.35)}
+    .warn{background:rgba(240,180,41,.15);color:#f0b429;border-color:rgba(240,180,41,.35)}
+    .bad{background:rgba(255,90,95,.15);color:#ff5a5f;border-color:rgba(255,90,95,.35)}
+    .stage{flex:1;min-width:260px;background:#1a1c20;border:1px dashed #2e3238;border-radius:12px;padding:12px}
+    .kv{color:#8e97a3}
+    table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;margin-top:10px}
+    th{background:#1c1e22;text-align:left;padding:8px;color:#8e97a3}
+    td{padding:8px;border-top:1px solid #2e3238}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>System Flow — Overview</h1>
+
+    <div class="card">
+      <div class="row">
+        <div class="stage">
+          <b>Sources</b>
+          <div class="kv">Feeds: <span id="sf-feeds">—</span></div>
+          <div class="kv">Last ingest: <span id="sf-ingest">—</span></div>
+          <div class="pill" id="sf-sources-pill">—</div>
+        </div>
+        <div class="stage">
+          <b>Parsing & Normalization</b>
+          <div class="kv">Parsed timestamps: <span id="sf-parsed">—</span></div>
+          <div class="kv">Dedupe collisions: <span id="sf-dedupe">—</span></div>
+          <div class="pill" id="sf-parse-pill">—</div>
+        </div>
+        <div class="stage">
+          <b>Data Readiness</b>
+          <div class="kv">Upcoming (7d): <span id="sf-upcoming">—</span></div>
+          <div class="kv">Past (24h): <span id="sf-past">—</span></div>
+          <div class="pill" id="sf-ready-pill">—</div>
+        </div>
+        <div class="stage">
+          <b>UI Surfaces</b>
+          <div class="kv">Banner items: <span id="sf-banner">—</span></div>
+          <div class="kv">Map countries w/ data: <span id="sf-map">—</span></div>
+          <div class="pill" id="sf-ui-pill">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <b>Diagnostics</b>
+      <table>
+        <thead><tr><th>Check</th><th>Value</th><th>Status</th></tr></thead>
+        <tbody id="diagBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="filterEvents.js"></script>
+  <script src="auth.js"></script>
+  <script src="alerts-data.js"></script>
+  
+
+<script>
+  CIAuth.requireAuth();
+  CIAuth.requireRole(['admin']); // redirect to index if not admin
+</script>
+
+  <script>
+    (function(){
+      const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+      const parse = v => (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v?new Date(v):null);
+      const now = new Date();
+      const in7d = new Date(now.getTime() + 7*864e5);
+      const in24h = new Date(now.getTime() - 1*864e5);
+
+      // metrics
+      const parsed = data.filter(a => parse(a.time ?? a.datetime ?? a.date ?? a.when));
+      const upcoming = parsed.filter(a => { const d=parse(a.time ?? a.datetime ?? a.date ?? a.when); return d && d>=now && d<=in7d; });
+      const past24h = parsed.filter(a => { const d=parse(a.time ?? a.datetime ?? a.date ?? a.when); return d && d<now && d>=in24h; });
+
+      // statuses
+      const pctParsed = data.length ? Math.round((parsed.length/data.length)*100) : 0;
+      const sourcesOK = data.length>0;
+      const parseOK   = pctParsed>=90;
+      const readyOK   = upcoming.length>0;
+
+      // fill
+      document.getElementById('sf-feeds').textContent = 'alerts-data.js';
+      document.getElementById('sf-ingest').textContent = new Date().toLocaleString('en-GB');
+      document.getElementById('sf-upcoming').textContent = upcoming.length;
+      document.getElementById('sf-past').textContent = past24h.length;
+      document.getElementById('sf-parsed').textContent = `${pctParsed}%`;
+      document.getElementById('sf-dedupe').textContent = '—';
+      document.getElementById('sf-banner').textContent = upcoming.filter(a=>parse(a.time) && a.city).length;
+      const countries = new Set(parsed.map(a => (a.Country||a.country||'').trim()).filter(Boolean));
+      document.getElementById('sf-map').textContent = countries.size;
+
+      const pill = (el, ok) => {
+        el.textContent = ok ? 'OK' : 'Check';
+        el.className = 'pill ' + (ok ? 'ok' : 'warn');
+      };
+      pill(document.getElementById('sf-sources-pill'), sourcesOK);
+      pill(document.getElementById('sf-parse-pill'), parseOK);
+      pill(document.getElementById('sf-ready-pill'), readyOK);
+      pill(document.getElementById('sf-ui-pill'), true);
+
+      // diag rows
+      const diag = [
+        ['Total records', data.length, sourcesOK?'OK':'Check source'],
+        ['Parsed timestamps', `${pctParsed}%`, parseOK?'OK':'Improve parser/inputs'],
+        ['Upcoming (≤7d)', upcoming.length, upcoming.length?'OK':'Add events'],
+        ['Past (24h)', past24h.length, 'Info'],
+        ['Countries covered', countries.size, countries.size?'OK':'Info'],
+      ];
+      const tbody = document.getElementById('diagBody');
+      diag.forEach(([k,v,s])=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${k}</td><td>${v}</td><td>${s}</td>`;
+        tbody.appendChild(tr);
+      });
+    })();
+  </script>
+</body>
+</html>

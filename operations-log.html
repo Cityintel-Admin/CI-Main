@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8" />
+  <title>CityIntel — Operations Log</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Theme -->
+  <style>
+    :root{
+      --brand-red:#D01616; --brand-black:#0C0C0C;
+      --g900:#111214; --g800:#16171a; --g700:#1c1e22; --g600:#2e3238;
+      --text:#e9edf2; --muted:#8e97a3; --ok:#33c48d; --warn:#f0b429; --danger:#ff5a5f;
+      --radius:16px; --shadow:0 8px 24px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,var(--g900),var(--g800));color:var(--text);
+      font:14px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .app{
+      display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;
+      grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh
+    }
+    .sidebar{grid-area:sidebar;background:linear-gradient(180deg,var(--brand-black),#131416);
+      border-right:1px solid var(--g600);display:flex;flex-direction:column;padding:18px 14px;gap:18px}
+    .brand{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;
+      background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
+    .brand img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#fff}
+    .brand .title{font-weight:700;letter-spacing:.3px}
+    nav a{display:flex;align-items:center;gap:10px;color:#e9edf2;text-decoration:none;
+      padding:10px 12px;border-radius:10px;border:1px solid transparent}
+    nav a:hover{background:#24272c;border-color:#2e3238}
+    nav a.active{background:rgba(208,22,22,.15);border-color:#D01616}
+    .topbar{grid-area:topbar;background:rgba(255,255,255,.02);border-bottom:1px solid var(--g600);
+      display:flex;align-items:center;gap:12px;padding:10px 16px;position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
+    .main{grid-area:main;padding:18px}
+    .card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--g600);
+      border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+
+    /* Filters */
+    .filters{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+    .filters .field{grid-column:span 3;background:var(--g700);border:1px solid var(--g600);border-radius:10px;padding:8px 10px}
+    .filters .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+    .filters input,.filters select{width:100%;background:transparent;border:none;outline:none;color:var(--text)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;
+      border:1px solid var(--g600);background:var(--g700);color:var(--text);cursor:pointer;text-decoration:none}
+    .btn:hover{filter:brightness(1.05)}
+    .btn.primary{background:#D01616;border-color:#9c0f0f;color:#fff;font-weight:700}
+    .btn.neutral{background:var(--g700)}
+    .btn.success{background:#144d39;border-color:#206850}
+    .btn.warn{background:#4b3a12;border-color:#6e541a}
+
+    /* Table */
+    table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;margin-top:12px}
+    thead th{background:var(--g700);text-align:left;padding:10px;color:var(--muted);font-weight:600}
+    tbody td{padding:10px;border-top:1px solid var(--g600);vertical-align:top}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+
+    /* Badges */
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;border:1px solid rgba(255,255,255,.15)}
+    .tag.high{color:var(--danger);background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.35)}
+    .tag.med{color:var(--warn);background:rgba(240,180,41,.12);border-color:rgba(240,180,41,.35)}
+    .tag.low{color:var(--ok);background:rgba(51,196,141,.12);border-color:rgba(51,196,141,.35)}
+    .muted{color:var(--muted)}
+    .rowmeta{font-size:12px;color:var(--muted)}
+
+    /* Footer */
+    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--muted);font-size:12px}
+    .pager{display:flex;gap:6px}
+    .pager .btn{padding:6px 10px}
+    @media (max-width:1000px){
+      .filters .field{grid-column:span 6}
+    }
+    @media (max-width:680px){
+      .app{grid-template-columns:1fr;grid-template-areas:"topbar" "main"}
+      .sidebar{display:none}
+      .filters .field{grid-column:span 12}
+    }
+
+.drawer-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.45);
+    backdrop-filter: blur(2px);
+    display:none; z-index:80;
+  }
+  .drawer{
+    position:fixed; top:0; right:0; height:100vh; width:420px;
+    background:linear-gradient(180deg,#1a1c20,#131417);
+    border-left:1px solid #2e3238; box-shadow: -12px 0 24px rgba(0,0,0,.35);
+    transform: translateX(100%); transition: transform .24s ease;
+    z-index:81; display:flex; flex-direction:column;
+  }
+  .drawer.open{ transform: translateX(0); }
+  .drawer-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid #2e3238;
+  }
+  .drawer-body{ padding:14px 16px; overflow:auto; }
+  .drawer h3{ margin:0 0 6px 0; }
+  .kv{ display:grid; grid-template-columns:110px 1fr; gap:6px 10px; margin:10px 0 14px; }
+  .kv .k{ color:#8e97a3; }
+  .timeline{ display:grid; gap:8px; margin:10px 0; }
+  .tl-item{ background:#1c1e22; border:1px solid #2e3238; border-radius:10px; padding:8px 10px; }
+  pre.json{
+    background:#0f1012; border:1px solid #2e3238; border-radius:10px;
+    padding:10px; overflow:auto; font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; color:#e9edf2;
+  }
+  .xbtn{
+    border:1px solid #2e3238; background:#1c1e22; color:#e9edf2;
+    border-radius:10px; padding:6px 10px; cursor:pointer;
+  }
+  .pill-risk{
+    display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;border:1px solid rgba(255,255,255,.15)
+  }
+  .pill-risk.high{ color:#ff5a5f; background:rgba(255,90,95,.12); border-color:rgba(255,90,95,.35); }
+  .pill-risk.med { color:#f0b429; background:rgba(240,180,41,.12); border-color:rgba(240,180,41,.35); }
+  .pill-risk.low { color:#33c48d; background:rgba(51,196,141,.12); border-color:rgba(51,196,141,.35); }
+
+
+  </style>
+</head>
+
+<script src="auth.js"></script>
+
+<script>
+  CIAuth.requireAuth();
+  CIAuth.requireRole(['admin']); // redirect to index if not admin
+</script>
+
+
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="CityintLogo.jpg" alt="CityIntel Logo" />
+        <div class="title">CityIntel</div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="events.html">Events</a>
+        <a href="reports.html">Reports</a>
+        <a href="sources.html">Sources & Reliability</a>
+        <a class="active" href="operations-log.html">Operations Log</a>
+        <a href="settings.html">Settings</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div style="margin-top:auto;color:var(--muted);font-size:12px">For information use only — not for redistribution</div>
+    </aside>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div style="font-weight:700">Operations Log</div>
+      <div style="margin-left:auto" id="topActions"></div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+      <section class="card">
+        <h2 style="margin:0 0 12px 0">Ingestion & Processing Activity</h2>
+
+        <div class="filters">
+          <div class="field">
+            <label>From</label>
+            <input type="datetime-local" id="f-from">
+          </div>
+          <div class="field">
+            <label>To</label>
+            <input type="datetime-local" id="f-to">
+          </div>
+          <div class="field">
+            <label>Risk</label>
+            <select id="f-risk">
+              <option value="">All</option>
+              <option value="high">High</option>
+              <option value="med">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Action Type</label>
+            <select id="f-type">
+              <option value="">All</option>
+              <option value="ingest">Ingest</option>
+              <option value="normalize">Normalize</option>
+              <option value="dedupe">Deduplicate</option>
+              <option value="kpi">KPI Refresh</option>
+              <option value="banner">Banner Update</option>
+              <option value="map">Map Refresh</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:span 12">
+            <label>Search (title, city, source)</label>
+            <input type="text" id="f-q" placeholder="e.g., London, transport, gov.uk …">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="btn-apply">Apply Filters</button>
+          <button class="btn neutral" id="btn-clear">Clear</button>
+          <button class="btn success" id="btn-export">Export CSV</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:160px">Timestamp</th>
+              <th>Action</th>
+              <th>Item</th>
+              <th>Risk</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+
+        <div class="foot">
+          <div id="countLabel">0 items</div>
+          <div class="pager">
+            <button class="btn" id="prevPage">Prev</button>
+            <div id="pageLabel" class="muted">Page 1</div>
+            <button class="btn" id="nextPage">Next</button>
+          </div>
+        </div>
+      </section>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="opsDrawer" aria-hidden="true">
+  <div class="drawer-header">
+    <div>
+      <div id="dw-title" style="font-weight:800"></div>
+      <div id="dw-sub" style="color:#8e97a3;font-size:12px"></div>
+    </div>
+    <button class="xbtn" id="dw-close">Close</button>
+  </div>
+  <div class="drawer-body">
+    <h3>Summary</h3>
+    <div class="kv">
+      <div class="k">Action</div><div id="dw-action">—</div>
+      <div class="k">Timestamp</div><div id="dw-ts">—</div>
+      <div class="k">Risk</div><div id="dw-risk">—</div>
+      <div class="k">Source</div><div id="dw-src">—</div>
+    </div>
+
+    <h3>Processing Timeline</h3>
+    <div class="timeline" id="dw-timeline"></div>
+
+    <h3>Raw Payload</h3>
+    <pre class="json" id="dw-json">{}</pre>
+  </div>
+</aside>
+
+
+    </main>
+  </div>
+
+  <!-- Data + helpers -->
+  <script src="filterEvents.js"></script>
+  <script src="alerts-data.js"></script>
+
+  <script>
+    // ---------- Utilities ----------
+    const CIF = window.CIFilter || {};
+    const parse = v => (CIF.parseDate ? CIF.parseDate({time:v, date:v, datetime:v}) :
+                       (v ? new Date(v) : null));
+    const normRisk = r => (CIF.normaliseRisk ? CIF.normaliseRisk(r) :
+                          (String(r||'').toLowerCase().startsWith('hi')?'high':
+                           String(r||'').toLowerCase().startsWith('me')?'med':'low'));
+    const fmt = d => new Date(d).toLocaleString('en-GB',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    // ---------- Build a synthetic ops log from alerts + system steps ----------
+    // If you later wire a real ops feed, replace window.opsLog with your own.
+
+
+function buildOpsFromAlerts(alerts){
+  const rows = [];
+  (alerts||[]).forEach(a=>{
+    const dt = parse(a.time || a.datetime || a.date);
+    const risk = normRisk(a.risk);
+    const src  = a.source || a.Source || '';
+    const base = {
+      id: `${(a.id||a.title||'').slice(0,40)}|${dt ? dt.toISOString() : ''}`,
+      title: a.title || '',
+      city: a.city || a.City || '',
+      risk, src, _raw: a
+    };
+    // 1) Ingest (T-10m)
+    const tIngest = dt ? new Date(dt.getTime() - 10*60*1000) : new Date();
+    rows.push({ ts:tIngest, type:'ingest',  ...base, msg:'Feed ingested' });
+    // 2) Normalize (T-9m)
+    const tNorm = dt ? new Date(dt.getTime() - 9*60*1000) : new Date();
+    rows.push({ ts:tNorm, type:'normalize',...base, msg:'Date & fields normalized' });
+    // 3) Dedupe (T-8m) — pretend 15% are deduped
+    if (Math.random() < 0.15) {
+      const tDed = dt ? new Date(dt.getTime() - 8*60*1000) : new Date();
+      rows.push({ ts:tDed, type:'dedupe', ...base, msg:'Merged duplicate with similar source/timestamp' });
+    }
+    // 4) KPI Refresh (T-2m)
+    const tKpi = dt ? new Date(dt.getTime() - 2*60*1000) : new Date();
+    rows.push({ ts:tKpi, type:'kpi',      ...base, msg:'KPI counters updated' });
+    // 5) Banner/Map near event time
+    if (dt) {
+      rows.push({ ts:new Date(dt.getTime() - 1*60*1000), type:'banner', ...base, msg:'Ticker refreshed' });
+      rows.push({ ts:new Date(dt.getTime()),              type:'map',    ...base, msg:'Risk map refreshed' });
+    }
+  });
+  return rows.sort((a,b)=> b.ts - a.ts);
+}
+
+
+    // ---------- Render ----------
+    const PAGE_SIZE = 20;
+    let OPS_ALL = [];
+    let OPS_FILT = [];
+    let page = 1;
+
+    function riskTag(r){
+      const cls = r==='high'?'high':r==='med'?'med':'low';
+      return `<span class="tag ${cls}">${r[0].toUpperCase()+r.slice(1)}</span>`;
+    }
+
+    function renderTable(){
+  const body = document.getElementById('logBody');
+  body.innerHTML = '';
+
+  const start = (page-1)*PAGE_SIZE;
+  const slice = OPS_FILT.slice(start, start+PAGE_SIZE);
+
+  // 1) render rows
+  slice.forEach(row=>{
+    const item = [row.title, row.city].filter(Boolean).join(' — ');
+    body.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td class="mono">${fmt(row.ts)}</td>
+        <td><strong>${row.type}</strong><div class="rowmeta">${row.msg}</div></td>
+        <td>${item || '<span class="muted">—</span>'}</td>
+        <td>${riskTag(row.risk)}</td>
+        <td class="mono">
+          ${row.src ? `<a class="src-link" href="${row.src}" target="_blank" rel="noopener">source</a>` : '<span class="muted">n/a</span>'}
+        </td>
+      </tr>
+    `);
+  });
+
+  // 2) NOW bind click handlers to the rows we just rendered
+  const trs = body.querySelectorAll('tr');
+  trs.forEach((tr, idx) => {
+    const row = slice[idx];
+    if (!row) return;
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', () => openDrawer(row));
+  });
+
+  // (optional) allow the "source" link to be clicked without opening drawer
+  body.querySelectorAll('a.src-link').forEach(a=>{
+    a.addEventListener('click', e => e.stopPropagation());
+  });
+
+  document.getElementById('countLabel').textContent = `${OPS_FILT.length} items`;
+  document.getElementById('pageLabel').textContent = `Page ${page}`;
+}
+
+
+// ---- Drawer controls ----
+function openDrawer(row){
+  const overlay = document.getElementById('drawerOverlay');
+  const drawer  = document.getElementById('opsDrawer');
+  const titleEl = document.getElementById('dw-title');
+  const subEl   = document.getElementById('dw-sub');
+  const tsEl    = document.getElementById('dw-ts');
+  const actEl   = document.getElementById('dw-action');
+  const riskEl  = document.getElementById('dw-risk');
+  const srcEl   = document.getElementById('dw-src');
+  const tlEl    = document.getElementById('dw-timeline');
+  const jsonEl  = document.getElementById('dw-json');
+
+  // Header
+  titleEl.textContent = row.title || '(untitled)';
+  subEl.textContent   = [row.city || '', row.id.split('|')[1] ? new Date(row.id.split('|')[1]).toLocaleString('en-GB') : '']
+                          .filter(Boolean).join(' • ');
+
+  // Summary
+  tsEl.textContent  = new Date(row.ts).toLocaleString('en-GB');
+  actEl.textContent = row.type;
+  srcEl.innerHTML   = row.src ? `<a href="${row.src}" target="_blank" rel="noopener">${row.src}</a>` : 'n/a';
+  riskEl.innerHTML  = `<span class="pill-risk ${row.risk}">${row.risk[0].toUpperCase()+row.risk.slice(1)}</span>`;
+
+  // Timeline (synthetic around this alert id)
+  tlEl.innerHTML = '';
+  const related = OPS_ALL.filter(r => r.id === row.id).sort((a,b)=> a.ts - b.ts);
+  related.forEach(r=>{
+    tlEl.insertAdjacentHTML('beforeend', `
+      <div class="tl-item">
+        <div><strong>${r.type}</strong> — <span class="mono">${new Date(r.ts).toLocaleString('en-GB')}</span></div>
+        <div class="muted">${r.msg || ''}</div>
+      </div>
+    `);
+  });
+
+  // Raw JSON
+  try {
+    const raw = row._raw || {};
+    jsonEl.textContent = JSON.stringify(raw, null, 2);
+  } catch(e){
+    jsonEl.textContent = '{}';
+  }
+
+  // Show
+  overlay.style.display = 'block';
+  requestAnimationFrame(()=> drawer.classList.add('open'));
+  drawer.setAttribute('aria-hidden','false');
+}
+
+function closeDrawer(){
+  const overlay = document.getElementById('drawerOverlay');
+  const drawer  = document.getElementById('opsDrawer');
+  drawer.classList.remove('open');
+  drawer.setAttribute('aria-hidden','true');
+  setTimeout(()=> overlay.style.display='none', 200);
+}
+
+// Wire close actions
+document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+document.getElementById('dw-close').addEventListener('click', closeDrawer);
+window.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeDrawer(); });
+
+
+    function applyFilters(){
+      const q     = document.getElementById('f-q').value.trim().toLowerCase();
+      const risk  = document.getElementById('f-risk').value;
+      const type  = document.getElementById('f-type').value;
+      const fromV = document.getElementById('f-from').value;
+      const toV   = document.getElementById('f-to').value;
+
+      const from = fromV ? new Date(fromV) : null;
+      const to   = toV   ? new Date(toV)   : null;
+
+      OPS_FILT = OPS_ALL.filter(row=>{
+        if (risk && row.risk !== risk) return false;
+        if (type && row.type !== type) return false;
+        if (from && row.ts < from) return false;
+        if (to && row.ts > to) return false;
+        if (q) {
+          const hay = `${row.title} ${row.city} ${row.src} ${row.msg}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      page = 1;
+      renderTable();
+    }
+
+    function clearFilters(){
+      ['f-q','f-risk','f-type','f-from','f-to'].forEach(id=>document.getElementById(id).value='');
+      OPS_FILT = OPS_ALL.slice();
+      page = 1;
+      renderTable();
+    }
+
+    function exportCSV(){
+      const rows = OPS_FILT.map(r=>({
+        timestamp: new Date(r.ts).toISOString(),
+        type: r.type,
+        title: r.title || '',
+        city: r.city || '',
+        risk: r.risk,
+        source: r.src || '',
+        message: r.msg || ''
+      }));
+      const headers = Object.keys(rows[0]||{
+        timestamp:'',type:'',title:'',city:'',risk:'',source:'',message:''
+      });
+      const csv = [
+        headers.join(','),
+        ...rows.map(o => headers.map(h => {
+          const v = String(o[h] ?? '');
+          return `"${v.replace(/"/g,'""')}"`;
+        }).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `cityintel-opslog-${Date.now()}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ---------- Wire UI ----------
+    document.getElementById('btn-apply').addEventListener('click', applyFilters);
+    document.getElementById('btn-clear').addEventListener('click', clearFilters);
+    document.getElementById('btn-export').addEventListener('click', exportCSV);
+    document.getElementById('prevPage').addEventListener('click', ()=>{ if (page>1){ page--; renderTable(); }});
+    document.getElementById('nextPage').addEventListener('click', ()=>{
+      const maxPage = Math.max(1, Math.ceil(OPS_FILT.length / PAGE_SIZE));
+      if (page < maxPage){ page++; renderTable(); }
+    });
+
+    // ---------- Bootstrap ----------
+    (function init(){
+      // If you later provide window.opsLog from backend, prefer that:
+      const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
+
+      OPS_ALL = (window.opsLog && Array.isArray(window.opsLog) ? window.opsLog : buildOpsFromAlerts(alerts));
+      // Normalize/ensure fields
+
+OPS_ALL = OPS_ALL.map(r=>{
+  const ts  = r.ts ? new Date(r.ts) : new Date();
+  const id  = r.id || `${(r.title||'').slice(0,40)}|${ts.toISOString()}`;
+  return {
+    // keep everything we need for the drawer
+    id,
+    _raw: r._raw || r,               // keep original payload
+    ts,
+    type: (r.type||'').toLowerCase(),
+    title: r.title || '',
+    city: r.city || '',
+    risk: normRisk(r.risk),
+    src: r.src || r.source || '',
+    msg: r.msg || ''
+  };
+}).sort((a,b)=> b.ts - a.ts);
+
+
+      OPS_FILT = OPS_ALL.slice();
+      renderTable();
+    })();
+
+    // ---------- Minimal user chip (keeps visual consistency) ----------
+    (function mountTopActions(){
+      const host = document.getElementById('topActions');
+      if (!host) return;
+      const isSub = localStorage.getItem('ci_subscribed') === 'true';
+      let initials = 'CI', role = 'Analyst';
+      try {
+        const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+        if (p.name) {
+          const parts = p.name.trim().split(/\s+/);
+          initials = parts.slice(0,2).map(s => s[0]?.toUpperCase() || '').join('') || 'CI';
+        }
+        if (p.role) role = p.role;
+      } catch(e){}
+      host.innerHTML = isSub
+        ? `<div class="user" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--g700);border:1px solid var(--g600)"><div class="avatar" style="width:28px;height:28px;background:#fff;color:#000;border-radius:50%;display:grid;place-items:center;font-weight:700">${initials}</div>${role}</div>`
+        : `<a class="btn primary" href="login.html">Log in</a>`;
+    })();
+  </script>
+</body>
+</html>

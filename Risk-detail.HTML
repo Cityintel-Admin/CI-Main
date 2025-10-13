@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CityIntel — Risk Detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="metrics.js"></script>
+  <script src="alerts-data.js"></script>
+
+  <!-- Chart.js for the pie -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    body {
+      margin:0; font:14px/1.5 system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:#111214; color:#e9edf2;
+    }
+    .container { max-width:900px; margin:40px auto; padding:20px; }
+    h1 { margin-top:0; color:#D01616; }
+    .card { background:#16171a; border:1px solid #2e3238; border-radius:14px; padding:18px; margin-bottom:20px; }
+
+    .tag { padding:6px 12px; border-radius:999px; font-size:13px; font-weight:700; border:1px solid transparent; }
+    .high { background:rgba(255,90,95,.15); color:#ff5a5f; border-color:rgba(255,90,95,.35); }
+    .med  { background:rgba(240,180,41,.15); color:#f0b429; border-color:rgba(240,180,41,.35); }
+    .low  { background:rgba(51,196,141,.15); color:#33c48d; border-color:rgba(51,196,141,.35); }
+
+    .crumbs{display:flex; gap:8px; align-items:center;margin:-6px 0 16px 2px; color:#8e97a3; font-size:13px;}
+    .crumbs a{ color:#cfd6e1; text-decoration:none; }
+    .crumbs a:hover{ text-decoration:underline; }
+    .crumbs .sep{ opacity:.45; }
+    .crumb-chip{padding:2px 8px; border-radius:999px;background:#1c1e22; border:1px solid #2e3238; color:#cfd6e1;}
+
+    table { width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; }
+    th { background:#1c1e22; text-align:left; padding:8px; color:#8e97a3; }
+    td { padding:8px; border-top:1px solid #2e3238; }
+    tr:hover td { background:rgba(255,255,255,0.02); }
+
+    table.mini { width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; }
+    table.mini th { background:#1c1e22; text-align:left; padding:8px; color:#8e97a3; }
+    table.mini td { padding:8px; border-top:1px solid #2e3238; }
+
+    /* Overview layout (keeps your look) */
+    .overview-grid {
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:16px;
+    }
+    @media (max-width: 860px){
+      .overview-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1 id="pageTitle">Risk Detail</h1>
+  <nav class="crumbs" id="crumbs" hidden>
+    <a id="crumb-continent" href="#"></a>
+    <span class="sep">›</span>
+    <span id="crumb-country" class="crumb-chip"></span>
+    <span class="sep">›</span>
+    <a id="crumb-city" href="#"></a>
+  </nav>
+
+  <!-- ===== New: Continent Overview (only shown in continent mode) ===== -->
+  <div id="continentOverviewBlock" style="display:none;">
+    <div class="card" style="margin-bottom:12px;">
+      <h2 id="contTitle">October Overview</h2>
+      <p id="contNarrative" style="color:#cfd6df; margin-top:6px;"></p>
+    </div>
+
+    <div class="overview-grid">
+      <div class="card" style="background:linear-gradient(180deg,#1a1c20,#131417); border:1px solid #2e3238;">
+        <h3 style="margin:0 0 8px 0;">Risk Distribution (Oct)</h3>
+        <canvas id="contRiskPie" width="320" height="320" aria-label="Risk distribution"></canvas>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:8px; font-size:12px; color:#e9edf2">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#ff5a5f;border-radius:2px;margin-right:6px"></span>High</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#f0b429;border-radius:2px;margin-right:6px"></span>Medium</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#6bcf6b;border-radius:2px;margin-right:6px"></span>Low</span>
+        </div>
+      </div>
+      <div class="card" style="background:linear-gradient(180deg,#1a1c20,#131417); border:1px solid #2e3238;">
+        <h3 style="margin:0 0 6px 0;">Analyst Brief</h3>
+        <ul id="contBullets" style="margin:6px 0 0 18px; color:#cfd6df;">
+          <!-- bullets injected -->
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- ===== End: Continent Overview ===== -->
+
+<div class="card">
+  <h2>Activity Trend (last 180 days)</h2>
+  <canvas id="miniTrend" height="60"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script>
+(function miniTrend(){
+  const ctx = document.getElementById('miniTrend'); if(!ctx||!window.alertsData) return;
+
+  const qs = new URLSearchParams(location.search);
+  const continentParam = (qs.get('continent')||'').trim().toLowerCase();
+  const cityParam = (qs.get('city')||'').trim().toLowerCase();
+
+  const parseTime = v => { const d=new Date(v); return isNaN(d)?null:d; };
+  const dayKey = d => new Date(d).toLocaleDateString('en-CA', { timeZone:'Europe/London' });
+
+  const scopeFilter = a => {
+    if (continentParam) return String(a.continent||a.Continent||'').toLowerCase()===continentParam;
+    if (cityParam) return String(a.city||'').toLowerCase().includes(cityParam);
+    return true;
+  };
+
+  const now=new Date(), windowDays=180, start=new Date(+now-windowDays*864e5);
+  const buckets = new Map();
+  (window.alertsData||[]).filter(scopeFilter).forEach(a=>{
+    const dt=parseTime(a.time); if(!dt||dt<start||dt>now) return;
+    const k=dayKey(dt); buckets.set(k, (buckets.get(k)||0)+1);
+  });
+
+  const labels=[], data=[];
+  for(let i=windowDays;i>=0;i--){
+    const d=new Date(+now-i*864e5), k=dayKey(d);
+    labels.push(k); data.push(buckets.get(k)||0);
+  }
+
+  new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Daily', data, borderWidth:2, pointRadius:0, tension:.25 }] },
+    options:{ responsive:true, maintainAspectRatio:true, aspectRatio:3.2, plugins:{legend:{display:false}}, scales:{x:{display:false},y:{display:false}} }
+  });
+})();
+</script>
+
+
+  <div class="card">
+    <h2>Protest Risk Level: <span id="riskLevel" class="tag">Unknown</span></h2>
+    <p id="riskSummary">Loading data…</p>
+  </div>
+
+  <!-- Location -->
+  <div class="card" id="location-card">
+    <h2>Location</h2>
+    <table class="mini">
+      <thead>
+        <tr><th>Location</th><th>City</th><th>Risk Rating</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="loc-country">—</td>
+          <td id="loc-city">—</td>
+          <td><span id="loc-risk" class="tag low">Low</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent Alerts -->
+  <div class="card">
+    <h2>Recent Alerts</h2>
+    <table>
+      <thead><tr><th>Alert</th><th>Date</th><th>Risk</th></tr></thead>
+      <tbody id="alertsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Upcoming Events -->
+  <div class="card">
+    <h2>Upcoming Events</h2>
+    <table>
+      <thead><tr><th>Event</th><th>Date</th><th>Risk</th></tr></thead>
+      <tbody id="eventsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <a href="index.html" style="color:#D01616;text-decoration:none;font-weight:bold">← Back to Dashboard</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const continentParam = (qs.get('continent') || '').trim();
+  const cityParam      = (qs.get('city') || '').trim();
+  const eventIdParam   = qs.get('eventId');
+
+  const norm  = r => { r=(r||'').toLowerCase(); if(r.startsWith('hi')) return 'high'; if(r.startsWith('me')) return 'med'; return 'low'; };
+  const label = r => r==='high'?'High':r==='med'?'Medium':'Low';
+  const color = r => r==='high'?'#ff5a5f':r==='med'?'#f0b429':'#33c48d';
+  const key   = a => `${a.title}|${a.time||''}|${a.city||''}|${a.country||a.Country||''}`;
+  const fmt   = t => { const d=new Date(t); return isNaN(d)?'':d.toLocaleString('en-GB',{timeZone:'Europe/London',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
+
+  const all = (window.alertsData || []).map(a => ({
+    ...a,
+    risk: norm(a.risk),
+    continent: a.continent || a.Continent || '',
+    country: a.country || a.Country || '',
+    city: a.city || a.City || '',
+    _dt: a.time ? new Date(a.time) : null
+  }));
+
+  const mode = continentParam ? 'continent' : 'city';
+  const subset = mode === 'continent'
+    ? all.filter(a => (a.continent||'').toLowerCase() === continentParam.toLowerCase())
+    : all.filter(a => (a.city||'').toLowerCase().includes(cityParam.toLowerCase()));
+
+  const now = new Date();
+  const upcoming = subset.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt);
+  const recent   = subset.filter(a => a._dt && a._dt < now).sort((a,b)=>b._dt-a._dt);
+
+  const pageTitle = document.getElementById('pageTitle');
+  const riskLevel = document.getElementById('riskLevel');
+  const riskSummary = document.getElementById('riskSummary');
+  const locCountry = document.getElementById('loc-country');
+  const locCity = document.getElementById('loc-city');
+  const locRisk = document.getElementById('loc-risk');
+
+  // pick a focus event
+  let focus = null;
+  if (eventIdParam) {
+    focus = subset.find(a => key(a) === decodeURIComponent(eventIdParam)) || null;
+  }
+  if (!focus) {
+    focus = upcoming.find(a=>a.risk==='high') || upcoming[0] || recent[0] || null;
+  }
+
+  // header title
+  if (mode === 'continent') {
+    pageTitle.textContent = `${continentParam} — Risk Detail`;
+  } else {
+    pageTitle.textContent = `${cityParam} — Risk Detail`;
+  }
+
+  // compute continent/city risk mix
+  const aggregate = rows => {
+    const c={high:0,med:0,low:0}; rows.forEach(r=>c[r.risk]++);
+    const order=['high','med','low']; let majority='low',max=-1;
+    for(const k of order){ if(c[k]>max){majority=k;max=c[k];}}
+    return {c,majority};
+  };
+
+  let badgeRisk = 'low';
+  if (subset.length) badgeRisk = aggregate(upcoming.length?upcoming:subset).majority;
+  riskLevel.textContent = label(badgeRisk);
+  riskLevel.className = 'tag ' + badgeRisk;
+
+  if (focus) {
+    const when = focus._dt ? fmt(focus._dt) : '';
+    riskSummary.innerHTML = `${focus.title||''}${when?` — <span style="color:#8e97a3">${when}</span>`:''}<br>${focus.summary||''}`;
+  } else {
+    riskSummary.textContent = `${subset.length||0} records found (${badgeRisk} risk overall).`;
+  }
+
+  // location card
+  if (focus) {
+    locCountry.textContent = focus.country || (mode==='continent'?continentParam:'—');
+    locCity.textContent = focus.city || '—';
+    locRisk.textContent = label(focus.risk);
+    locRisk.className = 'tag ' + focus.risk;
+  } else {
+    locCountry.textContent = mode==='continent'?continentParam:(subset[0]?.country||'—');
+    locCity.textContent = mode==='continent'?'—':cityParam;
+    locRisk.textContent = label(badgeRisk);
+    locRisk.className = 'tag ' + badgeRisk;
+  }
+
+  (function setupBreadcrumb(){
+    const qs = new URLSearchParams(location.search);
+    const continentParam = (qs.get('continent')||'').trim();
+    const cityParam      = (qs.get('city')||'').trim();
+
+    const crumbsEl = document.getElementById('crumbs');
+    const cCont    = document.getElementById('crumb-continent');
+    const cCountry = document.getElementById('crumb-country');
+    const cCity    = document.getElementById('crumb-city');
+    const seps     = crumbsEl ? crumbsEl.querySelectorAll('.sep') : [];
+
+    if (!crumbsEl || !cCont || !cCountry || !cCity) return;
+
+    const show = el => el && (el.style.display = '');
+    const hide = el => el && (el.style.display = 'none');
+
+    const continentName = (focus?.continent)
+      || (mode === 'continent' ? continentParam : (subset[0]?.continent || ''));
+    const countryName = (focus?.country) || (subset[0]?.country || '');
+    const cityName = (focus?.city)
+      || (mode === 'city' ? cityParam : '');
+
+    let partsShown = 0;
+
+    if (continentName) {
+      cCont.textContent = continentName;
+      cCont.href = `risk-detail.html?continent=${encodeURIComponent(continentName)}`;
+      show(cCont);
+      partsShown++;
+    } else hide(cCont);
+
+    if (countryName) { cCountry.textContent = countryName; show(cCountry); partsShown++; }
+    else hide(cCountry);
+
+    if (cityName) {
+      cCity.textContent = cityName;
+      cCity.href = `risk-detail.html?city=${encodeURIComponent(cityName)}`;
+      show(cCity);
+      partsShown++;
+    } else hide(cCity);
+
+    const [sep1, sep2] = seps;
+    if (sep1) show(sep1);
+    if (sep2) show(sep2);
+    if (!continentName || !countryName) sep1 && (sep1.style.display='none');
+    if (!countryName || !cityName) sep2 && (sep2.style.display='none');
+
+    crumbsEl.hidden = partsShown === 0;
+  })();
+
+  // render tables
+  const fillTable = (tbody, rows)=>{
+    tbody.innerHTML='';
+    if(!rows.length){ tbody.innerHTML=`<tr><td colspan="3" style="color:#8e97a3">No data.</td></tr>`; return; }
+    rows.slice(0,8).forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${r.title || ''} ${(mode==='continent')?`<span style="color:#8e97a3">(${r.country} — ${r.city})</span>`:''}</td>
+                    <td>${fmt(r._dt)}</td>
+                    <td><span style="font-weight:700;color:${color(r.risk)}">${label(r.risk)}</span></td>`;
+      tr.addEventListener('click',()=>{
+        const q=new URLSearchParams(location.search);
+        q.set('eventId',encodeURIComponent(key(r)));
+        location.search=q.toString();
+      });
+      tbody.appendChild(tr);
+    });
+  };
+
+  const alertsBody = document.getElementById('alertsBody');
+  const eventsBody = document.getElementById('eventsBody');
+  fillTable(alertsBody, recent);
+  fillTable(eventsBody, upcoming);
+
+  // ===== NEW: Continent Overview + Pie =====
+  (function renderContinentOverview(){
+    if (mode !== 'continent') return; // only show in continent mode
+
+    const block = document.getElementById('continentOverviewBlock');
+    const contTitle = document.getElementById('contTitle');
+    const contNarrative = document.getElementById('contNarrative');
+    const bullets = document.getElementById('contBullets');
+    const pieEl = document.getElementById('contRiskPie');
+
+    // Compute current-month window (e.g., Oct 2025)
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthEnd   = new Date(today.getFullYear(), today.getMonth()+1, 1);
+
+    const inMonth = d => (d && d >= monthStart && d < monthEnd);
+
+    const monthRows = subset.filter(a => inMonth(a._dt));
+    const counts = {high:0, med:0, low:0};
+    monthRows.forEach(r => counts[r.risk]++);
+
+    const total = monthRows.length;
+    const hi = counts.high, me = counts.med, lo = counts.low;
+
+    // Narrative
+    contTitle.textContent = `${continentParam} — ${monthStart.toLocaleString('en-GB',{month:'long', year:'numeric'})} Overview`;
+    contNarrative.textContent = total
+      ? `This month shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints early to mid-month; medium-risk actions are broadly distributed.`
+      : `No tracked protest events across ${continentParam} so far this month.`;
+
+    // Bullets — quick themes from titles/summaries
+    const themeDetect = (a => {
+      const s = `${a.title||''} ${a.summary||''}`.toLowerCase();
+      if (s.match(/labour|union|wage|strike|cosatu|workers/)) return 'Labour & wage disputes';
+      if (s.match(/cost[- ]?of[- ]?living|price|inflation/)) return 'Cost-of-living';
+      if (s.match(/governance|anti[- ]?government|corruption|security appointment/)) return 'Governance & legitimacy';
+      if (s.match(/fuel|shortage|queue|supply/)) return 'Resource & supply stress';
+      if (s.match(/campus|university|student|education/)) return 'Education sector mobilisation';
+      return 'Civic mobilisation';
+    });
+    const topThemes = {};
+    monthRows.forEach(a => { const t = themeDetect(a); topThemes[t] = (topThemes[t]||0)+1; });
+    const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    bullets.innerHTML = themeList.length
+      ? themeList.map(([t,c])=>`<li>${t} — ${c} event${c!==1?'s':''}</li>`).join('')
+      : `<li>No dominant themes detected yet for this month.</li>`;
+
+    // Pie
+    if (window.Chart && pieEl) {
+      new Chart(pieEl, {
+        type: 'pie',
+        data: {
+          labels: ['High','Medium','Low'],
+          datasets: [{
+            data: [hi, me, lo],
+            backgroundColor: ['#ff5a5f','#f0b429','#6bcf6b'],
+            borderColor: '#0f1115',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (tt) => {
+                  const v = tt.parsed || 0;
+                  const pct = total ? Math.round((v/total)*100) : 0;
+                  return `${tt.label}: ${v} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // reveal
+    block.style.display = 'block';
+  })();
+})();
+</script>
+
+</body>
+</html>

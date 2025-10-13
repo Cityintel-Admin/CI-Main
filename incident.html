@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CityIntel — Incident Drilldown</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Data -->
+  <script src="filterEvents.js"></script>
+  <script src="auth.js"></script>
+  <script src="alerts-data.js"></script>
+
+  <style>
+    :root{
+      --brand-red:#D01616; --brand-black:#0C0C0C;
+      --g900:#111214; --g800:#16171a; --g700:#1c1e22; --g600:#24272c; --g500:#2e3238;
+      --muted:#8e97a3; --text:#e9edf2; --ok:#33c48d; --warn:#f0b429; --danger:#ff5a5f;
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,var(--g900),var(--g800));color:var(--text);
+         font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:#9ccaff;text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1200px;margin:28px auto;padding:0 16px 40px}
+    .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .brand{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;
+           background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
+    .brand img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#fff}
+    .brand .t{font-weight:800;letter-spacing:.3px}
+    h1{margin:10px 0 0;font-size:24px;letter-spacing:.2px}
+    .sub{color:var(--muted);margin-bottom:16px}
+
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:16px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+
+    .card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--g600);
+          border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.35);padding:14px}
+
+    /* Filters */
+    .filters{display:grid;gap:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .fld{display:flex;flex-direction:column;gap:6px}
+    .fld label{color:var(--muted);font-size:12px}
+    .fld input,.fld select{
+      background:var(--g700); border:1px solid var(--g600); border-radius:10px; color:var(--text);
+      padding:8px 10px; outline:none
+    }
+    .chk{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+
+    /* List */
+    .list{margin-top:12px;border-top:1px solid var(--g600);max-height:65vh;overflow:auto}
+    .itm{padding:10px 8px;border-bottom:1px solid var(--g600);cursor:pointer}
+    .itm:hover{background:rgba(255,255,255,.03)}
+    .ttl{font-weight:700}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:12px;border:1px solid transparent}
+    .high{background:rgba(255,90,95,.15);color:var(--danger);border-color:rgba(255,90,95,.35)}
+    .med {background:rgba(240,180,41,.15);color:var(--warn);border-color:rgba(240,180,41,.35)}
+    .low {background:rgba(51,196,141,.15);color:var(--ok);border-color:rgba(51,196,141,.35)}
+
+    /* Detail */
+    .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .big{font-size:20px;font-weight:800}
+    .kv{display:grid;grid-template-columns:120px 1fr;gap:8px;margin-top:8px}
+    .kv div:nth-child(odd){color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid var(--g600)}
+    .btn:hover{background:rgba(255,255,255,.04)}
+
+    /* Tables */
+    table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden}
+    th{background:var(--g700);text-align:left;padding:8px;color:var(--muted)}
+    td{padding:8px;border-top:1px solid var(--g600)}
+    tr:hover td{background:rgba(255,255,255,.02)}
+  </style>
+</head>
+
+<script>
+  // must be after the header DOM exists
+  document.addEventListener('DOMContentLoaded', function(){
+    CIAuth.injectUserChip(document.getElementById('topActions'));
+    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
+
+<body>
+  <div class="wrap">
+    <div class="hdr">
+      <div class="brand">
+        <img src="CityintLogo.jpg" alt="CityIntel Logo" />
+        <div class="t">CityIntel</div>
+      </div>
+      <div><a class="btn" href="index.html">← Back to Dashboard</a></div>
+    </div>
+
+    <h1>Incident Drilldown</h1>
+    <div class="sub">Search, filter, and deep-dive into upcoming incidents. Past items are hidden by default.</div>
+
+    <div class="grid">
+      <!-- LEFT: FILTERS + LIST -->
+      <aside class="card">
+        <div class="filters">
+          <div class="fld">
+            <label for="q">Search (title, city)</label>
+            <input id="q" placeholder="e.g. transport strike, London, march…" />
+          </div>
+          <div class="row3">
+            <div class="fld">
+              <label for="continent">Continent</label>
+              <select id="continent">
+                <option value="">Any</option>
+                <option>Africa</option><option>Asia</option><option>Europe</option>
+                <option>North America</option><option>South America</option><option>Oceania</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label for="country">Country (free text)</label>
+              <input id="country" placeholder="e.g. United Kingdom, Ghana" />
+            </div>
+            <div class="fld">
+              <label for="city">City (free text)</label>
+              <input id="city" placeholder="e.g. London, Accra" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="fld">
+              <label for="risk">Risk</label>
+              <select id="risk">
+                <option value="">Any</option>
+                <option value="high">High</option>
+                <option value="med">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label for="window">Window</label>
+              <select id="window">
+                <option value="7">Next 7 days</option>
+                <option value="14">Next 14 days</option>
+                <option value="30" selected>Next 30 days</option>
+                <option value="all">All upcoming</option>
+              </select>
+            </div>
+          </div>
+          <label class="chk">
+            <input id="includePast" type="checkbox" /> Show past items
+          </label>
+        </div>
+
+        <div class="list" id="list"></div>
+      </aside>
+
+      <!-- RIGHT: DETAIL -->
+      <section class="card" id="detail">
+        <div class="head">
+          <div class="big" id="dTitle">Select an incident</div>
+          <span class="pill low" id="dRisk">Low</span>
+        </div>
+
+        <div class="kv">
+          <div>When</div><div id="dWhen" class="muted">—</div>
+          <div>Location</div><div id="dLoc" class="muted">—</div>
+          <div>Continent</div><div id="dCont" class="muted">—</div>
+          <div>Source</div><div id="dSrc" class="muted">—</div>
+        </div>
+
+        <h3 style="margin-top:14px">Summary</h3>
+        <p id="dSum" style="margin-top:6px">No incident selected.</p>
+
+        <div class="actions">
+          <a class="btn" id="openSource" target="_blank" rel="noopener">Open source ↗</a>
+          <button class="btn" id="copyLink" type="button">Copy link</button>
+        </div>
+
+        <h3 style="margin-top:18px">Other upcoming in this city</h3>
+        <table>
+          <thead><tr><th>Event</th><th>Date</th><th>Risk</th></tr></thead>
+          <tbody id="cityMore"></tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ---------- helpers ----------
+    const CIF = window.CIFilter || {};
+    const DATA = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const parse = v => (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v?new Date(v):null);
+    const rKey = r => {
+      const s = String(r||'').toLowerCase();
+      if (s.startsWith('hi')) return 'high';
+      if (s.startsWith('me')) return 'med';
+      return 'low';
+    };
+    const rLbl = r => r==='high'?'High':r==='med'?'Medium':'Low';
+    const pillCls = r => r==='high'?'high':r==='med'?'med':'low';
+    const fmt = d => d ? d.toLocaleString('en-GB',{ timeZone:'Europe/London', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+
+    // stable key for deep links
+    const makeKey = a => `${a.title||''}|${a.time||a.datetime||a.date||a.when||''}|${a.city||''}|${a.country||a.Country||''}`;
+
+    // normalize + upcoming-only baseline
+    function baselineUpcoming(){
+      if (CIF.upcoming) return CIF.upcoming(DATA);
+      const now = new Date();
+      return DATA.map(a=>{
+        const _dt = parse(a.time||a.datetime||a.date||a.when);
+        return {...a, risk:rKey(a.risk), _dt};
+      }).filter(a=>a._dt && a._dt>=now)
+        .sort((a,b)=> a._dt-b._dt);
+    }
+
+    // apply UI filters
+    function applyFilters(list){
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      const cont = document.getElementById('continent').value.trim();
+      const country = document.getElementById('country').value.trim().toLowerCase();
+      const city = document.getElementById('city').value.trim().toLowerCase();
+      const risk = document.getElementById('risk').value;
+      const win = document.getElementById('window').value;
+      const includePast = document.getElementById('includePast').checked;
+
+      let rows = list.slice();
+
+      if (q){
+        rows = rows.filter(a =>
+          (a.title||'').toLowerCase().includes(q) ||
+          (a.city||'').toLowerCase().includes(q) );
+      }
+      if (cont) rows = rows.filter(a => (a.Continent||a.continent||'') === cont);
+      if (country) rows = rows.filter(a => (a.country||a.Country||'').toLowerCase().includes(country));
+      if (city) rows = rows.filter(a => (a.city||'').toLowerCase().includes(city));
+      if (risk) rows = rows.filter(a => a.risk === risk);
+
+      // window
+      const now = new Date();
+      let end = null;
+      if (win !== 'all') end = new Date(now.getTime() + (+win)*24*3600*1000);
+      if (!includePast) rows = rows.filter(a => a._dt >= now);
+      if (end) rows = rows.filter(a => a._dt <= end);
+
+      return rows;
+    }
+
+    // render list
+    function renderList(rows){
+      const host = document.getElementById('list');
+      host.innerHTML = '';
+      if (!rows.length){
+        host.innerHTML = `<div class="itm muted">No incidents match your filters.</div>`;
+        return;
+      }
+      rows.forEach(a=>{
+        const div = document.createElement('div');
+        div.className = 'itm';
+        div.innerHTML = `
+          <div class="ttl">${a.city? `${a.city} — `:''}${a.title||''}</div>
+          <div class="muted">${fmt(a._dt)} • ${(a.country||a.Country||'').trim()} • <span class="pill ${pillCls(a.risk)}">${rLbl(a.risk)}</span></div>
+        `;
+        div.addEventListener('click', ()=>focusIncident(a));
+        host.appendChild(div);
+      });
+    }
+
+    // render detail
+    function focusIncident(a, pushState=true){
+      if (!a){ return; }
+      document.getElementById('dTitle').textContent = a.title || 'Untitled';
+      const pill = document.getElementById('dRisk');
+      pill.textContent = rLbl(a.risk);
+      pill.className = 'pill ' + pillCls(a.risk);
+
+      document.getElementById('dWhen').textContent = fmt(a._dt) || '—';
+      const loc = [a.city||'', a.country||a.Country||''].filter(Boolean).join(' — ');
+      document.getElementById('dLoc').textContent = loc || '—';
+      document.getElementById('dCont').textContent = a.Continent || a.continent || '—';
+
+      const src = a.source ? a.source : '';
+      const srcEl = document.getElementById('dSrc');
+      srcEl.innerHTML = src ? `<a href="${src}" target="_blank" rel="noopener">${new URL(src).hostname.replace(/^www\./,'')}</a>` : '—';
+
+      document.getElementById('dSum').textContent = (a.summary || '').trim() || '—';
+
+      const btn = document.getElementById('openSource');
+      if (a.source){ btn.style.pointerEvents='auto'; btn.style.opacity='1'; btn.href=a.source; }
+      else { btn.style.pointerEvents='none'; btn.style.opacity='.5'; btn.removeAttribute('href'); }
+
+      // city peers
+      const peersT = document.getElementById('cityMore');
+      peersT.innerHTML = '';
+      const peers = baselineUpcoming()
+        .filter(x => x !== a && (x.city||'').toLowerCase() === (a.city||'').toLowerCase())
+        .slice(0,5);
+      if (!peers.length){
+        peersT.innerHTML = `<tr><td colspan="3" class="muted">No other upcoming items in this city.</td></tr>`;
+      } else {
+        peers.forEach(p=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${p.title || ''}</td>
+            <td>${fmt(p._dt)}</td>
+            <td><span class="pill ${pillCls(p.risk)}">${rLbl(p.risk)}</span></td>`;
+          tr.style.cursor='pointer';
+          tr.addEventListener('click', ()=>focusIncident(p));
+          peersT.appendChild(tr);
+        });
+      }
+
+      // deep link
+      if (pushState){
+        const qs = new URLSearchParams(location.search);
+        qs.set('eventId', encodeURIComponent(makeKey(a)));
+        if (a.city) qs.set('city', a.city);
+        if (a.country||a.Country) qs.set('country', a.country||a.Country);
+        if (a.Continent||a.continent) qs.set('continent', a.Continent||a.continent);
+        history.replaceState(null, '', `?${qs.toString()}`);
+      }
+    }
+
+    // copy link
+    document.getElementById('copyLink').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(location.href); 
+        const b = document.getElementById('copyLink'); b.textContent='Copied!'; setTimeout(()=>b.textContent='Copy link',1200);
+      } catch(e){}
+    });
+
+    // ---------- boot ----------
+    (function init(){
+      // seed filters from URL if present
+      const qs = new URLSearchParams(location.search);
+      const setIf = (id,val)=>{ if (val) document.getElementById(id).value = val; };
+      setIf('continent', qs.get('continent')||'');
+      setIf('country', qs.get('country')||'');
+      setIf('city', qs.get('city')||'');
+      setIf('risk', (qs.get('risk')||'').toLowerCase());
+
+      // list render + handlers
+      const base = baselineUpcoming().map(a => ({...a, _key: makeKey(a)}));
+      const renderAll = ()=> renderList(applyFilters(base));
+      ['q','continent','country','city','risk','window','includePast'].forEach(id=>{
+        document.getElementById(id).addEventListener('input', renderAll);
+        document.getElementById(id).addEventListener('change', renderAll);
+      });
+      renderAll();
+
+      // focus from eventId if present
+      const eid = qs.get('eventId');
+      if (eid){
+        const wanted = decodeURIComponent(eid);
+        const hit = base.find(a => a._key === wanted);
+        if (hit) focusIncident(hit, /*pushState*/false);
+      } else if (base.length){
+        // default focus = first high risk, then first item
+        focusIncident(base.find(a=>a.risk==='high') || base[0], false);
+      }
+    })();
+  </script>
+</body>
+</html>
