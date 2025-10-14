@@ -428,10 +428,6 @@ window.alertsData =[
 
 { title:'Oct 7 Global Vigils — London Node', city:'London', country:'United Kingdom', continent:'Europe', risk:'low', time:'2025-10-07T18:00:00', source:'https://www.reuters.com/world/middle-east/planned-pro-palestinian-protests-gaza-war-anniversary-draw-criticism-2025-10-07/', summary:'Blurb: Evening vigils and rallies tied to Gaza war anniversary; static assemblies near central landmarks.\n\nFurther: Metropolitan Police applied conditions on amplification and route clustering. Attendance moderate; candlelight segments near embassies and civic sites. Commuter impact limited to localized footway congestion.' },
 
-{ title:'Youth‑Led Anti‑Government Rallies', city:'Antananarivo', country:'Madagascar', continent:'Africa', risk:'high', time:'2025-10-13T12:00:00', source:'https://www.reuters.com/world/africa/madagascar-president-rajoelina-address-nation-monday-evening-2025-10-13/', summary:'Blurb: Gen‑Z‑driven protests escalate in the capital; defections within security ranks raise volatility.\n\nFurther: Demonstrators cite corruption, outages and economic hardship; larger marches converged on 13 May Square. Reports of parts of military siding with crowds elevated confrontation risk; curfews and checkpoints followed. Expect snap roadblocks and sudden dispersal operations.' },
-
-
-
 { title:'Civic Groups Rally Over Debt & Taxes (IMF Week)', city:'Nairobi', country:'Kenya', continent:'Africa', risk:'medium', time:'2025-10-14T09:00:00', source:'https://www.reuters.com/world/africa/kenyan-activists-tell-imf-government-is-stoking-poverty-2025-10-14/', summary:'Blurb: Civil society coalition stages actions and deliverables targeting IMF meetings; anti‑tax sentiment prominent.\n\nFurther: Okoa Uchumi and partners decry fiscal policies and borrowing costs; protests near finance buildings and symbolic venues. Police monitored with cordons; risk of brief scuffles at barricades but events largely orderly.' },
 
 { title:'Farmers’ Demonstration for Loan Waivers', city:'Tasgaon (Sangli Dist.)', country:'India', continent:'Asia', risk:'medium', time:'2025-10-14T11:00:00', source:'https://timesofindia.indiatimes.com/city/kolhapur/sanjaykaka-leads-farmers-protest-seeking-loan-waiver/articleshow/124557163.cms', summary:'Blurb: Thousands rally with tractors and bullock carts seeking crop‑loss compensation and loan waivers.\n\nFurther: March led by former MP Sanjaykaka Patil; processions caused perimeter traffic jams near bus stand. Police presence visible; protest remained peaceful with speeches and petition hand‑over to district officials.' },
@@ -6671,5 +6667,6 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
