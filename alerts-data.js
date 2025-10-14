@@ -430,7 +430,7 @@ window.alertsData =[
 
 { title:'Youth‑Led Anti‑Government Rallies', city:'Antananarivo', country:'Madagascar', continent:'Africa', risk:'high', time:'2025-10-13T12:00:00', source:'https://www.reuters.com/world/africa/madagascar-president-rajoelina-address-nation-monday-evening-2025-10-13/', summary:'Blurb: Gen‑Z‑driven protests escalate in the capital; defections within security ranks raise volatility.\n\nFurther: Demonstrators cite corruption, outages and economic hardship; larger marches converged on 13 May Square. Reports of parts of military siding with crowds elevated confrontation risk; curfews and checkpoints followed. Expect snap roadblocks and sudden dispersal operations.' },
 
-{ title:'Youth Protests Continue — Analysis', city:'Antananarivo', country:'Madagascar', continent:'Africa', risk:'medium', time:'2025-10-14T10:00:00', source:'https://www.reuters.com/world/europe/scenting-victory-madagascar-youth-give-scant-thought-whats-next-2025-10-14/', summary:'Blurb: Momentum persists but leadership remains fluid; demonstrations remain city‑centered.\n\nFurther: Organizing is decentralized via social media; demands range from governance reform to relief from living‑cost pressures. Police posture tightened around ministries; non‑lethal crowd control likely if routes approach sensitive sites.' },
+
 
 { title:'Civic Groups Rally Over Debt & Taxes (IMF Week)', city:'Nairobi', country:'Kenya', continent:'Africa', risk:'medium', time:'2025-10-14T09:00:00', source:'https://www.reuters.com/world/africa/kenyan-activists-tell-imf-government-is-stoking-poverty-2025-10-14/', summary:'Blurb: Civil society coalition stages actions and deliverables targeting IMF meetings; anti‑tax sentiment prominent.\n\nFurther: Okoa Uchumi and partners decry fiscal policies and borrowing costs; protests near finance buildings and symbolic venues. Police monitored with cordons; risk of brief scuffles at barricades but events largely orderly.' },
 
@@ -6671,4 +6671,5 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
