@@ -201,6 +201,81 @@
 
 
 
+
+/* CityIntel – Alerts dataset validator (non-destructive) */
+(function CIValidate(){
+  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+  const okRisk = new Set(['low','medium','high','med','hi']); // we’ll normalize
+  const seen = new Set();
+
+  const issues = { missing:[], badRisk:[], badTime:[], duplicates:[], badKeys:[] };
+  let valid = 0;
+
+  const normRisk = r => {
+    const s = String(r||'').toLowerCase();
+    if (s.startsWith('hi')) return 'high';
+    if (s.startsWith('me')) return 'medium';
+    if (s.startsWith('lo')) return 'low';
+    return s;
+  };
+
+  const must = ['title','city','country','continent','risk','time','summary'];
+  const hasBadKeyCase = (obj) => {
+    // warn if we see 'Country'/'Continent' instead of lowercase
+    return ('Country' in obj) || ('Continent' in obj);
+  };
+
+  data.forEach((a, idx) => {
+    // 1) missing fields
+    const miss = must.filter(k => !(k in a));
+    if (miss.length) issues.missing.push({ index: idx, title: a.title||'', missing: miss.join(', ') });
+
+    // 2) bad key case
+    if (hasBadKeyCase(a)) issues.badKeys.push({ index: idx, title: a.title||'', hasCountryKey: !!a.Country, hasContinentKey: !!a.Continent });
+
+    // 3) risk check
+    const nr = normRisk(a.risk);
+    if (!okRisk.has(nr)) issues.badRisk.push({ index: idx, title: a.title||'', risk:a.risk });
+
+    // 4) time check
+    const d = new Date(a.time);
+    if (isNaN(d)) issues.badTime.push({ index: idx, title: a.title||'', time:a.time });
+
+    // 5) duplicate check (title|city|ISO-minute)
+    const isoMin = isNaN(d) ? '' : new Date(d.getTime() - (d.getSeconds()*1000 + d.getMilliseconds())).toISOString().slice(0,16);
+    const key = `${a.title||''}|${(a.city||'').toLowerCase()}|${isoMin}`;
+    if (seen.has(key)) issues.duplicates.push({ index: idx, title:a.title||'', city:a.city||'', time: a.time });
+    else seen.add(key);
+
+    // final validity
+    if (!miss.length && okRisk.has(nr) && !isNaN(d)) valid++;
+  });
+
+  const total = data.length;
+  console.group('%cCityIntel — Alerts dataset validation','color:#0ff');
+  console.log('Total entries:', total);
+  console.log('Valid entries:', valid);
+  const warn = (name, arr) => { 
+    if (arr.length) { console.warn(`${name}: ${arr.length}`); console.table(arr.slice(0,20)); }
+    else { console.log(`${name}: 0`); }
+  };
+  warn('Missing required fields', issues.missing);
+  warn('Bad key casing (Country/Continent)', issues.badKeys);
+  warn('Bad risk values', issues.badRisk);
+  warn('Bad time values', issues.badTime);
+  warn('Duplicates (title|city|minute)', issues.duplicates);
+  console.groupEnd();
+
+  // Optional quick normalizer (no mutation): preview what % are nonstandard ‘med/hi’
+  const nonStd = data.filter(a => ['med','hi'].includes(String(a.risk||'').toLowerCase()));
+  if (nonStd.length) {
+    console.info(`Risk normalization preview: ${nonStd.length} entries would be normalized to 'medium'/'high'.`);
+  }
+})();
+
+
+
+
 (function trendPhase5(){
   if (!window.alertsData || !alertsData.length) return;
 
@@ -584,3 +659,4 @@
   </script>
 </body>
 </html>
+
