@@ -14,6 +14,394 @@ window.alertsData =[
   },
 
 
+{ title:"International Women's Day March", city:'Sydney', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at Town Hall to Hyde Park.\n\nFurther: Police-managed, family-friendly; risk low.' },
+
+{ title:"International Women's Day March", city:'Melbourne', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T13:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march via Swanston/Flinders corridors.\n\nFurther: Peaceful; rolling traffic holds; risk low.' },
+
+{ title:"International Women's Day March", city:'Brisbane', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T10:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at King George Square.\n\nFurther: Compact assembly; risk low.' },
+
+{ title:"International Women's Day March", city:'Perth', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T11:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march near Parliament House.\n\nFurther: Peaceful; risk low.' },
+
+{ title:"International Women's Day March", city:'Adelaide', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T12:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally in Victoria Square.\n\nFurther: Short speeches; risk low.' },
+
+{ title:"International Women's Day March", city:'Canberra', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD event around Commonwealth Ave.\n\nFurther: Managed; risk low.' },
+
+{ title:"International Women's Day March", city:'Auckland', country:'New Zealand', continent:'Oceania', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD waterfront march.\n\nFurther: Peaceful; risk low.' },
+
+{ title:"International Women's Day March", city:'Wellington', country:'New Zealand', continent:'Oceania', risk:'low', time:'2026-03-08T12:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at Civic Square to Parliament.\n\nFurther: Police liaison present; risk low.' },
+
+{ title:"International Women's Day March", city:'Christchurch', country:'New Zealand', continent:'Oceania', risk:'low', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march in city centre.\n\nFurther: Peaceful; risk low.' },
+{ title:"International Women's Day March", city:'Suva', country:'Fiji', continent:'Oceania', risk:'low', time:'2026-03-08T10:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally near Albert Park.\n\nFurther: Compact; risk low.' },
+
+{ title:'Global Climate Strike — Sydney', city:'Sydney', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth climate rally at Town Hall.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Melbourne', city:'Melbourne', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-15T12:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student march via CBD grid.\n\nFurther: Rolling holds; risk low.' },
+
+{ title:'Global Climate Strike — Brisbane', city:'Brisbane', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-15T11:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate rally at King George Square.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Wellington', city:'Wellington', country:'New Zealand', continent:'Oceania', risk:'low', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Rally at Parliament lawns.\n\nFurther: Short speeches; risk low.' },
+
+{ title:'Global Climate Strike — Auckland', city:'Auckland', country:'New Zealand', continent:'Oceania', risk:'low', time:'2026-03-15T13:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Waterfront climate march.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Public Sector Pay Rally Window', city:'Sydney', country:'Australia', continent:'Oceania', risk:'medium', time:'2026-02-17T09:00:00', source:'Analyst forecast referencing NSW public sector bargaining cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Public employee rally at Macquarie Street.\n\nFurther: Moderate congestion; risk medium.' },
+
+{ title:'University Staff Strike Window', city:'Melbourne', country:'Australia', continent:'Oceania', risk:'medium', time:'2026-02-26T10:00:00', source:'Analyst forecast referencing enterprise agreement timelines', predictive:true, predictive_type:'modeled', summary:'Blurb: Campus pickets and CBD march.\n\nFurther: Traffic holds near universities; risk medium.' },
+
+{ title:'Cost-of-Living Protest Window', city:'Auckland', country:'New Zealand', continent:'Oceania', risk:'medium', time:'2026-02-13T12:00:00', source:'Analyst forecast referencing CPI and rent pressure cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic march from Aotea Square.\n\nFurther: Peaceful; risk medium.' },
+
+{ title:'Transport Union Action Window', city:'Wellington', country:'New Zealand', continent:'Oceania', risk:'medium', time:'2026-02-21T06:30:00', source:'Analyst forecast referencing bus/ferry bargaining windows', predictive:true, predictive_type:'modeled', summary:'Blurb: Early-morning stoppages affecting commuter routes.\n\nFurther: Service delays; risk medium.' },
+
+{ title:'Energy/Resources Rally Window', city:'Perth', country:'Australia', continent:'Oceania', risk:'low', time:'2026-01-28T11:00:00', source:'Analyst forecast referencing industry campaign cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Worker rally near company offices.\n\nFurther: Peaceful; risk low.' },
+
+{ title:"Teachers' Day of Action Window", city:'Christchurch', country:'New Zealand', continent:'Oceania', risk:'medium', time:'2026-02-27T10:30:00', source:'Analyst forecast referencing negotiation timelines', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers rally in city centre; family-friendly.\n\nFurther: Moderate congestion; risk medium.' },
+
+{ title:'Housing Affordability Rally Window', city:'Brisbane', country:'Australia', continent:'Oceania', risk:'low', time:'2026-02-08T11:00:00', source:'Analyst forecast referencing rent and vacancy cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic march from Roma Street forums.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Cost-of-Living Rally Window', city:'Adelaide', country:'Australia', continent:'Oceania', risk:'low', time:'2026-02-10T12:00:00', source:'Analyst forecast referencing utility tariff cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Rally at Victoria Square.\n\nFurther: Compact; risk low.' },
+
+{ title:'Public Service Action Window', city:'Canberra', country:'Australia', continent:'Oceania', risk:'low', time:'2026-02-19T09:30:00', source:'Analyst forecast referencing APS bargaining schedules', predictive:true, predictive_type:'modeled', summary:'Blurb: Peaceful assembly around Parliamentary Triangle.\n\nFurther: Lane closures possible; risk low.' },
+
+{ title:'Climate/Environment Rally Window', city:'Suva', country:'Fiji', continent:'Oceania', risk:'low', time:'2026-02-25T16:00:00', source:'Analyst forecast referencing regional climate activism cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic rally near Albert Park.\n\nFurther: Peaceful; risk low.' },
+
+
+    
+
+{ title:"International Women's Day March", city:'São Paulo', country:'Brazil', continent:'South America', risk:'medium', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march along Avenida Paulista.\n\nFurther: Large turnout expected; risk medium due to congestion.' },
+
+{ title:"International Women's Day March", city:'Rio de Janeiro', country:'Brazil', continent:'South America', risk:'medium', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at Cinelândia.\n\nFurther: Peaceful but densely attended; risk medium.' },
+
+{ title:"International Women's Day March", city:'Buenos Aires', country:'Argentina', continent:'South America', risk:'medium', time:'2026-03-08T17:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Feminist march to Plaza de Mayo.\n\nFurther: Large attendance; traffic disruption; risk medium.' },
+
+{ title:"International Women's Day March", city:'Santiago', country:'Chile', continent:'South America', risk:'medium', time:'2026-03-08T16:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march through central Santiago.\n\nFurther: Regular yearly event; risk medium.' },
+
+{ title:"International Women's Day March", city:'Bogotá', country:'Colombia', continent:'South America', risk:'medium', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at Plaza de Bolívar.\n\nFurther: Large turnout expected; risk medium.' },
+
+{ title:"International Women's Day March", city:'Lima', country:'Peru', continent:'South America', risk:'medium', time:'2026-03-08T16:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD protest march downtown.\n\nFurther: Road closures possible; risk medium.' },
+
+{ title:"International Women's Day March", city:'Quito', country:'Ecuador', continent:'South America', risk:'medium', time:'2026-03-08T14:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally near El Ejido Park.\n\nFurther: Peaceful; risk medium.' },
+
+{ title:"International Women's Day March", city:'La Paz', country:'Bolivia', continent:'South America', risk:'low', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD gathering downtown.\n\nFurther: Controlled; risk low.' },
+
+{ title:"International Women's Day March", city:'Caracas', country:'Venezuela', continent:'South America', risk:'medium', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD civic march at city centre.\n\nFurther: Monitored by authorities; risk medium.' },
+
+{ title:"International Women's Day March", city:'Montevideo', country:'Uruguay', continent:'South America', risk:'low', time:'2026-03-08T17:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD parade along main boulevard.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — São Paulo Rally', city:'São Paulo', country:'Brazil', continent:'South America', risk:'low', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth-led climate rally at Avenida Paulista.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Buenos Aires', city:'Buenos Aires', country:'Argentina', continent:'South America', risk:'medium', time:'2026-03-15T15:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate protest at Plaza de Mayo.\n\nFurther: Large turnout possible; risk medium.' },
+
+{ title:'Global Climate Strike — Santiago', city:'Santiago', country:'Chile', continent:'South America', risk:'medium', time:'2026-03-15T14:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student climate march downtown.\n\nFurther: Risk medium for congestion.' },
+
+{ title:'Global Climate Strike — Bogotá', city:'Bogotá', country:'Colombia', continent:'South America', risk:'low', time:'2026-03-15T13:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth climate rally near Plaza Bolívar.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Lima', city:'Lima', country:'Peru', continent:'South America', risk:'medium', time:'2026-03-15T15:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate protest at central parks.\n\nFurther: Risk medium for road disruption.' },
+
+{ title:'Fuel Price Protest Window', city:'Buenos Aires', country:'Argentina', continent:'South America', risk:'medium', time:'2026-02-14T09:00:00', source:'Analyst forecast referencing historical inflation/fuel unrest cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Motorist protests and partial roadblocks likely.\n\nFurther: Traffic disruption; risk medium.' },
+
+{ title:'Public Sector Wage Rally', city:'Santiago', country:'Chile', continent:'South America', risk:'medium', time:'2026-02-18T12:00:00', source:'Analyst forecast referencing public employee contract renewals', predictive:true, predictive_type:'modeled', summary:'Blurb: Union rallies downtown.\n\nFurther: Peaceful; moderate congestion.' },
+
+{ title:'Transport Strike Window', city:'Lima', country:'Peru', continent:'South America', risk:'medium', time:'2026-01-29T06:00:00', source:'Analyst forecast referencing prior nationwide stoppages', predictive:true, predictive_type:'modeled', summary:'Blurb: Transport workers strike; limited transit.\n\nFurther: Travel delays; risk medium.' },
+
+{ title:'Education Funding Protest', city:'Bogotá', country:'Colombia', continent:'South America', risk:'medium', time:'2026-02-10T10:00:00', source:'Analyst forecast referencing education budget cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers and students rally at Plaza Bolívar.\n\nFurther: Large turnout; risk medium.' },
+
+{ title:'Anti-Corruption Protest Window', city:'Quito', country:'Ecuador', continent:'South America', risk:'medium', time:'2026-02-24T11:00:00', source:'Analyst forecast referencing historic government reform protests', predictive:true, predictive_type:'modeled', summary:'Blurb: Demonstrations near National Assembly.\n\nFurther: Peaceful; risk medium.' },
+
+{ title:'Cost-of-Living Rally', city:'Caracas', country:'Venezuela', continent:'South America', risk:'high', time:'2026-02-16T09:00:00', source:'Analyst forecast referencing inflation and wage unrest cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic demonstrations over prices and shortages.\n\nFurther: Possible security presence; risk high.' },
+
+{ title:'Student Tuition Protest', city:'La Paz', country:'Bolivia', continent:'South America', risk:'low', time:'2026-02-12T10:30:00', source:'Analyst forecast referencing academic protest cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: March from universities to ministries.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Labour Union March', city:'Montevideo', country:'Uruguay', continent:'South America', risk:'low', time:'2026-02-20T12:00:00', source:'Analyst forecast referencing annual wage board activism', predictive:true, predictive_type:'modeled', summary:'Blurb: Workers’ rally at main square.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Farmers’ Protest Window', city:'Brasília', country:'Brazil', continent:'South America', risk:'medium', time:'2026-02-25T09:00:00', source:'Analyst forecast referencing agricultural subsidy protests', predictive:true, predictive_type:'modeled', summary:'Blurb: Convoys and rallies near government buildings.\n\nFurther: Moderate disruption; risk medium.' },
+
+{ title:'Mining Sector Strike Window', city:'Santiago', country:'Chile', continent:'South America', risk:'medium', time:'2026-01-27T07:00:00', source:'Analyst forecast referencing labour contract cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Mine worker protests at company offices.\n\nFurther: Limited but vocal gatherings; risk medium.' },
+
+{ title:'Teachers’ Day of Action', city:'Buenos Aires', country:'Argentina', continent:'South America', risk:'medium', time:'2026-02-28T11:00:00', source:'Analyst forecast referencing prior early-year strikes', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers march downtown for wage parity.\n\nFurther: Disruptive to traffic; risk medium.' },
+ 
+
+
+{ title:"International Women's Day March", city:'Nairobi', country:'Kenya', continent:'Africa', risk:'low', time:'2026-03-08T11:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Annual IWD rally at Uhuru Park with NGOs and civic groups.\n\nFurther: Police-escorted, peaceful; risk low.' },
+
+{ title:"International Women's Day March", city:'Lagos', country:'Nigeria', continent:'Africa', risk:'medium', time:'2026-03-08T10:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rallies in Lagos Island and Ikeja districts.\n\nFurther: Traffic congestion expected; risk medium.' },
+
+{ title:"International Women's Day March", city:'Cape Town', country:'South Africa', continent:'Africa', risk:'low', time:'2026-03-08T12:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march from City Hall to Parliament.\n\nFurther: Peaceful; short rolling closures; risk low.' },
+
+{ title:"International Women's Day March", city:'Johannesburg', country:'South Africa', continent:'Africa', risk:'low', time:'2026-03-08T11:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally downtown with labour groups.\n\nFurther: Historic presence; risk low.' },
+
+{ title:"International Women's Day March", city:'Accra', country:'Ghana', continent:'Africa', risk:'low', time:'2026-03-08T09:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD event at Independence Square.\n\nFurther: Peaceful civic gathering; risk low.' },
+
+{ title:"International Women's Day March", city:'Kampala', country:'Uganda', continent:'Africa', risk:'medium', time:'2026-03-08T10:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march through city centre.\n\nFurther: Minor traffic disruption; risk medium.' },
+
+{ title:"International Women's Day March", city:'Addis Ababa', country:'Ethiopia', continent:'Africa', risk:'low', time:'2026-03-08T09:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march with NGOs and students.\n\nFurther: Short route; risk low.' },
+
+{ title:"International Women's Day March", city:'Tunis', country:'Tunisia', continent:'Africa', risk:'medium', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march on Habib Bourguiba Avenue.\n\nFurther: Moderate crowds; risk medium.' },
+
+{ title:"International Women's Day March", city:'Casablanca', country:'Morocco', continent:'Africa', risk:'low', time:'2026-03-08T16:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally in central plaza.\n\nFurther: Peaceful gathering; risk low.' },
+
+{ title:"International Women's Day March", city:'Dakar', country:'Senegal', continent:'Africa', risk:'low', time:'2026-03-08T09:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally along Corniche.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Nairobi Rally', city:'Nairobi', country:'Kenya', continent:'Africa', risk:'low', time:'2026-03-15T10:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: FFF-inspired youth march near City Hall.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Cape Town Waterfront', city:'Cape Town', country:'South Africa', continent:'Africa', risk:'low', time:'2026-03-15T11:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student climate rally near waterfront.\n\nFurther: Managed; risk low.' },
+
+{ title:'Global Climate Strike — Lagos March', city:'Lagos', country:'Nigeria', continent:'Africa', risk:'medium', time:'2026-03-15T09:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate march downtown with youth groups.\n\nFurther: Congestion risk moderate.' },
+
+{ title:'Global Climate Strike — Accra Assembly', city:'Accra', country:'Ghana', continent:'Africa', risk:'low', time:'2026-03-15T09:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth climate rally near Independence Square.\n\nFurther: Small turnout; risk low.' },
+
+{ title:'Global Climate Strike — Tunis Rally', city:'Tunis', country:'Tunisia', continent:'Africa', risk:'medium', time:'2026-03-15T15:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate protest downtown.\n\nFurther: Moderate turnout; risk medium.' },
+
+{ title:'Fuel Price Protest Window', city:'Lagos', country:'Nigeria', continent:'Africa', risk:'high', time:'2026-02-12T09:00:00', source:'Analyst forecast referencing historical fuel subsidy protests', predictive:true, predictive_type:'modeled', summary:'Blurb: Demonstrations at petrol stations and city centres likely.\n\nFurther: Traffic blockades; risk high for disruption.' },
+
+{ title:'Cost-of-Living March', city:'Nairobi', country:'Kenya', continent:'Africa', risk:'medium', time:'2026-02-18T12:00:00', source:'Analyst forecast based on 2023–2025 food/utility protest cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Afternoon rally at Parliament Road.\n\nFurther: Medium risk of scuffles near security barriers.' },
+
+{ title:'Public Sector Pay Protest', city:'Accra', country:'Ghana', continent:'Africa', risk:'low', time:'2026-02-20T10:00:00', source:'Analyst forecast referencing union wage rounds', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers/health unions rally near Ministry of Finance.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Transport Union Action', city:'Kampala', country:'Uganda', continent:'Africa', risk:'medium', time:'2026-01-29T06:30:00', source:'Analyst forecast referencing prior fuel/tariff disputes', predictive:true, predictive_type:'modeled', summary:'Blurb: Early-morning stoppages along major roads.\n\nFurther: Traffic jams; risk medium.' },
+
+{ title:"Farmers' Protest Window", city:'Addis Ababa', country:'Ethiopia', continent:'Africa', risk:'medium', time:'2026-02-10T08:00:00', source:'Analyst forecast referencing crop pricing and prior rural actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Rallies in agricultural ministry area.\n\nFurther: Contained; risk medium.' },
+
+{ title:'Student Fee Protest Window', city:'Cape Town', country:'South Africa', continent:'Africa', risk:'medium', time:'2026-02-15T11:00:00', source:'Analyst forecast referencing recurring #FeesMustFall mobilizations', predictive:true, predictive_type:'modeled', summary:'Blurb: University marches toward Parliament likely.\n\nFurther: Potential disruption to traffic; risk medium.' },
+
+{ title:'Public Service Strike', city:'Harare', country:'Zimbabwe', continent:'Africa', risk:'medium', time:'2026-02-22T09:00:00', source:'Analyst forecast referencing prior wage negotiation seasons', predictive:true, predictive_type:'modeled', summary:'Blurb: Service worker strike with rallies downtown.\n\nFurther: Moderate impact; risk medium.' },
+
+{ title:'Anti-Corruption March', city:'Tunis', country:'Tunisia', continent:'Africa', risk:'medium', time:'2026-02-25T14:00:00', source:'Analyst forecast referencing past anti-graft protests', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic march through central avenue.\n\nFurther: Peaceful; moderate traffic disruption; risk medium.' },
+
+{ title:'Cost-of-Living Protest', city:'Dakar', country:'Senegal', continent:'Africa', risk:'medium', time:'2026-02-13T16:00:00', source:'Analyst forecast referencing prior inflation rallies', predictive:true, predictive_type:'modeled', summary:'Blurb: Late-afternoon march along main roads.\n\nFurther: Peaceful; risk medium.' },
+
+
+
+
+
+
+{ title:"International Women's Day March", city:'Tokyo', country:'Japan', continent:'Asia', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally in central Tokyo.\n\nFurther: Peaceful assembly with NGO blocs; minor traffic holds near rally point; risk low.' },
+
+{ title:"International Women's Day March", city:'Seoul', country:'South Korea', continent:'Asia', risk:'low', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally downtown with civil society groups.\n\nFurther: Managed by city police; risk low.' },
+
+{ title:"International Women's Day March", city:'Manila', country:'Philippines', continent:'Asia', risk:'medium', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march toward Mendiola/University Belt.\n\nFurther: Larger crowds possible; risk medium for congestion.' },
+
+{ title:"International Women's Day March", city:'Jakarta', country:'Indonesia', continent:'Asia', risk:'low', time:'2026-03-08T09:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally near the National Monument area.\n\nFurther: Peaceful; lane closures possible; risk low.' },
+
+{ title:"International Women's Day March", city:'Bangkok', country:'Thailand', continent:'Asia', risk:'low', time:'2026-03-08T16:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at central park/plaza.\n\nFurther: Short speeches; low confrontation history; risk low.' },
+
+{ title:"International Women's Day March", city:'Kuala Lumpur', country:'Malaysia', continent:'Asia', risk:'low', time:'2026-03-08T10:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD assembly at downtown green.\n\nFurther: Police liaison present; risk low.' },
+
+{ title:"International Women's Day March", city:'Singapore', country:'Singapore', continent:'Asia', risk:'low', time:'2026-03-08T11:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD civic gathering at designated venue.\n\nFurther: Organized, permit-bound; risk low.' },
+
+{ title:"International Women's Day March", city:'Delhi', country:'India', continent:'Asia', risk:'medium', time:'2026-03-08T12:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at central Delhi locations.\n\nFurther: Larger turnouts possible; traffic holds; risk medium.' },
+
+{ title:"International Women's Day March", city:'Mumbai', country:'India', continent:'Asia', risk:'low', time:'2026-03-08T17:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD seaside/central rally.\n\nFurther: Peaceful; local diversions; risk low.' },
+
+{ title:"International Women's Day March", city:'Bengaluru', country:'India', continent:'Asia', risk:'low', time:'2026-03-08T10:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD procession in city core.\n\nFurther: Police-managed; risk low.' },
+
+{ title:"International Women's Day March", city:'Colombo', country:'Sri Lanka', continent:'Asia', risk:'low', time:'2026-03-08T09:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally near Galle Face area.\n\nFurther: Compact assembly; risk low.' },
+
+{ title:"International Women's Day March", city:'Dhaka', country:'Bangladesh', continent:'Asia', risk:'medium', time:'2026-03-08T15:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march downtown with student/NGO blocs.\n\nFurther: Large turnout possible; risk medium for congestion.' },
+
+{ title:"International Women's Day March", city:'Kathmandu', country:'Nepal', continent:'Asia', risk:'low', time:'2026-03-08T11:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally and cultural program.\n\nFurther: Peaceful; risk low.' },
+
+{ title:"International Women's Day March", city:'Taipei', country:'Taiwan', continent:'Asia', risk:'low', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD parade in central Taipei.\n\nFurther: Police-escorted; risk low.' },
+
+{ title:'Global Climate Strike — City Hall Rally', city:'Tokyo', country:'Japan', continent:'Asia', risk:'low', time:'2026-03-13T12:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student climate rally; speeches then short march.\n\nFurther: Minor traffic disruption; risk low.' },
+
+{ title:'Global Climate Strike — Gwanghwamun', city:'Seoul', country:'South Korea', continent:'Asia', risk:'low', time:'2026-03-13T13:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth-led climate rally at central square.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Luneta/College Bloc', city:'Manila', country:'Philippines', continent:'Asia', risk:'medium', time:'2026-03-13T15:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student walkouts with march to historical park.\n\nFurther: Larger crowds; risk medium for congestion.' },
+
+{ title:'Global Climate Strike — Monas Rally', city:'Jakarta', country:'Indonesia', continent:'Asia', risk:'low', time:'2026-03-13T10:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth climate gathering near National Monument.\n\nFurther: Speeches; short route; risk low.' },
+
+{ title:'Global Climate Strike — Pathum Wan', city:'Bangkok', country:'Thailand', continent:'Asia', risk:'low', time:'2026-03-13T16:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate rally in central district.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — KLCC Rally', city:'Kuala Lumpur', country:'Malaysia', continent:'Asia', risk:'low', time:'2026-03-13T10:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth-led rally with banners and teach-ins.\n\nFurther: Compact assembly; risk low.' },
+
+{ title:'Global Climate Strike — Marina Bay Assembly', city:'Singapore', country:'Singapore', continent:'Asia', risk:'low', time:'2026-03-13T11:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate-themed civic activities at approved venue.\n\nFurther: Permit-bound; risk low.' },
+
+{ title:'Global Climate Strike — India Gate Corridor', city:'Delhi', country:'India', continent:'Asia', risk:'medium', time:'2026-03-13T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student/youth rally with march along central boulevard.\n\nFurther: Larger turnout possible; traffic holds; risk medium.' },
+
+{ title:'Global Climate Strike — Marine Drive Rally', city:'Mumbai', country:'India', continent:'Asia', risk:'low', time:'2026-03-13T17:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Evening rally by seafront/central plaza.\n\nFurther: Peaceful; risk low.' },
+
+{ title:"Farmers' March Window — NCR Corridors", city:'Delhi', country:'India', continent:'Asia', risk:'medium', time:'2026-02-10T09:00:00', source:'Analyst forecast referencing prior farm union mobilizations and permit patterns', predictive:true, predictive_type:'modeled', summary:'Blurb: Tractors/pedestrian marches on approach roads possible.\n\nFurther: Police diversions; risk medium for traffic pressure.' },
+
+{ title:'Jeepney Transport Strike Window', city:'Manila', country:'Philippines', continent:'Asia', risk:'medium', time:'2026-02-24T05:00:00', source:'Analyst forecast referencing prior transport strike cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Partial service stoppages; commuter crowding.\n\nFurther: Government contingency routes; risk medium.' },
+
+{ title:'Labour/Omnibus Law Protest Window', city:'Jakarta', country:'Indonesia', continent:'Asia', risk:'medium', time:'2026-02-18T10:00:00', source:'Analyst forecast referencing prior omnibus law rallies', predictive:true, predictive_type:'modeled', summary:'Blurb: Midday rallies near parliament/government offices.\n\nFurther: Road closures; risk medium.' },
+
+{ title:'Garment Sector Wage Rally Window', city:'Dhaka', country:'Bangladesh', continent:'Asia', risk:'medium', time:'2026-01-27T11:00:00', source:'Analyst forecast referencing wage rounds and past mobilizations', predictive:true, predictive_type:'modeled', summary:'Blurb: Factory-gate marches toward central arterials.\n\nFurther: Police cordons; risk medium.' },
+
+{ title:'Cost-of-Living March Window', city:'Colombo', country:'Sri Lanka', continent:'Asia', risk:'medium', time:'2026-02-05T16:00:00', source:'Analyst forecast referencing electricity/tariff cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Evening rallies near Galle Face area.\n\nFurther: Peaceful but dense crowds; risk medium.' },
+
+{ title:'Student Union Rally Window', city:'Kathmandu', country:'Nepal', continent:'Asia', risk:'low', time:'2026-02-12T12:00:00', source:'Analyst forecast referencing campus activity cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Daytime campus marches to civic squares.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Anti-Corruption Vigil Window', city:'Kuala Lumpur', country:'Malaysia', continent:'Asia', risk:'low', time:'2026-01-29T19:00:00', source:'Analyst forecast referencing civil society vigil patterns', predictive:true, predictive_type:'modeled', summary:'Blurb: Candlelight/placard vigils at approved venues.\n\nFurther: Controlled setting; risk low.' },
+
+{ title:'Peninsula Cost-of-Living Rallies Window', city:'Singapore', country:'Singapore', continent:'Asia', risk:'low', time:'2026-02-20T18:30:00', source:'Analyst forecast using civic activity windows', predictive:true, predictive_type:'modeled', summary:'Blurb: Talks and civic activities at designated sites.\n\nFurther: Permit-bound; risk low.' },
+
+{ title:'Trade Union Day of Action Window', city:'Seoul', country:'South Korea', continent:'Asia', risk:'medium', time:'2026-02-26T13:00:00', source:'Analyst forecast referencing confederation schedules', predictive:true, predictive_type:'modeled', summary:'Blurb: Rallies downtown with workplace blocs.\n\nFurther: Managed by police; risk medium.' },
+
+{ title:'University Tuition Protest Window', city:'Taipei', country:'Taiwan', continent:'Asia', risk:'low', time:'2026-01-22T17:30:00', source:'Analyst forecast referencing past campus actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Evening rally near education ministry area.\n\nFurther: Peaceful; risk low.' },
+
+
+
+
+{ title:'MLK Day March & Service Events', city:'Atlanta', country:'United States', continent:'North America', risk:'low', time:'2026-01-19T11:00:00', source:'https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Annual MLK Day march and community service events centered around Auburn Ave and the King Center.\n\nFurther: Consistently peaceful with road closures along parade routes; transit crowding near downtown; risk low.' },
+
+{ title:'MLK Day March', city:'Washington, D.C.', country:'United States', continent:'North America', risk:'low', time:'2026-01-19T12:00:00', source:'https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Annual MLK events on the National Mall and U Street corridor.\n\nFurther: Park Police-managed; crowd flows steady; risk low.' },
+
+{ title:'MLK Day Parade & March', city:'Los Angeles', country:'United States', continent:'North America', risk:'low', time:'2026-01-19T10:00:00', source:'https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Leimert Park–Crenshaw corridor parade and rally.\n\nFurther: LAPD escorts; rolling closures; risk low.' },
+
+{ title:'MLK Day March', city:'New York City', country:'United States', continent:'North America', risk:'low', time:'2026-01-19T12:30:00', source:'https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Community marches in Manhattan and Brooklyn; service events.\n\nFurther: NYPD traffic holds at crossings; risk low.' },
+
+{ title:'MLK Day March', city:'Chicago', country:'United States', continent:'North America', risk:'low', time:'2026-01-19T11:30:00', source:'https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Marches on South Side corridors with community orgs.\n\nFurther: Peaceful; weather may impact turnout; risk low.' },
+
+{ title:'March for Life — National Rally', city:'Washington, D.C.', country:'United States', continent:'North America', risk:'medium', time:'2026-01-23T12:00:00', source:'https://en.wikipedia.org/wiki/March_for_Life_(Washington,_D.C.)', predictive:true, predictive_type:'recurring', summary:'Blurb: Annual March for Life on the National Mall with march to the Supreme Court.\n\nFurther: Large turnout expected; counter-demonstrations likely but typically separated by police; risk medium for congestion.' },
+
+{ title:"International Women's Day March", city:'New York City', country:'United States', continent:'North America', risk:'medium', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally in Midtown and Union Square with labour and student blocs.\n\nFurther: NYPD-managed; moderate disruption to crosstown traffic; risk medium.' },
+
+{ title:"International Women's Day March", city:'Toronto', country:'Canada', continent:'North America', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally from OISE to Queen’s Park.\n\nFurther: Peaceful; TTC crowding; risk low to medium.' },
+
+{ title:"International Women's Day March", city:'Mexico City', country:'Mexico', continent:'North America', risk:'medium', time:'2026-03-08T16:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Large IWD mobilization along Paseo de la Reforma towards Zócalo.\n\nFurther: Historically high turnout; police cordons protect monuments; risk medium for crowd pressure.' },
+
+{ title:"International Women's Day March", city:'Vancouver', country:'Canada', continent:'North America', risk:'low', time:'2026-03-08T12:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally downtown with NGO blocs.\n\nFurther: Transit crowding; risk low.' },
+
+{ title:"International Women's Day March", city:'Los Angeles', country:'United States', continent:'North America', risk:'medium', time:'2026-03-08T12:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Downtown march with labour coalitions.\n\nFurther: Street closures around Civic Center; risk medium.' },
+
+{ title:'Global Climate Strike — Civic Center Rally', city:'San Francisco', country:'United States', continent:'North America', risk:'medium', time:'2026-03-13T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: FFF-led student walkouts and rally at Civic Center.\n\nFurther: Muni reroutes; risk medium.' },
+
+{ title:'Global Climate Strike — Downtown March', city:'Seattle', country:'United States', continent:'North America', risk:'low', time:'2026-03-13T12:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth climate march toward Westlake Park.\n\nFurther: SPD escorts; risk low.' },
+
+{ title:'Global Climate Strike — Queen’s Park', city:'Toronto', country:'Canada', continent:'North America', risk:'low', time:'2026-03-13T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student strike rally at legislature.\n\nFurther: TTC delays; risk low.' },
+
+{ title:'Global Climate Strike — Reforma Corridor', city:'Mexico City', country:'Mexico', continent:'North America', risk:'medium', time:'2026-03-13T16:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate march toward Angel de la Independencia.\n\nFurther: Large youth turnout; risk medium for congestion.' },
+
+{ title:'Global Climate Strike — Millennium Park Rally', city:'Chicago', country:'United States', continent:'North America', risk:'low', time:'2026-03-13T12:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Rally and short march in the Loop.\n\nFurther: CTA crowding; risk low to medium.' },
+
+{ title:'NYC Budget Protest Window (City Hall/Council)', city:'New York City', country:'United States', continent:'North America', risk:'medium', time:'2026-02-28T09:00:00', source:'Analyst forecast based on NYC budget timetable and recent cycles of union/community mobilizations', predictive:true, predictive_type:'modeled', summary:'Blurb: Rallies near City Hall during late budget negotiations likely.\n\nFurther: Historically daytime assemblies with union/community blocs; risk medium for localized disruption.' },
+
+{ title:'Education Funding Rally', city:'Boston', country:'United States', continent:'North America', risk:'low', time:'2026-02-11T12:00:00', source:'Analyst forecast referencing prior winter school funding actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers/parents midday rally at Boston Common.\n\nFurther: Short duration; risk low.' },
+
+{ title:'Port Truckers Work Stoppage (labor dispute window)', city:'Los Angeles', country:'United States', continent:'North America', risk:'medium', time:'2026-01-28T06:00:00', source:'Analyst forecast from prior port labor disputes and seasonal freight cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Slow-rolls and pickets at port gates possible.\n\nFurther: Logistics delays; risk medium for operational impact.' },
+
+{ title:'Healthcare Workers Rally', city:'Vancouver', country:'Canada', continent:'North America', risk:'low', time:'2026-02-18T12:00:00', source:'Analyst forecast referencing provincial bargaining cycle', predictive:true, predictive_type:'modeled', summary:'Blurb: Lunchtime rally near provincial offices.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Minimum Wage/Cost-of-Living March', city:'Toronto', country:'Canada', continent:'North America', risk:'low', time:'2026-02-24T17:30:00', source:'Analyst forecast based on prior campaigns and winter actions', predictive:true, predictive_type:'modeled', summary:'Blurb: After-work march to Nathan Phillips Square.\n\nFurther: Short rolling closures; risk low.' },
+
+{ title:'Anti-Corruption / Governance Rally', city:'Mexico City', country:'Mexico', continent:'North America', risk:'medium', time:'2026-02-16T17:00:00', source:'Analyst forecast based on previous winter cycles and civil society activity', predictive:true, predictive_type:'modeled', summary:'Blurb: Evening rally at Zócalo likely.\n\nFurther: Police cordons; risk medium for crowd pressure.' },
+
+{ title:'State Capitol Labor Day of Action', city:'Austin', country:'United States', continent:'North America', risk:'low', time:'2026-02-19T11:00:00', source:'Analyst forecast referencing prior statehouse rallies', predictive:true, predictive_type:'modeled', summary:'Blurb: Public sector unions rally on the Capitol grounds.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Immigration Policy Protest', city:'San Diego', country:'United States', continent:'North America', risk:'low', time:'2026-01-31T16:30:00', source:'Analyst forecast based on periodic mobilizations near ports of entry', predictive:true, predictive_type:'modeled', summary:'Blurb: Late-afternoon rally downtown with march toward federal buildings.\n\nFurther: Traffic holds; risk low to medium.' },
+
+{ title:'Energy Price / Cost-of-Living Rally', city:'Montréal', country:'Canada', continent:'North America', risk:'low', time:'2026-02-07T13:00:00', source:'Analyst forecast from prior winter COL mobilisations', predictive:true, predictive_type:'modeled', summary:'Blurb: Rally in downtown core with union/tenant groups.\n\nFurther: Snow/ice may limit march length; risk low.' },
+
+{ title:'University Tuition Protest', city:'Guadalajara', country:'Mexico', continent:'North America', risk:'low', time:'2026-02-27T11:30:00', source:'Analyst forecast referencing prior student actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Campus march to government palace.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Public Safety / Police Reform Rally', city:'Philadelphia', country:'United States', continent:'North America', risk:'low', time:'2026-02-14T15:00:00', source:'Analyst forecast referencing prior winter weekend rallies', predictive:true, predictive_type:'modeled', summary:'Blurb: Afternoon rally at City Hall.\n\nFurther: Peaceful with police liaison; risk low.' },
+
+{ title:'Transit Workers Informational Pickets', city:'Chicago', country:'United States', continent:'North America', risk:'low', time:'2026-02-05T06:30:00', source:'Analyst forecast from past contract cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Pre-dawn leafleting at major depots; minor delays.\n\nFurther: Low confrontation; risk low.' },
+
+{ title:'Student Solidarity March', city:'Monterrey', country:'Mexico', continent:'North America', risk:'low', time:'2026-02-21T11:00:00', source:'Analyst forecast referencing past campus coalitions', predictive:true, predictive_type:'modeled', summary:'Blurb: Daytime march around Macroplaza.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Farm/Water Policy Convoys', city:'Fresno', country:'United States', continent:'North America', risk:'medium', time:'2026-02-18T07:00:00', source:'Analyst forecast referencing Central Valley agitation cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Tractor/vehicle convoys along approach roads.\n\nFurther: CHP-managed; risk medium for traffic.' },
+
+{ title:"Teachers' Day of Action", city:'Houston', country:'United States', continent:'North America', risk:'low', time:'2026-02-25T12:00:00', source:'Analyst forecast based on prior advocacy days', predictive:true, predictive_type:'modeled', summary:'Blurb: Midday rally at City Hall.\n\nFurther: Short duration; risk low.' },
+
+{ title:'Housing/Cost-of-Living Rally', city:'San Juan', country:'Puerto Rico', continent:'North America', risk:'low', time:'2026-02-15T16:00:00', source:'Analyst forecast referencing prior winter actions in Old San Juan', predictive:true, predictive_type:'modeled', summary:'Blurb: Evening rally near Plaza Colón.\n\nFurther: Tourist overlap; risk low to medium.' },
+
+
+
+
+
+{ title:"International Women's Day March", city:'London', country:'United Kingdom', continent:'Europe', risk:'medium', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: Annual IWD march expected in central London with unions and feminist groups.\n\nFurther: Based on consistent yearly mobilisations (Trafalgar–Westminster routes). Police-managed rolling closures; risk medium for traffic disruption; low confrontation expected given prior years.' },
+
+{ title:"International Women's Day March", city:'Paris', country:'France', continent:'Europe', risk:'medium', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally along central boulevards with labour and student blocs.\n\nFurther: Recurs annually; expect metro crowding at République/Opéra and police escort; risk medium.' },
+
+{ title:"International Women's Day March", city:'Madrid', country:'Spain', continent:'Europe', risk:'medium', time:'2026-03-08T12:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march via Gran Vía/Cibeles with large youth turnout.\n\nFurther: Prior years saw significant attendance; risk medium for central congestion.' },
+
+{ title:"International Women's Day March", city:'Berlin', country:'Germany', continent:'Europe', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD demos across boroughs; central rally at Alexanderplatz.\n\nFurther: Historic pattern suggests multiple feeder marches; risk low to medium depending on size.' },
+
+{ title:"International Women's Day March", city:'Rome', country:'Italy', continent:'Europe', risk:'medium', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally near Piazza Venezia with student/union presence.\n\nFurther: Annual mobilisation; localized traffic holds; risk medium.' },
+
+{ title:"International Women's Day March", city:'Warsaw', country:'Poland', continent:'Europe', risk:'low', time:'2026-03-08T12:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD parade along Marszałkowska; static speeches at Plac Defilad.\n\nFurther: Regular attendance pattern; risk low for disruption.' },
+
+{ title:"International Women's Day March", city:'Dublin', country:'Ireland', continent:'Europe', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally from Garden of Remembrance to Merrion Square.\n\nFurther: Gardaí escorts; low confrontation; moderate traffic impact near city centre.' },
+
+{ title:"International Women's Day March", city:'Lisbon', country:'Portugal', continent:'Europe', risk:'low', time:'2026-03-08T15:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally downtown with neighbourhood collectives.\n\nFurther: Annual presence; risk low.' },
+
+{ title:"International Women's Day March", city:'Vienna', country:'Austria', continent:'Europe', risk:'low', time:'2026-03-08T14:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD demo in Innere Stadt; speeches near Stephansplatz.\n\nFurther: Prior years peaceful; risk low.' },
+
+{ title:"International Women's Day March", city:'Amsterdam', country:'Netherlands', continent:'Europe', risk:'low', time:'2026-03-08T13:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march through centre with NGO blocs.\n\nFurther: Cycling diversions; risk low.' },
+
+{ title:"International Women's Day March", city:'Stockholm', country:'Sweden', continent:'Europe', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally near Sergels torg.\n\nFurther: Low disruption; risk low.' },
+
+{ title:"International Women's Day March", city:'Copenhagen', country:'Denmark', continent:'Europe', risk:'low', time:'2026-03-08T12:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD assembly around Rådhuspladsen.\n\nFurther: Peaceful; risk low.' },
+
+{ title:'Global Climate Strike — Central Rally', city:'Berlin', country:'Germany', continent:'Europe', risk:'medium', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: FFF-led climate strike expected around Brandenburg Gate.\n\nFurther: Prior iterations drew tens of thousands; police-managed perimeters and S-Bahn crowding; risk medium.' },
+
+{ title:'Global Climate Strike — City Centre March', city:'London', country:'United Kingdom', continent:'Europe', risk:'medium', time:'2026-03-15T12:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Student/NGO blocs march via Westminster.\n\nFurther: Rolling closures on Whitehall/Victoria Embankment; risk medium.' },
+
+{ title:'Global Climate Strike — Student Bloc', city:'Paris', country:'France', continent:'Europe', risk:'medium', time:'2026-03-15T13:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate march with youth and union support.\n\nFurther: Route between République and Nation common in prior years; risk medium.' },
+
+{ title:'Global Climate Strike — Waterfront Rally', city:'Dublin', country:'Ireland', continent:'Europe', risk:'low', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: March to Custom House Quay.\n\nFurther: Garda escorts typical; risk low to medium.' },
+
+{ title:'Global Climate Strike — Citywide March', city:'Rome', country:'Italy', continent:'Europe', risk:'medium', time:'2026-03-15T11:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Climate strike march with student unions.\n\nFurther: Historic routes via Termini to Colosseo; risk medium due to size.' },
+
+{ title:'Global Climate Strike — Riverfront March', city:'Budapest', country:'Hungary', continent:'Europe', risk:'low', time:'2026-03-15T13:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth-led march along the Danube.\n\nFurther: Peaceful assemblies in prior years; risk low.' },
+
+{ title:'Global Climate Strike — Old Town Rally', city:'Prague', country:'Czechia', continent:'Europe', risk:'low', time:'2026-03-15T12:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Rally at Old Town Square with speeches.\n\nFurther: Tourist-pressure intersections; risk low to medium for crowding.' },
+
+{ title:'Global Climate Strike — Central March', city:'Vienna', country:'Austria', continent:'Europe', risk:'low', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: March ring roads with NGO blocs.\n\nFurther: Prior years peaceful; risk low to medium.' },
+
+{ title:'Global Climate Strike — City Centre', city:'Warsaw', country:'Poland', continent:'Europe', risk:'low', time:'2026-03-15T12:00:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: Youth climate march near Śródmieście.\n\nFurther: Frequent in past cycles; risk low.' },
+
+{ title:'Global Climate Strike — Old Port Route', city:'Marseille', country:'France', continent:'Europe', risk:'medium', time:'2026-03-15T11:30:00', source:'https://fridaysforfuture.org/what-we-do/strike/', predictive:true, predictive_type:'recurring', summary:'Blurb: March around Vieux-Port with coastal climate groups.\n\nFurther: Port traffic holds; risk medium for mobility.' },
+
+{ title:'International Day Against Racism March', city:'Paris', country:'France', continent:'Europe', risk:'medium', time:'2026-03-21T14:00:00', source:'https://en.wikipedia.org/wiki/International_Day_for_the_Elimination_of_Racial_Discrimination', predictive:true, predictive_type:'recurring', summary:'Blurb: Anti-racism coalitions hold march at Nation.\n\nFurther: Annual mobilisation; moderate crowd size; risk medium for traffic.' },
+
+{ title:'International Day Against Racism March', city:'Berlin', country:'Germany', continent:'Europe', risk:'low', time:'2026-03-21T13:00:00', source:'https://en.wikipedia.org/wiki/International_Day_for_the_Elimination_of_Racial_Discrimination', predictive:true, predictive_type:'recurring', summary:'Blurb: Coalition march through Mitte.\n\nFurther: Consistent yearly presence; risk low.' },
+
+{ title:'International Day Against Racism March', city:'Brussels', country:'Belgium', continent:'Europe', risk:'low', time:'2026-03-21T14:30:00', source:'https://en.wikipedia.org/wiki/International_Day_for_the_Elimination_of_Racial_Discrimination', predictive:true, predictive_type:'recurring', summary:'Blurb: Rally near Bourse.\n\nFurther: Peaceful, police-escorted; risk low.' },
+
+{ title:'International Day Against Racism March', city:'Madrid', country:'Spain', continent:'Europe', risk:'low', time:'2026-03-21T12:30:00', source:'https://en.wikipedia.org/wiki/International_Day_for_the_Elimination_of_Racial_Discrimination', predictive:true, predictive_type:'recurring', summary:'Blurb: Collective march via Puerta del Sol.\n\nFurther: Tourist overlap; risk low to medium.' },
+
+{ title:'International Day Against Racism March', city:'Lisbon', country:'Portugal', continent:'Europe', risk:'low', time:'2026-03-21T15:00:00', source:'https://en.wikipedia.org/wiki/International_Day_for_the_Elimination_of_Racial_Discrimination', predictive:true, predictive_type:'recurring', summary:'Blurb: Anti-racism rally downtown.\n\nFurther: Annual; risk low.' },
+
+{ title:'Rail Union Rolling Action (ASLEF/RMT window)', city:'London', country:'United Kingdom', continent:'Europe', risk:'medium', time:'2026-01-20T06:00:00', source:'Analyst forecast based on 2022–2025 UK rail strike patterns (ASLEF/RMT)', predictive:true, predictive_type:'modeled', summary:'Blurb: Likely limited-service day on select lines as unions leverage post-holiday period.\n\nFurther: Prior years show January rolling actions affecting commuter corridors. Expect reduced frequencies and station crowding; risk medium for mobility, low for confrontation.' },
+
+{ title:'Public Sector Pay Rally (Budget cycle)', city:'Dublin', country:'Ireland', continent:'Europe', risk:'low', time:'2026-02-10T12:00:00', source:'Analyst forecast from prior-year public sector bargaining cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Mid-day rally at Merrion Street Government Buildings likely during pay bargaining window.\n\nFurther: Historically small-to-medium turnouts; traffic holds minimal; risk low.' },
+
+{ title:"Farmers' Tractor Convoys (import policy)", city:'Warsaw', country:'Poland', continent:'Europe', risk:'medium', time:'2026-02-05T09:00:00', source:'Analyst forecast based on 2024–2025 farmer blockade cycles and seasonal escalation', predictive:true, predictive_type:'modeled', summary:'Blurb: Tractor convoys probable on approach roads, with static rally near Sejm.\n\nFurther: Past cycles show week-day morning arrivals and controlled lanes; risk medium for road disruption.' },
+
+{ title:'Education Unions Day of Action', city:'Paris', country:'France', continent:'Europe', risk:'medium', time:'2026-01-30T10:00:00', source:'Analyst forecast referencing previous January/February national education walkouts', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers likely to stage walkouts with rally at République.\n\nFurther: Expect metro crowding; risk medium for service delay.' },
+
+{ title:'Public Transport Strike (EVG window)', city:'Berlin', country:'Germany', continent:'Europe', risk:'medium', time:'2026-02-12T04:30:00', source:'Analyst forecast based on 2023–2025 EVG/ver.di strike patterns', predictive:true, predictive_type:'modeled', summary:'Blurb: Early-morning stoppage impacting S-Bahn/Regionalbahnen possible.\n\nFurther: Prior years show 4–8h stoppages; risk medium for commuter impact.' },
+
+{ title:'Austerity Protest (Budget debates)', city:'Athens', country:'Greece', continent:'Europe', risk:'medium', time:'2025-12-18T17:00:00', source:'Analyst forecast drawing on prior budget-session rallies at Syntagma', predictive:true, predictive_type:'modeled', summary:'Blurb: After-work rally likely at Syntagma as budget debate peaks.\n\nFurther: Past years show dense evening crowds; risk medium; tear gas risk low-to-moderate if confrontations arise.' },
+
+{ title:'Taxi/Ride-Hail Protest (licensing rules)', city:'Madrid', country:'Spain', continent:'Europe', risk:'low', time:'2026-02-03T10:00:00', source:'Analyst forecast based on recurring VTC/taxi disputes 2019–2025', predictive:true, predictive_type:'modeled', summary:'Blurb: Short rolling blockades near Atocha/Gran Vía feasible.\n\nFurther: Historically limited-duration with police-mediated diversions; risk low-to-medium for traffic.' },
+
+{ title:'Student Occupations & March', city:'Milan', country:'Italy', continent:'Europe', risk:'low', time:'2026-02-17T11:00:00', source:'Analyst forecast referencing prior winter campus actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Daytime march in university district with brief sit-ins.\n\nFurther: Usually peaceful; risk low with localized diversions.' },
+
+{ title:'Agricultural Policy Rally', city:'Amsterdam', country:'Netherlands', continent:'Europe', risk:'medium', time:'2026-02-09T09:30:00', source:'Analyst forecast based on 2019–2025 farmer protest cadence (nitrogen policy)', predictive:true, predictive_type:'modeled', summary:'Blurb: Tractor convoys to Malieveld/central areas plausible.\n\nFurther: Police route management likely; risk medium for road delays.' },
+
+{ title:'Public Services Day of Action', city:'Brussels', country:'Belgium', continent:'Europe', risk:'medium', time:'2026-01-25T10:30:00', source:'Analyst forecast from union calendars and past cross-sector actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Demonstration in EU quarter likely, affecting Rue de la Loi.\n\nFurther: Prior years show coordinated marches; risk medium.' },
+
+{ title:'Anti-Corruption Rally', city:'Bucharest', country:'Romania', continent:'Europe', risk:'low', time:'2026-02-20T18:00:00', source:'Analyst forecast referencing prior winter evening rallies at University Square', predictive:true, predictive_type:'modeled', summary:'Blurb: Evening rally with civic NGOs.\n\nFurther: Historic patterns suggest peaceful assembly; risk low.' },
+
+{ title:'Healthcare Staffing Protest', city:'Copenhagen', country:'Denmark', continent:'Europe', risk:'low', time:'2026-02-06T12:00:00', source:'Analyst forecast based on union statements and prior actions', predictive:true, predictive_type:'modeled', summary:'Blurb: Lunchtime rally by healthcare workers near Christiansborg.\n\nFurther: Short duration; risk low.' },
+
+{ title:'Education Funding Rally', city:'Prague', country:'Czechia', continent:'Europe', risk:'low', time:'2026-02-13T12:00:00', source:'Analyst forecast referencing prior Feb education marches', predictive:true, predictive_type:'modeled', summary:'Blurb: Midday march to Wenceslas Square.\n\nFurther: Peaceful; risk low.' },
+
+
+
+
+
+
+
+
+
+
+    
+
+
 { title:"‘Block Everything’ — Nationwide Road & Rail Disruptions", city:"Paris", country:"France", continent:"Europe", risk:"high", time:"2025-09-10T08:00:00", source:"https://www.reuters.com/world/europe/block-everything-protests-sweep-across-france-scores-arrested-2025-09-10/", summary:"Blurb: Coordinated blockades and scattered clashes over austerity and governance. Further: High police deployment; motorway nodes and city centres targeted; sporadic fires, arrests; rolling closures throughout the day." },
   
 { title:"‘Block Everything’ — Nationwide Road & Rail Disruptions", city:"Marseille", country:"France", continent:"Europe", risk:"high", time:"2025-09-10T08:00:00", source:"https://www.reuters.com/world/europe/block-everything-protests-sweep-across-france-scores-arrested-2025-09-10/", summary:"Blurb: Coordinated blockades and scattered clashes over austerity and governance. Further: High police deployment; motorway nodes and city centres targeted; sporadic fires, arrests; rolling closures throughout the day." },
@@ -6667,6 +7055,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
