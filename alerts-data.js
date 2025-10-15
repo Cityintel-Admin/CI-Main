@@ -736,8 +736,7 @@ window.alertsData =[
 
 {"title": "October 2 Commemoration March (Tlatelolco)", "city": "Mexico City", "country": "Mexico", "continent": "North America", "risk": "high", "time": "2025-10-02T16:00:00", "source": "https://mx.usembassy.gov/demonstration-alert-large-protest-in-mexico-city-on-october-2/", "summary": "Blurb: Annual Oct. 2 march marking the 1968 Tlatelolco massacre—large turnout and vandalism risks flagged by U.S. Embassy; route closures and property damage possible. Further: Marchers typically converge from Plaza de las Tres Culturas toward the Zócalo; CDMX police deploy anti-riot units along Avenida Insurgentes and Reforma. Expect spray-painting at government buildings and some clashes near barricades; businesses along the corridor tend to shutter early."},
   
-{"title": "Gaza Solidarity March", "city": "Mexico City", "country": "Mexico", "continent": "North America", "risk": "medium", "time": "2025-10-08T17:00:00", "source": "https://www.euronews.com/video/2025/10/08/hundreds-march-in-mexico-city-calling-for-an-end-to-the-war-in-gaza", "summary": "Blurb: Hundreds rallied downtown demanding an end to the Gaza war; peaceful march with heavy police presence. Further: Demonstrators moved through Avenida Juárez toward the U.S. Embassy area; speakers called for ceasefire and sanctions. Traffic disruptions were moderate; police maintained standoff distances and facilitated dispersal."},
-  
+
 {"title": "Oct 7 Anniversary Rally — Midtown", "city": "New York", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-08T18:00:00", "source": "https://www.reutersconnect.com/item/pro-palestinian-rally-held-in-midtown-manhattan-nyc/dGFnOnJldXRlcnMuY29tLDIwMjU6bmV3c21sX01UMUFOQURMMDAwMklPRTZW", "summary": "Blurb: Midtown assembly marking two years since Oct 7; police kettling used at curb lanes, no major clashes reported. Further: Crowd centered near Times Square spillover zones; NYPD Community Affairs and SRG units present. Chants, speeches; intermittent traffic holds on 7th Ave and 42nd Street."},
   
 {"title": "No Kings NYC — Labor Feeder March", "city": "New York", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T11:00:00", "source": "https://nycclc.org/events/no-kings-nyc-labor-march", "summary": "Blurb: Labor feeder march joins national 'No Kings' day; planned route from Duarte Square to 14th St. Further: Union delegations, marshals, and sound trucks expected; NYPD escorts; brief closures along 6th Ave with merge into the main march corridor."},
@@ -7079,6 +7078,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
