@@ -104,6 +104,25 @@
 <section class="card" style="margin:16px 0">
   <h2 style="margin:0 0 10px">Trend — Actuals, 7-Day Avg, 14-Day Projection</h2>
   <canvas id="trendChart" height="140"></canvas>
+<div id="trendControls" style="display:flex;gap:10px;align-items:center;margin:6px 0 10px">
+  <label style="display:flex;gap:6px;align-items:center">
+    <span>Continent</span>
+    <select id="trendContinent">
+      <option value="__all">All</option>
+      <option>Africa</option>
+      <option>Asia</option>
+      <option>Europe</option>
+      <option>North America</option>
+      <option>South America</option>
+      <option>Oceania</option>
+    </select>
+  </label>
+  <label style="display:flex;gap:6px;align-items:center">
+    <input type="checkbox" id="trendWeighted" checked>
+    <span>Weighted (risk-adjusted)</span>
+  </label>
+</div>
+  
 <div id="trendControls" style="display:flex;gap:8px;align-items:center;margin:8px 0 4px">
   <span style="color:#8e97a3;font-size:13px">Range:</span>
   <button data-range="90"  class="tbtn">90d</button>
@@ -656,7 +675,101 @@
       filt.addEventListener('input', drawTable);
       drawTable();
     })();
+
+    
+/* CityIntel – Trend series with continent filter + weighting */
+(function CITrendFilter(){
+  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+
+  // Helpers
+  const startOfWeek = (d) => {
+    const x=new Date(d); const day=(x.getDay()+6)%7; // Monday=0
+    x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x;
+  };
+  const fmtYMD = (d) => d.toISOString().slice(0,10);
+  const parse = (t) => { const d=new Date(t); return isNaN(d)?null:d; };
+  const normContinent = c => String(c||'').trim();
+  const normRisk = r => {
+    const s = String(r||'').toLowerCase();
+    if (s.startsWith('hi')) return 'high';
+    if (s.startsWith('me')) return 'medium';
+    return 'low';
+  };
+
+  const RISK_W = { low:0.5, medium:1.0, high:1.5 }; // tweakable
+
+  function computeSeries({ continent='__all', weighted=true, weeks=12 }) {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(start.getDate() - (weeks*7));
+    start.setHours(0,0,0,0);
+
+    // build weekly buckets
+    const buckets = new Map(); // key: yyyy-mm-dd (Mon), val: { rawCount, weightedSum }
+    function ensureBucket(k){ if(!buckets.has(k)) buckets.set(k, { raw:0, w:0 }); return buckets.get(k); }
+
+    data.forEach(a => {
+      const d = parse(a.time);
+      if (!d || d < start || d > now) return;
+      const cont = normContinent(a.continent || a.Continent);
+      if (continent !== '__all' && cont !== continent) return;
+
+      const wk = startOfWeek(d);
+      const key = fmtYMD(wk);
+      const r = normRisk(a.risk);
+      const w = weighted ? (RISK_W[r] || 1) : 1;
+
+      const b = ensureBucket(key);
+      b.raw += 1;
+      b.w += w;
+    });
+
+    // sort buckets by date
+    const keys = Array.from(buckets.keys()).sort();
+    const labels = keys;
+    const values = keys.map(k => {
+      const b = buckets.get(k);
+      return Math.round((weighted ? b.w : b.raw) * 100) / 100;
+    });
+
+    return { labels, values, options:{ continent, weighted, weeks } };
+  }
+
+  function rerender(){
+    const sel = document.getElementById('trendContinent');
+    const chk = document.getElementById('trendWeighted');
+    const continent = sel ? sel.value : '__all';
+    const weighted  = chk ? !!chk.checked : true;
+
+    const series = computeSeries({ continent, weighted, weeks:12 });
+
+    if (typeof window.renderTrendChart === 'function') {
+      // Hand off to your existing chart renderer
+      window.renderTrendChart(series.labels, series.values, series.options);
+    } else {
+      // Fallback: console only
+      console.group('Trend series (fallback)');
+      console.log('Options:', series.options);
+      console.log('First 6 points:', series.labels.slice(0,6).map((l,i)=>[l, series.values[i]]));
+      console.groupEnd();
+    }
+  }
+
+  // Wire UI
+  document.addEventListener('change', (e)=>{
+    if (e.target && (e.target.id === 'trendContinent' || e.target.id === 'trendWeighted')) {
+      rerender();
+    }
+  });
+
+  // Kick off once the page is idle (and your chart code likely loaded)
+  (window.requestIdleCallback || window.setTimeout)(rerender, 0);
+
+  // Expose utility if you want to call directly elsewhere
+  window.CITrend = { computeSeries, rerender };
+})();
   </script>
 </body>
 </html>
+
 
