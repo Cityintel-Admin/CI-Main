@@ -64,6 +64,30 @@ window.alertsData =[
 { title:'Climate/Environment Rally Window', city:'Suva', country:'Fiji', continent:'Oceania', risk:'low', time:'2026-02-25T16:00:00', source:'Analyst forecast referencing regional climate activism cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic rally near Albert Park.\n\nFurther: Peaceful; risk low.' },
 
 
+{ title:"International Women's Day March", city:"New York City", country:"USA", continent:"North America", risk:"medium", time:"2026-03-08T13:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally in Midtown and Lower Manhattan.\n\nFurther: Feminist groups and unions; moderate crowds and rolling closures." },
+  { title:"International Women's Day March", city:"Washington, DC", country:"USA", continent:"North America", risk:"low", time:"2026-03-08T12:30:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march on the National Mall.\n\nFurther: Permitted, police-escorted; risk low." },
+  { title:"International Women's Day March", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2026-03-08T14:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: Downtown IWD march around City Hall.\n\nFurther: Large turnout; congestion risk medium." },
+  { title:"International Women's Day March", city:"Toronto", country:"Canada", continent:"North America", risk:"low", time:"2026-03-08T13:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally at Nathan Phillips Square.\n\nFurther: Family-friendly; risk low." },
+  { title:"International Women's Day March", city:"Montréal", country:"Canada", continent:"North America", risk:"low", time:"2026-03-08T13:30:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march along Boulevard René-Lévesque.\n\nFurther: Peaceful; risk low." },
+  { title:"International Women's Day March", city:"Vancouver", country:"Canada", continent:"North America", risk:"low", time:"2026-03-08T12:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD waterfront rally.\n\nFurther: Compact and peaceful; risk low." },
+  { title:"International Women's Day March", city:"Mexico City", country:"Mexico", continent:"North America", risk:"medium", time:"2026-03-08T16:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march from Monumento a la Revolución toward Zócalo.\n\nFurther: Large, energetic crowds; moderate disruption." },
+  { title:"International Women's Day March", city:"Guadalajara", country:"Mexico", continent:"North America", risk:"medium", time:"2026-03-08T16:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally downtown with student blocs.\n\nFurther: Traffic holds; risk medium." },
+  { title:"International Women's Day March", city:"Monterrey", country:"Mexico", continent:"North America", risk:"low", time:"2026-03-08T17:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD assembly in Macroplaza.\n\nFurther: Peaceful; risk low." },
+  { title:"International Women's Day March", city:"San Juan", country:"USA", continent:"North America", risk:"low", time:"2026-03-08T15:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march in Old San Juan.\n\nFurther: Peaceful; risk low." },
+
+  
+  { title:"Global Climate Strike — New York City", city:"New York City", country:"USA", continent:"North America", risk:"medium", time:"2026-03-15T12:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Youth-led climate march through Midtown.\n\nFurther: Police-facilitated; medium congestion risk." },
+  { title:"Global Climate Strike — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2026-03-15T12:30:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Rally at Civic Center Plaza.\n\nFurther: Peaceful; risk low." },
+  { title:"Global Climate Strike — Toronto", city:"Toronto", country:"Canada", continent:"North America", risk:"low", time:"2026-03-15T12:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Students rally at Queen's Park.\n\nFurther: Peaceful; risk low." },
+  { title:"Global Climate Strike — Vancouver", city:"Vancouver", country:"Canada", continent:"North America", risk:"low", time:"2026-03-15T12:30:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Climate strike at Robson Square.\n\nFurther: Compact; risk low." },
+  { title:"Global Climate Strike — Mexico City", city:"Mexico City", country:"Mexico", continent:"North America", risk:"medium", time:"2026-03-15T13:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: March toward Zócalo by youth networks.\n\nFurther: Medium disruption expected." },
+
+    
+  { title:"MLK Day March and Commemoration", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2026-01-19T10:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day", summary:"Blurb: Annual MLK Day parade and rallies along Auburn Ave.\n\nFurther: Peaceful commemorations; rolling closures." },
+  { title:"MLK Day March and Service Events", city:"Washington, DC", country:"USA", continent:"North America", risk:"low", time:"2026-01-19T11:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day", summary:"Blurb: Commemorative march and service projects across DC.\n\nFurther: Peaceful; risk low." },
+
+  { title:"March for Life — National Rally", city:"Washington, DC", country:"USA", continent:"North America", risk:"medium", time:"2026-01-23T12:00:00", predictive:true, predictive_type:"recurring", source:"https://marchforlife.org/", summary:"Blurb: Annual March for Life from National Mall up Constitution Ave.\n\nFurther: Large attendance; medium disruption." },
+ 
     
 
 { title:"International Women's Day March", city:'São Paulo', country:'Brazil', continent:'South America', risk:'medium', time:'2026-03-08T14:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march along Avenida Paulista.\n\nFurther: Large turnout expected; risk medium due to congestion.' },
@@ -7055,6 +7079,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
