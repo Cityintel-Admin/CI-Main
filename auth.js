@@ -106,25 +106,33 @@ function isAdminUser() {
         e.preventDefault(); Auth.logout(); location.href='login.html';
       });
     },
-    updateSidebarForRole(sidebarEl){
-      const u = Auth.current();
-      if (!sidebarEl) return;
-      // ensure “Analytics” & “System Flow” only for admin
-      const ensureLink = (href, text) => {
-        let a = [...sidebarEl.querySelectorAll('a')].find(x=>x.getAttribute('href')===href);
-        if (!a && u && u.role==='admin') {
-          a = document.createElement('a'); a.href = href; a.textContent = text; sidebarEl.appendChild(a);
-        }
-        if (a && (!u || u.role!=='admin')) { a.remove(); }
-      };
-      ensureLink('analytics.html','Analytics');
-      ensureLink('system-flow.html','System Flow');
+updateSidebarForRole(sidebarEl){
+  const u = Auth.current();
+  if (!sidebarEl) return;
+  // ensure “Analytics” & “System Flow” only for admin
+  const ensureLink = (href, text) => {
+    let a = Array.from(sidebarEl.querySelectorAll('a'))
+      .find(x => x.getAttribute('href') === href);
+    if (!a && u && u.role === 'admin') {
+      a = document.createElement('a');
+      a.href = href; a.textContent = text;
+      sidebarEl.appendChild(a);
     }
+    if (a && (!u || u.role !== 'admin')) {
+      a.remove();
+    }
+  };
+  ensureLink('analytics.html','Analytics');
+  ensureLink('operationslog.html','Operations Log');
+  ensureLink('system-flow.html','System Flow');
+}
+
   };
 
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
