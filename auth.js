@@ -1,6 +1,3 @@
-<!-- auth.js -->
-
-
 /**
  * CityIntel Auth (frontend-only; swap to real backend later)
  * Stores: ci_user, ci_token, ci_subscribed in localStorage
@@ -128,5 +125,6 @@ function isAdminUser() {
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
