@@ -34,16 +34,14 @@ function isAdminUser() {
       return user && tok ? {...user, subscribed: sub} : null;
     },
 
-    login({email, password}){
-  const e = (email||'').toLowerCase();
-
-  // Use your allow-list first
-  const role = ADMIN_EMAILS.has(e) ? 'admin'
-            : e.includes('ops')    ? 'ops'
-            : 'analyst';
-
+login({email, password}){
+  const e = (email || '').toLowerCase();
+  const role =
+    ADMIN_EMAILS.has(e)        ? 'admin' :
+    e.includes('ops')          ? 'ops'   :
+                                 'analyst';
   const user = {
-    name: email?.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
+    name: e.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
     email, role, org: 'CityIntel Test Org'
   };
   LS.set('ci_user', user);
@@ -132,6 +130,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
