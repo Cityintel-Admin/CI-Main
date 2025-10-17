@@ -36,22 +36,29 @@ function isAdminUser() {
       const sub  = localStorage.getItem('ci_subscribed') === 'true';
       return user && tok ? {...user, subscribed: sub} : null;
     },
+
     login({email, password}){
-      // DEMO: very simple role mapping; replace with backend/Firebase later
-      const role = email?.toLowerCase().includes('admin') ? 'admin'
-                 : email?.toLowerCase().includes('ops')   ? 'ops'
-                 : 'analyst';
-      const user = {
-        name: email?.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
-        email, role, org: 'CityIntel Test Org'
-      };
-      LS.set('ci_user', user);
-      LS.set('ci_token', { t: Math.random().toString(36).slice(2), at: Date.now() });
-      if (localStorage.getItem('ci_subscribed') == null) {
-        // Give everyone a “subscribed” flag by default (you can toggle in settings)
-        localStorage.setItem('ci_subscribed','true');
-      }
-      return user;
+  const e = (email||'').toLowerCase();
+
+  // Use your allow-list first
+  const role = ADMIN_EMAILS.has(e) ? 'admin'
+            : e.includes('ops')    ? 'ops'
+            : 'analyst';
+
+  const user = {
+    name: email?.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
+    email, role, org: 'CityIntel Test Org'
+  };
+  LS.set('ci_user', user);
+  LS.set('ci_token', { t: Math.random().toString(36).slice(2), at: Date.now() });
+
+  // Default everyone to "subscribed" in this demo unless you override elsewhere
+  if (localStorage.getItem('ci_subscribed') == null) {
+    localStorage.setItem('ci_subscribed','true');
+  }
+  return user;
+}
+
     },
     logout(){
       LS.del('ci_user'); LS.del('ci_token');
@@ -121,4 +128,5 @@ function isAdminUser() {
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
