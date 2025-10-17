@@ -1,5 +1,6 @@
 <!-- auth.js -->
 
+
 /**
  * CityIntel Auth (frontend-only; swap to real backend later)
  * Stores: ci_user, ci_token, ci_subscribed in localStorage
@@ -11,6 +12,21 @@
     set(k,v){ localStorage.setItem(k, JSON.stringify(v)); },
     del(k){ localStorage.removeItem(k); }
   };
+
+  const ADMIN_EMAILS = new Set([
+  'mmadmin@cityintel.com',
+  'cjladmin@cityintel.com'
+]);  
+
+  function currentUser() {
+  try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); }
+  catch(e){ return {}; }
+}
+
+function isAdminUser() {
+  const user = currentUser();
+  return ADMIN_EMAILS.has((user.email||'').toLowerCase());
+}
 
   const Auth = {
     // --- session API ---
@@ -105,3 +121,4 @@
   // expose
   window.CIAuth = Auth;
 })(window);
+
