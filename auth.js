@@ -40,6 +40,15 @@ const ADMIN_EMAILS = new Set(['mmadmin@cityintel.com','cjladmin@cityintel.com'])
 const role = ADMIN_EMAILS.has(emailLc) ? 'admin'
            : emailLc.includes('ops')   ? 'ops'
            : 'analyst';
+
+const profile = { name: email.split('@')[0], email, role };
+  localStorage.setItem('ci_profile', JSON.stringify(profile));
+  localStorage.setItem('ci_user', email);
+  localStorage.setItem('ci_token', Math.random().toString(36).slice(2));
+
+  return profile;
+},
+  
   const user = {
     name: e.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
     email, role, org: 'CityIntel Test Org'
@@ -130,6 +139,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
