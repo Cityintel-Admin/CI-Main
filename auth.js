@@ -69,12 +69,16 @@
       // localStorage.setItem('ci_subscribed', 'true');
       return profile;
     },
-    logout() {
-      LS.del('ci_user');
-      LS.del('ci_token');
-      // Keep trial/subscribed flag unless you explicitly want to clear it:
-      // localStorage.removeItem('ci_subscribed');
-    },
+logout(){
+  // Clear CIAuth state
+  LS.del('ci_user');
+  LS.del('ci_token');
+
+  // Also clear legacy keys so older UI can’t think we’re still logged in
+  localStorage.removeItem('ci_profile');
+  localStorage.removeItem('ci_subscribed');
+  localStorage.removeItem('ci_trial'); // if you added any trial flag
+},
     requireAuth(redirectTo = 'login.html') {
       if (!this.isLoggedIn()) {
         const nxt = encodeURIComponent(location.pathname.split('/').pop() || 'index.html');
@@ -85,4 +89,5 @@
 
   window.CIAuth = CIAuth;
 })(window);
+
 
