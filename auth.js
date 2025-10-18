@@ -3,135 +3,86 @@
  * Stores: ci_user, ci_token, ci_subscribed in localStorage
  * Roles: 'analyst' | 'ops' | 'admin'
  */
-(function(window){
+(function (window) {
   const LS = {
-    get(k, def=null){ try{ return JSON.parse(localStorage.getItem(k) || 'null') ?? def; }catch(e){ return def; } },
-    set(k,v){ localStorage.setItem(k, JSON.stringify(v)); },
-    del(k){ localStorage.removeItem(k); }
+    get: (k, def=null) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+    set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+    del: (k) => localStorage.removeItem(k),
   };
 
-  const ADMIN_EMAILS = new Set([
-  'mmadmin@cityintel.com',
-  'cjladmin@cityintel.com'
-]);  
+  // SHA-256 helper (uses WebCrypto)
+  async function sha256(text) {
+    const enc = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
-  function currentUser() {
-  try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); }
-  catch(e){ return {}; }
-}
+  // Your admin users (passwords stored as SHA-256 hashes)
+  // Carlton — Admin:  cjladmin@cityintel.com  /  Kieron12!
+  // Morris  — Admin:  mm@cityintel.com        /  Morrisintel@01
+  const USERS = {
+    'cjladmin@cityintel.com': {
+      name: 'Carlton - Admin',
+      role: 'Admin',
+      passHash: '2af37cad7dca2c87d8aa6f5e8136e299e652be3953c182d1bc558f0f80bdb64e'
+    },
+    'mm@cityintel.com': {
+      name: 'Morris - Admin',
+      role: 'Admin',
+      passHash: 'ef2c36181af9977b4359eedab2d21a6715d266e0d5a35200f333d743adb2cc5e'
+    }
+  };
 
-function isAdminUser() {
-  const user = currentUser();
-  return ADMIN_EMAILS.has((user.email||'').toLowerCase());
-}
+  function isValidEmail(s='') {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  }
 
-  const Auth = {
-    // --- session API ---
-    current(){
-  const user = LS.get('ci_user');   // { name, email, role, org? }
-  const tok  = LS.get('ci_token');  // random token string
-  const sub  = localStorage.getItem('ci_subscribed') === 'true';
-  return (user && tok) ? {...user, subscribed: sub} : null;
-},
+  function token() {
+    return 'tok_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
 
-login({email, password}){
-  const emailLc = (email||'').toLowerCase();
-  const ADMINS = new Set(['mmadmin@cityintel.com','cjladmin@cityintel.com']); // your two admins
-  const role = ADMINS.has(emailLc) ? 'admin'
-            : emailLc.includes('ops') ? 'ops'
-            : 'analyst';
+  const CIAuth = {
+    who() {
+      return LS.get('ci_user', null); // {email, name, role, is_admin}
+    },
+    isLoggedIn() {
+      return !!LS.get('ci_user') && !!LS.get('ci_token');
+    },
+    async login(email, password) {
+      const e = String(email || '').trim().toLowerCase();
+      const p = String(password || '');
 
-const profile = { name: email.split('@')[0], email, role };
-  localStorage.setItem('ci_profile', JSON.stringify(profile));
-  LS.set('ci_user', profile);
-  LS.set('ci_token', Math.random().toString(36).slice(2));
+      if (!isValidEmail(e)) throw new Error('Please enter a valid email address.');
+      if (!p) throw new Error('Please enter your password.');
 
-  return profile;
-},
-  
-    logout(){
-      LS.del('ci_user'); LS.del('ci_token');
-      // keep subscribed if you want persistence across logins; comment next line to keep
+      const user = USERS[e];
+      if (!user) throw new Error('No account found for that email.');
+
+      const given = await sha256(p);
+      if (given !== user.passHash) throw new Error('Incorrect password.');
+
+      // success
+      const profile = { email: e, name: user.name, role: user.role, is_admin: true };
+      LS.set('ci_user', profile);
+      LS.set('ci_token', token());
+      // If you want to auto-mark subscribed for testing:
+      // localStorage.setItem('ci_subscribed', 'true');
+      return profile;
+    },
+    logout() {
+      LS.del('ci_user');
+      LS.del('ci_token');
+      // Keep trial/subscribed flag unless you explicitly want to clear it:
       // localStorage.removeItem('ci_subscribed');
     },
-    is(role){ const u = Auth.current(); return !!u && (u.role === role); },
-    hasAnyRole(roles){ const u = Auth.current(); return !!u && roles.includes(u.role); },
-
-    // --- guards & nav helpers ---
-    requireAuth({redirectTo='login.html'} = {}){
-      if (!Auth.current()){
-        const next = encodeURIComponent(location.pathname.split('/').pop() + location.search + location.hash);
-        location.href = `${redirectTo}?next=${next}`;
+    requireAuth(redirectTo = 'login.html') {
+      if (!this.isLoggedIn()) {
+        const nxt = encodeURIComponent(location.pathname.split('/').pop() || 'index.html');
+        location.href = `${redirectTo}?next=${nxt}`;
       }
-    },
-    requireRole(roles, {redirectTo='index.html'} = {}){
-      if (!Auth.hasAnyRole(roles)) location.href = redirectTo;
-    },
-    injectUserChip(hostEl){
-      const u = Auth.current();
-      if (!hostEl) return;
-      hostEl.innerHTML = '';
-if (!u){
-  const here = location.pathname.split('/').pop() || 'index.html';
-  const next = encodeURIComponent(here + location.search + location.hash);
-  hostEl.innerHTML = `<a class="login-btn" data-ci-login href="./login.html?next=${next}">Log in</a>`;
-  return;
-}
-      const initials = (u.name||'CI').split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
-      hostEl.innerHTML = `
-        <div class="user" id="ciUserChip" style="cursor:pointer">
-          <div class="avatar">${initials}</div>
-          ${u.role[0].toUpperCase()+u.role.slice(1)}
-        </div>
-        <div class="dropdown" id="ciUserMenu">
-          ${u.role==='admin' ? `<a href="analytics.html">Analytics</a>` : ``}
-          ${u.role==='admin' ? `<a href="system-flow.html">System Flow</a>` : ``}
-          <a href="settings.html">Settings</a>
-          <a href="index.html" id="ciLogoutLink">Log out</a>
-        </div>
-      `;
-      const chip = hostEl.querySelector('#ciUserChip');
-      const menu = hostEl.querySelector('#ciUserMenu');
-      chip.addEventListener('click', ()=> menu.style.display = (menu.style.display==='block'?'none':'block'));
-      document.addEventListener('click', e => { if (!hostEl.contains(e.target)) menu.style.display = 'none'; });
-      hostEl.querySelector('#ciLogoutLink').addEventListener('click', e=>{
-        e.preventDefault(); Auth.logout(); location.href='login.html';
-      });
-    },
-updateSidebarForRole(sidebarEl){
-  const u = Auth.current();
-  if (!sidebarEl) return;
-  // ensure “Analytics” & “System Flow” only for admin
-  const ensureLink = (href, text) => {
-    let a = Array.from(sidebarEl.querySelectorAll('a'))
-      .find(x => x.getAttribute('href') === href);
-    if (!a && u && u.role === 'admin') {
-      a = document.createElement('a');
-      a.href = href; a.textContent = text;
-      sidebarEl.appendChild(a);
-    }
-    if (a && (!u || u.role !== 'admin')) {
-      a.remove();
     }
   };
-  ensureLink('analytics.html','Analytics');
-  ensureLink('operationslog.html','Operations Log');
-  ensureLink('system-flow.html','System Flow');
-}
 
-  };
-
-  // expose
-  window.CIAuth = Auth;
+  window.CIAuth = CIAuth;
 })(window);
-
-
-
-
-
-
-
-
-
-
 
