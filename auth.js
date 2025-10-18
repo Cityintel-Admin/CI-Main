@@ -35,11 +35,11 @@ function isAdminUser() {
     },
 
 login({email, password}){
-  const e = (email || '').toLowerCase();
-  const role =
-    ADMIN_EMAILS.has(e)        ? 'admin' :
-    e.includes('ops')          ? 'ops'   :
-                                 'analyst';
+const emailLc = (email||'').toLowerCase();
+const ADMIN_EMAILS = new Set(['mmadmin@cityintel.com','cjladmin@cityintel.com']); // your two admins
+const role = ADMIN_EMAILS.has(emailLc) ? 'admin'
+           : emailLc.includes('ops')   ? 'ops'
+           : 'analyst';
   const user = {
     name: e.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
     email, role, org: 'CityIntel Test Org'
@@ -130,6 +130,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
