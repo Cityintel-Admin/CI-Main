@@ -28,23 +28,23 @@ function isAdminUser() {
   const Auth = {
     // --- session API ---
     current(){
-      const user = LS.get('ci_user');   // { name, email, role, org }
-      const tok  = LS.get('ci_token');  // mock
-      const sub  = localStorage.getItem('ci_subscribed') === 'true';
-      return user && tok ? {...user, subscribed: sub} : null;
-    },
+  const user = LS.get('ci_user');   // { name, email, role, org? }
+  const tok  = LS.get('ci_token');  // random token string
+  const sub  = localStorage.getItem('ci_subscribed') === 'true';
+  return (user && tok) ? {...user, subscribed: sub} : null;
+},
 
 login({email, password}){
-const emailLc = (email||'').toLowerCase();
-const ADMIN_EMAILS = new Set(['mmadmin@cityintel.com','cjladmin@cityintel.com']); // your two admins
-const role = ADMIN_EMAILS.has(emailLc) ? 'admin'
-           : emailLc.includes('ops')   ? 'ops'
-           : 'analyst';
+  const emailLc = (email||'').toLowerCase();
+  const ADMINS = new Set(['mmadmin@cityintel.com','cjladmin@cityintel.com']); // your two admins
+  const role = ADMINS.has(emailLc) ? 'admin'
+            : emailLc.includes('ops') ? 'ops'
+            : 'analyst';
 
 const profile = { name: email.split('@')[0], email, role };
   localStorage.setItem('ci_profile', JSON.stringify(profile));
-  localStorage.setItem('ci_user', email);
-  localStorage.setItem('ci_token', Math.random().toString(36).slice(2));
+  LS.set('ci_user', profile);
+  LS.set('ci_token', Math.random().toString(36).slice(2));
 
   return profile;
 },
@@ -71,12 +71,12 @@ const profile = { name: email.split('@')[0], email, role };
       const u = Auth.current();
       if (!hostEl) return;
       hostEl.innerHTML = '';
-      if (!u){
-        const here = location.pathname.split('/').pop() || 'index.html';
-        const next = encodeURIComponent(here + location.search + location.hash);
-       hostEl.innerHTML = `<a class="login-btn" href="login.html?next=index.html">Log in</a>`;
-        return;
-      }
+if (!u){
+  const here = location.pathname.split('/').pop() || 'index.html';
+  const next = encodeURIComponent(here + location.search + location.hash);
+  hostEl.innerHTML = `<a class="login-btn" href="./login.html?next=${next}">Log in</a>`;
+  return;
+}
       const initials = (u.name||'CI').split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
       hostEl.innerHTML = `
         <div class="user" id="ciUserChip" style="cursor:pointer">
@@ -124,6 +124,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
