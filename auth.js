@@ -80,7 +80,7 @@ const role = ADMIN_EMAILS.has(emailLc) ? 'admin'
       if (!u){
         const here = location.pathname.split('/').pop() || 'index.html';
         const next = encodeURIComponent(here + location.search + location.hash);
-        hostEl.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
+       hostEl.innerHTML = `<a class="login-btn" href="login.html?next=index.html">Log in</a>`;
         return;
       }
       const initials = (u.name||'CI').split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
@@ -93,7 +93,7 @@ const role = ADMIN_EMAILS.has(emailLc) ? 'admin'
           ${u.role==='admin' ? `<a href="analytics.html">Analytics</a>` : ``}
           ${u.role==='admin' ? `<a href="system-flow.html">System Flow</a>` : ``}
           <a href="settings.html">Settings</a>
-          <a href="#" id="ciLogoutLink">Log out</a>
+          <a href="index.html" id="ciLogoutLink">Log out</a>
         </div>
       `;
       const chip = hostEl.querySelector('#ciUserChip');
@@ -130,6 +130,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
