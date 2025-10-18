@@ -74,7 +74,7 @@ const profile = { name: email.split('@')[0], email, role };
 if (!u){
   const here = location.pathname.split('/').pop() || 'index.html';
   const next = encodeURIComponent(here + location.search + location.hash);
-  hostEl.innerHTML = `<a class="login-btn" href="./login.html?next=${next}">Log in</a>`;
+  hostEl.innerHTML = `<a class="login-btn" data-ci-login href="./login.html?next=${next}">Log in</a>`;
   return;
 }
       const initials = (u.name||'CI').split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
@@ -124,6 +124,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
