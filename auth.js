@@ -49,21 +49,6 @@ const profile = { name: email.split('@')[0], email, role };
   return profile;
 },
   
-  const user = {
-    name: e.split('@')[0]?.replace(/\./g,' ')?.replace(/\b\w/g,m=>m.toUpperCase()) || 'Analyst',
-    email, role, org: 'CityIntel Test Org'
-  };
-  LS.set('ci_user', user);
-  LS.set('ci_token', { t: Math.random().toString(36).slice(2), at: Date.now() });
-
-  // Default everyone to "subscribed" in this demo unless you override elsewhere
-  if (localStorage.getItem('ci_subscribed') == null) {
-    localStorage.setItem('ci_subscribed','true');
-  }
-  return user;
-}
-
-    },
     logout(){
       LS.del('ci_user'); LS.del('ci_token');
       // keep subscribed if you want persistence across logins; comment next line to keep
@@ -139,6 +124,7 @@ updateSidebarForRole(sidebarEl){
   // expose
   window.CIAuth = Auth;
 })(window);
+
 
 
 
