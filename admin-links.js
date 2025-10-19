@@ -1,6 +1,4 @@
 
-<script>
-// Admin links injector for sidebar nav
 (function(){
   function isAdmin(){
     if (!window.CIAuth || !CIAuth.isLoggedIn()) return false;
@@ -43,4 +41,4 @@
     if (['ci_user','ci_token'].includes(e.key)) renderAdminLinks();
   });
 })();
-</script>
+
