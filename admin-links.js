@@ -29,7 +29,7 @@
     };
 
     add('analytics.html',      'Analytics');
-    add('operations-log.html', 'Operations Log');
+    add('operationslog.html', 'Operations Log');
     add('system-flow.html',    'System Flow');
   }
 
