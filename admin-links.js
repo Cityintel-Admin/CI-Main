@@ -1,66 +1,77 @@
 
 <script>
 (function(){
-  const LINKS = [
-    { href: 'analytics.html',     text: 'Analytics' },
-    { href: 'system-flow.html',   text: 'System Flow' },
-    { href: 'operations-log.html',text: 'Operations Log' }
+  const TARGETS = [
+    { href: 'analytics.html',   text: 'Analytics' },
+    { href: 'system-flow.html', text: 'System Flow' },
+    { href: 'operationslog.html', text: 'Operations Log' }
   ];
 
-  function navEl(){
+  function getNav(){
+    // Adapt here if any page uses a slightly different sidebar structure
     return document.querySelector('aside.sidebar nav');
   }
 
   function isAdmin(){
-    try {
-      if (!(window.CIAuth && CIAuth.isLoggedIn())) return false;
-      const u = CIAuth.who();
-      return String(u.role || '').toLowerCase() === 'admin';
-    } catch(e){ return false; }
+    if (!window.CIAuth || !CIAuth.isLoggedIn()) return false;
+    const u = CIAuth.who() || {};
+    // normalize role checks
+    const role = String(u.role||'').toLowerCase();
+    return role === 'admin' || u.is_admin === true;
   }
 
   function ensureLinks(){
-    const nav = navEl();
+    const nav = getNav();
     if (!nav) return;
 
-    // If admin: add any missing admin links
-    if (isAdmin()){
-      LINKS.forEach(({href,text})=>{
-        if (!nav.querySelector(`a[href="${href}"]`)){
-          const a = document.createElement('a');
-          a.href = href;
-          a.textContent = text;
-          nav.appendChild(a);
-        }
+    // Build a Set of existing hrefs inside the sidebar to avoid duplicates
+    const existing = new Set(
+      Array.from(nav.querySelectorAll('a[href]')).map(a => a.getAttribute('href'))
+    );
+
+    // First remove any previously injected admin links if user is not admin
+    if (!isAdmin()){
+      TARGETS.forEach(t => {
+        nav.querySelectorAll(`a[href="${t.href}"]`).forEach(a => a.remove());
       });
-    } else {
-      // Not admin: remove admin links if present
-      LINKS.forEach(({href})=>{
-        const el = nav.querySelector(`a[href="${href}"]`);
-        if (el) el.remove();
-      });
+      return;
     }
+
+    // Admin: add missing links in a stable order, after the normal items
+    TARGETS.forEach(t => {
+      if (!existing.has(t.href)) {
+        const a = document.createElement('a');
+        a.href = t.href;
+        a.textContent = t.text;
+        nav.appendChild(a);
+      }
+    });
   }
 
-  // Run once when DOM is ready
-  document.addEventListener('DOMContentLoaded', ensureLinks);
+  function init(){
+    // need both: auth ready AND sidebar present
+    const nav = getNav();
+    if (!nav || !window.CIAuth) return false;
 
-  // Listen for auth events if your auth.js emits them
-  window.addEventListener('ci:auth:login',  ensureLinks);
-  window.addEventListener('ci:auth:logout', ensureLinks);
-
-  // Listen to storage changes (login/logout from other tabs)
-  window.addEventListener('storage', (e)=>{
-    if (e.key === 'ci_user' || e.key === 'ci_token' || e.key === 'ci_subscribed'){
-      ensureLinks();
-    }
-  });
-
-  // Small fallback poll (runs a handful of times on first 5s)
-  let checks = 10;
-  const timer = setInterval(()=>{
+    // Render once
     ensureLinks();
-    if (--checks <= 0) clearInterval(timer);
-  }, 500);
+
+    // Re-render when auth changes or storage changes (cross-tab)
+    window.addEventListener('ci:auth:login', ensureLinks);
+    window.addEventListener('ci:auth:logout', ensureLinks);
+    window.addEventListener('storage', (e)=>{
+      if (['ci_user','ci_token'].includes(e.key)) ensureLinks();
+    });
+
+    return true;
+  }
+
+  // Boot: wait for DOM then retry a few times if CIAuth/nav not ready yet
+  document.addEventListener('DOMContentLoaded', ()=>{
+    let tries = 20;
+    const t = setInterval(()=>{
+      if (init() || --tries <= 0) clearInterval(t);
+    }, 200);
+  });
 })();
 </script>
