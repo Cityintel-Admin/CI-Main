@@ -343,25 +343,15 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <script>
 (function compatProfileShim(){
   if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-  const u = CIAuth.who(); // {name,email,role}
+  const u = CIAuth.who();
   if (!u) return;
-
-  // Ensure legacy ci_profile is present for existing UI components
-  const legacy = JSON.parse(localStorage.getItem('ci_profile') || '{}');
-  if (!legacy.email || legacy.email !== u.email) {
-    localStorage.setItem('ci_profile', JSON.stringify({
-      name: u.name || 'CityIntel User',
-      email: u.email,
-      role: (u.role || 'Admin'),   // your two admins are Admins
-      is_admin: (u.role || 'Admin').toLowerCase() === 'admin'
-    }));
-  }
-
-  // Ensure subscription flag exists so old guards don’t redirect to subscribe
-  if (localStorage.getItem('ci_subscribed') == null) {
-    // If you want a gated trial, flip this to 'false' and set it on payment success.
-    localStorage.setItem('ci_subscribed', 'true');
-  }
+  localStorage.setItem('ci_profile', JSON.stringify({
+    name: u.name || 'CityIntel User',
+    email: u.email,
+    role: u.role || 'Admin',
+    is_admin: (u.role||'').toLowerCase()==='admin'
+  }));
+  // Do NOT auto-set ci_subscribed here anymore
 })();
 </script>
 
@@ -928,50 +918,64 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 
 
- <script>
+<script>
 (function mountTopActions(){
   const host = document.getElementById('topActions');
   if (!host) return;
 
-  const isSub = localStorage.getItem('ci_subscribed') === 'true';
-  let initials = 'CI', role = 'Analyst';
-  try {
-    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
-    if (p.name) {
-      const parts = p.name.trim().split(/\s+/);
-      initials = parts.slice(0,2).map(s => s[0]?.toUpperCase() || '').join('') || 'CI';
-    }
-    if (p.role) role = p.role;
-  } catch(e){}
+  // Helper: initials from name/email
+  const initialsOf = (nameOrEmail='CI') => {
+    const s = String(nameOrEmail).trim();
+    if (!s) return 'CI';
+    if (s.includes('@')) return s[0].toUpperCase();
+    const parts = s.split(/\s+/);
+    return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
+  };
 
-  const here = location.pathname.split('/').pop() || 'index.html';
-  const next = encodeURIComponent(here + location.search + location.hash);
+  // Logged-in view (CIAuth)
+  if (window.CIAuth && CIAuth.isLoggedIn()) {
+    const u = CIAuth.who(); // {name,email,role,subscribed?...}
+    const initials = initialsOf(u.name || u.email);
+    const role = u.role || 'Member';
+    const isAdmin = String(role).toLowerCase() === 'admin';
 
-  if (isSub) {
     host.innerHTML = `
-      <div class="user" id="userChip">
-        <div class="avatar">${initials}</div>${role}
+      <div class="user" id="userChip" style="cursor:pointer">
+        <div class="avatar">${initials}</div>
+        ${role}
       </div>
       <div class="dropdown" id="userMenu">
+        ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
+        <a href="settings.html">Manage Billing</a>
         <a href="#" id="logoutLink">Log out</a>
-      </div>`;
+      </div>
+    `;
+
     const chip = document.getElementById('userChip');
     const menu = document.getElementById('userMenu');
-    chip.addEventListener('click', ()=>{ menu.style.display = menu.style.display==='block' ? 'none' : 'block'; });
-    document.addEventListener('click', e=>{ if (!host.contains(e.target)) menu.style.display = 'none'; });
-    document.getElementById('logoutLink').addEventListener('click', e=>{
-      e.preventDefault();
-      localStorage.removeItem('ci_subscribed');
-      localStorage.removeItem('ci_profile');
-      location.reload();
+    chip.addEventListener('click', () => {
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
     });
+    document.addEventListener('click', (e) => {
+      if (!host.contains(e.target)) menu.style.display = 'none';
+    });
+
+    document.getElementById('logoutLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      try { CIAuth.logout(); } catch(_) {}
+      location.href = 'index.html';
+    });
+
   } else {
-    // IMPORTANT: ensure the filename is exactly "login.html" in the repo
-    host.innerHTML = `<a class="login-btn" href="./login.html?next=${next}">Log in</a>`;
+    // Logged-out view: Login pill with return param
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
   }
 })();
-
 </script>
+	
+<script src="admin-links.js"></script>
 
 
 <script>
@@ -1284,6 +1288,7 @@ if (isAdmin) {
 
 </body>
 </html>
+
 
 
 
