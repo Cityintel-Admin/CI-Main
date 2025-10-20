@@ -82,40 +82,53 @@
       return !!LS.get('ci_user') && !!LS.get('ci_token');
     },
 
-    async login(email, password) {
-      const e = String(email || '').trim().toLowerCase();
-      const p = String(password || '');
+async login(email, password) {
+  const e = String(email || '').trim().toLowerCase();
+  const p = String(password || '');
 
-      if (!isValidEmail(e)) throw new Error('Please enter a valid email address.');
-      if (!p) throw new Error('Please enter your password.');
+  if (!isValidEmail(e)) throw new Error('Please enter a valid email address.');
 
-      const user = USERS[e];
-      if (!user) throw new Error('No account found for that email.');
+  // 1) Admins still require password
+  const admin = USERS[e];
+  if (admin) {
+    if (!p) throw new Error('Please enter your password.');
+    const given = await sha256(p);
+    if (given !== admin.passHash) throw new Error('Incorrect password.');
+    const profile = { email: e, name: admin.name, role: admin.role, is_admin: true };
+    LS.set('ci_user', profile);
+    LS.set('ci_token', token());
+    localStorage.setItem('ci_profile', JSON.stringify(profile));
+    localStorage.setItem('ci_subscribed', 'true'); // admins usually have access
+    const params = new URLSearchParams(location.search);
+    const next = params.get('next') || 'index.html';
+    location.href = next;
+    return profile;
+  }
 
-      const given = await sha256(p);
-      if (given !== user.passHash) throw new Error('Incorrect password.');
+  // 2) Non-admins: check subscription status in Worker (email-only login for testing)
+  const sub = await fetchSubStatus(e); // {subscribed, plan, trialEndsAt}
+  if (!sub || (!sub.subscribed && !sub.trialEndsAt)) {
+    throw new Error('No active subscription found for this email. Please subscribe first.');
+  }
 
-      // Build profile from local directory
-      const profile = { email: e, name: user.name, role: user.role, is_admin: (user.role === 'Admin') };
+  const profile = {
+    email: e,
+    name: e.split('@')[0],
+    role: 'Analyst',
+    is_admin: false,
+  };
+  LS.set('ci_user', profile);
+  LS.set('ci_token', token());
+  localStorage.setItem('ci_profile', JSON.stringify(profile));
+  localStorage.setItem('ci_subscribed', String(!!sub.subscribed || !!sub.trialEndsAt));
+  if (sub.plan) localStorage.setItem('ci_plan', sub.plan);
 
-      // Ask Worker for subscription status (non-blocking failure)
-      const sub = await fetchSubStatus(e);
-      const isSubscribed = !!(sub && sub.subscribed === true);
-
-      // Persist profile + token + subscription flags
-      LS.set('ci_user', profile);
-      LS.set('ci_token', token());
-      localStorage.setItem('ci_profile', JSON.stringify({ name: profile.name, email: profile.email, role: profile.role }));
-      localStorage.setItem('ci_subscribed', String(isSubscribed));
-      if (sub && sub.plan) localStorage.setItem('ci_plan', sub.plan); else localStorage.removeItem('ci_plan');
-
-      // Redirect
-      const params = new URLSearchParams(location.search);
-      const next = params.get('next') || 'index.html';
-      location.href = next;
-
-      return profile;
-    },
+  const params = new URLSearchParams(location.search);
+  const next = params.get('next') || 'index.html';
+  location.href = next;
+  return profile;
+}
+    
 
     logout() {
       // Clear CIAuth state
@@ -139,3 +152,4 @@
 
   window.CIAuth = CIAuth;
 })(window);
+
