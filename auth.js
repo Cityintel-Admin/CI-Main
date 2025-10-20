@@ -58,20 +58,26 @@
   }
 
   // Optional: refresh subscription once per session on any page that loads this file
-  (async function refreshSubStatusOnce(){
-    try {
-      const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
-      if (!p.email) return;
-      if (sessionStorage.getItem('ci_refreshed')) return;
-      const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('ci_subscribed', String(!!data.subscribed));
-        if (data.plan) localStorage.setItem('ci_plan', data.plan);
-      }
-      sessionStorage.setItem('ci_refreshed', '1');
-    } catch(e){}
-  })();
+
+(async function bootRefresh(){
+  try {
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    if (!p.email) return;
+    // throttle to once per tab session
+    if (sessionStorage.getItem('ci_refreshed')) return;
+
+    const API_BASE = 'https://cityintel-api.cityintel2.workers.dev';
+    const r = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
+    if (r.ok) {
+      const data = await r.json();
+      localStorage.setItem('ci_subscribed', String(!!data.subscribed));
+      if (data.plan) localStorage.setItem('ci_plan', data.plan); else localStorage.removeItem('ci_plan');
+    }
+    sessionStorage.setItem('ci_refreshed', '1');
+  } catch {}
+})();
+
+  
 
   // ------------- CIAuth -------------
   const CIAuth = {
@@ -152,5 +158,6 @@ async login(email, password) {
 
   window.CIAuth = CIAuth;
 })(window);
+
 
 
