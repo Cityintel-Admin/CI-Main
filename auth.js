@@ -127,7 +127,7 @@ async login(email, password) {
   const next = params.get('next') || 'index.html';
   location.href = next;
   return profile;
-}
+},
     
 
     logout() {
@@ -152,4 +152,5 @@ async login(email, password) {
 
   window.CIAuth = CIAuth;
 })(window);
+
 
