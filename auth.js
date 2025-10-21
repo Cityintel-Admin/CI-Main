@@ -87,7 +87,7 @@ async refreshSubStatus(force = false) {
   } catch (e) {
     /* ignore */
   }
-}
+},
   
 
   // ------------- CIAuth -------------
@@ -173,6 +173,7 @@ async login(email, password) {
 
   window.CIAuth = CIAuth;
 })(window);
+
 
 
 
