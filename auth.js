@@ -42,52 +42,6 @@
     return 'tok_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
 
-  // ------------- Cloudflare Worker API -------------
-  const API_BASE = 'https://cityintel-api.cityintel2.workers.dev'; // your Worker URL
-
-  async function fetchSubStatus(email) {
-    try {
-      const url = `${API_BASE}/api/sub-status?email=${encodeURIComponent(email)}`;
-      const res = await fetch(url, { method: 'GET' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json(); // { email, subscribed, plan, trialEndsAt, updatedAt }
-    } catch (e) {
-      console.warn('Sub status fetch failed:', e);
-      return null; // fall back to not subscribed
-    }
-  }
-
-  // Optional: refresh subscription once per session on any page that loads this file
-
-async refreshSubStatus(force = false) {
-  try {
-    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
-    if (!p.email) return;
-
-    // Throttle (2 min) unless forced
-    const last = Number(localStorage.getItem('ci_sub_checked_at') || 0);
-    if (!force && Date.now() - last < 120_000) return;
-
-    const API_BASE = 'https://cityintel-api.cityintel2.workers.dev';
-    const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
-    if (!res.ok) return;
-    const data = await res.json();
-
-    localStorage.setItem('ci_subscribed', String(!!data.subscribed));
-    if (data.plan) localStorage.setItem('ci_plan', data.plan); else localStorage.removeItem('ci_plan');
-    localStorage.setItem('ci_sub_checked_at', String(Date.now()));
-
-    // If they lost access, bounce them to subscribe (except on auth/subscribe pages)
-    const path = (location.pathname.split('/').pop() || '').toLowerCase();
-    const protectedPages = ['index.html','alerts.html','events.html','reports.html','watch.html','operations-log.html','analytics.html','system-flow.html','sources.html'];
-    if (!data.subscribed && protectedPages.includes(path)) {
-      // keep them logged-in but remove access
-      location.href = 'subscribe.html?reason=expired';
-    }
-  } catch (e) {
-    /* ignore */
-  }
-}
 
   
 
@@ -168,8 +122,58 @@ async login(email, password) {
     }
   };
 
+  // ------------- Cloudflare Worker API -------------
+  const API_BASE = 'https://cityintel-api.cityintel2.workers.dev'; // your Worker URL
+
+  async function fetchSubStatus(email) {
+    try {
+      const url = `${API_BASE}/api/sub-status?email=${encodeURIComponent(email)}`;
+      const res = await fetch(url, { method: 'GET' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json(); // { email, subscribed, plan, trialEndsAt, updatedAt }
+    } catch (e) {
+      console.warn('Sub status fetch failed:', e);
+      return null; // fall back to not subscribed
+    }
+  }
+
+  // Optional: refresh subscription once per session on any page that loads this file
+
+async refreshSubStatus(force = false) {
+  try {
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    if (!p.email) return;
+
+    // Throttle (2 min) unless forced
+    const last = Number(localStorage.getItem('ci_sub_checked_at') || 0);
+    if (!force && Date.now() - last < 120_000) return;
+
+    const API_BASE = 'https://cityintel-api.cityintel2.workers.dev';
+    const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    localStorage.setItem('ci_subscribed', String(!!data.subscribed));
+    if (data.plan) localStorage.setItem('ci_plan', data.plan); else localStorage.removeItem('ci_plan');
+    localStorage.setItem('ci_sub_checked_at', String(Date.now()));
+
+    // If they lost access, bounce them to subscribe (except on auth/subscribe pages)
+    const path = (location.pathname.split('/').pop() || '').toLowerCase();
+    const protectedPages = ['index.html','alerts.html','events.html','reports.html','watch.html','operations-log.html','analytics.html','system-flow.html','sources.html'];
+    if (!data.subscribed && protectedPages.includes(path)) {
+      // keep them logged-in but remove access
+      location.href = 'subscribe.html?reason=expired';
+    }
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+  
+
   window.CIAuth = CIAuth;
 })(window);
+
 
 
 
