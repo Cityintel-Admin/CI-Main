@@ -59,23 +59,35 @@
 
   // Optional: refresh subscription once per session on any page that loads this file
 
-(async function bootRefresh(){
+async refreshSubStatus(force = false) {
   try {
     const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
     if (!p.email) return;
-    // throttle to once per tab session
-    if (sessionStorage.getItem('ci_refreshed')) return;
+
+    // Throttle (2 min) unless forced
+    const last = Number(localStorage.getItem('ci_sub_checked_at') || 0);
+    if (!force && Date.now() - last < 120_000) return;
 
     const API_BASE = 'https://cityintel-api.cityintel2.workers.dev';
-    const r = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
-    if (r.ok) {
-      const data = await r.json();
-      localStorage.setItem('ci_subscribed', String(!!data.subscribed));
-      if (data.plan) localStorage.setItem('ci_plan', data.plan); else localStorage.removeItem('ci_plan');
+    const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    localStorage.setItem('ci_subscribed', String(!!data.subscribed));
+    if (data.plan) localStorage.setItem('ci_plan', data.plan); else localStorage.removeItem('ci_plan');
+    localStorage.setItem('ci_sub_checked_at', String(Date.now()));
+
+    // If they lost access, bounce them to subscribe (except on auth/subscribe pages)
+    const path = (location.pathname.split('/').pop() || '').toLowerCase();
+    const protectedPages = ['index.html','alerts.html','events.html','reports.html','watch.html','operations-log.html','analytics.html','system-flow.html','sources.html'];
+    if (!data.subscribed && protectedPages.includes(path)) {
+      // keep them logged-in but remove access
+      location.href = 'subscribe.html?reason=expired';
     }
-    sessionStorage.setItem('ci_refreshed', '1');
-  } catch {}
-})();
+  } catch (e) {
+    /* ignore */
+  }
+}
 
   
 
@@ -158,6 +170,7 @@ async login(email, password) {
 
   window.CIAuth = CIAuth;
 })(window);
+
 
 
 
