@@ -44,7 +44,7 @@
   }
 
   // ------------- Cloudflare Worker API -------------
-  const API_BASE = 'https://api.cityintelapi.com'; // your Worker URL
+  const API_BASE = 'https://dev.cityintelapi.com'; // your Worker URL
 
   async function fetchSubStatus(email) {
     try {
@@ -186,4 +186,5 @@
   })();
 
 })(window);
+
 
