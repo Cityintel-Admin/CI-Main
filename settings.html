@@ -32,6 +32,20 @@
     .main{grid-area:main;padding:20px}
     .card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--gray-600);border-radius:16px;padding:16px;margin-bottom:20px}
 
+.billing-card{background:#11161b;border:1px solid #202830;border-radius:14px;padding:16px;max-width:720px}
+  .billing-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .badge{padding:4px 10px;border-radius:999px;font-size:.85rem;background:#1f2937;color:#e5e7eb}
+  .badge.ok{background:#064e3b;color:#d1fae5}
+  .badge.warn{background:#4b1d1d;color:#fecaca}
+  .row{display:flex;justify-content:space-between;margin:6px 0}
+  .label{color:#9ca3af}
+  .value{color:#e5e7eb}
+  .btn{background:#ef4444;color:white;border:none;border-radius:999px;padding:10px 14px;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .billing-actions{margin-top:12px}
+
+
+
     /* Pills (branding) */
     .pill-btn{display:inline-block;padding:12px 28px;border-radius:9999px;border:1px solid #9c0f0f;
               background:#D01616;color:#fff;font-weight:700;text-decoration:none;cursor:pointer}
@@ -84,8 +98,21 @@
         <div id="who" style="color:#8e97a3">Loading…</div>
       </section>
 
-      <section class="card">
-        <h3 style="margin:0 0 10px">Billing</h3>
+
+<div id="billing-card" class="billing-card">
+  <div class="billing-header">
+    <h3>Billing</h3>
+    <span id="billing-badge" class="badge">Loading…</span>
+  </div>
+
+  <div id="billing-body" class="billing-body">
+    <div class="row"><span class="label">Plan</span><span id="billing-plan" class="value">—</span></div>
+    <div class="row"><span class="label">Status</span><span id="billing-status" class="value">—</span></div>
+    <div class="row" id="billing-trial-row" style="display:none;">
+      <span class="label">Trial ends</span><span id="billing-trial" class="value">—</span>
+    </div>
+  </div>
+
         <p class="muted" style="color:#8e97a3">Update card, invoices, cancel or resume your plan.</p>
         <div style="display:flex; gap:10px; flex-wrap:wrap">
           <button class="pill-btn primary" id="btnBilling">Manage Billing</button>
@@ -189,5 +216,112 @@
     }
   })();
   </script>
+
+<script>
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  const els = {
+    badge: document.getElementById('billing-badge'),
+    plan: document.getElementById('billing-plan'),
+    status: document.getElementById('billing-status'),
+    trialRow: document.getElementById('billing-trial-row'),
+    trial: document.getElementById('billing-trial'),
+    btn: document.getElementById('btn-manage')
+  };
+
+  function profileEmail(){
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    return p.email || null;
+  }
+
+  function setBadge(text, cls){
+    els.badge.className = 'badge ' + (cls || '');
+    els.badge.textContent = text;
+  }
+
+  function fmtDate(iso){
+    try{
+      const d = new Date(iso);
+      return d.toLocaleString();
+    }catch{return iso;}
+  }
+
+  async function fetchStatus(email, force=false){
+    // add a small cache buster if forcing
+    const u = new URL(API_BASE + '/api/sub-status');
+    u.searchParams.set('email', email);
+    if (force) u.searchParams.set('_', Date.now());
+    const res = await fetch(u, { method: 'GET', credentials: 'omit' });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    return res.json();
+  }
+
+  async function openPortal(email){
+    els.btn.disabled = true;
+    try{
+      const res = await fetch(API_BASE + '/api/portal-session', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, return_url: location.origin + location.pathname + '?from=portal' })
+      });
+      const j = await res.json();
+      if (!res.ok || !j.url) throw new Error(j.error || 'Portal error');
+      location.href = j.url;
+    } catch(e){
+      alert('Could not open billing portal. '+e.message);
+      els.btn.disabled = false;
+    }
+  }
+
+  function render(data){
+    const { subscribed, plan, trialEndsAt } = data;
+
+    els.plan.textContent = plan || 'CityIntel Full Access';
+    if (subscribed) {
+      setBadge('Active', 'ok');
+      els.status.textContent = trialEndsAt ? 'Trialing' : 'Active';
+    } else {
+      setBadge('Inactive', 'warn');
+      els.status.textContent = 'No active subscription';
+    }
+
+    if (trialEndsAt){
+      els.trialRow.style.display = '';
+      els.trial.textContent = fmtDate(trialEndsAt);
+    } else {
+      els.trialRow.style.display = 'none';
+    }
+  }
+
+  async function init(){
+    const email = profileEmail();
+    if (!email){
+      setBadge('Not signed in','warn');
+      els.btn.disabled = true;
+      return;
+    }
+
+    // If we came back from portal, force-refresh
+    const fromPortal = new URLSearchParams(location.search).get('from') === 'portal';
+    try{
+      render({subscribed:false, plan:null, trialEndsAt:null});
+      setBadge('Loading…');
+      const data = await fetchStatus(email, fromPortal);
+      render(data);
+    }catch(e){
+      setBadge('Error','warn');
+      console.warn(e);
+    }
+
+    els.btn.addEventListener('click', () => openPortal(email));
+  }
+
+  init();
+})();
+</script>
+
+
+
 </body>
 </html>
