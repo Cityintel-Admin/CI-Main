@@ -14,9 +14,6 @@ window.alertsData =[
   },
 
 
-
-
-
     
 
 {
@@ -261,7 +258,7 @@ window.alertsData =[
   
   { title:"Anti-Racism March & Far-Right Mobilisation (UK)", city:"London", country:"United Kingdom", continent:"Europe", risk:"medium", time:"2025-11-02T12:00:00", source:"https://standuptoracism.org.uk/news-update-anti-racist-anti-fascist-round-up-17-19-oct-2025/", summary:"Large-scale march planned in central London by anti-racist organisations supported by union groups; far-right counter-demonstrations expected. Risk of disorder increased around transport hubs post-event." },
   
-  { title:"Student Climate Action Day (Berlin)", city:"Berlin", country:"Germany", continent:"Europe", risk:"low", time:"2025-11-14T13:00:00", source:"https://findaprotest.info/", summary:"Nationwide student-led climate rally scheduled for 14 Nov in Berlin, calling on government for accelerated renewable targets. Peaceful protest expected but may involve short road holds around Brandenburg Gate." }
+  { title:"Student Climate Action Day (Berlin)", city:"Berlin", country:"Germany", continent:"Europe", risk:"low", time:"2025-11-14T13:00:00", source:"https://findaprotest.info/", summary:"Nationwide student-led climate rally scheduled for 14 Nov in Berlin, calling on government for accelerated renewable targets. Peaceful protest expected but may involve short road holds around Brandenburg Gate." },
     
 
 
@@ -7329,6 +7326,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
