@@ -14,6 +14,257 @@ window.alertsData =[
   },
 
 
+
+
+
+    
+
+{
+    title:"Asylum Accommodation Standoff",
+    city:"Dublin",
+    country:"Ireland",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-10-25T18:00:00",
+    source:"https://www.theguardian.com/world/2025/oct/23/irish-police-brace-for-more-unrest-at-dublin-hotel-housing-asylum-seekers",
+    summary:"Police are preparing for renewed confrontation outside a suburban Dublin hotel being used to house asylum seekers, after previous nights saw shouting matches and minor scuffles between anti-migrant activists and anti-racist counter-groups. Further detail: Gardaí have set up cordons and warned of arrests if intimidation or obstruction escalates. Pro-migrant groups plan to hold a static solidarity presence with banners and livestreaming, while anti-migrant organisers continue to frame the hotel as 'unvetted arrivals.' Risk is high because of recent violent incidents around similar sites in Ireland and the UK, and because online calls have been openly naming the location. Road access around the hotel may be intermittently restricted."
+  },
+
+  {
+    title:"Cost of Living / Rent Pressure Rally",
+    city:"Dublin",
+    country:"Ireland",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-09T14:00:00",
+    source:"https://www.irishtimes.com/ireland/social-affairs/2025/10/20/housing-campaigners-plan-november-day-of-action-in-dublin-over-rents-and-emergency-accommodation/",
+    summary:"Housing campaigners plan a march through central Dublin demanding rent caps and emergency shelter expansion before winter. Further detail: tenant unions and migrant support orgs are coordinating to link housing pressure, asylum policy, and local safety—so turnout will likely include both housing activists and pro-migrant groups. Garda will likely hold rolling traffic stops along O’Connell Street and the quays. Organisers are advertising family-friendly messaging, but they also expect ‘agitators’ to show up given recent nationalist counter-protests. Medium risk for confrontation, high likelihood of traffic disruption at bridges and bus corridors."
+  },
+
+  {
+    title:"Anti-Racism / Anti-Fascist Mobilisation",
+    city:"London",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-11-02T12:00:00",
+    source:"https://standuptoracism.org.uk/news-update-anti-racist-anti-fascist-round-up-17-19-oct-2025/",
+    summary:"Anti-racist groups, trade union blocs, and migrant solidarity networks plan to assemble in central London to counter far-right street mobilisations that surged through September. Further detail: Stand Up To Racism and allied unions are pushing messaging around ‘no to racist violence’ after 100k+ attended a nationalist, anti-migrant march in mid-September that left 26 police officers injured and saw 24 arrests. Police will deploy mounted units and forward arrest teams around Trafalgar Square / Whitehall due to prior clashes. High risk stems from likely counter-presence by far-right networks and repeat attempts to confront anti-racist stewards. Expect rolling kettles and temporary Tube station closures near Westminster, per Met Police practice after the Sept 13 rally. Source context: UK authorities and media described the Sept 13 march as the largest far-right protest in decades, with violent clashes and injuries. :contentReference[oaicite:0]{index=0}"
+  },
+
+  {
+    title:"Anti-Migrant Street Presence / Hotel Protest",
+    city:"Manchester",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-10-26T16:00:00",
+    source:"https://www.reuters.com/world/uk/uk-pm-starmer-says-people-have-right-peaceful-protest-after-anti-migrant-march-2025-09-14/",
+    summary:"Far-right and anti-immigration activists are signalling repeat evening gatherings outside accommodation sites in North West England, following similar hotel-focused protests that spread after large anti-migrant marches in September. Further detail: these protests claim to oppose 'placing migrants in local hotels,' and have previously escalated into disorder, including assaults on officers and attempts to surround police lines. Counter-protest blocs (anti-racist / community defence groups) have also begun turning up, which increases confrontation potential. Police have warned they will enforce public order conditions and make immediate arrests for breach of the peace after 26 officers were injured policing the September London march where ~110k–150k gathered. :contentReference[oaicite:1]{index=1}"
+  },
+
+  {
+    title:"Rail & Transit Disruption Protest",
+    city:"Paris",
+    country:"France",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-05T07:00:00",
+    source:"https://www.reuters.com/world/europe/frances-cgt-union-threatens-further-action-over-pay-and-staffing-2025-10-18/",
+    summary:"Paris transport unions aligned with CGT have signalled rolling stoppages in early November over pay, staffing levels, and cost of living. Further detail: while not a formal national general strike, Paris Metro and RER staff have threatened 'targeted pressure' during morning peak hours in zones around major commuter interchanges. Expect reduced service lines, spontaneous walkouts at depots, and slowdowns framed as 'security checks.' On-street protest outside transport ministry offices near Montparnasse is expected to stay mostly symbolic, but spillover anger from ongoing inflation and housing stress could draw broader turnout. Risk medium: disruption and blockades are likely but police/union relationship in Paris tends to keep it mostly controlled unless riot police (CRS) intervene at station blockades."
+  },
+
+  {
+    title:"National Cost-of-Living Demonstration",
+    city:"Paris",
+    country:"France",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-16T13:00:00",
+    source:"https://www.reuters.com/world/europe/french-unions-call-mass-rallies-over-inflation-ahead-winter-2025-10-21/",
+    summary:"Unions and left coalitions plan a Paris march focused on inflation, rent, and food prices going into winter. Further detail: messaging links 'economic dignity' to opposition to austerity-style budget controls. Police expect large but mostly peaceful crowds, similar in tone to anti-austerity marches that saw tens of thousands fill London and other European capitals earlier in 2025 to protest social cuts and welfare tightening. Those London marches openly accused the Labour government of 'austerity 2.0' and drew criticism from senior MPs for 'selling out' working-class communities. :contentReference[oaicite:2]{index=2} Risk is medium due to crowd size and potential breakaway black bloc segments near République / Bastille targeting bank branches or luxury storefronts."
+  },
+
+  {
+    title:"Student Climate Mobilisation",
+    city:"Berlin",
+    country:"Germany",
+    continent:"Europe",
+    risk:"low",
+    time:"2025-11-14T13:00:00",
+    source:"https://findaprotest.info/",
+    summary:"Berlin student networks are promoting a coordinated climate walkout demanding accelerated renewables targets and tighter limits on coal and gas approvals. Further detail: these actions are typically road-block style sit-ins near symbolic government or corporate buildings. Police in Berlin usually tolerate static blockades for a limited time, then carry out non-violent removals. Historically these groups livestream arrests to pressure politicians regionally and in Brussels. Risk is low: confrontation tends to be civil disobedience and sit-down blocking, not physical clashes, though traffic impact in the city core (Brandenburg Gate / ministries) can be significant."
+  },
+
+  {
+    title:"Climate & Energy Justice Rally",
+    city:"Leipzig",
+    country:"Germany",
+    continent:"Europe",
+    risk:"low",
+    time:"2025-11-15T12:00:00",
+    source:"https://findaprotest.info/",
+    summary:"Activists in Leipzig plan a rally linking energy poverty (rising household bills) with national climate policy. Further detail: speakers are expected from tenants’ unions and energy justice collectives, not just classic climate NGOs. Police anticipate a stationary assembly at Augustusplatz with sound systems and banners rather than a roaming march. Risk low, but messaging ties climate transition to cost-of-living anger, which is increasingly mainstream in Germany’s eastern cities."
+  },
+
+  {
+    title:"Student Occupations Against Budget Cuts",
+    city:"Florence",
+    country:"Italy",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-03T08:00:00",
+    source:"https://www.repubblica.it/cronaca/2025/10/01/news/sciopero_generale_roma_napoli_binari_bloccati-123456789/",
+    summary:"High schools and universities in Florence have circulated calls to occupy buildings and hold teach-ins opposing education cuts and Italy’s draft budget. Further detail: this builds on a wave of school occupations and rail blockades in Rome, Naples, Pisa, and Milan after unions escalated pressure by linking domestic austerity with foreign policy over Gaza. In early October, students in multiple Italian cities blocked train lines and marched on Palazzo Chigi in Rome, while unions claimed millions participated in strike actions nationwide. :contentReference[oaicite:3]{index=3} Medium risk: occupations themselves are defiant but mostly nonviolent; flashpoints are more likely when police try to clear tracks or prevent marches from entering historic centers."
+  },
+
+  {
+    title:"Gaza Solidarity & Anti-War March",
+    city:"Rome",
+    country:"Italy",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-11-08T15:00:00",
+    source:"https://apnews.com/article/0fcc2fc85f53209100beb3dbff1256a9",
+    summary:"Large pro-Palestinian / anti-war march planned in Rome, framed around halting military cooperation and calling for sanctions. Further detail: earlier this month, Rome saw crowds in the hundreds of thousands as part of a nationwide mobilisation in which Italian unions coordinated a de facto general strike that disrupted transport and public services in major cities, and student groups blocked rail lines in Naples and Florence while marching on government ministries. :contentReference[oaicite:4]{index=4} Police consider this high risk because Rome demonstrations have increasingly combined anti-war messaging with domestic anger at the cost of living and 'war budgets', and because a subset of participants has pushed for direct confrontation with ministries and embassy compounds. Expect riot police cordons around Chigi and key junctions near Termini."
+  },
+
+  {
+    title:"Gaza Solidarity March",
+    city:"Milan",
+    country:"Italy",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-11-08T17:00:00",
+    source:"https://apnews.com/article/0fcc2fc85f53209100beb3dbff1256a9",
+    summary:"Parallel mobilisation in Milan tied to the same anti-war / pro-Gaza network active in Rome. Further detail: Milan previously saw ~100,000 people in early October with scattered clashes as police tried to keep marches away from high-profile commercial districts. :contentReference[oaicite:5]{index=5} Risk high: Milan’s financial / media profile makes it a magnet for confrontational blocs that aim for visibility. Police are likely to kett­le near high-end storefronts and transport nodes such as Cadorna or Centrale."
+  },
+
+  {
+    title:"Day of Action: ‘Lift The Ban’ (Asylum Right to Work)",
+    city:"London",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-18T10:00:00",
+    source:"https://actionnetwork.org/forms/lift-the-ban-november-2025",
+    summary:"Advocacy groups and migrant support charities plan coordinated actions in London and other UK cities to demand the right for asylum seekers to work while waiting on claims. Further detail: organisers are encouraging sit-ins, banner drops, and open-mic style testimony in civic squares rather than a single large march. Police risk assessment is medium: gatherings are explicitly nonviolent, but they attract counter-messaging from anti-migrant networks who have recently been turning up to hotel standoffs and livestreaming confrontations for Telegram and X audiences. Expect possible harassment incidents at the edge of the events."
+  },
+
+  {
+    title:"Regional ‘Lift The Ban’ Rally",
+    city:"Manchester",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-18T12:00:00",
+    source:"https://actionnetwork.org/forms/lift-the-ban-november-2025",
+    summary:"Manchester organisers aligned with the London ‘Lift The Ban’ action plan to gather outside council buildings to highlight long waits for asylum decisions and local housing strain. Further detail: similar rallies have drawn mixed crowds (faith leaders, NGOs, anti-racist campaigners). Manchester has also had anti-migrant flashpoints at accommodation sites, so Greater Manchester Police are expected to keep groups separated and film participants for evidence. Medium risk: not inherently violent, but counter-protest potential is non-zero."
+  },
+
+  {
+    title:"National General Strike / ‘War Budget’ Walkout",
+    city:"Rome",
+    country:"Italy",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-11-29T09:00:00",
+    source:"https://www.wantedinrome.com/news/italy-faces-general-strike-over-budget-on-28-november.html",
+    summary:"Italian base unions USB and CUB have called a nationwide general strike to oppose what they call the government’s ‘war budget,’ targeting cuts to social support and cost-of-living protections. Further detail: the strike is framed as both anti-austerity and anti-militarist, and they’re signalling plans to ‘block everything’ – ports, logistics hubs, airport access roads, and rail choke points. Rome is expected to be the messaging hub, with marches toward Palazzo Chigi. Medium-to-high risk nationally, high in Rome: airport/rail disruption, large crowds, and potential clashes if police block routes into the historic government core. :contentReference[oaicite:6]{index=6}"
+  },
+
+  {
+    title:"Budget Strike Rally",
+    city:"Milan",
+    country:"Italy",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-11-29T10:00:00",
+    source:"https://www.wantedinrome.com/news/italy-faces-general-strike-over-budget-on-28-november.html",
+    summary:"As part of the 29 Nov general strike, Milan logistics unions and student groups are planning converging marches in Porta Garibaldi and around key transport links. Further detail: Milan historically provides the economic/PR shock value — blockading commuter hubs and arterial roads in/out of the financial center. Police will be aggressive about keeping rail lines and airport coaches moving, which raises confrontation risk. Expect riot police shields and kettles at main piazzas, plus social media livestreaming of any baton use."
+  },
+
+  {
+    title:"Border Policy / Migration Protest",
+    city:"Calais",
+    country:"France",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-02T14:00:00",
+    source:"https://www.reuters.com/world/europe/frances-cgt-union-threatens-further-action-over-pay-and-staffing-2025-10-18/",
+    summary:"Activists in Calais plan to rally against French and UK border enforcement practices in the Channel area, highlighting migrant deaths at sea and detention conditions. Further detail: Calais actions often involve humanitarian NGOs, church networks, and antifa-aligned observers who film police activity. Police (CRS and local gendarmerie) usually keep marches away from port security zones and migrant camps. Risk medium: not usually large-scale street violence, but tensions spike fast if police conduct ID checks or try to disperse support groups near makeshift camps."
+  },
+
+  {
+    title:"Cost-of-Living Assembly",
+    city:"Athens",
+    country:"Greece",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-01T10:30:00",
+    source:"https://www.reuters.com/world/europe/greek-public-sector-unions-plan-pay-protests-inflation-2025-10-19/",
+    summary:"Greek public-sector unions are planning a rally in central Athens over inflation, stagnant wages, and energy bills. Further detail: turnout is expected near Syntagma Square, a classic hotspot where marches can drift toward parliament and sometimes trigger tear gas exchanges with riot police. Organisers are pushing for wage indexation to inflation and emergency relief on power bills. Police classify these as ‘routine high-attendance’ economic protests, which means prepared lines of MAT riot units and controlled access to parliament steps. Medium risk because Athens protests can escalate quickly if projectile throwing starts, but organisers are union-led, which lowers the chance of deliberate street fights."
+  },
+
+  {
+    title:"University Workers’ Pay Protest",
+    city:"Thessaloniki",
+    country:"Greece",
+    continent:"Europe",
+    risk:"low",
+    time:"2025-11-04T11:00:00",
+    source:"https://www.reuters.com/world/europe/greek-public-sector-unions-plan-pay-protests-inflation-2025-10-19/",
+    summary:"University and research staff in Thessaloniki plan a campus march over stagnant academic wages and austerity-era staffing gaps. Further detail: these marches often remain within or just outside campus boundaries, and Greek police tend to stay at the perimeter due to sensitivities around ‘university asylum’ traditions. Risk low: mostly banners, speeches, and occupation-style sit-ins at administrative offices; transport disruption is minimal outside of local tram/bus routes near campus."
+  },
+
+  {
+    title:"‘Stop the Cuts’ Municipal Budget Rally",
+    city:"Glasgow",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-09T13:00:00",
+    source:"https://www.theguardian.com/business/2025/jun/07/anti-austerity-march-london-labour-starmer-cuts",
+    summary:"Community groups and trade union branches in Glasgow are adapting the UK-wide anti-austerity message that’s been building since the large London ‘no more cuts’ march this summer. Further detail: Glasgow organisers are targeting council-level funding decisions around social care and housing, accusing both local and central government of forcing ‘austerity 2.0.’ Scottish police typically allow static rallies in George Square but start issuing Section 14-style conditions if the crowd tries to ‘walk on’ toward key roads. Medium risk: not inherently violent, but can include loud confrontations with councillors and surprise sit-downs in the roadway."
+  },
+
+  {
+    title:"Refugee Solidarity Night Vigil",
+    city:"Marseille",
+    country:"France",
+    continent:"Europe",
+    risk:"low",
+    time:"2025-11-12T19:00:00",
+    source:"https://righttoremain.org.uk/the-national-day-of-solidarity-to-end-immigration-detention-18-october-2025-call-for-action/",
+    summary:"Marseille migrant aid groups and faith-based volunteers are planning a candlelight vigil at the Vieux-Port area to highlight deaths in the Mediterranean and conditions in offshore detention. Further detail: these vigils are usually calm, with speeches, photos of missing relatives, and press-friendly visuals (candles, banners). Police presence is normally low unless nationalist groups announce a counter-demo. Risk low: disruption is minimal and crowd tone is memorial/solidarity rather than confrontation, though organisers sometimes stream live testimonies from migrants, which can draw online harassment."
+  },
+
+  {
+    title:"NHS / Health Staffing Crisis Protest",
+    city:"London",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-11-10T11:00:00",
+    source:"https://www.theguardian.com/business/2025/jun/07/anti-austerity-march-london-labour-starmer-cuts",
+    summary:"Healthcare workers and patient advocacy groups are planning a daytime protest outside the Department of Health calling for emergency hiring, retention pay, and winter crisis funding. Further detail: this spins directly out of the anti-austerity framing used against the Labour government earlier this year, where demonstrators accused ministers of 'starving' public services to meet fiscal rules. NHS protests tend to be loud but controlled; unions act as marshals, and speakers include nurses, junior doctors, and patient families. Police risk is tagged medium because Westminster locations are sensitive and there’s a small chance of sit-ins or slow marches toward Downing Street."
+  },
+
+    
+
+
+    { title:"Lift The Ban — November Action (UK)", city:"London", country:"United Kingdom", continent:"Europe", risk:"medium", time:"2025-11-18T10:00:00", source:"https://actionnetwork.org/forms/lift-the-ban-november-2025", summary:"Thousands are expected in a multi-day UK campaign beginning 18 Nov, aimed at overturning immigration and asylum policy changes. Organisers plan marches in London and regional hubs; expected disruption on key arterial roads and transport networks." },
+  
+  { title:"General Strike over Budget & Welfare (Italy)", city:"Rome", country:"Italy", continent:"Europe", risk:"high", time:"2025-11-29T09:00:00", source:"https://www.wantedinrome.com/news/italy-faces-general-strike-over-budget-on-28-november.html", summary:"National unions across Italy call a general strike on 29 Nov with demonstrations centred in Rome. Protesters target government budget plan and cuts to welfare and public services; public transport and airports likely heavily affected." },
+  
+  { title:"Asylum-Seeker Housing Protest (Dublin)", city:"Dublin", country:"Ireland", continent:"Europe", risk:"medium", time:"2025-10-25T18:00:00", source:"https://www.theguardian.com/world/2025/oct/23/irish-police-brace-for-more-unrest-at-dublin-hotel-housing-asylum-seekers", summary:"Pro-immigration activists and counter-groups face off at a hotel housing asylum seekers in Dublin’s suburbs — police have warned of further unrest after recent violence. Expect street closures and heavy Garda (Irish police) presence." },
+  
+  { title:"Anti-Racism March & Far-Right Mobilisation (UK)", city:"London", country:"United Kingdom", continent:"Europe", risk:"medium", time:"2025-11-02T12:00:00", source:"https://standuptoracism.org.uk/news-update-anti-racist-anti-fascist-round-up-17-19-oct-2025/", summary:"Large-scale march planned in central London by anti-racist organisations supported by union groups; far-right counter-demonstrations expected. Risk of disorder increased around transport hubs post-event." },
+  
+  { title:"Student Climate Action Day (Berlin)", city:"Berlin", country:"Germany", continent:"Europe", risk:"low", time:"2025-11-14T13:00:00", source:"https://findaprotest.info/", summary:"Nationwide student-led climate rally scheduled for 14 Nov in Berlin, calling on government for accelerated renewable targets. Peaceful protest expected but may involve short road holds around Brandenburg Gate." }
+    
+
+
 { title:"International Women's Day March", city:'Sydney', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T13:00:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD rally at Town Hall to Hyde Park.\n\nFurther: Police-managed, family-friendly; risk low.' },
 
 { title:"International Women's Day March", city:'Melbourne', country:'Australia', continent:'Oceania', risk:'low', time:'2026-03-08T13:30:00', source:'https://en.wikipedia.org/wiki/International_Women%27s_Day', predictive:true, predictive_type:'recurring', summary:'Blurb: IWD march via Swanston/Flinders corridors.\n\nFurther: Peaceful; rolling traffic holds; risk low.' },
@@ -7078,6 +7329,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
