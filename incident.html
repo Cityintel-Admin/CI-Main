@@ -10,226 +10,442 @@
   <script src="auth.js"></script>
   <script src="alerts-data.js"></script>
 
-
-
+  <!-- Access control -->
   <script>
-(function pageGuard(){
-  const NEED_LOGIN = true;          // this page requires a login
-  const NEED_SUB = false;           // set to true on pages that require an active sub
+  (function pageGuard(){
+    const NEED_LOGIN = true;   // must be logged in
+    const NEED_SUB   = false;  // this page doesn't hard-block non-subs (you can flip later)
 
-  // Must be logged in?
-  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
-    const here = location.pathname.split('/').pop() || 'index.html';
-    const next = encodeURIComponent(here + location.search + location.hash);
-    location.href = 'login.html?next=' + next;
-    return;
-  }
-
-  // Must be subscribed?
-  if (NEED_SUB) {
-    const isSub = localStorage.getItem('ci_subscribed') === 'true';
-    if (!isSub) {
-      location.href = 'subscribe.html';
+    if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
+      const here = location.pathname.split('/').pop() || 'index.html';
+      const next = encodeURIComponent(here + location.search + location.hash);
+      location.href = 'login.html?next=' + next;
       return;
     }
-  }
-})();
-</script>
+
+    if (NEED_SUB) {
+      const isSub = localStorage.getItem('ci_subscribed') === 'true';
+      if (!isSub) {
+        location.href = 'subscribe.html';
+        return;
+      }
+    }
+  })();
+  </script>
+
+  <!-- Legacy shim to keep ci_profile in sync for header stuff -->
   <script>
-(function compatProfileShim(){
-  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-  const u = CIAuth.who();
-  if (!u) return;
-  localStorage.setItem('ci_profile', JSON.stringify({
-    name: u.name || 'CityIntel User',
-    email: u.email,
-    role: u.role || 'Admin',
-    is_admin: (u.role||'').toLowerCase()==='admin'
-  }));
-  // Do NOT auto-set ci_subscribed here anymore
-})();
-</script>
-  
+  (function compatProfileShim(){
+    if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+    const u = CIAuth.who();
+    if (!u) return;
+    localStorage.setItem('ci_profile', JSON.stringify({
+      name: u.name || 'CityIntel User',
+      email: u.email,
+      role:  u.role || 'Analyst',
+      is_admin: (u.role||'').toLowerCase()==='admin'
+    }));
+    // we do NOT auto-set ci_subscribed here any more
+  })();
+  </script>
 
   <style>
     :root{
-      --brand-red:#D01616; --brand-black:#0C0C0C;
+      --brand-red:#D01616;
       --g900:#111214; --g800:#16171a; --g700:#1c1e22; --g600:#24272c; --g500:#2e3238;
-      --muted:#8e97a3; --text:#e9edf2; --ok:#33c48d; --warn:#f0b429; --danger:#ff5a5f;
-      --r:16px;
+      --muted:#8e97a3; --text:#e9edf2;
+      --ok:#33c48d; --warn:#f0b429; --danger:#ff5a5f;
     }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,var(--g900),var(--g800));color:var(--text);
-         font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:radial-gradient(circle at 0% 0%,rgba(208,22,22,.18) 0%,rgba(16,16,16,0) 60%),
+                 radial-gradient(circle at 100% -10%,rgba(208,22,22,.12) 0%,rgba(16,16,16,0) 70%),
+                 linear-gradient(#0c0c0c 0%, #1a1c20 200px, #0f1013 100%);
+      color:var(--text);
+      font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      min-height:100vh;
+    }
+
     a{color:#9ccaff;text-decoration:none}
     a:hover{text-decoration:underline}
 
-    .wrap{max-width:1200px;margin:28px auto;padding:0 16px 40px}
-    .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .brand{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;
-           background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
-    .brand img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#fff}
-    .brand .t{font-weight:800;letter-spacing:.3px}
-    h1{margin:10px 0 0;font-size:24px;letter-spacing:.2px}
-    .sub{color:var(--muted);margin-bottom:16px}
-
-    .grid{display:grid;grid-template-columns:360px 1fr;gap:16px}
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
-
-    .card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--gray-600);
-          border-radius:var(--card-radius);box-shadow:var(--shadow);padding:16px}
-
-    /* Filters */
-    .filters{display:grid;gap:10px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .fld{display:flex;flex-direction:column;gap:6px}
-    .fld label{color:var(--muted);font-size:12px}
-    .fld input,.fld select{
-      background:var(--g700); border:1px solid var(--g600); border-radius:10px; color:var(--text);
-      padding:8px 10px; outline:none
+    /* --- top brand bar (logo + trial banner + user chip) --- */
+    .brandbar{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:16px 20px;
+      border-bottom:1px solid rgba(255,255,255,0.07);
+      background:radial-gradient(circle at 0% 0%,rgba(208,22,22,.25) 0%,rgba(16,16,16,0) 60%),
+                 linear-gradient(90deg,rgba(208,22,22,.15),rgba(208,22,22,0) 60%);
+      position:relative;
     }
-    .chk{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+    .brandbar img{
+      height:60px;
+      width:auto;
+      object-fit:contain;
+      border-radius:6px;
+      background:#fff;
+    }
+    .brandbar .title{
+      font-weight:700;
+      font-size:18px;
+      color:#fff;
+    }
+    #trial-banner{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      color:#fecaca;
+      font-size:13px;
+      line-height:1.4;
+      display:none;
+      white-space:nowrap;
+    }
+    #topActions{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+    }
+    .user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      font-size:13px;
+      cursor:pointer;
+    }
+    .avatar{
+      width:28px;height:28px;
+      background:#fff;color:#000;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      font-weight:700;
+      font-size:12px;
+    }
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:calc(100% + 6px);
+      background:#1a1c20;
+      border:1px solid #24272c;
+      border-radius:10px;
+      padding:6px 0;
+      box-shadow:0 12px 28px rgba(0,0,0,.6);
+      display:none;
+      min-width:150px;
+      z-index:50;
+    }
+    .dropdown a{
+      display:block;
+      padding:8px 12px;
+      color:#e9edf2;
+      text-decoration:none;
+      font-size:14px;
+    }
+    .dropdown a:hover{
+      background:rgba(255,255,255,.05);
+    }
 
-    /* List */
-    .list{margin-top:12px;border-top:1px solid var(--g600);max-height:65vh;overflow:auto}
-    .itm{padding:10px 8px;border-bottom:1px solid var(--g600);cursor:pointer}
-    .itm:hover{background:rgba(255,255,255,.03)}
-    .ttl{font-weight:700}
-    .muted{color:var(--muted)}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:12px;border:1px solid transparent}
-    .high{background:rgba(255,90,95,.15);color:var(--danger);border-color:rgba(255,90,95,.35)}
-    .med {background:rgba(240,180,41,.15);color:var(--warn);border-color:rgba(240,180,41,.35)}
-    .low {background:rgba(51,196,141,.15);color:var(--ok);border-color:rgba(51,196,141,.35)}
+    /* --- page header under bar --- */
+    .page-head{
+      max-width:1280px;
+      margin:20px auto 12px;
+      padding:0 24px;
+    }
+    .page-head h1{
+      font-size:20px;
+      font-weight:600;
+      color:#fff;
+      margin-bottom:4px;
+    }
+    .page-head .sub{
+      font-size:13px;
+      color:var(--muted);
+    }
 
-    /* Detail */
-    .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .big{font-size:20px;font-weight:800}
-    .kv{display:grid;grid-template-columns:120px 1fr;gap:8px;margin-top:8px}
-    .kv div:nth-child(odd){color:var(--muted)}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .btn{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid var(--g600)}
-    .btn:hover{background:rgba(255,255,255,.04)}
+    /* --- main drilldown layout --- */
+    .main{
+      max-width:1280px;
+      margin:0 auto;
+      padding:0 24px 40px;
+    }
+    .drilldown-layout{
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:24px;
+      align-items:start;
+    }
+    @media (max-width:900px){
+      .drilldown-layout{
+        grid-template-columns:1fr;
+      }
+    }
 
-    /* Tables */
-    table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden}
-    th{background:var(--g700);text-align:left;padding:8px;color:var(--muted)}
-    td{padding:8px;border-top:1px solid var(--g600)}
-    tr:hover td{background:rgba(255,255,255,.02)}
+    /* left column (filters + list) */
+    .drilldown-left{
+      background:rgba(26,28,32,0.8);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px;
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      padding:16px;
+      max-height:calc(100vh - 160px);
+      overflow-y:auto;
+    }
 
-    .dropdown{ position:absolute;right:0;top:calc(100% + 6px);background:#1a1c20;border:1px solid #24272c;
-  border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:140px;z-index:50;
-}
-      .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
-    .dropdown a:hover{background:rgba(255,255,255,0.05)}
+    .filters{display:grid;gap:12px;margin-bottom:12px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:500px){
+      .row3{grid-template-columns:1fr}
+      .row2{grid-template-columns:1fr}
+    }
 
+    .fld{display:flex;flex-direction:column;gap:6px;font-size:13px}
+    .fld label{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .fld input,
+    .fld select{
+      background:var(--g700);
+      border:1px solid var(--g600);
+      border-radius:10px;
+      color:var(--text);
+      padding:8px 10px;
+      outline:none;
+      font-size:13px;
+    }
+    .chk{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-size:13px;
+      user-select:none;
+    }
+    .chk input{accent-color:var(--brand-red);}
 
-	    .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);
-            background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
-  .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
+    .list{
+      border-top:1px solid var(--g600);
+      margin-top:8px;
+    }
+    .itm{
+      padding:10px 6px 10px 2px;
+      border-bottom:1px solid var(--g600);
+      cursor:pointer;
+    }
+    .itm:hover{
+      background:rgba(255,255,255,.03);
+    }
+    .ttl{
+      font-weight:600;
+      color:#fff;
+      font-size:13px;
+      line-height:1.4;
+      margin-bottom:3px;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
 
+    .pill{
+      display:inline-block;
+      padding:3px 7px;
+      border-radius:999px;
+      font-weight:600;
+      font-size:11px;
+      line-height:1;
+      border:1px solid transparent;
+      vertical-align:middle;
+    }
+    .high{
+      background:rgba(255,90,95,.15);
+      color:var(--danger);
+      border-color:rgba(255,90,95,.4);
+    }
+    .med{
+      background:rgba(240,180,41,.15);
+      color:var(--warn);
+      border-color:rgba(240,180,41,.4);
+    }
+    .low{
+      background:rgba(51,196,141,.15);
+      color:var(--ok);
+      border-color:rgba(51,196,141,.4);
+    }
 
-#topActions{margin-left:auto;display:flex; align-items:center; gap:10px;min-width: fit-content;position: relative;}
+    /* right column (details) */
+    .drilldown-right{
+      background:rgba(26,28,32,0.8);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px;
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      padding:20px 24px 28px;
+      min-height:400px;
+    }
 
-  .user{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--gray-700);border:1px solid var(--gray-600)}
-  .avatar{width:28px;height:28px;background:#fff;color:#000;border-radius:50%;display:grid;place-items:center;font-weight:700}	  
+    .detail-headline{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+      margin-bottom:16px;
+    }
+    .detail-title{
+      font-size:18px;
+      font-weight:700;
+      color:#fff;
+      line-height:1.3;
+    }
+    #dRisk{
+      font-size:11px;
+      line-height:1;
+    }
 
-.main {max-width: 1280px; margin: 0 auto; padding: 24px;}
+    .meta-grid{
+      display:grid;
+      grid-template-columns:140px 1fr;
+      row-gap:8px;
+      column-gap:16px;
+      font-size:13px;
+      margin-bottom:20px;
+    }
+    .meta-grid .label{
+      color:var(--muted);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+    .meta-grid .val{
+      color:#d1d5db;
+    }
 
-.drilldown-layout {display: grid;grid-template-columns: 320px 1fr; /* left fixed, right fluid */
-  gap: 24px;align-items: start;}
+    .section-head{
+      font-size:14px;
+      font-weight:600;
+      color:#fff;
+      margin:20px 0 6px;
+    }
+    .summary-text{
+      color:#d1d5db;
+      font-size:13px;
+      line-height:1.5;
+    }
 
-/* left column (filters + list) */
-.drilldown-left {background-color: rgba(17, 24, 39, 0.6); /* #111827-ish w/ opacity */
-  border: 1px solid rgba(255,255,255,0.07);border-radius: 8px;padding: 16px;
-  max-height: calc(100vh - 200px);overflow-y: auto;}
+    .action-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:16px 0 24px;
+    }
+    .btn-outline{
+      background:transparent;
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.16);
+      border-radius:8px;
+      font-size:13px;
+      line-height:1.2;
+      padding:8px 12px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+    }
+    .btn-outline:hover{
+      background:rgba(255,255,255,.06);
+    }
 
-/* right column (details panel) */
-.drilldown-right { background-color: rgba(17, 24, 39, 0.6); border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 8px; padding: 20px 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);}
+    .city-table-wrap{
+      border-top:1px solid rgba(255,255,255,0.08);
+      padding-top:16px;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+      color:#d1d5db;
+    }
+    th{
+      text-align:left;
+      font-weight:500;
+      text-transform:uppercase;
+      font-size:11px;
+      color:#9ca3af;
+      padding-bottom:8px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    td{
+      padding:10px 0;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      vertical-align:top;
+    }
 
-/* event title row like "Scotland Demands Better — National march & rally   High" */
-.drilldown-right .event-header-line {display: flex;flex-wrap: wrap;align-items: baseline;
-  gap: 12px;font-size: 1rem;font-weight: 600;color: #fff;margin-bottom: 16px;}
-
-.drilldown-right .event-header-line .risk-chip {background-color: #7f1d1d;   /* deep red */
-  color: #fff;font-size: 0.75rem;line-height: 1rem;padding: 2px 8px;border-radius: 999px;
-  font-weight: 500;}
-
-/* the little 2-col metadata grid (When / Location / Continent / Source) */
-.drilldown-right .meta-grid {display: grid;grid-template-columns: 160px 1fr;
-  row-gap: 8px;column-gap: 16px;font-size: 0.875rem;color: #d1d5db; /* gray-300 */
-  margin-bottom: 20px;}
-
-.drilldown-right .meta-grid .label {color: #9ca3af; /* gray-400 */
-  font-size: 0.75rem; text-transform: uppercase;letter-spacing: .03em;}
-
-/* buttons row: "Open source", "Copy link" */
-.drilldown-right .action-row {display: flex;flex-wrap: wrap;
-  gap: 12px;margin: 16px 0 24px;}
-
-/* "Open source" style */
-.drilldown-right .btn-outline {background-color: transparent;
-  color: #fff;border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 6px;padding: 8px 12px;font-size: 0.8rem;
-  line-height: 1rem;cursor: pointer;}
-	  
-.drilldown-right .btn-outline:hover {background-color: rgba(255,255,255,0.06);}
-
-/* "Other upcoming in this city" table styles */
-.drilldown-right .city-table-wrap {margin-top: 24px;border-top: 1px solid rgba(255,255,255,0.08);
-  padding-top: 16px;}
-
-.drilldown-right table {width: 100%;font-size: 0.8rem;border-collapse: collapse;color: #d1d5db;}
-
-.drilldown-right th {text-align: left;font-size: 0.7rem;font-weight: 500;
-  text-transform: uppercase;color: #9ca3af;padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);}
-
-.drilldown-right td {padding: 10px 0;border-bottom: 1px solid rgba(255,255,255,0.04);
-  vertical-align: top;}
-
-  </style>  
+    /* footer link */
+    .footer-nav{
+      margin-top:28px;
+      text-align:left;
+    }
+    .back-link{
+      font-size:13px;
+      color:#fff;
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:8px;
+      display:inline-block;
+      padding:8px 12px;
+      text-decoration:none;
+    }
+    .back-link:hover{
+      background:rgba(255,255,255,0.12);
+    }
+  </style>
 </head>
-
-<script>
-  // must be after the header DOM exists
-  document.addEventListener('DOMContentLoaded', function(){
-    CIAuth.injectUserChip(document.getElementById('topActions'));
-    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
-  });
-</script>
 
 <body>
 
+  <!-- Top bar -->
   <div class="brandbar">
     <img src="CityintLogo.jpg" alt="CityIntel Logo">
-    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
-	<div id="trial-banner" style="display:none;position:absolute;
-    left:50%; transform:translateX(-50%); background:none;
-    color:#fecaca; padding:8px 12px; text-align:center;">
-  <span id="trial-text">Your trial ends soon.</span>
-</div>	
-	  <div id="topActions" style="position:relative"></div>
+    <div class="title">CityIntel</div>
+
+    <!-- trial countdown banner -->
+    <div id="trial-banner"><span id="trial-text">Your trial ends soon.</span></div>
+
+    <!-- user chip / menu -->
+    <div id="topActions"></div>
   </div>
 
-  
-
+  <!-- Page heading -->
+  <header class="page-head">
     <h1>Incident Drilldown</h1>
     <div class="sub">Search, filter, and deep-dive into upcoming incidents. Past items are hidden by default.</div>
+  </header>
 
+  <!-- Main content -->
+  <main class="main">
+    <section class="drilldown-layout">
 
+      <!-- LEFT COLUMN -->
+      <aside class="drilldown-left">
 
-	<main class="main drilldown-layout">
-  <aside class="drilldown-left">
-    <div class="grid">
-      <!-- LEFT: FILTERS + LIST -->
-
+        <!-- Filters -->
         <div class="filters">
           <div class="fld">
             <label for="q">Search (title, city)</label>
             <input id="q" placeholder="e.g. transport strike, London, march…" />
           </div>
+
           <div class="row3">
             <div class="fld">
               <label for="continent">Continent</label>
@@ -248,7 +464,8 @@
               <input id="city" placeholder="e.g. London, Accra" />
             </div>
           </div>
-          <div class="row">
+
+          <div class="row2">
             <div class="fld">
               <label for="risk">Risk</label>
               <select id="risk">
@@ -268,52 +485,74 @@
               </select>
             </div>
           </div>
+
           <label class="chk">
-            <input id="includePast" type="checkbox" /> Show past items
+            <input id="includePast" type="checkbox" />
+            Show past items
           </label>
         </div>
 
+        <!-- Incident list -->
         <div class="list" id="list"></div>
+
       </aside>
 
-		<section class="drilldown-right">
-      <!-- RIGHT: DETAIL -->
-      <section class="card" id="detail">
-        <div class="head">
-          <div class="big" id="dTitle">Select an incident</div>
+      <!-- RIGHT COLUMN -->
+      <section class="drilldown-right" id="detail">
+
+        <div class="detail-headline">
+          <div class="detail-title" id="dTitle">Select an incident</div>
           <span class="pill low" id="dRisk">Low</span>
         </div>
 
         <div class="meta-grid">
-          <div>When</div><div id="dWhen" class="muted">—</div>
-          <div>Location</div><div id="dLoc" class="muted">—</div>
-          <div>Continent</div><div id="dCont" class="muted">—</div>
-          <div>Source</div><div id="dSrc" class="muted">—</div>
+          <div class="label">When</div>
+          <div class="val" id="dWhen">—</div>
+
+          <div class="label">Location</div>
+          <div class="val" id="dLoc">—</div>
+
+          <div class="label">Continent</div>
+          <div class="val" id="dCont">—</div>
+
+          <div class="label">Source</div>
+          <div class="val" id="dSrc">—</div>
         </div>
 
-        <h3 style="margin-top:14px">Summary</h3>
-        <p id="dSum" style="margin-top:6px">No incident selected.</p>
+        <div class="section-head">Summary</div>
+        <p class="summary-text" id="dSum">No incident selected.</p>
 
-        <div class="actions">
-          <a class="btn" id="openSource" target="_blank" rel="noopener">Open source ↗</a>
-          <button class="btn" id="copyLink" type="button">Copy link</button>
+        <div class="action-row">
+          <a class="btn-outline" id="openSource" target="_blank" rel="noopener">Open source ↗</a>
+          <button class="btn-outline" id="copyLink" type="button">Copy link</button>
         </div>
 
-        <h3 style="margin-top:18px">Other upcoming in this city</h3>
-        <table>
-          <thead><tr><th>Event</th><th>Date</th><th>Risk</th></tr></thead>
-          <tbody id="cityMore"></tbody>
-        </table>
+        <div class="section-head">Other upcoming in this city</div>
+        <div class="city-table-wrap">
+          <table>
+            <thead>
+              <tr><th>Event</th><th>Date</th><th>Risk</th></tr>
+            </thead>
+            <tbody id="cityMore"></tbody>
+          </table>
+        </div>
+
+        <div class="footer-nav">
+          <a class="back-link" href="index.html">← Back to Dashboard</a>
+        </div>
+
       </section>
-    </div>
-  </div>
-	</main>		
+    </section>
+  </main>
 
+  <!-- ===== Page JS (render/filter logic) ===== -->
   <script>
-    // ---------- helpers ----------
-    const CIF = window.CIFilter || {};
-    const DATA = Array.isArray(window.alertsData) ? window.alertsData : [];
-    const parse = v => (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v?new Date(v):null);
+    const CIF   = window.CIFilter || {};
+    const DATA  = Array.isArray(window.alertsData) ? window.alertsData : [];
+
+    const parse = v =>
+      (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v?new Date(v):null);
+
     const rKey = r => {
       const s = String(r||'').toLowerCase();
       if (s.startsWith('hi')) return 'high';
@@ -322,30 +561,36 @@
     };
     const rLbl = r => r==='high'?'High':r==='med'?'Medium':'Low';
     const pillCls = r => r==='high'?'high':r==='med'?'med':'low';
-    const fmt = d => d ? d.toLocaleString('en-GB',{ timeZone:'Europe/London', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
 
-    // stable key for deep links
-    const makeKey = a => `${a.title||''}|${a.time||a.datetime||a.date||a.when||''}|${a.city||''}|${a.country||a.Country||''}`;
+    const fmt = d =>
+      d ? d.toLocaleString('en-GB',{
+        timeZone:'Europe/London',
+        day:'2-digit', month:'short', year:'numeric',
+        hour:'2-digit', minute:'2-digit'
+      }) : '';
 
-    // normalize + upcoming-only baseline
+    // stable key for deeplinks
+    const makeKey = a =>
+      `${a.title||''}|${a.time||a.datetime||a.date||a.when||''}|${a.city||''}|${a.country||a.Country||''}`;
+
     function baselineUpcoming(){
       if (CIF.upcoming) return CIF.upcoming(DATA);
       const now = new Date();
       return DATA.map(a=>{
         const _dt = parse(a.time||a.datetime||a.date||a.when);
         return {...a, risk:rKey(a.risk), _dt};
-      }).filter(a=>a._dt && a._dt>=now)
-        .sort((a,b)=> a._dt-b._dt);
+      })
+      .filter(a=>a._dt && a._dt>=now)
+      .sort((a,b)=> a._dt-b._dt);
     }
 
-    // apply UI filters
     function applyFilters(list){
-      const q = document.getElementById('q').value.trim().toLowerCase();
-      const cont = document.getElementById('continent').value.trim();
-      const country = document.getElementById('country').value.trim().toLowerCase();
-      const city = document.getElementById('city').value.trim().toLowerCase();
-      const risk = document.getElementById('risk').value;
-      const win = document.getElementById('window').value;
+      const q         = document.getElementById('q').value.trim().toLowerCase();
+      const cont      = document.getElementById('continent').value.trim();
+      const country   = document.getElementById('country').value.trim().toLowerCase();
+      const city      = document.getElementById('city').value.trim().toLowerCase();
+      const risk      = document.getElementById('risk').value;
+      const win       = document.getElementById('window').value;
       const includePast = document.getElementById('includePast').checked;
 
       let rows = list.slice();
@@ -353,24 +598,24 @@
       if (q){
         rows = rows.filter(a =>
           (a.title||'').toLowerCase().includes(q) ||
-          (a.city||'').toLowerCase().includes(q) );
+          (a.city||'').toLowerCase().includes(q)
+        );
       }
       if (cont) rows = rows.filter(a => (a.Continent||a.continent||'') === cont);
       if (country) rows = rows.filter(a => (a.country||a.Country||'').toLowerCase().includes(country));
       if (city) rows = rows.filter(a => (a.city||'').toLowerCase().includes(city));
       if (risk) rows = rows.filter(a => a.risk === risk);
 
-      // window
       const now = new Date();
       let end = null;
       if (win !== 'all') end = new Date(now.getTime() + (+win)*24*3600*1000);
+
       if (!includePast) rows = rows.filter(a => a._dt >= now);
-      if (end) rows = rows.filter(a => a._dt <= end);
+      if (end)          rows = rows.filter(a => a._dt <= end);
 
       return rows;
     }
 
-    // render list
     function renderList(rows){
       const host = document.getElementById('list');
       host.innerHTML = '';
@@ -383,35 +628,53 @@
         div.className = 'itm';
         div.innerHTML = `
           <div class="ttl">${a.city? `${a.city} — `:''}${a.title||''}</div>
-          <div class="muted">${fmt(a._dt)} • ${(a.country||a.Country||'').trim()} • <span class="pill ${pillCls(a.risk)}">${rLbl(a.risk)}</span></div>
-        `;
+          <div class="muted">
+            ${fmt(a._dt)} • ${(a.country||a.Country||'').trim()}
+            • <span class="pill ${pillCls(a.risk)}">${rLbl(a.risk)}</span>
+          </div>`;
         div.addEventListener('click', ()=>focusIncident(a));
         host.appendChild(div);
       });
     }
 
-    // render detail
     function focusIncident(a, pushState=true){
-      if (!a){ return; }
+      if (!a) return;
+
+      // header
       document.getElementById('dTitle').textContent = a.title || 'Untitled';
       const pill = document.getElementById('dRisk');
       pill.textContent = rLbl(a.risk);
       pill.className = 'pill ' + pillCls(a.risk);
 
+      // meta
       document.getElementById('dWhen').textContent = fmt(a._dt) || '—';
       const loc = [a.city||'', a.country||a.Country||''].filter(Boolean).join(' — ');
-      document.getElementById('dLoc').textContent = loc || '—';
+      document.getElementById('dLoc').textContent  = loc || '—';
       document.getElementById('dCont').textContent = a.Continent || a.continent || '—';
 
-      const src = a.source ? a.source : '';
       const srcEl = document.getElementById('dSrc');
-      srcEl.innerHTML = src ? `<a href="${src}" target="_blank" rel="noopener">${new URL(src).hostname.replace(/^www\./,'')}</a>` : '—';
+      if (a.source){
+        const host = new URL(a.source).hostname.replace(/^www\./,'');
+        srcEl.innerHTML = `<a href="${a.source}" target="_blank" rel="noopener">${host}</a>`;
+      } else {
+        srcEl.textContent = '—';
+      }
 
-      document.getElementById('dSum').textContent = (a.summary || '').trim() || '—';
+      // summary
+      document.getElementById('dSum').textContent =
+        (a.summary||'').trim() || '—';
 
+      // buttons
       const btn = document.getElementById('openSource');
-      if (a.source){ btn.style.pointerEvents='auto'; btn.style.opacity='1'; btn.href=a.source; }
-      else { btn.style.pointerEvents='none'; btn.style.opacity='.5'; btn.removeAttribute('href'); }
+      if (a.source){
+        btn.style.pointerEvents='auto';
+        btn.style.opacity='1';
+        btn.href=a.source;
+      } else {
+        btn.style.pointerEvents='none';
+        btn.style.opacity='.5';
+        btn.removeAttribute('href');
+      }
 
       // city peers
       const peersT = document.getElementById('cityMore');
@@ -419,6 +682,7 @@
       const peers = baselineUpcoming()
         .filter(x => x !== a && (x.city||'').toLowerCase() === (a.city||'').toLowerCase())
         .slice(0,5);
+
       if (!peers.length){
         peersT.innerHTML = `<tr><td colspan="3" class="muted">No other upcoming items in this city.</td></tr>`;
       } else {
@@ -434,11 +698,11 @@
         });
       }
 
-      // deep link
+      // deep link in URL
       if (pushState){
         const qs = new URLSearchParams(location.search);
         qs.set('eventId', encodeURIComponent(makeKey(a)));
-        if (a.city) qs.set('city', a.city);
+        if (a.city)      qs.set('city', a.city);
         if (a.country||a.Country) qs.set('country', a.country||a.Country);
         if (a.Continent||a.continent) qs.set('continent', a.Continent||a.continent);
         history.replaceState(null, '', `?${qs.toString()}`);
@@ -447,175 +711,175 @@
 
     // copy link
     document.getElementById('copyLink').addEventListener('click', async ()=>{
-      try { await navigator.clipboard.writeText(location.href); 
-        const b = document.getElementById('copyLink'); b.textContent='Copied!'; setTimeout(()=>b.textContent='Copy link',1200);
+      try {
+        await navigator.clipboard.writeText(location.href);
+        const b = document.getElementById('copyLink');
+        b.textContent='Copied!';
+        setTimeout(()=>b.textContent='Copy link',1200);
       } catch(e){}
     });
 
-    // ---------- boot ----------
+    // boot
     (function init(){
-      // seed filters from URL if present
       const qs = new URLSearchParams(location.search);
+
+      // restore filters if they're in the URL
       const setIf = (id,val)=>{ if (val) document.getElementById(id).value = val; };
       setIf('continent', qs.get('continent')||'');
-      setIf('country', qs.get('country')||'');
-      setIf('city', qs.get('city')||'');
-      setIf('risk', (qs.get('risk')||'').toLowerCase());
+      setIf('country',   qs.get('country')||'');
+      setIf('city',      qs.get('city')||'');
+      setIf('risk',     (qs.get('risk')||'').toLowerCase());
 
-      // list render + handlers
-      const base = baselineUpcoming().map(a => ({...a, _key: makeKey(a)}));
-      const renderAll = ()=> renderList(applyFilters(base));
+      const baseRaw = baselineUpcoming().map(a => ({...a, _key: makeKey(a)}));
+      const renderAll = ()=> renderList(applyFilters(baseRaw));
+
       ['q','continent','country','city','risk','window','includePast'].forEach(id=>{
-        document.getElementById(id).addEventListener('input', renderAll);
-        document.getElementById(id).addEventListener('change', renderAll);
+        const el = document.getElementById(id);
+        el.addEventListener('input', renderAll);
+        el.addEventListener('change', renderAll);
       });
       renderAll();
 
-      // focus from eventId if present
+      // preselect focused event if eventId in URL
       const eid = qs.get('eventId');
       if (eid){
         const wanted = decodeURIComponent(eid);
-        const hit = base.find(a => a._key === wanted);
-        if (hit) focusIncident(hit, /*pushState*/false);
-      } else if (base.length){
-        // default focus = first high risk, then first item
-        focusIncident(base.find(a=>a.risk==='high') || base[0], false);
+        const hit = baseRaw.find(a => a._key === wanted);
+        if (hit) {
+          focusIncident(hit, false);
+        } else if (baseRaw.length){
+          focusIncident(baseRaw.find(a=>a.risk==='high') || baseRaw[0], false);
+        }
+      } else if (baseRaw.length){
+        // default selection: first High if available, else first record
+        focusIncident(baseRaw.find(a=>a.risk==='high') || baseRaw[0], false);
       }
     })();
   </script>
 
-<script>
-(function(){
-  const API_BASE = 'https://api.cityintelapi.com';
-  const bar = document.getElementById('trial-banner');
-  const txt = document.getElementById('trial-text');
+  <!-- Trial banner script (countdown) -->
+  <script>
+  (function(){
+    const API_BASE = 'https://api.cityintelapi.com';
+    const bar = document.getElementById('trial-banner');
+    const txt = document.getElementById('trial-text');
 
-  function who(){ try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); } catch { return {}; } }
-  function pad(n){ return String(n).padStart(2,'0'); }
-
-  async function getStatus(email){
-    const u = new URL(API_BASE + '/api/sub-status');
-    u.searchParams.set('email', email);
-    const r = await fetch(u);
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
-  }
-
-  function startCountdown(endIso){
-    const end = new Date(endIso).getTime();
-    function tick(){
-      const now = Date.now();
-      const ms = end - now;
-      if (ms <= 0){
-        // trial ended → bounce to subscribe
-        bar.style.display = 'none';
-        location.href = 'subscribe.html?reason=trial_ended';
-        return;
-      }
-      const s = Math.floor(ms/1000);
-      const d = Math.floor(s/86400);
-      const h = Math.floor((s%86400)/3600);
-      const m = Math.floor((s%3600)/60);
-      const sec = s%60;
-      const parts = [];
-      if (d) parts.push(d+'d');
-      parts.push(pad(h)+'h', pad(m)+'m', pad(sec)+'s');
-      txt.textContent = 'Trial active — ends in ' + parts.join(' ');
-      bar.style.display = '';
+    function who(){
+      try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); }
+      catch { return {}; }
     }
-    tick();
-    return setInterval(tick, 1000);
-  }
+    function pad(n){ return String(n).padStart(2,'0'); }
 
-  (async function init(){
-    const p = who();
-    if (!p.email) return; // not logged in
+    async function getStatus(email){
+      const u = new URL(API_BASE + '/api/sub-status');
+      u.searchParams.set('email', email);
+      const r = await fetch(u);
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
 
-    try{
-      const data = await getStatus(p.email);
-      if (data.trialEndsAt){
-        startCountdown(data.trialEndsAt);
+    function startCountdown(endIso){
+      const end = new Date(endIso).getTime();
+      function tick(){
+        const now = Date.now();
+        const ms = end - now;
+        if (ms <= 0){
+          // trial ended -> bounce to subscribe
+          bar.style.display = 'none';
+          location.href = 'subscribe.html?reason=trial_ended';
+          return;
+        }
+        const s = Math.floor(ms/1000);
+        const d = Math.floor(s/86400);
+        const h = Math.floor((s%86400)/3600);
+        const m = Math.floor((s%3600)/60);
+        const sec = s%60;
+        const parts = [];
+        if (d) parts.push(d+'d');
+        parts.push(pad(h)+'h', pad(m)+'m', pad(sec)+'s');
+        txt.textContent = 'Trial active — ends in ' + parts.join(' ');
+        bar.style.display = '';
       }
-    }catch(e){
-      // silent
-      console.warn('trial banner error', e);
+      tick();
+      return setInterval(tick, 1000);
+    }
+
+    (async function init(){
+      const p = who();
+      if (!p.email) return;
+      try{
+        const data = await getStatus(p.email);
+        if (data.trialEndsAt){
+          startCountdown(data.trialEndsAt);
+        }
+      }catch(e){
+        console.warn('trial banner error', e);
+      }
+    })();
+  })();
+  </script>
+
+  <!-- User chip dropdown logic -->
+  <script>
+  (function mountTopActions(){
+    const host = document.getElementById('topActions');
+    if (!host) return;
+
+    // Helper: initials from name/email
+    const initialsOf = (nameOrEmail='CI') => {
+      const s = String(nameOrEmail).trim();
+      if (!s) return 'CI';
+      if (s.includes('@')) return s[0].toUpperCase();
+      const parts = s.split(/\s+/);
+      return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
+    };
+
+    if (window.CIAuth && CIAuth.isLoggedIn()) {
+      const u = CIAuth.who(); // {name,email,role,...}
+      const initials = initialsOf(u.name || u.email);
+      const role = u.role || 'Analyst';
+      const isAdmin = String(role).toLowerCase() === 'admin';
+
+      host.innerHTML = `
+        <div class="user" id="userChip">
+          <div class="avatar">${initials}</div>
+          ${role}
+        </div>
+        <div class="dropdown" id="userMenu">
+          ${isAdmin ? `
+            <a href="analytics.html">Analytics</a>
+            <a href="system-flow.html">System Flow</a>
+            <a href="operationslog.html">Operations Log</a>
+          ` : ``}
+          <a href="settings.html">Manage Billing</a>
+          <a href="#" id="logoutLink">Log out</a>
+        </div>
+      `;
+
+      const chip = document.getElementById('userChip');
+      const menu = document.getElementById('userMenu');
+
+      chip.addEventListener('click', () => {
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+      });
+      document.addEventListener('click', (e) => {
+        if (!host.contains(e.target)) menu.style.display = 'none';
+      });
+
+      document.getElementById('logoutLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        try { CIAuth.logout(); } catch(_) {}
+        location.href = 'index.html';
+      });
+
+    } else {
+      // Logged-out view
+      const here = location.pathname.split('/').pop() || 'index.html';
+      const next = encodeURIComponent(here + location.search + location.hash);
+      host.innerHTML = `<a class="btn-outline" href="login.html?next=${next}">Log in</a>`;
     }
   })();
-})();
-</script>
+  </script>
 
-
-  
-<script>
-(function mountTopActions(){
-  const host = document.getElementById('topActions');
-  if (!host) return;
-
-  // Helper: initials from name/email
-  const initialsOf = (nameOrEmail='CI') => {
-    const s = String(nameOrEmail).trim();
-    if (!s) return 'CI';
-    if (s.includes('@')) return s[0].toUpperCase();
-    const parts = s.split(/\s+/);
-    return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
-  };
-
-  // Logged-in view (CIAuth)
-  if (window.CIAuth && CIAuth.isLoggedIn()) {
-    const u = CIAuth.who(); // {name,email,role,subscribed?...}
-    const initials = initialsOf(u.name || u.email);
-    const role = u.role || 'Member';
-    const isAdmin = String(role).toLowerCase() === 'admin';
-
-    host.innerHTML = `
-      <div class="user" id="userChip" style="cursor:pointer">
-        <div class="avatar">${initials}</div>
-        ${role}
-      </div>
-      <div class="dropdown" id="userMenu">
-        ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
-        <a href="settings.html">Manage Billing</a>
-        <a href="#" id="logoutLink">Log out</a>
-      </div>
-    `;
-
-    const chip = document.getElementById('userChip');
-    const menu = document.getElementById('userMenu');
-    chip.addEventListener('click', () => {
-      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-    });
-    document.addEventListener('click', (e) => {
-      if (!host.contains(e.target)) menu.style.display = 'none';
-    });
-
-    document.getElementById('logoutLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      try { CIAuth.logout(); } catch(_) {}
-      location.href = 'index.html';
-    });
-
-  } else {
-    // Logged-out view: Login pill with return param
-    const here = location.pathname.split('/').pop() || 'index.html';
-    const next = encodeURIComponent(here + location.search + location.hash);
-    host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
-  }
-})();
-</script>
-  
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
