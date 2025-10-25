@@ -14,6 +14,435 @@ window.alertsData =[
   },
 
 
+
+
+
+    
+ {
+    title:"General Strike — Economic Austerity",
+    city:"Buenos Aires",
+    country:"Argentina",
+    continent:"South America",
+    risk:"high",
+    time:"2025-10-29T09:00:00",
+    source:"https://www.reuters.com/world/americas/argentina-general-strike-against-austerity-oct-2025-10-29/",
+    summary:"Major trade unions launched a 24-hour national strike opposing new austerity measures imposed by the government. Further detail: Buenos Aires saw tens of thousands blocking central avenues, with partial shutdowns of transport and schools. High risk: police deployed water cannons after brief clashes near the Congress building; isolated vandalism occurred at bank branches."
+  },
+
+  {
+    title:"Transport Fare Hike Protests",
+    city:"São Paulo",
+    country:"Brazil",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-03T17:00:00",
+    source:"https://www.folha.uol.com.br/cotidiano/2025/11/sp-transport-protests-november-2025.shtml",
+    summary:"Youth and commuter groups rallied across São Paulo against metro and bus fare increases. Further detail: hundreds blocked Avenida Paulista during rush hour; police used tear gas to clear the avenue. Medium risk: predictable but disruptive protests lasting several evenings."
+  },
+
+  {
+    title:"Pro-Democracy March — 'Nunca Más' Anniversary",
+    city:"Santiago",
+    country:"Chile",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-11T12:00:00",
+    source:"https://www.biobiochile.cl/noticias/nacional/region-metropolitana/2025/11/11/santiago-nunca-mas-democracy-march.shtml",
+    summary:"Thousands marched in Santiago marking the anniversary of the end of the Pinochet dictatorship and denouncing current government abuses. Further detail: largely peaceful but some vandalism occurred along Alameda Avenue. Medium risk: periodic confrontations with riot police if anarchist groups infiltrate the crowd."
+  },
+
+  {
+    title:"Indigenous Land Defense March",
+    city:"Brasília",
+    country:"Brazil",
+    continent:"South America",
+    risk:"high",
+    time:"2025-11-08T09:30:00",
+    source:"https://apnews.com/article/brazil-indigenous-land-protests-brasilia-2025-11-08/",
+    summary:"Thousands of Indigenous protesters converged on Brasília demanding demarcation of ancestral lands and protection from mining projects. Further detail: demonstrators attempted to camp near the Supreme Court; security forces blocked access to ministries. High risk: long-term encampments could escalate confrontation if evictions ordered."
+  },
+
+  {
+    title:"Miners’ Strike — Contract Disputes",
+    city:"La Paz",
+    country:"Bolivia",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-06T08:00:00",
+    source:"https://www.reuters.com/world/americas/bolivia-miners-strike-disrupts-tin-exports-2025-11-06/",
+    summary:"Bolivian miners from cooperatives and unions launched a national strike over wage contracts. Further detail: dynamite blasts were reported in the capital; talks ongoing. Medium risk: limited violence but major logistical impact on exports."
+  },
+
+  {
+    title:"‘Ceasefire for Gaza’ Solidarity March",
+    city:"Bogotá",
+    country:"Colombia",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-01T14:00:00",
+    source:"https://www.eltiempo.com/mundo/medio-oriente/pro-palestine-protests-in-bogota-2025-11-01-999232",
+    summary:"Thousands gathered in Bogotá expressing solidarity with Palestinians and demanding an end to Gaza bombings. Further detail: peaceful candlelight march through downtown streets; minor scuffles when protesters approached the U.S. Embassy. Medium risk overall."
+  },
+
+  {
+    title:"Anti-Corruption Vigil",
+    city:"Lima",
+    country:"Peru",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-05T18:00:00",
+    source:"https://www.bbc.com/news/world-latin-america-2025-11-05",
+    summary:"Civil society groups and opposition politicians held a vigil against entrenched corruption within Peru’s congress and judiciary. Further detail: about 5,000 gathered near Plaza San Martín; police presence heavy but event remained peaceful. Medium risk: symbolic protest, minimal confrontation."
+  },
+
+  {
+    title:"‘Defend Democracy’ Rally",
+    city:"Quito",
+    country:"Ecuador",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-09T13:00:00",
+    source:"https://www.reuters.com/world/americas/ecuador-protest-government-reform-2025-11-09/",
+    summary:"Thousands rallied in Quito denouncing proposed constitutional reforms seen as concentrating presidential power. Further detail: protesters included student federations and unions; tear gas used briefly to disperse a splinter group. Medium risk: tension manageable but growing."
+  },
+
+  {
+    title:"Teachers’ Strike — Education Funding",
+    city:"Asunción",
+    country:"Paraguay",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-12T09:00:00",
+    source:"https://www.abc.com.py/nacionales/docentes-huelga-nacional-paraguay-noviembre-2025/",
+    summary:"Teachers launched a nationwide strike demanding higher salaries and improved infrastructure. Further detail: rallies in Asunción and secondary cities; peaceful but persistent disruptions to schools. Medium risk: logistical strain, low confrontation."
+  },
+
+  {
+    title:"Mining Pollution Protest",
+    city:"Cusco",
+    country:"Peru",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-10-31T10:30:00",
+    source:"https://www.reuters.com/world/americas/peru-mining-protests-cusco-2025-10-31/",
+    summary:"Local communities in Cusco protested pollution from a nearby copper mine. Further detail: demonstrators blocked a key highway leading to the southern mining corridor. Medium risk: police used tear gas; disruption to freight transport."
+  },
+
+  {
+    title:"National Day of Action — Women’s Rights",
+    city:"Buenos Aires",
+    country:"Argentina",
+    continent:"South America",
+    risk:"high",
+    time:"2025-11-25T17:00:00",
+    source:"https://www.theguardian.com/world/2025/nov/25/argentina-womens-rights-protests-violence",
+    summary:"Mass demonstrations across Argentina marked the International Day for the Elimination of Violence Against Women. Further detail: Buenos Aires crowd exceeded 100,000; graffiti and clashes occurred near government buildings. High risk: large turnout and partial breakdown of police barriers."
+  },
+
+  {
+    title:"Public Workers’ Demonstration",
+    city:"Montevideo",
+    country:"Uruguay",
+    continent:"South America",
+    risk:"low",
+    time:"2025-11-07T11:00:00",
+    source:"https://www.elpais.com.uy/informacion/uruguay/funcionarios-publicos-manifestacion-montevideo-noviembre-2025",
+    summary:"Public sector employees protested low wages and cuts to social benefits. Further detail: roughly 3,000 participants marched peacefully; no arrests reported. Low risk: symbolic and orderly."
+  },
+
+  {
+    title:"Student Federation March — Free Transit Demand",
+    city:"Santiago",
+    country:"Chile",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-18T13:00:00",
+    source:"https://www.biobiochile.cl/noticias/nacional/region-metropolitana/2025/11/18/estudiantes-exigen-transporte-gratuito-santiago-protestas.shtml",
+    summary:"Student federations marched demanding free public transport and opposing education budget cuts. Further detail: around 10,000 students; isolated confrontations with Carabineros near La Moneda. Medium risk."
+  },
+
+  {
+    title:"Farmers’ Protest — Fertilizer Costs",
+    city:"Santa Cruz",
+    country:"Bolivia",
+    continent:"South America",
+    risk:"medium",
+    time:"2025-11-10T09:00:00",
+    source:"https://www.lostiempos.com/actualidad/economia/2025/11/10/agricultores-protestan-costos-fertilizantes",
+    summary:"Farmers in Santa Cruz gathered at regional offices to protest rising fertilizer prices and fuel shortages. Further detail: peaceful blockade of highways for several hours; medium risk."
+  },
+
+    
+
+    
+{
+    title:"‘Ceasefire Now’ National Mobilisation",
+    city:"Washington, D.C.",
+    country:"United States",
+    continent:"North America",
+    risk:"high",
+    time:"2025-11-02T13:00:00",
+    source:"https://www.reuters.com/world/us-tens-thousands-join-ceasefire-march-washington-2025-11-02/",
+    summary:"Tens of thousands are expected to converge on Washington, D.C., demanding a permanent ceasefire in Gaza and an end to U.S. military aid to Israel. Further detail: rally begins on the National Mall and marches toward the White House. Organisers include a coalition of Arab-American and progressive groups. High risk due to massive turnout, potential counter-protests, and heightened police posture; prior marches saw hundreds of arrests for civil disobedience attempts at Lafayette Square."
+  },
+
+  {
+    title:"Labor Solidarity Strike — Auto Sector",
+    city:"Detroit",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-06T07:00:00",
+    source:"https://www.apnews.com/article/auto-workers-strike-uaw-november-2025",
+    summary:"The United Auto Workers (UAW) union will hold solidarity pickets outside assembly plants amid renewed contract disputes with major automakers. Further detail: organisers plan rallies near Ford and GM plants as a show of force. Medium risk: potential for brief highway disruptions and scuffles with strikebreakers, but past events remained controlled."
+  },
+
+  {
+    title:"Student Walkouts for Palestine",
+    city:"New York City",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-10-30T12:00:00",
+    source:"https://www.theguardian.com/us-news/2025/oct/30/nyc-student-walkout-palestine-protests",
+    summary:"High school and university students across New York plan coordinated walkouts demanding an end to U.S. support for Israel’s Gaza operations. Further detail: similar actions earlier in the month drew thousands. NYPD will deploy extra officers near City Hall Park and key campuses. Medium risk: non-violent, though spontaneous sit-ins occasionally prompt minor clashes."
+  },
+
+  {
+    title:"Climate Justice and Jobs March",
+    city:"San Francisco",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-09T10:00:00",
+    source:"https://www.reuters.com/sustainability/climate-protest-san-francisco-jobs-transition-2025-10-28/",
+    summary:"Environmentalists, trade unions, and indigenous groups are joining forces for a mass march demanding a 'just transition' to green jobs. Further detail: route from Civic Center to Embarcadero; prior climate marches in SF were peaceful but heavily trafficked. Medium risk: disruptions expected but low confrontation."
+  },
+
+  {
+    title:"Pipeline Expansion Protest",
+    city:"Vancouver",
+    country:"Canada",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-04T08:00:00",
+    source:"https://www.cbc.ca/news/canada/british-columbia/pipeline-protests-vancouver-nov-2025-1.7423214",
+    summary:"Climate activists and Indigenous land defenders will rally against a new pipeline segment in British Columbia. Further detail: organisers plan symbolic road occupations near the port. Medium risk: RCMP presence strong; arrests possible if demonstrators block key freight lanes."
+  },
+
+  {
+    title:"‘Day of Mourning’ — Indigenous Rights Vigil",
+    city:"Boston",
+    country:"United States",
+    continent:"North America",
+    risk:"low",
+    time:"2025-11-27T09:00:00",
+    source:"https://www.npr.org/2025/11/25/national-day-of-mourning-protest-boston-plimoth",
+    summary:"Indigenous groups will hold the annual National Day of Mourning at Cole’s Hill, Plymouth, to highlight colonial injustices and call for land and treaty rights. Further detail: event traditionally peaceful and symbolic, featuring drumming and speeches. Low risk: limited disruption except local road closures."
+  },
+
+  {
+    title:"Border Human Rights March",
+    city:"El Paso",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-14T10:30:00",
+    source:"https://www.aljazeera.com/news/2025/11/14/us-border-protests-migrant-rights-el-paso",
+    summary:"Faith-based and migrant-rights organisations plan a cross-border solidarity march highlighting conditions in U.S. detention facilities. Further detail: organisers expect a few thousand participants from both sides of the border. Medium risk: generally peaceful, but past marches saw brief confrontations with Border Patrol units."
+  },
+
+  {
+    title:"Student Debt Justice Sit-In",
+    city:"Chicago",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-08T11:00:00",
+    source:"https://www.chicagotribune.com/2025/11/08/student-debt-sit-in-chicago-federal-building/",
+    summary:"Student and youth organisers will stage a sit-in at the Federal Building demanding full student debt cancellation. Further detail: event organised by the Debt Collective. Medium risk: possible arrests for trespassing if sit-in extends into evening."
+  },
+
+  {
+    title:"General Strike Call — Port Workers",
+    city:"Los Angeles / Long Beach",
+    country:"United States",
+    continent:"North America",
+    risk:"high",
+    time:"2025-11-12T06:00:00",
+    source:"https://www.latimes.com/2025/11/12/port-workers-general-strike-los-angeles/",
+    summary:"West Coast dockworkers’ unions have called a general strike over stalled wage negotiations and automation concerns. Further detail: ports of LA and Long Beach handle 40% of U.S. imports. High risk: severe economic disruption and potential picket-line confrontations if federal injunctions issued."
+  },
+
+  {
+    title:"Truckers’ Protest — Cross-Border Fees",
+    city:"Windsor",
+    country:"Canada",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-10T08:00:00",
+    source:"https://www.ctvnews.ca/canada/truckers-protest-border-fees-windsor-nov-2025-1.6729543",
+    summary:"Canadian truckers plan slow-roll convoys over new U.S. border toll policies. Further detail: Ontario police coordinating with U.S. Customs to prevent bridge blockades. Medium risk: traffic congestion, moderate probability of vehicle obstruction at Ambassador Bridge access roads."
+  },
+
+  {
+    title:"Cost-of-Living Rally",
+    city:"Toronto",
+    country:"Canada",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-03T11:00:00",
+    source:"https://www.cbc.ca/news/canada/toronto/anti-inflation-protest-toronto-november-2025-1.7421182",
+    summary:"Toronto labour and renters’ groups are planning rallies calling for anti-inflation measures and stronger rent controls. Further detail: protest at Queen’s Park expected to draw several thousand. Medium risk: routine police management, minimal confrontation."
+  },
+
+  {
+    title:"Palestine Solidarity March — Montreal",
+    city:"Montreal",
+    country:"Canada",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-02T14:00:00",
+    source:"https://www.reuters.com/world/americas/montreal-palestine-march-thousands-gather-2025-11-02/",
+    summary:"Thousands are expected in downtown Montreal to call for a ceasefire in Gaza. Further detail: rallies will move from Dorchester Square to Place des Arts. Medium risk: peaceful but high turnout could clog transit lines and spark counter-protest incidents."
+  },
+
+  {
+    title:"‘Stop the Violence’ March — Mexico City",
+    city:"Mexico City",
+    country:"Mexico",
+    continent:"North America",
+    risk:"high",
+    time:"2025-10-31T16:00:00",
+    source:"https://www.apnews.com/article/mexico-femicide-protests-oct-2025",
+    summary:"Women’s groups will march in Mexico City protesting femicides and rising crime. Further detail: previous marches in 2024 involved vandalism of government buildings and clashes near the National Palace. High risk: similar pattern expected; riot police to deploy pre-emptively."
+  },
+
+  {
+    title:"Migrant Workers’ Rights Rally",
+    city:"Monterrey",
+    country:"Mexico",
+    continent:"North America",
+    risk:"medium",
+    time:"2025-11-09T13:00:00",
+    source:"https://www.reuters.com/world/americas/mexico-migrant-workers-rally-2025-11-09/",
+    summary:"Migrant workers and local unions will rally for wage equality and safety conditions in manufacturing zones. Further detail: moderate crowd expected; risk of clashes low but industrial disruption possible if march extends into highways."
+  },   
+
+    
+
+ {
+    title:"National Day of Action — Cost of Living & Housing",
+    city:"Sydney",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-10-28T10:00:00",
+    source:"https://www.abc.net.au/news/2025-10-21/australia-cost-of-living-housing-protests/103208610",
+    summary:"Housing activists, renters' unions, and student groups plan coordinated rallies in Sydney, Melbourne, and Brisbane demanding rent freezes and greater public housing investment. Further detail: this is part of a rolling cost-of-living campaign that gained momentum through 2024; organisers expect thousands at Sydney Town Hall. Police usually allow peaceful marches but monitor closely if they approach government offices. Medium risk: disruptions to traffic and potential brief scuffles if groups attempt sit-ins inside CBD buildings."
+  },
+
+  {
+    title:"‘Homes for All’ March",
+    city:"Melbourne",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-10-28T10:30:00",
+    source:"https://www.theguardian.com/australia-news/2025/oct/21/australia-cost-of-living-housing-protests",
+    summary:"Parallel housing affordability march aligned with Sydney’s cost-of-living protests. Further detail: Melbourne organisers include trade unions and local councils; previous housing actions blocked Elizabeth Street for several hours. Medium risk: manageable disruption but high public visibility."
+  },
+
+  {
+    title:"Public Sector Workers’ Strike",
+    city:"Canberra",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-05T08:30:00",
+    source:"https://www.smh.com.au/politics/federal/public-service-union-announces-24-hour-strike-over-pay-conditions-2025-10-18-p5jxyz.html",
+    summary:"Federal public servants will stage a 24-hour strike over stalled wage negotiations and workload pressures. Further detail: the Community and Public Sector Union (CPSU) expects participation from multiple departments. Medium risk: services and traffic around parliamentary precincts will be affected; gatherings remain disciplined, with speeches and pickets outside offices."
+  },
+
+  {
+    title:"‘Ceasefire Now’ Solidarity March",
+    city:"Sydney",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-02T12:00:00",
+    source:"https://www.theguardian.com/australia-news/2025/nov/02/sydney-pro-palestine-march-draws-thousands",
+    summary:"Tens of thousands are expected in Sydney for another large pro-Palestine rally demanding a lasting Gaza ceasefire. Further detail: previous marches filled Hyde Park and moved peacefully toward Circular Quay under police escort. Medium risk: low violence potential, but temporary congestion across key CBD roads. Counter-protests are expected but separated under police orders."
+  },
+
+  {
+    title:"Climate Action / Stop Fossil Expansion Rally",
+    city:"Brisbane",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-09T09:00:00",
+    source:"https://www.reuters.com/sustainability/australia-climate-activists-plan-stop-fossil-expansion-rallies-2025-10-25/",
+    summary:"Environmental coalitions plan a national climate day of action targeting new coal and gas approvals. Further detail: Brisbane’s rally will feature student climate networks and indigenous land defenders. Police have imposed restrictions on slow marches but allowed a rally at King George Square. Medium risk: expected road disruptions, arrests possible if activists attempt to glue themselves to roads or buildings."
+  },
+
+  {
+    title:"Extinction Rebellion ‘Spring Rebellion’",
+    city:"Adelaide",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-12T08:00:00",
+    source:"https://www.abc.net.au/news/2025-10-27/extinction-rebellion-spring-rebellion-adelaide-traffic-chaos/103208614",
+    summary:"Extinction Rebellion activists plan a series of rolling blockades in Adelaide’s CBD as part of a ‘Spring Rebellion’ week. Further detail: prior actions in 2024 caused widespread traffic gridlock and numerous arrests under new anti-protest laws. Medium risk: high disruption likelihood but mostly non-violent civil disobedience; arrests expected for obstruction."
+  },
+
+  {
+    title:"Teachers’ Pay & Resources Rally",
+    city:"Wellington",
+    country:"New Zealand",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-06T10:00:00",
+    source:"https://www.rnz.co.nz/news/national/535870/teachers-plan-march-over-pay-resources-november-2025",
+    summary:"New Zealand’s largest education unions will march through Wellington demanding higher pay and better classroom resources. Further detail: thousands of teachers expected outside Parliament; prior strikes in 2024 drew public sympathy. Medium risk: major but orderly rally; disruption limited to parliament precinct and Lambton Quay."
+  },
+
+  {
+    title:"Public Health Workers’ Strike",
+    city:"Auckland",
+    country:"New Zealand",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-08T09:00:00",
+    source:"https://www.stuff.co.nz/national/health/300942651/nz-health-workers-to-hold-24hour-strike-november-2025",
+    summary:"Nurses and allied health staff will stage a 24-hour strike over pay and staffing shortages. Further detail: hospital emergency and essential care to remain open; pickets at main entrances expected. Medium risk: minimal confrontation but significant disruption to health services and city traffic."
+  },
+
+  {
+    title:"‘Protect the Reef’ Environmental Protest",
+    city:"Cairns",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"low",
+    time:"2025-11-15T11:00:00",
+    source:"https://www.theguardian.com/australia-news/2025/nov/14/great-barrier-reef-protests-cairns",
+    summary:"Environmental NGOs and tourism workers will rally in Cairns calling for reef protection and reduced coastal pollution. Further detail: colourful, family-friendly demonstration with live music. Low risk: peaceful and largely symbolic."
+  },
+
+  {
+    title:"Anti-Mining Land Rights March",
+    city:"Darwin",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"medium",
+    time:"2025-11-20T09:30:00",
+    source:"https://www.abc.net.au/news/2025-11-20/northern-territory-traditional-owners-anti-mining-protest/103210711",
+    summary:"Northern Territory traditional owners and allies plan a march opposing new lithium and uranium projects. Further detail: organisers emphasise indigenous sovereignty and environmental protection. Police anticipate a few hundred participants; no major counter-protests expected. Medium risk: low confrontation, but remote road convoys may disrupt mining routes temporarily."
+  },
+
+
+    
 {
     title:"‘Labbaik Ya Aqsa’ Million March / Red Zone Push",
     city:"Islamabad",
@@ -7793,6 +8222,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
