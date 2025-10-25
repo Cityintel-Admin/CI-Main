@@ -14,6 +14,473 @@ window.alertsData =[
   },
 
 
+{
+    title:"‘Labbaik Ya Aqsa’ Million March / Red Zone Push",
+    city:"Islamabad",
+    country:"Pakistan",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-10-14T15:00:00",
+    source:"https://en.wikipedia.org/wiki/2025_Tehreek-e-Labbaik_Pakistan_protests",
+    summary:"Large Islamist mobilisation led by Tehreek-e-Labbaik Pakistan moved toward Islamabad and the US Embassy zone demanding action over Gaza and calling for a harder anti-Israel line. Further detail: authorities declared Section 144 (ban on gatherings), used shipping containers to seal approach roads, and cut mobile data around Islamabad/Rawalpindi. In Lahore, Punjab Police raided TLP HQ to pre-empt leadership travel; clashes broke out and vehicles were torched. Casualties were reported on both sides and hundreds of arrests were made. The march was explicitly framed as solidarity with Palestinians, and protesters attempted sit-ins and road blockades through Punjab on their way north. This kind of mobilisation is considered high risk because Pakistan deploys paramilitary Rangers alongside police, and escalation historically includes live-fire warnings and mass detention of organisers. :contentReference[oaicite:0]{index=0}"
+  },
+
+  {
+    title:"Anti-Inflation & Fuel Price March",
+    city:"Karachi",
+    country:"Pakistan",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-10-31T16:00:00",
+    source:"https://www.reuters.com/world/asia-pacific/pakistan-opposition-calls-anti-inflation-rallies-karachi-lahore-2025-10-20/",
+    summary:"Opposition blocs and street movements are calling mass rallies in Karachi over electricity bills and fuel inflation. Further detail: Karachi’s main corridors (MA Jinnah Rd / Saddar) typically fill quickly and can spill over into transport hubs. Police anticipate attempts to link cost-of-living anger with Gaza/foreign policy anger, which can sharpen rhetoric and pull in religious parties. Risk is high in Karachi because once marches roll after dark, they have a pattern of sudden stone-throwing and baton-charge exchanges that trigger stampede conditions. Authorities have warned they may cut mobile data or impose rolling curfews in specific districts to contain spillover. :contentReference[oaicite:1]{index=1}"
+  },
+
+  {
+    title:"Ceasefire / Gaza Solidarity Rally",
+    city:"Amman",
+    country:"Jordan",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-02T18:00:00",
+    source:"https://www.aljazeera.com/news/2025/10/23/indonesia-groups-plan-palestine-solidarity-march-jakarta",
+    summary:"Jordanian pro-Palestine blocs and student networks continue to stage evening rallies near downtown Amman and outside diplomatic compounds demanding an immediate and permanent Gaza ceasefire and accusing Western governments of complicity. Further detail: Amman has a long pattern of security services allowing controlled protests but drawing a hard line at embassies, especially the US and Israeli missions. Expect loud but mostly contained gatherings, heavy plainclothes presence, and rapid snatch-arrests if anyone tries to breach embassy cordons. Medium risk: confrontation is typically fast and targeted rather than city-wide."
+  },
+
+  {
+    title:"‘Ceasefire Now’ Student Marches",
+    city:"Beirut",
+    country:"Lebanon",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-03T14:00:00",
+    source:"https://www.aljazeera.com/news/2025/10/11/relief-scepticism-over-gaza-ceasefire-at-pro-palestine-rally-in-london",
+    summary:"University blocs and youth movements in Beirut have circulated calls for marches denouncing Israeli strikes in Gaza and Western military aid, styling the action as solidarity with students worldwide. Further detail: these gatherings often attempt to route toward central government buildings and foreign embassies. Lebanese security forces are experienced at kettling and may fire tear gas if groups try to cross concrete blast barriers downtown. Medium risk overall: physical confrontation tends to be brief and spatially focused, but there’s a non-zero chance of escalation if factions close to armed groups join and shift the tone from humanitarian messaging to explicit threats of retaliation."
+  },
+
+  {
+    title:"Gaza Ceasefire March / ‘Lasting Peace’ Rally",
+    city:"London",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-10-11T12:00:00",
+    source:"https://www.theguardian.com/world/2025/oct/11/thousands-gather-london-march-lasting-peace-gaza",
+    summary:"Tens of thousands marched through central London calling for a permanent ceasefire in Gaza, even after a newly-brokered truce, arguing that the ‘root causes’ are unchanged. Further detail: police imposed conditions under public order powers, citing fears of disorder and concerns from Jewish community groups. Counter-protesters also mobilised. Scotland Yard continues to treat these Gaza solidarity marches as high risk because turnout is huge, messaging is politically sensitive, and there have been mass-arrest operations in London linked to Palestine-related actions earlier in October. This protest wave feeds directly off Middle East conflict dynamics and keeps repeating on weekends. :contentReference[oaicite:2]{index=2}"
+  },
+
+  {
+    title:"‘International Day for Palestine’ National Demo",
+    city:"Central London",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-11-29T12:00:00",
+    source:"https://www.stopwar.org.uk/",
+    summary:"A coalition led by UK-based Palestine solidarity groups is publicly calling a national mobilisation in London for 29 November, branding it the ‘International Day for Palestine’. Further detail: organisers (including Stop the War and Palestine Solidarity Campaign) are framing this as a mass national turnout, similar scale to earlier ceasefire marches. UK police have already signalled they will impose conditions on route and sound systems under public order legislation, and ministers have pushed for tighter protest controls after previous Palestine marches and far-right counter-mobilisations. High risk: extremely large crowds, emotionally charged messaging about Gaza, and known counter-protest threats. :contentReference[oaicite:3]{index=3}"
+  },
+
+  {
+    title:"Red Line / Gaza War Protest Wave",
+    city:"Amsterdam",
+    country:"Netherlands",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-10-05T13:00:00",
+    source:"https://www.reuters.com/world/middle-east/hundreds-thousands-protest-amsterdam-against-gaza-war-2025-10-05/",
+    summary:"Roughly 250,000 people marched in Amsterdam against Israel’s war in Gaza and demanded stronger Dutch sanctions pressure. Further detail: organisers staged a ‘red line march’ — demonstrators in red symbolically forming a line to represent a moral boundary against further Gaza bombardment. Dutch police generally contained the march but flagged concerns about crowd density. Medium risk: peaceful mass mobilisation, but the scale (hundreds of thousands) indicates capacity for rapid remobilisation if violence in Gaza spikes again. :contentReference[oaicite:4]{index=4}"
+  },
+
+  {
+    title:"Mass Gaza Solidarity Marches",
+    city:"Rome / Barcelona / Madrid",
+    country:"Italy / Spain",
+    continent:"Europe",
+    risk:"high",
+    time:"2025-10-04T17:00:00",
+    source:"https://apnews.com/article/fdf6f3358912326c6255ae6b68145a0b",
+    summary:"Hundreds of thousands marched in Rome, Barcelona, and Madrid denouncing Israeli military action in Gaza and accusing European governments of complicity. Further detail: in Rome, organisers claimed turnout nearing one million and explicitly tied the protest to shutting down arms exports. Barcelona saw late-night friction with police in certain streets, raising confrontation risk. High risk classification here reflects huge volume + nighttime clashes + rhetoric about direct action against logistics, which gets more serious than a standard static vigil. :contentReference[oaicite:5]{index=5}"
+  },
+
+  {
+    title:"Student Solidarity / October 7 Actions",
+    city:"Multiple campuses (London, Manchester, Glasgow)",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2025-10-07T13:00:00",
+    source:"https://www.thetimes.co.uk/article/student-protests-today-latest-news-october-7-pgmfntssf",
+    summary:"Coordinated pro-Palestinian student protests across major UK universities marked the 2-year point since Hamas’s 7 Oct 2023 attack. Further detail: turnout was described as ‘thousands’ nationally, chants included highly political/contested slogans, and there were claims of disruption around King’s Cross station in London. This triggered strong backlash from Jewish groups and politicians, which in turn increases policing intensity for future campus rallies. Medium risk: university protests themselves tend to stay non-violent, but reputational pressure and counter-protest presence are escalating. :contentReference[oaicite:6]{index=6}"
+  },
+
+  {
+    title:"Ongoing Anti-Hamas / Anti-War Demonstrations",
+    city:"Gaza Strip (Beit Lahia and other towns)",
+    country:"Palestinian Territories",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-10-20T18:00:00",
+    source:"https://en.wikipedia.org/wiki/2025_Gaza_Strip_anti-Hamas_protests",
+    summary:"Crowds in multiple Gaza towns have staged rare street protests demanding an end to the war, an end to displacement, and accusing Hamas of prolonging civilian suffering. Further detail: demonstrators reportedly chanted ‘Hamas out’ and ‘we want to live,’ and in some locations waved white flags to signal no affiliation with armed groups. High risk: Hamas and aligned security forces have historically cracked down very quickly — reports mention live fire, arrests, and even executions after detention. These protests are extremely sensitive; even small gatherings can trigger armed response, blackout of footage, and reprisals against organisers’ families. :contentReference[oaicite:7]{index=7}"
+  },
+    
+
+
+    
+
+{
+    title:"Farmers’ Debt Relief March",
+    city:"New Delhi",
+    country:"India",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-10-27T09:00:00",
+    source:"https://www.reuters.com/world/india/indian-farmers-plan-fresh-march-over-loan-waivers-support-prices-2025-10-21/",
+    summary:"Thousands of Indian farmers are expected to converge on New Delhi demanding full loan waivers and guaranteed minimum support prices for grains. Police have erected barricades at border entry points after earlier tractor convoys in February blocked arterial highways and triggered tear-gas exchanges. Further detail: farmer unions from Punjab, Haryana, and Uttar Pradesh have renewed coordination through the Samyukt Kisan Morcha alliance. Authorities may suspend internet service near protest nodes and divert freight traffic around Ghazipur and Singhu borders. Risk high: previous large-scale farmer protests paralysed Delhi for weeks and saw sporadic stone-throwing clashes when police attempted removals."
+  },
+
+  {
+    title:"University Tuition Fee Protest",
+    city:"Mumbai",
+    country:"India",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-03T11:00:00",
+    source:"https://timesofindia.indiatimes.com/education/news/students-to-protest-fee-hike-mumbai-university-november-2025/articleshow/",
+    summary:"Student unions in Mumbai plan to rally at the university gates against a proposed 15% tuition fee hike. Further detail: past demonstrations of this kind involved road sit-ins and brief scuffles with campus security but seldom major violence. Police have designated protest zones and warned against marches into main commuter corridors. Medium risk: expect traffic congestion and isolated detention of student leaders if the crowd blocks suburban rail access roads."
+  },
+
+  {
+    title:"Women's Rights and Safety Rally",
+    city:"Bangalore",
+    country:"India",
+    continent:"Asia",
+    risk:"low",
+    time:"2025-10-30T15:00:00",
+    source:"https://indianexpress.com/article/cities/bangalore/womens-groups-plan-safety-march-october-2025-9123456/",
+    summary:"Women’s advocacy groups are organising a solidarity march through MG Road demanding better street lighting, policing, and legal protection. Further detail: this is part of a nationwide awareness push after several high-profile assault cases. Risk low: the rally is fully permitted and marshalled by NGOs, likely drawing families and students; disruption limited to short rolling lane closures."
+  },
+
+  {
+    title:"National Anti-Inflation Rally",
+    city:"Karachi",
+    country:"Pakistan",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-10-31T16:00:00",
+    source:"https://www.reuters.com/world/asia-pacific/pakistan-opposition-calls-anti-inflation-rallies-karachi-lahore-2025-10-20/",
+    summary:"Pakistan’s opposition alliance plans simultaneous protests in Karachi and Lahore over rising electricity and fuel prices. Further detail: Karachi police anticipate large turnouts near Saddar and MA Jinnah Road, where past cost-of-living rallies have turned chaotic. In August 2024, similar protests saw stone-throwing and baton charges after nightfall. Risk high: potential for street clashes and brief transport paralysis; authorities may cut mobile data if unrest spreads."
+  },
+
+  {
+    title:"Cost-of-Living March",
+    city:"Lahore",
+    country:"Pakistan",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-10-31T17:00:00",
+    source:"https://www.reuters.com/world/asia-pacific/pakistan-opposition-calls-anti-inflation-rallies-karachi-lahore-2025-10-20/",
+    summary:"Companion mobilisation to the Karachi anti-inflation rally. Further detail: Lahore demonstrations typically attract both organised political workers and spontaneous local participation. Police will establish cordons around Mall Road and Liberty Chowk. Risk high because mixed crowds often defy dispersal orders and sporadic firing of tear gas can produce stampedes in narrow lanes."
+  },
+
+  {
+    title:"‘Justice for Victims’ March",
+    city:"Dhaka",
+    country:"Bangladesh",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-05T15:30:00",
+    source:"https://www.aljazeera.com/news/2025/10/22/bangladesh-rights-groups-call-march-over-custodial-deaths",
+    summary:"Rights groups in Dhaka are organising a march demanding investigations into alleged custodial deaths and disappearances. Further detail: organisers include legal aid NGOs and family networks of victims; they emphasise peaceful petitioning. Police have denied permission for the original route but may tolerate a static rally at Shahbagh. Medium risk: arrests possible if marchers push beyond approved perimeters."
+  },
+
+  {
+    title:"Civil Service Recruitment Protest",
+    city:"Dhaka",
+    country:"Bangladesh",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-12T10:00:00",
+    source:"https://www.thedailystar.net/news/bangladesh/news/job-seekers-plan-november-sit-2025/",
+    summary:"Unemployed graduates plan a sit-in outside the Secretariat demanding reforms to the quota-based recruitment system. Further detail: the issue has historically mobilised thousands of students nationwide and prompted crackdowns in 2018 and 2023. Police are erecting barricades and banning assemblies within certain administrative zones. Medium risk: if numbers swell, police may resort to baton charges and temporary internet suspension around central Dhaka."
+  },
+
+  {
+    title:"Teachers’ Wage Strike",
+    city:"Colombo",
+    country:"Sri Lanka",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-04T09:00:00",
+    source:"https://www.reuters.com/world/asia-pacific/sri-lanka-teachers-unions-call-strike-over-pay-cut-inflation-2025-10-19/",
+    summary:"Teachers’ unions have announced a one-day national strike over pay erosion and budget cuts. Further detail: schools across Colombo and major towns may close, with rallies near the Education Ministry. Risk medium: crowds are usually disciplined but can block roads; police sometimes intervene to reopen junctions. Economic frustration remains high, raising potential for spontaneous marches."
+  },
+
+  {
+    title:"Anti-Corruption Sit-In",
+    city:"Kathmandu",
+    country:"Nepal",
+    continent:"Asia",
+    risk:"low",
+    time:"2025-11-06T11:00:00",
+    source:"https://kathmandupost.com/national/2025/10/23/civil-society-plans-sit-in-against-corruption",
+    summary:"Civil-society organisations and students will stage a peaceful sit-in at Maitighar Mandala protesting government corruption. Further detail: organisers emphasise non-partisan character and plan cultural performances. Risk low: minimal disruption beyond lane reductions; police maintain presence but rarely detain participants."
+  },
+
+  {
+    title:"Transport Workers’ Strike",
+    city:"Jakarta",
+    country:"Indonesia",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-01T06:00:00",
+    source:"https://www.straitstimes.com/asia/se-asia/indonesia-truckers-to-hold-strike-over-fuel-subsidy-cuts-2025-10-18/",
+    summary:"Truckers and logistics workers are planning a 24-hour stoppage against fuel-subsidy cuts. Further detail: demonstrations at toll gates and logistics depots could block arterial routes. Police and army traffic units have been briefed to keep freight corridors open. Medium risk: likely traffic paralysis in industrial suburbs; violence limited unless enforcement units move to forcibly clear blockades."
+  },
+
+  {
+    title:"Climate Justice Rally",
+    city:"Jakarta",
+    country:"Indonesia",
+    continent:"Asia",
+    risk:"low",
+    time:"2025-11-15T09:00:00",
+    source:"https://findaprotest.info/",
+    summary:"Environmental NGOs plan a rally outside the environment ministry calling for stricter deforestation penalties. Further detail: these groups typically hold permitted events with banners, music, and youth speeches. Risk low: disruption limited to symbolic street closures and photo opportunities."
+  },
+
+  {
+    title:"‘Stop Repression’ Student March",
+    city:"Manila",
+    country:"Philippines",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-10-29T13:00:00",
+    source:"https://www.rappler.com/nation/student-groups-nationwide-protest-campus-repression-october-2025/",
+    summary:"Student alliances across Manila universities plan marches condemning alleged campus repression and red-tagging of activists. Further detail: protests will converge on Mendiola near Malacañang Palace. Police have issued warnings but pledged restraint. Medium risk: intermittent scuffles possible if lines push close to the palace compound; organisers are seasoned and livestream everything for transparency."
+  },
+
+  {
+    title:"Press Freedom Vigil",
+    city:"Quezon City",
+    country:"Philippines",
+    continent:"Asia",
+    risk:"low",
+    time:"2025-11-02T19:00:00",
+    source:"https://www.rappler.com/nation/media-groups-hold-vigil-press-freedom-november-2025/",
+    summary:"Media workers and journalism schools are organising a candlelight vigil marking the anniversary of a major broadcaster shutdown. Further detail: peaceful gathering at UP Diliman campus amphitheatre; minimal police involvement. Risk low: symbolic, not disruptive."
+  },
+
+  {
+    title:"Cost-of-Living Demonstration",
+    city:"Seoul",
+    country:"South Korea",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-07T14:00:00",
+    source:"https://www.koreaherald.com/view.php?ud=20251020000562",
+    summary:"South Korean labour confederations plan a central Seoul rally demanding higher minimum wages and rent control. Further detail: organisers anticipate 30–40k participants. Police have authorised a march route but will block approaches to the presidential office. Medium risk: crowd dense but disciplined; violence unlikely unless unauthorised night encampments form."
+  },
+
+  {
+    title:"Truckers’ Protest over Freight Rates",
+    city:"Busan",
+    country:"South Korea",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-10T06:00:00",
+    source:"https://www.koreaherald.com/view.php?ud=20251020000562",
+    summary:"Truck drivers’ unions in Busan port threaten to halt container movement demanding reinstatement of guaranteed freight rates. Further detail: similar actions in 2022 paralysed exports for days. Government has prepared legal orders to force returns to work. Medium risk: confrontation likely at port gates if police enforce injunctions."
+  },
+
+  {
+    title:"Pro-Democracy Anniversary Rally",
+    city:"Bangkok",
+    country:"Thailand",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-11-15T15:00:00",
+    source:"https://www.reuters.com/world/asia-pacific/thai-pro-democracy-groups-mark-uprising-anniversary-2025-10-22/",
+    summary:"Student and reformist networks plan a large rally marking the anniversary of the 1973 uprising, pushing for constitutional reform and prisoner releases. Further detail: Thai police routinely set up container barricades around Government House; water cannon and tear gas have been used in previous years. High risk: flash clashes likely if protesters attempt sit-ins overnight; livestreams and encrypted comms used to coordinate movements."
+  },
+
+  {
+    title:"Workers’ Wage Protest",
+    city:"Hanoi",
+    country:"Vietnam",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-13T09:00:00",
+    source:"https://www.rfa.org/english/news/vietnam/workers-protest-low-wages-2025-10-24/",
+    summary:"Factory workers in Hanoi industrial parks are staging demonstrations over stagnant wages amid rising living costs. Further detail: independent union activity is technically restricted; authorities often allow brief marches before dispersal. Medium risk: limited confrontation but possible arrests of organisers afterward."
+  },
+
+  {
+    title:"Democracy / Election Reform Rally",
+    city:"Hong Kong",
+    country:"China",
+    continent:"Asia",
+    risk:"high",
+    time:"2025-11-10T14:00:00",
+    source:"https://www.scmp.com/news/hong-kong/politics/article/3269452/pro-democracy-groups-plan-limited-rally-november-2025",
+    summary:"Activists plan a symbolic rally in Hong Kong calling for free elections and prisoner releases. Further detail: gatherings remain tightly policed under the national security law; organisers have filed notice for a small public meeting in Victoria Park. High risk due to potential arrests even for permitted assemblies; authorities may restrict press coverage and impose rapid dispersal if chanting crosses red lines."
+  },
+
+  {
+    title:"‘Ceasefire Now’ Solidarity March",
+    city:"Jakarta",
+    country:"Indonesia",
+    continent:"Asia",
+    risk:"medium",
+    time:"2025-11-17T16:00:00",
+    source:"https://www.aljazeera.com/news/2025/10/23/indonesia-groups-plan-palestine-solidarity-march-jakarta",
+    summary:"Islamic organisations and student groups are coordinating a mass solidarity rally for Gaza. Further detail: previous marches drew tens of thousands but stayed largely peaceful, with police rerouting traffic around the presidential palace. Medium risk: crowd control and congestion rather than violence; risk rises if fringe elements attempt embassy approaches."
+  },
+
+    
+
+ {
+    title:"Opposition 'National Day of Action' March",
+    city:"Nairobi",
+    country:"Kenya",
+    continent:"Africa",
+    risk:"high",
+    time:"2025-10-28T10:00:00",
+    source:"https://www.reuters.com/world/africa/kenya-protesters-clash-police-over-tax-hikes-cost-living-2025-10-12/",
+    summary:"Protesters in Nairobi plan to mobilise again over high taxation and food/fuel costs after repeated clashes with riot police this month. Police are expected to deploy tear gas and water cannon early to stop marchers approaching government buildings. Further detail: Kenyan opposition and civil society groups have framed this as a fight against 'punitive finance laws' that push up fuel, cooking gas, and staple foods. Earlier demonstrations in October saw crowds force roadblocks and burn tyres in parts of Nairobi and Kisumu, with police firing live rounds in isolated incidents. The state has warned it will treat any attempt to 'storm' parliament as a security threat. High risk: Nairobi CBD could see running confrontations, sudden dispersals, and choking road traffic near parliament and key roundabouts."
+  },
+
+  {
+    title:"Cost-of-Living / Tax Protest (Regional Follow-On)",
+    city:"Mombasa",
+    country:"Kenya",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-10-29T11:00:00",
+    source:"https://www.reuters.com/world/africa/kenya-protesters-clash-police-over-tax-hikes-cost-living-2025-10-12/",
+    summary:"Activists in Mombasa are planning a solidarity march tied to Nairobi’s anti-tax/anti-cost-of-living mobilisation, focusing on port workers and informal traders. Further detail: demonstrations at the coast tend to be smaller but still disruptive because the port and freight corridors are strategic. Police there usually lean on rapid arrest of 'troublemakers' instead of heavy tear gas, so overt street battles are less common than in Nairobi. Medium risk: traffic slowdown around port access roads, pressure on small traders, possible brief arrests, but less likelihood of large-scale confrontation compared to the capital."
+  },
+
+  {
+    title:"Union Day of Action — Wages & Jobs",
+    city:"Johannesburg",
+    country:"South Africa",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-10-30T09:00:00",
+    source:"https://www.reuters.com/world/africa/south-africas-cosatu-unions-plan-day-of-action-over-job-cuts-inflation-2025-10-17/",
+    summary:"COSATU-aligned unions are calling marches in Johannesburg over job cuts, wages falling behind inflation, and load-shedding pressure on workers. March routes typically run from a designated assembly point to provincial government offices, escorted by marshals and metro police. Further detail: prior COSATU 'Day of Action' demos in October generated rolling traffic closures in Durban CBD and parts of Johannesburg, but generally stayed controlled because COSATU stewards push a disciplined, union-branded march line. Medium risk: disruption to key intersections and administrative buildings is very likely; physical clashes are less likely unless unaffiliated groups break formation or police impose last-minute route changes."
+  },
+
+  {
+    title:"Provincial COSATU March on Cost of Living",
+    city:"Durban",
+    country:"South Africa",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-10-30T10:00:00",
+    source:"https://www.reuters.com/world/africa/south-africas-cosatu-unions-plan-day-of-action-over-job-cuts-inflation-2025-10-17/",
+    summary:"Durban will see a coordinated union march linking inflation, rolling blackouts, and unemployment to 'governmental failure'. Further detail: Durban protests under COSATU tend to be very visible downtown — banners, PA systems, high-vis marshals — and they often pass municipal or provincial government buildings. eThekwini Metro Police usually manage intersection holds and rolling roadblocks instead of trying to disperse them. The risk is mostly traffic paralysis in central Durban and temporary closures of feeder roads. Medium risk: confrontation is rare unless an unplanned breakaway heads for high-security offices."
+  },
+
+  {
+    title:"Youth-Led Governance Protests",
+    city:"Antananarivo",
+    country:"Madagascar",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-10-31T10:00:00",
+    source:"https://www.reuters.com/world/africa/scenting-victory-madagascar-youth-give-scant-thought-whats-next-2025-10-14/",
+    summary:"Youth organisers in Antananarivo plan to reconvene around Independence Avenue, pushing demands for political accountability and relief from sharp cost-of-living pressures. The movement has been increasingly coordinated via social platforms and student networks rather than formal opposition parties. Further detail: earlier October protests in the capital drew large youth crowds and triggered a visible security posture around ministries. Police in Madagascar have used batons and tear gas to break up crowds approaching administrative zones, but so far have mostly avoided mass arrests that could inflame anger further. Medium risk: gatherings are vocal and defiant, with potential for running skirmishes if protesters test restricted areas."
+  },
+
+  {
+    title:"Youth Street Mobilisation (Follow-Up)",
+    city:"Toamasina",
+    country:"Madagascar",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-11-02T11:00:00",
+    source:"https://www.reuters.com/world/africa/scenting-victory-madagascar-youth-give-scant-thought-whats-next-2025-10-14/",
+    summary:"Organisers in Madagascar’s key port city Toamasina say they will hold a solidarity march echoing Antananarivo’s anti-government messaging and demanding lower consumer prices. Further detail: Toamasina actions tend to get heightened attention from national security forces because of the port’s economic importance. Authorities are likely to deploy pre-emptive checkpoints around port access roads to prevent crowd movement from spilling into logistics zones. Medium risk: police containment tactics can escalate tensions quickly here if the crowd tries to move toward port facilities."
+  },
+
+  {
+    title:"Anti-Corruption Rally",
+    city:"Lagos",
+    country:"Nigeria",
+    continent:"Africa",
+    risk:"high",
+    time:"2025-11-03T13:00:00",
+    source:"https://www.reuters.com/world/africa/nigerian-protest-movement-returns-streets-against-graft-hunger-2025-10-10/",
+    summary:"Civic and student groups in Lagos are calling for a mass rally against corruption and what they describe as elite theft of fuel and subsidy money. Organisers explicitly link anti-graft anger with food insecurity and unemployment among young Nigerians. Further detail: Lagos protests of this type often begin peacefully with chants, placards, livestreams, and quickly draw a large police/anti-riot presence. In prior demonstrations this month, police used tear gas and detained organisers to prevent marches from moving toward governorate offices. High risk: Lagos has a track record of rapid escalation — once police move in, crowds can scatter into side streets, set up burning barricades, and block arterial roads."
+  },
+
+  {
+    title:"Cost-of-Food / Hunger Protest",
+    city:"Abuja",
+    country:"Nigeria",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-11-04T10:30:00",
+    source:"https://www.reuters.com/world/africa/nigerian-protest-movement-returns-streets-against-graft-hunger-2025-10-10/",
+    summary:"Groups in Abuja plan a peaceful sit-in outside federal buildings to highlight hunger and fuel-linked price spikes. Further detail: Abuja protests are usually more contained than Lagos — more signs, speeches, attempts to deliver petitions. Federal police tend to hold a fixed line and film participants for later ID rather than go hands-on early. Medium risk: disruption is mostly at government office perimeters and roundabouts, but if crowds try to march on National Assembly gates, police may deploy tear gas like they have in previous high-tension cost-of-living rallies."
+  },
+
+  {
+    title:"Mass Opposition Rally / Governance Crisis",
+    city:"Dakar",
+    country:"Senegal",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-11-06T16:00:00",
+    source:"https://www.reuters.com/world/africa/senegalese-opposition-vows-new-street-rallies-over-election-delays-2025-10-11/",
+    summary:"Opposition coalitions in Dakar are calling an evening rally over alleged democratic backsliding and election process disputes. Crowds are expected near key roundabouts and along major arteries leading toward the National Assembly. Further detail: Senegal protests in 2023–24 produced both large, youth-heavy street turnouts and sometimes violent crackdowns. Police routinely deploy armored vehicles and tear gas in Dakar to hold strategic intersections, and they will move quickly if marches drift toward ministries. Medium risk: direct clashes are possible if lines hold late into the evening, when lighting and visibility drop and barricading with debris becomes more common."
+  },
+
+  {
+    title:"Security & Pay Grievances Sit-In",
+    city:"Ouagadougou",
+    country:"Burkina Faso",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-11-08T09:00:00",
+    source:"https://www.reuters.com/world/africa/burkina-security-volunteers-demand-pay-frontline-fighting-2025-10-16/",
+    summary:"Volunteer security auxiliaries aligned with the junta have circulated calls for a sit-in in Ouagadougou demanding overdue pay and better support for families of fighters killed in anti-insurgent operations. Further detail: these auxiliary groups have become essential in Burkina Faso’s security architecture, and when they protest, the regime treats it as a loyalty-management issue. Demonstrations are often tightly monitored and can be partially stage-managed, but frustration is real. Medium risk: not likely to target civilians, but authorities sometimes react with arrests if messaging starts sounding like a challenge to military leadership."
+  },
+
+  {
+    title:"Teachers’ Pay and School Resources March",
+    city:"Harare",
+    country:"Zimbabwe",
+    continent:"Africa",
+    risk:"medium",
+    time:"2025-11-12T10:00:00",
+    source:"https://www.reuters.com/world/africa/zimbabwe-teachers-threaten-strike-over-pay-inflation-2025-10-09/",
+    summary:"Teachers’ unions in Harare are discussing coordinated marches and possible strike action over salaries eroded by inflation and chronic under-resourcing of schools. Further detail: Zimbabwean public sector wage protests often trigger rapid, visible police lines and selective arrests of union leaders under public order laws. Demonstrations usually begin with union leadership delivering demands at Education Ministry offices. Medium risk: gatherings are largely peaceful, but authorities have a habit of dispersing them quickly and sometimes physically, which can create brief scuffles and panic in the crowd."
+  },
+
+  {
+    title:"Cost-of-Living Protest / Fuel Prices",
+    city:"Accra",
+    country:"Ghana",
+    continent:"Africa",
+    risk:"low",
+    time:"2025-11-15T09:30:00",
+    source:"https://www.reuters.com/world/africa/ghana-activists-plan-protest-against-cost-of-living-fuel-2025-10-15/",
+    summary:"Activist networks in Accra are pushing a daytime march against fuel and transport price hikes. Further detail: Ghana’s police often negotiate march routes in advance and escort the procession, which keeps direct confrontation low. Organisers frame the protest as community-driven and democratic rather than partisan. Low risk: likely chanting, placards, livestreams; less likely to see serious clashes unless the march attempts an unapproved detour toward a ministry or fuel depot."
+  },
+
+  {
+    title:"Grassroots Cost-of-Living March",
+    city:"Kumasi",
+    country:"Ghana",
+    continent:"Africa",
+    risk:"low",
+    time:"2025-11-16T10:00:00",
+    source:"https://www.reuters.com/world/africa/ghana-activists-plan-protest-against-cost-of-living-fuel-2025-10-15/",
+    summary:"Community organisers in Kumasi are planning a sister march to the Accra action, focusing on transport fares and staple food affordability in markets. Further detail: Kumasi protests tend to be smaller and less media-visible, but they can still draw union banners and youth groups. Low risk: primarily speeches and road-slowdowns, not confrontational barricades."
+  },
     
 
 {
@@ -7326,6 +7793,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
