@@ -1,18 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<script src="auth.js"></script>
+<script src="metrics.js"></script>
+  
+<script>
+(function pageGuard(){
+  const NEED_LOGIN = true;          // this page requires a login
+  const NEED_SUB = false;           // set to true on pages that require an active sub
+
+  // Must be logged in?
+  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    location.href = 'login.html?next=' + next;
+    return;
+  }
+
+  // Must be subscribed?
+  if (NEED_SUB) {
+    const isSub = localStorage.getItem('ci_subscribed') === 'true';
+    if (!isSub) {
+      location.href = 'subscribe.html';
+      return;
+    }
+  }
+})();
+</script>
+
+  
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CityIntel — Live Feed</title>
 
   <style>
     :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
-    
-body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
+    body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
+    .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
+    .sidebar{grid-area:sidebar;background:#0c0c0c;border-right:1px solid var(--gray-600);display:flex;flex-direction:column;padding:18px 14px;gap:18px}
+    nav a{display:flex;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--text);border:1px solid transparent}
+    nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+    nav a.active{background:rgba(208,22,22,0.15);border-color:var(--brand-red)}
 
+    .main{grid-area:main;padding:20px}
+#topActions{margin-left:auto;display:flex; align-items:center; gap:10px;min-width: fit-content;position: relative;}
+
+    .user{ display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;
+  background:#1c1e22;border:1px solid #24272c;cursor:pointer;}
+    .avatar{ width:28px;height:28px;background:#fff;color:#000;border-radius:50%;
+  display:grid;place-items:center;font-weight:700;}
+    
     .dropdown{ position:absolute;right:0;top:calc(100% + 6px);background:#1a1c20;border:1px solid #24272c;
-  border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:140px;z-index:50;
-}
+  border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:140px;z-index:50;}
     .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
     .dropdown a:hover{background:rgba(255,255,255,0.05)}
 
@@ -20,97 +60,87 @@ body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gr
     background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
   .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
 
-    .brandbar .title {
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-
+    .brandbar .title {font-weight: 700;font-size: 18px;}
     
+    #feed-container {display: flex;flex-direction: column; gap: 16px;
+      padding: 20px 30px; max-width: 800px; margin: 0 auto;}
 
-#topActions{margin-left:auto;display:flex; align-items:center; gap:10px;min-width: fit-content;position: relative;}
+    .feed-card {background: linear-gradient(180deg, #1a1c20, #131417);border: 1px solid #292c31; border-radius: 10px;
+      padding: 16px;box-shadow: 0 2px 8px rgba(0,0,0,0.3);transition: all 0.3s ease; opacity: 0;transform: translateY(10px);
+      animation: fadeInUp 0.5s forwards;}
 
-    
-    #feed-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 20px 30px;
-      max-width: 800px;
-      margin: 0 auto;
+    @keyframes fadeInUp {to {opacity: 1;transform: translateY(0);}
     }
 
-    .feed-card {
-      background: linear-gradient(180deg, #1a1c20, #131417);
-      border: 1px solid #292c31;
-      border-radius: 10px;
-      padding: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeInUp 0.5s forwards;
-    }
+    .feed-header {display: flex;justify-content: space-between;align-items: center;
+      margin-bottom: 6px;}
 
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .feed-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .feed-risk {
-      text-transform: capitalize;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 12px;
-      color: white;
-      font-size: 13px;
-    }
+    .feed-risk {text-transform: capitalize;font-weight: 600;
+      padding: 3px 10px;border-radius: 12px;color: white;
+      font-size: 13px;}
 
     .feed-risk.high { background: #dc2626; }
     .feed-risk.med { background: #f59e0b; color: #111; }
     .feed-risk.low { background: #22c55e; color: #111; }
 
-    #add-feed {
-      background: #ef4444;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 10px 30px;
-      font-weight: 600;
-      transition: background 0.3s ease;
-    }
+    #add-feed {background: #ef4444;color: white;
+      padding: 8px 16px;border: none;border-radius: 6px;cursor: pointer;
+      margin: 10px 30px;font-weight: 600;transition: background 0.3s ease;}
 
-    #add-feed:hover {
-      background: #b91c1c;
-    }
+    #add-feed:hover {background: #b91c1c;}
+    
   </style>
-</head>
+</head
+
+  <script>
+  // must be after the header DOM exists
+  document.addEventListener('DOMContentLoaded', function(){
+    CIAuth.injectUserChip(document.getElementById('topActions'));
+    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
+  
 <body>
 
   <div class="brandbar">
     <img src="CityintLogo.jpg" alt="CityIntel Logo">
-    <div class="title">CityIntel Live Feed</div>
-    <button id="add-feed">+ Add Feed</button>
-    <div id="trial-banner" style="display:none;position:absolute;
+    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
+	<div id="trial-banner" style="display:none;position:absolute;
     left:50%; transform:translateX(-50%); background:none;
     color:#fecaca; padding:8px 12px; text-align:center;">
   <span id="trial-text">Your trial ends soon.</span>
 </div>	
+	  <div id="topActions" style="position:relative"></div>
   </div>
 
-  <div id="feed-container"></div>
+ <div class="app">
+    <aside class="sidebar">
+       <div class="section-label"></div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="events.html">Events</a>
+		<a href="live-feed.html">Live Feed</a>
+	<a href="brief.html">Intelligence Brief</a>
+	<a href="incident.html">Incident Drilldown</a>
+	    <a href="reports.html">Reports</a>
+	<a href="trends.html">Trends & Forecasts</a>
+		<a href="sources.html">Sources</a>
+        <a href="settings.html">Settings</a>
+        <a href="about.html">About</a>
+      </nav>
+    </aside>
 
+
+  <main class="main">
+  <div id="feed-container"></div>
+ </main>
+   
+  <script>
+    const here=location.pathname.split("/").pop()||"index.html";
+    document.querySelectorAll("aside.sidebar nav a").forEach(a=>{if(a.getAttribute("href")===here)a.classList.add("active")});
+  </script>
+   
   <script>
     const API_BASE = 'https://api.cityintelapi.com/api/live';
     const feeds = [];
@@ -179,7 +209,7 @@ body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gr
   </script>
 
 
-  <script>
+ <script>
 (function mountTopActions(){
   const host = document.getElementById('topActions');
   if (!host) return;
@@ -235,6 +265,7 @@ body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gr
   }
 })();
 </script>
+   
 <script>
 (function(){
   const API_BASE = 'https://api.cityintelapi.com';
@@ -294,7 +325,8 @@ body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gr
   })();
 })();
 </script>
-
+   
+<script src="admin-links.js"></script>
   
 </body>
 </html>
