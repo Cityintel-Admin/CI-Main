@@ -71,6 +71,7 @@
       display:grid;
       grid-template-columns:260px 1fr;
       min-height:100vh;
+      position:relative; /* so overlay can anchor */
     }
 
     /* sidebar */
@@ -340,6 +341,7 @@
       border-radius:10px;
       padding:10px 12px;
       margin-bottom:10px;
+      cursor:pointer;
     }
     .event-row.med{
       border-left-color:#f0b429;
@@ -363,6 +365,110 @@
     }
     .event-src a:hover{
       text-decoration:underline;
+    }
+
+    /* --- slide-over panel + backdrop --- */
+    .details-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.5);
+      display:none;
+      z-index:400;
+    }
+    .details-panel{
+      position:fixed;
+      top:0;
+      right:0;
+      height:100vh;
+      width:360px;
+      max-width:85%;
+      background:linear-gradient(180deg,#1a1c20,#131417);
+      border-left:1px solid var(--gray-600);
+      box-shadow:-20px 0 40px rgba(0,0,0,.8);
+      padding:16px;
+      color:var(--text);
+      font-size:13px;
+      line-height:1.4;
+      display:flex;
+      flex-direction:column;
+      transform:translateX(100%);
+      transition:transform .22s ease;
+      z-index:401;
+    }
+    .details-panel.open{
+      transform:translateX(0);
+    }
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .panel-head-left h3{
+      margin:0;
+      font-size:15px;
+      font-weight:600;
+      color:var(--text);
+      line-height:1.3;
+    }
+    .panel-head-left .meta-line{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.3;
+      margin-top:4px;
+    }
+    .panel-close-btn{
+      background:#1c1e22;
+      border:1px solid #2e3238;
+      border-radius:8px;
+      color:var(--text);
+      font-size:12px;
+      line-height:1.2;
+      padding:6px 8px;
+      cursor:pointer;
+    }
+    .panel-section{
+      background:#0f1012;
+      border:1px solid var(--gray-600);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .panel-section h4{
+      margin:0 0 6px;
+      font-size:12px;
+      font-weight:600;
+      color:var(--text);
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+    .panel-section p{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .distance-chip{
+      display:inline-block;
+      background:#1c1e22;
+      border:1px solid #2e3238;
+      border-radius:8px;
+      padding:4px 6px;
+      font-size:12px;
+      line-height:1.2;
+      color:var(--text);
+      margin-top:4px;
+    }
+    .mini-map{
+      background:#1c1e22;
+      border:1px solid #2e3238;
+      border-radius:8px;
+      height:120px;
+      display:grid;
+      place-items:center;
+      color:#8e97a3;
+      font-size:12px;
     }
 
     @media(max-width:900px){
@@ -427,7 +533,43 @@
       <div id="feedsGrid" class="feeds-grid"></div>
 
     </main>
-  </div>
+
+    <!-- Backdrop for slide-over -->
+    <div id="detailsBackdrop" class="details-backdrop"></div>
+
+    <!-- Slide-over details panel -->
+    <aside id="detailsPanel" class="details-panel" aria-hidden="true">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <h3 id="panelTitle">Incident title goes here</h3>
+          <div class="meta-line" id="panelMeta">London • High risk • 20 Oct 14:22</div>
+        </div>
+        <button class="panel-close-btn" id="panelCloseBtn">Close</button>
+      </div>
+
+      <div class="panel-section">
+        <h4>Location detail</h4>
+        <p id="panelLocationText">Stratford, East London (approx.)</p>
+        <div class="distance-chip" id="panelDistanceChip">~2.1 km from HQ</div>
+      </div>
+
+      <div class="panel-section">
+        <h4>Map / Proximity</h4>
+        <div class="mini-map" id="panelMapBox">
+          Map preview coming soon
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h4>Recent in this city</h4>
+        <p id="panelHistory">
+          • Police presence reported earlier near Stratford.<br/>
+          • Road closures causing disruption to transport hubs.
+        </p>
+      </div>
+    </aside>
+
+  </div><!-- /.app -->
 
   <!-- highlight active sidebar link -->
   <script>
@@ -554,7 +696,7 @@
   })();
   </script>
 
-  <!-- Live Feed logic with persistence -->
+  <!-- Live Feed logic with persistence + details panel -->
   <script>
   (function(){
     const API_BASE = 'https://api.cityintelapi.com';
@@ -562,6 +704,59 @@
 
     // our in-memory feeds array
     let feeds = [];
+
+    // details panel refs
+    const panel = document.getElementById('detailsPanel');
+    const backdrop = document.getElementById('detailsBackdrop');
+    const closeBtn = document.getElementById('panelCloseBtn');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelMeta  = document.getElementById('panelMeta');
+    const panelLocationText = document.getElementById('panelLocationText');
+    const panelDistanceChip = document.getElementById('panelDistanceChip');
+    const panelMapBox = document.getElementById('panelMapBox');
+    const panelHistory = document.getElementById('panelHistory');
+
+    function openPanel(ev){
+      // populate mock detail using the event row data
+      const city = ev.city || 'Unknown city';
+      const risk = ev.risk || 'med';
+      const whenPretty = new Date(ev.when).toLocaleString('en-GB',{
+        day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'
+      });
+
+      panelTitle.textContent = ev.title || (city + ' incident');
+      panelMeta.textContent  = `${city} • ${risk.charAt(0).toUpperCase()+risk.slice(1)} risk • ${whenPretty}`;
+
+      // mock location detail (placeholder: "Stratford, East London")
+      panelLocationText.textContent = city + ' central district (approx.)';
+
+      // fake distance from HQ
+      panelDistanceChip.textContent = '~2 km from HQ';
+
+      // small "map"
+      panelMapBox.textContent = 'Map preview for ' + city;
+
+      // "recent" history in that city
+      panelHistory.innerHTML = `
+        • Earlier report in ${city} about police presence.<br/>
+        • Traffic disruption still ongoing.<br/>
+        • Monitoring continues.
+      `;
+
+      // show
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden','false');
+      backdrop.style.display = 'block';
+    }
+
+    function closePanel(){
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden','true');
+      backdrop.style.display = 'none';
+    }
+
+    backdrop.addEventListener('click', closePanel);
+    closeBtn.addEventListener('click', closePanel);
 
     // ---------- helpers ----------
     function randPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -672,8 +867,13 @@
               day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'
             });
             const riskLabel = ev.risk==='high'?'High':'Medium';
+            // embed data attributes on clickable row for panel
             bodyHTML += `
-              <div class="${cls}">
+              <div class="${cls}" 
+                   data-city="${ev.city||''}" 
+                   data-title="${ev.title||''}" 
+                   data-risk="${ev.risk||''}" 
+                   data-when="${ev.when||''}">
                 <div class="event-topline">${ev.city} — ${ev.title}</div>
                 <div class="event-meta">${whenPretty} • ${riskLabel} risk</div>
                 <div class="event-src">
@@ -756,14 +956,32 @@
       refreshFeed(idx);
     }
 
-    // click handlers
+    // click handlers - add feed / refresh / remove + row click for panel
     addBtn.addEventListener('click', addFeed);
 
     feedsGrid.addEventListener('click', (e)=>{
       const t = e.target;
       if(!(t instanceof HTMLElement)) return;
-      const type = t.getAttribute('data-type');
-      const idx  = Number(t.getAttribute('data-idx'));
+
+      // row click for panel
+      const row = t.closest('.event-row');
+      if (row) {
+        const ev = {
+          city: row.getAttribute('data-city') || '',
+          title: row.getAttribute('data-title') || '',
+          risk: row.getAttribute('data-risk') || '',
+          when: row.getAttribute('data-when') || ''
+        };
+        openPanel(ev);
+        return;
+      }
+
+      // button click logic
+      const btn = t.closest('button.small-btn');
+      if(!btn) return;
+      const type = btn.getAttribute('data-type');
+      const idx  = Number(btn.getAttribute('data-idx'));
+
       if(type === 'remove'){
         removeFeed(idx);
       } else if(type === 'refresh'){
@@ -774,7 +992,6 @@
     // ---------- init ----------
     feeds = loadFeeds();
     if(!feeds.length){
-      // default starter feed if first visit
       feeds = [{ cities:['London','Paris'], risks:['high','med'], events:[] }];
     }
     renderFeeds();
