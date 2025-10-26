@@ -583,7 +583,8 @@
   <script>
   (function(){
     const API_BASE = 'https://api.cityintelapi.com';
-
+    const STORAGE_KEY = 'ci_live_feeds';
+    
     // state of all user-created feeds
     let feeds = [];
 
@@ -635,6 +636,34 @@
     } catch (err) {
       console.error('fetchLiveFeed failed:', err);
       return generateMockEvents(cities, risks);
+    }
+  }
+
+
+  function saveFeeds() {
+    try {
+      const minimal = feeds.map(f => ({ cities: f.cities, risks: f.risks }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+    } catch (e) {
+      console.warn('saveFeeds failed', e);
+    }
+  }
+   
+
+function loadFeeds() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.map(f => ({
+        cities: f.cities || [],
+        risks: f.risks || [],
+        events: [] // re-fetch later
+      }));
+    } catch (e) {
+      console.warn('loadFeeds failed', e);
+      return [];
     }
   }
     
@@ -758,13 +787,14 @@
     });
 
     // kick off with one default feed so page isn't empty
-    feeds = [{
-      cities:['London','Paris'],
-      risks:['high','med'],
-      events: generateMockEvents(['London','Paris'], ['high','med'])
-    }];
+      feeds = loadFeeds();
+  if (!feeds.length) {
+    feeds = [{cities:['London','Paris'],risks:['high','med'],events: [] }];}
+    
     renderFeeds();
+    feeds.forEach((_,i)=>refreshFeed(i));
 
+    
     // background auto-refresh every 30s
     setInterval(()=>{
       feeds.forEach((_,i)=>refreshFeed(i));
