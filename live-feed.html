@@ -1,265 +1,232 @@
 <!doctype html>
 <html lang="en">
 <head>
-
-  <!-- auth + metrics -->
-  <script src="auth.js"></script>
-  <script src="metrics.js"></script>
-
-  <!-- login/subscription guards -->
-  <script>
-  (function pageGuard(){
-    const NEED_LOGIN = true;   // require login
-    const NEED_SUB   = false;  // flip to true later to paywall
-    if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
-      const here = location.pathname.split('/').pop() || 'index.html';
-      const next = encodeURIComponent(here + location.search + location.hash);
-      location.href = 'login.html?next=' + next;
-      return;
-    }
-    if (NEED_SUB) {
-      const isSub = localStorage.getItem('ci_subscribed') === 'true';
-      if (!isSub) {
-        location.href = 'subscribe.html';
-        return;
-      }
-    }
-  })();
-  </script>
-
-  <!-- compat shim so legacy code reading ci_profile still works -->
-  <script>
-  (function compatProfileShim(){
-    if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-    const u = CIAuth.who();
-    if (!u) return;
-    localStorage.setItem('ci_profile', JSON.stringify({
-      name: u.name || 'CityIntel User',
-      email: u.email,
-      role:  u.role || 'Admin',
-      is_admin: (u.role||'').toLowerCase()==='admin'
-    }));
-  })();
-  </script>
-
   <meta charset="utf-8" />
   <title>CityIntel — Live Feed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <script>
+    // --- Page guard: require login/subscription ---
+    (function(){
+      if (!window.CIAuth || !CIAuth.isLoggedIn || !CIAuth.isLoggedIn()) {
+        const nxt = encodeURIComponent('live-feed.html');
+        location.href = `login.html?next=${nxt}`;
+        return;
+      }
+    })();
+  </script>
+
   <style>
     :root{
-      --brand-red:#D01616;
-      --gray-900:#111214;
-      --gray-800:#16171a;
-      --gray-700:#1c1e22;
-      --gray-650:#1a1c20;
-      --gray-600:#24272c;
-      --gray-500:#2e3238;
-      --text:#e9edf2;
-      --muted:#8e97a3;
+      --g900:#111214; --g800:#16171a; --g700:#1c1e22; --g600:#2e3238;
+      --text:#e9edf2; --muted:#8e97a3;
+      --danger:#ff5a5f; --warn:#f0b429; --ok:#33c48d;
     }
 
     body{
       margin:0;
-      font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      background:linear-gradient(180deg,var(--g900),var(--g800));
       color:var(--text);
-      background:linear-gradient(180deg,var(--gray-900),var(--gray-800));
+      font:14px/1.6 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     }
 
-    /* overall 2-col layout */
     .app{
       display:grid;
       grid-template-columns:260px 1fr;
+      grid-template-rows:60px 1fr;
+      grid-template-areas:
+        "sidebar topbar"
+        "sidebar main";
       min-height:100vh;
-      position:relative; /* so overlay can anchor */
     }
 
-    /* sidebar */
     .sidebar{
-      background:#0c0c0c;
-      border-right:1px solid var(--gray-600);
-      display:flex;
-      flex-direction:column;
+      grid-area:sidebar;
+      background:linear-gradient(180deg,#0C0C0C,#131416);
+      border-right:1px solid var(--g600);
       padding:18px 14px;
-      gap:18px;
-    }
-    nav a{
-      display:flex;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:10px;
-      text-decoration:none;
-      color:var(--text);
-      border:1px solid transparent;
-      font-size:14px;
-    }
-    nav a:hover{
-      background:var(--gray-600);
-      border-color:var(--gray-500);
-    }
-    nav a.active{
-      background:rgba(208,22,22,0.15);
-      border-color:var(--brand-red);
-    }
-    .footnote{
-      margin-top:auto;
-      font-size:12px;
-      color:var(--muted);
     }
 
-    /* brand bar at top */
     .brandbar{
       display:flex;
       align-items:center;
       gap:10px;
-      padding:16px 20px;
-      border-bottom:1px solid var(--gray-600);
-      background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0));
-      position:relative;
+      margin-bottom:16px;
     }
     .brandbar img{
-      width:auto;
-      height:60px;
-      object-fit:contain;
+      width:32px;
+      height:32px;
       border-radius:6px;
-      background:#fff;
+      object-fit:cover;
     }
     .brandbar .title{
+      font-size:16px;
       font-weight:700;
-      font-size:18px;
+      color:var(--text);
     }
 
-    /* trial countdown in the bar */
-    #trial-banner{
-      display:none;
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      background:none;
-      color:#fecaca;
-      padding:8px 12px;
-      text-align:center;
-      font-size:13px;
-      line-height:1.3;
-      white-space:nowrap;
+    nav a{
+      display:flex;
+      gap:10px;
+      color:#e9edf2;
+      text-decoration:none;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid transparent;
+      font-size:14px;
+      line-height:1.4;
+      align-items:center;
+      justify-content:flex-start;
+    }
+    nav a span.icon{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:#D01616;
+      box-shadow:0 0 8px #D01616;
+    }
+    nav a:hover{
+      background:#24272c;
+      border-color:#2e3238;
+    }
+    nav a.active{
+      background:rgba(208,22,22,.15);
+      border-color:#D01616;
     }
 
-    /* right side chip */
-    #topActions{
-      margin-left:auto;
+    .topbar{
+      grid-area:topbar;
+      background:rgba(255,255,255,.02);
+      border-bottom:1px solid var(--g600);
       display:flex;
       align-items:center;
-      gap:10px;
-      min-width:fit-content;
+      gap:12px;
+      padding:10px 16px;
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter:blur(8px);
+    }
+
+    #trial-banner{
+      flex:1;
+      text-align:center;
+      font-size:12px;
+      font-weight:600;
+      color:#fecaca;
+    }
+
+    #topActions{
+      margin-left:auto;
       position:relative;
     }
     .user{
+      background:#1f2024;
+      border:1px solid var(--g600);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:13px;
+      font-weight:500;
+      color:var(--text);
       display:flex;
       align-items:center;
       gap:8px;
-      padding:8px 10px;
-      border-radius:12px;
-      background:#1c1e22;
-      border:1px solid #24272c;
       cursor:pointer;
     }
-    .avatar{
-      width:28px;
-      height:28px;
-      background:#fff;
-      color:#000;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
+    .user .avatar{
+      background:#D01616;
+      color:#fff;
       font-weight:700;
-      font-size:13px;
+      border-radius:999px;
+      width:24px;
+      height:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      line-height:1;
     }
     .dropdown{
       position:absolute;
       right:0;
-      top:calc(100% + 6px);
+      top:38px;
       background:#1a1c20;
-      border:1px solid #24272c;
-      border-radius:10px;
-      padding:6px 0;
-      box-shadow:0 4px 12px rgba(0,0,0,.4);
-      display:none;
+      border:1px solid var(--g600);
+      border-radius:12px;
       min-width:160px;
-      z-index:50;
+      display:none;
+      flex-direction:column;
+      padding:6px 0;
+      box-shadow:0 20px 40px rgba(0,0,0,.8);
+      z-index:999;
     }
     .dropdown a{
-      display:block;
-      padding:8px 12px;
-      color:#e9edf2;
+      color:var(--text);
       text-decoration:none;
-      font-size:14px;
+      padding:8px 12px;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
     }
     .dropdown a:hover{
-      background:rgba(255,255,255,0.05);
+      background:#2a2d32;
+    }
+    .logout-link{
+      color:#8e97a3;
+      font-size:12px;
     }
 
-    /* login pill */
-    .login-btn{
-      display:inline-block;
-      padding:8px 12px;
-      border-radius:999px;
-      background:#D01616;
-      border:1px solid #9c0f0f;
-      color:#fff;
-      font-weight:700;
-      text-decoration:none;
-      white-space:nowrap;
-      font-size:13px;
-      line-height:1.2;
-    }
-    .login-btn:hover{ filter:brightness(1.05); }
-
-    /* MAIN area */
     .main{
-      padding:20px;
-      min-width:0;
+      grid-area:main;
+      padding:18px;
     }
 
-    /* top row inside main */
-    .main-toprow{
+    .page-head{
       display:flex;
-      flex-wrap:wrap;
       align-items:flex-start;
-      justify-content:space-between;
+      flex-wrap:wrap;
       gap:12px;
       margin-bottom:16px;
     }
-    .main-toprow-left h2{
-      color:var(--text);
-      margin:0 0 4px;
-      font-size:18px;
-      font-weight:600;
-    }
-    .main-toprow-left p{
+    .page-head-left h2{
       margin:0;
+      font-size:16px;
+      font-weight:600;
+      color:var(--text);
+    }
+    .page-head-left .sub{
+      font-size:12px;
       color:var(--muted);
-      font-size:13px;
       line-height:1.4;
-      max-width:600px;
+    }
+    .page-head-right{
+      margin-left:auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-width:160px;
+      gap:8px;
     }
 
-    .add-feed-btn{
-      align-self:flex-start;
+    .btn-red{
       background:#D01616;
-      border:1px solid #9c0f0f;
       color:#fff;
-      padding:8px 12px;
-      line-height:1.2;
-      border-radius:999px;
       font-size:13px;
-      font-weight:700;
+      font-weight:600;
+      border:1px solid #D01616;
+      border-radius:10px;
+      padding:8px 12px;
       cursor:pointer;
-      text-decoration:none;
-      white-space:nowrap;
+      line-height:1.2;
+      text-align:center;
+      min-width:140px;
     }
-    .add-feed-btn:hover{ filter:brightness(1.05); }
+    .btn-red:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
+    }
 
-    /* feeds grid: responsive 3-up -> 2-up -> 1-up */
     .feeds-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));
@@ -268,813 +235,886 @@
 
     .feed-card{
       background:linear-gradient(180deg,#1a1c20,#131417);
-      border:1px solid var(--gray-600);
+      border:1px solid var(--g600);
       border-radius:16px;
-      padding:16px;
-      min-height:260px;
       display:flex;
       flex-direction:column;
+      min-height:260px;
+      max-height:400px;
     }
 
     .feed-head{
       display:flex;
-      flex-wrap:wrap;
       align-items:flex-start;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
+      border-bottom:1px solid var(--g600);
+      padding:12px 16px;
     }
-    .feed-title{
-      font-size:14px;
-      font-weight:600;
+    .feed-head-left{
+      font-size:13px;
       color:var(--text);
-      margin:0;
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      align-items:center;
+      line-height:1.4;
     }
-    .filter-dots{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.3;
+    .feed-city{
+      font-weight:600;
+      font-size:14px;
+      color:#fff;
+    }
+    .feed-risk{
+      display:inline-block;
+      font-size:11px;
+      line-height:1.2;
+      font-weight:600;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .feed-risk.high{
+      background:rgba(255,90,95,.12);
+      border-color:rgba(255,90,95,.35);
+      color:#ff5a5f;
+    }
+    .feed-risk.med{
+      background:rgba(240,180,41,.12);
+      border-color:rgba(240,180,41,.35);
+      color:#f0b429;
+    }
+    .feed-risk.low{
+      background:rgba(51,196,141,.12);
+      border-color:rgba(51,196,141,.35);
+      color:#33c48d;
     }
     .feed-head-right{
-      margin-left:auto;
       display:flex;
-      align-items:center;
-      gap:8px;
-      flex-shrink:0;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
     }
-    .small-btn{
+    .btn-ghost{
+      background:#1f2024;
+      color:#e9edf2;
+      border:1px solid var(--g600);
+      border-radius:8px;
+      padding:4px 8px;
       font-size:12px;
       line-height:1.2;
-      padding:6px 8px;
-      border-radius:8px;
-      background:#1c1e22;
-      border:1px solid #2e3238;
-      color:var(--text);
-      text-decoration:none;
       cursor:pointer;
     }
-    .small-btn.danger{
-      background:rgba(208,22,22,.12);
-      border-color:#D01616;
-      color:#ff5a5f;
+    .btn-ghost:hover{
+      background:#2a2d32;
     }
 
     .feed-body{
       flex:1;
-      min-height:180px;
+      overflow-y:auto;
+      padding:12px 16px 16px;
       font-size:13px;
-      line-height:1.4;
-      color:var(--text);
-      border-top:1px solid var(--gray-600);
-      padding-top:12px;
-      overflow:auto;
-      max-height:280px;
     }
-
-    .event-row{
-      border-left:4px solid #ff5a5f;
-      background:linear-gradient(90deg,rgba(255,90,95,.12),rgba(255,90,95,0));
-      border-radius:10px;
+    .feed-item{
+      border-left:4px solid #D01616;
+      background:linear-gradient(90deg,rgba(208,22,22,.1),rgba(208,22,22,0));
+      border-radius:8px;
+      border:1px solid var(--g600);
       padding:10px 12px;
       margin-bottom:10px;
       cursor:pointer;
     }
-    .event-row.med{
-      border-left-color:#f0b429;
-      background:linear-gradient(90deg,rgba(240,180,41,.12),rgba(240,180,41,0));
+    .feed-item:last-child{
+      margin-bottom:0;
     }
-    .event-topline{
+    .feed-title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:8px;
       font-size:13px;
       font-weight:600;
-      color:var(--text);
-      margin-bottom:4px;
+      color:#fff;
     }
-    .event-meta{
+    .feed-meta{
       font-size:11px;
       color:var(--muted);
-      margin-bottom:6px;
-    }
-    .event-src a{
-      font-size:11px;
-      color:#8e97a3;
-      text-decoration:none;
-    }
-    .event-src a:hover{
-      text-decoration:underline;
+      line-height:1.4;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
     }
 
-    /* --- slide-over panel + backdrop --- */
-    .details-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.5);
-      display:none;
-      z-index:400;
+    .feed-footer{
+      border-top:1px solid var(--g600);
+      padding:10px 16px;
+      font-size:11px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
     }
-    .details-panel{
+    .feed-footer .src{
+      color:var(--muted);
+    }
+    .feed-footer .refresh{
+      cursor:pointer;
+      color:#8e97a3;
+    }
+    .feed-footer .refresh:hover{
+      color:#fff;
+    }
+
+    /* slide-in detail panel */
+    .detail-panel{
       position:fixed;
       top:0;
       right:0;
       height:100vh;
       width:360px;
-      max-width:85%;
-      background:linear-gradient(180deg,#1a1c20,#131417);
-      border-left:1px solid var(--gray-600);
+      max-width:80%;
+      background:#1a1c20;
+      border-left:1px solid var(--g600);
       box-shadow:-20px 0 40px rgba(0,0,0,.8);
-      padding:16px;
-      color:var(--text);
+      color:#e9edf2;
       font-size:13px;
-      line-height:1.4;
+      line-height:1.5;
       display:flex;
       flex-direction:column;
       transform:translateX(100%);
-      transition:transform .22s ease;
-      z-index:401;
+      transition:transform .25s ease;
+      z-index:10000;
     }
-    .details-panel.open{
-      transform:translateX(0);
+    .detail-panel.open{
+      transform:translateX(0%);
     }
-    .panel-head{
+
+    .detail-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:8px;
-      margin-bottom:12px;
+      padding:16px;
+      border-bottom:1px solid var(--g600);
+      background:#131417;
     }
-    .panel-head-left h3{
-      margin:0;
-      font-size:15px;
+    .detail-head-left{
+      max-width:260px;
+    }
+    .detail-title{
+      font-size:14px;
       font-weight:600;
-      color:var(--text);
-      line-height:1.3;
+      color:#fff;
+      margin-bottom:4px;
     }
-    .panel-head-left .meta-line{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.3;
-      margin-top:4px;
-    }
-    .panel-close-btn{
-      background:#1c1e22;
-      border:1px solid #2e3238;
-      border-radius:8px;
-      color:var(--text);
-      font-size:12px;
-      line-height:1.2;
-      padding:6px 8px;
-      cursor:pointer;
-    }
-    .panel-section{
-      background:#0f1012;
-      border:1px solid var(--gray-600);
-      border-radius:12px;
-      padding:12px;
-      margin-bottom:12px;
-    }
-    .panel-section h4{
-      margin:0 0 6px;
-      font-size:12px;
-      font-weight:600;
-      color:var(--text);
-      text-transform:uppercase;
-      letter-spacing:.03em;
-    }
-    .panel-section p{
-      margin:0;
+    .detail-meta{
       font-size:12px;
       color:var(--muted);
       line-height:1.4;
     }
-    .distance-chip{
-      display:inline-block;
-      background:#1c1e22;
-      border:1px solid #2e3238;
-      border-radius:8px;
-      padding:4px 6px;
-      font-size:12px;
-      line-height:1.2;
-      color:var(--text);
-      margin-top:4px;
-    }
-    .mini-map{
-      background:#1c1e22;
-      border:1px solid #2e3238;
-      border-radius:8px;
-      height:120px;
-      display:grid;
-      place-items:center;
+    .detail-close{
+      background:none;
+      border:0;
       color:#8e97a3;
       font-size:12px;
+      cursor:pointer;
+      padding:4px 6px;
+      border-radius:6px;
+    }
+    .detail-close:hover{
+      color:#fff;
+      background:#2a2d32;
     }
 
-    @media(max-width:900px){
+    .detail-body{
+      flex:1;
+      overflow-y:auto;
+      padding:16px;
+    }
+    .detail-section{
+      margin-bottom:16px;
+      background:linear-gradient(180deg,#1a1c20,#131417);
+      border:1px solid var(--g600);
+      border-radius:12px;
+      padding:12px;
+    }
+    .detail-section h4{
+      margin:0 0 6px;
+      font-size:12px;
+      font-weight:600;
+      color:#fff;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+    .detail-section .small{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .detail-footer{
+      border-top:1px solid var(--g600);
+      background:#131417;
+      padding:12px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .btn-full-incident{
+      background:#D01616;
+      color:#fff;
+      border:1px solid #D01616;
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:600;
+      line-height:1.2;
+      text-align:center;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .btn-full-incident:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
+    }
+
+    .btn-back-dash{
+      display:inline-block;
+      text-decoration:none;
+      color:#ff5a5f;
+      font-size:12px;
+      font-weight:600;
+      text-align:center;
+    }
+
+    /* Add Feed modal */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:10001;
+    }
+    .modal-box{
+      background:#1a1c20;
+      border:1px solid var(--g600);
+      border-radius:16px;
+      width:320px;
+      max-width:90%;
+      box-shadow:0 30px 60px rgba(0,0,0,.9);
+      padding:16px;
+      color:var(--text);
+      font-size:13px;
+    }
+    .modal-box h3{
+      margin:0 0 12px;
+      font-size:14px;
+      font-weight:600;
+      color:#fff;
+    }
+    .modal-row{
+      margin-bottom:12px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .modal-row label{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .modal-row input, .modal-row select{
+      background:#1f2024;
+      border:1px solid var(--g600);
+      border-radius:8px;
+      color:#fff;
+      padding:8px 10px;
+      font-size:13px;
+      line-height:1.4;
+      outline:none;
+      width:100%;
+    }
+    .modal-row input:focus,
+    .modal-row select:focus{
+      border-color:#D01616;
+    }
+    .modal-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-cancel{
+      background:#1f2024;
+      border:1px solid var(--g600);
+      border-radius:8px;
+      color:#8e97a3;
+      font-size:12px;
+      line-height:1.2;
+      padding:8px 10px;
+      cursor:pointer;
+      flex:1;
+      text-align:center;
+    }
+    .btn-cancel:hover{
+      background:#2a2d32;
+      color:#fff;
+    }
+    .btn-save{
+      background:#D01616;
+      border:1px solid #D01616;
+      border-radius:8px;
+      color:#fff;
+      font-size:12px;
+      font-weight:600;
+      line-height:1.2;
+      padding:8px 10px;
+      cursor:pointer;
+      flex:1;
+      text-align:center;
+    }
+    .btn-save:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
+    }
+
+    @media (max-width:900px){
       .app{
         grid-template-columns:1fr;
+        grid-template-areas:
+          "topbar"
+          "main";
       }
       .sidebar{
         display:none;
       }
+      .detail-panel{
+        width:80%;
+        max-width:400px;
+      }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- Brand bar -->
-  <div class="brandbar">
-    <img src="CityintLogo.jpg" alt="CityIntel Logo">
-    <div class="title">CityIntel</div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brandbar">
+      <img src="CityintLogo.jpg" alt="CityIntel Logo">
+      <div>
+        <div class="title">CityIntel</div>
+      </div>
+    </div>
 
-    <div id="trial-banner">
+    <nav>
+      <a href="index.html"><span class="icon"></span> Dashboard</a>
+      <a href="alerts.html"><span class="icon"></span> Alerts</a>
+      <a href="events.html"><span class="icon"></span> Events</a>
+      <a href="reports.html"><span class="icon"></span> Reports</a>
+      <a href="sources.html"><span class="icon"></span> Sources</a>
+      <a href="operations-log.html"><span class="icon"></span> Operations Log</a>
+      <a class="active" href="live-feed.html"><span class="icon"></span> Live Feed</a>
+      <a href="settings.html"><span class="icon"></span> Settings</a>
+      <!-- admin-links.js will inject Analytics / System Flow for admins -->
+    </nav>
+  </aside>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div id="trial-banner" style="display:none;">
       <span id="trial-text">Your trial ends soon.</span>
     </div>
 
     <div id="topActions" style="position:relative"></div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Live Feed</h2>
+        <div class="sub">Streaming incident chatter for your selected regions.</div>
+      </div>
+
+      <div class="page-head-right">
+        <!-- centered static red button -->
+        <button id="btnAddFeed" class="btn-red" type="button">+ Add Feed</button>
+      </div>
+    </div>
+
+    <div id="feedsGrid" class="feeds-grid">
+      <!-- Cards injected here -->
+    </div>
+  </main>
+</div>
+
+<!-- DETAIL PANEL -->
+<aside id="detailPanel" class="detail-panel">
+  <div class="detail-head">
+    <div class="detail-head-left">
+      <div id="detailTitle" class="detail-title">[Incident Title]</div>
+      <div class="detail-meta" id="detailMeta">
+        [City / Risk / Time]
+      </div>
+    </div>
+    <button class="detail-close" id="detailClose">Close ✕</button>
   </div>
 
-  <div class="app">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <nav>
-        <a href="index.html">Dashboard</a>
-        <a href="alerts.html">Alerts</a>
-        <a href="events.html">Events</a>
-        <a class="active" href="live-feed.html">Live Feed</a>
-        <a href="brief.html">Intelligence Brief</a>
-        <a href="incident.html">Incident Drilldown</a>
-        <a href="reports.html">Reports</a>
-        <a href="trends.html">Trends & Forecasts</a>
-        <a href="sources.html">Sources</a>
-        <a href="settings.html">Settings</a>
-        <a href="about.html">About</a>
-      </nav>
-      <div class="footnote">
-        For information use only — not for redistribution
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Summary</h4>
+      <div id="detailSummary" class="small">
+        -
       </div>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main">
-
-      <div class="main-toprow">
-        <div class="main-toprow-left">
-          <h2>Live Feeds</h2>
-          <p>Streaming situational chatter and incident reports for your selected locations. High / Medium risk is highlighted first.</p>
-        </div>
-
-        <button id="addFeedBtn" class="add-feed-btn">+ Add Feed</button>
+    <div class="detail-section">
+      <h4>Location / Impact</h4>
+      <div id="detailLocation" class="small">
+        Approx. location details here.
       </div>
-
-      <div id="feedsGrid" class="feeds-grid"></div>
-
-    </main>
-
-    <!-- Backdrop for slide-over -->
-    <div id="detailsBackdrop" class="details-backdrop"></div>
-
-    <!-- Slide-over details panel -->
-    <aside id="detailsPanel" class="details-panel" aria-hidden="true">
-      <div class="panel-head">
-        <div class="panel-head-left">
-          <h3 id="panelTitle">Incident title goes here</h3>
-          <div class="meta-line" id="panelMeta">London • High risk • 20 Oct 14:22</div>
-        </div>
-        <button class="panel-close-btn" id="panelCloseBtn">Close</button>
+      <div id="detailImpact" class="small" style="margin-top:8px;">
+        Impact to nearby assets here.
       </div>
+    </div>
 
-      <div class="panel-section">
-        <h4>Location detail</h4>
-        <p id="panelLocationText">Stratford, East London (approx.)</p>
-        <div class="distance-chip" id="panelDistanceChip">~2.1 km from HQ</div>
+    <div class="detail-section">
+      <h4>Earlier Today in This Area</h4>
+      <div id="detailEarlier" class="small">
+        No earlier incidents recorded.
       </div>
+    </div>
+  </div>
 
-      <div class="panel-section">
-        <h4>Map / Proximity</h4>
-        <div class="mini-map" id="panelMapBox">
-          Map preview coming soon
-        </div>
+  <div class="detail-footer">
+    <a id="viewFullBtn" class="btn-full-incident" href="incident.html">View Full Incident →</a>
+    <a class="btn-back-dash" href="index.html">← Back to Dashboard</a>
+  </div>
+</aside>
+
+<!-- ADD FEED MODAL -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Add Feed</h3>
+    <div class="modal-row">
+      <label for="feedCityInput">City / Region (e.g. London)</label>
+      <input id="feedCityInput" type="text" placeholder="London" />
+    </div>
+    <div class="modal-row">
+      <label for="feedRiskSelect">Risk Levels to Include</label>
+      <select id="feedRiskSelect" multiple size="3">
+        <option value="high">High</option>
+        <option value="med">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+        Hold Ctrl (or Cmd on Mac) to select multiple.
       </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancel">Cancel</button>
+      <button class="btn-save" id="modalSave">Save Feed</button>
+    </div>
+  </div>
+</div>
 
-      <div class="panel-section">
-        <h4>Recent in this city</h4>
-        <p id="panelHistory">
-          • Police presence reported earlier near Stratford.<br/>
-          • Road closures causing disruption to transport hubs.
-        </p>
-      </div>
-    </aside>
-
-  </div><!-- /.app -->
-
-  <!-- highlight active sidebar link -->
-  <script>
-  (function(){
-    const here = location.pathname.split('/').pop() || 'index.html';
-    document.querySelectorAll("aside.sidebar nav a").forEach(a=>{
-      if(a.getAttribute("href")===here) a.classList.add("active");
-    });
-  })();
-  </script>
-
-  <!-- trial countdown -->
-  <script>
-  (function(){
-    const API_BASE = 'https://api.cityintelapi.com';
-    const bar = document.getElementById('trial-banner');
-    const txt = document.getElementById('trial-text');
-
-    function who(){ try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); } catch { return {}; } }
-
-    function startCountdown(endIso){
-      const end = new Date(endIso).getTime();
-      function tick(){
-        const now = Date.now();
-        const ms = end - now;
-        if (ms <= 0){
-          bar.style.display = 'none';
-          location.href = 'subscribe.html?reason=trial_ended';
-          return;
-        }
-        const s = Math.floor(ms/1000);
-        const d = Math.floor(s/86400);
-        const h = Math.floor((s%86400)/3600);
-        const m = Math.floor((s%3600)/60);
-        const sec = s%60;
-        const parts=[];
-        if(d) parts.push(d+'d');
-        parts.push(
-          String(h).padStart(2,'0')+'h',
-          String(m).padStart(2,'0')+'m',
-          String(sec).padStart(2,'0')+'s'
-        );
-        txt.textContent = 'Trial active — ends in ' + parts.join(' ');
-        bar.style.display = '';
-      }
-      tick();
-      return setInterval(tick,1000);
-    }
-
-    (async function init(){
-      const p = who();
-      if(!p.email) return;
-      try{
-        const u = new URL(API_BASE + '/api/sub-status');
-        u.searchParams.set('email', p.email);
-        const r = await fetch(u);
-        if(!r.ok) return;
-        const data = await r.json();
-        if(data.trialEndsAt){
-          startCountdown(data.trialEndsAt);
-        }
-      }catch(e){
-        console.warn('trial banner error', e);
-      }
-    })();
-  })();
-  </script>
-
-  <!-- user chip dropdown -->
-  <script>
-  (function mountTopActions(){
-    const host = document.getElementById('topActions');
-    if (!host) return;
-
-    function initialsOf(nameOrEmail='CI') {
-      const s = String(nameOrEmail).trim();
-      if (!s) return 'CI';
-      if (s.includes('@')) return s[0].toUpperCase();
-      const parts = s.split(/\s+/);
-      return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
-    }
-
-    if (window.CIAuth && CIAuth.isLoggedIn()) {
-      const u = CIAuth.who();
-      const initials = initialsOf(u.name || u.email);
-      const role = u.role || 'Member';
-      const isAdmin = String(role).toLowerCase() === 'admin';
-
-      host.innerHTML = `
-        <div class="user" id="userChip">
-          <div class="avatar">${initials}</div>
-          ${role}
-        </div>
-        <div class="dropdown" id="userMenu">
-          ${isAdmin ? `
-            <a href="analytics.html">Analytics</a>
-            <a href="system-flow.html">System Flow</a>
-            <a href="operationslog.html">Operations Log</a>` : ``}
-          <a href="settings.html">Manage Billing</a>
-          <a href="#" id="logoutLink">Log out</a>
-        </div>
-      `;
-
-      const chip = document.getElementById('userChip');
-      const menu = document.getElementById('userMenu');
-      chip.addEventListener('click', ()=>{
-        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-      });
-      document.addEventListener('click', (e)=>{
-        if (!host.contains(e.target)) menu.style.display='none';
-      });
-
-      document.getElementById('logoutLink').addEventListener('click', (e)=>{
-        e.preventDefault();
-        try { CIAuth.logout(); } catch(_){}
-        location.href='index.html';
-      });
-
-    } else {
-      const here = location.pathname.split('/').pop() || 'index.html';
-      const next = encodeURIComponent(here + location.search + location.hash);
-      host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
-    }
-  })();
-  </script>
-
-  <!-- Live Feed logic with persistence + details panel -->
 <script>
-(function(){
-  const API_BASE = 'https://api.cityintelapi.com';
-  const STORAGE_KEY = 'ci_live_feeds';
-  let feeds = [];
+// -------------------- top bar user chip / dropdown --------------------
+(function mountTopActions(){
+  const host = document.getElementById('topActions');
+  if (!host) return;
 
-  // ----- panel elements -----
-  const panel     = document.getElementById('detailsPanel');
-  const backdrop  = document.getElementById('detailsBackdrop');
-  const closeBtn  = document.getElementById('panelCloseBtn');
-  const panelBody = document.getElementById('panelBody');
-  // We'll also inject a "View full incident" button dynamically.
+  const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+  const initials = (function(name){
+    if(!name) return 'CI';
+    const parts = name.trim().split(/\s+/);
+    return parts.slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
+  })(p.name);
 
-  // ----- modal elements (Add Feed) -----
-  const modal      = document.getElementById('addModal');
-  const modalBg    = document.getElementById('addModalBg');
-  const modalAdd   = document.getElementById('doAddFeed');
-  const modalClose = document.getElementById('closeAddModal');
-  const cityInput  = document.getElementById('feedCities');
-  const riskChecks = document.querySelectorAll('.riskChk');
+  const role = p.role || 'Analyst';
+  const isSub = (localStorage.getItem('ci_subscribed') === 'true');
 
-  // main grid
-  const feedsGrid  = document.getElementById('feedsGrid');
+  host.innerHTML = `
+    <div class="user" id="userChip">
+      <div class="avatar">${initials}</div>
+      ${role}
+    </div>
+    <div class="dropdown" id="userMenu">
+      <a href="settings.html">Settings</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="system-flow.html">System Flow</a>
+      <a href="operations-log.html">Operations Log</a>
+      <a href="#" id="logoutLink"><span class="logout-link">Log out</span></a>
+    </div>
+  `;
 
-  // ---------------------------------
-  // helpers: storage
-  // ---------------------------------
-  function loadFeeds(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      feeds = raw ? JSON.parse(raw) : [];
-    } catch(e){
-      feeds = [];
-    }
-  }
-  function saveFeeds(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
-  }
+  const chip  = document.getElementById('userChip');
+  const menu  = document.getElementById('userMenu');
+  const logoutLink = document.getElementById('logoutLink');
 
-  // ---------------------------------
-  // helpers: panel open/close
-  // ---------------------------------
-  function openPanel(html){
-    panelBody.innerHTML = html;
-    backdrop.style.display = 'block';
-    panel.classList.add('open');
-  }
-  function closePanel(){
-    panel.classList.remove('open');
-    backdrop.style.display = 'none';
-  }
-  closeBtn.addEventListener('click', closePanel);
-  backdrop.addEventListener('click', closePanel);
-
-  // ---------------------------------
-  // mock generator (fallback when API fails)
-  // ---------------------------------
-  function generateMockEvents(cities, risks){
-    const now = Date.now();
-    const chosenCities = cities.length ? cities : ['London','Paris','Berlin','New York','Rome'];
-    const chosenRisks = risks.length ? risks : ['high','med'];
-
-    const out=[];
-    for (let i=0;i<5;i++){
-      const city = chosenCities[i % chosenCities.length];
-      const risk = chosenRisks[i % chosenRisks.length];
-      out.push({
-        id: `${city}_${now}_${i}`,
-        title: (risk==='high'?'Police presence':'Crowd gathering') + ' at ' + city,
-        city,
-        risk,
-        when: new Date(now - i*600000).toISOString(),
-        src: 'Simulated Source',
-        approx_area: (city==='London'?'Stratford, East London':
-                      city==='Paris'?'Place de la République':
-                      'Central district'),
-        office_distance_km: (Math.random()*5+0.5).toFixed(1)+" km from HQ",
-        lat: 51.538 + Math.random()*0.02, // dummy-ish coords
-        lon: -0.003 + Math.random()*0.02
-      });
-    }
-    return out;
-  }
-
-  // ---------------------------------
-  // fetch live feed from Worker
-  // ---------------------------------
-  async function fetchLiveFeed(cities, risks){
-    const url = new URL(API_BASE + '/api/live');
-    if (cities.length) url.searchParams.set('cities', cities.join(','));
-    if (risks.length)  url.searchParams.set('risk', risks.join(','));
-
-    try {
-      const res = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
-      if (!res.ok) throw new Error('HTTP '+res.status);
-      const data = await res.json();
-      // Worker returns {ok:true, events:[...]}
-      if (data && Array.isArray(data.events) && data.events.length){
-        return data.events.map(ev=>({
-          ...ev,
-          approx_area: ev.approx_area || 'Central district',
-          office_distance_km: ev.office_distance_km || '2.1 km from HQ',
-          lat: ev.lat || 51.5,
-          lon: ev.lon || -0.1
-        }));
-      }
-      return generateMockEvents(cities, risks);
-    } catch (err) {
-      console.warn('fetchLiveFeed failed:', err);
-      return generateMockEvents(cities, risks);
-    }
-  }
-
-  // ---------------------------------
-  // RENDER FEEDS
-  // ---------------------------------
-  function renderFeeds(){
-    feedsGrid.innerHTML = '';
-
-    if(!feeds.length){
-      feedsGrid.innerHTML = `
-        <div class="feed-card" style="text-align:center;justify-content:center;min-height:200px">
-          <div style="color:var(--muted);font-size:13px;line-height:1.4;">
-            No feeds yet.<br/>Click "Add Feed" to start watching locations.
-          </div>
-        </div>`;
-      return;
-    }
-
-    feeds.forEach((feed, idx)=>{
-      // body rows
-      let bodyHTML='';
-      if(feed.events && feed.events.length){
-        feed.events.forEach(ev=>{
-          const high = (ev.risk==='high');
-          const cls = high ? 'event-row' : 'event-row med';
-          const whenPretty = new Date(ev.when).toLocaleString('en-GB',{
-            day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'
-          });
-          const riskLabel = ev.risk==='high'?'High':'Medium';
-
-          // stash in sessionStorage so incident.html can load later
-          const evId = ev.id || `${ev.city}_${Date.now()}_${Math.floor(Math.random()*100000)}`;
-          const stashKey = `ci_event_${evId}`;
-          sessionStorage.setItem(stashKey, JSON.stringify(ev));
-
-          // clickable row (but no redirect here!)
-          bodyHTML += `
-            <div class="${cls}"
-                 data-ev-id="${evId}">
-              <div class="event-topline">${ev.city} — ${ev.title}</div>
-              <div class="event-meta">${whenPretty} • ${riskLabel} risk</div>
-              <div class="event-src"><a href="#" target="_blank" rel="noopener">Source: ${ev.src}</a></div>
-            </div>`;
-        });
-      } else {
-        bodyHTML = `<div style="color:var(--muted);font-size:12px;">No recent items.</div>`;
-      }
-
-      const riskStr = feed.risks.length
-        ? feed.risks.map(r=>r[0].toUpperCase()+r.slice(1)).join(', ')
-        : 'All';
-      const citiesStr = feed.cities.join(', ');
-
-      const card = document.createElement('div');
-      card.className = 'feed-card';
-      card.innerHTML = `
-        <div class="feed-head">
-          <div class="feed-head-left">
-            <div class="feed-title">
-              <span>${citiesStr}</span>
-              <span class="filter-dots">• Risk: ${riskStr}</span>
-            </div>
-          </div>
-          <div class="feed-head-right">
-            <button class="small-btn" data-type="refresh" data-idx="${idx}">Refresh</button>
-            <button class="small-btn danger" data-type="remove" data-idx="${idx}">Remove</button>
-          </div>
-        </div>
-        <div class="feed-body">${bodyHTML}</div>
-      `;
-      feedsGrid.appendChild(card);
-    });
-  }
-
-  // ---------------------------------
-  // PANEL FILLER (called when you click an event row)
-  // ---------------------------------
-  function fillAndOpenPanel(evObj, evId){
-    // pretty time
-    const whenPretty = new Date(evObj.when).toLocaleString('en-GB',{
-      weekday:'short', day:'2-digit', month:'short',
-      hour:'2-digit', minute:'2-digit'
-    });
-    const riskLabel = evObj.risk==='high'?'High':'Medium';
-
-    // tiny map stub
-    const mapBox = `
-      <div style="
-        width:100%;
-        height:140px;
-        border-radius:12px;
-        border:1px solid var(--g600);
-        background:radial-gradient(circle at 30% 30%, #2a2d33 0%, #17181b 70%);
-        font-size:12px;
-        line-height:140px;
-        text-align:center;
-        color:var(--muted);
-      ">
-        [Map preview: ${evObj.city || ''}]
-      </div>
-    `;
-
-    panelBody.innerHTML = `
-      <div class="panel-section">
-        <div class="panel-heading">${evObj.city || ''} — ${evObj.title || ''}</div>
-        <div class="panel-meta">${whenPretty} • <span style="color:${evObj.risk==='high'?'#ff5a5f':'#f0b429'}">${riskLabel} risk</span></div>
-      </div>
-
-      <div class="panel-section">
-        <div class="panel-label">Approx. area</div>
-        <div>${evObj.approx_area || 'Unknown area'}</div>
-      </div>
-
-      <div class="panel-section">
-        <div class="panel-label">Distance to Office</div>
-        <div>${evObj.office_distance_km || 'N/A'}</div>
-      </div>
-
-      <div class="panel-section">
-        <div class="panel-label">Map</div>
-        ${mapBox}
-      </div>
-
-      <div class="panel-section">
-        <button id="openFullBtn" class="panel-full-btn"
-          style="
-            width:100%;
-            background:#D01616;
-            border:1px solid #D01616;
-            color:#fff;
-            font-weight:600;
-            border-radius:10px;
-            padding:10px 12px;
-            cursor:pointer;
-            font-size:14px;
-          ">
-          View Full Incident →
-        </button>
-      </div>
-    `;
-
-    // hook up full-view button
-    const fullBtn = panelBody.querySelector('#openFullBtn');
-    if (fullBtn){
-        fullBtn.addEventListener('click', ()=>{
-          window.location.href = `incident.html?from=live&event=${encodeURIComponent(evId)}`;
-        });
-    }
-
-    openPanel(panelBody.innerHTML);
-  }
-
-  // ---------------------------------
-  // GRID CLICK HANDLER
-  // ---------------------------------
-  feedsGrid.addEventListener('click', (e)=>{
-    const t = e.target;
-    if(!(t instanceof HTMLElement)) return;
-
-    // Did we click a feed header button?
-    const btn = t.closest('button.small-btn');
-    if(btn){
-      const type = btn.getAttribute('data-type');
-      const idx  = Number(btn.getAttribute('data-idx'));
-      if(type === 'remove') {
-        removeFeed(idx);
-      } else if(type === 'refresh') {
-        refreshFeed(idx);
-      }
-      return;
-    }
-
-    // Did we click an event row?
-    const row = t.closest('.event-row');
-    if(row){
-      const evId = row.getAttribute('data-ev-id');
-      const stashKey = `ci_event_${evId}`;
-      const raw = sessionStorage.getItem(stashKey);
-      if(raw){
-        const evObj = JSON.parse(raw);
-        fillAndOpenPanel(evObj, evId);
-      }
-      return;
-    }
+  chip.addEventListener('click', ()=>{
+    menu.style.display = (menu.style.display==='block')?'none':'block';
+  });
+  document.addEventListener('click',(e)=>{
+    if(!host.contains(e.target)) menu.style.display='none';
   });
 
-  // ---------------------------------
-  // FEED OPS: add / remove / refresh
-  // ---------------------------------
-  async function refreshFeed(idx){
-    const feed = feeds[idx];
-    if(!feed) return;
-    const events = await fetchLiveFeed(feed.cities, feed.risks);
-    feed.events = events;
-    saveFeeds();
-    renderFeeds();
-  }
+  logoutLink.addEventListener('click',(e)=>{
+    e.preventDefault();
+    if(window.CIAuth && CIAuth.logout) CIAuth.logout();
+    location.href='index.html';
+  });
 
-  async function addFeed(){
-    // cities from input:
-    const citiesRaw = cityInput.value.trim();
-    if(!citiesRaw){
-      alert('Enter at least one city (comma separated).');
-      return;
+  // trial banner logic
+  const trialBanner = document.getElementById('trial-banner');
+  const trialText   = document.getElementById('trial-text');
+  const trialEnds   = localStorage.getItem('ci_trialEndsAt');
+  const subscribed  = (localStorage.getItem('ci_subscribed') === 'true');
+
+  if (!subscribed && trialEnds) {
+    // show "Your trial ends <time>"
+    try {
+      const d = new Date(trialEnds);
+      const leftMin = Math.max(0, Math.round((d - Date.now()) / 60000));
+      trialBanner.style.display='block';
+      if (leftMin <= 0) {
+        trialText.textContent = 'Your trial has ended.';
+      } else if (leftMin < 60) {
+        trialText.textContent = `Your trial ends in ${leftMin} min`;
+      } else {
+        const leftHr = Math.round(leftMin/60);
+        trialText.textContent = `Your trial ends in ${leftHr} hour${leftHr!==1?'s':''}`;
+      }
+    } catch(e){
+      trialBanner.style.display='block';
+      trialText.textContent = 'Trial active.';
     }
-    const cities = citiesRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  }
+})();
 
-    // risks from checkboxes:
-    const risks = [];
-    riskChecks.forEach(ch => { if(ch.checked) risks.push(ch.value); });
+// -------------------- FEED STORAGE / STATE --------------------
+const STORAGE_KEY = 'ci_live_feeds_v1';
 
-    // fetch first batch:
-    const events = await fetchLiveFeed(cities, risks);
+// read feeds from localStorage
+function loadFeeds(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr)?arr:[];
+  }catch(e){
+    return [];
+  }
+}
 
-    // push into feeds list
-    feeds.push({ cities, risks, events });
-    saveFeeds();
-    renderFeeds();
-    closeAddModal();
+// save feeds to localStorage
+function saveFeeds(feeds){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
+}
+
+// add a feed definition {id, places[], risks[]}
+function addFeedDef(def){
+  const feeds = loadFeeds();
+  feeds.push(def);
+  saveFeeds(feeds);
+}
+
+// -------------------- RENDER / FETCH MOCK DATA --------------------
+async function fetchMockEventsForFeed(feed){
+  // feed.places is array of cities, feed.risks is array of risk levels
+  // We'll ask Worker for mock data (still fake but consistent format)
+  const params = new URLSearchParams();
+  if(feed.places && feed.places.length){
+    params.set('cities', feed.places.join(','));
+  }
+  if(feed.risks && feed.risks.length){
+    params.set('risk', feed.risks.join(','));
+  }
+  const url = `https://api.cityintelapi.com/api/live?${params.toString()}`;
+
+  try{
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    return data.events || [];
+  }catch(e){
+    console.warn('mock fetch fail', e);
+    return [];
+  }
+}
+
+function riskClass(r){
+  if(r==='high') return 'high';
+  if(r==='med')  return 'med';
+  return 'low';
+}
+
+function fmtWhen(iso){
+  try{
+    return new Date(iso).toLocaleString('en-GB',{
+      timeZone:'Europe/London',
+      day:'2-digit',month:'short',
+      hour:'2-digit',minute:'2-digit'
+    });
+  }catch(e){
+    return iso||'';
+  }
+}
+
+// -------------------- DETAIL PANEL HANDLING --------------------
+const detailPanel   = document.getElementById('detailPanel');
+const detailTitleEl = document.getElementById('detailTitle');
+const detailMetaEl  = document.getElementById('detailMeta');
+const detailSummaryEl = document.getElementById('detailSummary');
+const detailLocationEl = document.getElementById('detailLocation');
+const detailImpactEl   = document.getElementById('detailImpact');
+const detailEarlierEl  = document.getElementById('detailEarlier');
+const detailCloseBtn = document.getElementById('detailClose');
+const viewFullBtn   = document.getElementById('viewFullBtn');
+
+function openDetailPanel(item, relatedList){
+  // item = {title, city, risk, when, ...}
+  // relatedList = array of all events in that feed (for "earlier today")
+
+  detailTitleEl.textContent = item.title || '[Incident Title]';
+  detailMetaEl.textContent = `${item.city||'Unknown'} • ${item.risk||'n/a'} • ${fmtWhen(item.when)}`;
+
+  detailSummaryEl.textContent = item.description ||
+                                `Ongoing situation reported in ${item.city||'the area'}.`;
+
+  // mock "location / impact"
+  detailLocationEl.textContent =
+    `Approx area: ${item.city||'unknown'} (exact location may be refining).`;
+  detailImpactEl.textContent =
+    `Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.`;
+
+  // earlier today in same city
+  const sameCityEarlier = (relatedList||[])
+    .filter(x => x.city===item.city && x.when !== item.when)
+    .slice(0,3)
+    .map(x => `• ${fmtWhen(x.when)} — ${x.title}`)
+    .join('\n');
+  detailEarlierEl.textContent = sameCityEarlier || 'No earlier incidents recorded.';
+
+  // incident deep-link -> you could add query params later
+  viewFullBtn.href = 'incident.html';
+
+  detailPanel.classList.add('open');
+}
+function closeDetailPanel(){
+  detailPanel.classList.remove('open');
+}
+detailCloseBtn.addEventListener('click', closeDetailPanel);
+
+// close if click outside panel (optional)
+// window.addEventListener('click', (e)=>{
+//   if(detailPanel.classList.contains('open')){
+//     // if click is not inside panel
+//     if(!detailPanel.contains(e.target)){
+//       closeDetailPanel();
+//     }
+//   }
+// });
+
+// -------------------- CARD RENDER --------------------
+async function renderFeeds(){
+  const grid = document.getElementById('feedsGrid');
+  const feeds = loadFeeds();
+
+  // if there are no feeds saved, seed one default
+  if(!feeds.length){
+    const first = {
+      id: 'default-1',
+      places: ['London'],
+      risks: ['high','med','low']
+    };
+    saveFeeds([first]);
   }
 
-  function removeFeed(idx){
-    feeds.splice(idx,1);
-    saveFeeds();
-    renderFeeds();
-  }
+  const finalFeeds = loadFeeds();
 
-  // ---------------------------------
-  // modal open/close
-  // ---------------------------------
-  function openAddModal(){
-    modal.style.display = 'block';
-    modalBg.style.display = 'block';
-  }
-  function closeAddModal(){
-    modal.style.display = 'none';
-    modalBg.style.display = 'none';
-    cityInput.value = '';
-    riskChecks.forEach(ch => { ch.checked = false; });
-  }
+  grid.innerHTML = '';
 
-  document.getElementById('addFeedBtn').addEventListener('click', openAddModal);
-  modalClose.addEventListener('click', closeAddModal);
-  modalBg.addEventListener('click', closeAddModal);
-  modalAdd.addEventListener('click', addFeed);
+  for (const feed of finalFeeds){
+    const events = await fetchMockEventsForFeed(feed);
 
-  // ---------------------------------
-  // INIT
-  // ---------------------------------
-  async function init(){
-    loadFeeds();
-    // if first load and no feeds, create a default one
-    if(!feeds.length){
-      const defCities = ['London','Paris'];
-      const defRisks  = ['high','med'];
-      const events    = await fetchLiveFeed(defCities, defRisks);
-      feeds.push({ cities:defCities, risks:defRisks, events });
-      saveFeeds();
+    const card = document.createElement('section');
+    card.className = 'feed-card';
+
+    // header
+    const citiesLabel = feed.places.join(', ');
+    const risksLabel  = feed.risks.join(', ');
+    const topCity = feed.places[0] || 'Unknown';
+
+    card.innerHTML = `
+      <div class="feed-head">
+        <div class="feed-head-left">
+          <div class="feed-city">${citiesLabel}</div>
+          <div style="margin-top:4px;font-size:12px;color:${feed.risks.includes('high')?'#ff5a5f':feed.risks.includes('med')?'#f0b429':'#33c48d'};">
+            Watching: ${risksLabel}
+          </div>
+        </div>
+        <div class="feed-head-right">
+          <button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>
+        </div>
+      </div>
+
+      <div class="feed-body"></div>
+
+      <div class="feed-footer">
+        <div class="src">source: simulated source</div>
+        <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
+      </div>
+    `;
+
+    const bodyEl = card.querySelector('.feed-body');
+
+    if (!events.length){
+      bodyEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">No recent items in ${citiesLabel}.</div>`;
     } else {
-      // refresh them all on load
-      for (let i=0;i<feeds.length;i++){
-        await refreshFeed(i);
+      events.slice(0,8).forEach(ev=>{
+        const itemEl = document.createElement('div');
+        itemEl.className = 'feed-item';
+        itemEl.style.borderLeftColor =
+          ev.risk==='high' ? '#ff5a5f' :
+          ev.risk==='med'  ? '#f0b429' :
+                             '#33c48d';
+
+        itemEl.innerHTML = `
+          <div class="feed-title-row">
+            <div>${ev.city || topCity} — ${ev.title}</div>
+            <div class="feed-risk ${riskClass(ev.risk)}">${ev.risk}</div>
+          </div>
+          <div class="feed-meta">
+            <span>${fmtWhen(ev.when)}</span>
+            <span>${ev.risk.toUpperCase()} priority</span>
+          </div>
+        `;
+
+        // clicking an item opens side panel instead of nav
+        itemEl.addEventListener('click', ()=>{
+          openDetailPanel(ev, events);
+        });
+
+        bodyEl.appendChild(itemEl);
+      });
+    }
+
+    // refresh link
+    const refreshBtn = card.querySelector('.refresh');
+    refreshBtn.addEventListener('click', ()=>{
+      renderFeeds(); // just rerender for now
+    });
+
+    // edit feed
+    const editBtn = card.querySelector('.btn-edit-feed');
+    editBtn.addEventListener('click', ()=>{
+      openFeedModal(feed);
+    });
+
+    grid.appendChild(card);
+  }
+}
+
+// -------------------- FEED MODAL LOGIC --------------------
+const overlayEl = document.getElementById('modalOverlay');
+const cityInput = document.getElementById('feedCityInput');
+const riskSel   = document.getElementById('feedRiskSelect');
+const cancelBtn = document.getElementById('modalCancel');
+const saveBtn   = document.getElementById('modalSave');
+const addFeedBtn= document.getElementById('btnAddFeed');
+
+let editingFeedId = null;
+
+function openFeedModal(feed){
+  editingFeedId = feed ? feed.id : null;
+  overlayEl.style.display='flex';
+
+  if(feed){
+    cityInput.value = (feed.places||[]).join(', ');
+    // reset all first
+    for (let i=0;i<riskSel.options.length;i++){
+      riskSel.options[i].selected = false;
+    }
+    (feed.risks||[]).forEach(r=>{
+      for (let i=0;i<riskSel.options.length;i++){
+        if(riskSel.options[i].value===r){
+          riskSel.options[i].selected = true;
+        }
+      }
+    });
+  } else {
+    cityInput.value = '';
+    for (let i=0;i<riskSel.options.length;i++){
+      riskSel.options[i].selected = false;
+    }
+    // default select high+med
+    for (let i=0;i<riskSel.options.length;i++){
+      if(['high','med'].includes(riskSel.options[i].value)){
+        riskSel.options[i].selected = true;
       }
     }
-    renderFeeds();
+  }
+}
+
+function closeFeedModal(){
+  overlayEl.style.display='none';
+  editingFeedId = null;
+}
+
+cancelBtn.addEventListener('click', closeFeedModal);
+overlayEl.addEventListener('click',(e)=>{
+  if(e.target===overlayEl){
+    closeFeedModal();
+  }
+});
+addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
+
+saveBtn.addEventListener('click', ()=>{
+  const rawCities = cityInput.value.trim();
+  if(!rawCities){
+    alert('Please enter at least one city/region.');
+    return;
+  }
+  const places = rawCities.split(',').map(s=>s.trim()).filter(Boolean);
+
+  const risks = [];
+  for (let i=0;i<riskSel.options.length;i++){
+    if(riskSel.options[i].selected){
+      risks.push(riskSel.options[i].value);
+    }
+  }
+  if(!risks.length){
+    alert('Please pick at least one risk level.');
+    return;
   }
 
-  init();
-})();
+  const feeds = loadFeeds();
+
+  if(editingFeedId){
+    // update existing
+    const idx = feeds.findIndex(f=>f.id===editingFeedId);
+    if(idx>=0){
+      feeds[idx].places = places;
+      feeds[idx].risks  = risks;
+    }
+    saveFeeds(feeds);
+  } else {
+    // create new
+    const id = 'feed-' + Date.now().toString(36);
+    feeds.push({ id, places, risks });
+    saveFeeds(feeds);
+  }
+
+  closeFeedModal();
+  renderFeeds();
+});
+
+// -------------------- INIT --------------------
+renderFeeds();
+
 </script>
+
+<!-- auth helpers / admin links -->
+<script src="auth.js"></script>
+<script src="admin-links.js"></script>
+
+</body>
+</html>
