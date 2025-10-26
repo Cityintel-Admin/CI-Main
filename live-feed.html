@@ -697,206 +697,156 @@
   </script>
 
   <!-- Live Feed logic with persistence + details panel -->
-  <script>
-  (function(){
-    const API_BASE = 'https://api.cityintelapi.com';
-    const STORAGE_KEY = 'ci_live_feeds';
+<script>
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const STORAGE_KEY = 'ci_live_feeds';
+  let feeds = [];
 
-    // our in-memory feeds array
-    let feeds = [];
+  // ----- panel elements -----
+  const panel     = document.getElementById('detailsPanel');
+  const backdrop  = document.getElementById('detailsBackdrop');
+  const closeBtn  = document.getElementById('panelCloseBtn');
+  const panelBody = document.getElementById('panelBody');
+  // We'll also inject a "View full incident" button dynamically.
 
-    // details panel refs
-    const panel = document.getElementById('detailsPanel');
-    const backdrop = document.getElementById('detailsBackdrop');
-    const closeBtn = document.getElementById('panelCloseBtn');
-    const panelTitle = document.getElementById('panelTitle');
-    const panelMeta  = document.getElementById('panelMeta');
-    const panelLocationText = document.getElementById('panelLocationText');
-    const panelDistanceChip = document.getElementById('panelDistanceChip');
-    const panelMapBox = document.getElementById('panelMapBox');
-    const panelHistory = document.getElementById('panelHistory');
+  // ----- modal elements (Add Feed) -----
+  const modal      = document.getElementById('addModal');
+  const modalBg    = document.getElementById('addModalBg');
+  const modalAdd   = document.getElementById('doAddFeed');
+  const modalClose = document.getElementById('closeAddModal');
+  const cityInput  = document.getElementById('feedCities');
+  const riskChecks = document.querySelectorAll('.riskChk');
 
-    function openPanel(ev){
-      // populate mock detail using the event row data
-      const city = ev.city || 'Unknown city';
-      const risk = ev.risk || 'med';
-      const whenPretty = new Date(ev.when).toLocaleString('en-GB',{
-        day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'
+  // main grid
+  const feedsGrid  = document.getElementById('feedsGrid');
+
+  // ---------------------------------
+  // helpers: storage
+  // ---------------------------------
+  function loadFeeds(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      feeds = raw ? JSON.parse(raw) : [];
+    } catch(e){
+      feeds = [];
+    }
+  }
+  function saveFeeds(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
+  }
+
+  // ---------------------------------
+  // helpers: panel open/close
+  // ---------------------------------
+  function openPanel(html){
+    panelBody.innerHTML = html;
+    backdrop.style.display = 'block';
+    panel.classList.add('open');
+  }
+  function closePanel(){
+    panel.classList.remove('open');
+    backdrop.style.display = 'none';
+  }
+  closeBtn.addEventListener('click', closePanel);
+  backdrop.addEventListener('click', closePanel);
+
+  // ---------------------------------
+  // mock generator (fallback when API fails)
+  // ---------------------------------
+  function generateMockEvents(cities, risks){
+    const now = Date.now();
+    const chosenCities = cities.length ? cities : ['London','Paris','Berlin','New York','Rome'];
+    const chosenRisks = risks.length ? risks : ['high','med'];
+
+    const out=[];
+    for (let i=0;i<5;i++){
+      const city = chosenCities[i % chosenCities.length];
+      const risk = chosenRisks[i % chosenRisks.length];
+      out.push({
+        id: `${city}_${now}_${i}`,
+        title: (risk==='high'?'Police presence':'Crowd gathering') + ' at ' + city,
+        city,
+        risk,
+        when: new Date(now - i*600000).toISOString(),
+        src: 'Simulated Source',
+        approx_area: (city==='London'?'Stratford, East London':
+                      city==='Paris'?'Place de la République':
+                      'Central district'),
+        office_distance_km: (Math.random()*5+0.5).toFixed(1)+" km from HQ",
+        lat: 51.538 + Math.random()*0.02, // dummy-ish coords
+        lon: -0.003 + Math.random()*0.02
       });
-
-      panelTitle.textContent = ev.title || (city + ' incident');
-      panelMeta.textContent  = `${city} • ${risk.charAt(0).toUpperCase()+risk.slice(1)} risk • ${whenPretty}`;
-
-      // mock location detail (placeholder: "Stratford, East London")
-      panelLocationText.textContent = city + ' central district (approx.)';
-
-      // fake distance from HQ
-      panelDistanceChip.textContent = '~2 km from HQ';
-
-      // small "map"
-      panelMapBox.textContent = 'Map preview for ' + city;
-
-      // "recent" history in that city
-      panelHistory.innerHTML = `
-        • Earlier report in ${city} about police presence.<br/>
-        • Traffic disruption still ongoing.<br/>
-        • Monitoring continues.
-      `;
-
-      // show
-      panel.classList.add('open');
-      panel.setAttribute('aria-hidden','false');
-      backdrop.style.display = 'block';
     }
+    return out;
+  }
 
-    function closePanel(){
-      panel.classList.remove('open');
-      panel.setAttribute('aria-hidden','true');
-      backdrop.style.display = 'none';
-    }
+  // ---------------------------------
+  // fetch live feed from Worker
+  // ---------------------------------
+  async function fetchLiveFeed(cities, risks){
+    const url = new URL(API_BASE + '/api/live');
+    if (cities.length) url.searchParams.set('cities', cities.join(','));
+    if (risks.length)  url.searchParams.set('risk', risks.join(','));
 
-    backdrop.addEventListener('click', closePanel);
-    closeBtn.addEventListener('click', closePanel);
-
-    // ---------- helpers ----------
-    function randPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-    function nowISO(){ return new Date().toISOString(); }
-
-    function generateMockEvents(cities, riskFilter){
-      const risks = ['high','med','low'];
-      const out=[];
-      for(let i=0;i<5;i++){
-        const city = randPick(cities);
-        const r = randPick(risks);
-        if(riskFilter.length && !riskFilter.includes(r)) continue;
-        out.push({
-          id: city + '_' + Date.now() + '_' + i,
-          title: 'Incident unfolding near ' + city,
-          city,
-          risk: r,
-          when: nowISO(),
-          src: 'Simulated Source'
-        });
-      }
-      // sort so high first, then med, then low
-      out.sort((a,b)=>{
-        const pr = rr=> rr==='high'?0: rr==='med'?1:2;
-        return pr(a.risk)-pr(b.risk) || (new Date(b.when)-new Date(a.when));
-      });
-      return out;
-    }
-
-    async function fetchLiveFeed(cities, risks){
-      // call Worker /api/live (mock right now) and fall back to generated
-      const url = new URL(API_BASE + '/api/live');
-      if (cities.length) url.searchParams.set('cities', cities.join(','));
-      if (risks.length)  url.searchParams.set('risk', risks.join(','));
-
-      try {
-        const res = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
-        if (!res.ok) throw new Error('HTTP '+res.status);
-        const data = await res.json();
-        if (data && data.events && data.events.length) {
-          return data.events;
-        } else {
-          console.warn('Empty live data; using mock');
-          return generateMockEvents(cities, risks);
-        }
-      } catch (err) {
-        console.warn('fetchLiveFeed failed:', err);
-        return generateMockEvents(cities, risks);
-      }
-    }
-
-    function saveFeeds(){
-      try {
-        // save the visible events too, so refresh survives reload
-        const minimal = feeds.map(f => ({
-          cities: f.cities,
-          risks: f.risks,
-          events: f.events || []
+    try {
+      const res = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      // Worker returns {ok:true, events:[...]}
+      if (data && Array.isArray(data.events) && data.events.length){
+        return data.events.map(ev=>({
+          ...ev,
+          approx_area: ev.approx_area || 'Central district',
+          office_distance_km: ev.office_distance_km || '2.1 km from HQ',
+          lat: ev.lat || 51.5,
+          lon: ev.lon || -0.1
         }));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
-      } catch(e){
-        console.warn('saveFeeds failed', e);
       }
+      return generateMockEvents(cities, risks);
+    } catch (err) {
+      console.warn('fetchLiveFeed failed:', err);
+      return generateMockEvents(cities, risks);
+    }
+  }
+
+  // ---------------------------------
+  // RENDER FEEDS
+  // ---------------------------------
+  function renderFeeds(){
+    feedsGrid.innerHTML = '';
+
+    if(!feeds.length){
+      feedsGrid.innerHTML = `
+        <div class="feed-card" style="text-align:center;justify-content:center;min-height:200px">
+          <div style="color:var(--muted);font-size:13px;line-height:1.4;">
+            No feeds yet.<br/>Click "Add Feed" to start watching locations.
+          </div>
+        </div>`;
+      return;
     }
 
-    function loadFeeds(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return [];
-        const arr = JSON.parse(raw);
-        if(!Array.isArray(arr)) return [];
-        return arr.map(f => ({
-          cities: f.cities || [],
-          risks: f.risks || [],
-          events: Array.isArray(f.events) ? f.events : []
-        }));
-      }catch(e){
-        console.warn('loadFeeds failed', e);
-        return [];
-      }
-    }
-
-    // ---------- DOM refs ----------
-    const feedsGrid = document.getElementById('feedsGrid');
-    const addBtn    = document.getElementById('addFeedBtn');
-
-    // ---------- render ----------
-    function renderFeeds(){
-      feedsGrid.innerHTML = '';
-      if(!feeds.length){
-        feedsGrid.innerHTML = `
-          <div class="feed-card" style="text-align:center;justify-content:center;min-height:200px">
-            <div style="color:var(--muted);font-size:13px;line-height:1.4;">
-              No feeds yet.<br/>Click "Add Feed" to start watching locations.
-            </div>
-          </div>`;
-        return;
-      }
-
-      feeds.forEach((feed, idx)=>{
-        // build body
-        let bodyHTML='';
-        if(feed.events && feed.events.length){
-          feed.events.forEach(ev=>{
-            const high = (ev.risk==='high');
-            const cls = high ? 'event-row' : 'event-row med';
-            const whenPretty = new Date(ev.when).toLocaleString('en-GB',{
-              day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'
-            });
-            const riskLabel = ev.risk==='high'?'High':'Medium';
-            // embed data attributes on clickable row for panel
-            bodyHTML += `
-              <div class="${cls}" 
-                   data-city="${ev.city||''}" 
-                   data-title="${ev.title||''}" 
-                   data-risk="${ev.risk||''}" 
-                   data-when="${ev.when||''}">
-                <div class="event-topline">${ev.city} — ${ev.title}</div>
-                <div class="event-meta">${whenPretty} • ${riskLabel} risk</div>
-                <div class="event-src">
-                  <a href="#" target="_blank" rel="noopener">Source: ${ev.src}</a>
-                </div>
-              </div>`;
+    feeds.forEach((feed, idx)=>{
+      // body rows
+      let bodyHTML='';
+      if(feed.events && feed.events.length){
+        feed.events.forEach(ev=>{
+          const high = (ev.risk==='high');
+          const cls = high ? 'event-row' : 'event-row med';
+          const whenPretty = new Date(ev.when).toLocaleString('en-GB',{
+            day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'
           });
-        } else {
-          bodyHTML = `<div style="color:var(--muted);font-size:12px;">No recent items.</div>`;
-        }
+          const riskLabel = ev.risk==='high'?'High':'Medium';
 
-
-   // ✅ Step A: Make each event clickable → incident.html
+          // stash in sessionStorage so incident.html can load later
           const evId = ev.id || `${ev.city}_${Date.now()}_${Math.floor(Math.random()*100000)}`;
           const stashKey = `ci_event_${evId}`;
           sessionStorage.setItem(stashKey, JSON.stringify(ev));
 
+          // clickable row (but no redirect here!)
           bodyHTML += `
-            <div class="${cls}" data-ev-id="${evId}"
-                 data-city="${ev.city||''}"
-                 data-title="${ev.title||''}"
-                 data-risk="${ev.risk||''}"
-                 data-when="${ev.when||''}">
+            <div class="${cls}"
+                 data-ev-id="${evId}">
               <div class="event-topline">${ev.city} — ${ev.title}</div>
               <div class="event-meta">${whenPretty} • ${riskLabel} risk</div>
               <div class="event-src"><a href="#" target="_blank" rel="noopener">Source: ${ev.src}</a></div>
@@ -906,37 +856,36 @@
         bodyHTML = `<div style="color:var(--muted);font-size:12px;">No recent items.</div>`;
       }
 
+      const riskStr = feed.risks.length
+        ? feed.risks.map(r=>r[0].toUpperCase()+r.slice(1)).join(', ')
+        : 'All';
+      const citiesStr = feed.cities.join(', ');
 
-
-        const riskStr = feed.risks.length
-          ? feed.risks.map(r=>r[0].toUpperCase()+r.slice(1)).join(', ')
-          : 'All';
-        const citiesStr = feed.cities.join(', ');
-
-        const card = document.createElement('div');
-        card.className = 'feed-card';
-        card.innerHTML = `
-          <div class="feed-head">
-            <div class="feed-head-left">
-              <div class="feed-title">
-                <span>${citiesStr}</span>
-                <span class="filter-dots">• Risk: ${riskStr}</span>
-              </div>
-            </div>
-            <div class="feed-head-right">
-              <button class="small-btn" data-type="refresh" data-idx="${idx}">Refresh</button>
-              <button class="small-btn danger" data-type="remove" data-idx="${idx}">Remove</button>
+      const card = document.createElement('div');
+      card.className = 'feed-card';
+      card.innerHTML = `
+        <div class="feed-head">
+          <div class="feed-head-left">
+            <div class="feed-title">
+              <span>${citiesStr}</span>
+              <span class="filter-dots">• Risk: ${riskStr}</span>
             </div>
           </div>
-          <div class="feed-body">${bodyHTML}</div>
-        `;
-        feedsGrid.appendChild(card);
-      });
-    }
+          <div class="feed-head-right">
+            <button class="small-btn" data-type="refresh" data-idx="${idx}">Refresh</button>
+            <button class="small-btn danger" data-type="remove" data-idx="${idx}">Remove</button>
+          </div>
+        </div>
+        <div class="feed-body">${bodyHTML}</div>
+      `;
+      feedsGrid.appendChild(card);
+    });
+  }
 
-
-
- function fillAndOpenPanel(evObj, evId){
+  // ---------------------------------
+  // PANEL FILLER (called when you click an event row)
+  // ---------------------------------
+  function fillAndOpenPanel(evObj, evId){
     // pretty time
     const whenPretty = new Date(evObj.when).toLocaleString('en-GB',{
       weekday:'short', day:'2-digit', month:'short',
@@ -1011,32 +960,27 @@
     openPanel(panelBody.innerHTML);
   }
 
-
-
-    
-
-// Event delegation for clicks
+  // ---------------------------------
+  // GRID CLICK HANDLER
+  // ---------------------------------
   feedsGrid.addEventListener('click', (e)=>{
     const t = e.target;
     if(!(t instanceof HTMLElement)) return;
 
-    const row = t.closest('.event-row');
-    if (row) {
-      const evId = row.getAttribute('data-ev-id');
-      if (evId) {
-        window.location.href = `incident.html?from=live&event=${encodeURIComponent(evId)}`;
-        return;
+    // Did we click a feed header button?
+    const btn = t.closest('button.small-btn');
+    if(btn){
+      const type = btn.getAttribute('data-type');
+      const idx  = Number(btn.getAttribute('data-idx'));
+      if(type === 'remove') {
+        removeFeed(idx);
+      } else if(type === 'refresh') {
+        refreshFeed(idx);
       }
+      return;
     }
 
-    const btn = t.closest('button.small-btn');
-    if(!btn) return;
-    const type = btn.getAttribute('data-type');
-    const idx  = Number(btn.getAttribute('data-idx'));
-    if(type === 'remove') removeFeed(idx);
-    else if(type === 'refresh') refreshFeed(idx);
-  });
-
+    // Did we click an event row?
     const row = t.closest('.event-row');
     if(row){
       const evId = row.getAttribute('data-ev-id');
@@ -1050,87 +994,48 @@
     }
   });
 
+  // ---------------------------------
+  // FEED OPS: add / remove / refresh
+  // ---------------------------------
+  async function refreshFeed(idx){
+    const feed = feeds[idx];
+    if(!feed) return;
+    const events = await fetchLiveFeed(feed.cities, feed.risks);
+    feed.events = events;
+    saveFeeds();
+    renderFeeds();
+  }
 
-    // ---------- actions ----------
-    async function refreshFeed(i){
-      const f = feeds[i];
-      if(!f) return;
-      // pull from Worker (fallback to mock)
-      f.events = await fetchLiveFeed(f.cities, f.risks);
-      renderFeeds();
-      saveFeeds();
+  async function addFeed(){
+    // cities from input:
+    const citiesRaw = cityInput.value.trim();
+    if(!citiesRaw){
+      alert('Enter at least one city (comma separated).');
+      return;
     }
+    const cities = citiesRaw.split(',').map(s=>s.trim()).filter(Boolean);
 
-    function removeFeed(i){
-      feeds.splice(i,1);
-      renderFeeds();
-      saveFeeds();
-    }
+    // risks from checkboxes:
+    const risks = [];
+    riskChecks.forEach(ch => { if(ch.checked) risks.push(ch.value); });
 
-    async function addFeed(){
-      const citiesInput = prompt(
-        'Which locations? (comma separated)\nExample: London, Paris, Berlin'
-      );
-      if(!citiesInput) return;
-      const rawCities = citiesInput.split(',').map(s=>s.trim()).filter(Boolean);
-      if(!rawCities.length) return;
+    // fetch first batch:
+    const events = await fetchLiveFeed(cities, risks);
 
-      const riskInput = prompt(
-        'Risk filter? (high,med,low or blank for all)\nExample: high,med'
-      );
-      const rawRisks = (riskInput||'')
-        .split(',')
-        .map(s=>s.trim().toLowerCase())
-        .filter(Boolean);
+    // push into feeds list
+    feeds.push({ cities, risks, events });
+    saveFeeds();
+    renderFeeds();
+    closeAddModal();
+  }
 
-      const newFeed = {
-        cities: rawCities,
-        risks: rawRisks,
-        events: [] // we'll fill after first refresh
-      };
-      feeds.push(newFeed);
-      renderFeeds();
-      saveFeeds();
-      closeAddModal();
-      // prime it with data
-      const idx = feeds.length-1;
-      refreshFeed(idx);
-    }
+  function removeFeed(idx){
+    feeds.splice(idx,1);
+    saveFeeds();
+    renderFeeds();
+  }
 
-    // click handlers - add feed / refresh / remove + row click for panel
-    addBtn.addEventListener('click', addFeed);
-
-    feedsGrid.addEventListener('click', (e)=>{
-      const t = e.target;
-      if(!(t instanceof HTMLElement)) return;
-
-      // row click for panel
-      const row = t.closest('.event-row');
-      if (row) {
-        const ev = {
-          city: row.getAttribute('data-city') || '',
-          title: row.getAttribute('data-title') || '',
-          risk: row.getAttribute('data-risk') || '',
-          when: row.getAttribute('data-when') || ''
-        };
-        openPanel(ev);
-        return;
-      }
-
-      // button click logic
-      const btn = t.closest('button.small-btn');
-      if(!btn) return;
-      const type = btn.getAttribute('data-type');
-      const idx  = Number(btn.getAttribute('data-idx'));
-
-      if(type === 'remove'){
-        removeFeed(idx);
-      } else if(type === 'refresh'){
-        refreshFeed(idx);
-      }
-    });
-
-
+  // ---------------------------------
   // modal open/close
   // ---------------------------------
   function openAddModal(){
@@ -1149,22 +1054,27 @@
   modalBg.addEventListener('click', closeAddModal);
   modalAdd.addEventListener('click', addFeed);
 
-
-    
-    // ---------- init ----------
-    feeds = loadFeeds();
+  // ---------------------------------
+  // INIT
+  // ---------------------------------
+  async function init(){
+    loadFeeds();
+    // if first load and no feeds, create a default one
     if(!feeds.length){
-      feeds = [{ cities:['London','Paris'], risks:['high','med'], events:[] }];
+      const defCities = ['London','Paris'];
+      const defRisks  = ['high','med'];
+      const events    = await fetchLiveFeed(defCities, defRisks);
+      feeds.push({ cities:defCities, risks:defRisks, events });
+      saveFeeds();
+    } else {
+      // refresh them all on load
+      for (let i=0;i<feeds.length;i++){
+        await refreshFeed(i);
+      }
     }
     renderFeeds();
-    // refresh each feed once on load to get current data
-    feeds.forEach((_,i)=>refreshFeed(i));
-    // background refresh every 30s
-    setInterval(()=>{ feeds.forEach((_,i)=>refreshFeed(i)); }, 30000);
+  }
 
-  })();
-  </script>
-
-  <script src="admin-links.js"></script>
-</body>
-</html>
+  init();
+})();
+</script>
