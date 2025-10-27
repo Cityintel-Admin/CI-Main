@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -503,22 +504,23 @@
       }
 
 
-/* === LIVE badge animation === */
 .live-badge {
   position: absolute;
   top: 12px;
   right: 18px;
   background-color: #ff1e1e;
-  color: white;
+  color: #fff;
   font-weight: bold;
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 6px;
   animation: pulse 1.2s infinite;
+  line-height: 1.2;
+  box-shadow: 0 8px 20px rgba(255,0,0,.4);
 }
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.05); }
+  50%      { opacity: 0.7; transform: scale(1.05); }
 }
 
 		
@@ -659,11 +661,13 @@
         Hold Ctrl (or Cmd on Mac) to select multiple.
       </div>
     </div>
-
-<label>
-  <input type="checkbox" id="feedLiveToggle" />
-  Use Live Intel Feed (beta)
-</label>
+	  
+    <div class="modal-row" style="flex-direction:row;align-items:center;gap:8px;">
+      <input type="checkbox" id="feedLiveToggle" />
+      <label for="feedLiveToggle" style="font-size:12px;color:var(--muted);cursor:pointer;">
+        Use Live Intel Feed (beta)
+      </label>
+    </div>
 	  
     <div class="modal-actions">
       <button class="btn-cancel" id="modalCancel">Cancel</button>
@@ -774,68 +778,54 @@ function addFeedDef(def){
 }
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
-async function fetchMockEventsForFeed(feed) {
-  // feed = { places:[...], risks:[...], useLive:true/false }
+async function fetchEventsForFeed(feed) {
+  // feed = { places:[...], risks:[...], useLive:true|false }
 
-  // 1. Build the correct URL depending on useLive
-  // - If useLive is true → hit /api/live-news (future: real provider-backed feed)
-  // - Otherwise → hit /api/live (our current mock generator)
-  let url = feed.useLive
-    ? `https://api.cityintelapi.com/api/live-news?cities=${feed.places.join(",")}&risk=${feed.risks.join(",")}`
-    : `https://api.cityintelapi.com/api/live?cities=${feed.places.join(",")}&risk=${feed.risks.join(",")}`;
+  // build URL based on useLive
+  const base = feed.useLive ? 'live-news' : 'live';
+  const url = `https://api.cityintelapi.com/api/${base}` +
+              `?cities=${encodeURIComponent(feed.places.join(','))}` +
+              `&risk=${encodeURIComponent(feed.risks.join(','))}`;
 
-  // Helpful during testing: you'll see in DevTools console when this feed
-  // is trying to pull "real" news instead of mock
+  // helpful in console while we test real provider next step
   if (feed.useLive) {
-    console.log("Live feed active for:", feed.places.join(", "));
+    console.log('LIVE MODE for feed:', feed.places.join(', '));
   }
 
   try {
-    // 2. Hit the Worker
     const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    // 3. Parse what the Worker returns
-    // Expected worker response shape:
-    // { ok:true, events:[ { id, title, city, risk, when, src, ... }, ... ] }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
-    // 4. Normalize for the UI (fallbacks in case a field is missing)
     const list = Array.isArray(data.events) ? data.events : [];
     return list.map(evt => ({
       id: evt.id || crypto.randomUUID(),
-      title: evt.title || evt.headline || "Untitled incident",
-      city: evt.city || evt.location || "Unknown city",
-      risk: (evt.risk || "med").toLowerCase(), // make sure it's "high" | "med" | "low"
+      title: evt.title || evt.headline || 'Untitled incident',
+      city: evt.city || evt.location || 'Unknown city',
+      risk: (evt.risk || 'med').toLowerCase(),
       when: evt.when || evt.time || new Date().toISOString(),
-      src: evt.src || evt.source || "External source",
-      // You can carry extra fields for the side panel / incident.html:
-      description: evt.description || evt.summary || "",
+      src: evt.src || evt.source || (feed.useLive ? 'Live provider' : 'Simulated source'),
+      description: evt.description || evt.summary || '',
       lat: evt.lat || null,
       lon: evt.lon || null,
       neighbourhood: evt.neighbourhood || evt.area || null,
     }));
   } catch (err) {
-    console.warn("Feed fetch failed, falling back to local mock:", err);
-
-    // 5. Fallback local mock so UI doesn't break if network fails
+    console.warn('Feed fetch failed, falling back to local mock:', err);
+    // fallback mock
     const now = Date.now();
-    return feed.places.slice(0, 2).map((city, i) => {
-      return {
-        id: `${city}_${now}_${i}`,
-        title: `Police presence near ${city}`,
-        city,
-        risk: feed.risks[i % feed.risks.length] || "med",
-        when: new Date(now - i * 600000).toISOString(), // stagger by 10m
-        src: "Simulated source",
-        description: `Reports of crowd activity and increased police posture in ${city}.`,
-        lat: null,
-        lon: null,
-        neighbourhood: "Central district",
-      };
-    });
+    return feed.places.slice(0, 2).map((city, i) => ({
+      id: `${city}_${now}_${i}`,
+      title: `Police presence near ${city}`,
+      city,
+      risk: feed.risks[i % feed.risks.length] || 'med',
+      when: new Date(now - i * 600000).toISOString(), // stagger by 10m
+      src: 'Simulated source',
+      description: `Reports of crowd activity and increased police posture in ${city}.`,
+      lat: null,
+      lon: null,
+      neighbourhood: 'Central district',
+    }));
   }
 }
 
@@ -919,31 +909,27 @@ async function renderFeeds(){
 
   // if there are no feeds saved, seed one default
   if(!feeds.length){
-    const first = {
+    const first = [{
       id: 'default-1',
       places: ['London'],
       risks: ['high','med','low']
-    };
+	  useLive: false
+    }];
     saveFeeds([first]);
   }
-
-	if (feed.useLive) {
-  const badge = document.createElement("div");
-  badge.className = "live-badge";
-  badge.textContent = "LIVE";
-  card.appendChild(badge);
-}
 
   const finalFeeds = loadFeeds();
 
   grid.innerHTML = '';
 
   for (const feed of finalFeeds){
-    const events = await fetchMockEventsForFeed(feed);
+    const events = await fetchEventsForFeed(feed);
 
     const card = document.createElement('section');
     card.className = 'feed-card';
+    card.style.position = 'relative'; // for LIVE badge overlay
 
+	  
     // header
     const citiesLabel = feed.places.join(', ');
     const risksLabel  = feed.risks.join(', ');
@@ -970,6 +956,13 @@ async function renderFeeds(){
       </div>
     `;
 
+    if (feed.useLive){
+      const badge = document.createElement('div');
+      badge.className = 'live-badge';
+      badge.textContent = 'LIVE';
+      card.appendChild(badge);
+    }
+	  
     const bodyEl = card.querySelector('.feed-body');
 
     if (!events.length){
@@ -1023,7 +1016,7 @@ async function renderFeeds(){
 const overlayEl = document.getElementById('modalOverlay');
 const cityInput = document.getElementById('feedCityInput');
 const riskSel   = document.getElementById('feedRiskSelect');
-const useLive = document.getElementById("feedLiveToggle").checked; const newFeed = { cities, risk, useLive };feedLiveToggle.checked = !!feed?.useLive;
+const liveToggle  = document.getElementById('feedLiveToggle');
 const cancelBtn = document.getElementById('modalCancel');
 const saveBtn   = document.getElementById('modalSave');
 const addFeedBtn= document.getElementById('btnAddFeed');
@@ -1046,7 +1039,8 @@ function openFeedModal(feed){
           riskSel.options[i].selected = true;
         }
       }
-    });
+    }); 
+	  liveToggle.checked = !!feed.useLive;
   } else {
     cityInput.value = '';
     for (let i=0;i<riskSel.options.length;i++){
@@ -1058,6 +1052,7 @@ function openFeedModal(feed){
         riskSel.options[i].selected = true;
       }
     }
+	  liveToggle.checked = false;
   }
 }
 
@@ -1092,7 +1087,9 @@ saveBtn.addEventListener('click', ()=>{
     alert('Please pick at least one risk level.');
     return;
   }
-
+	
+  const useLive = !!liveToggle.checked;
+	
   const feeds = loadFeeds();
 
   if(editingFeedId){
@@ -1101,6 +1098,7 @@ saveBtn.addEventListener('click', ()=>{
     if(idx>=0){
       feeds[idx].places = places;
       feeds[idx].risks  = risks;
+	  feeds[idx].useLive = useLive;
     }
     saveFeeds(feeds);
   } else {
