@@ -774,30 +774,68 @@ function addFeedDef(def){
 }
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
-async function fetchMockEventsForFeed(feed){
-  // feed.places is array of cities, feed.risks is array of risk levels
-  // We'll ask Worker for mock data (still fake but consistent format)
-  const params = new URLSearchParams();
-  if(feed.places && feed.places.length){
-    params.set('cities', feed.places.join(','));
-  }
-  if(feed.risks && feed.risks.length){
-    params.set('risk', feed.risks.join(','));
-  }
-let url = feed.useLive
-  ? `https://api.cityintelapi.com/api/live-news?cities=${feed.places.join(",")}&risk=${feed.risks.join(",")}`
-  : `https://api.cityintelapi.com/api/live?cities=${feed.places.join(",")}&risk=${feed.risks.join(",")}`;
+async function fetchMockEventsForFeed(feed) {
+  // feed = { places:[...], risks:[...], useLive:true/false }
 
-if (feed.useLive) console.log("Live feed active");
+  // 1. Build the correct URL depending on useLive
+  // - If useLive is true → hit /api/live-news (future: real provider-backed feed)
+  // - Otherwise → hit /api/live (our current mock generator)
+  let url = feed.useLive
+    ? `https://api.cityintelapi.com/api/live-news?cities=${feed.places.join(",")}&risk=${feed.risks.join(",")}`
+    : `https://api.cityintelapi.com/api/live?cities=${feed.places.join(",")}&risk=${feed.risks.join(",")}`;
 
-  try{
+  // Helpful during testing: you'll see in DevTools console when this feed
+  // is trying to pull "real" news instead of mock
+  if (feed.useLive) {
+    console.log("Live feed active for:", feed.places.join(", "));
+  }
+
+  try {
+    // 2. Hit the Worker
     const res = await fetch(url);
-    if(!res.ok) throw new Error('bad response');
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    // 3. Parse what the Worker returns
+    // Expected worker response shape:
+    // { ok:true, events:[ { id, title, city, risk, when, src, ... }, ... ] }
     const data = await res.json();
-    return data.events || [];
-  }catch(e){
-    console.warn('mock fetch fail', e);
-    return [];
+
+    // 4. Normalize for the UI (fallbacks in case a field is missing)
+    const list = Array.isArray(data.events) ? data.events : [];
+    return list.map(evt => ({
+      id: evt.id || crypto.randomUUID(),
+      title: evt.title || evt.headline || "Untitled incident",
+      city: evt.city || evt.location || "Unknown city",
+      risk: (evt.risk || "med").toLowerCase(), // make sure it's "high" | "med" | "low"
+      when: evt.when || evt.time || new Date().toISOString(),
+      src: evt.src || evt.source || "External source",
+      // You can carry extra fields for the side panel / incident.html:
+      description: evt.description || evt.summary || "",
+      lat: evt.lat || null,
+      lon: evt.lon || null,
+      neighbourhood: evt.neighbourhood || evt.area || null,
+    }));
+  } catch (err) {
+    console.warn("Feed fetch failed, falling back to local mock:", err);
+
+    // 5. Fallback local mock so UI doesn't break if network fails
+    const now = Date.now();
+    return feed.places.slice(0, 2).map((city, i) => {
+      return {
+        id: `${city}_${now}_${i}`,
+        title: `Police presence near ${city}`,
+        city,
+        risk: feed.risks[i % feed.risks.length] || "med",
+        when: new Date(now - i * 600000).toISOString(), // stagger by 10m
+        src: "Simulated source",
+        description: `Reports of crowd activity and increased police posture in ${city}.`,
+        lat: null,
+        lon: null,
+        neighbourhood: "Central district",
+      };
+    });
   }
 }
 
