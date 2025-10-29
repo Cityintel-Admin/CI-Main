@@ -1,622 +1,409 @@
+
 <!doctype html>
 <html lang="en">
 <head>
+
+  <script src="auth.js"></script>
+
+
+<script>
+(function pageGuard(){
+  const NEED_LOGIN = true;          // this page requires a login
+  const NEED_SUB = false;           // set to true on pages that require an active sub
+
+  // Must be logged in?
+  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    location.href = 'login.html?next=' + next;
+    return;
+  }
+
+  // Must be subscribed?
+  if (NEED_SUB) {
+    const isSub = localStorage.getItem('ci_subscribed') === 'true';
+    if (!isSub) {
+      location.href = 'subscribe.html';
+      return;
+    }
+  }
+})();
+</script>
+
+<script>
+(function compatProfileShim(){
+  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+  const u = CIAuth.who();
+  if (!u) return;
+  localStorage.setItem('ci_profile', JSON.stringify({
+    name: u.name || 'CityIntel User',
+    email: u.email,
+    role: u.role || 'Admin',
+    is_admin: (u.role||'').toLowerCase()==='admin'
+  }));
+  // Do NOT auto-set ci_subscribed here anymore
+})();
+</script>
+
+
+  
   <meta charset="utf-8" />
   <title>CityIntel — Live Feed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
   <style>
-    :root{
-      --g900:#111214;
-      --g800:#16171a;
-      --g700:#1c1e22;
-      --g600:#2e3238;
-      --text:#e9edf2;
-      --muted:#8e97a3;
-      --danger:#ff5a5f;
-      --warn:#f0b429;
-      --ok:#33c48d;
-      --accent:#D01616;
-    }
+      :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
+      body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
 
-    body{
-      margin:0;
-      background:linear-gradient(180deg,var(--g900),var(--g800));
-      color:var(--text);
-      font:14px/1.6 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    }
+     .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
+    .sidebar{grid-area:sidebar;background:#0c0c0c;border-right:1px solid var(--gray-600);display:flex;flex-direction:column;padding:18px 14px;gap:18px}
+      nav a{display:flex;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--text);border:1px solid transparent}
+      nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+      nav a.active{background:rgba(208,22,22,0.15);border-color:var(--brand-red)}
 
-    .app{
-      display:grid;
-      grid-template-columns:260px 1fr;
-      grid-template-rows:60px 1fr;
-      grid-template-areas:
-        "sidebar topbar"
-        "sidebar main";
-      min-height:100vh;
-    }
+    .topbar{ grid-area: topbar;background: rgba(255,255,255,0.02);border-bottom:1px solid var(--brand-gray-600);display:flex; align-items:center; gap:12px;
+     padding:10px 16px;position:sticky; top:0; z-index:10;backdrop-filter: blur(8px);}
 
-    .sidebar{
-      grid-area:sidebar;
-      background:linear-gradient(180deg,#0C0C0C,#131416);
-      border-right:1px solid var(--g600);
-      padding:18px 14px;
-      min-height:100%;
-    }
+#topActions{margin-left:auto;display:flex; align-items:center; gap:10px;min-width: fit-content;position: relative;}
+    
+    .user{ display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;
+  background:#1c1e22;border:1px solid #24272c;cursor:pointer;
+}
+    .avatar{ width:28px;height:28px;background:#fff;color:#000;border-radius:50%;
+  display:grid;place-items:center;font-weight:700;
+}
+    .dropdown{ position:absolute;right:0;top:calc(100% + 6px);background:#1a1c20;border:1px solid #24272c;
+  border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:140px;z-index:50;
+}
+    .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
+    .dropdown a:hover{background:rgba(255,255,255,0.05)}
 
-    .sidebar .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-bottom:16px;
-    }
-    .sidebar .brand img{
-      width:32px;
-      height:32px;
-      border-radius:6px;
-      object-fit:cover;
-      border:1px solid var(--g600);
-      background:#000;
-    }
-    .sidebar .brand .title{
-      font-weight:700;
-      color:var(--text);
-      font-size:15px;
-      line-height:1.2;
-    }
-    .sidebar .brand .subtitle{
-      font-size:11px;
-      color:var(--muted);
-      line-height:1.2;
-    }
+  .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
+  .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
 
-    nav.sidebar-nav{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    nav.sidebar-nav a{
-      display:flex;
-      gap:10px;
-      color:#e9edf2;
-      text-decoration:none;
-      padding:10px 12px;
-      border-radius:10px;
-      border:1px solid transparent;
-      font-size:13px;
-      align-items:center;
-    }
-    nav.sidebar-nav a:hover{
-      background:#24272c;
-      border-color:#2e3238;
-    }
-    nav.sidebar-nav a.active{
-      background:rgba(208,22,22,.15);
-      border-color:#D01616;
-    }
 
-    .topbar{
-      grid-area:topbar;
-      background:rgba(255,255,255,.02);
-      border-bottom:1px solid var(--g600);
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:10px 16px;
-      position:sticky;
-      top:0;
-      z-index:20;
-      backdrop-filter:blur(8px);
-      justify-content:space-between;
-    }
 
-    .brandbar-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-
-    .trial-banner{
-      display:none;
-      background:none;
+    #trial-banner{
+      flex:1;
+      text-align:center;
+      font-size:12px;
+      font-weight:600;
       color:#fecaca;
+    }
+
+
+    .logout-link{
+      color:#8e97a3;
       font-size:12px;
-      line-height:1.3;
-      text-align:center;
-      font-weight:500;
-    }
-    .trial-banner .live-dot{
-      display:inline-block;
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#ff4d4d;
-      box-shadow:0 0 8px #ff4d4d;
-      margin-right:6px;
-    }
-
-    .top-actions-wrapper{
-      margin-left:auto;
-      position:relative;
-    }
-
-    .user-chip{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      background:#1f2227;
-      border:1px solid var(--g600);
-      border-radius:10px;
-      padding:6px 10px;
-      font-size:12px;
-      line-height:1.2;
-    }
-    .user-chip .avatar{
-      background:#D01616;
-      color:#fff;
-      font-weight:700;
-      font-size:11px;
-      line-height:1;
-      border-radius:6px;
-      padding:6px 6px;
-      min-width:24px;
-      text-align:center;
-    }
-
-    .user-menu{
-      display:none;
-      position:absolute;
-      right:0;
-      top:calc(100% + 6px);
-      background:#1a1c20;
-      border:1px solid var(--g600);
-      border-radius:10px;
-      min-width:180px;
-      box-shadow:0 20px 40px rgba(0,0,0,.6);
-      z-index:9999;
-      font-size:13px;
-      padding:8px;
-    }
-    .user-menu a{
-      display:block;
-      color:var(--text);
-      text-decoration:none;
-      padding:8px 10px;
-      border-radius:8px;
-      border:1px solid transparent;
-    }
-    .user-menu a:hover{
-      background:#2a2d33;
-      border-color:#3a3f46;
-    }
-    .user-menu hr{
-      border:0;
-      border-top:1px solid var(--g600);
-      margin:6px 0;
-    }
-    .user-menu a.danger{
-      color:#ff5a5f;
     }
 
     .main{
       grid-area:main;
       padding:18px;
-      position:relative;
     }
 
-    .page-header-row{
+    .page-head{
       display:flex;
-      flex-wrap:wrap;
       align-items:flex-start;
-      justify-content:space-between;
-      margin-bottom:16px;
+      flex-wrap:wrap;
       gap:12px;
+      margin-bottom:16px;
     }
-    .page-header-left{
-      min-width:0;
-    }
-    .page-header-left h2{
+    .page-head-left h2{
       margin:0;
       font-size:16px;
-      line-height:1.4;
       font-weight:600;
       color:var(--text);
-      display:flex;
-      align-items:center;
-      gap:8px;
     }
-    .page-header-left .sub{
+    .page-head-left .sub{
       font-size:12px;
       color:var(--muted);
-      line-height:1.3;
-      max-width:600px;
+      line-height:1.4;
     }
-
-    .page-header-right{
-      display:flex;
-      align-items:flex-start;
-      flex-direction:column;
-      gap:8px;
+    .page-head-right{
       margin-left:auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-width:160px;
+      gap:8px;
     }
 
-    .add-feed-btn{
-      display:inline-block;
-      background:rgba(208,22,22,.12);
+    .btn-red{
+      background:#D01616;
       color:#fff;
-      border:1px solid #D01616;
-      border-radius:10px;
       font-size:13px;
       font-weight:600;
+      border:1px solid #D01616;
+      border-radius:10px;
       padding:8px 12px;
       cursor:pointer;
       line-height:1.2;
-      text-decoration:none;
       text-align:center;
+      min-width:140px;
     }
-    .add-feed-btn:hover{
-      background:rgba(208,22,22,.18);
-    }
-
-    .last-fetch{
-      font-size:11px;
-      line-height:1.3;
-      color:var(--muted);
+    .btn-red:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
     }
 
-    /* FEEDS GRID */
     .feeds-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(320px,1fr));
+      grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));
       gap:16px;
     }
 
     .feed-card{
-      position:relative;
       background:linear-gradient(180deg,#1a1c20,#131417);
       border:1px solid var(--g600);
       border-radius:16px;
-      padding:16px;
       display:flex;
       flex-direction:column;
       min-height:260px;
+      max-height:400px;
     }
 
-    .card-header-row{
+    .feed-head{
       display:flex;
       align-items:flex-start;
-      margin-bottom:12px;
+      justify-content:space-between;
+      border-bottom:1px solid var(--g600);
+      padding:12px 16px;
     }
-
-    .feed-main{
-      flex:1;
-      min-width:0;
-    }
-    .feed-title{
-      margin:0;
-      font-size:14px;
-      font-weight:600;
+    .feed-head-left{
+      font-size:13px;
       color:var(--text);
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:6px;
-    }
-    .feed-watching{
-      color:var(--muted);
-      font-size:12px;
       line-height:1.4;
-      margin:4px 0 8px;
+    }
+    .feed-city{
+      font-weight:600;
+      font-size:14px;
+      color:#fff;
     }
     .feed-risk{
-      font-size:12px;
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:6px;
-    }
-    .risk-pill{
       display:inline-block;
-      padding:3px 8px;
-      border-radius:999px;
       font-size:11px;
       line-height:1.2;
       font-weight:600;
+      padding:2px 8px;
+      border-radius:999px;
       border:1px solid rgba(255,255,255,.15);
     }
-    .risk-high{
-      color:var(--danger);
+    .feed-risk.high{
       background:rgba(255,90,95,.12);
       border-color:rgba(255,90,95,.35);
+      color:#ff5a5f;
     }
-    .risk-med{
-      color:var(--warn);
+    .feed-risk.med{
       background:rgba(240,180,41,.12);
       border-color:rgba(240,180,41,.35);
+      color:#f0b429;
     }
-    .risk-low{
-      color:var(--ok);
+    .feed-risk.low{
       background:rgba(51,196,141,.12);
       border-color:rgba(51,196,141,.35);
+      color:#33c48d;
     }
-
-    .feed-controls{
-      margin-left:auto;
-      text-align:right;
-      min-width:max-content;
+    .feed-head-right{
       display:flex;
       flex-direction:column;
       align-items:flex-end;
-      gap:8px;
+      gap:4px;
     }
-    .live-badge{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:11px;
-      line-height:1.2;
-      font-weight:600;
-      color:#ff5a5f;
-    }
-    .live-dot{
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#ff5a5f;
-      box-shadow:0 0 8px #ff5a5f;
-    }
-    .edit-btn{
-      background:#1f2227;
-      color:#fff;
+    .btn-ghost{
+      background:#1f2024;
+      color:#e9edf2;
       border:1px solid var(--g600);
       border-radius:8px;
-      font-size:11px;
-      font-weight:600;
-      padding:6px 8px;
+      padding:4px 8px;
+      font-size:12px;
       line-height:1.2;
       cursor:pointer;
     }
-    .edit-btn:hover{
-      background:#2a2d33;
+    .btn-ghost:hover{
+      background:#2a2d32;
     }
 
     .feed-body{
       flex:1;
-      min-height:120px;
-      border:1px solid var(--g600);
-      border-radius:12px;
-      background:rgba(0,0,0,.15);
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-    }
-    .feed-events{
-      flex:1;
       overflow-y:auto;
-      scrollbar-width:thin;
-      scrollbar-color:#3a3f46 transparent;
+      padding:12px 16px 16px;
       font-size:13px;
-      line-height:1.4;
     }
-    .feed-events::-webkit-scrollbar{
-      width:6px;
-    }
-    .feed-events::-webkit-scrollbar-track{
-      background:transparent;
-    }
-    .feed-events::-webkit-scrollbar-thumb{
-      background:#3a3f46;
-      border-radius:3px;
-    }
-
-    .feed-event-row{
+    .feed-item{
+      border-left:4px solid #D01616;
+      background:linear-gradient(90deg,rgba(208,22,22,.1),rgba(208,22,22,0));
+      border-radius:8px;
+      border:1px solid var(--g600);
       padding:10px 12px;
-      border-bottom:1px solid var(--g600);
+      margin-bottom:10px;
       cursor:pointer;
     }
-    .feed-event-row:last-child{
-      border-bottom:none;
+    .feed-item:last-child{
+      margin-bottom:0;
     }
-    .event-head{
+    .feed-title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:8px;
       font-size:13px;
-      color:var(--text);
       font-weight:600;
+      color:#fff;
+    }
+    .feed-meta{
+      font-size:11px;
+      color:var(--muted);
       line-height:1.4;
       display:flex;
       flex-wrap:wrap;
       gap:6px;
-    }
-    .event-meta{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.3;
-      margin-top:4px;
-    }
-    .event-meta .city{
-      color:#fff;
-      font-weight:500;
     }
 
     .feed-footer{
+      border-top:1px solid var(--g600);
+      padding:10px 16px;
       font-size:11px;
       color:var(--muted);
-      border-top:1px solid var(--g600);
-      background:rgba(255,255,255,.02);
-      padding:8px 12px;
-      line-height:1.3;
       display:flex;
       justify-content:space-between;
-      align-items:flex-start;
       flex-wrap:wrap;
-      gap:6px;
     }
-    .feed-footer .src,
-    .feed-footer .ts{
-      white-space:nowrap;
+    .feed-footer .src{
+      color:var(--muted);
+    }
+    .feed-footer .refresh{
+      cursor:pointer;
+      color:#8e97a3;
+    }
+    .feed-footer .refresh:hover{
+      color:#fff;
     }
 
-    /* drawer on right */
-    .drawer{
+    /* slide-in detail panel */
+    .detail-panel{
       position:fixed;
       top:0;
       right:0;
-      bottom:0;
+      height:100vh;
       width:360px;
-      max-width:90%;
-      background:linear-gradient(180deg,#1a1c20,#131417);
+      max-width:80%;
+      background:#1a1c20;
       border-left:1px solid var(--g600);
       box-shadow:-20px 0 40px rgba(0,0,0,.8);
-      transform:translateX(100%);
-      transition:transform .22s ease;
-      z-index:9999;
+      color:#e9edf2;
+      font-size:13px;
+      line-height:1.5;
       display:flex;
       flex-direction:column;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:10000;
     }
-    .drawer.open{
-      transform:translateX(0);
-    }
-    .drawer-head{
-      padding:16px;
-      border-bottom:1px solid var(--g600);
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:8px;
-    }
-    .drawer-head-left{
-      font-size:13px;
-      line-height:1.4;
-      color:var(--text);
-    }
-    .drawer-head-left .drawer-city{
-      font-weight:600;
-      color:var(--text);
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:6px;
-    }
-    .drawer-head-left .drawer-title{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:400;
-    }
-    .drawer-close-btn{
-      background:#1f2227;
-      color:#fff;
-      border:1px solid var(--g600);
-      border-radius:8px;
-      font-size:11px;
-      font-weight:600;
-      padding:6px 8px;
-      line-height:1.2;
-      cursor:pointer;
-      text-align:center;
-    }
-    .drawer-close-btn:hover{
-      background:#2a2d33;
+    .detail-panel.open{
+      transform:translateX(0%);
     }
 
-    .drawer-body{
+    .detail-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding:16px;
+      border-bottom:1px solid var(--g600);
+      background:#131417;
+    }
+    .detail-head-left{
+      max-width:260px;
+    }
+    .detail-title{
+      font-size:14px;
+      font-weight:600;
+      color:#fff;
+      margin-bottom:4px;
+    }
+    .detail-meta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .detail-close{
+      background:none;
+      border:0;
+      color:#8e97a3;
+      font-size:12px;
+      cursor:pointer;
+      padding:4px 6px;
+      border-radius:6px;
+    }
+    .detail-close:hover{
+      color:#fff;
+      background:#2a2d32;
+    }
+
+    .detail-body{
       flex:1;
       overflow-y:auto;
       padding:16px;
-      scrollbar-width:thin;
-      scrollbar-color:#3a3f46 transparent;
-      font-size:13px;
-      line-height:1.5;
-      color:var(--text);
     }
-    .drawer-body::-webkit-scrollbar{
-      width:6px;
-    }
-    .drawer-body::-webkit-scrollbar-track{
-      background:transparent;
-    }
-    .drawer-body::-webkit-scrollbar-thumb{
-      background:#3a3f46;
-      border-radius:3px;
-    }
-
-    .drawer-section{
-      background:#1f2227;
+    .detail-section{
+      margin-bottom:16px;
+      background:linear-gradient(180deg,#1a1c20,#131417);
       border:1px solid var(--g600);
       border-radius:12px;
       padding:12px;
-      margin-bottom:12px;
     }
-    .drawer-section h4{
+    .detail-section h4{
       margin:0 0 6px;
       font-size:12px;
       font-weight:600;
-      color:var(--text);
-      display:flex;
-      align-items:center;
-      gap:6px;
+      color:#fff;
+      text-transform:uppercase;
+      letter-spacing:.03em;
     }
-    .drawer-section .muted{
-      color:var(--muted);
+    .detail-section .small{
       font-size:12px;
+      color:var(--muted);
       line-height:1.4;
     }
-    .map-card{
-      background:#0f1012;
-      border:1px solid var(--g600);
-      border-radius:10px;
-      height:140px;
-      color:#8e97a3;
-      font-size:12px;
+
+    .detail-footer{
+      border-top:1px solid var(--g600);
+      background:#131417;
+      padding:12px 16px;
       display:flex;
       flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      gap:4px;
+      gap:10px;
     }
-    .map-card .crosshair{
-      width:28px;
-      height:28px;
-      border-radius:50%;
-      border:2px solid #ff5a5f;
-      box-shadow:0 0 10px #ff5a5f;
-    }
-
-    .drawer-footer{
-      padding:16px;
-      border-top:1px solid var(--g600);
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      justify-content:space-between;
-      align-items:flex-start;
-    }
-    .view-full-btn{
+    .btn-full-incident{
       background:#D01616;
+      color:#fff;
       border:1px solid #D01616;
       border-radius:10px;
-      color:#fff;
-      font-size:12px;
-      line-height:1.2;
+      padding:10px 12px;
+      font-size:13px;
       font-weight:600;
-      padding:8px 10px;
-      cursor:pointer;
-      text-decoration:none;
+      line-height:1.2;
       text-align:center;
-      min-width:120px;
+      text-decoration:none;
+      cursor:pointer;
     }
-    .view-full-btn:hover{
-      background:#e11b1b;
-    }
-    .drawer-meta{
-      font-size:11px;
-      line-height:1.4;
-      color:var(--muted);
+    .btn-full-incident:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
     }
 
-    /* modal overlay */
+    .btn-back-dash{
+      display:inline-block;
+      text-decoration:none;
+      color:#ff5a5f;
+      font-size:12px;
+      font-weight:600;
+      text-align:center;
+    }
+
+    /* Add Feed modal */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -624,292 +411,235 @@
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:99999;
-      padding:16px;
+      z-index:10001;
     }
-    .modal-overlay.show{
-      display:flex;
-    }
-    .modal-card{
-      width:100%;
-      max-width:360px;
-      background:linear-gradient(180deg,#1a1c20,#131417);
+    .modal-box{
+      background:#1a1c20;
       border:1px solid var(--g600);
       border-radius:16px;
-      box-shadow:0 30px 60px rgba(0,0,0,.8);
+      width:320px;
+      max-width:90%;
+      box-shadow:0 30px 60px rgba(0,0,0,.9);
       padding:16px;
       color:var(--text);
       font-size:13px;
-      line-height:1.4;
     }
-    .modal-card h3{
-      margin:0 0 10px;
+    .modal-box h3{
+      margin:0 0 12px;
       font-size:14px;
       font-weight:600;
-      color:var(--text);
-    }
-    .modal-card label{
-      font-size:12px;
-      font-weight:500;
-      color:var(--muted);
-      display:block;
-      margin:10px 0 4px;
-    }
-    .modal-card input[type="text"]{
-      width:100%;
-      background:#1f2227;
       color:#fff;
+    }
+    .modal-row{
+      margin-bottom:12px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .modal-row label{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .modal-row input, .modal-row select{
+      background:#1f2024;
       border:1px solid var(--g600);
       border-radius:8px;
+      color:#fff;
       padding:8px 10px;
       font-size:13px;
-      line-height:1.3;
-      box-sizing:border-box;
-    }
-    .modal-flex-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .modal-flex-row .half{
-      flex:1;
-      min-width:120px;
-    }
-    .modal-check-wrap{
-      margin-top:12px;
-      background:#1f2227;
-      border:1px solid var(--g600);
-      border-radius:8px;
-      padding:10px;
-      font-size:12px;
       line-height:1.4;
-      color:var(--text);
+      outline:none;
+      width:100%;
+    }
+    .modal-row input:focus,
+    .modal-row select:focus{
+      border-color:#D01616;
+    }
+    .modal-actions{
       display:flex;
+      justify-content:space-between;
+      align-items:center;
       gap:8px;
-      align-items:flex-start;
-    }
-    .modal-check-wrap input[type="checkbox"]{
-      margin-top:2px;
-      flex-shrink:0;
-    }
-    .modal-check-copy{
-      flex:1;
-    }
-    .modal-check-copy .check-head{
-      font-weight:600;
-      color:#fff;
-      margin-bottom:2px;
-      font-size:12px;
-    }
-    .modal-check-copy .check-sub{
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.4;
-    }
-
-    .modal-btn-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      justify-content:flex-end;
-      margin-top:16px;
     }
     .btn-cancel{
-      background:#1f2227;
+      background:#1f2024;
       border:1px solid var(--g600);
-      border-radius:10px;
-      color:#fff;
+      border-radius:8px;
+      color:#8e97a3;
       font-size:12px;
       line-height:1.2;
-      font-weight:600;
       padding:8px 10px;
       cursor:pointer;
+      flex:1;
       text-align:center;
+    }
+    .btn-cancel:hover{
+      background:#2a2d32;
+      color:#fff;
     }
     .btn-save{
       background:#D01616;
       border:1px solid #D01616;
-      border-radius:10px;
+      border-radius:8px;
       color:#fff;
       font-size:12px;
-      line-height:1.2;
       font-weight:600;
+      line-height:1.2;
       padding:8px 10px;
       cursor:pointer;
+      flex:1;
       text-align:center;
-      min-width:90px;
     }
     .btn-save:hover{
-      background:#e11b1b;
+      background:#ff2a2a;
+      border-color:#ff2a2a;
     }
 
-    @media(max-width:900px){
+    @media (max-width:900px){
       .app{
         grid-template-columns:1fr;
         grid-template-areas:
           "topbar"
           "main";
       }
-      .sidebar{ display:none; }
-      .drawer{ width:90%; max-width:400px; }
+      .sidebar{
+        display:none;
+      }
+      .detail-panel{
+        width:80%;
+        max-width:400px;
+      }
     }
   </style>
 </head>
+
+
+  <script>
+  // must be after the header DOM exists
+  document.addEventListener('DOMContentLoaded', function(){
+    CIAuth.injectUserChip(document.getElementById('topActions'));
+    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
+
+  
 <body>
+    
+ <div class="brandbar">
+    <img src="CityintLogo.jpg" alt="CityIntel Logo">
+    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
+	<div id="trial-banner" style="display:none;position:absolute;
+    left:50%; transform:translateX(-50%); background:none;
+    color:#fecaca; padding:8px 12px; text-align:center;">
+  <span id="trial-text">Your trial ends soon.</span>
+</div>	
+	  <div id="topActions" style="position:relative"></div>
+  </div>
+	
+  <div class="app">
+    <aside class="sidebar">
+       <div class="section-label"></div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="events.html">Events</a>
+		<a href="live-feed.html">Live Feed</a>
+	<a href="brief.html">Intelligence Brief</a>
+	<a href="incident.html">Incident Drilldown</a>
+	    <a href="reports.html">Reports</a>
+	<a href="trends.html">Trends & Forecasts</a>
+		<a href="sources.html">Sources</a>
+        <a href="settings.html">Settings</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="footnote">For information use only — not for redistribution</div>
+    </aside>
 
-<div class="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="brand">
-      <img src="CityintLogo.jpg" alt="CityIntel Logo">
-      <div style="display:flex;flex-direction:column;">
-        <div class="title">CityIntel</div>
-        <div class="subtitle">Live Situational Intelligence</div>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <a href="index.html">Dashboard</a>
-      <a href="alerts.html">Alerts</a>
-      <a href="events.html">Events</a>
-      <a href="reports.html">Reports</a>
-      <a href="watch.html">My Live Feed</a>
-      <a href="sources.html">Sources</a>
-      <a href="operations-log.html">Operations Log</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="system-flow.html">System Flow</a>
-      <a class="active" href="live-feed.html">Live Feed</a>
-      <a href="settings.html">Settings</a>
-    </nav>
-  </aside>
-
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <div class="brandbar-left">
-      <div style="display:flex;flex-direction:column;">
-        <div style="font-weight:700;font-size:14px;color:#fff;line-height:1.3;">
-          Live Feed
-        </div>
-        <div class="trial-banner" id="trial-banner">
-          <span class="live-dot"></span>
-          <span id="trial-text">Trial: 1 day left</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="top-actions-wrapper" id="topActions"></div>
-  </header>
 
   <!-- MAIN -->
   <main class="main">
-
-    <section class="page-header-row">
-      <div class="page-header-left">
-        <h2>
-          City / Region Watch
-        </h2>
-        <div class="sub">
-          You define which locations matter. We stream emerging activity,
-          protest chatter, police presence, traffic disruption, etc.
-          Click an item for full context, office proximity, and map.
-        </div>
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Live Feed</h2>
+        <div class="sub">Streaming incident chatter for your selected regions.</div>
       </div>
 
-      <div class="page-header-right">
-        <button class="add-feed-btn" id="btnAddFeed">+ Add Feed</button>
-        <div class="last-fetch">
-          <span id="lastRefresh">Last refresh: —</span><br/>
-          Auto-refresh ~15s
-        </div>
+      <div class="page-head-right">
+        <!-- centered static red button -->
+        <button id="btnAddFeed" class="btn-red" type="button">+ Add Feed</button>
       </div>
-    </section>
+    </div>
 
-    <!-- GRID OF FEEDS -->
-    <section class="feeds-grid" id="feedsGrid"></section>
-
+    <div id="feedsGrid" class="feeds-grid">
+      <!-- Cards injected here -->
+    </div>
   </main>
 </div>
 
-<!-- DRAWER (right slide panel) -->
-<div class="drawer" id="drawer">
-  <div class="drawer-head">
-    <div class="drawer-head-left">
-      <div class="drawer-city" id="drawerCity">City</div>
-      <div class="drawer-title" id="drawerTitle">Incident title goes here</div>
+<!-- DETAIL PANEL -->
+<aside id="detailPanel" class="detail-panel">
+  <div class="detail-head">
+    <div class="detail-head-left">
+      <div id="detailTitle" class="detail-title">[Incident Title]</div>
+      <div class="detail-meta" id="detailMeta">
+        [City / Risk / Time]
+      </div>
     </div>
-    <button class="drawer-close-btn" id="drawerClose">Close</button>
+    <button class="detail-close" id="detailClose">Close ✕</button>
   </div>
 
-  <div class="drawer-body">
-    <div class="drawer-section">
-      <h4>Location / Office Proximity</h4>
-      <div class="muted" id="drawerProximity">2.1 km NE of London HQ (Stratford, East London)</div>
-      <div class="map-card" id="drawerMapCard">
-        <div class="crosshair"></div>
-        <div>Map Preview (placeholder)</div>
-        <div style="font-size:11px;color:#8e97a3;">
-          Incident ↔ Office distance overlay
-        </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Summary</h4>
+      <div id="detailSummary" class="small">
+        -
       </div>
     </div>
 
-    <div class="drawer-section">
-      <h4>Details / Field Notes</h4>
-      <div class="muted" id="drawerDetails">
-        Police presence and road disruption reported. Crowd gathering.
+    <div class="detail-section">
+      <h4>Location / Impact</h4>
+      <div id="detailLocation" class="small">
+        Approx. location details here.
+      </div>
+      <div id="detailImpact" class="small" style="margin-top:8px;">
+        Impact to nearby assets here.
       </div>
     </div>
 
-    <div class="drawer-section">
-      <h4>Earlier Activity in this Area</h4>
-      <div class="muted" id="drawerEarlier">
-        • 07:20 – minor roadblock<br/>
-        • 06:55 – protest convoy spotted<br/>
-        • 06:10 – police staging units nearby
+    <div class="detail-section">
+      <h4>Earlier Today in This Area</h4>
+      <div id="detailEarlier" class="small">
+        No earlier incidents recorded.
       </div>
     </div>
   </div>
 
-  <div class="drawer-footer">
-    <a class="view-full-btn" id="drawerViewFull" href="incident.html">View Full Incident</a>
-    <div class="drawer-meta">
-      <div id="drawerRisk">Risk: High</div>
-      <div id="drawerTime">07:59 • source: CityIntel mock</div>
-    </div>
+  <div class="detail-footer">
+    <a id="viewFullBtn" class="btn-full-incident" href="#">View Full Incident →</a>
+    <a class="btn-back-dash" href="index.html">← Back to Dashboard</a>
   </div>
-</div>
+</aside>
 
-<!-- MODAL: ADD / EDIT FEED -->
-<div class="modal-overlay" id="feedModalOverlay">
-  <div class="modal-card">
-    <h3 id="modalTitle">New Feed</h3>
-
-    <div class="modal-flex-row">
-      <div class="half">
-        <label for="modalCities">Cities / Regions</label>
-        <input id="modalCities" type="text" placeholder="e.g. London, Paris, Berlin" />
-      </div>
-      <div class="half">
-        <label for="modalName">Internal label</label>
-        <input id="modalName" type="text" placeholder="London + Paris Watch" />
+<!-- ADD FEED MODAL -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Add Feed</h3>
+    <div class="modal-row">
+      <label for="feedCityInput">City / Region (e.g. London)</label>
+      <input id="feedCityInput" type="text" placeholder="London" />
+    </div>
+    <div class="modal-row">
+      <label for="feedRiskSelect">Risk Levels to Include</label>
+      <select id="feedRiskSelect" multiple size="3">
+        <option value="high">High</option>
+        <option value="med">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+        Hold Ctrl (or Cmd on Mac) to select multiple.
       </div>
     </div>
-
-    <label for="modalRisk">Risk levels to watch</label>
-    <input id="modalRisk" type="text" placeholder="high,med,low" />
-
-    <!-- checkbox block on its own line -->
-    <div class="modal-check-wrap">
-      <input id="modalUseLive" type="checkbox" />
-      <div class="modal-check-copy">
-        <div class="check-head">Live feed (beta)</div>
-        <div class="check-sub">
-          Streams directly from external alert sources. May include raw / unverified intel.
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-btn-row">
+    <div class="modal-actions">
       <button class="btn-cancel" id="modalCancel">Cancel</button>
       <button class="btn-save" id="modalSave">Save Feed</button>
     </div>
@@ -917,448 +647,431 @@
 </div>
 
 <script>
-/* ================= AUTH GUARD / TOP RIGHT USER CHIP ================= */
-(function initTopActions(){
+// -------------------- top bar user chip / dropdown --------------------
+(function mountTopActions(){
   const host = document.getElementById('topActions');
   if (!host) return;
 
-  const CIAuth = window.CIAuth;
-  if (!CIAuth) return;
+  const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+  const initials = (function(name){
+    if(!name) return 'CI';
+    const parts = name.trim().split(/\s+/);
+    return parts.slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
+  })(p.name);
 
-  const isLoggedIn = CIAuth.isLoggedIn();
-  const profile = (function(){
-    try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); }
-    catch(e){ return {}; }
-  })();
+  const role = p.role || 'Analyst';
+  const isSub = (localStorage.getItem('ci_subscribed') === 'true');
+
+  host.innerHTML = `
+    <div class="user" id="userChip">
+      <div class="avatar">${initials}</div>
+      ${role}
+    </div>
+    <div class="dropdown" id="userMenu">
+      <a href="settings.html">Settings</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="system-flow.html">System Flow</a>
+      <a href="operations-log.html">Operations Log</a>
+      <a href="#" id="logoutLink"><span class="logout-link">Log out</span></a>
+    </div>
+  `;
+
+  const chip  = document.getElementById('userChip');
+  const menu  = document.getElementById('userMenu');
+  const logoutLink = document.getElementById('logoutLink');
+
+  chip.addEventListener('click', ()=>{
+    menu.style.display = (menu.style.display==='block')?'none':'block';
+  });
+  document.addEventListener('click',(e)=>{
+    if(!host.contains(e.target)) menu.style.display='none';
+  });
+
+  logoutLink.addEventListener('click',(e)=>{
+    e.preventDefault();
+    if(window.CIAuth && CIAuth.logout) CIAuth.logout();
+    location.href='index.html';
+  });
 
   // trial banner logic
-  (function(){
-    const banner = document.getElementById('trial-banner');
-    const txt = document.getElementById('trial-text');
-    let subInfo = {
-      subscribed: (localStorage.getItem('ci_subscribed')==='true'),
-      trialEndsAt: null
-    };
-    // we don't yet store trialEndsAt locally, but we will later
-    // so we'll just show banner if not subscribed:
-    if (!subInfo.subscribed){
-      banner.style.display='block';
-      txt.textContent='Trial: limited access';
-    } else {
-      banner.style.display='none';
+  const trialBanner = document.getElementById('trial-banner');
+  const trialText   = document.getElementById('trial-text');
+  const trialEnds   = localStorage.getItem('ci_trialEndsAt');
+  const subscribed  = (localStorage.getItem('ci_subscribed') === 'true');
+
+  if (!subscribed && trialEnds) {
+    // show "Your trial ends <time>"
+    try {
+      const d = new Date(trialEnds);
+      const leftMin = Math.max(0, Math.round((d - Date.now()) / 60000));
+      trialBanner.style.display='block';
+      if (leftMin <= 0) {
+        trialText.textContent = 'Your trial has ended.';
+      } else if (leftMin < 60) {
+        trialText.textContent = `Your trial ends in ${leftMin} min`;
+      } else {
+        const leftHr = Math.round(leftMin/60);
+        trialText.textContent = `Your trial ends in ${leftHr} hour${leftHr!==1?'s':''}`;
+      }
+    } catch(e){
+      trialBanner.style.display='block';
+      trialText.textContent = 'Trial active.';
     }
-  })();
-
-  host.innerHTML = '';
-
-  if (isLoggedIn) {
-    // compute initials & role
-    let initials='CI', role='Analyst';
-    if (profile.name){
-      const parts=profile.name.trim().split(/\s+/);
-      initials = parts.slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('')||'CI';
-    }
-    if (profile.role) role=profile.role;
-
-    host.innerHTML = `
-      <div class="user-chip" id="userChip">
-        <div class="avatar">${initials}</div>
-        <div style="display:flex;flex-direction:column;line-height:1.2;">
-          <div style="color:#fff;font-weight:600;font-size:12px;">${role}</div>
-          <div style="color:#8e97a3;font-size:11px;">${profile.email||''}</div>
-        </div>
-      </div>
-      <div class="user-menu" id="userMenu">
-        <a href="settings.html">Settings / Billing</a>
-        <a href="analytics.html">Analytics</a>
-        <a href="system-flow.html">System Flow</a>
-        <a href="operations-log.html">Operations Log</a>
-        <hr/>
-        <a href="#" class="danger" id="logoutLink">Log out</a>
-      </div>
-    `;
-
-    const chip = document.getElementById('userChip');
-    const menu = document.getElementById('userMenu');
-
-    chip.addEventListener('click', ()=>{
-      menu.style.display = (menu.style.display==='block') ? 'none' : 'block';
-    });
-    document.addEventListener('click', (e)=>{
-      if (!host.contains(e.target)) menu.style.display='none';
-    });
-
-    document.getElementById('logoutLink').addEventListener('click',(e)=>{
-      e.preventDefault();
-      CIAuth.logout();
-      location.href='login.html';
-    });
-
-  } else {
-    const here = location.pathname.split('/').pop() || 'index.html';
-    const next = encodeURIComponent(here + location.search + location.hash);
-    host.innerHTML = `
-      <a class="add-feed-btn" href="login.html?next=${next}">Log in</a>
-    `;
   }
 })();
 
-/* ====================== PAGE PROTECT ====================== */
-(function(){
-  if (!window.CIAuth) return;
-  // pages that require subscription: live-feed counts as protected
-  window.CIAuth.requireAuth('login.html');
-})();
+// -------------------- FEED STORAGE / STATE --------------------
+const STORAGE_KEY = 'ci_live_feeds_v1';
 
-/* =============== FEED STATE / STORAGE / HELPERS =============== */
-
+// read feeds from localStorage
 function loadFeeds(){
   try{
-    return JSON.parse(localStorage.getItem('ci_live_feeds')||'[]');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr)?arr:[];
   }catch(e){
     return [];
   }
 }
+
+// save feeds to localStorage
 function saveFeeds(feeds){
-  localStorage.setItem('ci_live_feeds', JSON.stringify(feeds));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
 }
 
-function riskPill(r){
-  const cls = r==='high' ? 'risk-pill risk-high'
-           : r==='med'  ? 'risk-pill risk-med'
-           : 'risk-pill risk-low';
-  const label = r==='high' ? 'High'
-             : r==='med'  ? 'Med'
-             : 'Low';
-  return `<span class="${cls}">${label}</span>`;
-}
-
-function timeAgo(iso){
-  if(!iso) return '';
-  const d=new Date(iso);
-  const now=Date.now();
-  const diffSec=Math.floor((now-d.getTime())/1000);
-  if(diffSec<60) return diffSec+"s ago";
-  const diffMin=Math.floor(diffSec/60);
-  if(diffMin<60) return diffMin+"m ago";
-  const diffHr=Math.floor(diffMin/60);
-  if(diffHr<24) return diffHr+"h ago";
-  const diffDay=Math.floor(diffHr/24);
-  return diffDay+"d ago";
-}
-
-/* ==================== DRAWER LOGIC ==================== */
-const drawerEl = document.getElementById('drawer');
-const drawerCity = document.getElementById('drawerCity');
-const drawerTitle = document.getElementById('drawerTitle');
-const drawerProximity = document.getElementById('drawerProximity');
-const drawerDetails = document.getElementById('drawerDetails');
-const drawerEarlier = document.getElementById('drawerEarlier');
-const drawerRisk = document.getElementById('drawerRisk');
-const drawerTime = document.getElementById('drawerTime');
-const drawerViewFull = document.getElementById('drawerViewFull');
-const drawerClose = document.getElementById('drawerClose');
-
-function openDrawerForEvent(feed, evt){
-  // fill fields
-  drawerCity.textContent = evt.city || 'Unknown city';
-  drawerTitle.textContent = evt.title || 'No title';
-
-  // example office/location strings
-  drawerProximity.textContent =
-    (evt.officeProximity || "2.1 km NE of London HQ (Stratford, East London)");
-
-  drawerDetails.textContent =
-    (evt.details || "Police presence and road disruption reported. Crowd gathering.");
-
-  drawerEarlier.innerHTML =
-    (evt.historyHtml || (
-      "• 07:20 – minor roadblock<br/>" +
-      "• 06:55 – protest convoy spotted<br/>" +
-      "• 06:10 – police staging units nearby"
-    ));
-
-  drawerRisk.textContent = "Risk: " + (evt.risk || 'low');
-  drawerTime.textContent =
-    (evt.when ? (new Date(evt.when).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})) : '') +
-    " • source: " + (evt.src || 'CityIntel mock');
-
-  // We also pass data to incident.html via query params for now
-  const incidentURL =
-    "incident.html?" +
-    new URLSearchParams({
-      city: evt.city || '',
-      title: evt.title || '',
-      risk: evt.risk || '',
-      when: evt.when || '',
-      src: evt.src || '',
-      details: evt.details || '',
-      proximity: evt.officeProximity || '',
-    }).toString();
-
-  drawerViewFull.setAttribute('href', incidentURL);
-
-  // open drawer
-  drawerEl.classList.add('open');
-}
-drawerClose.addEventListener('click', ()=> drawerEl.classList.remove('open') );
-
-/* ==================== MODAL LOGIC ==================== */
-const modalOverlay = document.getElementById('feedModalOverlay');
-const modalTitle = document.getElementById('modalTitle');
-const modalCities = document.getElementById('modalCities');
-const modalName = document.getElementById('modalName');
-const modalRisk = document.getElementById('modalRisk');
-const modalUseLive = document.getElementById('modalUseLive');
-const modalCancel = document.getElementById('modalCancel');
-const modalSave = document.getElementById('modalSave');
-
-let editingFeedIndex = null;
-
-function openFeedModal(feedIndex){
+// add a feed definition {id, places[], risks[]}
+function addFeedDef(def){
   const feeds = loadFeeds();
-  if(feedIndex===null || feedIndex===undefined){
-    // new feed
-    editingFeedIndex = null;
-    modalTitle.textContent = "New Feed";
-    modalCities.value = "";
-    modalName.value = "";
-    modalRisk.value = "high,med,low";
-    modalUseLive.checked = true;
-  } else {
-    editingFeedIndex = feedIndex;
-    const f = feeds[feedIndex];
-    modalTitle.textContent = "Edit Feed";
-    modalCities.value = f.cities.join(", ");
-    modalName.value = f.name || "";
-    modalRisk.value = f.risk.join(", ");
-    modalUseLive.checked = !!f.useLive;
-  }
-  modalOverlay.classList.add('show');
+  feeds.push(def);
+  saveFeeds(feeds);
 }
 
-function closeFeedModal(){
-  modalOverlay.classList.remove('show');
-}
-
-modalCancel.addEventListener('click', closeFeedModal);
-
-modalOverlay.addEventListener('click', (e)=>{
-  if(e.target===modalOverlay){
-    closeFeedModal();
+// -------------------- RENDER / FETCH MOCK DATA --------------------
+async function fetchMockEventsForFeed(feed){
+  // feed.places is array of cities, feed.risks is array of risk levels
+  // We'll ask Worker for mock data (still fake but consistent format)
+  const params = new URLSearchParams();
+  if(feed.places && feed.places.length){
+    params.set('cities', feed.places.join(','));
   }
-});
+  if(feed.risks && feed.risks.length){
+    params.set('risk', feed.risks.join(','));
+  }
+  const url = `https://api.cityintelapi.com/api/live?${params.toString()}`;
 
-/* ==================== FETCH + RENDER ==================== */
-
-async function fetchEventsForFeed(feed){
-  // feed = { cities:[], risk:[], useLive:true/false }
-  try {
-    const paramsCities = encodeURIComponent(feed.cities.join(","));
-    const paramsRisk = encodeURIComponent(feed.risk.join(","));
-    let url;
-    if(feed.useLive){
-      // future real endpoint:
-      url = `https://api.cityintelapi.com/api/live-news?cities=${paramsCities}&risk=${paramsRisk}`;
-      console.log("Live feed active for", feed.cities.join(", "));
-    } else {
-      // mock endpoint we already have
-      url = `https://api.cityintelapi.com/api/live?cities=${paramsCities}&risk=${paramsRisk}`;
-    }
-
+  try{
     const res = await fetch(url);
-    if(!res.ok){
-      throw new Error("HTTP "+res.status);
-    }
-    const j = await res.json();
-    return (j.events || []).slice(0,20); // cap
-  } catch(err){
-    console.warn("fetchEventsForFeed failed", err);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    return data.events || [];
+  }catch(e){
+    console.warn('mock fetch fail', e);
     return [];
   }
 }
 
-function renderFeeds(){
+function riskClass(r){
+  if(r==='high') return 'high';
+  if(r==='med')  return 'med';
+  return 'low';
+}
+
+function fmtWhen(iso){
+  try{
+    return new Date(iso).toLocaleString('en-GB',{
+      timeZone:'Europe/London',
+      day:'2-digit',month:'short',
+      hour:'2-digit',minute:'2-digit'
+    });
+  }catch(e){
+    return iso||'';
+  }
+}
+
+// -------------------- DETAIL PANEL HANDLING --------------------
+const detailPanel   = document.getElementById('detailPanel');
+const detailTitleEl = document.getElementById('detailTitle');
+const detailMetaEl  = document.getElementById('detailMeta');
+const detailSummaryEl = document.getElementById('detailSummary');
+const detailLocationEl = document.getElementById('detailLocation');
+const detailImpactEl   = document.getElementById('detailImpact');
+const detailEarlierEl  = document.getElementById('detailEarlier');
+const detailCloseBtn = document.getElementById('detailClose');
+const viewFullBtn   = document.getElementById('viewFullBtn');
+
+function openDetailPanel(item, relatedList){
+  // item = {title, city, risk, when, ...}
+  // relatedList = array of all events in that feed (for "earlier today")
+
+  detailTitleEl.textContent = item.title || '[Incident Title]';
+  detailMetaEl.textContent = `${item.city||'Unknown'} • ${item.risk||'n/a'} • ${fmtWhen(item.when)}`;
+
+  detailSummaryEl.textContent = item.description ||
+                                `Ongoing situation reported in ${item.city||'the area'}.`;
+
+  // mock "location / impact"
+  detailLocationEl.textContent =
+    `Approx area: ${item.city||'unknown'} (exact location may be refining).`;
+  detailImpactEl.textContent =
+    `Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.`;
+
+  // earlier today in same city
+  const sameCityEarlier = (relatedList||[])
+    .filter(x => x.city===item.city && x.when !== item.when)
+    .slice(0,3)
+    .map(x => `• ${fmtWhen(x.when)} — ${x.title}`)
+    .join('\n');
+  detailEarlierEl.textContent = sameCityEarlier || 'No earlier incidents recorded.';
+
+  // incident deep-link -> you could add query params later
+  viewFullBtn.href = 'incident.html';
+
+  detailPanel.classList.add('open');
+}
+function closeDetailPanel(){
+  detailPanel.classList.remove('open');
+}
+detailCloseBtn.addEventListener('click', closeDetailPanel);
+
+// close if click outside panel (optional)
+// window.addEventListener('click', (e)=>{
+//   if(detailPanel.classList.contains('open')){
+//     // if click is not inside panel
+//     if(!detailPanel.contains(e.target)){
+//       closeDetailPanel();
+//     }
+//   }
+// });
+
+// -------------------- CARD RENDER --------------------
+async function renderFeeds(){
   const grid = document.getElementById('feedsGrid');
   const feeds = loadFeeds();
+
+  // if there are no feeds saved, seed one default
+  if(!feeds.length){
+    const first = {
+      id: 'default-1',
+      places: ['London'],
+      risks: ['high','med','low'],
+    };
+    saveFeeds([first]);
+  }
+
+  const finalFeeds = loadFeeds();
+
   grid.innerHTML = '';
 
-  feeds.forEach((feed, idx)=>{
-    const card = document.createElement('div');
-    card.className='feed-card';
+  for (const feed of finalFeeds){
+    const events = await fetchMockEventsForFeed(feed);
 
-    const liveBadgeHTML = feed.useLive ? `
-      <div class="live-badge">
-        <span class="live-dot"></span>
-        <span>LIVE</span>
-      </div>` : '';
+    const card = document.createElement('section');
+    card.className = 'feed-card';
+
+    // header
+    const citiesLabel = feed.places.join(', ');
+    const risksLabel  = feed.risks.join(', ');
+    const topCity = feed.places[0] || 'Unknown';
 
     card.innerHTML = `
-      <div class="card-header-row">
-        <div class="feed-main">
-          <div class="feed-title">
-            <span>${feed.name || 'Custom Watch'}</span>
-          </div>
-          <div class="feed-watching">
-            Watching:
-            <strong>${feed.cities.join(', ')}</strong>
-          </div>
-          <div class="feed-risk">
-            ${feed.risk.map(riskPill).join('')}
+      <div class="feed-head">
+        <div class="feed-head-left">
+          <div class="feed-city">${citiesLabel}</div>
+          <div style="margin-top:4px;font-size:12px;color:${feed.risks.includes('high')?'#ff5a5f':feed.risks.includes('med')?'#f0b429':'#33c48d'};">
+            Watching: ${risksLabel}
           </div>
         </div>
-        <div class="feed-controls">
-          ${liveBadgeHTML}
-          <button class="edit-btn" data-edit="${idx}">Edit</button>
+        <div class="feed-head-right">
+          <button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>
         </div>
       </div>
 
-      <div class="feed-body">
-        <div class="feed-events" id="events-${idx}">
-          <div style="color:#8e97a3;font-size:12px;padding:16px;">
-            Loading…
-          </div>
-        </div>
-        <div class="feed-footer">
-          <span class="src">source: simulated feed</span>
-          <span class="ts" id="ts-${idx}">—</span>
-        </div>
+      <div class="feed-body"></div>
+
+      <div class="feed-footer">
+        <div class="src">source: simulated source</div>
+        <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
       </div>
     `;
 
-    grid.appendChild(card);
+    const bodyEl = card.querySelector('.feed-body');
 
-    // attach edit click
-    const editBtn = card.querySelector('.edit-btn');
-    editBtn.addEventListener('click', ()=>{
-      openFeedModal(idx);
-    });
+    if (!events.length){
+      bodyEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">No recent items in ${citiesLabel}.</div>`;
+    } else {
+      events.slice(0,8).forEach(ev=>{
+        const itemEl = document.createElement('div');
+        itemEl.className = 'feed-item';
+        itemEl.style.borderLeftColor =
+          ev.risk==='high' ? '#ff5a5f' :
+          ev.risk==='med'  ? '#f0b429' :
+                             '#33c48d';
 
-  });
+        itemEl.innerHTML = `
+          <div class="feed-title-row">
+            <div>${ev.city || topCity} — ${ev.title}</div>
+            <div class="feed-risk ${riskClass(ev.risk)}">${ev.risk}</div>
+          </div>
+          <div class="feed-meta">
+            <span>${fmtWhen(ev.when)}</span>
+            <span>${ev.risk.toUpperCase()} priority</span>
+          </div>
+        `;
 
-  // after building cards, load data
-  refreshAllFeeds();
-}
+        // clicking an item opens side panel instead of nav
+        itemEl.addEventListener('click', ()=>{
+          openDetailPanel(ev, events);
+        });
 
-async function refreshAllFeeds(){
-  const feeds = loadFeeds();
-  const nowTs = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  document.getElementById('lastRefresh').textContent = `Last refresh: ${nowTs}`;
-
-  feeds.forEach(async (feed, idx)=>{
-    const evWrap = document.getElementById(`events-${idx}`);
-    const tsEl = document.getElementById(`ts-${idx}`);
-    if(!evWrap || !tsEl) return;
-
-    const events = await fetchEventsForFeed(feed);
-
-    if(!events.length){
-      evWrap.innerHTML = `
-        <div style="color:#8e97a3;font-size:12px;padding:16px;">
-          No recent items.
-        </div>
-      `;
-      tsEl.textContent = nowTs;
-      return;
+        bodyEl.appendChild(itemEl);
+      });
     }
 
-    evWrap.innerHTML = '';
-    events.forEach(evt=>{
-      const row = document.createElement('div');
-      row.className='feed-event-row';
-      row.innerHTML = `
-        <div class="event-head">
-          <span>${evt.city || 'Unknown city'}</span> — <span>${evt.title || ''}</span>
-        </div>
-        <div class="event-meta">
-          <span class="city">${evt.city||''}</span>
-          <span>${evt.risk||''}</span>
-          <span>${timeAgo(evt.when)}</span>
-        </div>
-      `;
-      row.addEventListener('click', ()=>{
-        openDrawerForEvent(feed, evt);
-      });
-      evWrap.appendChild(row);
+    // refresh link
+    const refreshBtn = card.querySelector('.refresh');
+    refreshBtn.addEventListener('click', ()=>{
+      renderFeeds(); // just rerender for now
     });
 
-    tsEl.textContent = nowTs;
-  });
+    // edit feed
+    const editBtn = card.querySelector('.btn-edit-feed');
+    editBtn.addEventListener('click', ()=>{
+      openFeedModal(feed);
+    });
+
+    grid.appendChild(card);
+  }
 }
 
-/* ==================== SAVE FEED (NEW OR EDIT) ==================== */
-modalSave.addEventListener('click', ()=>{
-  const citiesArr = modalCities.value
-    .split(',')
-    .map(s=>s.trim())
-    .filter(Boolean);
+// -------------------- FEED MODAL LOGIC --------------------
+const overlayEl = document.getElementById('modalOverlay');
+const cityInput = document.getElementById('feedCityInput');
+const riskSel   = document.getElementById('feedRiskSelect');
+const cancelBtn = document.getElementById('modalCancel');
+const saveBtn   = document.getElementById('modalSave');
+const addFeedBtn= document.getElementById('btnAddFeed');
 
-  const riskArr = modalRisk.value
-    .split(',')
-    .map(s=>s.trim().toLowerCase())
-    .filter(Boolean);
+let editingFeedId = null;
 
-  const lbl = modalName.value.trim() || (citiesArr[0] ? `${citiesArr[0]} Watch` : "Custom Watch");
+function openFeedModal(feed){
+  editingFeedId = feed ? feed.id : null;
+  overlayEl.style.display='flex';
 
-  const liveChecked = modalUseLive.checked;
+  if(feed){
+    cityInput.value = (feed.places||[]).join(', ');
+    // reset all first
+    for (let i=0;i<riskSel.options.length;i++){
+      riskSel.options[i].selected = false;
+    }
+    (feed.risks||[]).forEach(r=>{
+      for (let i=0;i<riskSel.options.length;i++){
+        if(riskSel.options[i].value===r){
+          riskSel.options[i].selected = true;
+        }
+      }
+    });
+  } else {
+    cityInput.value = '';
+    for (let i=0;i<riskSel.options.length;i++){
+      riskSel.options[i].selected = false;
+    }
+    // default select high+med
+    for (let i=0;i<riskSel.options.length;i++){
+      if(['high','med'].includes(riskSel.options[i].value)){
+        riskSel.options[i].selected = true;
+      }
+    }
+  }
+}
 
-  if(!citiesArr.length){
-    alert("Please enter at least one city/region.");
+function closeFeedModal(){
+  overlayEl.style.display='none';
+  editingFeedId = null;
+}
+
+cancelBtn.addEventListener('click', closeFeedModal);
+overlayEl.addEventListener('click',(e)=>{
+  if(e.target===overlayEl){
+    closeFeedModal();
+  }
+});
+addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
+
+saveBtn.addEventListener('click', ()=>{
+  const rawCities = cityInput.value.trim();
+  if(!rawCities){
+    alert('Please enter at least one city/region.');
     return;
   }
-  if(!riskArr.length){
-    alert("Please enter at least one risk level (high,med,low).");
+  const places = rawCities.split(',').map(s=>s.trim()).filter(Boolean);
+
+  const risks = [];
+  for (let i=0;i<riskSel.options.length;i++){
+    if(riskSel.options[i].selected){
+      risks.push(riskSel.options[i].value);
+    }
+  }
+  if(!risks.length){
+    alert('Please pick at least one risk level.');
     return;
   }
 
   const feeds = loadFeeds();
-  const newFeedObj = {
-    name: lbl,
-    cities: citiesArr,
-    risk: riskArr,
-    useLive: liveChecked
-  };
 
-  if(editingFeedIndex===null){
-    // new feed
-    feeds.push(newFeedObj);
+  if(editingFeedId){
+    // update existing
+    const idx = feeds.findIndex(f=>f.id===editingFeedId);
+    if(idx>=0){
+      feeds[idx].places = places;
+      feeds[idx].risks  = risks;
+    }
+    saveFeeds(feeds);
   } else {
-    // update feed
-    feeds[editingFeedIndex] = newFeedObj;
+    // create new
+    const id = 'feed-' + Date.now().toString(36);
+    feeds.push({ id, places, risks });
+    saveFeeds(feeds);
   }
 
-  saveFeeds(feeds);
   closeFeedModal();
   renderFeeds();
 });
 
-/* "Add Feed" button (new feed) */
-document.getElementById('btnAddFeed').addEventListener('click', ()=>{
-  openFeedModal(null);
+// -------------------- INIT --------------------
+renderFeeds();
+
+// ---- link View Full Incident to incident.html ----
+viewFullBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  // Build a minimal object to pass along
+  const incidentData = {
+    title: detailTitleEl.textContent,
+    meta: detailMetaEl.textContent,
+    summary: detailSummaryEl.textContent,
+    location: detailLocationEl.textContent,
+    impact: detailImpactEl.textContent,
+    earlier: detailEarlierEl.textContent,
+  };
+
+  // Generate a temp ID (could use timestamp)
+  const incId = 'inc-' + Date.now().toString(36);
+
+  // Persist in sessionStorage
+  const all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
+  all[incId] = incidentData;
+  sessionStorage.setItem('ci_incidents', JSON.stringify(all));
+
+  // Redirect with ?id=
+  location.href = 'incident.html?id=' + encodeURIComponent(incId);
 });
 
-/* ==================== FIRST LOAD ==================== */
-(function initFeeds(){
-  let feeds = loadFeeds();
-  if(!feeds.length){
-    // seed with 1 default
-    feeds = [{
-      name:'London + Paris Watch',
-      cities:['London','Paris'],
-      risk:['high','med','low'],
-      useLive:true
-    }];
-    saveFeeds(feeds);
-  }
-  renderFeeds();
-
-  // auto-refresh every ~15s
-  setInterval(refreshAllFeeds, 15000);
-})();
+	
 </script>
 
-<!-- auth.js must be loaded before this page runs -->
-<script src="auth.js"></script>
+<!-- auth helpers / admin links -->
+
+<script src="admin-links.js"></script>
 
 </body>
 </html>
