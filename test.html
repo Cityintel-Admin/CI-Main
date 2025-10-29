@@ -211,6 +211,59 @@
       align-items:flex-end;
       gap:4px;
     }
+
+
+	  
+	  
+/* LIVE badge in feed header */
+    .live-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(208,22,22,0.15);
+      border:1px solid #D01616;
+      color:#ff4d4d;
+      font-size:11px;
+      font-weight:600;
+      line-height:1.2;
+      padding:3px 8px;
+      border-radius:999px;
+    }
+    .live-dot {
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#ff4d4d;
+      box-shadow:0 0 6px #ff4d4d,0 0 10px #ff4d4d;
+    }
+
+    /* checkbox row in modal */
+    .modal-row-inline {
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+      margin-bottom:12px;
+    }
+    .modal-row-inline input[type="checkbox"] {
+      margin-top:2px;
+      accent-color:#D01616; /* modern browsers */
+    }
+    .modal-row-inline .live-row-text {
+      color:#fff;
+      font-size:13px;
+      line-height:1.4;
+    }
+    .modal-row-inline .live-row-hint {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+	  
+	  
     .btn-ghost{
       background:#1f2024;
       color:#e9edf2;
@@ -639,6 +692,17 @@
         Hold Ctrl (or Cmd on Mac) to select multiple.
       </div>
     </div>
+
+  <!-- NEW CHECKBOX ROW -->
+  <div class="modal-row-inline">
+    <input type="checkbox" id="feedLiveCheck" />
+    <div>
+      <div class="live-row-text">Live news mode</div>
+      <div class="live-row-hint">Pull from external breaking sources (slower, rate-limited in test)</div>
+    </div>
+  </div>
+
+	  
     <div class="modal-actions">
       <button class="btn-cancel" id="modalCancel">Cancel</button>
       <button class="btn-save" id="modalSave">Save Feed</button>
@@ -758,7 +822,16 @@ async function fetchMockEventsForFeed(feed){
   if(feed.risks && feed.risks.length){
     params.set('risk', feed.risks.join(','));
   }
-  const url = `https://api.cityintelapi.com/api/live?${params.toString()}`;
+
+  // choose which route
+  let url;
+  if (feed.useLive) {
+    console.log('Live feed active');
+    url = `https://api.cityintelapi.com/api/live-news?${params.toString()}`;
+  } else {
+    url = `https://api.cityintelapi.com/api/live?${params.toString()}`;
+  }
+	
 
   try{
     const res = await fetch(url);
@@ -883,6 +956,10 @@ async function renderFeeds(){
           </div>
         </div>
         <div class="feed-head-right">
+
+      ${feed.useLive ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>`
+          : ``}
+		
           <button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>
         </div>
       </div>
@@ -891,6 +968,7 @@ async function renderFeeds(){
 
       <div class="feed-footer">
         <div class="src">source: simulated source</div>
+		 <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
         <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
       </div>
     `;
@@ -948,6 +1026,7 @@ async function renderFeeds(){
 const overlayEl = document.getElementById('modalOverlay');
 const cityInput = document.getElementById('feedCityInput');
 const riskSel   = document.getElementById('feedRiskSelect');
+const liveCheck = document.getElementById('feedLiveCheck');	
 const cancelBtn = document.getElementById('modalCancel');
 const saveBtn   = document.getElementById('modalSave');
 const addFeedBtn= document.getElementById('btnAddFeed');
@@ -971,6 +1050,9 @@ function openFeedModal(feed){
         }
       }
     });
+
+liveCheck.checked = !!feed.useLive;
+	  
   } else {
     cityInput.value = '';
     for (let i=0;i<riskSel.options.length;i++){
@@ -982,6 +1064,7 @@ function openFeedModal(feed){
         riskSel.options[i].selected = true;
       }
     }
+	   liveCheck.checked = false;
   }
 }
 
@@ -1018,19 +1101,21 @@ saveBtn.addEventListener('click', ()=>{
   }
 
   const feeds = loadFeeds();
-
+  const liveMode = !!liveCheck.checked;
+	
   if(editingFeedId){
     // update existing
     const idx = feeds.findIndex(f=>f.id===editingFeedId);
     if(idx>=0){
       feeds[idx].places = places;
       feeds[idx].risks  = risks;
+	  feeds[idx].useLive = liveMode;
     }
     saveFeeds(feeds);
   } else {
     // create new
     const id = 'feed-' + Date.now().toString(36);
-    feeds.push({ id, places, risks });
+    feeds.push({ id, places, risks, useLive: liveMode });
     saveFeeds(feeds);
   }
 
