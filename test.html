@@ -807,7 +807,7 @@ function saveFeeds(feeds){
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
   const feeds = loadFeeds();
-  feeds.push(def);
+    feeds.push({ ...def, useLive: !!def.useLive });
   saveFeeds(feeds);
 }
 
@@ -917,6 +917,78 @@ detailCloseBtn.addEventListener('click', closeDetailPanel);
 //   }
 // });
 
+
+
+// Re-render a single card (fetch -> DOM -> schedule next refresh)
+async function refreshSingleFeedCard(cardEl, feed){
+  try {
+    const events = await fetchMockEventsForFeed(feed);
+    renderEventsIntoCard(cardEl, events, feed);
+  } finally {
+    scheduleNextRefresh(cardEl, feed);
+  }
+}
+
+// Put the events into an existing card (no refetch here)
+function renderEventsIntoCard(cardEl, events, feed){
+  const bodyEl = cardEl.querySelector('.feed-body');
+
+  // header: live badge
+  const headRight = cardEl.querySelector('.feed-head-right');
+  const liveMarkup = feed.useLive
+    ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>`
+    : ``;
+  const editBtn = headRight.querySelector('.btn-edit-feed');
+  headRight.innerHTML = `${liveMarkup}${editBtn ? editBtn.outerHTML : ''}`;
+
+  // body
+  if (!events.length){
+    bodyEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">No recent items in ${(feed.places||[]).join(', ')}.</div>`;
+  } else {
+    bodyEl.innerHTML = '';
+    const topCity = (feed.places && feed.places[0]) || 'Unknown';
+    events.slice(0,8).forEach(ev=>{
+      const itemEl = document.createElement('div');
+      itemEl.className = 'feed-item';
+      itemEl.style.borderLeftColor =
+        ev.risk==='high' ? '#ff5a5f' :
+        ev.risk==='med'  ? '#f0b429' :
+                           '#33c48d';
+      itemEl.innerHTML = `
+        <div class="feed-title-row">
+          <div>${ev.city || topCity} — ${ev.title}</div>
+          <div class="feed-risk ${riskClass(ev.risk)}">${ev.risk}</div>
+        </div>
+        <div class="feed-meta">
+          <span>${fmtWhen(ev.when)}</span>
+          <span>${(ev.risk||'').toUpperCase()} priority</span>
+        </div>
+      `;
+      // open slide panel
+      itemEl.addEventListener('click', ()=> openDetailPanel(ev, events));
+      bodyEl.appendChild(itemEl);
+    });
+  }
+
+  // footer: set correct source label
+  const srcEl = cardEl.querySelector('.feed-footer .src');
+  if (srcEl) srcEl.textContent = feed.useLive ? 'source: live stream' : 'source: simulated source';
+}
+
+// Timer per card (60s live, 120s mock)
+function scheduleNextRefresh(cardEl, feed){
+  const ms = feed.useLive ? 60_000 : 120_000;
+  clearTimeout(cardEl.__nextTimer);
+  cardEl.__nextTimer = setTimeout(()=>{
+    // reload latest feed definition in case user edited it
+    const fresh = loadFeeds().find(f => f.id === feed.id);
+    if (fresh) refreshSingleFeedCard(cardEl, fresh);
+  }, ms);
+}
+
+
+
+	
 // -------------------- CARD RENDER --------------------
 async function renderFeeds(){
   const grid = document.getElementById('feedsGrid');
@@ -928,24 +1000,24 @@ async function renderFeeds(){
       id: 'default-1',
       places: ['London'],
       risks: ['high','med','low'],
+	  useLive: false
     };
     saveFeeds([first]);
+	feeds = [first];
   }
 
-  const finalFeeds = loadFeeds();
 
   grid.innerHTML = '';
 
-  for (const feed of finalFeeds){
-    const events = await fetchMockEventsForFeed(feed);
-
+   for (const feed of feeds){
+    // build card shell
+    const citiesLabel = (feed.places||[]).join(', ');
+    const risksLabel  = (feed.risks||[]).join(', ');
+    const topCity = feed.places[0] || 'Unknown';
+	   
     const card = document.createElement('section');
     card.className = 'feed-card';
-
-    // header
-    const citiesLabel = feed.places.join(', ');
-    const risksLabel  = feed.risks.join(', ');
-    const topCity = feed.places[0] || 'Unknown';
+    card.dataset.id = feed.id;
 
     card.innerHTML = `
       <div class="feed-head">
@@ -967,11 +1039,19 @@ async function renderFeeds(){
       <div class="feed-body"></div>
 
       <div class="feed-footer">
-        <div class="src">source: simulated source</div>
+        <div class="src"></div>
 		 <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
         <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
       </div>
     `;
+
+    card.querySelector('.refresh').addEventListener('click', ()=>{
+      const fresh = loadFeeds().find(f=>f.id===feed.id) || feed;
+      refreshSingleFeedCard(card, fresh);
+    });
+
+
+	   
 
     const bodyEl = card.querySelector('.feed-body');
 
@@ -1006,11 +1086,6 @@ async function renderFeeds(){
       });
     }
 
-    // refresh link
-    const refreshBtn = card.querySelector('.refresh');
-    refreshBtn.addEventListener('click', ()=>{
-      renderFeeds(); // just rerender for now
-    });
 
     // edit feed
     const editBtn = card.querySelector('.btn-edit-feed');
@@ -1019,6 +1094,8 @@ async function renderFeeds(){
     });
 
     grid.appendChild(card);
+
+	refreshSingleFeedCard(card, feed);
   }
 }
 
