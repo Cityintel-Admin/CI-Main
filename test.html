@@ -823,26 +823,32 @@ async function fetchMockEventsForFeed(feed){
     params.set('risk', feed.risks.join(','));
   }
 
-  // choose which route
-  let url;
-  if (feed.useLive) {
-    console.log('Live feed active');
-    url = `https://api.cityintelapi.com/api/live-news?${params.toString()}`;
-  } else {
-    url = `https://api.cityintelapi.com/api/live?${params.toString()}`;
-  }
+  // choose live (GDELT) vs mock
+  const provider = 'gdelt'; // keep gdelt as default for live
+  const base = 'https://api.cityintelapi.com';
+
+  // NOTE: always use absolute URL to your Worker
+  const url = feed.useLive
+    ? `${base}/api/live-news?${params.toString()}&provider=${provider}`
+    : `${base}/api/live?${params.toString()}`;
 	
 
-  try{
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('bad response');
-    const data = await res.json();
-    return data.events || [];
-  }catch(e){
-    console.warn('mock fetch fail', e);
+  try {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) {
+      // helpful console output while testing
+      const txt = await res.text().catch(() => '');
+      console.error('Live fetch failed', res.status, txt);
+      return [];
+    }
+    const data = await res.json().catch(() => ({}));
+    return Array.isArray(data.events) ? data.events : [];
+  } catch (e) {
+    console.warn('Fetch error', e);
     return [];
   }
 }
+
 
 function riskClass(r){
   if(r==='high') return 'high';
