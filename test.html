@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -657,10 +658,6 @@
       <div id="detailImpact" class="small" style="margin-top:8px;">
         Impact to nearby assets here.
       </div>
-
-<canvas id="detailMiniMap" width="320" height="180" style="margin-top:10px;border-radius:10px;border:1px solid var(--g600);background:#0f1013;"></canvas>
-<div id="detailCoords" class="small" style="margin-top:6px;opacity:.8;"></div>
-		
     </div>
 
     <div class="detail-section">
@@ -883,88 +880,23 @@ const detailEarlierEl  = document.getElementById('detailEarlier');
 const detailCloseBtn = document.getElementById('detailClose');
 const viewFullBtn   = document.getElementById('viewFullBtn');
 
-
-
-function lonLatToXY(lon, lat, w, h) {
-  // Equirectangular projection (fast and fine for a mini-hint map)
-  const x = (lon + 180) * (w / 360);
-  const y = (90 - lat) * (h / 180);
-  return [x, y];
-}
-
-function drawMiniMapPin(lat, lon) {
-  const cvs = document.getElementById('detailMiniMap');
-  const coordsEl = document.getElementById('detailCoords');
-  if (!cvs || !coordsEl) return;
-
-  const ctx = cvs.getContext('2d');
-  const w = cvs.width, h = cvs.height;
-
-  // background grid
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#14161a';
-  ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-  ctx.lineWidth = 1;
-  for (let gx = 0; gx <= w; gx += 32) {
-    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
-  }
-  for (let gy = 0; gy <= h; gy += 24) {
-    ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
-  }
-
-  // a faint oval “coastline” to avoid a flat background
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.beginPath();
-  ctx.ellipse(w/2, h/2, w*0.46, h*0.36, 0, 0, Math.PI*2);
-  ctx.stroke();
-
-  if (typeof lat === 'number' && typeof lon === 'number') {
-    const [x, y] = lonLatToXY(lon, lat, w, h);
-
-    // glow
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,77,77,0.25)';
-    ctx.fill();
-
-    // pin
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI*2);
-    ctx.fillStyle = '#ff4d4d';
-    ctx.shadowColor = '#ff4d4d';
-    ctx.shadowBlur = 8;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    coordsEl.textContent = `Coordinates: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
-  } else {
-    coordsEl.textContent = 'No coordinates provided for this alert.';
-  }
-}
-
-	
 function openDetailPanel(item, relatedList){
-  // Text fields
+  // item = {title, city, risk, when, ...}
+  // relatedList = array of all events in that feed (for "earlier today")
+
   detailTitleEl.textContent = item.title || '[Incident Title]';
   detailMetaEl.textContent = `${item.city||'Unknown'} • ${item.risk||'n/a'} • ${fmtWhen(item.when)}`;
 
   detailSummaryEl.textContent = item.description ||
                                 `Ongoing situation reported in ${item.city||'the area'}.`;
 
+  // mock "location / impact"
   detailLocationEl.textContent =
     `Approx area: ${item.city||'unknown'} (exact location may be refining).`;
   detailImpactEl.textContent =
     `Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.`;
 
-  // Mini-map pin (lat/lon come from the event if present)
-  if (typeof item.lat === 'number' && typeof item.lon === 'number') {
-    drawMiniMapPin(item.lat, item.lon);
-  } else {
-    drawMiniMapPin(null, null);
-  }
-
-  // Earlier today in same city
+  // earlier today in same city
   const sameCityEarlier = (relatedList||[])
     .filter(x => x.city===item.city && x.when !== item.when)
     .slice(0,3)
@@ -972,25 +904,25 @@ function openDetailPanel(item, relatedList){
     .join('\n');
   detailEarlierEl.textContent = sameCityEarlier || 'No earlier incidents recorded.';
 
-  // Deep link
+  // incident deep-link -> you could add query params later
   viewFullBtn.href = 'incident.html';
 
-  // Open
   detailPanel.classList.add('open');
 }
-
-	
 function closeDetailPanel(){
-  const cvs = document.getElementById('detailMiniMap');
-  if (cvs) {
-    const ctx = cvs.getContext('2d');
-    if (ctx) ctx.clearRect(0, 0, cvs.width, cvs.height);
-  }
   detailPanel.classList.remove('open');
 }
-
-// bind the close button OUTSIDE the function
 detailCloseBtn.addEventListener('click', closeDetailPanel);
+
+// close if click outside panel (optional)
+// window.addEventListener('click', (e)=>{
+//   if(detailPanel.classList.contains('open')){
+//     // if click is not inside panel
+//     if(!detailPanel.contains(e.target)){
+//       closeDetailPanel();
+//     }
+//   }
+// });
 
 
 
@@ -1092,16 +1024,10 @@ if (!events.length) {
     });
   }
 
-// footer: correct source + timestamp
-const srcEl = cardEl.querySelector('.feed-footer .src');
-if (srcEl) srcEl.textContent = feed.useLive ? 'source: live stream' : 'source: simulated source';
-
-const lu = cardEl.querySelector('.feed-footer .last-updated');
-if (lu) {
-  const ts = new Date().toLocaleString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  lu.textContent = `last updated ${ts}`;
+  // footer: set correct source label
+  const srcEl = cardEl.querySelector('.feed-footer .src');
+  if (srcEl) srcEl.textContent = feed.useLive ? 'source: live stream' : 'source: simulated source';
 }
-
 
 // Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
 function scheduleNextRefresh(cardEl, feed){
@@ -1272,11 +1198,10 @@ async function renderFeeds(){
 
       <div class="feed-body"></div>
 
-<div class="feed-footer">
-  <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
-  <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
-  <div class="last-updated" data-feedid="${feed.id}" style="margin-left:auto;">—</div>
-</div>
+      <div class="feed-footer">
+        <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
+        <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
+      </div>
     `;
 
     // refresh link
