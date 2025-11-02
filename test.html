@@ -592,13 +592,21 @@
 </head>
 
 
-  <script>
   // must be after the header DOM exists
-  document.addEventListener('DOMContentLoaded', function(){
-    CIAuth.injectUserChip(document.getElementById('topActions'));
-    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
-  });
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const topActions = document.getElementById('topActions');
+  if (window.CIAuth && typeof CIAuth.injectUserChip === 'function' && topActions) {
+    CIAuth.injectUserChip(topActions);
+  }
+
+  const nav = document.querySelector('aside.sidebar nav');
+  if (window.CIAuth && typeof CIAuth.updateSidebarForRole === 'function' && nav) {
+    CIAuth.updateSidebarForRole(nav);
+  }
+});
 </script>
+
 
   
 <body>
@@ -889,45 +897,42 @@ function escapeHtml(s='') {
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
 async function fetchMockEventsForFeed(feed){
-  // feed.places is array of cities, feed.risks is array of risk levels
-  // We'll ask Worker for mock data (still fake but consistent format)
   const params = new URLSearchParams();
-  if(feed.places && feed.places.length){
-    params.set('cities', feed.places.join(','));
-  }
-  if(feed.risks && feed.risks.length){
-    params.set('risk', feed.risks.join(','));
-  }
+  if (feed.places?.length)   params.set('cities', feed.places.join(','));
+  if (feed.risks?.length)    params.set('risk',   feed.risks.join(','));
+  if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
 
-	if (feed.keywords && feed.keywords.length) {
-  params.set('keywords', feed.keywords.join(','));
-}
-
-  // choose live (GDELT) vs mock
-  const provider = 'gdelt'; // keep gdelt as default for live
+  const provider = 'gdelt';
   const base = 'https://api.cityintelapi.com';
 
-  // NOTE: always use absolute URL to your Worker
-  const url = feed.useLive
-    ? `${base}/api/live-news?${params.toString()}&provider=${provider}`
-    : `${base}/api/live?${params.toString()}`;
-	
+  const liveUrl = `${base}/api/live-news?${params.toString()}&provider=${provider}`;
+  const mockUrl = `${base}/api/live?${params.toString()}`;
 
+  // Try LIVE first
   try {
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) {
-      // helpful console output while testing
-      const txt = await res.text().catch(() => '');
-      console.error('Live fetch failed', res.status, txt);
-      return [];
+    const res = await fetch(liveUrl, { headers: { 'Accept': 'application/json' } });
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (Array.isArray(data.events) && data.events.length) return data.events;
     }
+    // If LIVE returns non-OK or empty, fall through to mock
+    console.warn('Live feed not available or empty, using mock:', res.status);
+  } catch (e) {
+    console.warn('Live fetch error, using mock:', e);
+  }
+
+  // Fallback: mock
+  try {
+    const res = await fetch(mockUrl, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return [];
     const data = await res.json().catch(() => ({}));
     return Array.isArray(data.events) ? data.events : [];
   } catch (e) {
-    console.warn('Fetch error', e);
+    console.warn('Mock fetch error', e);
     return [];
   }
 }
+
 
 
 function riskClass(r){
@@ -1171,8 +1176,11 @@ if (!events.length) {
   }
 
   // footer: set correct source label
-  const srcEl = cardEl.querySelector('.feed-footer .src');
-  if (srcEl) srcEl.textContent = feed.useLive ? 'source: live stream' : 'source: simulated source';
+const usedFallback = feed.useLive && !events.length; // crude hint; or set a flag above if you prefer
+const srcEl = cardEl.querySelector('.feed-footer .src');
+if (srcEl) srcEl.textContent = feed.useLive
+  ? (usedFallback ? 'source: live stream (fallback active)' : 'source: live stream')
+  : 'source: simulated source';
 }
 
 // Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
