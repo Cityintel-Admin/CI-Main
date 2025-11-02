@@ -610,6 +610,36 @@
     left:50%; transform:translateX(-50%); background:none;
     color:#fecaca; padding:8px 12px; text-align:center;">
   <span id="trial-text">Your trial ends soon.</span>
+
+		<!-- Latest tweet -->
+<div id="tweetEmbed" style="margin:8px 0 12px;">
+  <a class="twitter-timeline"
+     data-theme="dark"
+     data-tweet-limit="1"
+     href="https://x.com/CityIntel1">
+     Tweets by CityIntel
+  </a>
+</div>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script>
+  // Rebuild the timeline iframe every 5 minutes so it pulls the newest tweet
+  function refreshTimeline(){
+    const host = document.getElementById('tweetEmbed');
+    if (!host || !window.twttr || !twttr.widgets) return;
+    host.innerHTML = ''; // clear old iframe
+    twttr.widgets.createTimeline(
+      { sourceType: 'profile', screenName: 'CityIntel' },
+      host,
+      { theme: 'dark', tweetLimit: 1 }
+    );
+  }
+  // initial ensure (in case widgets.js loaded before this script)
+  document.addEventListener('DOMContentLoaded', refreshTimeline);
+  // periodic refresh
+  setInterval(refreshTimeline, 5 * 60 * 1000);
+</script>
+
 </div>	
 	  <div id="topActions" style="position:relative"></div>
   </div>
@@ -1081,6 +1111,16 @@ function renderEventsIntoCard(cardEl, events, feed){
     ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>`
     : ``;
 
+	// update per-card state for adaptive schedule
+cardEl.__state = cardEl.__state || {};
+cardEl.__state.lastLen = events.length;
+cardEl.__state.lastHighAt = Math.max(
+  cardEl.__state.lastHighAt || 0,
+  ...events.filter(e => (e.risk||'').toLowerCase()==='high')
+           .map(e => Date.parse(e.when) || 0)
+);
+
+
   headRight.innerHTML = `
     ${liveMarkup}
     <div style="display:flex;gap:6px;">
@@ -1162,13 +1202,24 @@ if (!events.length) {
 
 // Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
 function scheduleNextRefresh(cardEl, feed){
-  const base   = feed.useLive ? 60_000 : 120_000;            // 60s live, 120s mock
-  const jitter = Math.floor(Math.random() * 10_000) - 5_000; // -5s .. +5s
-  const ms     = Math.max(15_000, base + jitter);            // never less than 15s
+  // keep lightweight state per card
+  cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
+  const { lastLen, lastHighAt } = cardEl.__state;
+
+  // base cadence
+  let base = feed.useLive ? 60_000 : 120_000;
+
+  // if last pull had zero items on a LIVE feed, try a bit sooner
+  if (feed.useLive && lastLen === 0) base = 30_000;
+
+  // if we saw a high-risk item recently, keep it hot for 5 minutes
+  if (feed.useLive && Date.now() - lastHighAt < 5*60_000) base = Math.min(base, 25_000);
+
+  const jitter = Math.floor(Math.random() * 10_000) - 5_000;
+  const ms = Math.max(15_000, base + jitter);
 
   clearTimeout(cardEl.__nextTimer);
   cardEl.__nextTimer = setTimeout(()=>{
-    // reload latest feed definition in case user edited it
     const fresh = loadFeeds().find(f => f.id === feed.id);
     if (fresh) refreshSingleFeedCard(cardEl, fresh);
   }, ms);
@@ -1328,17 +1379,24 @@ async function renderFeeds(){
   let feeds = loadFeeds();
   if (!Array.isArray(feeds)) feeds = [];
 
-// Seed a default feed if none exist
+// Auto-seed several useful starters if none exist
 if (feeds.length === 0){
-  const first = {
-    id: 'default-1',
-    places: ['London'],
-    risks: ['high','med','low'],
-    useLive: false
-  };
-  saveFeeds([first]);
-  feeds = [first];
+  const starters = [
+    { id: 'seed-global', title: 'Global (live)', places: ['global'],  risks: ['high','med'], useLive: true  },
+    { id: 'seed-eu',     title: 'Europe (live)', places: ['eu'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-uk',     title: 'UK (live)',     places: ['uk'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-usa',    title: 'US (live)',     places: ['us'],      risks: ['high','med'], useLive: true  },
+  ];
+
+  // persist (title is only for display – we derive label from places below)
+  saveFeeds(starters.map(s => ({
+    id: s.id, places: s.places, risks: s.risks, useLive: s.useLive,
+    // keywords left empty by default
+  })));
+
+  feeds = loadFeeds();
 }
+
 
 
   grid.innerHTML = '';
@@ -1353,6 +1411,16 @@ if (feeds.length === 0){
 
 
 const keywordsLine = renderKeywordsLine(feed.keywords || []);
+const prettyName =
+  (feed.id && feed.id.startsWith('seed-')) ? (
+    feed.id==='seed-global' ? 'Global (live)' :
+    feed.id==='seed-eu'     ? 'Europe (live)' :
+    feed.id==='seed-uk'     ? 'UK (live)' :
+    feed.id==='seed-usa'    ? 'US (live)' :
+    null
+  ) : null;
+
+const citiesLabel = prettyName || (feed.places||[]).join(', ');
 
 	  
     card.innerHTML = `
