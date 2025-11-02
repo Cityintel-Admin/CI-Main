@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -211,6 +212,83 @@
       align-items:flex-end;
       gap:4px;
     }
+
+	.feed-kw{
+     margin-top:4px;
+     font-size:12px;
+     color:var(--muted);
+     white-space:nowrap;
+     overflow:hidden;
+     text-overflow:ellipsis;
+     max-width: 100%;
+    }
+
+.kw-chip{
+  display:inline-block;
+  padding:2px 6px;
+  border:1px solid var(--g600);
+  border-radius:999px;
+  font-size:11px;
+  color:#cfd6df;
+  background:#1f2024;
+  margin-right:6px;
+}
+.kw-more{
+  font-size:11px;
+  opacity:.8;
+}
+	  
+ 
+	  
+/* LIVE badge in feed header */
+    .live-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(208,22,22,0.15);
+      border:1px solid #D01616;
+      color:#ff4d4d;
+      font-size:11px;
+      font-weight:600;
+      line-height:1.2;
+      padding:3px 8px;
+      border-radius:999px;
+    }
+    .live-dot {
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#ff4d4d;
+      box-shadow:0 0 6px #ff4d4d,0 0 10px #ff4d4d;
+    }
+
+    /* checkbox row in modal */
+    .modal-row-inline {
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+      margin-bottom:12px;
+    }
+    .modal-row-inline input[type="checkbox"] {
+      margin-top:2px;
+      accent-color:#D01616; /* modern browsers */
+    }
+    .modal-row-inline .live-row-text {
+      color:#fff;
+      font-size:13px;
+      line-height:1.4;
+    }
+    .modal-row-inline .live-row-hint {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+	  
+	  
     .btn-ghost{
       background:#1f2024;
       color:#e9edf2;
@@ -604,6 +682,10 @@
       <div id="detailImpact" class="small" style="margin-top:8px;">
         Impact to nearby assets here.
       </div>
+
+<canvas id="detailMiniMap" width="320" height="180"
+    style="margin-top:10px;border-radius:10px;border:1px solid var(--g600);background:#0f1013;"></canvas>
+  <div id="detailCoords" class="small" style="margin-top:6px;opacity:.8;"></div>		
     </div>
 
     <div class="detail-section">
@@ -624,10 +706,24 @@
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-box">
     <h3>Add Feed</h3>
-    <div class="modal-row">
+   
+	  <div class="modal-row">
       <label for="feedCityInput">City / Region (e.g. London)</label>
       <input id="feedCityInput" type="text" placeholder="London" />
     </div>
+
+
+<div class="modal-row">
+  <label for="feedKeywordsInput">Keywords (optional)</label>
+  <input id="feedKeywordsInput" type="text"
+         placeholder='e.g. UK OR Britain, flooding, evacuation' />
+  <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+    Tip: use comma-separated terms or OR logic. Examples:<br>
+    <code>UK OR Britain</code>, <code>flooding</code>, <code>evacuation</code>
+  </div>
+</div>
+
+	  
     <div class="modal-row">
       <label for="feedRiskSelect">Risk Levels to Include</label>
       <select id="feedRiskSelect" multiple size="3">
@@ -639,6 +735,19 @@
         Hold Ctrl (or Cmd on Mac) to select multiple.
       </div>
     </div>
+
+
+	  
+  <!-- NEW CHECKBOX ROW -->
+  <div class="modal-row-inline">
+    <input type="checkbox" id="feedLiveCheck" />
+    <div>
+      <div class="live-row-text">Live news mode</div>
+      <div class="live-row-hint">Pull from external breaking sources (slower, rate-limited in test)</div>
+    </div>
+  </div>
+
+	  
     <div class="modal-actions">
       <button class="btn-cancel" id="modalCancel">Cancel</button>
       <button class="btn-save" id="modalSave">Save Feed</button>
@@ -743,9 +852,32 @@ function saveFeeds(feeds){
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
   const feeds = loadFeeds();
-  feeds.push(def);
+    feeds.push({ ...def, useLive: !!def.useLive });
   saveFeeds(feeds);
 }
+
+function truncate(str, n=48) {
+  return (str.length > n) ? (str.slice(0, n-1) + '…') : str;
+}
+
+function escapeHtml(s='') {
+  return s.replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+
+	function renderKeywordsLine(keywords = []) {
+  if (!keywords.length) return '';
+  const max = 3;
+  const shown = keywords.slice(0, max);
+  const extra = Math.max(0, keywords.length - shown.length);
+  const chips = shown.map(k => `<span class="kw-chip">${escapeHtml(k)}</span>`).join(' ');
+  const more  = extra ? `<span class="kw-more">+${extra} more</span>` : '';
+  const full  = escapeHtml(keywords.join(', '));
+  return `<div class="feed-kw" title="${full}">Topics: ${chips} ${more}</div>`;
+}
+
+	
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
 async function fetchMockEventsForFeed(feed){
@@ -758,18 +890,37 @@ async function fetchMockEventsForFeed(feed){
   if(feed.risks && feed.risks.length){
     params.set('risk', feed.risks.join(','));
   }
-  const url = `https://api.cityintelapi.com/api/live?${params.toString()}`;
 
-  try{
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('bad response');
-    const data = await res.json();
-    return data.events || [];
-  }catch(e){
-    console.warn('mock fetch fail', e);
+	if (feed.keywords && feed.keywords.length) {
+  params.set('keywords', feed.keywords.join(','));
+}
+
+  // choose live (GDELT) vs mock
+  const provider = 'gdelt'; // keep gdelt as default for live
+  const base = 'https://api.cityintelapi.com';
+
+  // NOTE: always use absolute URL to your Worker
+  const url = feed.useLive
+    ? `${base}/api/live-news?${params.toString()}&provider=${provider}`
+    : `${base}/api/live?${params.toString()}`;
+	
+
+  try {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) {
+      // helpful console output while testing
+      const txt = await res.text().catch(() => '');
+      console.error('Live fetch failed', res.status, txt);
+      return [];
+    }
+    const data = await res.json().catch(() => ({}));
+    return Array.isArray(data.events) ? data.events : [];
+  } catch (e) {
+    console.warn('Fetch error', e);
     return [];
   }
 }
+
 
 function riskClass(r){
   if(r==='high') return 'high';
@@ -800,6 +951,62 @@ const detailEarlierEl  = document.getElementById('detailEarlier');
 const detailCloseBtn = document.getElementById('detailClose');
 const viewFullBtn   = document.getElementById('viewFullBtn');
 
+
+function lonLatToXY(lon, lat, w, h) {
+  // quick equirectangular projection
+  const x = (lon + 180) * (w / 360);
+  const y = (90 - lat) * (h / 180);
+  return [x, y];
+}
+
+function drawMiniMapPin(lat, lon) {
+  const cvs = document.getElementById('detailMiniMap');
+  const coordsEl = document.getElementById('detailCoords');
+  if (!cvs || !coordsEl) return;
+
+  const ctx = cvs.getContext('2d');
+  const w = cvs.width, h = cvs.height;
+
+  // background grid
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#14161a';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx <= w; gx += 32) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+  for (let gy = 0; gy <= h; gy += 24) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+  // subtle oval to avoid flat look
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.beginPath();
+  ctx.ellipse(w/2, h/2, w*0.46, h*0.36, 0, 0, Math.PI*2);
+  ctx.stroke();
+
+  if (typeof lat === 'number' && typeof lon === 'number') {
+    const [x, y] = lonLatToXY(lon, lat, w, h);
+
+    // glow
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,77,77,0.25)';
+    ctx.fill();
+
+    // pin
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#ff4d4d';
+    ctx.shadowColor = '#ff4d4d';
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    coordsEl.textContent = `Coordinates: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+  } else {
+    coordsEl.textContent = 'No coordinates provided for this alert.';
+  }
+}
+
+	
 function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
@@ -816,6 +1023,13 @@ function openDetailPanel(item, relatedList){
   detailImpactEl.textContent =
     `Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.`;
 
+	// Mini-map pin (lat/lon come from the event if present)
+if (typeof item.lat === 'number' && typeof item.lon === 'number') {
+  drawMiniMapPin(item.lat, item.lon);
+} else {
+  drawMiniMapPin(null, null);
+}
+
   // earlier today in same city
   const sameCityEarlier = (relatedList||[])
     .filter(x => x.city===item.city && x.when !== item.when)
@@ -830,124 +1044,141 @@ function openDetailPanel(item, relatedList){
   detailPanel.classList.add('open');
 }
 function closeDetailPanel(){
+  const cvs = document.getElementById('detailMiniMap');
+  if (cvs) {
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+  }
   detailPanel.classList.remove('open');
 }
-detailCloseBtn.addEventListener('click', closeDetailPanel);
 
-// close if click outside panel (optional)
-// window.addEventListener('click', (e)=>{
-//   if(detailPanel.classList.contains('open')){
-//     // if click is not inside panel
-//     if(!detailPanel.contains(e.target)){
-//       closeDetailPanel();
-//     }
-//   }
-// });
 
-// -------------------- CARD RENDER --------------------
-async function renderFeeds(){
-  const grid = document.getElementById('feedsGrid');
-  const feeds = loadFeeds();
 
-  // if there are no feeds saved, seed one default
-  if(!feeds.length){
-    const first = {
-      id: 'default-1',
-      places: ['London'],
-      risks: ['high','med','low'],
-    };
-    saveFeeds([first]);
-  }
-
-  const finalFeeds = loadFeeds();
-
-  grid.innerHTML = '';
-
-  for (const feed of finalFeeds){
+// Re-render a single card (fetch -> DOM -> schedule next refresh)
+async function refreshSingleFeedCard(cardEl, feed){
+  try {
     const events = await fetchMockEventsForFeed(feed);
-
-    const card = document.createElement('section');
-    card.className = 'feed-card';
-
-    // header
-    const citiesLabel = feed.places.join(', ');
-    const risksLabel  = feed.risks.join(', ');
-    const topCity = feed.places[0] || 'Unknown';
-
-    card.innerHTML = `
-      <div class="feed-head">
-        <div class="feed-head-left">
-          <div class="feed-city">${citiesLabel}</div>
-          <div style="margin-top:4px;font-size:12px;color:${feed.risks.includes('high')?'#ff5a5f':feed.risks.includes('med')?'#f0b429':'#33c48d'};">
-            Watching: ${risksLabel}
-          </div>
-        </div>
-        <div class="feed-head-right">
-          <button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>
-        </div>
-      </div>
-
-      <div class="feed-body"></div>
-
-      <div class="feed-footer">
-        <div class="src">source: simulated source</div>
-        <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
-      </div>
-    `;
-
-    const bodyEl = card.querySelector('.feed-body');
-
-    if (!events.length){
-      bodyEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">No recent items in ${citiesLabel}.</div>`;
-    } else {
-      events.slice(0,8).forEach(ev=>{
-        const itemEl = document.createElement('div');
-        itemEl.className = 'feed-item';
-        itemEl.style.borderLeftColor =
-          ev.risk==='high' ? '#ff5a5f' :
-          ev.risk==='med'  ? '#f0b429' :
-                             '#33c48d';
-
-        itemEl.innerHTML = `
-          <div class="feed-title-row">
-            <div>${ev.city || topCity} — ${ev.title}</div>
-            <div class="feed-risk ${riskClass(ev.risk)}">${ev.risk}</div>
-          </div>
-          <div class="feed-meta">
-            <span>${fmtWhen(ev.when)}</span>
-            <span>${ev.risk.toUpperCase()} priority</span>
-          </div>
-        `;
-
-        // clicking an item opens side panel instead of nav
-        itemEl.addEventListener('click', ()=>{
-          openDetailPanel(ev, events);
-        });
-
-        bodyEl.appendChild(itemEl);
-      });
-    }
-
-    // refresh link
-    const refreshBtn = card.querySelector('.refresh');
-    refreshBtn.addEventListener('click', ()=>{
-      renderFeeds(); // just rerender for now
-    });
-
-    // edit feed
-    const editBtn = card.querySelector('.btn-edit-feed');
-    editBtn.addEventListener('click', ()=>{
-      openFeedModal(feed);
-    });
-
-    grid.appendChild(card);
+    renderEventsIntoCard(cardEl, events, feed);
+  } finally {
+    scheduleNextRefresh(cardEl, feed);
   }
 }
+
+// Put the events into an existing card (no refetch here)
+function renderEventsIntoCard(cardEl, events, feed){
+  const bodyEl = cardEl.querySelector('.feed-body');
+
+  // header: live badge
+  const headRight = cardEl.querySelector('.feed-head-right');
+
+  const editBtnExisting = headRight.querySelector('.btn-edit-feed');
+  const delBtnExisting  = headRight.querySelector('.btn-del-feed');
+	
+  const liveMarkup = feed.useLive
+    ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>`
+    : ``;
+
+  headRight.innerHTML = `
+    ${liveMarkup}
+    <div style="display:flex;gap:6px;">
+      ${editBtnExisting ? editBtnExisting.outerHTML
+                        : `<button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>`}
+      ${delBtnExisting  ? delBtnExisting.outerHTML
+                        : `<button class="btn-ghost btn-del-feed" data-feedid="${feed.id}" style="color:#ff5a5f;border-color:#ff5a5f;">✕</button>`}
+    </div>
+  `;
+
+  // Re-bind events because innerHTML resets listeners
+  const editBtn = headRight.querySelector('.btn-edit-feed');
+  if (editBtn){
+    editBtn.addEventListener('click', ()=> openFeedModal(feed));
+  }
+  const delBtn = headRight.querySelector('.btn-del-feed');
+  if (delBtn){
+    delBtn.addEventListener('click', ()=>{
+      if (!confirm('Remove this feed?')) return;
+      const updated = loadFeeds().filter(f => f.id !== feed.id);
+      saveFeeds(updated);
+      renderFeeds();
+    });
+  }
+
+
+
+	
+  // body
+if (!events.length) {
+  const placesLabel = (feed.places || []).join(', ');
+  if (feed.useLive) {
+    // Live feeds get a more dynamic hint
+    bodyEl.innerHTML = `
+      <div style="color:var(--muted);font-size:12px;">
+        No recent items in ${placesLabel}. 
+        <span style="opacity:.8">Listening for live updates…</span>
+      </div>`;
+  } else {
+    // Mock/simulated feeds keep a simpler line
+    bodyEl.innerHTML = `
+      <div style="color:var(--muted);font-size:12px;">
+        No recent items in ${placesLabel}.
+      </div>`;
+  }
+}
+  
+  else {
+   
+	  bodyEl.innerHTML = '';
+    const topCity = (feed.places && feed.places[0]) || 'Unknown';
+    events.slice(0,8).forEach(ev=>{
+      const itemEl = document.createElement('div');
+      itemEl.className = 'feed-item';
+      itemEl.style.borderLeftColor =
+        ev.risk==='high' ? '#ff5a5f' :
+        ev.risk==='med'  ? '#f0b429' :
+                           '#33c48d';
+      itemEl.innerHTML = `
+        <div class="feed-title-row">
+          <div>${ev.city || topCity} — ${ev.title}</div>
+          <div class="feed-risk ${riskClass(ev.risk)}">${ev.risk}</div>
+        </div>
+        <div class="feed-meta">
+          <span>${fmtWhen(ev.when)}</span>
+          <span>${(ev.risk||'').toUpperCase()} priority</span>
+        </div>
+      `;
+      // open slide panel
+      itemEl.addEventListener('click', ()=> openDetailPanel(ev, events));
+      bodyEl.appendChild(itemEl);
+    });
+  }
+
+  // footer: set correct source label
+  const srcEl = cardEl.querySelector('.feed-footer .src');
+  if (srcEl) srcEl.textContent = feed.useLive ? 'source: live stream' : 'source: simulated source';
+}
+
+// Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
+function scheduleNextRefresh(cardEl, feed){
+  const base   = feed.useLive ? 60_000 : 120_000;            // 60s live, 120s mock
+  const jitter = Math.floor(Math.random() * 10_000) - 5_000; // -5s .. +5s
+  const ms     = Math.max(15_000, base + jitter);            // never less than 15s
+
+  clearTimeout(cardEl.__nextTimer);
+  cardEl.__nextTimer = setTimeout(()=>{
+    // reload latest feed definition in case user edited it
+    const fresh = loadFeeds().find(f => f.id === feed.id);
+    if (fresh) refreshSingleFeedCard(cardEl, fresh);
+  }, ms);
+}
+
+
 
 // -------------------- FEED MODAL LOGIC --------------------
 const overlayEl = document.getElementById('modalOverlay');
 const cityInput = document.getElementById('feedCityInput');
 const riskSel   = document.getElementById('feedRiskSelect');
+const kwInput = document.getElementById('feedKeywordsInput');
+const liveCheck = document.getElementById('feedLiveCheck');	
 const cancelBtn = document.getElementById('modalCancel');
 const saveBtn   = document.getElementById('modalSave');
 const addFeedBtn= document.getElementById('btnAddFeed');
@@ -971,7 +1202,12 @@ function openFeedModal(feed){
         }
       }
     });
-  } else {
+
+liveCheck.checked = !!feed.useLive;
+kwInput.value = (feed.keywords || []).join(', ');	  
+  } 
+  
+  else {
     cityInput.value = '';
     for (let i=0;i<riskSel.options.length;i++){
       riskSel.options[i].selected = false;
@@ -982,6 +1218,8 @@ function openFeedModal(feed){
         riskSel.options[i].selected = true;
       }
     }
+	   liveCheck.checked = false;
+	   kwInput.value = '';
   }
 }
 
@@ -1000,12 +1238,48 @@ addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
 
 saveBtn.addEventListener('click', ()=>{
   const rawCities = cityInput.value.trim();
-  if(!rawCities){
-    alert('Please enter at least one city/region.');
+  const rawKeywords = kwInput.value.trim();
+
+  // NEW: allow either cities or keywords
+  if (!rawCities && !rawKeywords) {
+    alert('Enter at least one city/region OR at least one keyword.');
     return;
   }
-  const places = rawCities.split(',').map(s=>s.trim()).filter(Boolean);
+	
+  let places = rawCities ? rawCities.split(',').map(s=>s.trim()).filter(Boolean) : [];
 
+// Expand region shortcuts
+const EXPANSIONS = {
+  uk: [
+    'London','Manchester','Birmingham','Leeds','Liverpool',
+'Bristol','Glasgow','Edinburgh','Cardiff','Belfast',
+'Nottingham','Sheffield','Newcastle','Leicester','Portsmouth',
+'Southampton','Coventry','Bradford','Derby','Stoke-on-Trent',
+'Sunderland','Wolverhampton','Hull','Plymouth','Brighton',
+'Cambridge','cambridgeshire','Oxford','Exeter','Norwich','York',
+'Preston','Canterbury','Lancaster','Chester','Milton Keynes',
+'Swansea','Aberdeen','Dundee','Inverness','Newport',
+'Luton','Reading','Watford','Blackpool','Middlesbrough',
+'Bolton','Warrington','Huddersfield','Peterborough','Northampton',
+'Chelmsford','Colchester','Ipswich','Slough','Basildon',
+'Woking','Crawley','Bournemouth','Poole','Bath',
+'Gloucester','Hereford','Carlisle','Wakefield','Telford',
+'Doncaster','Rotherham','Barnsley','Oldham','Wigan',
+'Burnley','Blackburn','Stockport','Swindon','Hastings'
+  ]
+};
+
+if (places.length) {
+    places = places.flatMap(p => EXPANSIONS[p.toLowerCase()] || [p]);
+  }
+
+
+  // keywords
+  const keywords = rawKeywords
+    ? rawKeywords.split(',').map(s=>s.trim()).filter(Boolean)
+    : [];
+	
+	
   const risks = [];
   for (let i=0;i<riskSel.options.length;i++){
     if(riskSel.options[i].selected){
@@ -1017,26 +1291,124 @@ saveBtn.addEventListener('click', ()=>{
     return;
   }
 
+	
   const feeds = loadFeeds();
-
+  const liveMode = !!liveCheck.checked;
+	
   if(editingFeedId){
     // update existing
     const idx = feeds.findIndex(f=>f.id===editingFeedId);
     if(idx>=0){
       feeds[idx].places = places;
       feeds[idx].risks  = risks;
+	  feeds[idx].useLive = liveMode;
+	  feeds[idx].keywords = keywords;
     }
     saveFeeds(feeds);
   } else {
     // create new
     const id = 'feed-' + Date.now().toString(36);
-    feeds.push({ id, places, risks });
-    saveFeeds(feeds);
+    feeds.push({ id, places, risks, useLive: liveMode, keywords });
   }
-
+  saveFeeds(feeds);
   closeFeedModal();
   renderFeeds();
 });
+	
+
+	
+// -------------------- CARD RENDER --------------------
+async function renderFeeds(){
+  const grid = document.getElementById('feedsGrid');
+
+  // use let (we mutate this below)
+  let feeds = loadFeeds();
+  if (!Array.isArray(feeds)) feeds = [];
+
+// Seed a default feed if none exist
+if (feeds.length === 0){
+  const first = {
+    id: 'default-1',
+    places: ['London'],
+    risks: ['high','med','low'],
+    useLive: false
+  };
+  saveFeeds([first]);
+  feeds = [first];
+}
+
+
+  grid.innerHTML = '';
+
+  for (const feed of feeds){
+    const citiesLabel = (feed.places||[]).join(', ');
+    const risksLabel  = (feed.risks||[]).join(', ');
+
+    const card = document.createElement('section');
+    card.className = 'feed-card';
+    card.dataset.id = feed.id;
+
+
+const keywordsLine = renderKeywordsLine(feed.keywords || []);
+
+	  
+    card.innerHTML = `
+      <div class="feed-head">
+        <div class="feed-head-left">
+          <div class="feed-city">${citiesLabel}</div>
+          <div style="margin-top:4px;font-size:12px;color:${feed.risks.includes('high')?'#ff5a5f':feed.risks.includes('med')?'#f0b429':'#33c48d'};">
+            Watching: ${risksLabel}
+          </div>
+          ${keywordsLine}  <!-- NEW: compact keywords row -->
+        </div>
+        <div class="feed-head-right">
+          ${feed.useLive ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>` : ``}
+          <div style="display:flex;gap:6px;">
+            <button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>
+            <button class="btn-ghost btn-del-feed" data-feedid="${feed.id}" style="color:#ff5a5f;border-color:#ff5a5f;">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-body"></div>
+
+      <div class="feed-footer">
+        <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
+        <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
+      </div>
+    `;
+
+    // refresh link
+    card.querySelector('.refresh').addEventListener('click', ()=>{
+      const fresh = loadFeeds().find(f=>f.id===feed.id) || feed;
+      refreshSingleFeedCard(card, fresh);
+    });
+
+    // edit feed (fixed the missing dot before addEventListener)
+    card.querySelector('.btn-edit-feed').addEventListener('click', ()=>{
+      openFeedModal(feed);
+    });
+
+	  // optional: click the topics line to edit
+const kwEl = card.querySelector('.feed-kw');
+if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
+
+
+    // delete feed
+    card.querySelector('.btn-del-feed').addEventListener('click', ()=>{
+      if (!confirm('Remove this feed?')) return;
+      const updated = loadFeeds().filter(f => f.id !== feed.id);
+      saveFeeds(updated);
+      renderFeeds();
+    });
+
+    grid.appendChild(card);
+
+    // initial fetch & schedule next refresh
+    refreshSingleFeedCard(card, feed);
+  }
+}
+
 
 // -------------------- INIT --------------------
 renderFeeds();
