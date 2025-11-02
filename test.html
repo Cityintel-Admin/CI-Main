@@ -900,40 +900,33 @@ function escapeHtml(s='') {
 // -------------------- RENDER / FETCH MOCK DATA --------------------
 async function fetchMockEventsForFeed(feed){
   const params = new URLSearchParams();
-  if (feed.places?.length)   params.set('cities', feed.places.join(','));
-  if (feed.risks?.length)    params.set('risk',   feed.risks.join(','));
+  if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+  if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
   if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
 
-  const provider = 'gdelt';
   const base = 'https://api.cityintelapi.com';
+  const url  = feed.useLive
+    ? `${base}/api/live-news?${params.toString()}&provider=gdelt`
+    : `${base}/api/live?${params.toString()}`;
 
-  const liveUrl = `${base}/api/live-news?${params.toString()}&provider=${provider}`;
-  const mockUrl = `${base}/api/live?${params.toString()}`;
-
-  // Try LIVE first
   try {
-    const res = await fetch(liveUrl, { headers: { 'Accept': 'application/json' } });
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+
+    // If Worker is up but returns no events, just show “listening…” (no mock).
     if (res.ok) {
       const data = await res.json().catch(() => ({}));
-      if (Array.isArray(data.events) && data.events.length) return data.events;
+      const events = Array.isArray(data.events) ? data.events : [];
+      return events; // <- may be []
     }
-    // If LIVE returns non-OK or empty, fall through to mock
-    console.warn('Live feed not available or empty, using mock:', res.status);
-  } catch (e) {
-    console.warn('Live fetch error, using mock:', e);
-  }
 
-  // Fallback: mock
-  try {
-    const res = await fetch(mockUrl, { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) return [];
-    const data = await res.json().catch(() => ({}));
-    return Array.isArray(data.events) ? data.events : [];
-  } catch (e) {
-    console.warn('Mock fetch error', e);
+    // Hard error? still don’t spam logs.
+    return [];
+
+  } catch {
     return [];
   }
 }
+
 
 
 
