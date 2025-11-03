@@ -265,7 +265,7 @@
     /* checkbox row in modal */
     .modal-row-inline {
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       gap:8px;
       font-size:12px;
       color:var(--muted);
@@ -495,7 +495,7 @@
       background:#1a1c20;
       border:1px solid var(--g600);
       border-radius:16px;
-      width:320px;
+      width:420px;
       max-width:90%;
       box-shadow:0 30px 60px rgba(0,0,0,.9);
       padding:16px;
@@ -512,7 +512,7 @@
       margin-bottom:12px;
       display:flex;
       flex-direction:column;
-      gap:6px;
+      gap:8px;
     }
     .modal-row label{
       font-size:12px;
@@ -523,11 +523,11 @@
       border:1px solid var(--g600);
       border-radius:8px;
       color:#fff;
-      padding:8px 10px;
-      font-size:13px;
+      padding:10px 12px;
+      font-size:14px;
       line-height:1.4;
       outline:none;
-      width:100%;
+      width:90%;
     }
     .modal-row input:focus,
     .modal-row select:focus{
@@ -592,27 +592,42 @@
 </head>
 
 
-  <script>
-  // must be after the header DOM exists
-  document.addEventListener('DOMContentLoaded', function(){
-    CIAuth.injectUserChip(document.getElementById('topActions'));
-    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
-  });
+  
+<script>
+
+	// must be after the header DOM exists
+document.addEventListener('DOMContentLoaded', () => {
+  const topActions = document.getElementById('topActions');
+  if (window.CIAuth && typeof CIAuth.injectUserChip === 'function' && topActions) {
+    CIAuth.injectUserChip(topActions);
+  }
+
+  const nav = document.querySelector('aside.sidebar nav');
+  if (window.CIAuth && typeof CIAuth.updateSidebarForRole === 'function' && nav) {
+    CIAuth.updateSidebarForRole(nav);
+  }
+});
 </script>
+
 
   
 <body>
     
- <div class="brandbar">
-    <img src="CityintLogo.jpg" alt="CityIntel Logo">
-    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
-	<div id="trial-banner" style="display:none;position:absolute;
-    left:50%; transform:translateX(-50%); background:none;
-    color:#fecaca; padding:8px 12px; text-align:center;">
-  <span id="trial-text">Your trial ends soon.</span>
-</div>	
-	  <div id="topActions" style="position:relative"></div>
+<div class="brandbar">
+  <img src="CityintLogo.jpg" alt="CityIntel Logo">
+  <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
+
+  <div id="trial-banner" style="display:none;position:absolute;
+       left:50%; transform:translateX(-50%); background:none;
+       color:#fecaca; padding:8px 12px; text-align:center;">
+    <span id="trial-text">Your trial ends soon.</span>
   </div>
+
+  <!-- keep topActions INSIDE the brandbar -->
+  <div id="topActions" style="position:relative;margin-left:auto"></div>
+</div>
+		
+
 	
   <div class="app">
     <aside class="sidebar">
@@ -710,8 +725,11 @@
 	  <div class="modal-row">
       <label for="feedCityInput">City / Region (e.g. London)</label>
       <input id="feedCityInput" type="text" placeholder="London" />
-    </div>
 
+	  <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+  Tip: you can use shortcuts like <code>uk</code>, <code>us</code>, <code>eu</code>, 
+  <code>apac</code>, <code>mea</code>, <code>latam</code>, or <code>global</code>.
+</div></div>
 
 <div class="modal-row">
   <label for="feedKeywordsInput">Keywords (optional)</label>
@@ -880,46 +898,37 @@ function escapeHtml(s='') {
 	
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
-async function fetchMockEventsForFeed(feed){
-  // feed.places is array of cities, feed.risks is array of risk levels
-  // We'll ask Worker for mock data (still fake but consistent format)
+async function fetchMockEventsForFeed(feed) {
   const params = new URLSearchParams();
-  if(feed.places && feed.places.length){
-    params.set('cities', feed.places.join(','));
-  }
-  if(feed.risks && feed.risks.length){
-    params.set('risk', feed.risks.join(','));
-  }
+  if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+  if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
+  if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
 
-	if (feed.keywords && feed.keywords.length) {
-  params.set('keywords', feed.keywords.join(','));
-}
+  // ✅ Choose which backend to use:
+  // Change 'newsapi' -> 'gdelt' anytime you want to toggle
+  const provider = 'newsapi';
 
-  // choose live (GDELT) vs mock
-  const provider = 'gdelt'; // keep gdelt as default for live
   const base = 'https://api.cityintelapi.com';
-
-  // NOTE: always use absolute URL to your Worker
-  const url = feed.useLive
+  const url  = feed.useLive
     ? `${base}/api/live-news?${params.toString()}&provider=${provider}`
     : `${base}/api/live?${params.toString()}`;
-	
 
   try {
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) {
-      // helpful console output while testing
-      const txt = await res.text().catch(() => '');
-      console.error('Live fetch failed', res.status, txt);
-      return [];
+
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const events = Array.isArray(data.events) ? data.events : [];
+      return events;
     }
-    const data = await res.json().catch(() => ({}));
-    return Array.isArray(data.events) ? data.events : [];
-  } catch (e) {
-    console.warn('Fetch error', e);
+
+    return [];
+  } catch {
     return [];
   }
 }
+
+
 
 
 function riskClass(r){
@@ -1078,6 +1087,16 @@ function renderEventsIntoCard(cardEl, events, feed){
     ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>`
     : ``;
 
+	// update per-card state for adaptive schedule
+cardEl.__state = cardEl.__state || {};
+cardEl.__state.lastLen = events.length;
+cardEl.__state.lastHighAt = Math.max(
+  cardEl.__state.lastHighAt || 0,
+  ...events.filter(e => (e.risk||'').toLowerCase()==='high')
+           .map(e => Date.parse(e.when) || 0)
+);
+
+
   headRight.innerHTML = `
     ${liveMarkup}
     <div style="display:flex;gap:6px;">
@@ -1153,19 +1172,33 @@ if (!events.length) {
   }
 
   // footer: set correct source label
-  const srcEl = cardEl.querySelector('.feed-footer .src');
-  if (srcEl) srcEl.textContent = feed.useLive ? 'source: live stream' : 'source: simulated source';
+const usedFallback = feed.useLive && !events.length; // crude hint; or set a flag above if you prefer
+const srcEl = cardEl.querySelector('.feed-footer .src');
+if (srcEl) srcEl.textContent = feed.useLive
+  ? (usedFallback ? 'source: live stream (fallback active)' : 'source: live stream')
+  : 'source: simulated source';
 }
 
 // Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
 function scheduleNextRefresh(cardEl, feed){
-  const base   = feed.useLive ? 60_000 : 120_000;            // 60s live, 120s mock
-  const jitter = Math.floor(Math.random() * 10_000) - 5_000; // -5s .. +5s
-  const ms     = Math.max(15_000, base + jitter);            // never less than 15s
+  // keep lightweight state per card
+  cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
+  const { lastLen, lastHighAt } = cardEl.__state;
+
+  // base cadence
+  let base = feed.useLive ? 60_000 : 120_000;
+
+  // if last pull had zero items on a LIVE feed, try a bit sooner
+  if (feed.useLive && lastLen === 0) base = 30_000;
+
+  // if we saw a high-risk item recently, keep it hot for 5 minutes
+  if (feed.useLive && Date.now() - lastHighAt < 5*60_000) base = Math.min(base, 25_000);
+
+  const jitter = Math.floor(Math.random() * 10_000) - 5_000;
+  const ms = Math.max(15_000, base + jitter);
 
   clearTimeout(cardEl.__nextTimer);
   cardEl.__nextTimer = setTimeout(()=>{
-    // reload latest feed definition in case user edited it
     const fresh = loadFeeds().find(f => f.id === feed.id);
     if (fresh) refreshSingleFeedCard(cardEl, fresh);
   }, ms);
@@ -1325,23 +1358,29 @@ async function renderFeeds(){
   let feeds = loadFeeds();
   if (!Array.isArray(feeds)) feeds = [];
 
-// Seed a default feed if none exist
+// Auto-seed several useful starters if none exist
 if (feeds.length === 0){
-  const first = {
-    id: 'default-1',
-    places: ['London'],
-    risks: ['high','med','low'],
-    useLive: false
-  };
-  saveFeeds([first]);
-  feeds = [first];
+  const starters = [
+    { id: 'seed-global', title: 'Global (live)', places: ['global'],  risks: ['high','med'], useLive: true  },
+    { id: 'seed-eu',     title: 'Europe (live)', places: ['eu'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-uk',     title: 'UK (live)',     places: ['uk'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-usa',    title: 'US (live)',     places: ['us'],      risks: ['high','med'], useLive: true  },
+  ];
+
+  // persist (title is only for display – we derive label from places below)
+  saveFeeds(starters.map(s => ({
+    id: s.id, places: s.places, risks: s.risks, useLive: s.useLive,
+    // keywords left empty by default
+  })));
+
+  feeds = loadFeeds();
 }
+
 
 
   grid.innerHTML = '';
 
   for (const feed of feeds){
-    const citiesLabel = (feed.places||[]).join(', ');
     const risksLabel  = (feed.risks||[]).join(', ');
 
     const card = document.createElement('section');
@@ -1350,7 +1389,16 @@ if (feeds.length === 0){
 
 
 const keywordsLine = renderKeywordsLine(feed.keywords || []);
+const prettyName =
+  (feed.id && feed.id.startsWith('seed-')) ? (
+    feed.id==='seed-global' ? 'Global (live)' :
+    feed.id==='seed-eu'     ? 'Europe (live)' :
+    feed.id==='seed-uk'     ? 'UK (live)' :
+    feed.id==='seed-usa'    ? 'US (live)' :
+    null
+  ) : null;
 
+const citiesLabel = prettyName ?? (feed.places || []).join(', ');  
 	  
     card.innerHTML = `
       <div class="feed-head">
