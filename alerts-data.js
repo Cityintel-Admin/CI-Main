@@ -16,6 +16,142 @@ window.alertsData =[
 
 
 
+  {
+    title: "Protest at Italian embassy over Albania migrant centres",
+    city: "Tirana",
+    country: "Albania",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-11-01T11:00:00",
+    source: "https://www.reuters.com/world/europe/activists-protest-against-italys-migrant-centres-in-albania-2025-11-01/",
+    summary: "Protest outside the Italian diplomatic presence in Tirana against Rome’s plan to run migrant detention facilities in Albania. Expect a static rally with banners and migrant-rights NGOs present. Further info: crowd size likely in the low hundreds; local police deployed at gate and along approach roads; media present increases visibility but violence risk remains low unless a counter-group appears."
+  },
+  {
+    title: "Serbia ‘One Year of Protests’ commemorative rally",
+    city: "Novi Sad",
+    country: "Serbia",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-11-01T17:00:00",
+    source: "https://crd.org/2025/10/30/one-year-of-protests-hope-is-louder-than-fear/",
+    summary: "Commemoration-style assembly marking a year of anti-government protests in Serbia; organisers stress peaceful conduct but note attempts at intimidation. Further info: likely to stay in the city centre with speeches and remembrance elements; risk mainly comes from pro-government groups attempting disruption — police advised to guarantee safe passage and buffer zones."
+  },
+  {
+    title: "London XR / UK climate actions (rotating local groups)",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-11-25T19:30:00",
+    source: "https://extinctionrebellion.uk/act-now/events/",
+    summary: "Planned climate action/organising night advertised through XR’s UK events page. These small-footprint actions are used to prep for larger disruptive actions tied to international climate processes. Further info: venue is usually indoor/online hybrid, but rapid-reaction banner drops in central London remain possible the same evening."
+  },
+  {
+    title: "XR Wandsworth planning meeting (climate mobilisation prep)",
+    city: "Online / Wandsworth",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-11-25T19:30:00",
+    source: "https://xrwandsworth.earth/events",
+    summary: "Local XR cell coordination meeting ahead of December actions. Further info: not a street protest itself but can produce short-notice local actions, disruptions, or outreach tables in SW London in the 48h after the call."
+  },
+  {
+    title: "XR Wandsworth December mobilisation call",
+    city: "Online / Wandsworth",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-09T19:30:00",
+    source: "https://xrwandsworth.earth/events",
+    summary: "December organising call to finalise end-of-year climate actions. Further info: treat as a feeder to small-scale protests; monitoring is useful to anticipate locations (bridges, high-visibility commuter nodes)."
+  },
+  {
+    title: "Italy CGIL/union-led demonstration in Rome corridor",
+    city: "Rome",
+    country: "Italy",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-11-24T10:00:00",
+    source: "https://it.usembassy.gov/demonstration-alert-u-s-embassy-rome-italy-october-24-25-2025/",
+    summary: "Follow-on union demonstration in Rome’s central march corridor (Piazza della Repubblica toward govt buildings). Further info: expect traffic disruption, high police visibility, and union flags; violence unlikely but crowd congestion around the march head is common."
+  },
+  {
+    title: "Southern Europe anti-overtourism network — winter actions prep",
+    city: "Barcelona",
+    country: "Spain",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-13T11:00:00",
+    source: "https://www.reuters.com/world/coordinated-protests-against-tourism-levels-planned-spain-portugal-italy-2025-06-13/",
+    summary: "Localised anti-overtourism action in Barcelona linked to the broader Southern Europe tourism-pressure network. Further info: likely to stay peaceful and media-focused (placards at high-tourist sites); disruption mainly to pedestrian flows and short road holds near the historic centre."
+  },
+  {
+    title: "Southern Europe anti-overtourism action — Lisbon node",
+    city: "Lisbon",
+    country: "Portugal",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-13T11:30:00",
+    source: "https://www.reuters.com/world/coordinated-protests-against-tourism-levels-planned-spain-portugal-italy-2025-06-13/",
+    summary: "Lisbon activists aligned with Spain/Italy groups protesting rent pressure and tourist-zone saturation. Further info: expect banners, speeches, and social-media filming; police normally keep it low-key unless tourist traffic is blocked."
+  },
+  {
+    title: "Southern Europe anti-overtourism action — Venice node",
+    city: "Venice",
+    country: "Italy",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-13T12:00:00",
+    source: "https://www.reuters.com/world/coordinated-protests-against-tourism-levels-planned-spain-portugal-italy-2025-06-13/",
+    summary: "Venice participation in the coordinated anti-overtourism day. Further info: disruption is symbolic (bridges, photo spots) rather than large-scale; useful to mark as high-visibility for media monitoring."
+  },
+
+  // === Africa / linked labour & governance in Nov–Dec 2025 ===
+  {
+    title: "NUM / Eskom labour pressure meetings – possible protest pivots",
+    city: "Johannesburg",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "low",
+    time: "2025-11-14T09:00:00",
+    source: "https://num.org.za/news-reports-speeches/posts/num-post-nec-media-statement-2/",
+    summary: "Union engagements with Eskom in mid-November could spill over into small pickets at utility or union offices if talks stall. Further info: keep flagged as low-scale but high-impact if the union calls for wider participation."
+  },
+
+  // === Americas — local but verified ===
+  {
+    title: "Overpass bannering — democracy / anti-authoritarian message",
+    city: "Lacey, WA",
+    country: "United States",
+    continent: "North America",
+    risk: "low",
+    time: "2025-11-03T16:30:00",
+    source: "https://theblop.org/",
+    summary: "Small, highly visible overpass banner protest over I-5 in Lacey, WA. Further info: disruption is visual only; traffic flow impact minimal; good example of repeat civic-activist activity in US Pacific Northwest."
+  },
+  {
+    title: "Indivisible national digital action window",
+    city: "Online / Various US cities",
+    country: "United States",
+    continent: "North America",
+    risk: "low",
+    time: "2025-12-30T21:00:00",
+    source: "https://www.mobilize.us/indivisible/",
+    summary: "Year-end Indivisible mobilisation that can generate local banner drops, courthouse steps protests, or solidarity lights-on actions. Further info: treat as a trigger for small, same-day local actions — not one central march."
+  },
+
+  // === Global climate / union linked to COP30 (Brazil, 10–21 Nov 2025) ===
+  {
+    title: "Union climate ‘year of action’ mobilisations around COP30",
+    city: "Rio de Janeiro",
+    country: "Brazil",
+    continent: "South America",
+    risk: "medium",
+    time: "2025-11-10T09:00:00",
+    source: "https://www.lrd.org.uk/free-read/unions-launch-year-action-climate",
+    summary: "Union-backed climate mobilisation timed to COP30 in Brazil (10–21 Nov 2025). Further info: actions will vary from rallies to sectoral protests in major Brazilian cities to pressure negotiators on just transition, finance, and labour protections."
+  },    
 
     
  {
@@ -8222,6 +8358,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
