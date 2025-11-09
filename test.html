@@ -929,33 +929,46 @@ function escapeHtml(s='') {
 	
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
-async function fetchMockEventsForFeed(feed){
+async function fetchMockEventsForFeed(feed) {
   const params = new URLSearchParams();
   if (feed.places?.length)   params.set('cities',   feed.places.join(','));
   if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
   if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
 
   const base = 'https://api.cityintelapi.com';
-  const provider = 'newsdata';  // <— use the new source
+  const provider = 'newsdata';
 
-  const url  = feed.useLive
-    ? `${base}/api/live-news?${params.toString()}&provider=${provider}`
-    : `${base}/api/live?${params.toString()}`;
+  // primary + backup candidates
+  const urls = feed.useLive
+    ? [
+        `${base}/api/live-news?${params.toString()}&provider=${provider}`,            // primary
+        `${base}/api/live-news?${params.toString()}&provider=${provider}&alt=1`      // backup – change to your 2nd key
+      ]
+    : [
+        `${base}/api/live?${params.toString()}`,                                     // primary
+        `${base}/api/live?${params.toString()}&alt=1`                                // backup – change to your 2nd key
+      ];
 
-  try {
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (res.ok) {
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      // if quota hit we often get 429
+      if (!res.ok) {
+        if (res.status === 429) continue; // try next URL
+        continue;
+      }
       const data = await res.json().catch(() => ({}));
       const events = Array.isArray(data.events) ? data.events : [];
       return events;
+    } catch (err) {
+      // try next candidate
+      continue;
     }
-    return [];
-  } catch {
-    return [];
   }
+
+  // if both failed
+  return [];
 }
-
-
 
 
 
