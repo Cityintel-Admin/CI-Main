@@ -863,6 +863,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // -------------------- FEED STORAGE / STATE --------------------
 const STORAGE_KEY = 'ci_live_feeds_v1';
 
+function storeFeedEvents(feedId, events) {
+  const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+  all[feedId] = { at: Date.now(), events };
+  localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all));
+}
+
+function loadFeedEvents(feedId) {
+  const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+  return all[feedId] || null;
+}
+	
 // read feeds from localStorage
 function loadFeeds(){
   try{
@@ -947,18 +958,24 @@ function riskClass(r){
   return 'low';
 }
 
-function fmtWhen(iso){
-  try{
-    return new Date(iso).toLocaleString('en-GB',{
-      timeZone:'Europe/London',
-      day:'2-digit',month:'short',
-      hour:'2-digit',minute:'2-digit',
-	  hour12: true   // 👈 force 12h, so 12:18 AM/PM
+function fmtWhen(iso) {
+  try {
+    const s = new Date(iso).toLocaleString('en-GB', {
+      timeZone: 'Europe/London',
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour24: true
     });
-  }catch(e){
-    return iso||'';
+    // drop trailing ", 12:18 am" → or just the AM/PM part
+    return s.replace(/,\s*(\d{2}:\d{2})\s*(AM|PM)$/i, ' $1')
+            .replace(/\s*(AM|PM)$/i, '');
+  } catch (e) {
+    return iso || '';
   }
 }
+
 
 // -------------------- DETAIL PANEL HANDLING --------------------
 const detailPanel   = document.getElementById('detailPanel');
@@ -1073,22 +1090,27 @@ if (earlier.length) {
 
 
 	
-function closeDetailPanel(){
+function closeDetailPanel() {
   const cvs = document.getElementById('detailMiniMap');
   if (cvs) {
     const ctx = cvs.getContext('2d');
     ctx.clearRect(0, 0, cvs.width, cvs.height);
   }
   detailPanel.classList.remove('open');
-
-	const detailCloseBtn = document.getElementById('detailClose');
-detailCloseBtn.addEventListener('click', closeDetailPanel);
-
-	document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeDetailPanel();
-});
 }
 
+// attach listeners ONCE
+detailCloseBtn.addEventListener('click', closeDetailPanel);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDetailPanel();
+  }
+});
+
+const cached = loadFeedEvents(feed.id);
+if (cached && cached.events) {
+  renderEventsIntoCard(card, cached.events, feed);
+}
 
 
 // Re-render a single card (fetch -> DOM -> schedule next refresh)
@@ -1104,6 +1126,8 @@ async function refreshSingleFeedCard(cardEl, feed){
 // Put the events into an existing card (no refetch here)
 function renderEventsIntoCard(cardEl, events, feed){
   const bodyEl = cardEl.querySelector('.feed-body');
+  storeFeedEvents(feed.id, events);
+
 
   // header: live badge
   const headRight = cardEl.querySelector('.feed-head-right');
