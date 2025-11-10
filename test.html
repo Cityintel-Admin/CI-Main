@@ -864,6 +864,33 @@ document.addEventListener('DOMContentLoaded', () => {
 const STORAGE_KEY = 'ci_live_feeds_v1';
 const FEED_EVENTS_KEY = 'ci_live_feed_events_v1';
 
+
+// per-feed UI cache (so cards can show stuff before network finishes)
+const FEED_UI_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+function saveUiCache(feedId, events) {
+  if (!feedId) return;
+  const key = 'ci_ui_feed_' + feedId;
+  localStorage.setItem(key, JSON.stringify({
+    at: Date.now(),
+    events: Array.isArray(events) ? events : []
+  }));
+}
+
+function loadUiCache(feedId) {
+  if (!feedId) return null;
+  const key = 'ci_ui_feed_' + feedId;
+  try {
+    const obj = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!obj || !obj.at) return null;
+    if (Date.now() - obj.at > FEED_UI_CACHE_TTL) return null;
+    return obj.events || [];
+  } catch {
+    return null;
+  }
+}
+	
+
 	
 function storeFeedEvents(feedId, events) {
   const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
@@ -1143,6 +1170,9 @@ async function refreshSingleFeedCard(cardEl, feed){
 function renderEventsIntoCard(cardEl, events, feed){
   const bodyEl = cardEl.querySelector('.feed-body');
   storeFeedEvents(feed.id, events);
+ 
+	// NEW: save pretty UI cache too
+  saveUiCache(feed.id, events);
 
 
   // header: live badge
@@ -1525,14 +1555,21 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
 
     grid.appendChild(card);
 
-	    // 1) try to show last saved events immediately
+// 1) try UI cache (prettier, per-feed)
+const uiEvents = loadUiCache(feed.id);
+if (uiEvents && uiEvents.length) {
+  renderEventsIntoCard(card, uiEvents, feed);
+} else {
+  // 2) fallback to your existing 15min cache
   const cached = loadFeedEvents(feed.id);
   if (cached && cached.events) {
     renderEventsIntoCard(card, cached.events, feed);
   }
+}
 
-    // initial fetch & schedule next refresh
-    refreshSingleFeedCard(card, feed);
+// 3) always go fetch fresh + schedule
+refreshSingleFeedCard(card, feed);
+
   }
 }
 
