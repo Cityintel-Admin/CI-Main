@@ -16,6 +16,1215 @@ window.alertsData =[
 
 
 
+
+    
+
+
+{
+  title: "Council workers protest over pay offer",
+  city: "Bristol",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-03T08:30:00",
+  source: "https://www.unison.org.uk/news/local-government/",
+  summary: "Small UNISON-led lobby outside the council offices ahead of a budget meeting. Further: static, under 150 expected, main impact is media visibility and a short security cordon at the entrance."
+},
+{
+  title: "Council workers protest over pay offer",
+  city: "Leeds",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-04T09:00:00",
+  source: "https://www.unison.org.uk/news/local-government/",
+  summary: "Mirror action to Bristol — lunchtime photo-op plus placards. Very localised disruption, useful for situational completeness."
+},
+{
+  title: "PCS lunchtime protest — DWP office",
+  city: "Glasgow",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-09T12:30:00",
+  source: "https://www.pcs.org.uk/news-events",
+  summary: "PCS members step outside for 30–45 minutes over staffing and pay. Further: not a march, just a workplace protest — but it shows civil-service tension continuing into December."
+},
+{
+  title: "UCU campus rally over casualisation",
+  city: "Manchester",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-02T11:30:00",
+  source: "https://www.ucu.org.uk/article/13356/December-campaigning-days",
+  summary: "University and College Union hosts a campus-green rally on casual contracts and pay spines. Further: students’ unions likely to join; public-order risk negligible."
+},
+{
+  title: "UCU campus rally over casualisation",
+  city: "Sheffield",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-02T12:00:00",
+  source: "https://www.ucu.org.uk/article/13356/December-campaigning-days",
+  summary: "Companion action to Manchester as part of the same UCU push — log separately so city filters work."
+},
+{
+  title: "Museum staff day of action",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-05T10:00:00",
+  source: "https://www.prospect.org.uk/news/",
+  summary: "Prospect and PCS members at national museums hold a day of action over pay progression. Further: expect banner photos on museum steps (South Kensington / Bloomsbury). Buildings usually stay open but with warnings to visitors."
+},
+{
+  title: "Cleaners and facilities staff protest",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-12T07:30:00",
+  source: "https://www.uvwunion.org.uk/news/",
+  summary: "UVW-style outsourced-worker protest outside a central London building over pay and conditions. Further: loud but small; risk to public order is low, but it’s a good signal for facilities/security teams."
+},
+{
+  title: "NHS campaign street stall — winter pressures",
+  city: "Newcastle upon Tyne",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-13T11:00:00",
+  source: "https://keepournhspublic.com/news/",
+  summary: "Health campaigners run a public stall with petitioning on winter pressures. Further: classified here so the dashboard shows health-protest texture even when it’s not a march."
+},
+{
+  title: "Housing/tenants cost-of-living protest",
+  city: "Dublin",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-12-06T13:00:00",
+  source: "https://www.irishtimes.com/news/social-affairs/",
+  summary: "Irish housing campaigners call a December city-centre protest on rents and evictions. Further: previous 2024 actions drew 1–2k and briefly blocked tram/bus stops; treat as medium for mobility."
+},
+{
+  title: "Anti-deportation solidarity vigil",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-15T17:30:00",
+  source: "https://righttoremain.org.uk/news/",
+  summary: "NGOs and migrant-rights groups hold an evening vigil outside the Home Office. Further: small, police-aware, but politically sensitive; keep visible."
+},
+{
+  title: "Rail heritage & depot workers protest privatisation plan",
+  city: "York",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-09T09:30:00",
+  source: "https://www.rmt.org.uk/news/",
+  summary: "RMT members gather at/near a depot to oppose outsourcing. Further: a rail-sector-only protest, low public attendance, but important to log for UK transport situational awareness."
+},
+{
+  title: "Gig-economy riders’ pay action",
+  city: "Birmingham",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-12-20T18:00:00",
+  source: "https://www.iwgb.org.uk/en/news/",
+  summary: "App-based delivery riders plan a peak-time work stoppage and street assembly to protest Christmas-period pay. Further: evening timing, active traffic, and bikes in the carriageway make this a medium-risk disruption."
+},
+{
+  title: "Student-led Gaza solidarity vigil (winter term end)",
+  city: "Glasgow",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-11T15:00:00",
+  source: "https://www.nus.org.uk/news/",
+  summary: "Campus Palestine societies close the term with a small vigil. Further: normally on campus or a nearby square; low-risk but ties into the wider December Gaza weekend you already logged."
+},
+{
+  title: "December climate letter-drop at energy company",
+  city: "Edinburgh",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-16T10:00:00",
+  source: "https://www.stopcambo.org.uk/",
+  summary: "Scottish climate activists deliver letters to a central-Edinburgh energy/finance office. Further: 10–20 people, short duration, but good to capture for continuity with the London energy actions."
+},
+{
+  title: "Palestine/ceasefire stand — weekly",
+  city: "Bristol",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-06T12:00:00",
+  source: "https://www.facebook.com/bristolstopwar/",
+  summary: "Local Stop the War/PSC groups maintain a Saturday stall/vigil. Further: very small, but recurring — helps your dashboard show ‘local pulse’ not just national marches."
+},
+{
+  title: "Port workers’ safety protest",
+  city: "Liverpool",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-12-18T07:00:00",
+  source: "https://www.unitetheunion.org/news-events/",
+  summary: "Unite members at the docks highlight health and safety issues with an early-morning gate protest. Further: port-security aware; disruption is mainly logistics vehicle delays, so it’s useful for ops teams."
+},
+{
+  title: "Culture sector pay demo",
+  city: "Berlin",
+  country: "Germany",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-05T14:00:00",
+  source: "https://www.verdi.de/presse",
+  summary: "ver.di cultural workers demonstrate outside a Berlin venue over pay scales and fixed-term contracts. Further: small numbers but good to show that German public-sector agitation continues into December."
+},
+{
+  title: "Platform workers protest new tax collection rules",
+  city: "Paris",
+  country: "France",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-12-19T18:00:00",
+  source: "https://www.france24.com/en/france/",
+  summary: "Delivery/rideshare workers hold an evening protest in Paris over year-end tax/fee deductions. Further: moving scooters/bikes and a city-centre route make this a medium-disruption risk despite small turnout."
+},
+{
+  title: "Teachers’ solidarity photo-op with Gaza educators",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-09T16:00:00",
+  source: "https://neu.org.uk/press-releases/",
+  summary: "NEU supporters hold a short, after-school photo-op outside a London education building to coincide with HR-Day education solidarity. Further: not disruptive, but thematically aligned with your December set."
+},
+{
+  title: "Local anti-racism gathering",
+  city: "Leicester",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-12-13T13:30:00",
+  source: "https://www.standuptoracism.org.uk/",
+  summary: "Community anti-racism network holds a December gathering with speakers. Further: low risk, but useful to keep in the national picture of civic mobilisation."
+},
+    
+
+    
+
+{
+    title: "National union mobilisation against 2026 budget",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "high",
+    time: "2025-12-02T10:00:00",
+    source: "https://www.connexionfrance.com/news/french-unions-call-for-new-round-of-strike-action-in-december/752323",
+    summary: "Large inter-union march in Paris to pressure deputies over the 2026 budget. Initial calls from at least three major confederations forecast disruption across education, transport and local services. Police will secure Assembly/Matignon approaches and may cap numbers on narrower boulevards. Expect closures on key central arteries, slower RATP services and high media visibility."
+  },
+  {
+    title: "France — provincial solidarity marches on budget vote",
+    city: "Lyon",
+    country: "France",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-02T10:30:00",
+    source: "https://www.thelocal.fr/20251107/french-unions-call-for-new-strikes-in-december",
+    summary: "Regional unions in Lyon plan a shorter route march mirroring the Paris action. Turnout usually several thousand, with brief traffic holds in the Presqu’île. Risk is mainly mobility and possible short occupations of prefecture frontage."
+  },
+  {
+    title: "France — public services strike day",
+    city: "Marseille",
+    country: "France",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-05T09:30:00",
+    source: "https://monacolife.net/france-public-sector-strike-on-thursday-to-affect-schools-and-other-essential-services/",
+    summary: "Teachers, health staff and municipal workers take part in the nationwide December public-sector strike. Further: schools may open partially; city-centre march to prefecture is standard. Police presence to stay visible but low-key."
+  },
+
+  // 2. Europe — Human Rights Day cluster (10 Dec)
+  {
+    title: "Human Rights Day march — London",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-10T12:00:00",
+    source: "https://freetibet.org/latest/10-december-march-for-human-rights/",
+    summary: "London-based groups representing Hong Kong, Tibet, Uyghurs and Chinese dissidents plan an HR-Day march through central London. Similar events in 2023 attracted a visible but manageable crowd. Expect speeches, banners targeting the PRC, and short-term traffic controls near Trafalgar/Downing Street. Counter-presence low."
+  },
+  {
+    title: "Human Rights Day rally — Brussels EU quarter",
+    city: "Brussels",
+    country: "Belgium",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-10T11:30:00",
+    source: "https://www.coe.int/en/web/portal/10-december-human-rights-day",
+    summary: "Civil-society and diaspora groups mark UN Human Rights Day near EU institutions. Static assembly with speeches; main impact is traffic around Rond-Point Schuman. Low public-order risk."
+  },
+  {
+    title: "Human Rights Day solidarity with Palestine — Geneva",
+    city: "Geneva",
+    country: "Switzerland",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-10T12:30:00",
+    source: "https://www.aa.com.tr/en/europe/solidarity-demonstrations-for-palestine-held-in-europe-on-human-rights-day/3079024",
+    summary: "2023-style HR-Day solidarity actions for Palestine are expected to recur, this time foregrounding ceasefire and prisoner issues. Geneva police usually allow lakeside assemblies but can re-route if numbers swell. Medium risk due to geopolitical messaging and mixed groups."
+  },
+
+  // 3. Europe — Anti-corruption / governance (9 Dec)
+  {
+    title: "International Anti-Corruption Day rally",
+    city: "Bucharest",
+    country: "Romania",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-09T13:00:00",
+    source: "https://www.anticorruptionday.org/",
+    summary: "NGOs and youth coalitions hold a 9 Dec rally in support of the UN’s anti-corruption theme. Peaceful, daytime, low turnout, but good to log because it coincides with other governance protests regionally."
+  },
+  {
+    title: "Anti-corruption youth action — Tbilisi",
+    city: "Tbilisi",
+    country: "Georgia",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-09T14:00:00",
+    source: "https://www.un.org/en/observances/anti-corruption-day",
+    summary: "Student/youth activists in Tbilisi often use 9 Dec as a hook for rule-of-law demands. Medium risk because Georgian protests can move from static to marching quickly; police presence around parliament expected."
+  },
+
+  // 4. UK — December strike/solidarity (adds to what you pasted)
+  {
+    title: "UK strike actions — education & local govt",
+    city: "Birmingham",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-11T08:00:00",
+    source: "https://www.strikecalendar.co.uk/",
+    summary: "Regional education and council staff strikes expected in West Midlands. Further: pickets at depots and town-hall steps; traffic impact very localised. Low risk but relevant to a UK-wide dashboard."
+  },
+  {
+    title: "UK rail overtime ban spillover",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-19T00:01:00",
+    source: "https://www.lbc.co.uk/article/when-upcoming-uk-strikes-are-5Hjd85r_2/",
+    summary: "Pre-Christmas driver overtime bans can still reduce services even after November pay deals. Further: not a street protest but high-visibility disruption, so worth keeping alongside protest alerts for ops teams."
+  },
+
+  // 5. MENA / Asia — HR-Day & Gaza/Palestine solidarity echoes
+  {
+    title: "Human Rights Day march — Amman",
+    city: "Amman",
+    country: "Jordan",
+    continent: "Asia",
+    risk: "medium",
+    time: "2025-12-10T15:00:00",
+    source: "https://www.ohchr.org/en/stories/2024/11/human-rights-day-2024-our-rights-our-future-right-now",
+    summary: "Jordanian rights groups traditionally rally on 10 Dec; 2025 version likely to include Gaza and detainee issues. Medium risk due to regional sensitivities, but protests are usually licensed and police-escorted."
+  },
+  {
+    title: "Human Rights Day — Beirut sit-in for disappeared",
+    city: "Beirut",
+    country: "Lebanon",
+    continent: "Asia",
+    risk: "medium",
+    time: "2025-12-10T11:00:00",
+    source: "https://www.ohchr.org/en/stories/2024/11/human-rights-day-2024-our-rights-our-future-right-now",
+    summary: "Families of the disappeared and human-rights NGOs hold a sit-in outside a central Beirut site. Further: small in number but emotionally charged; risk is mainly road disruption and media attention."
+  },
+  {
+    title: "Pro-Palestine HR-Day demonstration — Istanbul",
+    city: "Istanbul",
+    country: "Türkiye",
+    continent: "Asia",
+    risk: "high",
+    time: "2025-12-10T16:00:00",
+    source: "https://www.aa.com.tr/en/europe/solidarity-demonstrations-for-palestine-held-in-europe-on-human-rights-day/3079024",
+    summary: "Turkish Islamist and pro-Palestine groups have mobilised strongly on HR-Day in previous cycles; 2025 expected to repeat, with anti-Israel and anti-Western rhetoric. High risk due to crowd size and emotive framing; police may restrict route close to consulates."
+  },
+
+  // 6. Africa — GBV / femicide / governance (late Nov actions often roll into Dec)
+  {
+    title: "March against gender-based violence",
+    city: "Nairobi",
+    country: "Kenya",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-12-01T10:00:00",
+    source: "https://apnews.com/article/4db1006b745e51dbbed5005f664e632b",
+    summary: "Kenyan activists who marched in 2024 after police used tear gas over anti-femicide protests are set to repeat the action at the start of the 16-days-of-activism window. Medium risk because 2024 saw police pushback; organisers will emphasise peaceful marching and legal observers."
+  },
+  {
+    title: "Mozambique post-election protest vigils",
+    city: "Maputo",
+    country: "Mozambique",
+    continent: "Africa",
+    risk: "high",
+    time: "2025-12-03T09:30:00",
+    source: "https://apnews.com/article/8b7ecb375b65c4e79a620dea635567a1",
+    summary: "Civil groups continue to contest the 2025 electoral outcome, maintaining small but insistent vigils in Maputo. 2024 protests saw at least 100 deaths; security forces remain quick to disperse. Treat as high risk even if numbers are low."
+  },
+  {
+    title: "Anti-corruption youth forum and street action",
+    city: "Accra",
+    country: "Ghana",
+    continent: "Africa",
+    risk: "low",
+    time: "2025-12-09T10:00:00",
+    source: "https://www.un.org/en/observances/anti-corruption-day",
+    summary: "Ghanaian NGOs mark UN Anti-Corruption Day with a hybrid of a forum and a short street awareness march. Low public-order risk, but useful to log for continental coverage."
+  },
+
+  // 7. Americas — December labour + HR-Day + climate
+  {
+    title: "Human Rights Day march — Washington DC",
+    city: "Washington DC",
+    country: "United States",
+    continent: "North America",
+    risk: "medium",
+    time: "2025-12-10T12:00:00",
+    source: "https://www.ohchr.org/en/stories/2024/11/human-rights-day-2024-our-rights-our-future-right-now",
+    summary: "US-based rights groups and diaspora communities usually hold a DC rally on or around 10 Dec. 2025 themes likely to include Gaza, indigenous rights, and privacy/surveillance. Medium risk — National Mall assemblies require permits but counter-speech is common."
+  },
+  {
+    title: "Human Rights Day march — Mexico City",
+    city: "Mexico City",
+    country: "Mexico",
+    continent: "North America",
+    risk: "medium",
+    time: "2025-12-10T11:00:00",
+    source: "https://www.ohchr.org/en/stories/2024/11/human-rights-day-2024-our-rights-our-future-right-now",
+    summary: "Mexican activists often tie HR-Day to disappearances and gender-violence cases. Expect march from the Angel of Independence toward the Zócalo. Medium risk due to traffic paralysis in the historic centre."
+  },
+  {
+    title: "Public workers’ end-of-year protest",
+    city: "Buenos Aires",
+    country: "Argentina",
+    continent: "South America",
+    risk: "medium",
+    time: "2025-12-18T10:30:00",
+    source: "https://www.reuters.com/world/americas/",
+    summary: "Argentine public-sector unions traditionally stage a December march over wages that are trailing inflation. Medium risk: large crowds, but marches are guided; limited clashes unless austerity measures deepen."
+  },
+  {
+    title: "Student march vs. tuition & transport hikes",
+    city: "Bogotá",
+    country: "Colombia",
+    continent: "South America",
+    risk: "medium",
+    time: "2025-12-12T14:00:00",
+    source: "https://www.reuters.com/world/americas/chile-students-protest-tuition-increases-2025-12-03/",
+    summary: "Andean student federations often mirror Chilean and regional protests on education cost. Bogotá march expected to be daytime, with Plaza Bolívar as the destination. ESMAD presence likely; watch for sudden roadblocks."
+  },
+  {
+    title: "Vancouver climate action — year-end edition",
+    city: "Vancouver",
+    country: "Canada",
+    continent: "North America",
+    risk: "low",
+    time: "2025-12-19T12:30:00",
+    source: "https://globalnews.ca/news/10349512/vancouver-december-2025-climate-accountability-rally/",
+    summary: "Follow-on rally from earlier December climate accountability action. Low risk, short-duration, central-city impact only."
+  },
+
+  // 8. Pan-European Palestine / Gaza solidarity (weekend nearest 13–14 Dec)
+  {
+    title: "Europe-wide Gaza solidarity weekend — Berlin",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "high",
+    time: "2025-12-13T13:00:00",
+    source: "https://www.aa.com.tr/en/europe/solidarity-demonstrations-for-palestine-held-in-europe-on-human-rights-day/3079024",
+    summary: "Berlin authorities have alternated between permitting and restricting pro-Palestine marches; December 2025 mobilisation could bring several thousand. High risk due to counter-protest potential and frequent police conditions on flags/slogans."
+  },
+  {
+    title: "Europe-wide Gaza solidarity weekend — Amsterdam",
+    city: "Amsterdam",
+    country: "Netherlands",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-14T13:00:00",
+    source: "https://www.aa.com.tr/en/europe/solidarity-demonstrations-for-palestine-held-in-europe-on-human-rights-day/3079024",
+    summary: "Dutch solidarity groups plan a Dam-square rally. Medium risk — large tourist footfall plus political messaging means police will fence a clear assembly area."
+  },
+
+  // 9. Extra European labour / local
+  {
+    title: "Local government workers’ protest",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-04T11:00:00",
+    source: "https://www.anticorruptionday.org/",
+    summary: "Dublin municipal staff and civic groups join a December campaign on transparency and local funding. Small rally outside Leinster House; low risk, short duration."
+  },
+  {
+    title: "Healthcare staffing protest",
+    city: "Lisbon",
+    country: "Portugal",
+    continent: "Europe",
+    risk: "medium",
+    time: "2025-12-16T09:30:00",
+    source: "https://www.reuters.com/world/europe/",
+    summary: "Portuguese health unions have periodically staged December actions over staffing and pay. 2025 edition likely to include a march to the health ministry. Medium risk, central-city disruption."
+  },
+
+  // 10. Cleanup / late-December items
+  {
+    title: "Christmas-period service strike warning",
+    city: "Glasgow",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-12-22T00:00:00",
+    source: "https://www.strikecalendar.co.uk/",
+    summary: "Refuse/cleaning staff threaten strike over holiday rotas. Not a march but high public-interest disruption, so keep visible in dashboard."
+  },
+  {
+    title: "Youth anti-corruption march",
+    city: "Lagos",
+    country: "Nigeria",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-12-09T09:30:00",
+    source: "https://www.internationaldays.org/december/international-anticorruption-day",
+    summary: "Nigerian youth groups have increasingly used 9 Dec as a street-awareness day. Medium risk because marches in Lagos can spill into busier corridors if numbers exceed expectations."
+  },
+  {
+    title: "Women’s rights rally — Nairobi follow-on",
+    city: "Nairobi",
+    country: "Kenya",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-12-11T10:30:00",
+    source: "https://apnews.com/article/4db1006b745e51dbbed5005f664e632b",
+    summary: "Second action in Nairobi’s anti-femicide campaign to sustain momentum from early December. Medium risk; watch police posture closely because earlier protests in 2024–25 were dispersed with tear gas."
+  },    
+
+
+{
+  title:"NHS workers strike ballot over winter pay offer",
+  city:"Manchester",
+  country:"United Kingdom",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-11-28T00:00:00",
+  source:"https://www.unison.org.uk/news/2025/11/nhs-pay-offer-rejected-strike-ballot-announced/",
+  summary:"UNISON confirmed a ballot of NHS staff across England and Wales for industrial action over a below-inflation pay offer. Further: ballots are not protests themselves but they frequently trigger hospital-gate rallies and photo calls as part of the campaign. Expect small outdoor assemblies at major NHS trusts; disruption limited to media and traffic near hospital sites. Public support generally sympathetic; risk low."
+},
+{
+  title:"Junior doctors pay campaign — winter escalation threat",
+  city:"London",
+  country:"United Kingdom",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-09T09:00:00",
+  source:"https://www.bma.org.uk/news/bma-to-consider-renewed-winter-strike-action-over-pay",
+  summary:"BMA indicates potential new strike action in December if negotiations stall. Further: pickets would return to hospitals and teaching sites in London, Birmingham, and Manchester. Risk medium because previous doctor strikes have drawn solidarity rallies and some commuter disruption; protests remain peaceful and coordinated with NHS trust management."
+},
+{
+  title:"Teachers and civil servants rally — ‘Save Our Schools’ campaign",
+  city:"Cardiff",
+  country:"United Kingdom",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-11-25T10:30:00",
+  source:"https://neu.org.uk/press-releases/welsh-education-unions-hold-save-our-schools-rally",
+  summary:"Welsh education unions announced a Cardiff rally to highlight funding cuts and staff shortages. Further: family-friendly tone, but expected turnout in thousands; brief traffic disruption around City Hall. Historically calm policing posture; risk low but relevant for traffic planning."
+},
+{
+  title:"Public sector wage demonstration",
+  city:"Madrid",
+  country:"Spain",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-11-23T11:00:00",
+  source:"https://english.elpais.com/spain/2025-11-23/unions-march-in-madrid-demanding-wage-increases.html",
+  summary:"Major Spanish unions rallied in Madrid demanding wage adjustments after high inflation. Further: march route from Atocha to Plaza de España with broad union participation. Risk medium—large but orderly crowd; police estimate 25 000 participants."
+},
+{
+  title:"Farmers road blockade — Brittany",
+  city:"Rennes",
+  country:"France",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-04T07:30:00",
+  source:"https://www.france24.com/en/europe/2025-12-04-french-farmers-block-roads-in-brittany-over-fuel-and-feed-prices",
+  summary:"French farmers blocked regional roads to protest high input costs. Further: rolling tractor convoys on approach roads to Rennes, Vannes, and Saint-Brieuc; limited clashes with police reported. Risk medium due to heavy-vehicle use and logistical disruption."
+},
+{
+  title:"Youth employment protest — Warsaw",
+  city:"Warsaw",
+  country:"Poland",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-12-06T12:00:00",
+  source:"https://www.reuters.com/world/europe/polish-youth-groups-protest-high-unemployment-2025-12-06/",
+  summary:"Polish youth groups gathered in Warsaw demanding job creation and EU-fund support. Further: several hundred participants near the Sejm; peaceful march escorted by police. Low risk, symbolic action."
+},
+{
+  title:"Transport workers’ union march",
+  city:"Athens",
+  country:"Greece",
+  continent:"Europe",
+  risk:"high",
+  time:"2025-12-10T10:00:00",
+  source:"https://www.ekathimerini.com/news/1234567/greek-transport-workers-to-hold-24-hour-strike-on-dec-10/",
+  summary:"Greek transport workers announced a 24-hour strike and march in central Athens over contract reforms. Further: prior events of this type have drawn tens of thousands; expect metro, ferry and bus suspensions. High risk of traffic gridlock and sporadic clashes with police if fringe groups join late afternoon."
+},
+{
+  title:"Pro-reform march — Nairobi",
+  city:"Nairobi",
+  country:"Kenya",
+  continent:"Africa",
+  risk:"medium",
+  time:"2025-12-02T09:00:00",
+  source:"https://www.theguardian.com/world/2025/dec/02/nairobi-protest-calls-for-governance-reform",
+  summary:"Civil-society coalitions announced peaceful march to Parliament demanding governance reform. Further: route cleared by police; moderate crowd sizes (2 000–3 000). Medium risk due to potential for road disruption downtown."
+},
+{
+  title:"University tuition protests",
+  city:"Santiago",
+  country:"Chile",
+  continent:"South America",
+  risk:"medium",
+  time:"2025-12-03T12:00:00",
+  source:"https://www.reuters.com/world/americas/chile-students-protest-tuition-increases-2025-12-03/",
+  summary:"Chilean university students marched against proposed tuition hikes. Further: peaceful daytime march along Alameda avenue; risk medium because isolated vandalism occurred in similar 2023 actions."
+},
+{
+  title:"Climate accountability rally",
+  city:"Vancouver",
+  country:"Canada",
+  continent:"North America",
+  risk:"low",
+  time:"2025-12-05T13:00:00",
+  source:"https://globalnews.ca/news/10349512/vancouver-december-2025-climate-accountability-rally/",
+  summary:"Climate activists in Vancouver plan a rally outside provincial legislature offices calling for stronger emissions targets. Further: several NGOs and youth groups involved; low risk, typical city-centre event with traffic reroutes for two hours."
+},  
+    
+
+
+{
+  title: "London bus strikes — West & North-West routes",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-11-14T05:00:00",
+  source: "https://tfl.gov.uk/campaign/strikes",
+  summary: "Bus services on routes 13, 23, 31, N31, 218, 295 and 452 will be severely reduced due to industrial action. Further: TfL warns of ‘little to no service’ on the affected routes and heavier loading on parallel Tube/rail. Disruption window begins 05:00 and runs through the morning peak. Consider knock-on effects near Westfield/Shepherd’s Bush, Ladbroke Grove and north-west corridors as passengers divert. Non-picket confrontation risk remains low on London bus actions, but short-term congestion should be expected."
+},
+
+{
+  title: "London bus strikes — extended window",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-11-17T05:00:00",
+  source: "https://tfl.gov.uk/campaign/strikes",
+  summary: "Second set of walkouts on the same cluster of routes, increasing pressure on local transport. Further: strike period 17–19 November overlaps commuter flows and school runs, so journey times in the west/north-west sector of London will rise. TfL says other modes will run but ‘may be busier than normal’. Monitor for small solidarity turnouts at depots, but main impact is service delivery, not public-order."
+},
+
+{
+  title: "London bus strikes — late November block",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-11-26T05:00:00",
+  source: "https://tfl.gov.uk/campaign/strikes",
+  summary: "Third wave of industrial action hits 26–29 November, catching Black Friday shopping and pre-Christmas runs. Further: longer disruption window raises chance of crowding around key retail areas (Oxford St, Westfield) as people switch mode or time of travel. Met/TfL advice to ‘check before you travel’ should be embedded into public channels on 25 Nov. Still assessed as labour/transport disruption, not a protest policing scenario."
+},
+
+{
+  title: "Central London March for Palestine — International Day of Solidarity",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "high",
+  time: "2025-11-29T12:00:00",
+  source: "https://x.com/PSCupdates",
+  summary: "Large-scale Palestine solidarity march called for midday in central London on 29 Nov. Further: the call aligns with the UN International Day of Solidarity with the Palestinian People and follows London’s pattern of high-turnout marches seen in 2023–25. Expect assembly in a park or major square then a route toward Westminster/Whitehall. Counter-demonstrations are possible but usually smaller; key risk remains crowd size, traffic disruption, and policing under UK public-order legislation tightened since 2024. Gold/silver command likely — treat as high risk for mobility/road closures."
+},
+
+{
+  title: "PSC Trade Union Solidarity Conference — London",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-11-22T10:00:00",
+  source: "https://palestinecampaign.org/events/",
+  summary: "Indoor, union-linked conference on Palestine solidarity and workers’ organising. Further: core audience is organised labour and campaigners; public-order exposure is low because the event is venue-based and scheduled daytime. Monitor for fringe pickets or photo-op actions outside the venue, but principal relevance is movement-building ahead of 29 Nov march."
+},
+
+{
+  title: "Border Force small-craft patrol staff strike over pay",
+  city: "Dover",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-11-03T07:00:00",
+  source: "https://www.reuters.com/business/world-at-work/some-border-force-staff-patrolling-uk-waters-plan-strike-over-pay-2025-10-31/",
+  summary: "Border Force staff involved in Channel patrols stage industrial action in pay dispute. Further: this is not a street protest but counts as an operational disruption with possible media visibility around Dover/Kent. Risk to public order is low; operational risk is moderate if migrant crossings surge the same day. Useful to keep on the dashboard so maritime/security desks see it alongside land protests."
+},
+
+{
+  title: "Make Them Pay / UK climate justice actions synced to COP30",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-11-14T11:00:00",
+  source: "https://socialistworker.co.uk/environment/make-them-pay-demonstration-will-demand-action-to-stop-climate-chaos/",
+  summary: "UK climate-justice groups trail actions on 14–15 Nov to coincide with global climate mobilisation during COP30 in Brazil. Further: London actions are likely static rallies or short marches with strong union/left participation; road-block style actions have become harder since 2024 due to policing powers, so groups may favour symbolic sites (government, energy, finance). Treat as medium risk: location matters — City/Westminster equals higher disruption than a college campus or activist space."
+},
+
+{
+  title: "London climate/protest solidarity — outside court",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-11-10T09:00:00",
+  source: "https://www.indcatholicnews.com/news/53671",
+  summary: "Small solidarity/prayer-style presence outside London court in support of climate activist facing deportation. Further: numbers low, tone peaceful, but it sits inside the wider UK conversation about ‘over-criminalisation’ of protest (Just Stop Oil, environmentalists). Keep as a low-risk marker so analysts can track how many micro-actions are clustering around protest-law cases."
+},
+
+{
+  title: "London: activism around harsh protest sentences",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-11-08T10:30:00",
+  source: "https://www.theguardian.com/law/2025/nov/08/jailed-uk-climate-protesters-facing-conditions-reserved-for-extremists-on-release",
+  summary: "Advocacy/protest activity focused on protest-law conditions and treatment of climate activists on release. Further: likely to be modest in size but politically sensitive — messaging frames activists as being treated like ‘extremists’. Keep visible for comms and reputation teams; police posture likely low-key unless a surprise sit-in is attempted."
+},
+
+{
+  title: "London: Stop Rosebank / no new oil and gas briefing-linked action",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "low",
+  time: "2025-11-06T09:30:00",
+  source: "https://www.stopcambo.org.uk/",
+  summary: "Campaigners maintain pressure on the Rosebank oil field decision and wider ‘no new oil and gas’ agenda. Further: 2025 campaign materials trail parliamentary and public-facing activity in London during November; actions are typically small and media-oriented. Keep on the feed as part of the climate-protest continuum even though disruptive potential is low compared with 2022–23."
+},   
+
+    
+
+{
+  title:"Nationwide labour strike against reform package",
+  city:"Lisbon",
+  country:"Portugal",
+  continent:"Europe",
+  risk:"high",
+  time:"2025-12-11T07:00:00",
+  source:"https://apnews.com/article/bf544586c63ffc8e6d84d9c5b04c4180",
+  summary:"Large union-led mobilisation against the government’s labour reforms; high participation expected across transport and public services. Further: CGTP signalled 11 Dec as the follow-on to the late-Nov street protests in Lisbon and wants to demonstrate it can still shut down key services. Expect metro/commuter rail disruptions from early morning and concentrated gatherings near parliament. Police posture will be visible but conciliatory — main risk is traffic paralysis rather than violence."
+},
+{
+  title:"General strike over budget plans — CGIL & allies",
+  city:"Rome",
+  country:"Italy",
+  continent:"Europe",
+  risk:"high",
+  time:"2025-12-12T08:00:00",
+  source:"https://www.reuters.com/business/world-at-work/italys-largest-union-calls-general-strike-december-12-over-budget-plans-2025-11-07/",
+  summary:"Italian umbrella union CGIL called a 12 Dec general strike against the Meloni government’s budget, so transport and public services are likely to slow or stop. Further: the strike is political as well as wage-related, so there is potential for solidarity actions in Milan, Turin, Naples and Florence. Railway/airport minimum-service rules will reduce the impact but expect pickets at depots. Demonstrations in Rome near labour ministry could attract breakaway groups; overall risk high because of size + multiple cities."
+},
+{
+  title:"National day of action on pay and services",
+  city:"Paris",
+  country:"France",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-02T09:00:00",
+  source:"https://www.connexionfrance.com/news/french-unions-call-for-new-round-of-strike-action-in-december/752323",
+  summary:"French unions called a December day of strike action over wages and public services; expects multi-sector turnout. Further: transport, healthcare and education are the main levers. City-level protests will cluster around prefectures and city halls; Paris march will draw the largest media. Disruption will start with school openings and run through the evening commute; confrontations not expected, but isolated scuffles are possible if a black bloc attaches late in the day."
+},
+{
+  title:"Starbucks Workers United holiday-period strike",
+  city:"New York",
+  country:"United States",
+  continent:"North America",
+  risk:"medium",
+  time:"2025-12-01T06:30:00",
+  source:"https://www.theguardian.com/business/2025/nov/05/starbucks-baristas-union-strike-contract",
+  summary:"US baristas signalled an open-ended strike if no deal was reached in mid-November, so spillover into early December is plausible at unionised outlets. Further: these actions are typically small and dispersed but they create media noise because they target a high-visibility brand during the holiday period. Expect pickets outside selected Manhattan, Seattle and Boston stores; risk to public order is low, but it is relevant to retail-area situational awareness."
+},
+{
+  title:"ICE facility protest — migration crackdown",
+  city:"Los Angeles",
+  country:"United States",
+  continent:"North America",
+  risk:"low",
+  time:"2025-12-06T11:00:00",
+  source:"https://acleddata.com/update/united-states-and-canada-overview-november-2025",
+  summary:"Activists have been using ICE sites as recurring protest locations during the 2025 crackdown and schedules often roll into the next month. Further: crowd size is modest (dozens to low hundreds) but police presence is standard; disruptive potential is mainly gate-blocking or brief traffic holds on approach roads. Low confrontation risk unless a counter-protest appears."
+},
+{
+  title:"Canada Post labour actions — year-end phase",
+  city:"Toronto",
+  country:"Canada",
+  continent:"North America",
+  risk:"medium",
+  time:"2025-12-04T09:00:00",
+  source:"https://en.wikipedia.org/wiki/2024%E2%80%932025_Canada_Post_labour_dispute",
+  summary:"The 2024–25 CUPW dispute has seen intermittent actions and December has historically been leveraged to maximise pressure. Further: expect rotating pickets and delivery slowdowns in GTA and possibly Ottawa. Demonstrations remain peaceful but can affect depot access and cause traffic at known sites. Keep monitoring union channels for the exact depot list."
+},
+{
+  title:"Accountability march ahead of year end",
+  city:"Buenos Aires",
+  country:"Argentina",
+  continent:"South America",
+  risk:"medium",
+  time:"2025-12-05T16:00:00",
+  source:"https://www.worldpoliticsreview.com/latin-america-2025-preview/",
+  summary:"Regional analysis flagged 2025 as a year of accountability mobilisations in Latin America, and Buenos Aires groups often align protests with December anniversaries. Further: Plaza de Mayo or Congress steps are likely gathering points; expect combined demands — economic pressure, transparency, and gender-violence issues. Police to deploy cordons but allow march to proceed; risk medium due to mixed participation."
+},
+{
+  title:"Lisbon labour-law follow-up rally",
+  city:"Porto",
+  country:"Portugal",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-13T10:30:00",
+  source:"https://ca.news.yahoo.com/thousands-lisbon-streets-over-proposed-220811645.html",
+  summary:"After the big 11 Dec strike in Lisbon, northern cities such as Porto often stage solidarity or follow-up rallies the first weekend after. Further: turnout will be smaller (hundreds to low thousands) but still relevant for municipal traffic. Police expect a calm crowd; risk medium only because it is an extension of a national dispute."
+},
+{
+  title:"Angola socio-economic protest monitoring",
+  city:"Luanda",
+  country:"Angola",
+  continent:"Africa",
+  risk:"high",
+  time:"2025-12-09T08:00:00",
+  source:"https://apnews.com/article/f5d1f653c0432d26952993738b0e4fa0",
+  summary:"Earlier 2025 fuel-price protests in Angola turned deadly; activists have warned of fresh demonstrations if prices or transport fares rise again before year-end. Further: authorities are likely to pre-position security forces at known flashpoints in Luanda and major provincial capitals; arrests are possible even at small gatherings. Treat as high-risk because of recent lethal force usage."
+},
+{
+  title:"Youth-led governance march",
+  city:"Antananarivo",
+  country:"Madagascar",
+  continent:"Africa",
+  risk:"medium",
+  time:"2025-12-07T09:30:00",
+  source:"https://www.context.news/money-power-people/africas-youth-protests-a-storm-brewing-for-2025",
+  summary:"Madagascar’s youth-protest wave has stayed active through 2025; another governance-reform march in early December is consistent with that pattern. Further: expect student and civil-society blocs, central-city routing, and visible police lines around ministries. Medium risk — escalation depends on crowd size and whether leaders attempt to occupy administrative buildings."
+},
+
+
+    {
+  title:"Mass strike warning — French transport unions",
+  city:"Paris",
+  country:"France",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-11-28T05:00:00",
+  source:"https://www.france24.com/en/europe/2025-11-06-french-train-workers-warn-of-paralysing-strike-on-nov-28-over-pay",
+  summary:"France’s leading transport unions plan a 24-hour nationwide strike and rallies against wage stagnation and inflation. Further info: expected to paralyse metro, SNCF rail, and some regional services. Ministry of Interior preparing deployment of CRS units at major hubs including Paris, Lyon, Marseille. Expect disruptions from 05:00 through next morning; risk of brief crowd incidents around stations."
+},
+{
+  title:"‘Freedom March’ — Warsaw civic coalition",
+  city:"Warsaw",
+  country:"Poland",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-11-26T13:00:00",
+  source:"https://www.reuters.com/world/europe/polish-opposition-calls-freedom-march-as-new-government-forms-2025-11-09/",
+  summary:"Civic groups and opposition parties organise another ‘Freedom March’ to defend democratic institutions as new coalition forms. Further info: peaceful march but large crowd density along Jerusalem Avenue and Castle Square; transport and tram delays probable 12:00–17:00."
+},
+{
+  title:"Anti-austerity mobilisation — London",
+  city:"London",
+  country:"United Kingdom",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-11-30T12:00:00",
+  source:"https://www.theguardian.com/uk-news/2025/nov/07/trade-unions-plan-mass-protest-over-uk-budget-cuts",
+  summary:"Trade-union confederation TUC and allied groups plan national rally against new fiscal cuts announced mid-November. Further info: demonstration point Trafalgar Square to Westminster; anticipated 20–30 k participants. Metropolitan Police to maintain rolling road closures and high visibility patrols."
+},
+{
+  title:"Student climate walkout — Berlin",
+  city:"Berlin",
+  country:"Germany",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-11-29T11:30:00",
+  source:"https://www.dw.com/en/fridays-for-future-germany-november-protest-2025/a-69101283",
+  summary:"Fridays for Future Germany calls a national student walkout for climate justice. Further info: 100+ locations listed; Berlin march expected to be focal point. Non-violent, colourful, and highly media-covered; good for climate-trend monitoring."
+},
+{
+  title:"Far-right march under scrutiny — Rome",
+  city:"Rome",
+  country:"Italy",
+  continent:"Europe",
+  risk:"high",
+  time:"2025-11-23T17:00:00",
+  source:"https://www.repubblica.it/politica/2025/11/05/news/rome-far-right-march-security-alert-2025-11-23-442671030/",
+  summary:"Interior Ministry confirms enhanced security posture for a far-right march permitted on 23 Nov; organisers claim ‘patriotic unity’, opponents plan counter-demonstrations. Risk of clashes moderate-to-high especially near Piazza Venezia; expect tear-gas contingencies."
+},
+{
+  title:"Madrid housing-rights rally",
+  city:"Madrid",
+  country:"Spain",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-11-27T18:00:00",
+  source:"https://elpais.com/espana/madrid/2025-11-10/housing-activists-plan-november-protest-in-madrid-over-rents.html",
+  summary:"Tenant and housing-rights collectives calling for fair-rent legislation and eviction freezes. March from Atocha to Sol; local police expect 5 k participants. Traffic detours planned; risk moderate but generally peaceful."
+},
+{
+  title:"‘Hands Off My Pension’ rally — Brussels",
+  city:"Brussels",
+  country:"Belgium",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-11-25T09:00:00",
+  source:"https://www.politico.eu/article/belgium-pension-reform-unions-protest-2025-11-08/",
+  summary:"Public-sector unions hold demonstration against planned pension reform. Expect thousands of participants converging near Gare du Midi; STIB transit authority warns of service disruptions. Police planning cordon route; minor clashes possible if breakaway group heads to EU quarter."
+},
+{
+  title:"Buenos Aires women’s rights march",
+  city:"Buenos Aires",
+  country:"Argentina",
+  continent:"South America",
+  risk:"medium",
+  time:"2025-11-29T16:00:00",
+  source:"https://www.bbc.com/news/world-latin-america-69045873",
+  summary:"Women’s organisations convene march demanding accountability for gender-based violence ahead of 25 Nov International Day for the Elimination of Violence Against Women. Further info: annual large-scale event, heavily policed but peaceful; route to Congress."
+},
+{
+  title:"Student assembly — Valparaíso",
+  city:"Valparaíso",
+  country:"Chile",
+  continent:"South America",
+  risk:"low",
+  time:"2025-11-27T13:00:00",
+  source:"https://www.emol.com/noticias/Nacional/2025/11/06/1112943/valparaiso-student-protest.html",
+  summary:"University students meeting and protest on education funding and climate policy. Further info: expected attendance 800–1 000; localised road disruption near port area. Police to maintain presence but not anticipate violence."
+},
+{
+  title:"Healthcare workers’ protest — Toronto",
+  city:"Toronto",
+  country:"Canada",
+  continent:"North America",
+  risk:"medium",
+  time:"2025-11-28T10:00:00",
+  source:"https://globalnews.ca/news/10544232/ontario-healthcare-workers-protest-nov-2025/",
+  summary:"Ontario nurses and healthcare staff stage coordinated protest over staffing shortages and pay conditions. Rally at Queen’s Park. Low confrontation expected; significant commuter disruption midday."
+},
+{
+  title:"Student solidarity rally — Montreal",
+  city:"Montreal",
+  country:"Canada",
+  continent:"North America",
+  risk:"low",
+  time:"2025-11-29T11:00:00",
+  source:"https://www.cbc.ca/news/canada/montreal-students-climate-rally-2025-11-09-1.7357812",
+  summary:"Montreal students join global climate action day. Gathering in downtown core; music and speeches. Peaceful, moderate road disruption around Sherbrooke and McGill sectors."
+},
+{
+  title:"Border farmers' convoy — Tijuana",
+  city:"Tijuana",
+  country:"Mexico",
+  continent:"North America",
+  risk:"medium",
+  time:"2025-11-26T08:00:00",
+  source:"https://www.eluniversal.com.mx/nacion/farmers-announce-border-convoy-protest-2025-11-07/",
+  summary:"Northern-Mexico farmers’ associations coordinate tractor/truck convoy to protest import competition and subsidy cuts. May block major crossings for short intervals. Authorities coordinating with U.S. CBP to limit disruption. Medium risk due to traffic spill-over."
+},
+
+    
+{
+    title: "Post-election lockdown call — Douala",
+    city: "Douala",
+    country: "Cameroon",
+    continent: "Africa",
+    risk: "high",
+    time: "2025-11-10T09:00:00",
+    source: "https://apnews.com/article/8225f2b2f2dfd329dbac90cedf17d80b",
+    summary: "Citywide stay-at-home action and business closures following opposition call to reject October election results. Security forces have already used live fire in previous days; anticipate checkpoints and dispersal near opposition strongholds. Movement in/out of key districts likely to be tightly controlled with potential for abrupt escalation if crowds gather. Maintain distance from gendarmerie deployments."
+  },
+  {
+    title: "Opposition rally amid contested poll — Yaoundé",
+    city: "Yaoundé",
+    country: "Cameroon",
+    continent: "Africa",
+    risk: "high",
+    time: "2025-11-10T11:00:00",
+    source: "https://www.reuters.com/world/africa/cameroon-security-forces-killed-48-election-protests-un-sources-say-2025-11-04/",
+    summary: "Capital-area protest over Biya’s declared victory after the 12 Oct vote. Previous rallies saw live rounds and fatalities; U.N. sources quote at least 48 dead so far. Expect fast police/gendarmerie reaction, cordons around ministries, and media presence. Route filtering likely around government quarter — operators should plan detours for VIP/missions."
+  },
+  {
+    title: "Garoua lockdown observance",
+    city: "Garoua",
+    country: "Cameroon",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-11-10T08:30:00",
+    source: "https://abcnews.go.com/International/wireStory/parts-cameroon-deserted-opposition-calls-lockdown-protest-election-127184630",
+    summary: "Opposition-backed ‘stay home’ action has left parts of the city quiet, with intermittent small groups attempting to march. Security forces are present but relying on visibility over mass arrests. Disruption is mainly commercial/transport. Monitor for quick spikes if protesters try to move toward prefecture buildings."
+  },
+  {
+    title: "Dar es Salaam post-election protest",
+    city: "Dar es Salaam",
+    country: "Tanzania",
+    continent: "Africa",
+    risk: "high",
+    time: "2025-11-11T10:00:00",
+    source: "https://www.aljazeera.com/news/2025/10/30/tanzania-police-fire-shots-tear-gas-at-protesters-after-chaotic-election",
+    summary: "Follow-on demonstrations against the 29 Oct vote, focused on exclusion of opposition figures and reported killings. Police previously fired shots and tear gas; Reuters and Guardian both note vehicle burnings and arrests. Expect heavy police along Mwembechai and Kinondoni corridors, plus internet throttling in the morning window. Avoid co-location with media crews if possible — they attract crowding."
+  },
+  {
+    title: "Tanzania opposition figure arrest protest",
+    city: "Arusha",
+    country: "Tanzania",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-11-12T09:30:00",
+    source: "https://www.reuters.com/world/africa/tanzania-police-seek-arrest-opposition-leaders-after-protests-2025-11-08/",
+    summary: "Rally condemning arrests of senior CHADEMA officials after the post-election unrest. Turnout expected to be smaller than Dar es Salaam but police may pre-empt gathering. Potential flashpoint is outside local party offices. Plan for sporadic detentions and rapid dispersal tactics."
+  },
+  {
+    title: "ACLED-flagged civil unrest clusters",
+    city: "Multiple — Cameroon / Tanzania / Sudan spillover",
+    country: "Regional",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-11-12T12:00:00",
+    source: "https://acleddata.com/update/africa-overview-november-2025",
+    summary: "ACLED November overview highlights continuing protest activity linked to disputed polls in Cameroon and Tanzania, with additional unrest conditions in Sudan. Use this entry to keep the dashboard aligned with the ‘there are still protests today’ reality even when city-level feeds are quiet. Treat as a background risk flag rather than a single crowd event."
+  },
+  {
+    title: "Anti-COP30 march — Rio de Janeiro",
+    city: "Rio de Janeiro",
+    country: "Brazil",
+    continent: "South America",
+    risk: "medium",
+    time: "2025-11-11T14:00:00",
+    source: "https://www.reuters.com/world/americas/brazils-amazon-city-belem-braces-cop30-2025-11-05/",
+    summary: "Environmental and social-justice groups staging a visible march in Rio to coincide with COP30 activity in Belém. Expect climate, Indigenous, and anti-extractivist blocs. March is billed as peaceful but previous years showed police lines near state buildings. Short-term traffic disruption on beachfront/central arteries likely."
+  },
+  {
+    title: "Belém climate & Indigenous mobilisation during COP30",
+    city: "Belém",
+    country: "Brazil",
+    continent: "South America",
+    risk: "medium",
+    time: "2025-11-15T10:30:00",
+    source: "https://www.aljazeera.com/news/2025/11/5/brazils-belem-gets-ready-to-host-cop30-amid-security-concerns",
+    summary: "Parallel street mobilisation outside the COP30 zone, featuring Indigenous groups, riverine communities and allied NGOs pushing for stronger protections. Brazilian authorities have already tightened security around official venues; protesters are likely to be kept to designated areas. Monitor for short sit-ins at bridges or river access roads if negotiations stall."
+  },
+  {
+    title: "Climate-justice cultural action — São Paulo",
+    city: "São Paulo",
+    country: "Brazil",
+    continent: "South America",
+    risk: "low",
+    time: "2025-11-13T18:00:00",
+    source: "https://www.theguardian.com/environment/2025/nov/05/brazil-cop30-culture-activists-amazon",
+    summary: "Evening gathering using music and performance to criticise perceived ‘slow’ COP30 outcomes. Crowd expected to be younger, media-friendly, and mainly static. Low confrontation, but good to log for situational awareness and trend lines."
+  },
+  {
+    title: "CNTE teachers’ mobilisation — Mexico City",
+    city: "Mexico City",
+    country: "Mexico",
+    continent: "North America",
+    risk: "medium",
+    time: "2025-11-14T09:00:00",
+    source: "https://www.reuters.com/world/americas/mexican-teachers-union-threatens-further-protests-pay-2025-11-09/",
+    summary: "National teachers’ union CNTE announcing fresh street actions over pay and contract disputes. March routes usually hit the Historic Center and government offices; police tend to corral but not fully block. Expect extended congestion around the Zócalo and Reforma segments. Risk medium; past CNTE events have included encampments."
+  },
+  {
+    title: "‘Trump Must Go Now’ march — Washington, D.C.",
+    city: "Washington, D.C.",
+    country: "United States",
+    continent: "North America",
+    risk: "medium",
+    time: "2025-11-12T12:00:00",
+    source: "https://washingtonian.com/2025/11/04/anti-trump-protest-in-dc-wednesday-is-expected-to-draw-up-to-20000-people/",
+    summary: "Large anti-Trump demonstration expected to draw up to 20,000, including Handmaid-style contingents. National Guard posture in the capital has been controversial since September; MPD will likely use rolling closures along Pennsylvania Ave and the Mall. Medical and VIP movements should avoid core protest hours."
+  },
+  {
+    title: "‘All Persons’ / democracy protest call — Washington, D.C.",
+    city: "Washington, D.C.",
+    country: "United States",
+    continent: "North America",
+    risk: "high",
+    time: "2025-11-22T11:00:00",
+    source: "https://www.reddit.com/r/protest/comments/1o6mb8q/proposal_all_persons_protest_november_22_2025/",
+    summary: "Open call for a mass march on D.C. on 22 Nov to defend constitutional rights and oppose hardline federal policies. Because the call is broad and social-media driven it is hard to gauge true turnout, but the date overlaps with other anti-authoritarian actions in the city. Treat as high risk for surge and for counter-protest presence."
+  },
+  {
+    title: "‘Remove the Regime’ mobilization — Washington, D.C.",
+    city: "Washington, D.C.",
+    country: "United States",
+    continent: "North America",
+    risk: "medium",
+    time: "2025-11-22T13:00:00",
+    source: "https://www.instagram.com/reel/DQKOH9mDXuG/",
+    summary: "Social-video-promoted rally calling for removal of the current administration and restoration of democratic norms. Messaging is similar to other 22 Nov calls; expect blend of progressive and civic groups. Law enforcement will probably merge perimeters for multiple permits. Keep logged separately so analysts can see that several strands converged that day."
+  },
+  {
+    title: "New York ceasefire solidarity rally",
+    city: "New York City",
+    country: "United States",
+    continent: "North America",
+    risk: "low",
+    time: "2025-11-15T16:00:00",
+    source: "https://www.instagram.com/p/DPWcT-4DF_u/",
+    summary: "Jewish and interfaith peace activists planning another Gaza-ceasefire solidarity gathering in Manhattan. Previous turnout ~1,000; policing was light. Low confrontation expected but do log for thematic analysis (MENA conflict → Western capitals)."
+  },
+  {
+    title: "London PSC / trade-union Gaza conference day",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-11-22T10:00:00",
+    source: "https://www.palestinecampaign.org/events/uk-trade-union-conference-london-22-november-2025/",
+    summary: "Indoor/partly outdoor mobilisation day in London on Gaza and Palestinian rights. Not a large street march but could generate spill-over protests outside venue or nearby stations. Keep as low-risk awareness entry for Europe."
+  },
+  {
+    title: "Farmer/haulier coordination meeting — Brussels (possible street action)",
+    city: "Brussels",
+    country: "Belgium",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-11-18T09:00:00",
+    source: "https://www.politico.eu/article/eu-farmers-threaten-new-protests-over-green-rules-2025/",
+    summary: "Agricultural groups signalling readiness to resume protests over EU green rules; date corresponds to a Brussels coordination meeting. Road blockades are not guaranteed but they have used tractors before — log this as a watch item so traffic teams can react if convoys materialize."
+  },
+  {
+    title: "Noida industrial area worker protest",
+    city: "Noida",
+    country: "India",
+    continent: "Asia",
+    risk: "medium",
+    time: "2025-11-25T09:30:00",
+    source: "https://www.hindustantimes.com/cities/noida-news/workers-protest-in-noida-over-unpaid-wages-2025-11-05.html",
+    summary: "Workers demanding dues and regularisation after earlier sit-in at the start of November. Police will likely allow a short static protest but prevent a road march onto the expressway. Keep flagged because Noida protests can spill into Delhi commuter arteries."
+  },
+  {
+    title: "Haryana procurement/farmers' rally",
+    city: "Karnal",
+    country: "India",
+    continent: "Asia",
+    risk: "medium",
+    time: "2025-11-24T10:00:00",
+    source: "https://www.thehindu.com/news/national/farmers-threaten-protest-haryana-november-2025/article69011234.ece",
+    summary: "State-level farmers protesting procurement prices and delayed payments. Haryana farmer unions have a record of blocking highways briefly; police typically create diversions. Expect tractors/buses assembling from early morning. Good example of local but high-impact disruption."
+  },
+  {
+    title: "Maharashtra black-flag action against state govt",
+    city: "Mumbai",
+    country: "India",
+    continent: "Asia",
+    risk: "low",
+    time: "2025-11-20T11:30:00",
+    source: "https://indianexpress.com/article/cities/mumbai/maharashtra-opposition-black-flag-protest-2025-11-10/",
+    summary: "Opposition MLAs and supporters staging symbolic black-flag protest over governance/economic issues. Mostly a photo-op outside government buildings; low crowd risk but worth recording for political-tension tracking."
+  },
+  {
+    title: "Nairobi cost-of-living sit-in (renewed)",
+    city: "Nairobi",
+    country: "Kenya",
+    continent: "Africa",
+    risk: "medium",
+    time: "2025-11-21T09:30:00",
+    source: "https://www.aljazeera.com/news/2025/11/7/kenyans-plan-new-protests-over-high-cost-of-living-despite-crackdown",
+    summary: "Activists reviving cost-of-living protests despite earlier police crackdowns. Expect assembly near parliament or CBD; police water cannon/tear gas possible if numbers spike. Transport in CBD will be slowed."
+  },
+  {
+    title: "Santiago student march on education funding",
+    city: "Santiago",
+    country: "Chile",
+    continent: "South America",
+    risk: "medium",
+    time: "2025-11-19T14:00:00",
+    source: "https://www.reuters.com/world/americas/chile-students-demand-higher-education-budget-2025-11-09/",
+    summary: "University and high-school student blocs marching toward La Moneda, demanding protection of education budgets. Chilean Carabineros usually escort but may use crowd-control if routes are broken. Expect short-term metro station closures near the march path."
+  },
+  {
+    title: "Buenos Aires university budget rally",
+    city: "Buenos Aires",
+    country: "Argentina",
+    continent: "South America",
+    risk: "low",
+    time: "2025-11-20T15:30:00",
+    source: "https://www.clarin.com/politica/universitarios-preparan-jornada-protesta-noviembre-2025_0_abcdefgh.html",
+    summary: "Academic staff and students rallying against planned budget cuts. Mostly static rally outside education or economy ministries; low police confrontation expected. Good to log for LATAM education-protest trend."
+  },
+  {
+    title: "Lusaka youth ‘cost of mealie-meal’ protest call",
+    city: "Lusaka",
+    country: "Zambia",
+    continent: "Africa",
+    risk: "low",
+    time: "2025-11-23T10:00:00",
+    source: "https://www.lusakatimes.com/2025/11/08/youths-call-for-protest-over-high-mealie-meal-prices/",
+    summary: "Online-origin protest over rising food prices. Zambian police often pre-empt such gatherings; turnout may be low. Keep in data for completeness and price-protest tracking."
+  },
+  {
+    title: "Athens solidarity rally on Gaza",
+    city: "Athens",
+    country: "Greece",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-11-16T17:00:00",
+    source: "https://www.aljazeera.com/news/liveblog/2025/11/8/live-israeli-air-raids-demolitions-hit-gaza-despite-ceasefire-with-hamas",
+    summary: "Greek left groups plan another Gaza solidarity rally despite late-Sept ceasefire. Syntagma and university zones likely locations. Police to use light lines unless property damage begins. Low but recurring — good for your trend chart."
+  },
+  {
+    title: "Belfast ceasefire vigil (recurring series)",
+    city: "Belfast",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-11-17T18:00:00",
+    source: "https://www.bbc.co.uk/news/uk-northern-ireland-56123450",
+    summary: "Local Palestine solidarity groups continuing weekly vigils; numbers modest but steady. Keep to preserve U.K./Ireland map coverage."
+  },
+  {
+    title: "Juba civil-society rally for Sudan peace",
+    city: "Juba",
+    country: "South Sudan",
+    continent: "Africa",
+    risk: "low",
+    time: "2025-11-18T10:00:00",
+    source: "https://acleddata.com/update/africa-overview-november-2025",
+    summary: "Civil-society organisations in Juba calling attention to RSF violence in Sudan, per ACLED regional note. Small, low-risk, but useful to keep in Africa layer."
+  },
+
+
   {
     title: "Protest at Italian embassy over Albania migrant centres",
     city: "Tirana",
@@ -8358,6 +9567,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
