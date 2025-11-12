@@ -941,6 +941,38 @@ function escapeHtml(s='') {
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+// ---- 7-day per-feed archive (new) ----
+const FEED_ARCHIVE_KEY = 'ci_live_feed_archive_v1';
+
+function loadArchiveMap(){
+  try { return JSON.parse(localStorage.getItem(FEED_ARCHIVE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveArchiveMap(map){
+  localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(map));
+}
+function archiveMerge(feedId, events, { maxItems = 300 } = {}){
+  if (!feedId || !Array.isArray(events) || !events.length) return;
+  const map = loadArchiveMap();
+  const current = Array.isArray(map[feedId]) ? map[feedId] : [];
+  const seen = new Set(current.map(e => (
+    e.id || `${e.src||''}|${(e.when||'').slice(0,16)}|${(e.title||'').toLowerCase().slice(0,80)}`
+  )));
+
+  for (const ev of events){
+    const key = ev.id || `${ev.src||''}|${(ev.when||'').slice(0,16)}|${(ev.title||'').toLowerCase().slice(0,80)}`;
+    if (!seen.has(key)) { current.push(ev); seen.add(key); }
+  }
+  current.sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0));
+  map[feedId] = current.slice(0, maxItems);
+  saveArchiveMap(map);
+}
+function loadArchive(feedId){
+  const map = loadArchiveMap();
+  return Array.isArray(map[feedId]) ? map[feedId] : [];
+}
+
+	
 
 	function renderKeywordsLine(keywords = []) {
   if (!keywords.length) return '';
@@ -951,6 +983,31 @@ function escapeHtml(s='') {
   const more  = extra ? `<span class="kw-more">+${extra} more</span>` : '';
   const full  = escapeHtml(keywords.join(', '));
   return `<div class="feed-kw" title="${full}">Topics: ${chips} ${more}</div>`;
+}
+
+	// ---- lightweight client-side incident filter (new) ----
+const INCIDENT_POSITIVE = [
+  'protest','demonstration','clashes','riot','unrest','blockade','strike',
+  'explosion','blast','bomb','fire','evacuation','evacuated','lockdown',
+  'shooting','stabbing','gunfire','shots fired','attack','assault',
+  'road closed','road closure','traffic disruption','derailment',
+  'power outage','blackout','hazmat','chemical spill','gas leak',
+  'police','security incident','incident','emergency'
+];
+const INCIDENT_BAD_WORDS = [
+  'live scoring','live blog','live stream','how to watch','tickets',
+  'premier league','tottenham','manchester united','arsenal','chelsea','liverpool',
+  'rugby','cricket','nba','mlb','celebrity','fashion','award','red carpet','tv show',
+  'movie','music','festival','actor','actress','singer','rapper','royal family',
+  'restaurant review','shop opening','store opening','photo gallery','in pictures',
+  'style','trend','beauty tips'
+];
+function isLikelyIncidentClient(ev){
+  const text = `${ev.title||''} ${ev.description||''}`.toLowerCase();
+  if (INCIDENT_BAD_WORDS.some(b => text.includes(b))) return false;
+  if (INCIDENT_POSITIVE.some(g => text.includes(g))) return true;
+  const r = (ev.risk||'').toLowerCase();
+  return r === 'high' || r === 'med';
 }
 
 	
@@ -1178,6 +1235,9 @@ async function refreshSingleFeedCard(cardEl, feed){
 function renderEventsIntoCard(cardEl, events, feed){
   const bodyEl = cardEl.querySelector('.feed-body');
 
+const archived = loadArchive(feed.id);
+const list = (archived && archived.length) ? archived : events;
+	
   // only update caches if we actually got something
   if (Array.isArray(events) && events.length) {
     storeFeedEvents(feed.id, events);
@@ -1192,7 +1252,7 @@ function renderEventsIntoCard(cardEl, events, feed){
  
 	// NEW: save pretty UI cache too
   saveUiCache(feed.id, events);
-
+  archiveMerge(feed.id, events);
 
   // header: live badge
   const headRight = cardEl.querySelector('.feed-head-right');
@@ -1204,14 +1264,18 @@ function renderEventsIntoCard(cardEl, events, feed){
     ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>`
     : ``;
 
-	// update per-card state for adaptive schedule
-cardEl.__state = cardEl.__state || {};
-cardEl.__state.lastLen = events.length;
-cardEl.__state.lastHighAt = Math.max(
-  cardEl.__state.lastHighAt || 0,
-  ...events.filter(e => (e.risk||'').toLowerCase()==='high')
-           .map(e => Date.parse(e.when) || 0)
-);
+if (!list.length) {
+  // ... existing "No recent items" HTML ...
+} else {
+  bodyEl.innerHTML = '';
+  const topCity = (feed.places && feed.places[0]) || 'Unknown';
+  list.slice(0,8).forEach(ev => {
+    // ... build item DOM as you already do ...
+    itemEl.addEventListener('click', ()=> openDetailPanel(ev, list));
+    bodyEl.appendChild(itemEl);
+  });
+}
+
 
 
   headRight.innerHTML = `
@@ -1543,10 +1607,18 @@ const citiesLabel = prettyName ?? (feed.places || []).join(', ');
       <div class="feed-body"></div>
 
       <div class="feed-footer">
-        <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
-        <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
-      </div>
-    `;
+  <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
+    <select class="earlier" data-feedid="${feed.id}" style="background:#1f2024;border:1px solid var(--g600);border-radius:6px;color:#e9edf2;font-size:11px;padding:4px 6px;">
+      <option value="">Load earlier…</option>
+      <option value="720">Last 12h</option>
+      <option value="1440">Last 24h</option>
+      <option value="2880">Last 48h</option>
+      <option value="4320">Last 72h</option>
+    </select>
+  </div>
+</div> `;
 
     // refresh link
     card.querySelector('.refresh').addEventListener('click', ()=>{
@@ -1571,6 +1643,37 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
       saveFeeds(updated);
       renderFeeds();
     });
+
+
+// "Load earlier" selector
+const earlierSel = card.querySelector('.earlier');
+if (earlierSel){
+  earlierSel.addEventListener('change', async () => {
+    const mins = Number(earlierSel.value || 0);
+    if (!mins) return;
+    // fetch a history slice from server (keeps live provider & filters)
+    const params = new URLSearchParams();
+    if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+    if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
+    if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
+    params.set('provider', 'newsdata');
+    params.set('maxAgeMins', String(mins));
+
+    const base = 'https://api.cityintelapi.com';
+    const url  = `${base}/api/live-news?${params.toString()}`;
+    try {
+      const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = await res.json().catch(()=>({}));
+      const events = Array.isArray(data.events) ? data.events : [];
+      // merge into archive and render from archive
+      archiveMerge(feed.id, events);
+      const merged = loadArchive(feed.id);
+      renderEventsIntoCard(card, merged, feed); // shows many more items
+    } catch {}
+    earlierSel.value = '';
+  });
+}
+	  
 
     grid.appendChild(card);
 
