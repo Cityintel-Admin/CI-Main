@@ -1268,8 +1268,21 @@ async function refreshSingleFeedCard(cardEl, feed){
 }
 
 // Put the events into an existing card (no refetch here)
-function renderEventsIntoCard(cardEl, events, feed){
+const MAX_VISIBLE_EVENTS = 20;
+
+function renderEventsIntoCard(cardEl, newEvents, feed){
   const bodyEl = cardEl.querySelector('.feed-body');
+
+  // ---- 1) Merge latest batch into archives / caches ----
+  let events = Array.isArray(newEvents) ? newEvents : [];
+  if (events.length) {
+    // 15-min cache
+    storeFeedEvents(feed.id, events);
+    // UI cache (so cards look populated before network finishes)
+    saveUiCache(feed.id, events);
+    // 7-day archive
+    archiveMerge(feed.id, events);
+  }
 
 const archived = loadArchive(feed.id);
 const list = (archived && archived.length) ? archived : events;
@@ -1345,6 +1358,10 @@ if (!list.length) {
   // body
 if (!events.length) {
   const placesLabel = (feed.places || []).join(', ');
+ const extra = feed.useLive
+      ? '<span style="opacity:.8">Listening for live updates…</span>'
+      : '';
+	
   if (feed.useLive) {
     // Live feeds get a more dynamic hint
     bodyEl.innerHTML = `
