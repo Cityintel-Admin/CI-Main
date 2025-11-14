@@ -1010,6 +1010,39 @@ function isLikelyIncidentClient(ev){
   return r === 'high' || r === 'med';
 }
 
+
+	
+// ---- Global time window control (hours) ----
+const WINDOW_STORAGE_KEY = 'ci_feed_window_hours';
+
+function getCurrentWindowHours() {
+  const raw = localStorage.getItem(WINDOW_STORAGE_KEY);
+  const h = Number(raw);
+  if (!Number.isFinite(h) || h <= 0) return 6;
+  return Math.min(72, h);
+}
+
+function initWindowSelector() {
+  const sel = document.getElementById('windowSelect');
+  if (!sel) return;
+
+  // initialise from storage
+  const current = String(getCurrentWindowHours());
+  if ([...sel.options].some(o => o.value === current)) {
+    sel.value = current;
+  }
+
+  sel.addEventListener('change', () => {
+    const h = Number(sel.value || '6') || 6;
+    const clamped = Math.max(1, Math.min(72, h));
+    localStorage.setItem(WINDOW_STORAGE_KEY, String(clamped));
+    // re-run all feeds with the new window
+    renderFeeds();
+  });
+}
+
+// call once after DOM is ready
+document.addEventListener('DOMContentLoaded', initWindowSelector);
 	
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
@@ -1021,7 +1054,10 @@ async function fetchMockEventsForFeed(feed) {
 
   const base = 'https://api.cityintelapi.com';
   const provider = 'newsdata';
+  const windowHours = getCurrentWindowHours();
+params.set('window', String(windowHours));
 
+	
   // primary + backup candidates
   const urls = feed.useLive
     ? [
@@ -1649,15 +1685,19 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
 const earlierSel = card.querySelector('.earlier');
 if (earlierSel){
   earlierSel.addEventListener('change', async () => {
-    const mins = Number(earlierSel.value || 0);
-    if (!mins) return;
-    // fetch a history slice from server (keeps live provider & filters)
-    const params = new URLSearchParams();
-    if (feed.places?.length)   params.set('cities',   feed.places.join(','));
-    if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
-    if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
-    params.set('provider', 'newsdata');
-    params.set('maxAgeMins', String(mins));
+const mins = Number(earlierSel.value || 0);
+if (!mins) return;
+const hours = Math.max(1, Math.round(mins / 60)); // 720 -> 12, 1440 -> 24, etc.
+
+// build the same filters as before
+const params = new URLSearchParams();
+if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
+if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
+params.set('provider', 'newsdata');
+
+// NEW: explicit window in hours
+params.set('window', String(Math.min(72, hours)));
 
     const base = 'https://api.cityintelapi.com';
     const url  = `${base}/api/live-news?${params.toString()}`;
