@@ -380,28 +380,35 @@
       </section>
 
       <!-- RIGHT COLUMN -->
-      <section class="card" style="grid-column: span 5;">
-        <h3>Map / Distance</h3>
-        <div class="map-box" id="mapBox">
-          <div style="font-weight:600; margin-bottom:4px;">Map preview unavailable in demo</div>
-          <div>
-            Calculated impact radius and nearest office will appear here.
-            <div id="incidentDistance" style="margin-top:6px; font-weight:600; color:var(--text);">
-              —
-            </div>
-          </div>
-        </div>
+<section class="card" style="grid-column: span 5;">
+  <h3>Map / Distance</h3>
 
-        <div style="margin-top:16px;font-size:12px;color:var(--muted);line-height:1.5;">
-          When live data is wired in, this panel will show:
-          <ul style="margin:6px 0 0 16px;padding:0;">
-            <li>Incident lat/lon (approx)</li>
-            <li>Your nearest office</li>
-            <li>Distance in km / mi</li>
-            <li>Any active travel advisories</li>
-          </ul>
-        </div>
-      </section>
+  <div class="map-box" id="mapBox">
+    <!-- Placeholder map area (still static for now) -->
+    <div style="font-weight:600; margin-bottom:4px;">
+      Map preview unavailable in demo
+    </div>
+    <div>
+      Calculated impact radius and nearest office will appear here.
+    </div>
+
+    <!-- This is what our JS populates -->
+    <div id="incidentDistance"
+         style="margin-top:6px; font-weight:600; color:var(--text);">
+      —
+    </div>
+  </div>
+
+  <div style="margin-top:16px;font-size:12px;color:var(--muted);line-height:1.5;">
+    When live data is wired in, this panel will show:
+    <ul style="margin:6px 0 0 16px;padding:0;">
+      <li>Incident lat/lon (approx)</li>
+      <li>Your nearest office</li>
+      <li>Distance in km / mi</li>
+      <li>Any active travel advisories</li>
+    </ul>
+  </div>
+</section>
 
     </div>
 
@@ -504,6 +511,196 @@ function fmtWhen(iso) {
   }
 }
 
+
+	
+// -------- Office locations + distance helpers -------------------------
+const OFFICES_KEY = 'ci_offices_v1';
+
+function loadOffices() {
+  try {
+    const raw = localStorage.getItem(OFFICES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveOffices(offices) {
+  try {
+    localStorage.setItem(OFFICES_KEY, JSON.stringify(offices || []));
+  } catch (e) {
+    // ignore
+  }
+}
+
+// Seed with a simple default office if nothing is saved yet
+function ensureSeedOffices() {
+  const existing = loadOffices();
+  if (existing && existing.length) return existing;
+
+  const seeded = [{
+    id: 'hqlon',
+    name: 'CityIntel HQ, London',
+    lat: 51.5074,
+    lon: -0.1278,
+    address: 'London, UK'
+  }];
+
+  saveOffices(seeded);
+  return seeded;
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const toRad = d => d * Math.PI / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function findNearestOffice(lat, lon, offices) {
+  let best = null;
+  for (const off of offices) {
+    if (typeof off.lat !== 'number' || typeof off.lon !== 'number') continue;
+    const distKm = haversineKm(lat, lon, off.lat, off.lon);
+    if (!best || distKm < best.distKm) {
+      best = { ...off, distKm };
+    }
+  }
+  return best;
+}
+
+function drawIncidentMiniMap(lat, lon, office) {
+  const canvas    = document.getElementById('incidentMiniMap');
+  const distEl    = document.getElementById('distanceSummary');
+  const officeEl  = document.getElementById('officeSummary');
+
+  if (!canvas || !distEl || !officeEl) return;
+
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // background grid
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#14161a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx <= w; gx += 32) {
+    ctx.beginPath();
+    ctx.moveTo(gx, 0);
+    ctx.lineTo(gx, h);
+    ctx.stroke();
+  }
+  for (let gy = 0; gy <= h; gy += 24) {
+    ctx.beginPath();
+    ctx.moveTo(0, gy);
+    ctx.lineTo(w, gy);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath();
+  ctx.ellipse(w / 2, h / 2, w * 0.46, h * 0.36, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // No coordinates? Just show message text.
+  if (typeof lat !== 'number' || typeof lon !== 'number') {
+    distEl.textContent =
+      'No coordinates provided for this alert. Location-based distance is unavailable.';
+    officeEl.textContent =
+      'Nearest office distance will appear when location data is available.';
+    return;
+  }
+
+  // Incident pin (centered – we are not doing full map projection here)
+  const x = w / 2;
+  const y = h / 2;
+
+  ctx.beginPath();
+  ctx.arc(x, y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,77,77,0.25)';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x, y, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff4d4d';
+  ctx.shadowColor = '#ff4d4d';
+  ctx.shadowBlur = 8;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  distEl.textContent =
+    `Approximate incident coordinates: ${lat.toFixed(3)}, ${lon.toFixed(3)}.`;
+
+  if (office && typeof office.distKm === 'number') {
+    const miles = office.distKm * 0.621371;
+    const label = office.address ? `${office.name} — ${office.address}` : office.name;
+    officeEl.textContent =
+      `Nearest office: ${label} · about ${office.distKm.toFixed(1)} km (${miles.toFixed(1)} mi).`;
+  } else {
+    officeEl.textContent = 'No office locations configured yet.';
+  }
+}
+
+function setupOfficeEditor() {
+  const btn = document.getElementById('editOfficesBtn');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    const current = ensureSeedOffices();
+    const template = current
+      .map(o => `${o.name}|${o.lat},${o.lon}`)
+      .join('\n');
+
+    const input = prompt(
+      'Office locations (one per line, format: Name|lat,lon)\n' +
+      'Example: London HQ|51.5074,-0.1278',
+      template
+    );
+    if (input == null) return; // user cancelled
+
+    const lines = input.split('\n').map(s => s.trim()).filter(Boolean);
+    const offices = [];
+
+    for (const line of lines) {
+      const [namePart, coordsPart] = line.split('|');
+      if (!namePart || !coordsPart) continue;
+      const [latStr, lonStr] = coordsPart.split(',');
+      const lat = Number(latStr);
+      const lon = Number(lonStr);
+      if (!isFinite(lat) || !isFinite(lon)) continue;
+
+      offices.push({
+        id: `${namePart.trim().toLowerCase().replace(/\s+/g, '-')}-${offices.length}`,
+        name: namePart.trim(),
+        lat,
+        lon
+      });
+    }
+
+    if (!offices.length) {
+      alert('Could not parse any office entries. Keeping previous list.');
+      return;
+    }
+
+    saveOffices(offices);
+    alert('Office locations updated.');
+  });
+}
+
+	
 
 	
 /* ---------- read incident from sessionStorage ---------- */
@@ -628,6 +825,29 @@ const city = inc.city || '—';
 
 
 
+  // --- Map / distance panel --------------------------------------
+  const offices = ensureSeedOffices();
+
+  // lat/lon may come directly or inside a coords object, be defensive
+  const lat =
+    typeof inc.lat === 'number'
+      ? inc.lat
+      : (inc.coords && typeof inc.coords.lat === 'number' ? inc.coords.lat : null);
+
+  const lon =
+    typeof inc.lon === 'number'
+      ? inc.lon
+      : (inc.coords && typeof inc.coords.lon === 'number' ? inc.coords.lon : null);
+
+  const nearest =
+    (typeof lat === 'number' && typeof lon === 'number')
+      ? findNearestOffice(lat, lon, offices)
+      : null;
+
+  drawIncidentMiniMap(lat, lon, nearest);
+  setupOfficeEditor();
+	
+
   // ----- source button + non-link source badge (only on incident page) -----
   // We expect live-feed to pass through: inc.url, inc.src, inc.description, etc.
   if (srcBtn) {
@@ -679,6 +899,7 @@ const city = inc.city || '—';
 
 </body>
 </html>
+
 
 
 
