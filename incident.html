@@ -693,6 +693,95 @@ function setupOfficeEditor() {
   });
 }
 
+
+	
+
+// --- Geo helpers for Map / Distance panel ---
+
+// Approximate city centre coordinates
+const CITY_COORDS = {
+  London: { lat: 51.5074, lon: -0.1278 },
+  Berlin: { lat: 52.52,   lon: 13.4050 },
+  Paris:  { lat: 48.8566, lon: 2.3522 },
+  Madrid: { lat: 40.4168, lon: -3.7038 },
+  Kyiv:   { lat: 50.4501, lon: 30.5234 }
+  // Add more cities here as your feeds grow
+};
+
+// Your offices (you can edit/expand this)
+const OFFICES = [
+  {
+    id: 'hq-london',
+    name: 'CityIntel HQ',
+    city: 'London',
+    lat: 51.5074,
+    lon: -0.1278
+  }
+  // Example extra:
+  // { id:'berlin-office', name:'Berlin Office', city:'Berlin', lat:52.52, lon:13.4050 }
+];
+
+// Haversine distance in kilometres between two lat/lon points
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Find the nearest configured office to a given coordinate
+function findNearestOffice(lat, lon) {
+  if (!Array.isArray(OFFICES) || !OFFICES.length) return null;
+  let best = null;
+  let bestKm = Infinity;
+
+  for (const office of OFFICES) {
+    if (typeof office.lat !== 'number' || typeof office.lon !== 'number') continue;
+    const km = haversineKm(lat, lon, office.lat, office.lon);
+    if (km < bestKm) {
+      bestKm = km;
+      best = { ...office, distanceKm: bestKm };
+    }
+  }
+  return best;
+}
+
+// Update the Map / Distance box for a given incident
+function updateDistancePanel(inc) {
+  const box   = document.getElementById('mapBox');
+  const distEl = document.getElementById('incidentDistance');
+  if (!box || !distEl || !inc) return;
+
+  const cityRaw = (inc.city || '').trim();
+  const city = cityRaw || (inc.meta || '').split('•')[0].trim(); // fallback from meta line
+  const coords = CITY_COORDS[city];
+
+  if (!city || !coords) {
+    distEl.textContent = 'Location data for this area is not configured yet.';
+    return;
+  }
+
+  const nearest = findNearestOffice(coords.lat, coords.lon);
+
+  if (!nearest) {
+    distEl.textContent = `Approx area: ${city}. Office locations not configured yet.`;
+    return;
+  }
+
+  const km = nearest.distanceKm;
+  const mi = km * 0.621371;
+
+  distEl.textContent =
+    `Approx area: ${city}. Nearest office: ${nearest.name} ` +
+    `— about ${Math.round(km)} km / ${Math.round(mi)} mi away.`;
+}
+
 	
 
 	
@@ -816,6 +905,8 @@ const city = inc.city || '—';
   impEl.textContent = inc.impact   || 'Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.';
   earlierEl.textContent= inc.earlier || 'No earlier incidents recorded.';
 
+// Update Map / Distance panel
+updateDistancePanel(inc);
 
 
   // --- Map / distance panel --------------------------------------
@@ -892,6 +983,7 @@ const city = inc.city || '—';
 
 </body>
 </html>
+
 
 
 
