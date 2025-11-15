@@ -507,198 +507,9 @@ function fmtWhen(iso) {
 
 	
 // -------- Office locations + distance helpers -------------------------
-const OFFICES_KEY = 'ci_offices_v1';
+// -------- Office / distance helpers for Map panel --------------------
 
-function loadOffices() {
-  try {
-    const raw = localStorage.getItem(OFFICES_KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveOffices(offices) {
-  try {
-    localStorage.setItem(OFFICES_KEY, JSON.stringify(offices || []));
-  } catch (e) {
-    // ignore
-  }
-}
-
-// Seed with a simple default office if nothing is saved yet
-function ensureSeedOffices() {
-  const existing = loadOffices();
-  if (existing && existing.length) return existing;
-
-  const seeded = [{
-    id: 'hqlon',
-    name: 'CityIntel HQ, London',
-    lat: 51.5074,
-    lon: -0.1278,
-    address: 'London, UK'
-  }];
-
-  saveOffices(seeded);
-  return seeded;
-}
-
-function haversineKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // km
-  const toRad = d => d * Math.PI / 180;
-
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) ** 2;
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function findNearestOffice(lat, lon, offices) {
-  let best = null;
-  for (const off of offices) {
-    if (typeof off.lat !== 'number' || typeof off.lon !== 'number') continue;
-    const distKm = haversineKm(lat, lon, off.lat, off.lon);
-    if (!best || distKm < best.distKm) {
-      best = { ...off, distKm };
-    }
-  }
-  return best;
-}
-
-function drawIncidentMiniMap(lat, lon, office) {
-  const canvas    = document.getElementById('incidentMiniMap');
-  const distEl    = document.getElementById('distanceSummary');
-  const officeEl  = document.getElementById('officeSummary');
-
-  if (!canvas || !distEl || !officeEl) return;
-
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
-  // background grid
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#14161a';
-  ctx.fillRect(0, 0, w, h);
-
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-  ctx.lineWidth = 1;
-  for (let gx = 0; gx <= w; gx += 32) {
-    ctx.beginPath();
-    ctx.moveTo(gx, 0);
-    ctx.lineTo(gx, h);
-    ctx.stroke();
-  }
-  for (let gy = 0; gy <= h; gy += 24) {
-    ctx.beginPath();
-    ctx.moveTo(0, gy);
-    ctx.lineTo(w, gy);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.beginPath();
-  ctx.ellipse(w / 2, h / 2, w * 0.46, h * 0.36, 0, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // No coordinates? Just show message text.
-  if (typeof lat !== 'number' || typeof lon !== 'number') {
-    distEl.textContent =
-      'No coordinates provided for this alert. Location-based distance is unavailable.';
-    officeEl.textContent =
-      'Nearest office distance will appear when location data is available.';
-    return;
-  }
-
-  // Incident pin (centered – we are not doing full map projection here)
-  const x = w / 2;
-  const y = h / 2;
-
-  ctx.beginPath();
-  ctx.arc(x, y, 7, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255,77,77,0.25)';
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(x, y, 3, 0, Math.PI * 2);
-  ctx.fillStyle = '#ff4d4d';
-  ctx.shadowColor = '#ff4d4d';
-  ctx.shadowBlur = 8;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  distEl.textContent =
-    `Approximate incident coordinates: ${lat.toFixed(3)}, ${lon.toFixed(3)}.`;
-
-  if (office && typeof office.distKm === 'number') {
-    const miles = office.distKm * 0.621371;
-    const label = office.address ? `${office.name} — ${office.address}` : office.name;
-    officeEl.textContent =
-      `Nearest office: ${label} · about ${office.distKm.toFixed(1)} km (${miles.toFixed(1)} mi).`;
-  } else {
-    officeEl.textContent = 'No office locations configured yet.';
-  }
-}
-
-function setupOfficeEditor() {
-  const btn = document.getElementById('editOfficesBtn');
-  if (!btn) return;
-
-  btn.addEventListener('click', () => {
-    const current = ensureSeedOffices();
-    const template = current
-      .map(o => `${o.name}|${o.lat},${o.lon}`)
-      .join('\n');
-
-    const input = prompt(
-      'Office locations (one per line, format: Name|lat,lon)\n' +
-      'Example: London HQ|51.5074,-0.1278',
-      template
-    );
-    if (input == null) return; // user cancelled
-
-    const lines = input.split('\n').map(s => s.trim()).filter(Boolean);
-    const offices = [];
-
-    for (const line of lines) {
-      const [namePart, coordsPart] = line.split('|');
-      if (!namePart || !coordsPart) continue;
-      const [latStr, lonStr] = coordsPart.split(',');
-      const lat = Number(latStr);
-      const lon = Number(lonStr);
-      if (!isFinite(lat) || !isFinite(lon)) continue;
-
-      offices.push({
-        id: `${namePart.trim().toLowerCase().replace(/\s+/g, '-')}-${offices.length}`,
-        name: namePart.trim(),
-        lat,
-        lon
-      });
-    }
-
-    if (!offices.length) {
-      alert('Could not parse any office entries. Keeping previous list.');
-      return;
-    }
-
-    saveOffices(offices);
-    alert('Office locations updated.');
-  });
-}
-
-
-	
-
-// --- Geo helpers for Map / Distance panel ---
-
-// Approximate city centre coordinates
+// Approximate city centre coordinates for quick distance estimates
 const CITY_COORDS = {
   London: { lat: 51.5074, lon: -0.1278 },
   Berlin: { lat: 52.52,   lon: 13.4050 },
@@ -708,21 +519,20 @@ const CITY_COORDS = {
   // Add more cities here as your feeds grow
 };
 
-// Your offices (you can edit/expand this)
+// Example “offices” – you can extend this later or wire to settings
 const OFFICES = [
   {
     id: 'hq-london',
-    name: 'CityIntel HQ',
+    name: 'CityIntel HQ (London)',
     city: 'London',
     lat: 51.5074,
     lon: -0.1278
   }
-  // Example extra:
   // { id:'berlin-office', name:'Berlin Office', city:'Berlin', lat:52.52, lon:13.4050 }
 ];
 
 // Haversine distance in kilometres between two lat/lon points
-function haversineKm(lat1, lon1, lat2, lon2) {
+function computeDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
   const toRad = d => d * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
@@ -735,111 +545,63 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Find the nearest configured office to a given coordinate
-function findNearestOffice(lat, lon) {
-  if (!Array.isArray(OFFICES) || !OFFICES.length) return null;
-  let best = null;
-  let bestKm = Infinity;
-
-  for (const office of OFFICES) {
-    if (typeof office.lat !== 'number' || typeof office.lon !== 'number') continue;
-    const km = haversineKm(lat, lon, office.lat, office.lon);
-    if (km < bestKm) {
-      bestKm = km;
-      best = { ...office, distanceKm: bestKm };
-    }
-  }
-  return best;
-}
-
-// Update the Map / Distance box for a given incident
-function updateDistancePanel(inc) {
-  const box   = document.getElementById('mapBox');
-  const distEl = document.getElementById('incidentDistance');
-  if (!box || !distEl || !inc) return;
-
-  const cityRaw = (inc.city || '').trim();
-  const city = cityRaw || (inc.meta || '').split('•')[0].trim(); // fallback from meta line
-  const coords = CITY_COORDS[city];
-
-  if (!city || !coords) {
-    distEl.textContent = 'Location data for this area is not configured yet.';
-    return;
-  }
-
-  const nearest = findNearestOffice(coords.lat, coords.lon);
-
-  if (!nearest) {
-    distEl.textContent = `Approx area: ${city}. Office locations not configured yet.`;
-    return;
-  }
-
-  const km = nearest.distanceKm;
-  const mi = km * 0.621371;
-
-  distEl.textContent =
-    `Approx area: ${city}. Nearest office: ${nearest.name} ` +
-    `— about ${Math.round(km)} km / ${Math.round(mi)} mi away.`;
-}
-
-// --- TEMP: office locations for distance demo ---
-window.CI_OFFICES = [
-  {
-    name: 'CityIntel HQ',
-    lat: 51.515,   // example: somewhere in central London
-    lon: -0.09
-  }
-];
-
-// Haversine distance in km between two lat/lon points
-function computeDistanceKm(lat1, lon1, lat2, lon2) {
-  const toRad = d => (d * Math.PI) / 180;
-  const R = 6371; // km
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
+// Single source of truth for the Map / Distance text
 function updateDistancePanel(inc) {
   const distanceEl = document.getElementById('incidentDistance');
-  if (!distanceEl) return;
+  if (!distanceEl || !inc) return;
 
-  // If we don't have coordinates or offices, keep the placeholder
-  if (!inc.lat || !inc.lon || !Array.isArray(window.CI_OFFICES) || !window.CI_OFFICES.length) {
-    distanceEl.textContent = '—';
+  // Try city field first, then fall back to the first part of meta line
+  let city = (inc.city || '').trim();
+  if (!city && inc.meta) {
+    city = inc.meta.split('•')[0].trim();
+  }
+
+  if (!city) {
+    distanceEl.textContent =
+      'Location data for this alert is not configured yet.';
+    return;
+  }
+
+  const coords = CITY_COORDS[city];
+  if (!coords) {
+    distanceEl.textContent =
+      `Approx area: ${city}. Distance to offices is not configured yet.`;
+    return;
+  }
+
+  if (!Array.isArray(OFFICES) || !OFFICES.length) {
+    distanceEl.textContent =
+      `Approx area: ${city}. Office locations have not been set up yet.`;
     return;
   }
 
   // Find nearest office
   let best = null;
-  for (const office of window.CI_OFFICES) {
-    if (!office.lat || !office.lon) continue;
-    const km = computeDistanceKm(inc.lat, inc.lon, office.lat, office.lon);
+  for (const office of OFFICES) {
+    if (typeof office.lat !== 'number' || typeof office.lon !== 'number') continue;
+    const km = computeDistanceKm(coords.lat, coords.lon, office.lat, office.lon);
     if (!best || km < best.km) {
       best = { office, km };
     }
   }
 
   if (!best) {
-    distanceEl.textContent = '—';
+    distanceEl.textContent =
+      `Approx area: ${city}. Office locations have not been set up yet.`;
     return;
   }
 
-  const km = best.km;
-  const mi = km * 0.621371;
-  const kmStr = km.toFixed(1);
-  const miStr = mi.toFixed(1);
+  const kmStr = best.km.toFixed(1);
+  const miStr = (best.km * 0.621371).toFixed(1);
 
   distanceEl.textContent =
-    `Nearest office: ${best.office.name} — approx ${kmStr} km (${miStr} mi) from incident.`;
+    `Approx area: ${city}. Nearest office: ${best.office.name} — ` +
+    `about ${kmStr} km (${miStr} mi) away.`;
 }
 
+
 	
+/* ---------- read incident from sessionStorage ---------- */
 /* ---------- read incident from sessionStorage ---------- */
 (function loadIncident(){
   const params = new URLSearchParams(location.search);
@@ -856,52 +618,6 @@ function updateDistancePanel(inc) {
   const srcBtn    = document.getElementById('incSourceBtn');
   const srcTag    = document.getElementById('incSourceTag');
 
-
-  // Build a richer summary from whatever data we have
-  function buildSummary(inc){
-    const bits = [];
-
-    // 1) main text: use explicit summary if we ever set one, else description
-    if (inc.summary && inc.summary.trim()) {
-      bits.push(inc.summary.trim());
-    } else if (inc.description && inc.description.trim()) {
-      bits.push(inc.description.trim());
-    } else if (inc.meta) {
-      bits.push(inc.meta);
-    } else {
-      bits.push('No additional narrative is available yet for this alert.');
-    }
-
-    // 2) quick context: city + time
-    if (inc.city) {
-      bits.push(`Location: ${inc.city}.`);
-    }
-
-    if (inc.when) {
-      const d = new Date(inc.when);
-      if (!isNaN(d)) {
-        const whenStr = d.toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }).replace(',', '');
-        bits.push(`Reported around ${whenStr}.`);
-      }
-    }
-
-    // 3) mention source
-    if (inc.src) {
-      bits.push(`Source: ${inc.src}.`);
-    }
-
-    return bits.join(' ');
-  }
-
-
-  
-  // default fallback UI
   function noData(){
     titleEl.textContent   = 'No incident selected';
     metaEl.textContent    = '';
@@ -913,91 +629,66 @@ function updateDistancePanel(inc) {
     riskPill.style.display='none';
   }
 
-  if(!incId){
+  if (!incId) {
     noData();
     return;
   }
 
   let all = {};
-  try { all = JSON.parse(sessionStorage.getItem('ci_incidents')||'{}'); } catch(e){}
+  try {
+    all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
+  } catch (e) {}
   const inc = all[incId];
-  if(!inc){
+  if (!inc) {
     noData();
     return;
   }
 
   // We stored flattened strings in live-feed
-  // We'll try to infer a city/risk from meta line like "London • High Risk • 25 Oct 10:32"
-const city = inc.city || '—';
+  const city = inc.city || '—';
+  const whenNice = fmtWhen(inc.when);
+  const src = inc.src || 'news source';
 
   // --- Build richer summary ---
   let summaryText = (inc.summary || '').trim();
-  const desc      = (inc.description || '').replace(/\s+/g, ' ').trim();
-  const src       = inc.src || 'news source';
-  const whenNice  = fmtWhen(inc.when);
+  const desc = (inc.description || '').replace(/\s+/g, ' ').trim();
 
-  // If no explicit summary, fall back to description + context
   if (!summaryText && desc) {
     if (city !== '—' && whenNice) {
-      summaryText = `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${src}.`;
+      summaryText =
+        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${src}.`;
     } else {
       summaryText = desc;
     }
   }
 
-  // Keep it readable – trim to ~500 chars and end at a sentence if possible
   if (summaryText.length > 500) {
     const cut = summaryText.slice(0, 500);
     const lastDot = cut.lastIndexOf('.');
     summaryText = (lastDot > 200 ? cut.slice(0, lastDot + 1) : cut) + ' …';
   }
 
+  // --- Fill main fields ---
   titleEl.textContent = inc.title || 'Untitled incident';
   metaEl.textContent  = `${city} • ${inc.risk || 'n/a'} • ${whenNice || ''}`.trim();
   summEl.textContent  = summaryText || '(no summary provided – open source for details).';
 
-  locEl.textContent    = inc.location || `Approx area: ${city} (exact location may be refining).`;
-  impEl.textContent = inc.impact   || 'Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.';
-  earlierEl.textContent= inc.earlier || 'No earlier incidents recorded.';
+  locEl.textContent =
+    inc.location || `Approx area: ${city} (exact location may be refining).`;
+  impEl.textContent =
+    inc.impact || 'Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.';
+  earlierEl.textContent = inc.earlier || 'No earlier incidents recorded.';
 
-// Update Map / Distance panel
-updateDistancePanel(inc);
+  // --- Map / Distance panel (NEW single call) ---
+  updateDistancePanel(inc);
 
-
-	
-
-  // --- Map / distance panel --------------------------------------
-  const offices = ensureSeedOffices();
-
-  // lat/lon may come directly or inside a coords object, be defensive
-  const lat =
-    typeof inc.lat === 'number'
-      ? inc.lat
-      : (inc.coords && typeof inc.coords.lat === 'number' ? inc.coords.lat : null);
-
-  const lon =
-    typeof inc.lon === 'number'
-      ? inc.lon
-      : (inc.coords && typeof inc.coords.lon === 'number' ? inc.coords.lon : null);
-
-  const nearest =
-    (typeof lat === 'number' && typeof lon === 'number')
-      ? findNearestOffice(lat, lon, offices)
-      : null;
-
-  drawIncidentMiniMap(lat, lon, nearest);
-  setupOfficeEditor();
-	
-
-  // ----- source button + non-link source badge (only on incident page) -----
-  // We expect live-feed to pass through: inc.url, inc.src, inc.description, etc.
+  // ----- source button + non-link source badge -----
   if (srcBtn) {
     if (inc.url) {
       let host = '';
       try { host = new URL(inc.url).hostname.replace(/^www\./,''); } catch {}
       srcBtn.href = inc.url;
       srcBtn.style.display = 'inline-block';
-      // Optional: add host to button text
       srcBtn.textContent = `Open original source${host ? ` (${host})` : ''} →`;
     } else {
       srcBtn.style.display = 'none';
@@ -1014,46 +705,33 @@ updateDistancePanel(inc);
     }
   }
 
+  // --- Risk pill styling ---
+  const metaLower = (inc.meta || '').toLowerCase();
+  const risk =
+    metaLower.includes('high') ? 'high' :
+    metaLower.includes('med')  ? 'med'  :
+    metaLower.includes('low')  ? 'low'  : null;
 
-  // TEMP: infer rough coordinates for demo if missing
-  if (!inc.lat && !inc.lon && inc.city) {
-    const cityLower = inc.city.toLowerCase();
-    if (cityLower.includes('london')) {
-      inc.lat = 51.5074;
-      inc.lon = -0.1278;
-    }
-    // you can add more demo cities here later if you want
-  }
-
-  // Update the Map / Distance panel
-  updateDistancePanel(inc);
-
-	
-  // crude distance extraction
-  const distMatch = (inc.location||'').match(/(\d+(?:\.\d+)?)\s?(km|mi)\b/i);
-  distEl.textContent = distMatch ? `Nearest office approx ${distMatch[0]} away` : '—';
-
-  // crude risk extraction
-  const risk = (inc.meta||'').toLowerCase().includes('high') ? 'high'
-             : (inc.meta||'').toLowerCase().includes('med')  ? 'med'
-             : (inc.meta||'').toLowerCase().includes('low')  ? 'low'
-             : null;
-  if(risk){
-    riskPill.style.display='inline-block';
-    riskPill.textContent = risk==='high'?'High':'Medium';
+  if (risk) {
+    riskPill.style.display = 'inline-block';
+    riskPill.textContent = risk === 'high' ? 'High'
+                         : risk === 'med'  ? 'Medium'
+                         : 'Low';
     riskPill.classList.remove('risk-high','risk-med','risk-low');
     riskPill.classList.add(
-      risk==='high'?'risk-high':
-      risk==='med'?'risk-med':'risk-low'
+      risk === 'high' ? 'risk-high' :
+      risk === 'med'  ? 'risk-med'  : 'risk-low'
     );
-  }else{
-    riskPill.style.display='none';
+  } else {
+    riskPill.style.display = 'none';
   }
 })();
+
 </script>
 
 </body>
 </html>
+
 
 
 
