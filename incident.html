@@ -1,6 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
+
+<script src="auth.js"></script>
+
+	
+	<script>
+(function pageGuard(){
+  const NEED_LOGIN = true;          // this page requires a login
+  const NEED_SUB = false;           // set to true on pages that require an active sub
+
+  // Must be logged in?
+  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    location.href = 'login.html?next=' + next;
+    return;
+  }
+
+  // Must be subscribed?
+  if (NEED_SUB) {
+    const isSub = localStorage.getItem('ci_subscribed') === 'true';
+    if (!isSub) {
+      location.href = 'subscribe.html';
+      return;
+    }
+  }
+})();
+</script>
+	
+	
+	<script>
+(function compatProfileShim(){
+  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+  const u = CIAuth.who();
+  if (!u) return;
+  localStorage.setItem('ci_profile', JSON.stringify({
+    name: u.name || 'CityIntel User',
+    email: u.email,
+    role: u.role || 'Admin',
+    is_admin: (u.role||'').toLowerCase()==='admin'
+  }));
+  // Do NOT auto-set ci_subscribed here anymore
+})();
+</script>
+
+
+	
   <meta charset="utf-8"/>
   <title>CityIntel — Incident Detail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -234,6 +280,15 @@
 
   </style>
 </head>
+
+<script>
+  // must be after the header DOM exists
+  document.addEventListener('DOMContentLoaded', function(){
+    CIAuth.injectUserChip(document.getElementById('topActions'));
+    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
+	
 <body>
 
 
@@ -375,79 +430,61 @@
 })();
 
 	
+(function mountTopActions(){
+  const host = document.getElementById('topActions');
+  if (!host) return;
 
-/* ---------- fill user chip like other pages ---------- */
-(function mountUserChip(){
-  const chip        = document.getElementById('userChip');
-  const menu        = document.getElementById('userMenu');
-  const avatar      = document.getElementById('userAvatar');
-  const roleEl      = document.getElementById('chipText');
-  const trialBanner = document.getElementById('trialBanner');
-  const trialText   = document.getElementById('trialText');
-  const logoutLink  = document.getElementById('logoutLink');
+  // Helper: initials from name/email
+  const initialsOf = (nameOrEmail='CI') => {
+    const s = String(nameOrEmail).trim();
+    if (!s) return 'CI';
+    if (s.includes('@')) return s[0].toUpperCase();
+    const parts = s.split(/\s+/);
+    return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
+  };
 
-  // If this page doesn't have the header elements, just bail out quietly
-  if (!chip || !menu || !avatar || !roleEl) {
-    return;
-  }
+  // Logged-in view (CIAuth)
+  if (window.CIAuth && CIAuth.isLoggedIn()) {
+    const u = CIAuth.who(); // {name,email,role,subscribed?...}
+    const initials = initialsOf(u.name || u.email);
+    const role = u.role || 'Member';
+    const isAdmin = String(role).toLowerCase() === 'admin';
 
-  let prof = {};
-  try {
-    prof = JSON.parse(localStorage.getItem('ci_profile') || '{}');
-  } catch (e) {}
+    host.innerHTML = `
+      <div class="user" id="userChip" style="cursor:pointer">
+        <div class="avatar">${initials}</div>
+        ${role}
+      </div>
+      <div class="dropdown" id="userMenu">
+        ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
+        <a href="settings.html">Manage Billing</a>
+        <a href="#" id="logoutLink">Log out</a>
+      </div>
+    `;
 
-  const initials = (prof.name || prof.email || 'CI')
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase() || '')
-    .join('');
-
-  avatar.textContent = initials || 'CI';
-  roleEl.textContent = prof.role || 'Analyst';
-
-  // admin-only dropdown links
-  const isAdmin = !!prof.is_admin || (prof.role || '').toLowerCase() === 'admin';
-  document.querySelectorAll('.admin-only-dd').forEach(a => {
-    a.style.display = isAdmin ? 'block' : 'none';
-  });
-
-  // trial banner logic (only if the elements exist)
-  const sub = localStorage.getItem('ci_subscribed') === 'true';
-  let trialEndsAt = null;
-  try {
-    const me = JSON.parse(sessionStorage.getItem('ci_trial_info') || 'null');
-    if (me && me.trialEndsAt) trialEndsAt = me.trialEndsAt;
-  } catch (e) {}
-
-  if (!sub && trialEndsAt && trialBanner && trialText) {
-    const end = new Date(trialEndsAt);
-    const hrsLeft = Math.max(0, Math.round((end - Date.now()) / 3600000));
-    trialText.textContent = `Trial active — ${hrsLeft}h left`;
-    trialBanner.style.display = 'block';
-  } else if (trialBanner) {
-    trialBanner.style.display = 'none';
-  }
-
-  chip.addEventListener('click', (e) => {
-    e.stopPropagation();
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!chip.contains(e.target)) menu.style.display = 'none';
-  });
-
-  if (logoutLink) {
-    logoutLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (window.CIAuth && CIAuth.logout) {
-        CIAuth.logout();
-      }
-      location.href = 'login.html';
+    const chip = document.getElementById('userChip');
+    const menu = document.getElementById('userMenu');
+    chip.addEventListener('click', () => {
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
     });
+    document.addEventListener('click', (e) => {
+      if (!host.contains(e.target)) menu.style.display = 'none';
+    });
+
+    document.getElementById('logoutLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      try { CIAuth.logout(); } catch(_) {}
+      location.href = 'index.html';
+    });
+
+  } else {
+    // Logged-out view: Login pill with return param
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
   }
 })();
+
 
 
 // Pretty-print an ISO datetime like "2025-11-15T02:01:00Z"
@@ -642,6 +679,7 @@ const city = inc.city || '—';
 
 </body>
 </html>
+
 
 
 
