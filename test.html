@@ -955,18 +955,29 @@ function archiveMerge(feedId, events, { maxItems = 300 } = {}){
   if (!feedId || !Array.isArray(events) || !events.length) return;
   const map = loadArchiveMap();
   const current = Array.isArray(map[feedId]) ? map[feedId] : [];
-  const seen = new Set(current.map(e => (
-    e.id || `${e.src||''}|${(e.when||'').slice(0,16)}|${(e.title||'').toLowerCase().slice(0,80)}`
-  )));
+
+  // 💡 dedupe by src + trimmed time + title ONLY – ignore id
+  const makeKey = (e) =>
+    `${(e.src || '').toLowerCase()}|${(e.when || '').slice(0,16)}|${(e.title || '')
+      .toLowerCase()
+      .replace(/\s+/g,' ')
+      .slice(0,80)}`;
+
+  const seen = new Set(current.map(makeKey));
 
   for (const ev of events){
-    const key = ev.id || `${ev.src||''}|${(ev.when||'').slice(0,16)}|${(ev.title||'').toLowerCase().slice(0,80)}`;
-    if (!seen.has(key)) { current.push(ev); seen.add(key); }
+    const key = makeKey(ev);
+    if (!seen.has(key)) {
+      current.push(ev);
+      seen.add(key);
+    }
   }
+
   current.sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0));
   map[feedId] = current.slice(0, maxItems);
   saveArchiveMap(map);
 }
+
 function loadArchive(feedId){
   const map = loadArchiveMap();
   return Array.isArray(map[feedId]) ? map[feedId] : [];
