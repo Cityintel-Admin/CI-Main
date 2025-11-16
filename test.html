@@ -1135,6 +1135,42 @@ function fmtWhen(iso) {
 
 
 // -------------------- DETAIL PANEL HANDLING --------------------
+
+function buildIntelSummary(ev, earlierList) {
+  if (!ev) return '';
+
+  const where = ev.city || 'the area';
+  const riskRaw = (ev.risk || '').toLowerCase();
+  const riskLabel =
+    riskRaw === 'high' ? 'High–priority' :
+    riskRaw === 'med'  ? 'Medium–priority' :
+    'Low–priority';
+
+  const whenLabel = ev.when ? fmtWhen(ev.when) : 'recently';
+  const lines = [];
+
+  lines.push(`${riskLabel} incident reported in ${where} at ${whenLabel}.`);
+
+  if (ev.title) {
+    lines.push(`Headline: ${ev.title}`);
+  }
+
+  const desc = (ev.description || '').trim();
+  if (desc) {
+    const trimmed = desc.length > 220 ? desc.slice(0, 217).trimEnd() + '…' : desc;
+    lines.push(trimmed);
+  }
+
+  const earlierCount = Array.isArray(earlierList) ? earlierList.length : 0;
+  if (earlierCount > 0) {
+    lines.push(
+      `Earlier today: ${earlierCount} additional alert${earlierCount > 1 ? 's' : ''} logged in ${where}.`
+    );
+  }
+
+  return lines.join('\n\n');
+}	
+
 const detailPanel   = document.getElementById('detailPanel');
 const detailTitleEl = document.getElementById('detailTitle');
 const detailMetaEl  = document.getElementById('detailMeta');
@@ -1205,47 +1241,48 @@ function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
 
+  const earlier = (relatedList || [])
+    .filter(x => x.city === item.city && x.when !== item.when)
+    .slice(0, 3);
+
   detailTitleEl.textContent = item.title || '[Incident Title]';
-  detailMetaEl.textContent = `${item.city||'Unknown'} • ${item.risk||'n/a'} • ${fmtWhen(item.when)}`;
+  detailMetaEl.textContent = `${item.city || 'Unknown'} • ${item.risk || 'n/a'} • ${fmtWhen(item.when)}`;
 
-  detailSummaryEl.textContent = item.description ||
-                                `Ongoing situation reported in ${item.city||'the area'}.`;
+  // NEW: richer intel-style summary
+  detailSummaryEl.textContent = buildIntelSummary(item, earlier);
 
-  // mock "location / impact"
+  // location / impact (still placeholder until we wire real office locations)
   detailLocationEl.textContent =
-    `Approx area: ${item.city||'unknown'} (exact location may be refining).`;
+    `Approx area: ${item.city || 'unknown'} (exact location may be refining).`;
   detailImpactEl.textContent =
     `Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.`;
 
-	// Mini-map pin (lat/lon come from the event if present)
-if (typeof item.lat === 'number' && typeof item.lon === 'number') {
-  drawMiniMapPin(item.lat, item.lon);
-} else {
-  drawMiniMapPin(null, null);
-}
+  // Mini-map pin (lat/lon come from the event if present)
+  if (typeof item.lat === 'number' && typeof item.lon === 'number') {
+    drawMiniMapPin(item.lat, item.lon);
+  } else {
+    drawMiniMapPin(null, null);
+  }
 
-  // earlier today in same city
- const earlier = (relatedList || [])
-  .filter(x => x.city === item.city && x.when !== item.when)
-  .slice(0, 3);
+  // earlier today in same city (re-use the list we already built)
+  if (earlier.length) {
+    detailEarlierEl.innerHTML =
+      '<ul class="earlier-list">' +
+      earlier.map(x => `<li>${fmtWhen(x.when)} — ${x.title}</li>`).join('') +
+      '</ul>';
+  } else {
+    detailEarlierEl.textContent = 'No earlier incidents recorded.';
+  }
 
-if (earlier.length) {
-  detailEarlierEl.innerHTML =
-    '<ul class="earlier-list">' +
-    earlier.map(x => `<li>${fmtWhen(x.when)} — ${x.title}</li>`).join('') +
-    '</ul>';
-} else {
-  detailEarlierEl.textContent = 'No earlier incidents recorded.';
-}
-
-
-  // incident deep-link -> you could add query params later
+  // incident deep-link -> you already pass this into incident.html
   viewFullBtn.href = 'incident.html';
- 
-  window.__lastDetailItem = item; 
-	
+
+  // keep last item handy for the incident drilldown handover
+  window.__lastDetailItem = item;
+
   detailPanel.classList.add('open');
 }
+
 
 
 	
