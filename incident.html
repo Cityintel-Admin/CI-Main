@@ -570,6 +570,25 @@ const OFFICES = [
   // { id:'berlin-office', name:'Berlin Office', city:'Berlin', lat:52.52, lon:13.4050 }
 ];
 
+
+// Allow overriding default offices via localStorage ("ci_offices")
+function getOffices() {
+  try {
+    const raw = localStorage.getItem('ci_offices');
+    if (!raw) return OFFICES;
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length) {
+      return parsed;
+    }
+  } catch (e) {
+    console.warn('Could not read ci_offices from localStorage', e);
+  }
+  return OFFICES;
+}
+
+
+	
 // Haversine distance in kilometres between two lat/lon points
 function computeDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
@@ -584,39 +603,37 @@ function computeDistanceKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+
+	
 // Single source of truth for the Map / Distance text
 function updateDistancePanel(inc) {
   const distanceEl = document.getElementById('incidentDistance');
-  if (!distanceEl || !inc) return;
+  if (!distanceEl) return;
 
-  // Try city field first, then fall back to the first part of meta line
-  let city = (inc.city || '').trim();
-  if (!city && inc.meta) {
-    city = inc.meta.split('•')[0].trim();
-  }
+  const city = (inc.city || '').trim() || 'Approx area unknown';
 
-  if (!city) {
-    distanceEl.textContent =
-      'Location data for this alert is not configured yet.';
-    return;
-  }
+  // If we don't have any sort of location on the incident, keep it simple
+  const hasLatLon = typeof inc.lat === 'number' && typeof inc.lon === 'number';
+  const coords = hasLatLon ? { lat: inc.lat, lon: inc.lon } : null;
 
-  const coords = CITY_COORDS[city];
+  // If we have no coordinates at all, just show the city + office hint
   if (!coords) {
     distanceEl.textContent =
-      `Approx area: ${city}. Distance to offices is not configured yet.`;
+      `Approx area: ${city}. Nearest office will appear here when coordinates are available.`;
     return;
   }
 
-  if (!Array.isArray(OFFICES) || !OFFICES.length) {
+  const offices = getOffices();
+
+  if (!Array.isArray(offices) || !offices.length) {
     distanceEl.textContent =
       `Approx area: ${city}. Office locations have not been set up yet.`;
     return;
   }
 
-  // Find nearest office
+  // Find nearest office with valid lat/lon
   let best = null;
-  for (const office of OFFICES) {
+  for (const office of offices) {
     if (typeof office.lat !== 'number' || typeof office.lon !== 'number') continue;
     const km = computeDistanceKm(coords.lat, coords.lon, office.lat, office.lon);
     if (!best || km < best.km) {
@@ -637,7 +654,6 @@ function updateDistancePanel(inc) {
     `Approx area: ${city}. Nearest office: ${best.office.name} — ` +
     `about ${kmStr} km (${miStr} mi) away.`;
 }
-
 
 	
 /* ---------- read incident from sessionStorage ---------- */
@@ -814,6 +830,7 @@ function renderRelatedActivity(inc) {
 
 </body>
 </html>
+
 
 
 
