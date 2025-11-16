@@ -444,6 +444,48 @@
 
     </div>
 
+
+
+      <!-- BRIEFING BUILDER -->
+      <section class="card" style="grid-column: span 5;">
+        <h3>Briefing builder</h3>
+        <p style="font-size:12px;color:var(--muted);margin-top:4px;">
+          Use this pad to assemble notes across multiple incidents, then copy into an email or report.
+        </p>
+
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button id="briefAddBtn" type="button"
+                  style="background:#D01616;border:1px solid #D01616;border-radius:999px;
+                         padding:6px 10px;font-size:12px;color:#fff;font-weight:600;cursor:pointer;">
+            + Add this incident
+          </button>
+
+          <button id="briefClearBtn" type="button"
+                  style="background:#1a1c20;border:1px solid #383b42;border-radius:999px;
+                         padding:6px 10px;font-size:12px;color:#9ca3af;cursor:pointer;">
+            Clear pad
+          </button>
+
+          <button id="briefCopyBtn" type="button"
+                  style="background:#111827;border:1px solid #4b5563;border-radius:999px;
+                         padding:6px 10px;font-size:12px;color:#e5e7eb;cursor:pointer;">
+            Copy to clipboard
+          </button>
+        </div>
+
+        <textarea id="briefPad"
+                  style="margin-top:10px;width:100%;min-height:120px;resize:vertical;
+                         background:#050810;border:1px solid #2f3540;border-radius:10px;
+                         color:#e5e7eb;padding:10px 12px;font-size:12px;line-height:1.5;">
+        </textarea>
+
+        <div id="briefStatus"
+             style="margin-top:6px;font-size:11px;color:#9ca3af;">
+          Draft is stored for this tab only. You can switch incidents and keep adding lines.
+        </div>
+      </section>
+
+	  
     <div class="back-row">
       <a class="back-link" href="live-feed.html">← Back to My Live Feed</a>
       <a class="back-link" href="index.html">← Back to Dashboard</a>
@@ -697,10 +739,16 @@ function updateDistancePanel(inc) {
     all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
   } catch (e) {}
   const inc = all[incId];
-  if (!inc) {
-    noData();
+  if (!inc){
+    summaryEl.textContent = 'Incident details not found or have expired.';
+    titleEl.textContent   = 'Incident unavailable';
+    cityMeta.textContent  = '—';
     return;
   }
+
+  // expose for other helpers
+  window.__incident = inc;
+  initBriefPad(inc);
 
   // We stored flattened strings in live-feed
   const city = inc.city || '—';
@@ -823,14 +871,102 @@ function renderRelatedActivity(inc) {
 
     box.appendChild(div);
   });
-}
-	
+}	
 })();
 
+
+// ---------- briefing pad helpers ----------
+function buildBriefLine(inc) {
+  if (!inc) return '';
+  const when = inc.when || '';
+  const city = inc.city || 'Unknown location';
+  const risk = (inc.risk || '').toUpperCase() || 'N/A';
+  const title = inc.title || 'Untitled incident';
+  const src = inc.src || '';
+  const distanceText = (document.getElementById('incidentDistance')?.textContent || '').trim();
+  const url = inc.url || '';
+
+  let line = `• [${risk}] ${city} — ${title}\n  Time: ${when}\n`;
+  if (distanceText && distanceText !== '—') {
+    line += `  Distance: ${distanceText}\n`;
+  }
+  if (src) line += `  Source: ${src}\n`;
+  if (url) line += `  Link: ${url}\n`;
+  line += '\n';
+  return line;
+}
+
+function initBriefPad(incident) {
+  const pad      = document.getElementById('briefPad');
+  const addBtn   = document.getElementById('briefAddBtn');
+  const clearBtn = document.getElementById('briefClearBtn');
+  const copyBtn  = document.getElementById('briefCopyBtn');
+  const status   = document.getElementById('briefStatus');
+
+  if (!pad || !addBtn) return;
+
+  // restore existing draft for this tab
+  try {
+    const saved = sessionStorage.getItem('ci_incident_brief_pad');
+    if (saved) pad.value = saved;
+  } catch(e){}
+
+  function savePad() {
+    try {
+      sessionStorage.setItem('ci_incident_brief_pad', pad.value || '');
+    } catch(e){}
+  }
+
+  addBtn.addEventListener('click', () => {
+    const inc = incident || window.__incident || null;
+    const line = buildBriefLine(inc);
+    if (!line) return;
+
+    if (pad.value && !pad.value.endsWith('\n')) {
+      pad.value += '\n';
+    }
+    pad.value += line;
+    savePad();
+    if (status) {
+      status.textContent = 'Added this incident to the draft.';
+    }
+  });
+
+  pad.addEventListener('input', savePad);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (!confirm('Clear briefing pad for this tab?')) return;
+      pad.value = '';
+      savePad();
+      if (status) status.textContent = 'Pad cleared.';
+    });
+  }
+
+  if (copyBtn && navigator.clipboard) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pad.value || '');
+        if (status) {
+          status.textContent = 'Copied — paste into your email or report.';
+        }
+      } catch(e) {
+        if (status) {
+          status.textContent = 'Copy failed — you can still select and copy manually.';
+        }
+      }
+    });
+  }
+}
+
+
+
+	
 </script>
 
 </body>
 </html>
+
 
 
 
