@@ -466,6 +466,77 @@
   margin-bottom: 4px;
 }
 
+
+.event-group {
+  background: #1a1a1a;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #2a2a2a;
+}
+
+.eg-header {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  align-items: center;
+}
+
+.eg-title {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.eg-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #333;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.eg-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.eg-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  opacity: 0.85;
+  display: flex;
+  gap: 12px;
+}
+
+.eg-body {
+  margin-top: 12px;
+  padding-left: 8px;
+  border-left: 2px solid #333;
+}
+
+.eg-item {
+  margin-bottom: 9px;
+}
+
+.eg-item-when {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.eg-item-text {
+  font-size: 13px;
+  line-height: 1.3;
+}
+	  
 	  
     .btn-full-incident{
       background:#D01616;
@@ -1349,6 +1420,91 @@ async function refreshSingleFeedCard(cardEl, feed){
   }
 }
 
+
+	
+
+	// -------------------------------------------------------------
+// GROUPING ENGINE — collapses similar alerts into update threads
+// -------------------------------------------------------------
+function groupEvents(events) {
+
+  // helper: normalise titles for fuzzy-matching
+  const norm = (s='') =>
+    s.toLowerCase()
+     .replace(/[^a-z0-9 ]+/g, '')
+     .replace(/\s+/g, ' ')
+     .trim();
+
+  // helper: check if two timestamps are within 60 minutes
+  const within60 = (a, b) => {
+    try {
+      const aa = new Date(a).getTime();
+      const bb = new Date(b).getTime();
+      return Math.abs(aa - bb) <= 3600_000; // 1 hour
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const groups = [];
+
+  events.forEach(ev => {
+    const nTitle = norm(ev.title || ev.summary || ev.description || '');
+
+    let matched = null;
+
+    // try to match with existing groups
+    for (const g of groups) {
+      if (
+        g.city === ev.city &&                  // same city
+        g.category === ev.category &&          // same category  
+        within60(g.latestWhen, ev.when) &&     // close in time
+        (norm(g.baseTitle).includes(nTitle) || // fuzzy title match
+         nTitle.includes(norm(g.baseTitle)))
+      ) {
+        matched = g;
+        break;
+      }
+    }
+
+    if (!matched) {
+      // make a new group
+      matched = {
+        city: ev.city,
+        category: ev.category,
+        events: [],
+        baseTitle: ev.title || ev.summary || '',
+        latestWhen: ev.when
+      };
+      groups.push(matched);
+    }
+
+    matched.events.push(ev);
+
+    // update latest timestamp
+    if (new Date(ev.when) > new Date(matched.latestWhen)) {
+      matched.latestWhen = ev.when;
+      matched.baseTitle = ev.title || ev.summary || matched.baseTitle;
+    }
+  });
+
+  // sort groups newest → oldest
+  groups.sort((a, b) =>
+    new Date(b.latestWhen) - new Date(a.latestWhen)
+  );
+
+  // inside each group, sort events newest → oldest
+  groups.forEach(g =>
+    g.events.sort((a, b) =>
+      new Date(b.when) - new Date(a.when)
+    )
+  );
+
+  return groups;
+}
+
+
+	
 // Put the events into an existing card (no refetch here)
 const MAX_VISIBLE_EVENTS = 20;
 
@@ -1428,43 +1584,72 @@ if (!displayEvents.length) {
   }
 
   // --- Body: events list / empty state --------------------------------
-  if (!renderList.length) {
-    const placesLabel = (feed.places || []).join(', ') || 'this area';
-    if (feed.useLive) {
-      bodyEl.innerHTML = `
-        <div style="color:var(--muted);font-size:12px;">
-          No recent items in ${placesLabel}. 
-          <span style="opacity:.8">Listening for live updates…</span>
-        </div>`;
-    } else {
-      bodyEl.innerHTML = `
-        <div style="color:var(--muted);font-size:12px;">
-          No recent items in ${placesLabel}.
-        </div>`;
-    }
-  } else {
-    bodyEl.innerHTML = '';
-    const topCity = (feed.places && feed.places[0]) || 'Unknown';
-    renderList.slice(0, 8).forEach(ev => {
-      const itemEl = document.createElement('div');
-      itemEl.className = 'feed-item';
-      itemEl.style.borderLeftColor =
-        ev.risk === 'high' ? '#ff5a5f' :
-        ev.risk === 'med'  ? '#f0b429' :
-                             '#33c48d';
-      itemEl.innerHTML = `
-        <div class="feed-title-row">
-          <div>${ev.city || topCity} — ${ev.title}</div>
-          <div class="feed-risk ${riskClass(ev.risk)}">${ev.risk}</div>
+
+// ---- NEW: GROUP FIRST ----
+const groups = groupEvents(renderList);
+
+// take only the newest 8 grouped threads
+groups.slice(0, 8).forEach(g => {
+
+  const first = g.events[0];      // newest event in that group
+  const updates = g.events.length - 1;
+
+  // risk colour
+  const risk = (first.risk || '').toLowerCase();
+  const riskColor =
+    risk === 'high' ? '#b21f1f' :
+    risk === 'medium' ? '#d97706' :
+    risk === 'low' ? '#15803d' :
+    '#666';
+
+  const cat = first.category || first.type || 'info';
+  const whenNice = fmtWhen(first.when);
+
+  // create group container
+  const groupEl = document.createElement('div');
+  groupEl.className = 'event-group';
+
+  groupEl.innerHTML = `
+    <div class="eg-header">
+      <div class="eg-title">
+        <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
+        ${first.title || first.summary || '(no title)'}
+      </div>
+      <div class="eg-meta">
+        <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
+        <span class="eg-arrow">▼</span>
+      </div>
+    </div>
+
+    <div class="eg-sub">
+      <div class="eg-risk" style="color:${riskColor}">${risk || 'n/a'}</div>
+      <div class="eg-when">${whenNice}</div>
+    </div>
+
+    <div class="eg-body" style="display:none;">
+      ${g.events.map(ev => `
+        <div class="eg-item">
+          <div class="eg-item-when">${fmtWhen(ev.when)}</div>
+          <div class="eg-item-text">
+            ${ev.summary || ev.description || ev.title}
+          </div>
         </div>
-        <div class="feed-meta">
-          <span>${fmtWhen(ev.when)}</span>
-          <span>${(ev.risk||'').toUpperCase()} priority</span>
-        </div>
-      `;
-      itemEl.addEventListener('click', () => openDetailPanel(ev, renderList));
-      bodyEl.appendChild(itemEl);
-    });
+      `).join('')}
+    </div>
+  `;
+
+  // collapse behaviour
+  groupEl.querySelector('.eg-header').addEventListener('click', () => {
+    const body = groupEl.querySelector('.eg-body');
+    const arrow = groupEl.querySelector('.eg-arrow');
+    const open = body.style.display === 'block';
+    body.style.display = open ? 'none' : 'block';
+    arrow.textContent = open ? '▼' : '▲';
+  });
+
+  list.appendChild(groupEl);
+});
+	
   }
 
   // --- Footer: source label + timestamp -------------------------------
