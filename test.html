@@ -864,6 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // -------------------- FEED STORAGE / STATE --------------------
 const STORAGE_KEY = 'ci_live_feeds_v1';
 const FEED_EVENTS_KEY = 'ci_live_feed_events_v1';
+const HISTORY_WINDOWS = [12, 24, 48, 72];                    // For "Load earlier" – how far back we go on each click (in hours)
 
 
 // per-feed UI cache (so cards can show stuff before network finishes)
@@ -1387,7 +1388,7 @@ if (!displayEvents.length) {
 } else {
   bodyEl.innerHTML = '';
   const topCity = (feed.places && feed.places[0]) || 'Unknown';
-  displayEvents.slice(0,8).forEach(ev => {
+  displayEvents.slice(0,20).forEach(ev => {
   });
 }
 
@@ -1721,19 +1722,16 @@ const citiesLabel = prettyName ?? (feed.places || []).join(', ');
 
       <div class="feed-body"></div>
 
-      <div class="feed-footer">
+ <div class="feed-footer">
   <div class="src">${feed.useLive ? 'source: live stream' : 'source: simulated source'}</div>
   <div style="display:flex;gap:10px;align-items:center;">
     <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
-    <select class="earlier" data-feedid="${feed.id}" style="background:#1f2024;border:1px solid var(--g600);border-radius:6px;color:#e9edf2;font-size:11px;padding:4px 6px;">
-      <option value="">Load earlier…</option>
-      <option value="720">Last 12h</option>
-      <option value="1440">Last 24h</option>
-      <option value="2880">Last 48h</option>
-      <option value="4320">Last 72h</option>
-    </select>
+    <button class="btn-ghost btn-earlier" data-feedid="${feed.id}" type="button">
+      Load earlier…
+    </button>
   </div>
-</div> `;
+</div>
+
 
     // refresh link
     card.querySelector('.refresh').addEventListener('click', ()=>{
@@ -1751,7 +1749,7 @@ const kwEl = card.querySelector('.feed-kw');
 if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
 
 
-    // delete feed
+        // delete feed
     card.querySelector('.btn-del-feed').addEventListener('click', ()=>{
       if (!confirm('Remove this feed?')) return;
       const updated = loadFeeds().filter(f => f.id !== feed.id);
@@ -1759,39 +1757,46 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
       renderFeeds();
     });
 
+    // "Load earlier" button – step through 12h → 24h → 48h → 72h for this feed
+    const earlierBtn = card.querySelector('.btn-earlier');
+    if (earlierBtn) {
+      earlierBtn.addEventListener('click', async () => {
+        const step = card.__historyStep || 0;
+        if (step >= HISTORY_WINDOWS.length) {
+          alert('No more earlier history available (up to last 72h).');
+          return;
+        }
+        const hours = HISTORY_WINDOWS[step];
+        card.__historyStep = step + 1;  // next click will go further back
 
-// "Load earlier" selector
-const earlierSel = card.querySelector('.earlier');
-if (earlierSel){
-  earlierSel.addEventListener('change', async () => {
-const mins = Number(earlierSel.value || 0);
-if (!mins) return;
-const hours = Math.max(1, Math.round(mins / 60)); // 720 -> 12, 1440 -> 24, etc.
+        const params = new URLSearchParams();
+        if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+        if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
+        if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
+        params.set('provider', 'newsdata');
+        params.set('window', String(Math.min(72, hours)));
 
-// build the same filters as before
-const params = new URLSearchParams();
-if (feed.places?.length)   params.set('cities',   feed.places.join(','));
-if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
-if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
-params.set('provider', 'newsdata');
+        const base = 'https://api.cityintelapi.com';
+        const url  = `${base}/api/live-news?${params.toString()}`;
 
-// NEW: explicit window in hours
-params.set('window', String(Math.min(72, hours)));
+        try {
+          const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          const data = await res.json().catch(() => ({}));
+          const events = Array.isArray(data.events) ? data.events : [];
 
-    const base = 'https://api.cityintelapi.com';
-    const url  = `${base}/api/live-news?${params.toString()}`;
-    try {
-      const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const data = await res.json().catch(()=>({}));
-      const events = Array.isArray(data.events) ? data.events : [];
-      // merge into archive and render from archive
-      archiveMerge(feed.id, events);
-      const merged = loadArchive(feed.id);
-      renderEventsIntoCard(card, merged, feed); // shows many more items
-    } catch {}
-    earlierSel.value = '';
-  });
-}
+          // merge into archive and then render full archive timeline
+          archiveMerge(feed.id, events);
+          const merged = loadArchive(feed.id);
+          renderEventsIntoCard(card, merged, feed);
+        } catch (e) {
+          console.error('load earlier failed', e);
+        }
+      });
+    }
+
+
+
+
 	  
 
     grid.appendChild(card);
