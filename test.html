@@ -1571,8 +1571,7 @@ const MAX_VISIBLE_EVENTS = 20;
 
 function renderEventsIntoCard(cardEl, events, feed) {
   const bodyEl = cardEl.querySelector('.feed-body');
-  if (!bodyEl) return;
-  const list = bodyEl;
+  const list   = bodyEl;
 
   // Fallback to cached events if nothing new came in
   let listEvents = Array.isArray(events) ? events : [];
@@ -1590,23 +1589,42 @@ function renderEventsIntoCard(cardEl, events, feed) {
     archiveMerge(feed.id, listEvents);
   }
 
-  // For rendering, prefer the 7-day archive if present
+  // Prefer 7-day archive if present
   const archived   = loadArchive(feed.id);
   const renderList = (archived && archived.length) ? archived : listEvents;
 
+  // Keep it “fresh” by default: prefer last 3h if available
+  const now       = Date.now();
+  const MAX_AGE_MS = 3 * 60 * 60 * 1000;
+  const fresh = renderList.filter(ev => {
+    const t = Date.parse(ev.when || '');
+    return !isNaN(t) && (now - t <= MAX_AGE_MS);
+  });
+
+  const displayEvents = fresh.length ? fresh : renderList;
+
+  // Track some stats for the refresh scheduler
+  cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
+  cardEl.__state.lastLen = displayEvents.length;
+  if (displayEvents.some(e => (e.risk || '').toLowerCase() === 'high')) {
+    cardEl.__state.lastHighAt = Date.now();
+  }
+
   bodyEl.innerHTML = '';
 
-  // --- Body: events list / empty state --------------------------------
-  if (!renderList.length) {
-    bodyEl.innerHTML =
-      '<div style="font-size:12px;color:var(--muted);opacity:.8;">No recent alerts for this feed.</div>';
+  if (!displayEvents.length) {
+    bodyEl.innerHTML = `
+      <div style="font-size:12px;color:var(--muted);opacity:.8;">
+        No alerts in the selected window.
+      </div>
+    `;
   } else {
-    // ---- NEW: GROUP FIRST ----
-    const groups = groupEvents(renderList);
+    // ---------- GROUPED VIEW ----------
+    const groups = groupEvents(displayEvents);
 
     // take only the newest 8 grouped threads
     groups.slice(0, 8).forEach(g => {
-      const first   = g.events[0];                 // newest event in that group
+      const first   = g.events[0];       // newest in the group
       const updates = g.events.length - 1;
 
       const risk = (first.risk || '').toLowerCase();
@@ -1616,7 +1634,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
         risk === 'low'    ? '#15803d' :
                             '#666';
 
-      const cat      = first.category || first.type || 'info';
+      const cat      = first.category || first.type || 'i';
       const whenNice = fmtWhen(first.when);
 
       const groupEl  = document.createElement('div');
@@ -1652,37 +1670,43 @@ function renderEventsIntoCard(cardEl, events, feed) {
         </div>
       `;
 
-      // collapse behaviour
-      // collapse behaviour + open panel on first expand
-  groupEl.querySelector('.eg-header').addEventListener('click', () => {
-    const body  = groupEl.querySelector('.eg-body');
-    const arrow = groupEl.querySelector('.eg-arrow');
-    const open  = body.style.display === 'block';
+      // collapse / expand behaviour on header
+      const headerEl = groupEl.querySelector('.eg-header');
+      headerEl.addEventListener('click', () => {
+        const body  = groupEl.querySelector('.eg-body');
+        const arrow = groupEl.querySelector('.eg-arrow');
+        const open  = body.style.display === 'block';
+        body.style.display = open ? 'none' : 'block';
+        arrow.textContent  = open ? '▼' : '▲';
+      });
 
-    body.style.display = open ? 'none' : 'block';
-    arrow.textContent  = open ? '▼' : '▲';
+      // CLICK ANY UPDATE → open side detail panel
+      const itemNodes = groupEl.querySelectorAll('.eg-item');
+      g.events.forEach((ev, idx) => {
+        const node = itemNodes[idx];
+        if (!node) return;
+        node.addEventListener('click', (e) => {
+          e.stopPropagation();               // don’t toggle the collapse
+          openDetailPanel(ev, g.events);     // show slide-out with this alert
+        });
+      });
 
-    // when we FIRST open the thread, also show the side panel
-    if (!open && first) {
-      openDetailPanel(first, g.events);
-    }
-  });
-
-  // clicking an individual update opens the side detail panel too
-  const itemEls = groupEl.querySelectorAll('.eg-item');
-  itemEls.forEach((el, idx) => {
-    const ev = g.events[idx];
-    if (!ev) return;
-
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();          // don’t toggle collapse at the same time
-      openDetailPanel(ev, g.events);
+      list.appendChild(groupEl);
     });
-  });
-
-  list.appendChild(groupEl);
-});
   }
+
+  // --- Footer: source label + timestamp -------------------------------
+  const srcEl = cardEl.querySelector('.feed-footer .src');
+  if (srcEl) {
+    const usedFallback = feed.useLive && !listEvents.length;
+    const base = feed.useLive
+      ? (usedFallback ? 'source: live stream (fallback active)' : 'source: live stream')
+      : 'source: simulated source';
+    const time = new Date().toLocaleTimeString();
+    srcEl.textContent = `${base} • updated ${time}`;
+  }
+}
+
 
   // --- Footer: source label + timestamp -------------------------------
   const srcEl = cardEl.querySelector('.feed-footer .src');
