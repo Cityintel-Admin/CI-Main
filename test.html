@@ -1565,12 +1565,13 @@ function getAgeClass(when) {
 
 
 	
-	
+
 // Put the events into an existing card (no refetch here)
 const MAX_VISIBLE_EVENTS = 20;
 
-function renderEventsIntoCard(cardEl, events, feed){
+function renderEventsIntoCard(cardEl, events, feed) {
   const bodyEl = cardEl.querySelector('.feed-body');
+  if (!bodyEl) return;
   const list = bodyEl;
 
   // Fallback to cached events if nothing new came in
@@ -1590,76 +1591,78 @@ function renderEventsIntoCard(cardEl, events, feed){
   }
 
   // For rendering, prefer the 7-day archive if present
+  const archived   = loadArchive(feed.id);
+  const renderList = (archived && archived.length) ? archived : listEvents;
 
+  bodyEl.innerHTML = '';
 
   // --- Body: events list / empty state --------------------------------
+  if (!renderList.length) {
+    bodyEl.innerHTML =
+      '<div style="font-size:12px;color:var(--muted);opacity:.8;">No recent alerts for this feed.</div>';
+  } else {
+    // ---- NEW: GROUP FIRST ----
+    const groups = groupEvents(renderList);
 
-// ---- NEW: GROUP FIRST ----
-const groups = groupEvents(renderList);
+    // take only the newest 8 grouped threads
+    groups.slice(0, 8).forEach(g => {
+      const first   = g.events[0];                 // newest event in that group
+      const updates = g.events.length - 1;
 
-// take only the newest 8 grouped threads
-groups.slice(0, 8).forEach(g => {
+      const risk = (first.risk || '').toLowerCase();
+      const riskColor =
+        risk === 'high'   ? '#b21f1f' :
+        risk === 'medium' ? '#d97706' :
+        risk === 'low'    ? '#15803d' :
+                            '#666';
 
-  const first = g.events[0];      // newest event in that group
-  const updates = g.events.length - 1;
+      const cat      = first.category || first.type || 'info';
+      const whenNice = fmtWhen(first.when);
 
-  // risk colour
-  const risk = (first.risk || '').toLowerCase();
-  const riskColor =
-    risk === 'high' ? '#b21f1f' :
-    risk === 'medium' ? '#d97706' :
-    risk === 'low' ? '#15803d' :
-    '#666';
+      const groupEl  = document.createElement('div');
+      const ageClass = getAgeClass(first.when);
+      groupEl.className = `event-group ${ageClass}`;
 
-  const cat = first.category || first.type || 'info';
-  const whenNice = fmtWhen(first.when);
-
-  // create group container
-  const groupEl = document.createElement('div');
-  const ageClass = getAgeClass(first.when);
-  groupEl.className = `event-group ${ageClass}`;
-
-  groupEl.innerHTML = `
-    <div class="eg-header">
-      <div class="eg-title">
-        <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
-        ${first.title || first.summary || '(no title)'}
-      </div>
-      <div class="eg-meta">
-        <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
-        <span class="eg-arrow">▼</span>
-      </div>
-    </div>
-
-    <div class="eg-sub">
-      <div class="eg-risk" style="color:${riskColor}">${risk || 'n/a'}</div>
-      <div class="eg-when">${whenNice}</div>
-    </div>
-
-    <div class="eg-body" style="display:none;">
-      ${g.events.map(ev => `
-        <div class="eg-item">
-          <div class="eg-item-when">${fmtWhen(ev.when)}</div>
-          <div class="eg-item-text">
-            ${ev.summary || ev.description || ev.title}
+      groupEl.innerHTML = `
+        <div class="eg-header">
+          <div class="eg-title">
+            <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
+            ${first.title || first.summary || '(no title)'}
+          </div>
+          <div class="eg-meta">
+            <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
+            <span class="eg-arrow">▼</span>
           </div>
         </div>
-      `).join('')}
-    </div>
-  `;
 
-  // collapse behaviour
-  groupEl.querySelector('.eg-header').addEventListener('click', () => {
-    const body = groupEl.querySelector('.eg-body');
-    const arrow = groupEl.querySelector('.eg-arrow');
-    const open = body.style.display === 'block';
-    body.style.display = open ? 'none' : 'block';
-    arrow.textContent = open ? '▼' : '▲';
-  });
+        <div class="eg-sub">
+          <div class="eg-risk" style="color:${riskColor}">${risk || 'n/a'}</div>
+          <div class="eg-when">${whenNice}</div>
+        </div>
 
-  list.appendChild(groupEl);
-});
-	
+        <div class="eg-body" style="display:none;">
+          ${g.events.map(ev => `
+            <div class="eg-item">
+              <div class="eg-item-when">${fmtWhen(ev.when)}</div>
+              <div class="eg-item-text">
+                ${ev.summary || ev.description || ev.title}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // collapse behaviour
+      groupEl.querySelector('.eg-header').addEventListener('click', () => {
+        const body  = groupEl.querySelector('.eg-body');
+        const arrow = groupEl.querySelector('.eg-arrow');
+        const open  = body.style.display === 'block';
+        body.style.display = open ? 'none' : 'block';
+        arrow.textContent  = open ? '▼' : '▲';
+      });
+
+      list.appendChild(groupEl);
+    });
   }
 
   // --- Footer: source label + timestamp -------------------------------
@@ -1672,7 +1675,9 @@ groups.slice(0, 8).forEach(g => {
     const time = new Date().toLocaleTimeString();
     srcEl.textContent = `${base} • updated ${time}`;
   }
+}
 
+	
 
 // Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
 function scheduleNextRefresh(cardEl, feed){
