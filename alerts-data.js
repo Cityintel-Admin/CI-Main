@@ -17,7 +17,66 @@ window.alertsData =[
 
 
 
-    
+    {
+  title: "World AIDS Day die-in vigil",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2025-12-01T08:00:00",
+  source: "https://allevents.in/london/world-aids-day-die-in-vigil-2025/200029215457748",
+  summary: "ACT UP London organises a World AIDS Day ‘die-in’ at Trafalgar Square, framed explicitly as a living act of resistance against the ongoing AIDS crisis and cuts to HIV services. Peaceful but visually impactful protest format (lying in the road/square with placards). Traffic disruption depends on policing and crowd size, but central London visibility is high."
+},
+{
+  title: "Netherlands – national higher education strike",
+  city: "Amsterdam",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "high",
+  time: "2025-12-09T10:00:00",
+  source: "https://www.resource-online.nl/index.php/2025/10/28/trade-unions-announce-new-strike/?lang=en",
+  summary: "Dutch higher-education unions call a new national strike over funding cuts and long-term investment, aiming to ‘bring higher education to a standstill’ for the day. Main mobilisation is flagged for Amsterdam (exact rally point TBD). Expect widespread university closures, pickets and a large, union-organised march; time is a morning placeholder as the action is expected to run across the working day."
+},
+{
+  title: "ICE OUT – New York City Council rally",
+  city: "New York City",
+  country: "United States",
+  continent: "North America",
+  risk: "medium",
+  time: "2025-12-08T10:00:00",
+  source: "https://www.nyclu.org/event/ice-out-of-ny-city-council-rally",
+  summary: "NYCLU and allied immigrant-rights groups rally outside City Hall Park while the City Council holds a hearing on the NYC Trust Act and restrictions on ICE presence at Rikers. Organisers call for banners and signs; crowd size likely in the hundreds to low thousands. Street closures immediately around City Hall Park are likely; broader city-wide disruption limited."
+},
+{
+  title: "Portugal – national general strike",
+  city: "Lisbon",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "high",
+  time: "2025-12-11T09:00:00",
+  source: "https://www.idealista.pt/en/news/lifestyle-in-portugal/2025/11/13/72595-general-strike-in-portugal-on-11-december-what-to-know",
+  summary: "Joint UGT–CGTP national general strike against labour-code reforms and erosion of purchasing power. Transport (metro, rail, ferries), schools, public administration and municipal services across Portugal are expected to be heavily disrupted, with major demos in Lisbon and Porto. Time is a morning placeholder: unions frame this as an all-day stoppage rather than a single march window."
+},
+{
+  title: "Italy – CGIL general strike over 2026–28 budget",
+  city: "Rome",
+  country: "Italy",
+  continent: "Europe",
+  risk: "high",
+  time: "2025-12-12T09:00:00",
+  source: "https://www.reuters.com/business/world-at-work/italys-largest-union-calls-general-strike-december-12-over-budget-plans-2025-11-07/",
+  summary: "Italy’s largest union, CGIL, calls a nationwide general strike against the Meloni government’s budget, criticising cuts to public services and increased defence spending. Rallies are expected in multiple cities, with Rome as the political focal point. Anticipate reduced services in transport and public sector, large marches and strong media attention; time is a generic morning start to represent an all-day mobilisation."
+},
+{
+  title: "Freedom of religion march – Jantar Mantar",
+  city: "New Delhi",
+  country: "India",
+  continent: "Asia",
+  risk: "medium",
+  time: "2025-12-10T09:30:00",
+  source: "https://www.instagram.com/p/DOl7oeskg7a/",
+  summary: "Christian Peace Mission-organised ‘Freedom of Religion’ march at Jantar Mantar, New Delhi, scheduled from 09:30 to 13:00 on UN Human Rights Day. Faith-based civil-rights framing with placards and speeches; crowd size uncertain but Jantar Mantar is a standard protest corridor, so police presence and some localised traffic impact are likely."
+},    
 
 
 {
@@ -9567,6 +9626,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
