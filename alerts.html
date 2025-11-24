@@ -162,59 +162,151 @@
     const here=location.pathname.split("/").pop()||"index.html";
     document.querySelectorAll("aside.sidebar nav a").forEach(a=>{if(a.getAttribute("href")===here)a.classList.add("active")});
   </script>
-<script src="alerts-data.js"></script>  <!-- 1) data first -->
-<script>
 
-  // 2) renderer after data
+	
+<script src="alerts-data.js"></script>  <!-- 1) data first -->
+
+	
+<script>
   (function renderAlerts(){
     const feed = document.getElementById('alertsFeed');
-    if(!feed){ return; }
+    if (!feed) return;
 
-    // Remove any leftover demo content
     feed.innerHTML = "";
 
-    // Defensive: accept "high"/"medium" *or* "high"/"med"
-    const normalize = r => (r||"").toLowerCase()
-      .replace("medium","med")
-      .replace("medium risk","med")
-      .replace("high risk","high");
+    // --- READ FILTER FROM BRIEF PAGE (if any) ---
+    function readFilter(){
+      try {
+        const raw = sessionStorage.getItem('ci_alerts_filter');
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+    const filter = readFilter();
+    // one-shot: don’t keep applying this if user comes back manually
+    sessionStorage.removeItem('ci_alerts_filter');
 
-     const now = new Date();
+    // --- HELPERS ---
+    const normalizeRisk = r => (r || "")
+      .toLowerCase()
+      .replace("medium risk", "med")
+      .replace("medium", "med")
+      .replace("high risk", "high")
+      .trim();
 
-    const alerts = (window.alertsData||[])
-      .map(a => ({...a, risk: normalize(a.risk), _dt: new Date(a.time)}))
-      .filter(a => a.risk === "high" || a.risk === "med")
-      .filter(a => a._dt && a._dt >= now) // only future/upcoming
-      .sort((a,b) => a._dt - b._dt);       // soonest first
+    const now = new Date();
 
-    if(alerts.length === 0){
-      feed.innerHTML = `<p style="color:#8e97a3">No medium/high alerts available.</p>`;
+    let alerts = (window.alertsData || [])
+      .map(a => ({
+        ...a,
+        risk: normalizeRisk(a.risk),
+        _dt: a.time ? new Date(a.time) : null
+      }))
+      .filter(a => a._dt); // only items with a valid date
+
+    // ---- APPLY FILTERS FROM BRIEF ----
+    if (filter) {
+
+      // Filter by risk bar click (High / Medium / Low)
+      if (filter.type === 'risk' && filter.risk) {
+        const r = normalizeRisk(filter.risk);
+        alerts = alerts.filter(a => a.risk === r);
+      }
+
+      // Filter by region click (Regional Outlook)
+      if (filter.type === 'region') {
+        // If we passed explicit cities from brief, use those
+        if (Array.isArray(filter.cities) && filter.cities.length) {
+          const citySet = new Set(
+            filter.cities.map(c => String(c).toLowerCase())
+          );
+          alerts = alerts.filter(a =>
+            citySet.has(String(a.city || '').toLowerCase())
+          );
+        } else if (filter.region) {
+          // Otherwise try a generic region/continent match if present on data
+          const target = String(filter.region).toLowerCase();
+          alerts = alerts.filter(a =>
+            String(a.region || a.continent || '').toLowerCase() === target
+          );
+        }
+      }
+
+      // (Optional future: KPI time-window filters could go here)
+      // e.g. filter.type === 'window' with filter.windowHours, etc.
+    }
+
+    // If NO explicit risk filter, keep your original behaviour:
+    // only upcoming HIGH & MEDIUM alerts by default
+    if (!filter || filter.type !== 'risk') {
+      alerts = alerts.filter(a => a.risk === 'high' || a.risk === 'med');
+    }
+
+    // Still treat "upcoming" as future-dated
+    alerts = alerts
+      .filter(a => a._dt >= now)
+      .sort((a, b) => a._dt - b._dt);
+
+    // --- EMPTY STATE ---
+    if (!alerts.length) {
+      const msg = filter
+        ? `No alerts match the selected filter.`
+        : `No medium/high alerts available.`;
+      feed.innerHTML = `<p style="color:#8e97a3">${msg}</p>`;
       return;
     }
 
-    // Risk → class
-    const riskClass = r => r === "high" ? "high" : "med";
+    // --- OPTIONAL: SHOW CURRENT FILTER LABEL ---
+    if (filter) {
+      const badge = document.createElement('div');
+      badge.style.cssText =
+        'margin-bottom:8px;font-size:12px;color:#8e97a3;padding:4px 8px;' +
+        'border-radius:8px;background:#111214;border:1px solid #24272c;';
+      let label = 'Filtered view';
 
-    // Build cards
+      if (filter.type === 'risk' && filter.risk) {
+        label = `Filtered view — risk: ${filter.risk}`;
+      } else if (filter.type === 'region' && filter.region) {
+        label = `Filtered view — region: ${filter.region}`;
+      }
+      badge.textContent = label;
+      feed.appendChild(badge);
+    }
+
+    // --- RENDER CARDS ---
+    const riskClass = r =>
+      r === 'high' ? 'high' :
+      r === 'med'  ? 'med'  : '';  // low / others fall back to base styling
+
     alerts.forEach(a => {
-      const pretty = a._dt.toLocaleString('en-GB', { 
-        timeZone: 'Europe/London', 
-        day:'2-digit', month:'short', year:'numeric',
-        hour:'2-digit', minute:'2-digit'
+      const pretty = a._dt.toLocaleString('en-GB', {
+        timeZone: 'Europe/London',
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
       });
 
       const card = document.createElement('div');
       card.className = `alert ${riskClass(a.risk)}`;
+      const riskLabel =
+        a.risk === 'high' ? 'High' :
+        a.risk === 'med'  ? 'Medium' :
+        'Low';
+
       card.innerHTML = `
-        <strong>${a.city} — ${a.title}</strong>
-        <div style="color:#8e97a3;font-size:12px;margin:2px 0 8px">${pretty} • ${a.risk === 'high' ? 'High' : 'Medium'} risk</div>
-        <p style="margin:0 0 8px">${a.summary||''}</p>
-        <a href="${a.source}" target="_blank" rel="noopener" class="btn">View source</a>
+        <strong>${a.city || ''} — ${a.title || ''}</strong>
+        <div style="color:#8e97a3;font-size:12px;margin:2px 0 8px">
+          ${pretty} • ${riskLabel} risk
+        </div>
+        <p style="margin:0 0 8px">${a.summary || ''}</p>
+        ${a.source ? `<a href="${a.source}" target="_blank" rel="noopener" class="btn">View source</a>` : ''}
       `;
       feed.appendChild(card);
     });
   })();
 </script>
+
 
 
 <script>
@@ -338,6 +430,7 @@
 
 </body>
 </html>
+
 
 
 
