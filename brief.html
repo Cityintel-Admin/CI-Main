@@ -467,67 +467,76 @@
 
 
   
-	  <script>
-    // ---- Brief → Alerts navigation (no MOCK_EVENTS needed) ----
-    (function attachBriefNavigation() {
+<script>
+// Click-throughs from Brief:
+// - Top Upcoming High-Risk list  → alerts.html (7-day, search by title)
+// - Regional Outlook rows        → risk-detail.html?continent=...
+// - Risk Distribution bars       → alerts.html (7-day, filtered by risk)
+(function () {
 
-      function goToAlerts(params) {
-  const qs = new URLSearchParams();
+  function goToAlerts(params) {
+    const url = new URL('alerts.html', window.location.origin);
+    Object.entries(params || {}).forEach(([k, v]) => {
+      if (v != null && v !== '') url.searchParams.set(k, v);
+    });
+    // ensure 7-day window unless caller overridden it
+    if (!url.searchParams.has('window')) {
+      url.searchParams.set('window', '7d');
+    }
+    url.searchParams.set('from', 'brief');
+    window.location.href = url.toString();
+  }
 
-  Object.entries(params || {}).forEach(([k, v]) => {
-    if (v) qs.set(k, v);
+  document.addEventListener('DOMContentLoaded', () => {
+    // A) Top Upcoming High-Risk → alerts, 7-day window, search by title
+    const topList = document.getElementById('topHighList');
+    if (topList) {
+      topList.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (!li) return;
+        const title = li.dataset.title || '';
+        if (!title) return;         // ignore "no upcoming" placeholder
+        goToAlerts({ search: title, window: '7d' });
+      });
+    }
+
+    // B) Regional Outlook → continent overview in risk-detail.html
+    const regional = document.getElementById('regionalList');
+    if (regional) {
+      regional.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (!li) return;
+        const labelEl = li.querySelector('strong');
+        const name = labelEl ? labelEl.textContent.trim() : '';
+        if (!name) return;
+
+        const url = new URL('risk-detail.html', window.location.origin);
+        url.searchParams.set('continent', name);
+        window.location.href = url.toString();
+      });
+    }
+
+    // C) Risk Distribution bars → alerts.html filtered by risk (High/Med/Low), 7-day window
+    const bars = document.getElementById('riskBars');
+    if (bars) {
+      bars.addEventListener('click', (e) => {
+        const row = e.target.closest('.bar-row');
+        if (!row) return;
+
+        const lbl = (row.querySelector('.bar-lbl')?.textContent || '').toLowerCase();
+        let risk = '';
+        if (lbl.startsWith('high'))   risk = 'high';
+        else if (lbl.startsWith('medium')) risk = 'med';
+        else if (lbl.startsWith('low'))    risk = 'low';
+        if (!risk) return;
+
+        goToAlerts({ risk, window: '7d' });
+      });
+    }
   });
-  qs.set('from', 'brief');
+})();
+</script>
 
-  // keep the same folder, just swap brief.html → alerts.html
-  const path = window.location.pathname.replace(/[^\/]+$/, 'alerts.html');
-  const url  = path + '?' + qs.toString();
-
-  window.location.href = url;
-}
-
-
-      // A) Top Upcoming High-Risk list → alerts, pre-filtered by title
-      const topList = document.getElementById('topHighList');
-      if (topList) {
-        topList.querySelectorAll('li').forEach(li => {
-          // we set data-title when building the list in JS
-          const title = li.dataset.title || '';
-          if (!title) return;            // skip the "no upcoming" placeholder row
-
-          li.addEventListener('click', () => {
-            goToAlerts({ search: title });
-          });
-        });
-      }
-
-      // B) Regional Outlook rows → alerts filtered by continent
-      const regionLis = document.querySelectorAll('#regionalList li');
-      regionLis.forEach(li => {
-        li.addEventListener('click', () => {
-          const labelEl = li.querySelector('strong');
-          const name = labelEl ? labelEl.textContent.trim() : '';
-          if (!name) return;
-          goToAlerts({ continent: name });
-        });
-      });
-
-      // C) Risk Distribution bars → alerts filtered by risk level
-      const barRows = document.querySelectorAll('#riskBars .bar-row');
-      barRows.forEach(row => {
-        row.addEventListener('click', () => {
-          const lbl = (row.querySelector('.bar-lbl')?.textContent || '').toLowerCase();
-          let risk = '';
-          if (lbl.startsWith('high'))   risk = 'high';
-          else if (lbl.startsWith('medium')) risk = 'med';
-          else if (lbl.startsWith('low'))    risk = 'low';
-          if (!risk) return;
-          goToAlerts({ risk });
-        });
-      });
-
-    })();
-  </script>
 
 	  
 
@@ -653,9 +662,7 @@
 
 <script>
 (function () {
-  // ------------------------------
-  // 1. KPI tiles scroll behaviour
-  // ------------------------------
+  // 1. KPI tiles scroll behaviour (already there)
   const kpiCards = document.querySelectorAll('[data-scroll-target]');
   kpiCards.forEach(card => {
     card.style.cursor = 'pointer';
@@ -668,10 +675,7 @@
     });
   });
 
-  // --------------------------------------------
-  // 2. Briefing pad summary (from incident.html)
-  //    Uses the same localStorage key: "ci_brief_pad"
-  // --------------------------------------------
+  // 2. Briefing pad summary (shared with incident.html)
   const draftEl = document.getElementById('brief-draft-preview');
   if (draftEl) {
     const raw = (localStorage.getItem('ci_brief_pad') || '').trim();
@@ -679,23 +683,83 @@
       draftEl.textContent =
         'Draft briefing: no notes yet. Use “Add this incident” from any incident view.';
     } else {
-      // Count lines and show a short first-line preview
       const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
       const firstLine = lines[0].trim();
       const preview =
         firstLine.length > 80 ? firstLine.slice(0, 77).trimEnd() + '…' : firstLine;
 
       draftEl.textContent =
-        `Draft briefing: ${lines.length} line${lines.length !== 1 ? 's' : ''} in pad — `
-        + `first line: “${preview}”`;
+        `Draft briefing: ${lines.length} line${lines.length !== 1 ? 's' : ''} in pad — ` +
+        `first line: “${preview}”`;
     }
+  }
+
+  // 3. Auto-detected themes (last 30 days, global) – mirrors risk-detail.html
+  try {
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    if (!data.length) return;
+
+    const now = new Date();
+    const from = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+
+    const rows = data
+      .map(a => ({
+        ...a,
+        _dt: (a.time || a.datetime || a.date || a.when) ? new Date(a.time || a.datetime || a.date || a.when) : null
+      }))
+      .filter(a => a._dt && a._dt >= from && a._dt <= now);
+
+    if (!rows.length) return;
+
+    const themeDetect = (a => {
+      const s = `${a.title || ''} ${a.summary || ''}`.toLowerCase();
+      if (s.match(/labour|labor|union|wage|strike|cosatu|workers/)) return 'Labour & wage disputes';
+      if (s.match(/cost[- ]?of[- ]?living|price|inflation/)) return 'Cost-of-living pressures';
+      if (s.match(/governance|anti[- ]?government|corruption|security appointment/)) return 'Governance & legitimacy';
+      if (s.match(/fuel|shortage|queue|supply/)) return 'Resource & supply stress';
+      if (s.match(/campus|university|student|education/)) return 'Education sector mobilisation';
+      return 'Civic mobilisation';
+    });
+
+    const counts = {};
+    rows.forEach(a => {
+      const t = themeDetect(a);
+      counts[t] = (counts[t] || 0) + 1;
+    });
+
+    const top = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4);
+
+    if (!top.length) return;
+
+    const section = document.getElementById('section-analyst-notes');
+    if (!section) return;
+
+    const autoHeader = document.createElement('div');
+    autoHeader.className = 'muted';
+    autoHeader.style.margin = '10px 0 4px';
+    autoHeader.textContent = 'Automated themes (last 30 days):';
+
+    const ul = document.createElement('ul');
+    ul.className = 'clean';
+    ul.innerHTML = top
+      .map(([t, c]) => `<li>${t} — ${c} event${c !== 1 ? 's' : ''}</li>`)
+      .join('');
+
+    section.appendChild(autoHeader);
+    section.appendChild(ul);
+  } catch (e) {
+    console.warn('brief auto-themes error', e);
   }
 })();
 </script>
 
+
 		  
 </body>
 </html>
+
 
 
 
