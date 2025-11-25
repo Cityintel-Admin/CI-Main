@@ -76,7 +76,8 @@
     .alert small{color:#8e97a3}
     .alert.med{ border-left-color:#f0b429; background:linear-gradient(90deg,rgba(240,180,41,.12),rgba(240,180,41,0)); }
     .alert.high{ border-left-color:#ff5a5f; background:linear-gradient(90deg,rgba(255,90,95,.12),rgba(255,90,95,0)); }
-    .btn{display:inline-block; padding:6px 10px; border-radius:10px;border:1px solid #2e3238; text-decoration:none; color:#e9edf2;
+    .alert.low{ border-left-color:#33c48d;  background:linear-gradient(90deg,rgba(51,196,141,.12),rgba(51,196,141,0));}
+	.btn{display:inline-block; padding:6px 10px; border-radius:10px;border:1px solid #2e3238; text-decoration:none; color:#e9edf2;
 }
     .btn:hover{border-color:#D01616 }
 
@@ -167,99 +168,115 @@
 <script src="alerts-data.js"></script>  <!-- 1) data first -->
 
 	<script>
-  (function renderAlerts(){
+  (function renderAlerts() {
     const feed = document.getElementById('alertsFeed');
     if (!feed) return;
 
     feed.innerHTML = "";
 
-    // --- 1. Read filters from URL ---
-    const params = new URLSearchParams(window.location.search);
+    const params     = new URLSearchParams(window.location.search);
+    const searchQ    = (params.get('search')    || '').trim().toLowerCase();
+    const continentQ = (params.get('continent') || '').trim().toLowerCase();
+    const riskParam  = (params.get('risk')      || '').trim().toLowerCase();
+    const fromBrief  = (params.get('from')      || '') === 'brief';
 
-    const rawSearch   = (params.get('search')    || '').trim().toLowerCase();
-    const rawContinent= (params.get('continent') || '').trim().toLowerCase();
-    const rawRisk     = (params.get('risk')      || '').trim().toLowerCase();
-
-    let riskFilter = '';
-    if (rawRisk.startsWith('high'))   riskFilter = 'high';
-    else if (rawRisk.startsWith('med'))  riskFilter = 'med';
-    else if (rawRisk.startsWith('low'))  riskFilter = 'low';
-
-    // --- 2. Helpers ---
+    // Normalise risk to: high / med / low
     const normalizeRisk = (r) => {
       const s = String(r || '').toLowerCase();
       if (s.startsWith('hi')) return 'high';
       if (s.startsWith('me')) return 'med';
-      return 'low';
+      if (s.startsWith('lo')) return 'low';
+      return '';
     };
 
+    // Risk requested from URL (?risk=...)
+    let requestedRisk = '';
+    if (riskParam) {
+      if (riskParam.startsWith('hi')) requestedRisk = 'high';
+      else if (riskParam.startsWith('me')) requestedRisk = 'med';
+      else if (riskParam.startsWith('lo')) requestedRisk = 'low';
+    }
+
     const now = new Date();
+    // If we came from brief, cap at next 7 days
+    const end = fromBrief ? new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
 
-    // --- 3. Build alerts list with extra fields for filtering ---
-    const alerts = (window.alertsData || [])
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+
+    const alerts = data
       .map(a => {
-        const risk   = normalizeRisk(a.risk);
-        const dt     = new Date(a.time);
-        const region = (a.Continent || a.continent || '').toLowerCase();
-        const haystack = [
-          a.city, a.country, a.title, a.summary
-        ].filter(Boolean).join(' ').toLowerCase();
-
-        return { ...a, risk, _dt: dt, _region: region, _haystack: haystack };
+        const risk = normalizeRisk(a.risk);
+        // try multiple possible datetime fields just in case
+        const dt = new Date(a.time || a.datetime || a.date || a.when);
+        const cont = (a.continent || a.Continent || '').toLowerCase();
+        return { ...a, risk, _dt: dt, _continent: cont };
       })
-      // keep only medium/high
-      .filter(a => a.risk === 'high' || a.risk === 'med')
-      // future/upcoming only
-      .filter(a => a._dt && a._dt >= now)
-      // apply risk filter if present
-      .filter(a => !riskFilter || a.risk === riskFilter)
-      // apply continent/region filter if present
+      // Time filter: always upcoming, and if from brief, only next 7 days
+      .filter(a => a._dt && a._dt >= now && (!end || a._dt <= end))
+      // Risk filter:
+      //  - default: only HIGH + MED (old behaviour)
+      //  - if a risk was requested, allow LOW too and show only that level
       .filter(a => {
-        if (!rawContinent) return true;
-        if (!a._region) return false;
-        return a._region === rawContinent || a._region.includes(rawContinent);
+        if (!requestedRisk) {
+          return a.risk === 'high' || a.risk === 'med';
+        }
+        return a.risk === requestedRisk;
       })
-      // apply text search if present
-      .filter(a => !rawSearch || a._haystack.includes(rawSearch))
-      // sort soonest first
-      .sort((a, b) => a._dt - b._dt);
+      // Continent filter (from Regional Outlook clicks)
+      .filter(a => {
+        if (continentQ && a._continent !== continentQ) return false;
+        return true;
+      })
+      // Search filter (from Top Upcoming High-Risk clicks)
+      .filter(a => {
+        if (!searchQ) return true;
+        const hay = (
+          (a.title || '')     + ' ' +
+          (a.summary || '')   + ' ' +
+          (a.city || '')      + ' ' +
+          (a.country || '')
+        ).toLowerCase();
+        return hay.includes(searchQ);
+      })
+      .sort((a, b) => a._dt - b._dt); // soonest first
 
-    // --- 4. Empty state ---
-    if (alerts.length === 0) {
-      let msg = 'No medium/high alerts available.';
-      // optional: tweak message depending on filter
-      if (rawRisk || rawContinent || rawSearch) {
-        msg = 'No alerts match the selected filters.';
-      }
-      feed.innerHTML = `<p style="color:#8e97a3">${msg}</p>`;
+    if (!alerts.length) {
+      feed.innerHTML = `<p style="color:#8e97a3">No alerts matching the selected filters.</p>`;
       return;
     }
 
-    // --- 5. Risk → class ---
-    const riskClass = (r) => r === 'high' ? 'high' : 'med';
+    const riskClass = (r) =>
+      r === 'high' ? 'high' :
+      r === 'med'  ? 'med'  :
+      'low';
 
-    // --- 6. Render cards ---
+    const riskLabel = (r) =>
+      r === 'high' ? 'High' :
+      r === 'med'  ? 'Medium' :
+      'Low';
+
     alerts.forEach(a => {
       const pretty = a._dt.toLocaleString('en-GB', {
         timeZone: 'Europe/London',
-        day:'2-digit', month:'short', year:'numeric',
-        hour:'2-digit', minute:'2-digit'
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
       });
 
       const card = document.createElement('div');
       card.className = `alert ${riskClass(a.risk)}`;
       card.innerHTML = `
-        <strong>${a.city || ''} — ${a.title || ''}</strong>
+        <strong>${a.city || a.country || ''} — ${a.title}</strong>
         <div style="color:#8e97a3;font-size:12px;margin:2px 0 8px">
-          ${pretty} • ${a.risk === 'high' ? 'High' : 'Medium'} risk
+          ${pretty} • ${riskLabel(a.risk)} risk
         </div>
         <p style="margin:0 0 8px">${a.summary || ''}</p>
-        <a href="${a.source || '#'}" target="_blank" rel="noopener" class="btn">View source</a>
+        ${a.source ? `<a href="${a.source}" target="_blank" rel="noopener" class="btn">View source</a>` : ''}
       `;
       feed.appendChild(card);
     });
   })();
 </script>
+
 
 
 
@@ -386,6 +403,7 @@
 
 </body>
 </html>
+
 
 
 
