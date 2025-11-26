@@ -152,6 +152,10 @@
 
 
     <main class="main">
+
+
+<div id="incidentSnapshot" class="card" style="margin-bottom:16px; display:none;"></div>
+
 		
       <div class="card">
         <h3>Alerts Feed</h3>  
@@ -211,6 +215,82 @@
         const cont = (a.continent || a.Continent || '').toLowerCase();
         return { ...a, risk, _dt: dt, _continent: cont };
       })
+
+
+		// Read query params
+const params = new URLSearchParams(window.location.search);
+const fromBrief = params.get('from') === 'brief';
+const searchTitle = (params.get('search') || '').toLowerCase();
+
+// Try to find the primary alert the user clicked in brief
+let primary = null;
+if (fromBrief && searchTitle) {
+  primary = alerts.find(a =>
+    (a.title || '').toLowerCase().includes(searchTitle)
+  );
+}
+
+// If we found it, build a richer snapshot panel
+if (primary) {
+  const snap = document.getElementById('incidentSnapshot');
+  if (snap) {
+    // simple helpers
+    const riskLabel = primary.risk === 'high' ? 'High risk'
+                    : primary.risk === 'med'  ? 'Medium risk'
+                    : 'Low risk';
+
+    const dt = primary._dt || (primary.time ? new Date(primary.time) : null);
+    const whenPretty = dt
+      ? dt.toLocaleString('en-GB', {
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        })
+      : '';
+
+    const where = [primary.city || '', primary.country || primary.Country || '']
+      .filter(Boolean)
+      .join(' — ');
+
+    // turn summary into bullet-ish lines
+    const summary = (primary.summary || '').split(/\. +/)
+      .filter(x => x.trim().length)
+      .map(x => x.trim());
+
+    // simple canned guidance per risk
+    let guidance = '';
+    if (primary.risk === 'high') {
+      guidance = 'Expect significant disruption near the venue and march route. Consider alternate routes, remote work options and heightened security posture for nearby offices.';
+    } else if (primary.risk === 'med') {
+      guidance = 'Localised disruption possible around key junctions and transport hubs. Monitor turnout and policing posture; prepare light mitigation (staff comms, travel advice).';
+    } else {
+      guidance = 'Limited disruption expected; maintain watching brief only.';
+    }
+
+    snap.style.display = 'block';
+    snap.innerHTML = `
+      <h2>Incident snapshot</h2>
+      <div style="margin-bottom:6px;">
+        <span class="pill ${primary.risk}">${riskLabel}</span>
+        ${where ? `<strong style="margin-left:8px;">${where}</strong>` : ''}
+      </div>
+      ${whenPretty ? `<div class="muted" style="margin-bottom:10px;">${whenPretty}</div>` : ''}
+      ${summary.length ? `
+        <div style="margin-bottom:8px;">
+          <strong>What’s happening</strong>
+          <ul class="clean" style="margin-top:4px;">
+            ${summary.map(s => `<li>${s}.</li>`).join('')}
+          </ul>
+        </div>` : ''}
+      <div style="margin-top:4px;">
+        <strong>Operational take</strong>
+        <div class="muted" style="margin-top:4px;">${guidance}</div>
+      </div>
+    `;
+  }
+}
+
+
+		
       // Time filter: always upcoming, and if from brief, only next 7 days
       .filter(a => a._dt && a._dt >= now && (!end || a._dt <= end))
       // Risk filter:
@@ -403,6 +483,7 @@
 
 </body>
 </html>
+
 
 
 
