@@ -497,7 +497,9 @@
 <!-- auth, admin menu injection, etc -->
 <script src="auth.js"></script>
 <script src="admin-links.js"></script>
+<script src="alerts-data.js"></script>
 
+	
 <script>
 /* ---------- auth guard (require paid user / trial) ---------- */
 (function hardGuard(){
@@ -698,18 +700,52 @@ function updateDistancePanel(inc) {
     `about ${kmStr} km (${miStr} mi) away.`;
 }
 
-	
-/* ---------- read incident from sessionStorage ---------- */
-/* ---------- read incident from sessionStorage ---------- */
-(function loadIncident(){
-  const params = new URLSearchParams(location.search);
-  const incId = params.get('id');
-	
-	if (!incId) {
-  // Either redirect:
-  location.href = 'live-feed.html';
-  // or show a friendly message instead of rendering empty state.
+
+/* ---------- render related activity list (shared helper) ---------- */
+function renderRelatedActivity(inc) {
+  const box = document.getElementById('relatedList');
+  if (!box) return;
+
+  const rel = Array.isArray(inc.related) ? inc.related : [];
+  if (!rel.length) {
+    box.innerHTML = '<div class="muted">No earlier related items.</div>';
+    return;
+  }
+
+  box.innerHTML = '';
+  rel.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'related-item';
+
+    div.innerHTML = `
+      <div class="related-title">
+        ${r.title || 'Related activity'}
+        <span class="related-priority ${(r.priority || 'low').toLowerCase()}">
+          ${r.priority || ''}
+        </span>
+      </div>
+      <div class="related-meta">
+        ${r.city || '—'} · ${fmtWhen(r.when) || ''}
+      </div>
+    `;
+
+    // clicking takes you to that incident (live-feed mode only)
+    if (r.id) {
+      div.addEventListener('click', () => {
+        location.href = `incident.html?id=${r.id}`;
+      });
+    }
+
+    box.appendChild(div);
+  });
 }
+
+/* ---------- read incident from live feed OR from alerts-data ---------- */
+(function loadIncident() {
+  const params     = new URLSearchParams(location.search);
+  const incId      = params.get('id');                       // from live-feed.html
+  const alertTitle = (params.get('search') || '').trim().toLowerCase(); // from brief/alerts
+  const fromBrief  = (params.get('from') || '') === 'brief';
 
   const titleEl   = document.getElementById('incidentTitle');
   const metaEl    = document.getElementById('incidentMeta');
@@ -722,87 +758,174 @@ function updateDistancePanel(inc) {
   const srcBtn    = document.getElementById('incSourceBtn');
   const srcTag    = document.getElementById('incSourceTag');
 
-  function noData(){
-    titleEl.textContent   = 'No incident selected';
-    metaEl.textContent    = '';
-    summEl.textContent    = 'Open My Live Feed and select an incident.';
-    locEl.textContent     = '—';
-    impEl.textContent     = '—';
+  function noData(msg) {
+    titleEl.textContent = 'No incident selected';
+    metaEl.textContent  = '';
+    summEl.textContent  = msg || 'Open your Live Feed or Intelligence Brief and select an incident.';
+    locEl.textContent   = '—';
+    impEl.textContent   = '—';
     if (relatedEl) {
       relatedEl.innerHTML = '<div class="muted">No earlier related items.</div>';
     }
-    distEl.textContent    = '—';
-    riskPill.style.display='none';
+    if (distEl) distEl.textContent = '—';
+    if (riskPill) riskPill.style.display = 'none';
   }
 
-  if (!incId) {
+  // Normalise risk into neat word: "High" / "Medium" / "Low"
+  function normalizeRiskWord(r) {
+    const s = String(r || '').toLowerCase();
+    if (!s) return '';
+    if (s.startsWith('hi')) return 'High';
+    if (s.startsWith('me')) return 'Medium';
+    if (s.startsWith('lo')) return 'Low';
+    return r;
+  }
+
+  let inc = null;   // unified incident object we render from
+
+  /* --------- MODE 1: opened from Live Feed (id + sessionStorage) ---------- */
+  if (incId) {
+    let all = {};
+    try {
+      all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
+    } catch (e) {
+      all = {};
+    }
+    const stored = all[incId];
+    if (!stored) {
+      noData('Incident details not found or have expired from the live feed.');
+      return;
+    }
+
+    inc = {
+      ...stored,
+      risk: normalizeRiskWord(stored.risk || stored.meta || '')
+    };
+  }
+
+  /* --------- MODE 2: opened from Brief/Alerts (search + alerts-data.js) --- */
+  else if (alertTitle) {
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    if (!data.length) {
+      noData('No alert data available to build this incident.');
+      return;
+    }
+
+    const now   = new Date();
+    const next7 = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+
+    const candidates = data
+      .map(a => {
+        const dt = new Date(a.time || a.datetime || a.date || a.when || '');
+        return {
+          raw: a,
+          _dt: isNaN(dt.getTime()) ? null : dt
+        };
+      })
+      .filter(row => row._dt && row._dt >= now && row._dt <= next7);
+
+    const matchRow = candidates.find(row =>
+      (row.raw.title || '').toLowerCase().includes(alertTitle)
+    ) || candidates[0];   // fallback: just take first upcoming if somehow no title match
+
+    if (!matchRow) {
+      noData('Could not locate a matching alert for this incident.');
+      return;
+    }
+
+    const a = matchRow.raw;
+    const whenIso = matchRow._dt ? matchRow._dt.toISOString() : (a.time || a.datetime || a.date || a.when || '');
+
+    let host = '';
+    if (a.source) {
+      try { host = new URL(a.source).hostname.replace(/^www\./, ''); } catch (e) {}
+    }
+
+    inc = {
+      id:     'alert-' + (a.id || a.title || ''),
+      title:  a.title || 'Untitled incident',
+      city:   a.city  || '',
+      country: a.country || a.Country || '',
+      when:   whenIso,
+      risk:   normalizeRiskWord(a.risk),
+      summary: a.summary || '',
+      description: '',
+      location: [a.city || '', a.country || a.Country || ''].filter(Boolean).join(', '),
+      impact: '',
+      src:    host,
+      url:    a.source || '',
+      lat:    typeof a.lat === 'number' ? a.lat : undefined,
+      lon:    typeof a.lon === 'number' ? a.lon : undefined,
+      related: []   // we don’t have structured related items for alerts yet
+    };
+  }
+
+  /* --------- No id + no search: user opened incident.html directly -------- */
+  else {
     noData();
     return;
   }
 
-  let all = {};
-  try {
-    all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
-  } catch (e) {}
-  const inc = all[incId];
-  if (!inc){
-    summaryEl.textContent = 'Incident details not found or have expired.';
-    titleEl.textContent   = 'Incident unavailable';
-    cityMeta.textContent  = '—';
-    return;
-  }
-
-  // expose for other helpers
+  // At this point we have a unified 'inc' object from either source.
   window.__incident = inc;
   initBriefPad(inc);
 
-  // We stored flattened strings in live-feed
-  const city = inc.city || '—';
-  const whenNice = fmtWhen(inc.when);
-  const src = inc.src || 'news source';
+  const city      = inc.city || '—';
+  const whenNice  = fmtWhen(inc.when);
+  const riskWord  = normalizeRiskWord(inc.risk || '');
+  const metaParts = [city, riskWord || 'n/a', whenNice].filter(Boolean);
 
-  // --- Build richer summary ---
+  titleEl.textContent = inc.title || 'Untitled incident';
+  metaEl.textContent  = metaParts.join(' • ');
+
+  // --- Summary ---
   let summaryText = (inc.summary || '').trim();
   const desc = (inc.description || '').replace(/\s+/g, ' ').trim();
 
   if (!summaryText && desc) {
-    if (city !== '—' && whenNice) {
-      summaryText =
-        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${src}.`;
-    } else {
-      summaryText = desc;
-    }
+    summaryText = desc;
   }
 
-  if (summaryText.length > 500) {
-    const cut = summaryText.slice(0, 500);
+  if (!summaryText) {
+    summaryText = '(no summary provided – open source for details).';
+  } else if (summaryText.length > 700) {
+    const cut = summaryText.slice(0, 700);
     const lastDot = cut.lastIndexOf('.');
     summaryText = (lastDot > 200 ? cut.slice(0, lastDot + 1) : cut) + ' …';
   }
 
-  // --- Fill main fields ---
-  titleEl.textContent = inc.title || 'Untitled incident';
-  metaEl.textContent  = `${city} • ${inc.risk || 'n/a'} • ${whenNice || ''}`.trim();
-  summEl.textContent  = summaryText || '(no summary provided – open source for details).';
+  summEl.textContent = summaryText;
 
+  // --- Location / impact ---
   locEl.textContent =
-    inc.location || `Approx area: ${city} (exact location may be refining).`;
-	
-   impEl.textContent =
-    inc.impact || 'Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.';
+    inc.location ||
+    `Approx area: ${[inc.city, inc.country].filter(Boolean).join(', ') || 'unknown'}.`;
 
-  // Render earlier related activity list
+  if (!inc.impact) {
+    const riskLow = (riskWord || '').toLowerCase();
+    if (riskLow === 'high') {
+      impEl.textContent =
+        'Expect significant disruption near the venue and march route. Consider alternate routes, remote work options and heightened security posture for nearby offices.';
+    } else if (riskLow === 'medium') {
+      impEl.textContent =
+        'Localised disruption possible around key junctions and transport hubs. Monitor turnout and policing posture; prepare light mitigation (staff comms, travel advice).';
+    } else {
+      impEl.textContent =
+        'Limited disruption expected; maintain a watching brief and monitor for changes in turnout or policing.';
+    }
+  } else {
+    impEl.textContent = inc.impact;
+  }
+
+  // --- Related activity + distance panel ---
   renderRelatedActivity(inc);
-
-  // --- Map / Distance panel (NEW single call) ---
   updateDistancePanel(inc);
 
-
-  // ----- source button + non-link source badge -----
+  // --- Source button + tag ---
   if (srcBtn) {
     if (inc.url) {
       let host = '';
-      try { host = new URL(inc.url).hostname.replace(/^www\./,''); } catch {}
+      try { host = new URL(inc.url).hostname.replace(/^www\./, ''); } catch {}
       srcBtn.href = inc.url;
       srcBtn.style.display = 'inline-block';
       srcBtn.textContent = `Open original source${host ? ` (${host})` : ''} →`;
@@ -812,9 +935,8 @@ function updateDistancePanel(inc) {
   }
 
   if (srcTag) {
-    const label = inc.src || '';
-    if (label) {
-      srcTag.textContent = `Source: ${label}`;
+    if (inc.src) {
+      srcTag.textContent = `Source: ${inc.src}`;
       srcTag.style.display = 'inline-block';
     } else {
       srcTag.style.display = 'none';
@@ -822,63 +944,21 @@ function updateDistancePanel(inc) {
   }
 
   // --- Risk pill styling ---
-  const metaLower = (inc.meta || '').toLowerCase();
-  const risk =
-    metaLower.includes('high') ? 'high' :
-    metaLower.includes('med')  ? 'med'  :
-    metaLower.includes('low')  ? 'low'  : null;
-
-  if (risk) {
+  if (riskPill && riskWord) {
+    const r = riskWord.toLowerCase();
     riskPill.style.display = 'inline-block';
-    riskPill.textContent = risk === 'high' ? 'High'
-                         : risk === 'med'  ? 'Medium'
-                         : 'Low';
+    riskPill.textContent   = riskWord;
     riskPill.classList.remove('risk-high','risk-med','risk-low');
     riskPill.classList.add(
-      risk === 'high' ? 'risk-high' :
-      risk === 'med'  ? 'risk-med'  : 'risk-low'
+      r === 'high' ? 'risk-high' :
+      r === 'medium' ? 'risk-med' :
+      'risk-low'
     );
-  } else {
+  } else if (riskPill) {
     riskPill.style.display = 'none';
   }
-
-
-	
-function renderRelatedActivity(inc) {
-  const box = document.getElementById('relatedList');
-  box.innerHTML = '';
-
-  // safety
-  if (!inc.related || !Array.isArray(inc.related) || inc.related.length === 0) {
-    box.innerHTML = '<div class="muted">No earlier related items.</div>';
-    return;
-  }
-
-  inc.related.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'related-item';
-
-    div.innerHTML = `
-      <div class="related-title">
-        ${r.title || 'Related Activity'}
-        <span class="related-priority ${r.priority?.toLowerCase() || 'low'}">
-          ${r.priority || ''}
-        </span>
-      </div>
-      <div class="related-meta">
-        ${r.city || '—'} · ${fmtWhen(r.when) || ''}
-      </div>
-    `;
-
-    // clicking takes you to that incident
-    div.addEventListener('click', () => {
-      location.href = `incident.html?id=${r.id}`;
-    });
-
-    box.appendChild(div);
-  });
-}	
 })();
+
 
 
 // ---------- briefing pad helpers ----------
@@ -972,24 +1052,4 @@ function initBriefPad(incident) {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
