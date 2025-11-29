@@ -447,6 +447,14 @@
     </div>
 
 
+<section class="card" style="grid-column: span 5;">
+  <h3>Live context (next 7 days)</h3>
+  <div id="liveContextList" class="subtext">
+    Looking for other upcoming alerts in this area…
+  </div>
+</section>
+
+	  
 
       <!-- BRIEFING BUILDER -->
       <section class="card" style="grid-column: span 5;">
@@ -923,7 +931,7 @@ function renderRelatedActivity(inc) {
   // --- Related activity + distance panel ---
   renderRelatedActivity(inc);
   updateDistancePanel(inc);
-
+  renderLiveContext(inc);
   // --- Source button + tag ---
   if (srcBtn) {
     if (inc.url) {
@@ -963,6 +971,82 @@ function renderRelatedActivity(inc) {
 })();
 
 
+function renderLiveContext(inc) {
+  const box = document.getElementById('liveContextList');
+  if (!box) return;
+
+  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+  if (!data.length) {
+    box.textContent = 'No additional alerts available for this area yet.';
+    return;
+  }
+
+  const now = new Date();
+  const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // next 7 days
+
+  const city    = (inc.city || '').toLowerCase();
+  const country = (inc.country || inc.Country || '').toLowerCase();
+
+  // Build comparable alert objects with dates
+  const matches = data
+    .map(a => {
+      const dt = new Date(a.time || a.datetime || a.date || a.when);
+      return { ...a, _dt: dt };
+    })
+    .filter(a => a._dt && a._dt >= now && a._dt <= end)      // next 7 days
+    .filter(a => {
+      const aCity    = (a.city || '').toLowerCase();
+      const aCountry = (a.country || a.Country || '').toLowerCase();
+
+      // Same city OR same country, but not this exact same title
+      if ((a.title || '') === (inc.title || '')) return false;
+
+      return (city && aCity === city) || (country && aCountry === country);
+    })
+    .sort((a, b) => a._dt - b._dt)
+    .slice(0, 4); // top 4
+
+  if (!matches.length) {
+    box.textContent = 'No other upcoming alerts in this area in the next 7 days.';
+    return;
+  }
+
+  // Render mini list
+  box.innerHTML = '';
+  matches.forEach(a => {
+    const row = document.createElement('div');
+    row.style.marginBottom = '8px';
+
+    const when = a._dt.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const where = [a.city || '', a.country || a.Country || '']
+      .filter(Boolean)
+      .join(' — ');
+
+    row.innerHTML = `
+      <div style="font-size:13px;font-weight:600;">
+        ${where || (a.title || 'Upcoming alert')}
+      </div>
+      <div style="font-size:12px;color:#8e97a3;">
+        ${when} • ${(a.risk || '').toUpperCase() || 'RISK'}
+      </div>
+      <div style="font-size:12px;margin-top:2px;">
+        ${(a.summary || '').slice(0, 140)}${(a.summary || '').length > 140 ? '…' : ''}
+      </div>
+    `;
+
+    box.appendChild(row);
+  });
+}
+
+
+
+	
 
 // ---------- briefing pad helpers ----------
 function buildBriefLine(inc) {
@@ -1055,6 +1139,7 @@ function initBriefPad(incident) {
 
 </body>
 </html>
+
 
 
 
