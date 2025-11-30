@@ -751,12 +751,13 @@ function renderRelatedActivity(inc) {
   });
 }
 
-/* ---------- read incident from live feed OR from alerts-data ---------- */
-(function loadIncident() {
-  const params     = new URLSearchParams(location.search);
-  const incId      = params.get('id');                       // from live-feed.html
-  const alertTitle = (params.get('search') || '').trim().toLowerCase(); // from brief/alerts
-  const fromBrief  = (params.get('from') || '') === 'brief';
+
+/* ---------- incident loader: supports Live Feed (id=) AND Brief (search=) ---------- */
+(function loadIncident(){
+  const params    = new URLSearchParams(location.search);
+  const incId     = params.get('id');
+  const searchQ   = (params.get('search') || '').trim().toLowerCase();
+  const fromBrief = params.get('from') === 'brief';
 
   const titleEl   = document.getElementById('incidentTitle');
   const metaEl    = document.getElementById('incidentMeta');
@@ -769,174 +770,162 @@ function renderRelatedActivity(inc) {
   const srcBtn    = document.getElementById('incSourceBtn');
   const srcTag    = document.getElementById('incSourceTag');
 
-  function noData(msg) {
-    titleEl.textContent = 'No incident selected';
-    metaEl.textContent  = '';
-    summEl.textContent  = msg || 'Open your Live Feed or Intelligence Brief and select an incident.';
-    locEl.textContent   = '—';
-    impEl.textContent   = '—';
+  function noData(msg){
+    titleEl.textContent   = 'Incident not found';
+    metaEl.textContent    = '';
+    summEl.textContent    = msg || 'This incident may have expired. Try again from the Live Feed or Intelligence Brief.';
+    locEl.textContent     = '—';
+    impEl.textContent     = '—';
     if (relatedEl) {
       relatedEl.innerHTML = '<div class="muted">No earlier related items.</div>';
     }
     if (distEl) distEl.textContent = '—';
-    if (riskPill) riskPill.style.display = 'none';
+    if (riskPill) riskPill.style.display='none';
+    if (srcBtn) srcBtn.style.display='none';
+    if (srcTag) srcTag.style.display='none';
   }
 
-  // Normalise risk into neat word: "High" / "Medium" / "Low"
-  function normalizeRiskWord(r) {
-    const s = String(r || '').toLowerCase();
-    if (!s) return '';
-    if (s.startsWith('hi')) return 'High';
-    if (s.startsWith('me')) return 'Medium';
-    if (s.startsWith('lo')) return 'Low';
-    return r;
-  }
+  // ---- pick source: Live Feed vs Brief ----
+  let inc = null;
 
-  let inc = null;   // unified incident object we render from
-
-  /* --------- MODE 1: opened from Live Feed (id + sessionStorage) ---------- */
   if (incId) {
+    // ---- PATH A: from Live Feed (existing behaviour) ----
     let all = {};
     try {
       all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
-    } catch (e) {
-      all = {};
-    }
-    const stored = all[incId];
-    if (!stored) {
-      noData('Incident details not found or have expired from the live feed.');
+    } catch (e) {}
+
+    inc = all[incId] || null;
+    if (!inc) {
+      noData('Incident details not found or have expired. Open My Live Feed and select an incident again.');
       return;
     }
 
-    inc = {
-      ...stored,
-      risk: normalizeRiskWord(stored.risk || stored.meta || '')
-    };
-  }
-
-  /* --------- MODE 2: opened from Brief/Alerts (search + alerts-data.js) --- */
-  else if (alertTitle) {
+  } else if (fromBrief && searchQ) {
+    // ---- PATH B: from Intelligence Brief (new) ----
     const data = Array.isArray(window.alertsData) ? window.alertsData : [];
     if (!data.length) {
-      noData('No alert data available to build this incident.');
+      noData('No alert data available for this incident.');
       return;
     }
 
-    const now   = new Date();
-    const next7 = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+    // Find the alert whose title best matches ?search=
+    let best = null;
+    data.forEach(a => {
+      const t = (a.title || '').toLowerCase();
+      if (!t) return;
+      if (t === searchQ && !best) {
+        best = a;
+        return;
+      }
+      if (!best && t.includes(searchQ)) {
+        best = a;
+      }
+    });
 
-    const candidates = data
-      .map(a => {
-        const dt = new Date(a.time || a.datetime || a.date || a.when || '');
-        return {
-          raw: a,
-          _dt: isNaN(dt.getTime()) ? null : dt
-        };
-      })
-      .filter(row => row._dt && row._dt >= now && row._dt <= next7);
-
-    const matchRow = candidates.find(row =>
-      (row.raw.title || '').toLowerCase().includes(alertTitle)
-    ) || candidates[0];   // fallback: just take first upcoming if somehow no title match
-
-    if (!matchRow) {
-      noData('Could not locate a matching alert for this incident.');
+    if (!best) {
+      noData('Could not match this item in the alerts feed.');
       return;
     }
 
-    const a = matchRow.raw;
-    const whenIso = matchRow._dt ? matchRow._dt.toISOString() : (a.time || a.datetime || a.date || a.when || '');
+    const normRisk = (r => {
+      const s = String(r || '').toLowerCase();
+      if (s.startsWith('hi')) return 'High';
+      if (s.startsWith('me')) return 'Medium';
+      if (s.startsWith('lo')) return 'Low';
+      return 'Medium';
+    })(best.risk);
 
-    let host = '';
-    if (a.source) {
-      try { host = new URL(a.source).hostname.replace(/^www\./, ''); } catch (e) {}
-    }
+    const whenRaw = best.time || best.datetime || best.date || best.when || '';
 
+    // Build an "incident-style" object using alert fields
     inc = {
-      id:     'alert-' + (a.id || a.title || ''),
-      title:  a.title || 'Untitled incident',
-      city:   a.city  || '',
-      country: a.country || a.Country || '',
-      when:   whenIso,
-      risk:   normalizeRiskWord(a.risk),
-      summary: a.summary || '',
-      description: '',
-      location: [a.city || '', a.country || a.Country || ''].filter(Boolean).join(', '),
-      impact: '',
-      src:    host,
-      url:    a.source || '',
-      lat:    typeof a.lat === 'number' ? a.lat : undefined,
-      lon:    typeof a.lon === 'number' ? a.lon : undefined,
-      related: []   // we don’t have structured related items for alerts yet
+      id:        'brief-' + (best.id || best.title || 'x'),
+      title:     best.title || 'Upcoming event',
+      city:      best.city || '',
+      country:   best.country || best.Country || '',
+      risk:      normRisk,
+      when:      whenRaw,
+      summary:   best.summary || '',
+      description: best.summary || '',
+      location:
+        (best.city || best.country || best.Country)
+          ? [best.city, best.country || best.Country].filter(Boolean).join(', ')
+          : 'Location refining.',
+      impact:
+        normRisk === 'High'
+          ? 'Expect significant disruption near the venue and march route. Consider alternate routes, remote work options and heightened security posture for nearby offices.'
+          : normRisk === 'Medium'
+            ? 'Localised disruption possible around key junctions and transport hubs. Monitor turnout and policing posture; prepare light mitigation (staff comms, travel advice).'
+            : 'Limited disruption expected; maintain watching brief only.',
+      url: best.source || '',
+      src: (function(){
+        if (!best.source) return 'source';
+        try { return new URL(best.source).hostname.replace(/^www\./,''); }
+        catch(e){ return 'source'; }
+      })(),
+      meta: normRisk + (whenRaw ? ` • ${fmtWhen(whenRaw)}` : '')
     };
-  }
 
-  /* --------- No id + no search: user opened incident.html directly -------- */
-  else {
-    noData();
+  } else {
+    // No id, no brief search → visited directly
+    noData('Open My Live Feed or the Intelligence Brief and select an incident.');
     return;
   }
 
-  // At this point we have a unified 'inc' object from either source.
-  window.__incident = inc;
+  // ---- Common render path (works for both Live Feed + Brief) ----
+  window.__incident = inc;  // for briefing pad etc.
   initBriefPad(inc);
 
   const city      = inc.city || '—';
   const whenNice  = fmtWhen(inc.when);
-  const riskWord  = normalizeRiskWord(inc.risk || '');
-  const metaParts = [city, riskWord || 'n/a', whenNice].filter(Boolean);
+  const srcLabel  = inc.src || 'news source';
 
-  titleEl.textContent = inc.title || 'Untitled incident';
-  metaEl.textContent  = metaParts.join(' • ');
-
-  // --- Summary ---
+  // Build summary text
   let summaryText = (inc.summary || '').trim();
-  const desc = (inc.description || '').replace(/\s+/g, ' ').trim();
+  const desc      = (inc.description || '').replace(/\s+/g, ' ').trim();
 
   if (!summaryText && desc) {
-    summaryText = desc;
+    if (city !== '—' && whenNice) {
+      summaryText =
+        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${srcLabel}.`;
+    } else {
+      summaryText = desc;
+    }
   }
-
-  if (!summaryText) {
-    summaryText = '(no summary provided – open source for details).';
-  } else if (summaryText.length > 700) {
-    const cut = summaryText.slice(0, 700);
+  if (summaryText.length > 500) {
+    const cut = summaryText.slice(0, 500);
     const lastDot = cut.lastIndexOf('.');
     summaryText = (lastDot > 200 ? cut.slice(0, lastDot + 1) : cut) + ' …';
   }
 
-  summEl.textContent = summaryText;
+  // Fill main fields
+  titleEl.textContent = inc.title || 'Untitled incident';
+  metaEl.textContent  = [
+    city !== '—' ? city : null,
+    inc.risk || null,
+    whenNice || null
+  ].filter(Boolean).join(' • ');
 
-  // --- Location / impact ---
-  locEl.textContent =
-    inc.location ||
-    `Approx area: ${[inc.city, inc.country].filter(Boolean).join(', ') || 'unknown'}.`;
+  summEl.textContent = summaryText || '(no summary provided – open source for details).';
+  locEl.textContent  = inc.location ||
+    `Approx area: ${city} (exact location may be refining).`;
+  impEl.textContent  = inc.impact ||
+    'Nearest office: CityIntel HQ. Impact: Elevated security posture recommended.';
 
-  if (!inc.impact) {
-    const riskLow = (riskWord || '').toLowerCase();
-    if (riskLow === 'high') {
-      impEl.textContent =
-        'Expect significant disruption near the venue and march route. Consider alternate routes, remote work options and heightened security posture for nearby offices.';
-    } else if (riskLow === 'medium') {
-      impEl.textContent =
-        'Localised disruption possible around key junctions and transport hubs. Monitor turnout and policing posture; prepare light mitigation (staff comms, travel advice).';
-    } else {
-      impEl.textContent =
-        'Limited disruption expected; maintain a watching brief and monitor for changes in turnout or policing.';
-    }
-  } else {
-    impEl.textContent = inc.impact;
+  // Related list (for now: none when coming from Brief)
+  if (relatedEl) {
+    relatedEl.innerHTML = '<div class="muted">No earlier related items.</div>';
   }
 
-  // --- Related activity + distance panel ---
-  renderRelatedActivity(inc);
+  // Map / distance panel
   updateDistancePanel(inc);
-  renderLiveContext(inc);
-  // --- Source button + tag ---
+
+  // Source button + tag
   if (srcBtn) {
     if (inc.url) {
       let host = '';
-      try { host = new URL(inc.url).hostname.replace(/^www\./, ''); } catch {}
+      try { host = new URL(inc.url).hostname.replace(/^www\./,''); } catch {}
       srcBtn.href = inc.url;
       srcBtn.style.display = 'inline-block';
       srcBtn.textContent = `Open original source${host ? ` (${host})` : ''} →`;
@@ -944,31 +933,39 @@ function renderRelatedActivity(inc) {
       srcBtn.style.display = 'none';
     }
   }
-
   if (srcTag) {
-    if (inc.src) {
-      srcTag.textContent = `Source: ${inc.src}`;
+    if (srcLabel) {
+      srcTag.textContent = `Source: ${srcLabel}`;
       srcTag.style.display = 'inline-block';
     } else {
       srcTag.style.display = 'none';
     }
   }
 
-  // --- Risk pill styling ---
-  if (riskPill && riskWord) {
-    const r = riskWord.toLowerCase();
-    riskPill.style.display = 'inline-block';
-    riskPill.textContent   = riskWord;
-    riskPill.classList.remove('risk-high','risk-med','risk-low');
-    riskPill.classList.add(
-      r === 'high' ? 'risk-high' :
-      r === 'medium' ? 'risk-med' :
-      'risk-low'
-    );
-  } else if (riskPill) {
-    riskPill.style.display = 'none';
+  // Risk pill
+  if (riskPill) {
+    const r = (inc.risk || '').toLowerCase();
+    let key = '';
+    if (r.startsWith('hi')) key = 'high';
+    else if (r.startsWith('me')) key = 'med';
+    else if (r.startsWith('lo')) key = 'low';
+
+    if (key) {
+      riskPill.style.display = 'inline-block';
+      riskPill.textContent = key === 'high' ? 'High'
+                           : key === 'med'  ? 'Medium'
+                           : 'Low';
+      riskPill.classList.remove('risk-high','risk-med','risk-low');
+      riskPill.classList.add(
+        key === 'high' ? 'risk-high' :
+        key === 'med'  ? 'risk-med'  : 'risk-low'
+      );
+    } else {
+      riskPill.style.display = 'none';
+    }
   }
 })();
+
 
 
 function renderLiveContext(inc) {
@@ -1139,6 +1136,7 @@ function initBriefPad(incident) {
 
 </body>
 </html>
+
 
 
 
