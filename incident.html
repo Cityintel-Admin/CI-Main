@@ -581,6 +581,98 @@
 
 
 
+	
+// --------- INCIDENT SUMMARY ENRICHMENT (local, no AI) ---------
+function enrichIncidentSummary(inc, baseSummary) {
+  if (!inc) return baseSummary || '';
+  let summary = (baseSummary || '').trim();
+
+  // If it's already quite long, don't add too much on top
+  const MAX_BEFORE_ENRICH = 650;
+  if (summary.length > MAX_BEFORE_ENRICH) return summary;
+
+  const text = (
+    (inc.title || '') + ' ' +
+    (inc.summary || '') + ' ' +
+    (inc.description || '')
+  ).toLowerCase();
+
+  // --- classify the scenario a bit ---
+  let scenario = 'civic mobilisation';
+  if (/strike|walkout|industrial|union\b|pay deal|ballot/.test(text)) {
+    scenario = 'labour / union action';
+  } else if (/march|rally|demonstration|demo|mobilisation|protest/.test(text)) {
+    scenario = 'street protest / march';
+  } else if (/vigil|memorial|candle|mourning/.test(text)) {
+    scenario = 'vigil / symbolic gathering';
+  } else if (/election|vote|polling|ballot box|campaign/.test(text)) {
+    scenario = 'election / political process';
+  }
+
+  const risk = (inc.risk || '').toString().toLowerCase();
+  let riskLine = '';
+  if (risk === 'high') {
+    riskLine =
+      'Treat as high risk for local disruption and crowding, particularly around key junctions and transport hubs.';
+  } else if (risk === 'med' || risk === 'medium') {
+    riskLine =
+      'Monitor as a medium-impact event with potential for localised congestion and short-notice policing adjustments.';
+  } else if (risk === 'low') {
+    riskLine =
+      'Operational impact is likely limited; maintain a watching brief unless conditions escalate.';
+  }
+
+  const city = (inc.city || '').trim();
+  const country = (inc.country || inc.Country || '').trim();
+  let locationLine = '';
+  if (city || country) {
+    const place = [city, country].filter(Boolean).join(', ');
+    locationLine =
+      `Key exposure is for offices, staff and travellers in and around ${place}, ` +
+      `especially near known assembly points and main approach routes.`;
+  }
+
+  let scenarioLine = '';
+  if (scenario === 'labour / union action') {
+    scenarioLine =
+      'The action is driven by labour and union dynamics, with disruption most likely to affect ' +
+      'public services, commuter flows and access to key workplaces.';
+  } else if (scenario === 'street protest / march') {
+    scenarioLine =
+      'Expect crowd concentration at assembly points and along the march route, with knock-on ' +
+      'effects for traffic management, public transport and nearby retail areas.';
+  } else if (scenario === 'vigil / symbolic gathering') {
+    scenarioLine =
+      'Format is primarily symbolic, but visibility around the site may be high; any counter-' +
+      'protests or policing changes could raise the disruption profile.';
+  } else if (scenario === 'election / political process') {
+    scenarioLine =
+      'Activity is linked to the electoral cycle; tensions can increase around campaign offices, ' +
+      'counting centres and government buildings.';
+  } else {
+    scenarioLine =
+      'Activity forms part of a broader pattern of civic mobilisation; online narratives and ' +
+      'copycat actions in other cities should be monitored.';
+  }
+
+  const extraPieces = [];
+  if (scenarioLine) extraPieces.push(scenarioLine);
+  if (riskLine) extraPieces.push(riskLine);
+  if (locationLine) extraPieces.push(locationLine);
+
+  if (!extraPieces.length) return summary;
+
+  const extraText = extraPieces.join(' ');
+
+  // Make sure we join nicely with a space / full stop
+  if (!summary) return extraText;
+  const needsDot = !/[.!?]$/.test(summary);
+  return summary + (needsDot ? '. ' : ' ') + extraText;
+}
+
+	
+
+
 // Pretty-print an ISO datetime like "2025-11-15T02:01:00Z"
 function fmtWhen(iso) {
   if (!iso) return '';
@@ -881,33 +973,35 @@ function renderRelatedActivity(inc) {
   const whenNice  = fmtWhen(inc.when);
   const srcLabel  = inc.src || 'news source';
 
-  // Build summary text
+
+	
+    // --- Build richer summary (then enrich it) ---
   let summaryText = (inc.summary || '').trim();
-  const desc      = (inc.description || '').replace(/\s+/g, ' ').trim();
+  const desc = (inc.description || '').replace(/\s+/g, ' ').trim();
 
   if (!summaryText && desc) {
     if (city !== '—' && whenNice) {
       summaryText =
-        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${srcLabel}.`;
+        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${src}.`;
     } else {
       summaryText = desc;
     }
   }
+
+  // light trimming before enrichment
   if (summaryText.length > 500) {
     const cut = summaryText.slice(0, 500);
     const lastDot = cut.lastIndexOf('.');
     summaryText = (lastDot > 200 ? cut.slice(0, lastDot + 1) : cut) + ' …';
   }
 
-  // Fill main fields
-  titleEl.textContent = inc.title || 'Untitled incident';
-  metaEl.textContent  = [
-    city !== '—' ? city : null,
-    inc.risk || null,
-    whenNice || null
-  ].filter(Boolean).join(' • ');
+  // NEW: pass through the enrichment helper
+  summaryText = enrichIncidentSummary(inc, summaryText);
 
-  summEl.textContent = summaryText || '(no summary provided – open source for details).';
+  // --- Fill main fields ---
+  titleEl.textContent = inc.title || 'Untitled incident';
+  metaEl.textContent  = `${city} • ${inc.risk || 'n/a'} • ${whenNice || ''}`.trim();
+  summEl.textContent  = summaryText || '(no summary provided – open source for details).';
   locEl.textContent  = inc.location ||
     `Approx area: ${city} (exact location may be refining).`;
   impEl.textContent  = inc.impact ||
@@ -1136,6 +1230,7 @@ function initBriefPad(incident) {
 
 </body>
 </html>
+
 
 
 
