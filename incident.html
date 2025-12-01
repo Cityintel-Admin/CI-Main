@@ -901,6 +901,76 @@ function updateDistancePanel(inc) {
   }
 
 
+	
+// Build auto-related activity from alertsData (last 30 days, same city/country)
+function buildAutoRelatedFromAlerts(inc) {
+  if (!inc) return [];
+
+  const base = Array.isArray(inc.related) ? inc.related.slice() : [];
+
+  const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
+  if (!alerts.length) return base;
+
+  const parseWhen = (v) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const mainWhen = parseWhen(inc.when);
+  if (!mainWhen) return base;
+
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const from = new Date(mainWhen.getTime() - THIRTY_DAYS);
+
+  const city    = (inc.city    || '').toLowerCase();
+  const country = (inc.country || '').toLowerCase();
+
+  // Avoid duplicates (use simple date+title key)
+  const existingKeys = new Set(
+    base.map(r => `${(r.when || '').split('T')[0]}|${(r.title || '').toLowerCase()}`)
+  );
+
+  alerts.forEach(a => {
+    const dt = parseWhen(a.time || a.datetime || a.date || a.when);
+    if (!dt) return;
+
+    // Only keep things BEFORE the main incident, and within last 30 days
+    if (dt >= mainWhen || dt < from) return;
+
+    const aCity    = (a.city || '').toLowerCase();
+    const aCountry = ((a.country || a.Country) || '').toLowerCase();
+
+    const matchesCity =
+      city && aCity && aCity === city;
+
+    const matchesCountry =
+      !matchesCity && country && aCountry && aCountry === country;
+
+    if (!matchesCity && !matchesCountry) return;
+
+    const key = `${dt.toISOString().split('T')[0]}|${(a.title || '').toLowerCase()}`;
+    if (existingKeys.has(key)) return;
+    existingKeys.add(key);
+
+    // Normalise risk → priority label
+    const r = (a.risk || '').toLowerCase();
+    let priority = 'Low';
+    if (r.startsWith('hi')) priority = 'High';
+    else if (r.startsWith('me')) priority = 'Med';
+
+    base.push({
+      title: a.title || 'Related alert',
+      city:  a.city  || (a.country || a.Country || ''),
+      when:  dt.toISOString(),
+      priority
+      // no id → these are context-only, not clickable to a specific incident
+    });
+  });
+
+  return base;
+}
+
 
 /* ---------- incident loader: supports Live Feed (id=) AND Brief (search=) ---------- */
 (function loadIncident(){
@@ -1040,7 +1110,7 @@ function updateDistancePanel(inc) {
   if (!summaryText && desc) {
     if (city !== '—' && whenNice) {
       summaryText =
-        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${src}.`;
+        `${desc} Location: ${city}. Reported around ${whenNice}. Source: ${srcLabel}.`;
     } else {
       summaryText = desc;
     }
@@ -1061,18 +1131,21 @@ function updateDistancePanel(inc) {
   metaEl.textContent  = `${city} • ${inc.risk || 'n/a'} • ${whenNice || ''}`.trim();
   summEl.textContent  = summaryText || '(no summary provided – open source for details).';
   locEl.textContent  = inc.location ||
-    `Approx area: ${city} (exact location may be refining).`;
+  `Approx area: ${city} (exact location may be refining).`;
   impEl.textContent  = inc.impact ||
-    'Nearest office: CityIntel HQ. Impact: Elevated security posture recommended.';
+  'Nearest office: CityIntel HQ. Impact: Elevated security posture recommended.';
 
-  // Related list (for now: none when coming from Brief)
-  if (relatedEl) {
-    relatedEl.innerHTML = '<div class="muted">No earlier related items.</div>';
-  }
+// Auto-augment related activity with alerts from same city/country (last 30 days)
+inc.related = buildAutoRelatedFromAlerts(inc);
+renderRelatedActivity(inc);
+  
 
   // Map / distance panel
   updateDistancePanel(inc);
+  renderLiveContext(inc);
+	}
 
+ 
   // Source button + tag
   if (srcBtn) {
     if (inc.url) {
@@ -1288,6 +1361,7 @@ function initBriefPad(incident) {
 
 </body>
 </html>
+
 
 
 
