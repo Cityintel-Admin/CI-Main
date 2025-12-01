@@ -298,6 +298,22 @@
 .related-priority.med  { background:#b85; }
 .related-priority.low  { background:#3b5; }
 
+.related-list { position: relative; padding-left: 10px;}
+
+.related-list::before { content: ""; position: absolute;
+  left: 3px; top: 4px; bottom: 4px;
+  width: 2px; background: rgba(255,255,255,0.08);
+}
+
+.related-item { position: relative; padding-left: 14px;}
+
+.related-item::before {  content: ""; position: absolute;
+  left: 0; top: 14px; width: 8px;
+  height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+}
+
+	  
 .page-label{ font-size:26px; text-transform:uppercase;
   letter-spacing:.08em; color:var(--muted); margin-bottom:4px;
 }
@@ -805,43 +821,85 @@ function updateDistancePanel(inc) {
 
 
 /* ---------- render related activity list (shared helper) ---------- */
-function renderRelatedActivity(inc) {
-  const box = document.getElementById('relatedList');
-  if (!box) return;
+  function renderRelatedActivity(inc) {
+    const box = document.getElementById('relatedList');
+    if (!box) return;
 
-  const rel = Array.isArray(inc.related) ? inc.related : [];
-  if (!rel.length) {
-    box.innerHTML = '<div class="muted">No earlier related items.</div>';
-    return;
-  }
-
-  box.innerHTML = '';
-  rel.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'related-item';
-
-    div.innerHTML = `
-      <div class="related-title">
-        ${r.title || 'Related activity'}
-        <span class="related-priority ${(r.priority || 'low').toLowerCase()}">
-          ${r.priority || ''}
-        </span>
-      </div>
-      <div class="related-meta">
-        ${r.city || '—'} · ${fmtWhen(r.when) || ''}
-      </div>
-    `;
-
-    // clicking takes you to that incident (live-feed mode only)
-    if (r.id) {
-      div.addEventListener('click', () => {
-        location.href = `incident.html?id=${r.id}`;
-      });
+    // No related items → friendly message
+    if (!inc || !Array.isArray(inc.related) || !inc.related.length) {
+      box.innerHTML = '<div class="muted">No earlier related items.</div>';
+      return;
     }
 
-    box.appendChild(div);
-  });
-}
+    // Safe date parser
+    const parseWhen = (v) => {
+      if (!v) return null;
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const mainWhen = parseWhen(inc.when);
+
+    // Sort related items oldest → newest (timeline style)
+    const items = inc.related.slice().sort((a, b) => {
+      const da = parseWhen(a.when);
+      const db = parseWhen(b.when);
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return da - db;
+    });
+
+    // Helper: "3 days earlier", "5 hours earlier", etc.
+    const earlierLabel = (ref, other) => {
+      if (!ref || !other) return '';
+      const diffMs = ref.getTime() - other.getTime();
+      if (diffMs <= 0) return ''; // not earlier or same time
+      const diffHours = diffMs / (1000 * 60 * 60);
+      if (diffHours < 24) {
+        const h = Math.round(diffHours);
+        return h <= 1 ? 'about 1 hour earlier' : `about ${h} hours earlier`;
+      }
+      const diffDays = diffHours / 24;
+      const d = Math.round(diffDays);
+      return d <= 1 ? 'about 1 day earlier' : `about ${d} days earlier`;
+    };
+
+    box.innerHTML = '';
+
+    items.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'related-item';
+
+      const whenShort = fmtWhen(r.when) || '';
+      const city = r.city || '—';
+      const pri  = (r.priority || '').toLowerCase(); // "high" / "med" / "low"
+      const priLabel = r.priority || '';             // original case e.g. "High"
+
+      const earlier = mainWhen ? earlierLabel(mainWhen, parseWhen(r.when)) : '';
+
+      div.innerHTML = `
+        <div class="related-title">
+          ${r.title || 'Related activity'}
+          ${priLabel ? `<span class="related-priority ${pri}">${priLabel}</span>` : ''}
+        </div>
+        <div class="related-meta">
+          ${whenShort || ''} · ${city}
+          ${earlier ? ` · ${earlier}` : ''}
+        </div>
+      `;
+
+      // Clicking takes you to that incident
+      if (r.id) {
+        div.addEventListener('click', () => {
+          location.href = `incident.html?id=${encodeURIComponent(r.id)}`;
+        });
+      }
+
+      box.appendChild(div);
+    });
+  }
+
 
 
 /* ---------- incident loader: supports Live Feed (id=) AND Brief (search=) ---------- */
@@ -1230,6 +1288,7 @@ function initBriefPad(incident) {
 
 </body>
 </html>
+
 
 
 
