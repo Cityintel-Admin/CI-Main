@@ -269,6 +269,15 @@
 }
 
 
+	#incidentInsight ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+#incidentInsight li {
+  margin-bottom: 4px;
+}
+  
+
 
 .related-item {
   padding: 8px 0;
@@ -477,6 +486,20 @@
   <h3>Live context (next 7 days)</h3>
   <div id="liveContextList" class="subtext">
     Looking for other upcoming alerts in this area…
+  </div>
+</section>
+
+
+	  <section class="card" style="grid-column: span 5;">
+  <h3>
+    Analyst insight
+    <span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:6px;">
+      Auto-generated from feed data
+    </span>
+  </h3>
+
+  <div id="incidentInsight" class="subtext">
+    Building quick incident insight…
   </div>
 </section>
 
@@ -982,6 +1005,83 @@ function buildAutoRelatedFromAlerts(inc) {
 }
 
 
+
+// ---------- Analyst-style incident insight (rule-based, no external AI) ----------
+function buildIncidentInsight(inc) {
+  if (!inc) {
+    return '<div>No incident context available.</div>';
+  }
+
+  const city = inc.city || 'this location';
+  const country = inc.country || inc.Country || '';
+  const whenNice = fmtWhen(inc.when);
+  const risk = (inc.risk || '').toString().toLowerCase();
+
+  const text = (
+    (inc.title || '') + ' ' +
+    (inc.summary || '') + ' ' +
+    (inc.description || '')
+  ).toLowerCase();
+
+  // Classify rough scenario
+  let scenario = 'civic mobilisation';
+  if (/strike|walkout|industrial|union\b|pay deal|ballot/.test(text)) {
+    scenario = 'labour / union action';
+  } else if (/march|rally|demonstration|demo|mobilisation|protest/.test(text)) {
+    scenario = 'street protest / march';
+  } else if (/vigil|memorial|candle|mourning/.test(text)) {
+    scenario = 'vigil / symbolic gathering';
+  } else if (/election|vote|polling|ballot box|campaign/.test(text)) {
+    scenario = 'election / political process';
+  }
+
+  // Risk driver line
+  let driver = `Activity appears linked to ${scenario}.`;
+  if (/budget|austerity|tax|fiscal/.test(text)) {
+    driver = 'Activity is driven by fiscal / budget tensions and public-sector expectations.';
+  } else if (/tuition|university|campus|students? union/.test(text)) {
+    driver = 'Activity is centred on higher-education and student-union dynamics.';
+  } else if (/police|brutality|security forces|riot police/.test(text)) {
+    driver = 'Tensions with security forces are a visible driver of mobilisation.';
+  }
+
+  // Policing posture
+  let policing = 'Expect a standard public-order posture with visible policing at key junctions and near the venue.';
+  if (risk === 'high') {
+    policing = 'Expect a robust public-order posture, with potential for cordons, diversions and short-notice closures if crowds grow.';
+  } else if (risk === 'low') {
+    policing = 'Policing posture is likely light-touch, focused on traffic control and basic crowd safety.';
+  }
+
+  // Business / operations impact
+  let impact = `Operational impact is likely to focus on local congestion and short delays around ${city}.`;
+  if (risk === 'high') {
+    impact = `High disruption risk near ${city}; plan for route changes, adjusted staff arrival times and possible impacts to client meetings.`;
+  } else if (risk === 'medium' || risk === 'med') {
+    impact = `Moderate disruption risk around main approaches in ${city}; early travel advice and light mitigation should be sufficient.`;
+  }
+
+  // Confidence level (very simple for now)
+  let confidence = 'Medium';
+  if (!inc.when || !inc.summary) confidence = 'Low';
+  if (risk === 'high' && inc.summary && inc.when) confidence = 'Medium–High';
+
+  const placeLabel = [city, country].filter(Boolean).join(', ') || 'the affected area';
+  const timing = whenNice ? `Scheduled around ${whenNice}.` : '';
+
+  return `
+    <ul>
+      <li><strong>Primary drivers:</strong> ${driver}</li>
+      <li><strong>Location focus:</strong> Key exposure is in and around ${placeLabel}. ${timing}</li>
+      <li><strong>Policing outlook:</strong> ${policing}</li>
+      <li><strong>Business impact:</strong> ${impact}</li>
+      <li><strong>Confidence level:</strong> ${confidence} (based on current feed detail; reassess if route or turnout changes).</li>
+    </ul>
+  `;
+}
+
+
+	
 /* ---------- incident loader: supports Live Feed (id=) AND Brief (search=) ---------- */
 (function loadIncident(){
   const params    = new URLSearchParams(location.search);
@@ -1145,6 +1245,14 @@ function buildAutoRelatedFromAlerts(inc) {
   impEl.textContent  = inc.impact ||
   'Nearest office: CityIntel HQ. Impact: Elevated security posture recommended.';
 
+  // Analyst insight panel
+  const insightBox = document.getElementById('incidentInsight');
+  if (insightBox) {
+    insightBox.innerHTML = buildIncidentInsight(inc);
+  }
+
+
+	
 // Auto-augment related activity with alerts from same city/country (last 30 days)
 inc.related = buildAutoRelatedFromAlerts(inc);
 renderRelatedActivity(inc);
@@ -1378,6 +1486,7 @@ function initBriefPad(incident) {
 
 </body>
 </html>
+
 
 
 
