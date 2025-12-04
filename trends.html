@@ -182,15 +182,28 @@
 
 
 <section class="card" style="grid-column: span 12;">
-  <h3> Protests — last 30 days</h3>
-  <div id="londonProtestsSummary" class="subtext" style="margin-bottom:8px;">
-    Loading recent protest activity for London…
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px;">
+    <h3 style="margin:0;">Protests — last 30 days</h3>
+
+    <label style="font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:6px;">
+      City
+      <select id="cityProtestSelect"
+              style="background:#050810;border:1px solid #2f3540;border-radius:999px;
+                     padding:4px 10px;color:#e5e7eb;font-size:12px;">
+        <!-- JS will populate options -->
+      </select>
+    </label>
   </div>
 
-  <div id="londonProtestsList" class="subtext">
+  <div id="cityProtestsSummary" class="subtext" style="margin-bottom:8px;">
+    Loading recent protest activity…
+  </div>
+
+  <div id="cityProtestsList" class="subtext">
     <!-- JS will populate -->
   </div>
 </section>
+
 
 
 
@@ -970,17 +983,51 @@
 
 	
 <script>
-// Simple helper to parse dates safely
+// --- tiny helper to parse dates safely ---
 function ciParseDate(v) {
   if (!v) return null;
   const d = new Date(v);
   return isNaN(d.getTime()) ? null : d;
 }
 
-// Render "London protests — last 30 days" using alertsData
-function renderLondonProtestsLast30() {
-  const summaryBox = document.getElementById('londonProtestsSummary');
-  const listBox    = document.getElementById('londonProtestsList');
+// Basic "does this alert look like a protest?" check
+function isProtestyAlert(a) {
+  const text = (
+    (a.title || '') + ' ' +
+    (a.summary || '') + ' ' +
+    (a.description || '')
+  ).toLowerCase();
+
+  return /protest|march|rally|demonstration|demo/.test(text);
+}
+
+// Build a list of cities that have protesty alerts in the last ~90 days
+function buildProtestCities() {
+  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+  const now  = new Date();
+  const from = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); // 90 days
+
+  const set = new Set();
+
+  data.forEach(a => {
+    const dt = ciParseDate(a.time || a.datetime || a.date || a.when);
+    if (!dt || dt < from || dt > now) return;
+    if (!isProtestyAlert(a)) return;
+
+    const city = (a.city || '').trim();
+    if (!city) return;
+
+    set.add(city);
+  });
+
+  return Array.from(set).sort((a, b) => a.localeCompare(b));
+}
+
+// Render "protests — last 30 days" for a given city
+function renderCityProtestsLast30(cityName) {
+  const summaryBox = document.getElementById('cityProtestsSummary');
+  const listBox    = document.getElementById('cityProtestsList');
+  const selectEl   = document.getElementById('cityProtestSelect');
 
   if (!summaryBox || !listBox) return;
 
@@ -992,7 +1039,8 @@ function renderLondonProtestsLast30() {
   }
 
   const now  = new Date();
-  const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // last 30 days
+  const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days
+  const citySlug = (cityName || '').toLowerCase();
 
   const matches = data
     .map(a => {
@@ -1001,29 +1049,22 @@ function renderLondonProtestsLast30() {
     })
     .filter(a => a._dt && a._dt >= from && a._dt <= now)
     .filter(a => {
-      const city = (a.city || '').toLowerCase();
-      if (city !== 'london') return false;
+      if (!isProtestyAlert(a)) return false;
 
-      const text = (
-        (a.title   || '') + ' ' +
-        (a.summary || '') + ' ' +
-        (a.description || '')
-      ).toLowerCase();
-
-      // very simple "protesty" keyword filter
-      return /protest|march|rally|demonstration|demo/.test(text);
+      const aCity = (a.city || '').toLowerCase();
+      return citySlug && aCity === citySlug;
     })
     .sort((a, b) => b._dt - a._dt); // newest first
 
   if (!matches.length) {
     summaryBox.textContent =
-      'No protest-related alerts for London in the last 30 days.';
+      `No protest-related alerts for ${cityName} in the last 30 days.`;
     listBox.textContent = '';
     return;
   }
 
   summaryBox.textContent =
-    `${matches.length} protest-related alert${matches.length === 1 ? '' : 's'} in London over the last 30 days.`;
+    `${matches.length} protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the last 30 days.`;
 
   listBox.innerHTML = '';
   matches.slice(0, 8).forEach(a => {
@@ -1038,7 +1079,7 @@ function renderLondonProtestsLast30() {
       minute: '2-digit'
     });
 
-    const risk = (a.risk || '').toUpperCase() || 'RISK';
+    const risk  = (a.risk || '').toUpperCase() || 'RISK';
     const title = a.title || 'Protest-related alert';
 
     row.innerHTML = `
@@ -1049,14 +1090,14 @@ function renderLondonProtestsLast30() {
         </span>
       </div>
       <div style="font-size:12px;color:#8e97a3;">
-        ${when} • London
+        ${when} • ${cityName}
       </div>
       <div style="font-size:12px;margin-top:2px;">
         ${(a.summary || '').slice(0, 160)}${(a.summary || '').length > 160 ? '…' : ''}
       </div>
     `;
 
-    // click → open in incident drilldown via the brief-style route
+    // click → open in Incident Drilldown via the brief-style route
     const titleForSearch = (a.title || '').trim();
     if (titleForSearch) {
       row.addEventListener('click', () => {
@@ -1069,11 +1110,51 @@ function renderLondonProtestsLast30() {
   });
 }
 
-// kick it off once the page is ready
-document.addEventListener('DOMContentLoaded', renderLondonProtestsLast30);
+// Initialise selector + first render
+document.addEventListener('DOMContentLoaded', () => {
+  const selectEl   = document.getElementById('cityProtestSelect');
+  const summaryBox = document.getElementById('cityProtestsSummary');
+  if (!selectEl) return;
+
+  const cities = buildProtestCities();
+
+  if (!cities.length) {
+    // Fallback if we don't see any protest cities
+    selectEl.innerHTML = `<option value="">No cities found</option>`;
+    if (summaryBox) {
+      summaryBox.textContent = 'No protest-related alerts found in the feed yet.';
+    }
+    return;
+  }
+
+  // Build options
+  selectEl.innerHTML = cities.map(c => {
+    const slug = c.toLowerCase();
+    return `<option value="${slug}">${c}</option>`;
+  }).join('');
+
+  // Prefer London as default if available
+  let defaultCity = cities[0];
+  const hasLondon = cities.some(c => c.toLowerCase() === 'london');
+  if (hasLondon) defaultCity = cities.find(c => c.toLowerCase() === 'london');
+
+  selectEl.value = defaultCity.toLowerCase();
+
+  // First render
+  renderCityProtestsLast30(defaultCity);
+
+  // On change
+  selectEl.addEventListener('change', () => {
+    const chosenSlug = selectEl.value;
+    const chosenCity = cities.find(c => c.toLowerCase() === chosenSlug) || chosenSlug || 'Selected city';
+    renderCityProtestsLast30(chosenCity);
+  });
+});
 </script>
+
 
 	
 </body>
 </html>
+
 
