@@ -206,6 +206,30 @@
 
 
 
+<section class="card" style="grid-column: span 12;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px;">
+    <h3 style="margin:0;">Upcoming protests — next 30 days</h3>
+
+    <label style="font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:6px;">
+      City
+      <select id="cityUpcomingSelect"
+              style="background:#050810;border:1px solid #2f3540;border-radius:999px;
+                     padding:4px 10px;color:#e5e7eb;font-size:12px;">
+        <!-- JS will populate options (same set as above) -->
+      </select>
+    </label>
+  </div>
+
+  <div id="cityUpcomingSummary" class="subtext" style="margin-bottom:8px;">
+    Loading upcoming protest activity…
+  </div>
+
+  <div id="cityUpcomingList" class="subtext">
+    <!-- JS will populate -->
+  </div>
+</section>
+
+		  
 
 		  
         <!-- Risk Mix + Window Controls -->
@@ -226,37 +250,6 @@
           </div>
         </section>
 
-
-		  
-        <!-- Compare (City/Country) -->
-        <section class="card" style="grid-column: span 6;">
-          <div class="row" style="justify-content:space-between">
-            <h3 style="margin:0">Compare (next 30 days)</h3>
-            <div class="row">
-              <label class="pill" style="display:flex;gap:8px;align-items:center">
-                Group by:
-                <select id="groupBy" style="background:transparent;border:none;color:var(--text)">
-                  <option value="city">City</option>
-                  <option value="country">Country</option>
-                </select>
-              </label>
-              <input id="groupFilter" placeholder="Filter…" class="pill" style="border:none;background:var(--g700);color:var(--text)">
-              <button class="btn" id="btnReset">Reset</button>
-            </div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th id="thLabel">City</th>
-                <th>Count</th>
-                <th>Risk (mode)</th>
-                <th>Trend</th>
-                <th>Next Event</th>
-              </tr>
-            </thead>
-            <tbody id="groupBody"></tbody>
-          </table>
-        </section>
       </div>
     </main>
   </div>
@@ -1023,11 +1016,10 @@ function buildProtestCities() {
   return Array.from(set).sort((a, b) => a.localeCompare(b));
 }
 
-// Render "protests — last 30 days" for a given city
+// ---------- LAST 30 DAYS ----------
 function renderCityProtestsLast30(cityName) {
   const summaryBox = document.getElementById('cityProtestsSummary');
   const listBox    = document.getElementById('cityProtestsList');
-  const selectEl   = document.getElementById('cityProtestSelect');
 
   if (!summaryBox || !listBox) return;
 
@@ -1039,7 +1031,7 @@ function renderCityProtestsLast30(cityName) {
   }
 
   const now  = new Date();
-  const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days
+  const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // last 30 days
   const citySlug = (cityName || '').toLowerCase();
 
   const matches = data
@@ -1097,7 +1089,6 @@ function renderCityProtestsLast30(cityName) {
       </div>
     `;
 
-    // click → open in Incident Drilldown via the brief-style route
     const titleForSearch = (a.title || '').trim();
     if (titleForSearch) {
       row.addEventListener('click', () => {
@@ -1110,45 +1101,147 @@ function renderCityProtestsLast30(cityName) {
   });
 }
 
-// Initialise selector + first render
+// ---------- NEXT 30 DAYS ----------
+function renderCityUpcomingProtests30(cityName) {
+  const summaryBox = document.getElementById('cityUpcomingSummary');
+  const listBox    = document.getElementById('cityUpcomingList');
+
+  if (!summaryBox || !listBox) return;
+
+  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+  if (!data.length) {
+    summaryBox.textContent = 'No feed data is available yet.';
+    listBox.textContent    = '';
+    return;
+  }
+
+  const now  = new Date();
+  const end  = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // next 30 days
+  const citySlug = (cityName || '').toLowerCase();
+
+  const matches = data
+    .map(a => {
+      const dt = ciParseDate(a.time || a.datetime || a.date || a.when);
+      return { ...a, _dt: dt };
+    })
+    .filter(a => a._dt && a._dt >= now && a._dt <= end)
+    .filter(a => {
+      if (!isProtestyAlert(a)) return false;
+
+      const aCity = (a.city || '').toLowerCase();
+      return citySlug && aCity === citySlug;
+    })
+    .sort((a, b) => a._dt - b._dt); // soonest first
+
+  if (!matches.length) {
+    summaryBox.textContent =
+      `No upcoming protest-related alerts for ${cityName} in the next 30 days.`;
+    listBox.textContent = '';
+    return;
+  }
+
+  summaryBox.textContent =
+    `${matches.length} upcoming protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the next 30 days.`;
+
+  listBox.innerHTML = '';
+  matches.slice(0, 8).forEach(a => {
+    const row = document.createElement('div');
+    row.style.marginBottom = '8px';
+    row.style.cursor = 'pointer';
+
+    const when = a._dt.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const risk  = (a.risk || '').toUpperCase() || 'RISK';
+    const title = a.title || 'Upcoming protest';
+
+    row.innerHTML = `
+      <div style="font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;">
+        <span>${title}</span>
+        <span style="font-size:11px;border-radius:999px;padding:2px 8px;border:1px solid rgba(255,255,255,0.18);opacity:0.85;">
+          ${risk}
+        </span>
+      </div>
+      <div style="font-size:12px;color:#8e97a3;">
+        ${when} • ${cityName}
+      </div>
+      <div style="font-size:12px;margin-top:2px;">
+        ${(a.summary || '').slice(0, 160)}${(a.summary || '').length > 160 ? '…' : ''}
+      </div>
+    `;
+
+    const titleForSearch = (a.title || '').trim();
+    if (titleForSearch) {
+      row.addEventListener('click', () => {
+        const url = `incident.html?search=${encodeURIComponent(titleForSearch)}&from=brief`;
+        location.href = url;
+      });
+    }
+
+    listBox.appendChild(row);
+  });
+}
+
+// ---------- Initialise both cards + keep selectors in sync ----------
 document.addEventListener('DOMContentLoaded', () => {
-  const selectEl   = document.getElementById('cityProtestSelect');
-  const summaryBox = document.getElementById('cityProtestsSummary');
-  if (!selectEl) return;
+  const pastSelect    = document.getElementById('cityProtestSelect');
+  const upcomingSelect = document.getElementById('cityUpcomingSelect');
+  const pastSummary   = document.getElementById('cityProtestsSummary');
+  const upcomingSummary = document.getElementById('cityUpcomingSummary');
 
   const cities = buildProtestCities();
 
   if (!cities.length) {
-    // Fallback if we don't see any protest cities
-    selectEl.innerHTML = `<option value="">No cities found</option>`;
-    if (summaryBox) {
-      summaryBox.textContent = 'No protest-related alerts found in the feed yet.';
-    }
+    if (pastSelect)    pastSelect.innerHTML    = `<option value="">No cities found</option>`;
+    if (upcomingSelect) upcomingSelect.innerHTML = `<option value="">No cities found</option>`;
+    if (pastSummary)   pastSummary.textContent   = 'No protest-related alerts found in the feed yet.';
+    if (upcomingSummary) upcomingSummary.textContent = 'No protest-related alerts found in the feed yet.';
     return;
   }
 
-  // Build options
-  selectEl.innerHTML = cities.map(c => {
+  const optionsHtml = cities.map(c => {
     const slug = c.toLowerCase();
     return `<option value="${slug}">${c}</option>`;
   }).join('');
+
+  if (pastSelect)    pastSelect.innerHTML    = optionsHtml;
+  if (upcomingSelect) upcomingSelect.innerHTML = optionsHtml;
 
   // Prefer London as default if available
   let defaultCity = cities[0];
   const hasLondon = cities.some(c => c.toLowerCase() === 'london');
   if (hasLondon) defaultCity = cities.find(c => c.toLowerCase() === 'london');
 
-  selectEl.value = defaultCity.toLowerCase();
+  const defaultSlug = defaultCity.toLowerCase();
+  if (pastSelect)    pastSelect.value    = defaultSlug;
+  if (upcomingSelect) upcomingSelect.value = defaultSlug;
 
-  // First render
-  renderCityProtestsLast30(defaultCity);
+  function handleCityChange(slug) {
+    const city = cities.find(c => c.toLowerCase() === slug) || slug || 'Selected city';
+    if (pastSelect)    pastSelect.value    = slug;
+    if (upcomingSelect) upcomingSelect.value = slug;
+    renderCityProtestsLast30(city);
+    renderCityUpcomingProtests30(city);
+  }
 
-  // On change
-  selectEl.addEventListener('change', () => {
-    const chosenSlug = selectEl.value;
-    const chosenCity = cities.find(c => c.toLowerCase() === chosenSlug) || chosenSlug || 'Selected city';
-    renderCityProtestsLast30(chosenCity);
-  });
+  // initial render
+  handleCityChange(defaultSlug);
+
+  if (pastSelect) {
+    pastSelect.addEventListener('change', () => {
+      handleCityChange(pastSelect.value);
+    });
+  }
+
+  if (upcomingSelect) {
+    upcomingSelect.addEventListener('change', () => {
+      handleCityChange(upcomingSelect.value);
+    });
+  }
 });
 </script>
 
@@ -1156,5 +1249,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 </body>
 </html>
+
 
 
