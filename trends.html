@@ -232,23 +232,63 @@
 		  
 
 		  
-        <!-- Risk Mix + Window Controls -->
-        <section class="card" style="grid-column: span 6;">
-          <div class="row" style="justify-content:space-between">
-            <h3 style="margin:0">Risk Mix</h3>
-            <div class="row">
-              <div class="muted">Window:</div>
-              <input id="winDays" class="slider" type="range" min="7" max="90" step="1" value="30">
-              <div class="pill" id="winLabel">30 days</div>
-            </div>
-          </div>
-          <svg id="mixChart" viewBox="0 0 260 220"></svg>
-          <div class="legend" style="margin-top:6px">
-            <span class="dot" style="background:#33c48d"></span>Low
-            <span class="dot" style="background:#f0b429"></span>Med
-            <span class="dot" style="background:#ff5a5f"></span>High
-          </div>
-        </section>
+<section class="card" id="riskMixCard">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <h3 style="margin:0;">Risk Mix — <span id="riskMixCityLabel">All cities</span></h3>
+
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#9ca3af;">
+      <span>Window:</span>
+      <input id="riskWindow" type="range" min="7" max="60" value="30"
+             style="width:160px;">
+      <span id="riskWindowLabel">30 days</span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:24px;">
+    <!-- donut -->
+    <div style="position:relative;width:140px;height:140px;">
+      <div id="riskDonut"
+           style="
+             width:100%;height:100%;border-radius:50%;
+             background:radial-gradient(circle at center,#050810 58%,transparent 59%),
+                         conic-gradient(#10b981 0 33%,#fbbf24 33% 66%,#ef4444 66% 100%);
+           ">
+      </div>
+      <div style="
+        position:absolute;inset:0;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;font-size:13px;">
+        <div id="riskTotal" style="font-size:22px;font-weight:700;">0</div>
+        <div style="font-size:11px;color:#9ca3af;">upcoming</div>
+      </div>
+    </div>
+
+    <!-- legend + text -->
+    <div style="flex:1;font-size:12px;">
+      <div id="riskMixSummary" style="margin-bottom:8px;color:#9ca3af;">
+        No upcoming protests in this window.
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#10b981;margin-right:6px;"></span>
+          Low
+          <span id="riskLowCount" style="margin-left:4px;color:#9ca3af;">0</span>
+        </div>
+        <div>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#fbbf24;margin-right:6px;"></span>
+          Med
+          <span id="riskMedCount" style="margin-left:4px;color:#9ca3af;">0</span>
+        </div>
+        <div>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#ef4444;margin-right:6px;"></span>
+          High
+          <span id="riskHighCount" style="margin-left:4px;color:#9ca3af;">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
       </div>
     </main>
@@ -1246,9 +1286,133 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
+
+	<script>
+// --- helpers ---
+function normaliseRisk(r){
+  const s = String(r||'').toLowerCase();
+  if (s.startsWith('hi')) return 'high';
+  if (s.startsWith('me')) return 'med';
+  return 'low';
+}
+
+function filterAlertsForRisk(city, days){
+  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+  const now = new Date();
+  const end = new Date(now.getTime() + days*24*60*60*1000);
+
+  const cityLc = (city || '').toLowerCase();
+  const isAll = !cityLc || cityLc === 'all';
+
+  return data.filter(a => {
+    const rawDate = a.time || a.datetime || a.date || a.when;
+    if (!rawDate) return false;
+    const dt = new Date(rawDate);
+    if (isNaN(dt)) return false;
+    if (dt < now || dt > end) return false;
+
+    if (isAll) return true;
+    const aCityLc = (a.city || '').toLowerCase();
+    return aCityLc === cityLc;
+  });
+}
+
+function computeRiskBuckets(list){
+  const counts = { low:0, med:0, high:0 };
+  list.forEach(a => {
+    const key = normaliseRisk(a.risk);
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return counts;
+}
+
+function renderRiskMix(){
+  const citySelect = document.getElementById('trendCitySelector'); // <-- change id if needed
+  const city = citySelect ? citySelect.value : 'All';
+  const cityLabel = city && city.toLowerCase() !== 'all' ? city : 'All cities';
+
+  const windowInput = document.getElementById('riskWindow');
+  const days = windowInput ? parseInt(windowInput.value,10) || 30 : 30;
+
+  const alerts = filterAlertsForRisk(city, days);
+  const counts = computeRiskBuckets(alerts);
+  const total  = alerts.length || 0;
+
+  const cityLabelEl = document.getElementById('riskMixCityLabel');
+  const windowLabel = document.getElementById('riskWindowLabel');
+  const totalEl     = document.getElementById('riskTotal');
+  const summaryEl   = document.getElementById('riskMixSummary');
+  const donutEl     = document.getElementById('riskDonut');
+
+  if (cityLabelEl) cityLabelEl.textContent = cityLabel;
+  if (windowLabel) windowLabel.textContent = `${days} days`;
+  if (totalEl)     totalEl.textContent = total.toString();
+
+  // legend counts
+  const lowEl  = document.getElementById('riskLowCount');
+  const medEl  = document.getElementById('riskMedCount');
+  const highEl = document.getElementById('riskHighCount');
+  if (lowEl)  lowEl.textContent  = `${counts.low} low`;
+  if (medEl)  medEl.textContent  = `${counts.med} med`;
+  if (highEl) highEl.textContent = `${counts.high} high`;
+
+  if (!donutEl) return;
+
+  if (!total){
+    donutEl.style.background =
+      'radial-gradient(circle at center,#050810 58%,transparent 59%),' +
+      'conic-gradient(#374151 0 100%)';
+    if (summaryEl) {
+      summaryEl.textContent =
+        `No upcoming protests in ${cityLabel.toLowerCase()} in the next ${days} days.`;
+    }
+    return;
+  }
+
+  const pctLow  = (counts.low  / total) * 100;
+  const pctMed  = (counts.med  / total) * 100;
+  const pctHigh = 100 - pctLow - pctMed;
+
+  donutEl.style.background = `
+    radial-gradient(circle at center,#050810 58%,transparent 59%),
+    conic-gradient(
+      #10b981 0 ${pctLow}%,
+      #fbbf24 ${pctLow}% ${pctLow + pctMed}%,
+      #ef4444 ${pctLow + pctMed}% 100%
+    )
+  `;
+
+  if (summaryEl) {
+    summaryEl.textContent =
+      `${total} upcoming protests in ${cityLabel.toLowerCase()} in the next ${days} days.`;
+  }
+}
+
+// --- hook up events ---
+(function initRiskMix(){
+  const windowInput = document.getElementById('riskWindow');
+  if (windowInput){
+    windowInput.addEventListener('input', renderRiskMix);
+  }
+
+  const citySelect = document.getElementById('trendCitySelector'); // adjust id if needed
+  if (citySelect){
+    citySelect.addEventListener('change', renderRiskMix);
+  }
+
+  // first render once alertsData is present
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    renderRiskMix();
+  } else {
+    document.addEventListener('DOMContentLoaded', renderRiskMix);
+  }
+})();
+</script>
+
 	
 </body>
 </html>
+
 
 
 
