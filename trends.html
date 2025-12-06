@@ -272,16 +272,24 @@
 </section>
 
 		  
-
-		  
 <!-- RISK MIX FOR SELECTED CITY -->
 <section class="card" style="grid-column: 1 / -1;">
-  <h3>
-    Risk Mix — <span id="riskMixCityLabel">All cities</span>
-    <span style="font-size:12px;font-weight:400;color:#9ca3af;margin-left:auto;">
+  <h3 style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <span>Risk Mix — <span id="riskMixCityLabel">All cities</span></span>
+    <span style="font-size:12px;font-weight:400;color:#9ca3af;">
       Window: <span id="riskMixWindowLabel">30 days</span>
     </span>
   </h3>
+
+  <!-- window slider -->
+  <div class="row" style="gap:8px;margin:2px 0 10px;">
+    <span class="muted" style="font-size:12px;">Adjust window</span>
+    <input id="riskWindowSlider"
+           type="range"
+           min="7" max="90" step="7" value="30"
+           class="slider"
+           style="max-width:220px;">
+  </div>
 
   <div id="riskMixBody">
     <div id="riskMixBars">
@@ -315,8 +323,6 @@
     </div>
   </div>
 </section>
-
-
 
       </div>
     </main>
@@ -657,142 +663,7 @@
       });
     }
 
-    // ---------- 2) Risk Mix Donut ----------
-    function aggregateWindow(days){
-      const now = new Date();
-      const end = new Date(now.getTime() + days*86400000);
-      const counts = {low:0, med:0, high:0};
-      NORM.forEach(a=>{
-        if(a._dt >= now && a._dt <= end){ counts[a.risk] = (counts[a.risk]||0)+1; }
-      });
-      return counts;
-    }
 
-    function renderDonut(svgId, counts){
-      const svg = document.getElementById(svgId);
-      const W=260,Hh=220,cx=130,cy=110,r=70,th=22;
-      svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
-      svg.innerHTML = '';
-
-      const total = Math.max(1, counts.low + counts.med + counts.high);
-      const arcs = [
-        {k:'low',  v:counts.low,  color:'#33c48d'},
-        {k:'med',  v:counts.med,  color:'#f0b429'},
-        {k:'high', v:counts.high, color:'#ff5a5f'}
-      ].filter(a=>a.v>0);
-
-      let angle= -Math.PI/2;
-      const toXY = (ang, rad)=>[cx + Math.cos(ang)*rad, cy + Math.sin(ang)*rad];
-
-      arcs.forEach(a=>{
-        const frac = a.v/total;
-        const ang2 = angle + frac * Math.PI*2;
-        const [x1,y1] = toXY(angle, r);
-        const [x2,y2] = toXY(ang2, r);
-        const large = frac > .5 ? 1 : 0;
-
-        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const d = [
-          `M ${x1} ${y1}`,
-          `A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`,
-          `L ${cx + Math.cos(ang2)*(r-th)} ${cy + Math.sin(ang2)*(r-th)}`,
-          `A ${r-th} ${r-th} 0 ${large} 0 ${cx + Math.cos(angle)*(r-th)} ${cy + Math.sin(angle)*(r-th)}`,
-          'Z'
-        ].join(' ');
-        path.setAttribute('d', d);
-        path.setAttribute('fill', a.color);
-        svg.appendChild(path);
-
-        angle = ang2;
-      });
-
-      const totalTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
-      totalTxt.setAttribute('x', cx); totalTxt.setAttribute('y', cy);
-      totalTxt.setAttribute('fill', '#e9edf2'); totalTxt.setAttribute('font-size','18'); totalTxt.setAttribute('font-weight','700'); totalTxt.setAttribute('text-anchor','middle'); totalTxt.textContent = total;
-      svg.appendChild(totalTxt);
-
-      const subTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
-      subTxt.setAttribute('x', cx); subTxt.setAttribute('y', cy+18);
-      subTxt.setAttribute('fill', '#8e97a3'); subTxt.setAttribute('font-size','11'); subTxt.setAttribute('text-anchor','middle'); subTxt.textContent = 'upcoming';
-      svg.appendChild(subTxt);
-    }
-
-    // ---------- 3) Compare (City/Country) with deep links ----------
-    function weeklyBucketsFor(list, weeks=6){
-      const end = H.startOfWeek(new Date());
-      const out=[];
-      for(let i=weeks-1;i>=0;i--){
-        const s = H.weeksAgo(end,i), e = H.weeksAgo(end,i-1);
-        out.push(list.filter(a=> a._dt>=s && a._dt<e).length);
-      }
-      return out;
-    }
-
-    function groupNext30(byKey='city'){
-      const now = new Date();
-      const end = new Date(now.getTime()+30*86400000);
-      const by = new Map();
-      NORM.forEach(a=>{
-        if(a._dt >= now && a._dt <= end){
-          const k = String(a[byKey]||'').trim();
-          if(!k) return;
-          if(!by.has(k)) by.set(k, []);
-          by.get(k).push(a);
-        }
-      });
-      return by;
-    }
-
-    function modeRisk(list){
-      const c = {low:0, med:0, high:0};
-      list.forEach(a=>c[a.risk]++);
-      if(c.high>=c.med && c.high>=c.low) return 'high';
-      if(c.med>=c.low) return 'med';
-      return 'low';
-    }
-
-    function sparkline(vals){
-      const W=120,Hh=28,pad=2; const max = Math.max(1, ...vals);
-      const step = (W - pad*2) / Math.max(1, vals.length-1);
-      const ys = vals.map(v => (Hh-pad) - (v/max)*(Hh - pad*2));
-      const xs = vals.map((_,i)=> pad + i*step);
-      let d = `M ${xs[0]} ${ys[0]}`;
-      for(let i=1;i<xs.length;i++) d += ` L ${xs[i]} ${ys[i]}`;
-      return `<svg class="spark" viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none">
-        <path d="${d}" fill="none" stroke="#3a6cf4" stroke-width="2"/>
-      </svg>`;
-    }
-
-    function renderGroupTable(byKey='city', q=''){
-      const th = document.getElementById('thLabel');
-      th.textContent = byKey==='city' ? 'City' : 'Country';
-      const body = document.getElementById('groupBody');
-      body.innerHTML = '';
-      const by = groupNext30(byKey);
-      const rows = [];
-      for(const [label, list] of by){
-        if(q && !label.toLowerCase().includes(q.toLowerCase())) continue;
-        const count = list.length;
-        const rk = modeRisk(list);
-        const badge = `<span class="badge ${rk}">${rk[0].toUpperCase()+rk.slice(1)}</span>`;
-        const series = weeklyBucketsFor(list, 6);
-        const next = list.slice().sort((a,b)=>a._dt-b._dt)[0];
-        const nextTxt = next ? `${next.title || ''} — ${next._dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}` : '<span class="muted">—</span>';
-        const href = `events.html?q=${encodeURIComponent(label)}`;
-        rows.push({label,count,badge,series,nextTxt,href});
-      }
-      rows.sort((a,b)=>b.count-a.count).slice(0,12).forEach(r=>{
-        body.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td><a class="link" href="${r.href}">${r.label}</a></td>
-            <td>${r.count}</td>
-            <td>${r.badge}</td>
-            <td>${sparkline(r.series)}</td>
-            <td>${r.nextTxt}</td>
-          </tr>
-        `);
-      });
-    }
 
     // ---------- Wire UI + Initial renders ----------
     (function init(){
@@ -1316,168 +1187,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 	<script>
-// --- helpers ---
-function normaliseRisk(r){
-  const s = String(r||'').toLowerCase();
-  if (s.startsWith('hi')) return 'high';
-  if (s.startsWith('me')) return 'med';
-  return 'low';
-}
+// --- Risk Mix (per selected city + window) --------------------------
 
-function filterAlertsForRisk(city, days){
-  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
-  const now = new Date();
-  const end = new Date(now.getTime() + days*24*60*60*1000);
+// Uses ciParseDate + isProtestyAlert helpers defined just above
 
-  const cityLc = (city || '').toLowerCase();
-  const isAll = !cityLc || cityLc === 'all';
-
-  return data.filter(a => {
-    const rawDate = a.time || a.datetime || a.date || a.when;
-    if (!rawDate) return false;
-    const dt = new Date(rawDate);
-    if (isNaN(dt)) return false;
-    if (dt < now || dt > end) return false;
-
-    if (isAll) return true;
-    const aCityLc = (a.city || '').toLowerCase();
-    return aCityLc === cityLc;
-  });
-}
-
-function computeRiskBuckets(list){
-  const counts = { low:0, med:0, high:0 };
-  list.forEach(a => {
-    const key = normaliseRisk(a.risk);
-    counts[key] = (counts[key] || 0) + 1;
-  });
-  return counts;
-}
-
-function renderRiskMix(){
-  const citySelect = document.getElementById('trendCitySelector'); // <-- change id if needed
-  const city = citySelect ? citySelect.value : 'All';
-  const cityLabel = city && city.toLowerCase() !== 'all' ? city : 'All cities';
-
-  const windowInput = document.getElementById('riskWindow');
-  const days = windowInput ? parseInt(windowInput.value,10) || 30 : 30;
-
-  const alerts = filterAlertsForRisk(city, days);
-  const counts = computeRiskBuckets(alerts);
-  const total  = alerts.length || 0;
-
-  const cityLabelEl = document.getElementById('riskMixCityLabel');
-  const windowLabel = document.getElementById('riskWindowLabel');
-  const totalEl     = document.getElementById('riskTotal');
-  const summaryEl   = document.getElementById('riskMixSummary');
-  const donutEl     = document.getElementById('riskDonut');
-
-  if (cityLabelEl) cityLabelEl.textContent = cityLabel;
-  if (windowLabel) windowLabel.textContent = `${days} days`;
-  if (totalEl)     totalEl.textContent = total.toString();
-
-  // legend counts
-  const lowEl  = document.getElementById('riskLowCount');
-  const medEl  = document.getElementById('riskMedCount');
-  const highEl = document.getElementById('riskHighCount');
-  if (lowEl)  lowEl.textContent  = `${counts.low} low`;
-  if (medEl)  medEl.textContent  = `${counts.med} med`;
-  if (highEl) highEl.textContent = `${counts.high} high`;
-
-  if (!donutEl) return;
-
-  if (!total){
-    donutEl.style.background =
-      'radial-gradient(circle at center,#050810 58%,transparent 59%),' +
-      'conic-gradient(#374151 0 100%)';
-    if (summaryEl) {
-      summaryEl.textContent =
-        `No upcoming protests in ${cityLabel.toLowerCase()} in the next ${days} days.`;
-    }
-    return;
-  }
-
-  const pctLow  = (counts.low  / total) * 100;
-  const pctMed  = (counts.med  / total) * 100;
-  const pctHigh = 100 - pctLow - pctMed;
-
-  donutEl.style.background = `
-    radial-gradient(circle at center,#050810 58%,transparent 59%),
-    conic-gradient(
-      #10b981 0 ${pctLow}%,
-      #fbbf24 ${pctLow}% ${pctLow + pctMed}%,
-      #ef4444 ${pctLow + pctMed}% 100%
-    )
-  `;
-
-  if (summaryEl) {
-    summaryEl.textContent =
-      `${total} upcoming protests in ${cityLabel.toLowerCase()} in the next ${days} days.`;
-  }
-}
-
-// --- hook up events ---
-(function initRiskMix(){
-  const windowInput = document.getElementById('riskWindow');
-  if (windowInput){
-    windowInput.addEventListener('input', renderRiskMix);
-  }
-
-  const citySelect = document.getElementById('trendCitySelector'); // adjust id if needed
-  if (citySelect){
-    citySelect.addEventListener('change', renderRiskMix);
-  }
-
-  // first render once alertsData is present
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    renderRiskMix();
-  } else {
-    document.addEventListener('DOMContentLoaded', renderRiskMix);
-  }
-})();
-
-
-		
-	// --- Risk Mix (per selected city + window) --------------------------
 function updateRiskMixForCity() {
   const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
-  const citySel   = document.getElementById('upcomingCitySelect'); // <- adjust id if needed
-  const winSlider = document.getElementById('riskWindowSlider');   // <- adjust id if needed
+  const citySel   = document.getElementById('cityUpcomingSelect'); // same dropdown as "Upcoming protests — next 30 days"
+  const winSlider = document.getElementById('riskWindowSlider');
 
-  if (!alerts.length) return;
+  if (!alerts.length || !citySel) return;
 
-  const cityValue = (citySel?.value || 'all').toLowerCase();
-  const cityLabel = citySel?.value || 'All cities';
+  const citySlug  = (citySel.value || '').toLowerCase();
+  const cityLabel =
+    citySel.options[citySel.selectedIndex]?.text || 'Selected city';
 
-  const windowDays = parseInt(winSlider?.value, 10) || 30;
-  const now = new Date();
-  const end = new Date(now.getTime() + windowDays * 24 * 60 * 60 * 1000);
+  const windowDays = winSlider ? parseInt(winSlider.value, 10) || 30 : 30;
+  const now  = new Date();
+  const end  = new Date(now.getTime() + windowDays * 24 * 60 * 60 * 1000);
 
-  // Identify protest-ish alerts in the window for this city (or all cities)
+  // Filter down to protest-style alerts in this city within the window
   const protests = alerts.filter(a => {
-    const txt = (
-      (a.title || '') + ' ' +
-      (a.summary || '') + ' ' +
-      (a.category || '')
-    ).toLowerCase();
+    if (!isProtestyAlert(a)) return false;
 
-    // very simple protest filter; re-use whatever you use above if you prefer
-    const isProtest = /protest|march|rally|demonstration|strike|picket|vigil/.test(txt);
-    if (!isProtest) return false;
+    const dt = ciParseDate(a.time || a.datetime || a.date || a.when);
+    if (!dt || dt < now || dt > end) return false;
 
-    const dt = new Date(a.time || a.datetime || a.date || a.when);
-    if (!dt || isNaN(dt.getTime())) return false;
-    if (dt < now || dt > end) return false;
-
-    if (cityValue === 'all') return true;
-
-    const aCity = (a.city || '').toLowerCase();
-    return aCity === cityValue;
+    const aCitySlug = (a.city || '').toLowerCase();
+    return aCitySlug === citySlug;
   });
 
   const total = protests.length;
 
-  const counters = { high:0, med:0, low:0 };
+  const counters = { high: 0, med: 0, low: 0 };
   protests.forEach(a => {
     const r = String(a.risk || '').toLowerCase();
     if (r.startsWith('hi')) counters.high++;
@@ -1500,17 +1242,18 @@ function updateRiskMixForCity() {
   const pctMedEl  = document.getElementById('riskPctMed');
   const pctLowEl  = document.getElementById('riskPctLow');
 
-  if (cityLbl) cityLbl.textContent = cityLabel || 'All cities';
+  if (cityLbl) cityLbl.textContent = cityLabel;
   if (winLbl)  winLbl.textContent  = `${windowDays} days`;
 
-  if (total === 0) {
-    if (meta) {
-      meta.textContent = `No upcoming protest-related alerts for ${cityLabel.toLowerCase()} in the next ${windowDays} days.`;
+  if (meta) {
+    if (!total) {
+      meta.textContent =
+        `No upcoming protest-related alerts for ${cityLabel} in the next ${windowDays} days.`;
+    } else {
+      meta.textContent =
+        `${total} upcoming protest-related alerts in ${cityLabel} in the next ${windowDays} days ` +
+        `(${counters.high} high, ${counters.med} medium, ${counters.low} low).`;
     }
-  } else if (meta) {
-    meta.textContent =
-      `${total} upcoming protest-related alerts in ${cityLabel.toLowerCase()} in the next ${windowDays} days ` +
-      `(${counters.high} high, ${counters.med} medium, ${counters.low} low).`;
   }
 
   if (barHigh) barHigh.style.width = pct('high') + '%';
@@ -1522,13 +1265,12 @@ function updateRiskMixForCity() {
   if (pctLowEl)  pctLowEl.textContent  = pct('low')  + '%';
 }
 
-
-// Run once on load (after alertsData is available)
+// Wire up events
 document.addEventListener('DOMContentLoaded', () => {
   updateRiskMixForCity();
 
-  const citySel   = document.getElementById('upcomingCitySelect'); // adjust id if needed
-  const winSlider = document.getElementById('riskWindowSlider');   // adjust id if needed
+  const citySel   = document.getElementById('cityUpcomingSelect');
+  const winSlider = document.getElementById('riskWindowSlider');
 
   if (citySel) {
     citySel.addEventListener('change', updateRiskMixForCity);
@@ -1537,14 +1279,13 @@ document.addEventListener('DOMContentLoaded', () => {
     winSlider.addEventListener('input', updateRiskMixForCity);
   }
 });
-
-
-		
 </script>
+
 
 	
 </body>
 </html>
+
 
 
 
