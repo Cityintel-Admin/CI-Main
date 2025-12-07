@@ -483,7 +483,6 @@
 
 
 
-
 (function trendPhase5(){
   if (!window.alertsData || !alertsData.length) return;
 
@@ -495,8 +494,18 @@
   const canvas = document.getElementById('trendChart');
   if (!canvas) return;
 
-  let currentDays = 90; // default
-  let chart = null;
+  let currentDays   = 90;   // default range
+  let chart         = null;
+  let currentSeries = null; // holds last computed series for tooltips
+
+  // normalise risk
+  const riskKey = r => {
+    const s = String(r || '').toLowerCase();
+    if (s.startsWith('hi')) return 'high';
+    if (s.startsWith('me')) return 'med';
+    if (s.startsWith('lo')) return 'low';
+    return 'med';
+  };
 
   // moving average
   const movAvg = (arr, w=7) => {
@@ -510,10 +519,10 @@
     return out;
   };
 
-    function buildSeries(windowDays, citySlug) {
-    const now = new Date();
+  function buildSeries(windowDays, citySlug) {
+    const now   = new Date();
     const start = new Date(+now - windowDays * 864e5);
-    const slug = (citySlug || '').toLowerCase();
+    const slug  = (citySlug || '').toLowerCase();
 
     const buckets = new Map();
     alertsData.forEach(a => {
@@ -526,25 +535,37 @@
       }
 
       const k = dayKey(dt);
-      if (!buckets.has(k)) buckets.set(k, { count: 0 });
-      buckets.get(k).count += 1;
+      if (!buckets.has(k)) {
+        buckets.set(k, { count:0, high:0, med:0, low:0 });
+      }
+      const b = buckets.get(k);
+      b.count += 1;
+
+      const rk = riskKey(a.risk || a.Risk);
+      if (rk === 'high') b.high++;
+      else if (rk === 'med') b.med++;
+      else b.low++;
     });
 
-
+    // build contiguous daily series (including zero days)
     const days = [];
     for (let i=windowDays; i>=0; i--){
-      const d = new Date(+now - i*864e5);
-      const k = dayKey(d);
-      const row = buckets.get(k) || {count:0};
-      days.push({ k, d, count: row.count });
+      const d  = new Date(+now - i*864e5);
+      const k  = dayKey(d);
+      const row = buckets.get(k) || { count:0, high:0, med:0, low:0 };
+      days.push({ k, d, ...row });
     }
-    const totals = days.map(x=>x.count);
+
+    const totals = days.map(x => x.count);
+    const high   = days.map(x => x.high);
+    const med    = days.map(x => x.med);
+    const low    = days.map(x => x.low);
     const avg7   = movAvg(totals, 7);
 
     // simple 14d projection from recent mean
-    const recent = totals.slice(-Math.min(14, totals.length)).filter(n=>Number.isFinite(n));
-    const lambda = recent.length ? recent.reduce((a,b)=>a+b,0)/recent.length : 0;
-    const projLen = 14;
+    const recent   = totals.slice(-Math.min(14, totals.length)).filter(n => Number.isFinite(n));
+    const lambda   = recent.length ? recent.reduce((a,b)=>a+b,0)/recent.length : 0;
+    const projLen  = 14;
     const projVals = Array.from({length:projLen}, _ => +lambda.toFixed(2));
     const projLabels = Array.from({length:projLen}, (_,i)=>{
       const d = new Date(+now + (i+1)*864e5);
@@ -555,23 +576,55 @@
       labels: days.map(x=>x.k).concat(projLabels),
       actual: totals.concat(Array(projLen).fill(null)),
       avg7:   avg7.concat(Array(projLen).fill(null)),
-      proj:   Array(days.length).fill(null).concat(projVals)
+      proj:   Array(days.length).fill(null).concat(projVals),
+      // risk breakdown only exists for historical days
+      high,
+      med,
+      low
     };
   }
 
-  function render(windowDays) {
+  function render(windowDays){
     const citySlug = (window.ciSelectedCitySlug || '').toLowerCase();
-    const series = buildSeries(windowDays, citySlug);
+    const series   = buildSeries(windowDays, citySlug);
+    currentSeries  = series;
 
     if (chart) chart.destroy();
+
     chart = new Chart(canvas, {
       type: 'line',
       data: {
         labels: series.labels,
         datasets: [
-          { label:'Daily (actual)',       data:series.actual, borderWidth:2, tension:.2, pointRadius:0 },
-          { label:'7-day avg',           data:series.avg7,   borderWidth:2, borderDash:[6,3], tension:.2, pointRadius:0 },
-          { label:'Projection (14d)',    data:series.proj,   borderWidth:2, borderDash:[2,4], tension:.2, pointRadius:0 }
+          {
+            label:'Daily (actual)',
+            data: series.actual,
+            borderWidth: 2.5,
+            tension: .25,
+            pointRadius: 0,
+            hitRadius: 8,
+            borderColor: '#3b82f6'
+          },
+          {
+            label:'7-day avg',
+            data: series.avg7,
+            borderWidth: 2,
+            borderDash: [6,3],
+            tension: .25,
+            pointRadius: 0,
+            hitRadius: 8,
+            borderColor: '#a5b4fc'
+          },
+          {
+            label:'Projection (14d)',
+            data: series.proj,
+            borderWidth: 2,
+            borderDash: [2,4],
+            tension: .25,
+            pointRadius: 0,
+            hitRadius: 8,
+            borderColor: '#f97316'
+          }
         ]
       },
       options: {
@@ -579,12 +632,42 @@
         maintainAspectRatio:true,
         aspectRatio:2.2,
         scales:{
-          x:{ ticks:{ maxRotation:0, autoSkip:true, autoSkipPadding:20 } },
-          y:{ beginAtZero:true, grace:'10%' }
+          x:{ 
+            ticks:{ maxRotation:0, autoSkip:true, autoSkipPadding:20 },
+            grid:{ display:false }
+          },
+          y:{
+            beginAtZero:true,
+            grace:'10%',
+            grid:{ color:'rgba(148,163,184,0.25)' }
+          }
         },
         plugins:{
-          legend:{ labels:{ boxWidth:12, usePointStyle:true, pointStyle:'line' } },
-          tooltip:{ intersect:false, mode:'index' }
+          legend:{
+            labels:{ boxWidth:12, usePointStyle:true, pointStyle:'line' }
+          },
+          tooltip:{
+            intersect:false,
+            mode:'index',
+            callbacks:{
+              afterBody(ctx){
+                if (!currentSeries || !ctx.length) return;
+                const idx = ctx[0].dataIndex;
+
+                // Projection area – no per-risk breakdown
+                if (idx >= currentSeries.high.length) {
+                  return 'Projection only — no historical risk breakdown for this point.';
+                }
+
+                const h = currentSeries.high[idx] || 0;
+                const m = currentSeries.med[idx]  || 0;
+                const l = currentSeries.low[idx]  || 0;
+                if (!h && !m && !l) return; // all zero
+
+                return `High: ${h} • Med: ${m} • Low: ${l}`;
+              }
+            }
+          }
         }
       }
     });
@@ -595,8 +678,7 @@
     });
   }
 
-
-  // wire buttons
+  // wire range buttons
   document.querySelectorAll('.tbtn').forEach(b=>{
     b.addEventListener('click', ()=>{
       currentDays = +b.dataset.range;
@@ -604,14 +686,15 @@
     });
   });
 
-    // initial
+  // initial
   render(currentDays);
 
-  // 🔴 NEW: allow city changes to re-use current range
+  // allow other code (city selector) to force a redraw with same range
   window.ciRedrawTrend = function () {
     render(currentDays);
   };
 })();
+
 
 
 
@@ -1400,6 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 </body>
 </html>
+
 
 
 
