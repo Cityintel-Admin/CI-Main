@@ -510,18 +510,26 @@
     return out;
   };
 
-  function buildSeries(windowDays){
+    function buildSeries(windowDays, citySlug) {
     const now = new Date();
-    const start = new Date(+now - windowDays*864e5);
+    const start = new Date(+now - windowDays * 864e5);
+    const slug = (citySlug || '').toLowerCase();
 
     const buckets = new Map();
-    alertsData.forEach(a=>{
-      const dt = parseTime(a.time);
+    alertsData.forEach(a => {
+      const dt = parseTime(a.time || a.datetime || a.date || a.when);
       if (!dt || dt < start || dt > now) return;
+
+      if (slug) {
+        const aCity = (a.city || a.City || '').toLowerCase();
+        if (aCity !== slug) return;
+      }
+
       const k = dayKey(dt);
-      if (!buckets.has(k)) buckets.set(k, {count:0});
+      if (!buckets.has(k)) buckets.set(k, { count: 0 });
       buckets.get(k).count += 1;
     });
+
 
     const days = [];
     for (let i=windowDays; i>=0; i--){
@@ -551,8 +559,9 @@
     };
   }
 
-  function render(windowDays){
-    const series = buildSeries(windowDays);
+  function render(windowDays) {
+    const citySlug = (window.ciSelectedCitySlug || '').toLowerCase();
+    const series = buildSeries(windowDays, citySlug);
 
     if (chart) chart.destroy();
     chart = new Chart(canvas, {
@@ -560,24 +569,32 @@
       data: {
         labels: series.labels,
         datasets: [
-          { label:'Daily (actual)', data:series.actual, borderWidth:2, tension:.2, pointRadius:0 },
-          { label:'7-day avg',     data:series.avg7,   borderWidth:2, borderDash:[6,3], tension:.2, pointRadius:0 },
-          { label:'Projection (14d)', data:series.proj, borderWidth:2, borderDash:[2,4], tension:.2, pointRadius:0 }
+          { label:'Daily (actual)',       data:series.actual, borderWidth:2, tension:.2, pointRadius:0 },
+          { label:'7-day avg',           data:series.avg7,   borderWidth:2, borderDash:[6,3], tension:.2, pointRadius:0 },
+          { label:'Projection (14d)',    data:series.proj,   borderWidth:2, borderDash:[2,4], tension:.2, pointRadius:0 }
         ]
       },
       options: {
         responsive:true,
         maintainAspectRatio:true,
         aspectRatio:2.2,
-        scales:{ x:{ ticks:{ maxRotation:0, autoSkip:true, autoSkipPadding:20 } }, y:{ beginAtZero:true, grace:'10%' } },
-        plugins:{ legend:{ labels:{ boxWidth:12, usePointStyle:true, pointStyle:'line' } }, tooltip:{ intersect:false, mode:'index' } }
+        scales:{
+          x:{ ticks:{ maxRotation:0, autoSkip:true, autoSkipPadding:20 } },
+          y:{ beginAtZero:true, grace:'10%' }
+        },
+        plugins:{
+          legend:{ labels:{ boxWidth:12, usePointStyle:true, pointStyle:'line' } },
+          tooltip:{ intersect:false, mode:'index' }
+        }
       }
     });
+
     // set active button
     document.querySelectorAll('.tbtn').forEach(b=>{
       b.classList.toggle('active', +b.dataset.range === windowDays);
     });
   }
+
 
   // wire buttons
   document.querySelectorAll('.tbtn').forEach(b=>{
@@ -587,8 +604,13 @@
     });
   });
 
-  // initial
+    // initial
   render(currentDays);
+
+  // 🔴 NEW: allow city changes to re-use current range
+  window.ciRedrawTrend = function () {
+    render(currentDays);
+  };
 })();
 
 
@@ -609,21 +631,31 @@
     }).filter(a=>a._dt);
 
     // ---------- 1) Weekly Volume + simple forecast ----------
-    function weeklyBuckets(list, weeks=12, includePredictive=false){
+        function weeklyBuckets(list, weeks = 12, includePredictive = false, citySlug = '') {
       const now = new Date();
       const end = H.startOfWeek(now);
       const buckets = [];
-      for(let i=weeks-1;i>=0;i--){
+      const slug = (citySlug || '').toLowerCase();
+
+      for (let i = weeks - 1; i >= 0; i--) {
         const start = H.weeksAgo(end, i);
-        const stop  = H.weeksAgo(end, i-1);
-        const n = list.filter(a=>{
-          if(!includePredictive && a.predictive===true) return false;
+        const stop  = H.weeksAgo(end, i - 1);
+        const n = list.filter(a => {
+          if (!includePredictive && a.predictive === true) return false;
+          if (slug) {
+            const aCity = (a.city || '').toLowerCase();
+            if (aCity !== slug) return false;
+          }
           return a._dt >= start && a._dt < stop;
         }).length;
-        buckets.push({label: start.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}), n});
+        buckets.push({
+          label: start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+          n
+        });
       }
       return buckets;
     }
+
 
     // least-squares line y = a + b*x
     function linearFit(y){
@@ -696,18 +728,32 @@
 
 
     // ---------- Wire UI + Initial renders ----------
-    (function init(){
+      (function init(){
       // Weekly volume + forecast
       const predCb = document.getElementById('togglePred');
-      function drawVol(){
-        const data = weeklyBuckets(NORM, 12, predCb.checked);
+      const volCaptionEl = document.getElementById('volCaption');
+
+      function drawVol() {
+        const citySlug  = (window.ciSelectedCitySlug  || '').toLowerCase();
+        const cityLabel = window.ciSelectedCityLabel || 'all cities';
+
+        const data = weeklyBuckets(NORM, 12, predCb.checked, citySlug);
         renderAreaWithForecast('volChart', data, 4);
-        const sum = data.reduce((s,x)=>s+x.n,0);
-        document.getElementById('volCaption').textContent =
-          `${sum} events over last 12 weeks (${predCb.checked?'incl.':'excl.'} predictive) • forecast shows dashed (+4w)`;
+
+        const sum = data.reduce((s, x) => s + x.n, 0);
+        if (volCaptionEl) {
+          volCaptionEl.textContent =
+            `${sum} events in ${cityLabel} over last 12 weeks ` +
+            `(${predCb.checked ? 'incl.' : 'excl.'} predictive) • forecast shows dashed (+4w)`;
+        }
       }
+
       predCb.addEventListener('change', drawVol);
       drawVol();
+
+      // 🔴 NEW: allow other code to force a redraw when city changes
+      window.ciRedrawWeeklyVolume = drawVol;
+
 
       // Risk mix
       const win = document.getElementById('winDays');
@@ -1207,13 +1253,34 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pastSelect)    pastSelect.value    = defaultSlug;
   if (upcomingSelect) upcomingSelect.value = defaultSlug;
 
-  function handleCityChange(slug) {
+    
+	
+	function handleCityChange(slug) {
     const city = cities.find(c => c.toLowerCase() === slug) || slug || 'Selected city';
+
+    // 🔴 NEW: store globally so charts can use it
+    window.ciSelectedCitySlug  = slug || '';
+    window.ciSelectedCityLabel = city;
+
     if (pastSelect)    pastSelect.value    = slug;
     if (upcomingSelect) upcomingSelect.value = slug;
+
+    // existing cards
     renderCityProtestsLast30(city);
     renderCityUpcomingProtests30(city);
+
+    // 🔴 NEW: keep risk mix + charts in sync with city
+    if (typeof updateRiskMixForCity === 'function') {
+      updateRiskMixForCity();
+    }
+    if (typeof window.ciRedrawWeeklyVolume === 'function') {
+      window.ciRedrawWeeklyVolume();
+    }
+    if (typeof window.ciRedrawTrend === 'function') {
+      window.ciRedrawTrend();
+    }
   }
+
 
   // initial render
   handleCityChange(defaultSlug);
@@ -1333,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 </body>
 </html>
+
 
 
 
