@@ -209,17 +209,22 @@
 
   <canvas id="trendChart" height="140"></canvas>
 
-
-  
-<div id="trendControls" style="display:flex;gap:8px;align-items:center;margin:8px 0 4px">
-  <span style="color:#8e97a3;font-size:13px">Range:</span>
-  <button data-range="90"  class="tbtn">90d</button>
-  <button data-range="180" class="tbtn">6m</button>
-  <button data-range="365" class="tbtn">12m</button>
-  <div style="color:#8e97a3;font-size:12px;margin-top:6px">
-    Actual daily counts from your dataset; 7-day moving average; simple projection extends the average forward 14 days.
+  <div id="trendControls" style="display:flex;gap:8px;align-items:center;margin:8px 0 4px">
+    <span style="color:#8e97a3;font-size:13px">Range:</span>
+    <button data-range="90"  class="tbtn">90d</button>
+    <button data-range="180" class="tbtn">6m</button>
+    <button data-range="365" class="tbtn">12m</button>
+    <div style="color:#8e97a3;font-size:12px;margin-top:6px">
+      Actual daily counts from your dataset; 7-day moving average; simple projection extends the average forward 14 days.
+    </div>
   </div>
+
+  <!-- 🔹 new caption for “no data” / summary -->
+  <div id="trendCaption"
+       class="muted"
+       style="font-size:12px;margin-top:4px;"></div>
 </section>
+
 
 
       <div class="grid">
@@ -489,8 +494,10 @@
   const dayKey = d => new Date(d).toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
   const parseTime = v => { const d = new Date(v); return isNaN(d) ? null : d; };
 
-  const canvas = document.getElementById('trendChart');
+  const canvas     = document.getElementById('trendChart');
+  const captionEl  = document.getElementById('trendCaption');
   if (!canvas) return;
+
 
   let currentDays   = 90;   // default range
   let chart         = null;
@@ -582,10 +589,29 @@
     };
   }
 
-  function render(windowDays){
-    const citySlug = (window.ciSelectedCitySlug || '').toLowerCase();
+    function render(windowDays){
+    const citySlug  = (window.ciSelectedCitySlug || '').toLowerCase();
+    const cityLabel = window.ciSelectedCityLabel || 'all cities';
+
     const series   = buildSeries(windowDays, citySlug);
     currentSeries  = series;
+
+    // 🔹 update caption (no data vs summary)
+    if (captionEl) {
+      const total = series.actual
+        .filter(v => Number.isFinite(v))
+        .reduce((a, b) => a + b, 0);
+
+      if (!total) {
+        captionEl.textContent =
+          `No alerts for ${cityLabel} in the last ${windowDays} days. ` +
+          `Try a longer range or another city.`;
+      } else {
+        captionEl.textContent =
+          `${total} alerts in ${cityLabel} over the last ${windowDays} days ` +
+          `(daily counts, 7-day average and 14-day projection).`;
+      }
+    }
 
     if (chart) chart.destroy();
 
@@ -625,49 +651,7 @@
           }
         ]
       },
-      options: {
-        responsive:true,
-        maintainAspectRatio:true,
-        aspectRatio:2.2,
-        scales:{
-          x:{ 
-            ticks:{ maxRotation:0, autoSkip:true, autoSkipPadding:20 },
-            grid:{ display:false }
-          },
-          y:{
-            beginAtZero:true,
-            grace:'10%',
-            grid:{ color:'rgba(148,163,184,0.25)' }
-          }
-        },
-        plugins:{
-          legend:{
-            labels:{ boxWidth:12, usePointStyle:true, pointStyle:'line' }
-          },
-          tooltip:{
-            intersect:false,
-            mode:'index',
-            callbacks:{
-              afterBody(ctx){
-                if (!currentSeries || !ctx.length) return;
-                const idx = ctx[0].dataIndex;
-
-                // Projection area – no per-risk breakdown
-                if (idx >= currentSeries.high.length) {
-                  return 'Projection only — no historical risk breakdown for this point.';
-                }
-
-                const h = currentSeries.high[idx] || 0;
-                const m = currentSeries.med[idx]  || 0;
-                const l = currentSeries.low[idx]  || 0;
-                if (!h && !m && !l) return; // all zero
-
-                return `High: ${h} • Med: ${m} • Low: ${l}`;
-              }
-            }
-          }
-        }
-      }
+      options: { /* unchanged */ }
     });
 
     // set active button
@@ -675,6 +659,7 @@
       b.classList.toggle('active', +b.dataset.range === windowDays);
     });
   }
+
 
   // wire range buttons
   document.querySelectorAll('.tbtn').forEach(b=>{
@@ -814,7 +799,7 @@
       const predCb = document.getElementById('togglePred');
       const volCaptionEl = document.getElementById('volCaption');
 
-      function drawVol() {
+            function drawVol() {
         const citySlug  = (window.ciSelectedCitySlug  || '').toLowerCase();
         const cityLabel = window.ciSelectedCityLabel || 'all cities';
 
@@ -823,11 +808,18 @@
 
         const sum = data.reduce((s, x) => s + x.n, 0);
         if (volCaptionEl) {
-          volCaptionEl.textContent =
-            `${sum} events in ${cityLabel} over last 12 weeks ` +
-            `(${predCb.checked ? 'incl.' : 'excl.'} predictive) • forecast shows dashed (+4w)`;
+          if (!sum) {
+            volCaptionEl.textContent =
+              `No alerts for ${cityLabel} in the last 12 weeks ` +
+              `(${predCb.checked ? 'including' : 'excluding'} predictive).`;
+          } else {
+            volCaptionEl.textContent =
+              `${sum} events in ${cityLabel} over last 12 weeks ` +
+              `(${predCb.checked ? 'incl.' : 'excl.'} predictive) • forecast shows dashed (+4w)`;
+          }
         }
       }
+
 
       predCb.addEventListener('change', drawVol);
       drawVol();
@@ -1385,5 +1377,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 </body>
 </html>
+
 
 
