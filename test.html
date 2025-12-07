@@ -585,6 +585,79 @@
   padding: 4px 8px;
 }  
 
+
+/* --- Global "Now" strip above feeds --- */
+.live-now-strip{
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--g600);
+  background: linear-gradient(90deg, rgba(208,22,22,.14), rgba(12,10,20,.9));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.live-now-label{
+  font-weight: 600;
+  color: #fecaca;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: 11px;
+}
+
+.live-now-stats{
+  color: #e5e7eb;
+  opacity: .9;
+}
+
+.live-now-stats span{
+  margin-right: 6px;
+}
+
+.live-now-stats .dot-high{ color:#f97373; }
+.live-now-stats .dot-med { color:#fbbf24; }
+.live-now-stats .dot-low { color:#4ade80; }
+
+.live-now-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-left:auto;
+}
+
+.live-now-pill{
+  border-radius:999px;
+  border:1px solid rgba(248,113,113,.7);
+  background:rgba(127,29,29,.9);
+  color:#fee2e2;
+  font-size:11px;
+  padding:4px 8px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+}
+
+.live-now-pill span:first-child{
+  font-size:13px;
+}
+
+.live-now-pill:hover{
+  filter:brightness(1.1);
+}
+
+.live-now-empty{
+  font-size:12px;
+  color:#9ca3af;
+}
+
+
+
+	  
 	  
     .btn-full-incident{
       background:#D01616;
@@ -782,6 +855,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <!-- MAIN -->
   <main class="main">
+
+
+<div id="liveNowStrip" class="live-now-strip">
+      <div class="live-now-label">NOW</div>
+      <div class="live-now-stats live-now-empty">No alerts in the current window.</div>
+    </div>
+
+	  
     <div class="page-head">
       <div class="page-head-left">
         <h2>Live Feed</h2>
@@ -1133,6 +1214,29 @@ function loadArchive(feedId){
   return `<div class="feed-kw" title="${full}">Topics: ${chips} ${more}</div>`;
 }
 
+
+	
+// ---- unified way to get events for a feed (archive > UI cache > short cache) ----
+function getEventsForFeed(feed){
+  if (!feed || !feed.id) return [];
+  // 1) 7-day archive
+  let events = loadArchive(feed.id);
+  if (Array.isArray(events) && events.length) return events;
+
+  // 2) per-feed UI cache
+  const ui = loadUiCache(feed.id);
+  if (Array.isArray(ui) && ui.length) return ui;
+
+  // 3) 15-min feedEvents cache
+  const cached = loadFeedEvents(feed.id);
+  if (cached && Array.isArray(cached.events) && cached.events.length) {
+    return cached.events;
+  }
+  return [];
+}
+
+
+	
 	// ---- lightweight client-side incident filter (new) ----
 const INCIDENT_POSITIVE = [
   'protest','demonstration','clashes','riot','unrest','blockade','strike',
@@ -1270,6 +1374,124 @@ function fmtWhen(iso) {
   }
 }
 
+// ---- Global "Now" strip across all feeds ----
+function recomputeGlobalStrip(){
+  const strip = document.getElementById('liveNowStrip');
+  if (!strip) return;
+
+  const windowHours = getCurrentWindowHours();
+  const cutoffMs    = Date.now() - windowHours * 3600_000;
+
+  const feeds = loadFeeds();
+  let all = [];
+
+  feeds.forEach(feed => {
+    const evs = getEventsForFeed(feed);
+    evs.forEach(ev => {
+      const t = Date.parse(ev.when || '');
+      if (!t || t < cutoffMs) return;
+      all.push({ ...ev, __feedId: feed.id });
+    });
+  });
+
+  // empty state
+  if (!all.length){
+    strip.innerHTML = `
+      <div class="live-now-label">NOW</div>
+      <div class="live-now-stats live-now-empty">
+        No alerts in the current ${windowHours}h window.
+      </div>
+    `;
+    return;
+  }
+
+  // counts by risk
+  let hi = 0, med = 0, low = 0;
+  all.forEach(ev => {
+    const r = (ev.risk || '').toLowerCase();
+    if (r === 'high') hi++;
+    else if (r === 'med' || r === 'medium') med++;
+    else low++;
+  });
+
+  // pick top 3 incidents: high > med > low, then newest first
+  const riskScore = r => r === 'high' ? 3 : (r === 'med' || r === 'medium' ? 2 : 1);
+  all.sort((a,b) => {
+    const rs = riskScore(b.risk || '') - riskScore(a.risk || '');
+    if (rs !== 0) return rs;
+    return (Date.parse(b.when||0) || 0) - (Date.parse(a.when||0) || 0);
+  });
+
+  const top = all.slice(0,3);
+
+  // build pills
+  const pillsHtml = top.map(ev => {
+    const { emoji, label } = classifyIncident(ev || {});
+    const city = ev.city || 'Unknown';
+    const title = ev.title || ev.summary || '(no title)';
+    const shortTitle = title.length > 40 ? title.slice(0,37) + '…' : title;
+    const safeTitle = (ev.title || '').replace(/"/g, '&quot;');
+    return `
+      <button class="live-now-pill"
+              data-feedid="${ev.__feedId}"
+              data-title="${safeTitle}">
+        <span>${emoji}</span>
+        <span>${city}: ${shortTitle}</span>
+      </button>
+    `;
+  }).join('');
+
+  strip.innerHTML = `
+    <div class="live-now-label">NOW</div>
+    <div class="live-now-stats">
+      <span><span class="dot-high">●</span> ${hi} high</span>
+      <span><span class="dot-med">●</span> ${med} med</span>
+      <span><span class="dot-low">●</span> ${low} low</span>
+      <span style="opacity:.75;margin-left:4px;">in last ${windowHours}h</span>
+    </div>
+    <div class="live-now-pills">
+      ${pillsHtml || '<span class="live-now-empty">No headline incidents to highlight.</span>'}
+    </div>
+  `;
+}
+
+
+	
+// Click: jump to card + open detail panel
+document.addEventListener('click', (e) => {
+  const pill = e.target.closest('.live-now-pill');
+  if (!pill) return;
+
+  const feedId = pill.getAttribute('data-feedid');
+  const title  = pill.getAttribute('data-title') || '';
+
+  const feeds = loadFeeds();
+  const feed  = feeds.find(f => f.id === feedId);
+  if (!feed) return;
+
+  const events = getEventsForFeed(feed);
+  if (!events.length) return;
+
+  // try to find matching event by exact title
+  let ev = events.find(ev => (ev.title || '') === title);
+  if (!ev) {
+    // fallback: first event in that feed
+    ev = events[0];
+  }
+
+  // scroll the card into view
+  const card = document.querySelector(`.feed-card[data-id="${feedId}"]`);
+  if (card) {
+    card.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // open detail panel with full list as related
+  if (ev) {
+    openDetailPanel(ev, events);
+  }
+});
+
+	
 
 // -------------------- DETAIL PANEL HANDLING --------------------
 
@@ -1770,6 +1992,11 @@ function scheduleNextRefresh(cardEl, feed){
     const fresh = loadFeeds().find(f => f.id === feed.id);
     if (fresh) refreshSingleFeedCard(cardEl, fresh);
   }, ms);
+
+	  // keep global strip in sync with latest per-feed data
+  recomputeGlobalStrip();
+}
+
 }
 
 
@@ -2083,6 +2310,10 @@ if (uiEvents && uiEvents.length) {
 
 // 3) always go fetch fresh + schedule
 refreshSingleFeedCard(card, feed);
+	    // after all cards are created / refreshed
+  recomputeGlobalStrip();
+}
+
 
   }
 }
