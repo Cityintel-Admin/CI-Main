@@ -1128,36 +1128,65 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
   let geoLayer = null;
 
-  function aggregate(alerts){
-    const end = new Date(+now + windowDays*86400000);
-    const by = {};
-    for(const a of alerts || []){
-      if(!a || !a.country || !a.time) continue;
-      if(!includePredictive && a.predictive === true) continue;
+ // put this inside the map IIFE, replacing the existing aggregate() function
+const parseTime = v =>
+  (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
 
-      const t = new Date(a.time);
-      if(t < now || t > end) continue;
+function aggregate(alerts){
+  const end = new Date(+now + windowDays * 86400000);
+  const by = {};
 
-      let country = a.Country;
-      const n = alias.get(norm(country));
-      if(n) country = n.replace(/\b\w/g,m=>m.toUpperCase());
+  for (const a of alerts || []) {
+    if (!a) continue;
+    if (!includePredictive && a.predictive === true) continue;
 
-      const rk = norm(a.risk);
-      const score = rk.startsWith('hi') ? 3 : rk.startsWith('me') ? 2 : 1;
+    // 🔹 Use all the same time fields as the rest of the code
+    const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
+    if (!dt || dt < now || dt > end) continue;
 
-      if(!by[country]) by[country] = {max:0, counts:{low:0, medium:0, high:0}, items:[]};
-      by[country].max = Math.max(by[country].max, score);
-      if(rk.startsWith('hi')) by[country].counts.high++;
-      else if(rk.startsWith('me')) by[country].counts.medium++;
-      else by[country].counts.low++;
-      by[country].items.push(a);
+    // 🔹 Accept both Country / country (and a generic country_name if you ever add it)
+    let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
+    if (!rawCountry) continue;
+
+    // 🔹 Normalise & apply your alias map (england → united kingdom, etc.)
+    const key = norm(rawCountry);              // lowercased
+    if (alias.has(key)) {
+      rawCountry = alias.get(key);
     }
-    for(const k in by){
-      const c = by[k].counts;
-      by[k].mix = ((c.high>0 && c.low>0) || (c.medium>0 && c.high>0) || (c.medium>0 && c.low>0));
+    const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
+
+    // 🔹 Normalise risk into bands
+    const rk = norm(a.risk);
+    let band = 'low';
+    if (rk.startsWith('hi')) band = 'high';
+    else if (rk.startsWith('me')) band = 'medium';
+
+    if (!by[country]) {
+      by[country] = {
+        max: 0,
+        counts: { low: 0, medium: 0, high: 0 },
+        items: []
+      };
     }
-    return by;
+
+    const score = riskScore[band]; // {low:1, medium:2, high:3} from your existing code
+    by[country].max = Math.max(by[country].max, score);
+    by[country].counts[band]++;
+    by[country].items.push(a);
   }
+
+  // Mark mixed-risk countries (for dashed outline)
+  for (const k in by) {
+    const c = by[k].counts;
+    by[k].mix =
+      (c.high > 0 && c.low > 0) ||
+      (c.medium > 0 && c.high > 0) ||
+      (c.medium > 0 && c.low > 0);
+  }
+
+  return by;
+}
+
 
   function draw(){
     fetch(TOPO_URL).then(r=>r.json()).then(topology=>{
@@ -1226,6 +1255,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 </body>
 </html>
+
 
 
 
