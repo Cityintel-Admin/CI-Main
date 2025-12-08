@@ -235,6 +235,69 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   background: rgba(255,255,255,0.05);
 }
 
+/* Map card header layout */
+.map-card-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+
+.map-card-header h3{
+  margin:0;
+}
+
+/* Right-hand side toolbar */
+.map-toolbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+/* Search input styling */
+#mapSearchInput{
+  min-width:230px;
+  max-width:280px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--brand-gray-600);
+  background:var(--brand-gray-700);
+  color:var(--text);
+  font-size:13px;
+}
+#mapSearchInput::placeholder{
+  color:#8e97a3;
+}
+
+/* Window slider + predictive */
+.map-window-ctl{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:12px;
+  background:rgba(22,23,26,.95);
+  border:1px solid var(--brand-gray-600);
+  font-size:13px;
+}
+
+.map-window-ctl span{
+  white-space:nowrap;
+}
+
+.map-window-ctl input[type="range"]{
+  width:130px;
+}
+
+.map-pred-toggle{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+}
 
 
 
@@ -392,9 +455,32 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <div></div>
 <div class="card" style="grid-column: span 12;">
-  <h3>Global Protest Risk Map</h3>
+  <div class="map-card-header">
+    <h3>Global Protest Risk Map</h3>
+
+    <div class="map-toolbar">
+      <!-- Search -->
+      <input
+        id="mapSearchInput"
+        type="text"
+        placeholder="Search country or city…"
+      />
+
+      <!-- Window + predictive toggle -->
+      <div class="map-window-ctl">
+        <span>Window: Next <span id="wval">30</span> days</span>
+        <input id="wslider" type="range" min="7" max="90" step="1" value="30" />
+        <label class="map-pred-toggle">
+          <input id="togglePred" type="checkbox" />
+          Include predictive entries
+        </label>
+      </div>
+    </div>
+  </div>
+
   <div id="riskMap"></div>
 </div>
+
 </div>
 
 
@@ -1126,72 +1212,49 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <script>
 /* ===============================
    Global Protest Risk Map (Leaflet)
-   Expects:
-     - window.alertsData = [{title, city, Country, Continent, risk, time, summary, predictive?}]
-     - world countries GeoJSON at: /assets/geo/world-countries.geojson
    =============================== */
-
 (function(){
-  const MAP_EL = 'riskMap';
+  const MAP_EL   = 'riskMap';
   const TOPO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-  const palette = { low:'#6bcf6b', medium:'#f0b429', high:'#ff5a5f', none:'#2e3238' };
-  const riskScore = {low:1, medium:2, high:3};
 
-  const now = new Date();
-  let windowDays = 30;
+  const palette   = { low:'#6bcf6b', medium:'#f0b429', high:'#ff5a5f', none:'#2e3238' };
+  const riskScore = { low:1, medium:2, high:3 };
+
+  let windowDays       = 30;      // default
   let includePredictive = false;
 
-  const norm = s => (s||'').trim().toLowerCase();
+  const norm = s => (s || '').trim().toLowerCase();
+
   const alias = new Map([
-    ['england','united kingdom'],['scotland','united kingdom'],['wales','united kingdom'],
-    ['czech republic','czechia'],['vatican city','holy see'],
+    ['england','united kingdom'],
+    ['scotland','united kingdom'],
+    ['wales','united kingdom'],
+    ['czech republic','czechia'],
+    ['vatican city','holy see']
   ]);
 
   function emitCountrySelected(name, items){
     try {
-      window.dispatchEvent(new CustomEvent('ci:countrySelected', { detail: { country: name, items } }));
-    } catch(e) { console.warn('countrySelected event error', e); }
+      window.dispatchEvent(new CustomEvent('ci:countrySelected', {
+        detail: { country: name, items }
+      }));
+    } catch(e) {
+      console.warn('countrySelected event error', e);
+    }
   }
 
-  // Map init
-  const map = L.map(MAP_EL, {scrollWheelZoom: true, worldCopyJump: true, boxZoom: false   // ⬅ removes the grey lines you see 
-	  }).setView([18, 10], 2);
+  // --- Map init ---
+  const map = L.map(MAP_EL, {
+    scrollWheelZoom: true,
+    worldCopyJump: true,
+    boxZoom: false         // prevent grey zoom box lines
+  }).setView([18, 10], 2);
 
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
 
-  // Create geocoder control
-const geoCtl = L.Control.geocoder({
-  defaultMarkGeocode: false,
-  placeholder: 'Search country or city…'
-})
-  .on('markgeocode', e => {
-    if (e?.geocode?.bbox) map.fitBounds(e.geocode.bbox);
-  })
-  .addTo(map);
-
-// Force it to stay expanded so the input is always visible
-setTimeout(() => {
-  const el = document.querySelector('.leaflet-control-geocoder');
-  if (el) el.classList.add('leaflet-control-geocoder-expanded');
-}, 0);
-
-
-  // Control bar
-  const RiskCtl = L.Control.extend({
-    onAdd: function(){
-      const wrap = L.DomUtil.create('div', 'riskctl');
-      wrap.innerHTML = `
-        <div><b>Window:</b> Next <span id="wval">${windowDays}</span> days</div>
-        <input id="wslider" type="range" min="7" max="120" step="1" value="${windowDays}">
-        <label><input id="togglePred" type="checkbox"> Include predictive entries</label>
-      `;
-      L.DomEvent.disableClickPropagation(wrap);
-      return wrap;
-    }
-  });
-  map.addControl(new RiskCtl({ position:'topright' }));
-
-  // Legend
+  // Legend (keep inside map)
   const Legend = L.Control.extend({
     onAdd: function(){
       const d = L.DomUtil.create('div','risklegend');
@@ -1208,153 +1271,171 @@ setTimeout(() => {
 
   let geoLayer = null;
 
- // put this inside the map IIFE, replacing the existing aggregate() function
-const parseTime = v =>
-  (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
+  // ----- Data aggregation -----
+  const parseTime = v =>
+    (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
 
-function aggregate(alerts){
-  const end = new Date(+now + windowDays * 86400000);
-  const by = {};
+  function aggregate(alerts){
+    const now = new Date();
+    const start = now;
+    const end   = new Date(+now + windowDays * 86400000);
 
-  for (const a of alerts || []) {
-    if (!a) continue;
-    if (!includePredictive && a.predictive === true) continue;
+    const by = {};
 
-    // 🔹 Use all the same time fields as the rest of the code
-    const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
-    if (!dt || dt < now || dt > end) continue;
+    for (const a of alerts || []) {
+      if (!a) continue;
+      if (!includePredictive && a.predictive === true) continue;
 
-    // 🔹 Accept both Country / country (and a generic country_name if you ever add it)
-    let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
-    if (!rawCountry) continue;
+      const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
+      if (!dt || dt < start || dt > end) continue;
 
-    // 🔹 Normalise & apply your alias map (england → united kingdom, etc.)
-    const key = norm(rawCountry);              // lowercased
-    if (alias.has(key)) {
-      rawCountry = alias.get(key);
+      let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
+      if (!rawCountry) continue;
+
+      const key = norm(rawCountry);
+      if (alias.has(key)) {
+        rawCountry = alias.get(key);
+      }
+      const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
+
+      const rk = norm(a.risk);
+      let band = 'low';
+      if (rk.startsWith('hi')) band = 'high';
+      else if (rk.startsWith('me')) band = 'medium';
+
+      if (!by[country]) {
+        by[country] = {
+          max: 0,
+          counts: { low:0, medium:0, high:0 },
+          items: []
+        };
+      }
+
+      const score = riskScore[band];
+      by[country].max = Math.max(by[country].max, score);
+      by[country].counts[band]++;
+      by[country].items.push(a);
     }
-    const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
 
-    // 🔹 Normalise risk into bands
-    const rk = norm(a.risk);
-    let band = 'low';
-    if (rk.startsWith('hi')) band = 'high';
-    else if (rk.startsWith('me')) band = 'medium';
-
-    if (!by[country]) {
-      by[country] = {
-        max: 0,
-        counts: { low: 0, medium: 0, high: 0 },
-        items: []
-      };
+    // Mark mixed risk
+    for (const k in by) {
+      const c = by[k].counts;
+      by[k].mix =
+        (c.high > 0 && c.low > 0) ||
+        (c.medium > 0 && c.high > 0) ||
+        (c.medium > 0 && c.low > 0);
     }
 
-    const score = riskScore[band]; // {low:1, medium:2, high:3} from your existing code
-    by[country].max = Math.max(by[country].max, score);
-    by[country].counts[band]++;
-    by[country].items.push(a);
+    return by;
   }
 
-  // Mark mixed-risk countries (for dashed outline)
-  for (const k in by) {
-    const c = by[k].counts;
-    by[k].mix =
-      (c.high > 0 && c.low > 0) ||
-      (c.medium > 0 && c.high > 0) ||
-      (c.medium > 0 && c.low > 0);
-  }
-
-  return by;
-}
-
-
+  // ----- Draw / redraw map -----
   function draw(){
-    fetch(TOPO_URL).then(r=>r.json()).then(topology=>{
-      const geo = topojson.feature(topology, topology.objects.countries);
-      geo.features.forEach(f=>{
-        const n = f.properties.name || f.properties.NAME || "";
-        f.properties.ADMIN = n;
+    fetch(TOPO_URL)
+      .then(r => r.json())
+      .then(topology => {
+        const geo = topojson.feature(topology, topology.objects.countries);
+        geo.features.forEach(f => {
+          const n = f.properties.name || f.properties.NAME || "";
+          f.properties.ADMIN = n;
+        });
+
+        const alerts = window.alertsData || [];
+        const agg = aggregate(alerts);
+
+        if (geoLayer) geoLayer.remove();
+
+        geoLayer = L.geoJSON(geo, {
+          style: f => {
+            const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+            const row  = agg[name];
+            if (!row) {
+              return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
+            }
+            const col = row.max === 3 ? palette.high :
+                        row.max === 2 ? palette.medium : palette.low;
+            return {
+              fillColor: col,
+              fillOpacity: .85,
+              color: row.mix ? '#ffffff' : '#111',
+              dashArray: row.mix ? '6 3' : null,
+              weight: row.mix ? 1.2 : .6
+            };
+          },
+          onEachFeature: (f, layer) => {
+            const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+            const row  = agg[name];
+            const tot  = row
+              ? (row.counts.low + row.counts.medium + row.counts.high)
+              : 0;
+            const chips = row ? `
+              <span class="chip" style="background:${palette.high}"></span>${row.counts.high}
+              <span class="chip" style="background:${palette.medium}"></span>${row.counts.medium}
+              <span class="chip" style="background:${palette.low}"></span>${row.counts.low}
+            ` : 'No events';
+
+            layer.bindPopup(`<b>${name}</b><br>${tot} event(s) in next ${windowDays} days<br>${chips}`);
+
+            layer.on('click', () => {
+              const items = (row && row.items)
+                ? row.items.slice().sort((a,b)=>parseTime(a.time)-parseTime(b.time))
+                : [];
+              emitCountrySelected(name, items);
+            });
+          }
+        }).addTo(map);
       });
+  }
 
-      const alerts = window.alertsData || [];
-      const agg = aggregate(alerts);
+  // ----- Wire header controls -----
+  const slider = document.getElementById('wslider');
+  const wval   = document.getElementById('wval');
 
-      if(geoLayer) geoLayer.remove();
-      geoLayer = L.geoJSON(geo, {
-        style: f => {
-          const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-          const row  = agg[name];
-          if(!row) return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
-          const col = row.max===3? palette.high : row.max===2? palette.medium : palette.low;
-          return {
-            fillColor: col, fillOpacity:.85,
-            color: row.mix ? '#ffffff' : '#111',
-            dashArray: row.mix ? '6 3' : null,
-            weight: row.mix ? 1.2 : .6
-          };
-        },
-        onEachFeature: (f, layer) => {
-          const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-          const row = agg[name];
-          const tot = row? (row.counts.low + row.counts.medium + row.counts.high) : 0;
-          const chips = row ? `
-            <span class="chip" style="background:${palette.high}"></span>${row.counts.high}
-            <span class="chip" style="background:${palette.medium}"></span>${row.counts.medium}
-            <span class="chip" style="background:${palette.low}"></span>${row.counts.low}
-          ` : 'No events';
-          layer.bindPopup(`<b>${name}</b><br>${tot} event(s) in next ${windowDays} days<br>${chips}`);
-          layer.on('click', ()=>{
-            const items = (row && row.items) ? row.items.slice().sort((a,b)=>new Date(a.time)-new Date(b.time)) : [];
-            emitCountrySelected(name, items);
-          });
-        }
-      }).addTo(map);
+  if (slider && wval) {
+    slider.value = windowDays;
+    wval.textContent = windowDays;
+    slider.addEventListener('input', () => {
+      windowDays = parseInt(slider.value, 10) || 30;
+      wval.textContent = windowDays;
+      draw();
     });
   }
 
-  // Wire controls -> redraw
-  document.addEventListener('change', e=>{
-    if(e.target && e.target.id==='togglePred'){
-      includePredictive = e.target.checked;
+  const predChk = document.getElementById('togglePred');
+  if (predChk) {
+    predChk.addEventListener('change', () => {
+      includePredictive = predChk.checked;
       draw();
-    }
-  });
-  document.addEventListener('input', e=>{
-    if(e.target && e.target.id==='wslider'){
-      windowDays = parseInt(e.target.value,10);
-      const wval = document.getElementById('wval');
-      if (wval) wval.textContent = windowDays;
-      draw();
-    }
-  });
+    });
+  }
 
-  // initial draw
+  // Search box using leaflet-control-geocoder backend
+  const searchInput = document.getElementById('mapSearchInput');
+  if (searchInput && L.Control && L.Control.Geocoder && L.Control.Geocoder.nominatim) {
+    const geocoder = L.Control.Geocoder.nominatim();
+    searchInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const q = searchInput.value.trim();
+      if (!q) return;
+
+      geocoder.geocode(q, results => {
+        if (!results || !results.length) return;
+        const r = results[0];
+        if (r.bbox) {
+          const bounds = L.latLngBounds(r.bbox);
+          map.fitBounds(bounds);
+        } else if (r.center) {
+          map.setView(r.center, 6);
+        }
+      });
+    });
+  }
+
+  // Initial draw
   draw();
 })();
 </script>
 
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
