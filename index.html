@@ -1410,6 +1410,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   }
 
   // === Search box using leaflet-control-geocoder backend ===
+   // === Search box using Nominatim (OpenStreetMap) ===
   (function wireSearchBox(){
     const searchInput = document.getElementById('mapSearchInput');
     if (!searchInput) {
@@ -1417,49 +1418,64 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       return;
     }
 
-    if (!L.Control || !L.Control.Geocoder || !L.Control.Geocoder.nominatim) {
-      console.warn('CI map: Leaflet geocoder plugin not available');
-      return;
-    }
-
-    const geocoder = L.Control.Geocoder.nominatim();
-
-    searchInput.addEventListener('keydown', function(e){
+    searchInput.addEventListener('keydown', async (e) => {
       if (e.key !== 'Enter') return;
 
-      const q = this.value.trim();
+      const q = searchInput.value.trim();
       if (!q) return;
 
-      geocoder.geocode(q, function(results){
-        console.log('CI map geocode results for', q, results);
-        if (!results || !results.length) {
-          // Optional: quick feedback
-          // alert('No location found for "' + q + '"');
+      try {
+        // Ask Nominatim for the first matching result
+        const url = `https://nominatim.openstreetmap.org/search` +
+                    `?format=json&limit=1&q=${encodeURIComponent(q)}`;
+
+        const res = await fetch(url, {
+          headers: {
+            // helps with polite usage; fine in browser
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = await res.json();
+        console.log('CI map search results for', q, data);
+
+        if (!Array.isArray(data) || !data.length) {
+          console.info('No location found for', q);
           return;
         }
 
-        const r = results[0];
+        const r = data[0];
 
-        if (r.bbox) {
-          // bbox is a LatLngBounds or array understood by Leaflet
-          map.fitBounds(r.bbox);
-        } else if (r.center) {
-          // centre point fallback
-          const c = r.center;
-          map.setView([c.lat, c.lng], 6);
+        // boundingbox: [south, north, west, east]
+        if (Array.isArray(r.boundingbox) && r.boundingbox.length === 4) {
+          const south = parseFloat(r.boundingbox[0]);
+          const north = parseFloat(r.boundingbox[1]);
+          const west  = parseFloat(r.boundingbox[2]);
+          const east  = parseFloat(r.boundingbox[3]);
+
+          const bounds = L.latLngBounds(
+            [south, west],
+            [north, east]
+          );
+          map.fitBounds(bounds);
+        } else if (r.lat && r.lon) {
+          map.setView([parseFloat(r.lat), parseFloat(r.lon)], 6);
         }
-      });
+
+      } catch (err) {
+        console.error('CI map search error for', q, err);
+      }
     });
   })();
 
   // Initial draw
   draw();
 })();
-
 </script>
 
 
 </body>
 </html>
+
 
 
