@@ -17,6 +17,178 @@ window.alertsData =[
 
 
 
+
+    
+
+
+{
+  title: "Anti-Saied Crackdown Protests",
+  city: "Tunis",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "high",
+  time: "2025-12-06T14:00:00",
+  source: "https://www.reuters.com/world/africa/tunisians-step-up-protests-against-saieds-crackdown-opposition-2025-12-06/",
+  summary: "Thousands of Tunisians are again expected to rally in central Tunis against President Kais Saied’s tightening grip on power and his expanding crackdown on opposition parties, critics and civil society groups. Demonstrators have framed the march as a stand against one-man rule and the jailing of political opponents, journalists and activists.\n\nThe protests build on two previous weekends of mobilisation and come amid mounting complaints from rights groups that Saied is using the judiciary and security forces to silence dissent. Marchers are likely to converge along Habib Bourguiba Avenue and adjacent downtown arteries, with opposition coalitions, youth activists and NGO networks all calling for turnout. Chants denouncing authoritarianism and demanding the release of political prisoners have become a fixture of recent rallies, along with banners criticising economic hardship and rising prices.\n\nSecurity forces have so far contained the demonstrations with cordons and road closures rather than mass detentions, but police units and plain-clothes officers are routinely deployed in strength around key intersections and government buildings. Any attempt by protesters to push closer to the interior ministry or presidential sites could trigger the use of tear gas and more forceful dispersal tactics. Given the repeated nature of the rallies, the likelihood of crowd fatigue exists, yet the depth of political frustration means further weekend protests remain probable through December. Overall risk is assessed as high because of the sensitive political target, the concentration of people in a confined urban core, and the potential for a rapid shift from static chanting to confrontations if police lines tighten or arrests occur."
+},
+
+{
+  title: "Student Aid Clashes at Cheikh Anta Diop University",
+  city: "Dakar",
+  country: "Senegal",
+  continent: "Africa",
+  risk: "medium",
+  time: "2025-12-03T11:00:00",
+  source: "https://www.reuters.com/world/africa/students-senegal-clash-with-security-forces-over-financial-aid-2025-12-03/",
+  summary: "Students at Cheikh Anta Diop University in Dakar are staging protests over delayed stipends and other financial support, leading to repeated clashes with security forces inside and around the campus. Demonstrators have blocked roads, thrown stones and set up makeshift barricades, while police have responded with tear gas and baton charges.\n\nThe government is facing wider fiscal pressure and has struggled to pay scholarships and allowances on time, turning the dispute into a flashpoint over living costs and youth unemployment. Although gatherings are centred on the university, spillover into adjacent neighbourhoods is possible if confrontations intensify. Most incidents so far have been short, sharp bursts of unrest rather than sustained urban rioting, which keeps the overall risk at medium; however, further escalation is possible if injuries mount or authorities move to close faculties or arrest student leaders."
+},
+
+{
+  title: "Benin Coup Attempt and Street Lockdown",
+  city: "Cotonou",
+  country: "Benin",
+  continent: "Africa",
+  risk: "high",
+  time: "2025-12-07T06:00:00",
+  source: "https://www.reuters.com/world/africa/benin-president-says-coup-bid-thwarted-vows-retribution-2025-12-07/",
+  summary: "In the early hours of 7 December, elements of Benin’s National Guard launched a coup attempt in Cotonou, attacking President Patrice Talon’s residence and seizing the state broadcaster. A small group of soldiers appeared on television to announce that they had removed the president, dissolved state institutions and created a military committee to take power. Loyalist forces quickly responded, backed by Nigerian air support and a standby ECOWAS deployment, and by late afternoon the government declared the coup foiled and said it had re-established control of key sites.\n\nThe mutineers cited grievances over deteriorating security in northern Benin, alleged favouritism within the armed forces, cuts to healthcare and insufficient support for families of soldiers killed in action. Their message resonated with some public frustrations, but there was no broad civilian uprising in support of the takeover; most residents sheltered indoors as heavy gunfire and explosions echoed around central Cotonou and districts near the presidential compound. Authorities imposed tight security perimeters around ministries, the airport and key intersections, while checkpoints and patrols were reinforced on arterial roads linking the capital to Porto-Novo and the interior.\n\nIn the operation to regain control of the national TV station and other seized locations there were casualties on both sides, and several journalists were temporarily held hostage before being released. Multiple officers were arrested, although the alleged ringleader, Lieutenant Colonel Pascal Tigri, initially remained at large. Regional capitals and international partners, including ECOWAS and the African Union, quickly condemned the coup attempt and voiced support for constitutional order.\n\nFor operational planning, Cotonou should be treated as a high-risk environment in the short term. While the immediate mutiny has been suppressed, the government has promised vigorous investigations and retribution, raising the possibility of further sporadic arrests and military tensions. Security forces are likely to maintain a visible presence across the city and remain quick to break up any gatherings perceived as sympathetic to the putschists. Normal commercial activity is expected to resume gradually, but sudden roadblocks, identity checks and temporary closures of public buildings are likely as authorities consolidate control and search for remaining suspects."
+},
+
+{
+  title: "Benin Security Sweep After Coup Bid",
+  city: "Porto-Novo",
+  country: "Benin",
+  continent: "Africa",
+  risk: "medium",
+  time: "2025-12-08T09:00:00",
+  source: "https://apnews.com/article/benin-coup-attempt-nigeria-ecowas-83aeb86128bf1e054e0e75110aaeced3",
+  summary: "Following the failed coup in Cotonou, Benin’s security forces and regional ECOWAS troops have extended operations into the political capital Porto-Novo and surrounding areas. Roadblocks, checkpoints and patrols have been stepped up on highways, particularly routes carrying traffic from Nigeria, as authorities search for remaining mutineers and possible accomplices.\n\nAuthorities have acknowledged casualties among both loyalist troops and coup supporters and have vowed to track down anyone linked to the plot. Although there are no large-scale civilian demonstrations, the heightened military posture and uncertainty around further arrests increase the risk of incidental disruption for travellers and local businesses. The risk level is assessed as medium: the main threat comes from sudden cordons, vehicle searches and short-notice movement restrictions rather than organised protest marches."
+},
+
+{
+  title: "Tanzania Independence Day Protest Calls",
+  city: "Dar es Salaam",
+  country: "Tanzania",
+  continent: "Africa",
+  risk: "medium",
+  time: "2025-12-09T10:00:00",
+  source: "https://www.straitstimes.com/world/tanzanias-police-says-any-december-9-protests-would-be-illegal",
+  summary: "Opposition groups and activists in Tanzania have called for nationwide demonstrations on 9 December, Independence Day, to denounce alleged election irregularities and security-force abuses. In response, police have publicly declared that any protest will be illegal on the grounds that organisers have not filed formal notifications, and they have warned that participants risk arrest.\n\nAhead of the date, authorities have urged citizens to stay at home and treat the day as a period of rest and celebration, while at the same time deploying large numbers of police and military personnel along major roads in Dar es Salaam and the northern city of Arusha. International observers, including the UN human rights office, have expressed concern about earlier lethal force used during post-election unrest and are urging restraint on all sides. The risk for 9 December is assessed as medium: if people heed the call to protest despite the ban, even modest crowds could face rapid dispersal and localised clashes, particularly around key junctions and symbolic government locations."
+},
+
+{
+  title: "Tanzania Protest Ban and Security Lockdown",
+  city: "Arusha",
+  country: "Tanzania",
+  continent: "Africa",
+  risk: "medium",
+  time: "2025-12-09T10:00:00",
+  source: "https://news.az/news/tanzania-warns-public-ahead-of-dec-9-protests",
+  summary: "In Arusha, the same Independence Day protest calls have prompted a visible lockdown, with police and army units stationed on approach roads and around administrative buildings. Authorities repeat that any unauthorised march or rally will be treated as unlawful. While it is unclear how many residents will attempt to mobilise, previous incidents of deadly force during opposition demonstrations mean that even small gatherings carry a heightened risk of confrontation.\n\nBusinesses near known rally points are likely to close or operate with reduced hours, and public transport routes could be diverted or disrupted if police seal off sections of the city centre. For now the situation remains tense but calm; risk is medium, dominated by the potential for flash clashes if groups defy the protest ban."
+},
+
+
+
+{
+  title:"Greek Farmers Block Borders & Airports Over EU Subsidy Delays",
+  city:"Heraklion / Chania / Larissa",
+  country:"Greece",
+  continent:"Europe",
+  risk:"high",
+  time:"2025-12-08T09:00:00",
+  source:"https://www.reuters.com/world/greek-farmers-block-borders-airport-roads-protest-delayed-eu-farm-subsidies-2025-12-08/",
+  summary:"Greek farmers have escalated a rolling campaign over delayed EU farm payments into a disruptive, multi-day national mobilisation. Tractor convoys and groups of livestock breeders have blocked key border crossings with Bulgaria and Turkey, staged rolling roadblocks on the Athens–Thessaloniki highway, and forced temporary closures at Heraklion and Chania airports on Crete.\n\nThe core grievance is the slow release of EU subsidies after a fraud scandal involving falsified land claims triggered tighter audits and delays, leaving a funding shortfall estimated in the hundreds of millions of euros. Farmers say they are facing a triple-hit: rising input costs, fallout from a severe sheep-pox outbreak that has wiped out thousands of animals, and the cash-flow crunch caused by withheld payments. Protest leaders argue that honest producers are being punished for the misconduct of a small group of fraudsters. \n\nTactically, the movement has shifted from symbolic rallies to pressure-point disruptions. On Crete, groups of demonstrators forced their way onto airport runways, briefly halting air traffic and, in some cases, damaging police vehicles and airport infrastructure. Elsewhere, tractors and hay bales have been used to choke off access roads to ports and toll plazas. These actions have generated confrontations with riot police, including exchanges of stones and tear gas. At least several officers have been reported injured in the clashes, and authorities have warned that criminal charges will follow for those identified on video.\n\nPolitically, Prime Minister Kyriakos Mitsotakis has publicly acknowledged the subsidy delays and promised that billions of euros in support will be disbursed, but has called for protesters to lift road and airport blockades and return to formal talks. Farmers’ committees are divided between hard-liners who favour sustained disruption and moderates who are cautious about alienating urban public opinion and the tourism sector. The risk level is assessed as high because of the combination of strategic infrastructure blockades, volatile confrontations around airports and border posts, and the potential for copy-cat road actions in other regions if no rapid compromise is reached."
+},
+
+{
+  title:"Nationwide Strike Against 2026 Budget Austerity",
+  city:"Paris",
+  country:"France",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-02T09:00:00",
+  source:"https://www.euronews.com/my-europe/2025/12/02/french-unions-stage-new-strikes-against-budget-plan-as-nationwide-turnout-dwindles",
+  summary:"French unions have called a nationwide day of strikes and marches against the government’s 2026 budget plans, with demonstrations centred in Paris but echoed in cities across the country. Turnout is smaller than the huge pension protests earlier in the year, yet still large enough to disrupt public services, especially transport and education.\n\nThe CGT, FSU and Solidaires unions accuse the government of entrenching austerity through wage restraint and cuts to public services while households face persistent inflation. In Paris, union balloons and banners fill central avenues as teachers, civil servants, hospital workers and rail staff march to the National Assembly, demanding that lawmakers reject key budget articles. Protesters focus on wage purchasing power, hospital staffing and opposition to planned reductions in social spending. Rail and metro services are running on a reduced schedule, some schools are partially closed, and public-sector offices report higher levels of absenteeism as employees join the marches. Police presence is high but clashes are limited and largely confined to small groups on the fringes of the Paris rally. Overall risk is rated medium: the action is disruptive and involves multiple sectors but remains mostly peaceful and time-bounded to the single strike day."
+},
+
+{
+  title:"Louvre Museum Staff Strike Over Security, Staffing and Pay",
+  city:"Paris",
+  country:"France",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-12-15T08:00:00",
+  source:"https://www.reuters.com/world/planned-december-15-strike-frances-louvre-museum-adds-catalogue-woes-2025-12-08/",
+  summary:"Unions at the Louvre Museum have called a strike from 15 December to protest staffing shortages, pay levels and management’s handling of a string of high-profile incidents. Workers say they are overstretched and that the institution is prioritising prestige projects and expensive acquisitions over day-to-day security and maintenance.\n\nThe walkout follows a spectacular jewel heist earlier in the year, a major water leak that damaged heritage collections and the discovery of structural faults in a 1930s gallery. Strikers argue these episodes illustrate chronic under-investment in infrastructure and security. They also criticise a sharp ticket price rise for non-EU visitors, claiming the burden should not be shifted onto tourists while staff remain underpaid. The immediate operational impact will depend on participation, but visitors should be prepared for partial closures, slower entry screening and possible last-minute changes to gallery openings. The risk level is low: the action is limited to the museum, and while reputational and commercial impacts are significant, wider public-order issues are not expected."
+},
+
+{
+  title:"Doctors’ Four-Day Strike Over Staffing and Pay Pressures",
+  city:"Malaga",
+  country:"Spain",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-09T11:30:00",
+  source:"https://www.surinenglish.com/malaga/more-than-5700-doctors-from-malaga-are-20251208100424-nt.html",
+  summary:"More than 5,000 doctors from Malaga province are beginning a four-day strike over pay, workload and staffing levels in Andalusia’s public health system. The action runs from 9–12 December, with a flagship march on 9 December starting at the Hospital Clínico, moving past the Jiménez Fraud roundabout and along Bulevar Luis Pasteur before ending at the Faculty of Medicine.\n\nDoctors’ associations say that chronic understaffing, long waiting lists and pay scales that lag other Spanish regions are driving burnout and migration of specialists. Emergency and critical services will be maintained under minimum service rules, but outpatient appointments and non-urgent procedures are expected to be heavily disrupted. A further rally is scheduled outside the government’s Malaga delegation offices on 10 December. Authorities insist reforms and hiring are under way, yet talks have failed to avert December’s stoppage. Risk is assessed as medium: public-order concerns are low, but the strike has significant operational impact across hospitals and clinics, and could spur solidarity action in neighbouring provinces if no compromise emerges."
+},
+
+{
+  title:"Amnesty-Led Protest Over German Arms Policy on Gaza",
+  city:"Berlin",
+  country:"Germany",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-12-05T15:00:00",
+  source:"https://www.aa.com.tr/en/europe/amnesty-international-protests-german-chancellor-s-upcoming-visit-to-israel/3763221",
+  summary:"Human rights activists and civil-society groups gathered at Pariser Platz, next to Berlin’s Brandenburg Gate, to protest Chancellor Friedrich Merz’s planned visit to Israel and Germany’s continued arms exports amid alleged war crimes in Gaza. Organised by Amnesty International and partner NGOs, the rally calls for a complete arms embargo and stronger pressure on Israel to comply with international humanitarian law.\n\nSpeakers emphasise Germany’s historical responsibility, arguing that it should translate into a duty to prevent further civilian harm rather than unconditional support. Participants wave Palestinian flags and hold placards condemning weapons sales and urging an immediate permanent ceasefire. Police presence around the square is visible but low-key, with the event proceeding under a pre-notified route and timetable. There are no reports of major clashes or arrests. Risk is rated low: the demonstration is politically sensitive but tightly managed, centred on speeches and symbolic visuals rather than disruptive direct action."
+},
+
+{
+  title:"Gaza Ceasefire Solidarity March at Odenplan",
+  city:"Stockholm",
+  country:"Sweden",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-06T14:00:00",
+  source:"https://www.middleeastmonitor.com/20251206-protesters-rally-in-stockholm-against-israels-actions-in-gaza/",
+  summary:"Hundreds of demonstrators gather at Odenplan Square in central Stockholm to protest Israel’s conduct in Gaza and demand that Sweden press harder for a durable ceasefire. The rally, called by a coalition of civil-society organisations and diaspora groups, accuses Israel of violating the October truce through renewed airstrikes and tight restrictions on humanitarian aid flows.\n\nMarchers carry Palestinian flags and banners denouncing collective punishment and urging sanctions or arms embargoes. Speakers include local activists, academics and representatives of Muslim community organisations, who link events in Gaza to broader concerns about racism and surveillance at home. Swedish police supervise the route from Odenplan towards government buildings, using cordons to keep counter-protesters separate and minimise the risk of confrontation. So far the event has been noisy but peaceful, with limited disruption confined mainly to traffic diversions near the square and on the march route. Given its size, political sensitivity and the potential for tense counter-rallies, risk is assessed as medium rather than low, but there are no current indicators of planned violence."
+},
+
+{
+  title:"Global March for Venezuela’s Machado – Madrid Leg",
+  city:"Madrid",
+  country:"Spain",
+  continent:"Europe",
+  risk:"low",
+  time:"2025-12-06T17:00:00",
+  source:"https://www.aljazeera.com/news/2025/12/7/supporters-of-venezuelas-machado-rally-in-cities-around-the-world",
+  summary:"Venezuelan expatriates and supporters of opposition figure Maria Corina Machado rally in central Madrid as part of a coordinated global day of action. Participants assemble with Venezuelan flags and portraits of political prisoners, calling for the release of detainees and for credible democratic elections in Venezuela.\n\nThe Madrid march moves through central streets near government offices but remains peaceful and relatively contained in size. Organisers frame the rally as solidarity with activists facing repression inside Venezuela, linking their demands to broader questions of political prisoners and human rights within Latin America. Spanish police observe but largely keep a distance, with no major incidents reported. Risk level is low: the protest is focused on symbolic visibility and international messaging rather than disruptive tactics, though organisers may stage follow-up vigils if conditions in Venezuela deteriorate."
+},
+
+{
+  title:"Bosch Workers Strike Over Contract Changes",
+  city:"Glenrothes",
+  country:"United Kingdom",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-08T06:00:00",
+  source:"https://www.wsws.org/en/articles/2025/12/04/xglo-d04.html",
+  summary:"Around 280 workers at the Bosch Rexroth plant in Glenrothes, Scotland, begin a week-long strike against proposed changes to contracts that would cut pay and reconfigure working hours. Members of the Unite union voted overwhelmingly for industrial action and have established picket lines at the factory entrance from the early hours of 8 December.\n\nThe dispute centres on management plans to lower wage scales for new hires and restructure shift patterns, which workers see as undermining long-term job security in a town where manufacturing opportunities are already limited. The strike halts most production at the hydraulics plant and may impact delivery schedules to downstream clients if quickly unresolved. Local solidarity from other unions is visible but modest. The situation is assessed as medium risk: it is economically disruptive at the plant level but geographically contained, with low likelihood of significant public-order issues beyond occasional tension at picket lines."
+},
+
+{
+  title:"‘End Horizon Apartheid’ Protest at European Parliament",
+  city:"Brussels",
+  country:"Belgium",
+  continent:"Europe",
+  risk:"medium",
+  time:"2025-12-12T13:00:00",
+  source:"https://www.instagram.com/p/DRzWxzrCIZV/",
+  summary:"Pro-Palestinian campaign networks mobilise activists to the European Parliament in Brussels on 12 December to demand Israel’s exclusion from the EU’s Horizon research programme. Demonstrators argue that continued scientific cooperation and funding flows amount to complicity in alleged war crimes and apartheid in the occupied Palestinian territories.\n\nThe action combines a static rally with short marches around the Parliament complex. Participants display academic-themed slogans such as ‘No Research for Repression’ and call on universities and EU institutions to suspend partnerships with Israeli bodies linked to the defence and surveillance sectors. Organisers emphasise peaceful discipline but the thematic focus, location and timing – as MEPs debate budget lines – make the protest politically sensitive. Belgian police deploy barriers and crowd-control units around Parliament to prevent incursions into restricted zones. Risk is rated medium due to the potential for sit-ins, minor scuffles at police lines and spillover solidarity actions in nearby EU quarter offices."
+},
+
+
     {
   title: "World AIDS Day die-in vigil",
   city: "London",
@@ -9626,6 +9798,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
