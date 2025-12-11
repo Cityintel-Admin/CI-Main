@@ -1271,63 +1271,115 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
   let geoLayer = null;
 
-  // ----- Data aggregation -----
-  const parseTime = v =>
-    (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
+	
 
-  function aggregate(alerts){
-    const now = new Date();
-    const start = now;
-    const end   = new Date(+now + windowDays * 86400000);
+  const HISTORY_DAYS = 180;   // lookback for structural risk (~6 months)
 
-    const by = {};
+const parseTime = v =>
+  (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
 
-    for (const a of alerts || []) {
-      if (!a) continue;
-      if (!includePredictive && a.predictive === true) continue;
+function aggregate(alerts){
+  const now        = new Date();
+  const futureEnd  = new Date(+now + windowDays * 86400000);
+  const histStart  = new Date(+now - HISTORY_DAYS * 86400000);
 
-      const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
-      if (!dt || dt < start || dt > end) continue;
+  const by = {};
 
-      let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
-      if (!rawCountry) continue;
+  for (const a of alerts || []) {
+    if (!a) continue;
 
-      const key = norm(rawCountry);
-      if (alias.has(key)) {
-        rawCountry = alias.get(key);
-      }
-      const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
+    const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
+    if (!dt) continue;
 
-      const rk = norm(a.risk);
-      let band = 'low';
-      if (rk.startsWith('hi')) band = 'high';
-      else if (rk.startsWith('me')) band = 'medium';
+    // Normalise country (same logic as before)
+    let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
+    if (!rawCountry) continue;
 
-      if (!by[country]) {
-        by[country] = {
-          max: 0,
-          counts: { low:0, medium:0, high:0 },
-          items: []
-        };
-      }
+    const key = norm(rawCountry);
+    if (alias.has(key)) rawCountry = alias.get(key);
+    const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
 
-      const score = riskScore[band];
-      by[country].max = Math.max(by[country].max, score);
-      by[country].counts[band]++;
-      by[country].items.push(a);
+    // Normalise risk band
+    const rk = norm(a.risk);
+    let band = 'low';
+    if (rk.startsWith('hi')) band = 'high';
+    else if (rk.startsWith('me')) band = 'medium';
+
+    // Ensure bucket
+    if (!by[country]) {
+      by[country] = {
+        hist:   { low:0, medium:0, high:0 },
+        fut:    { low:0, medium:0, high:0 },
+        mixFuture: false,
+        band: 'low',
+        items: []
+      };
+    }
+    const row = by[country];
+
+    // History window (structural risk)
+    if (dt >= histStart && dt <= now) {
+      row.hist[band]++;
     }
 
-    // Mark mixed risk
-    for (const k in by) {
-      const c = by[k].counts;
-      by[k].mix =
-        (c.high > 0 && c.low > 0) ||
-        (c.medium > 0 && c.high > 0) ||
-        (c.medium > 0 && c.low > 0);
+    // Future window (current/forecast) – honour includePredictive
+    if (dt > now && dt <= futureEnd) {
+      if (!includePredictive && a.predictive === true) {
+        // skip predictive if checkbox is off
+      } else {
+        row.fut[band]++;
+        row.items.push(a);
+      }
     }
-
-    return by;
   }
+
+  // Derive mix + combined band for shading
+  for (const k in by) {
+    const row = by[k];
+
+    // Mixed future risk (for dashed outline)
+    const f = row.fut;
+    row.mixFuture =
+      (f.high > 0 && f.low > 0) ||
+      (f.medium > 0 && f.high > 0) ||
+      (f.medium > 0 && f.low > 0);
+
+    // Scores: history weight 1×, future weight 2×
+    const histHigh   = row.hist.high;
+    const histMed    = row.hist.medium;
+    const histLow    = row.hist.low;
+
+    const futHigh    = row.fut.high;
+    const futMed     = row.fut.medium;
+    const futLow     = row.fut.low;
+
+    const highScore   = 3 * (histHigh + 2 * futHigh);
+    const mediumScore = 2 * (histMed  + 2 * futMed);
+    const lowScore    = 1 * (histLow  + 2 * futLow);
+
+    const totalScore  = highScore + mediumScore + lowScore;
+
+    if (totalScore === 0) {
+      row.band = 'none';
+      continue;
+    }
+
+    const highRatio = highScore / totalScore;
+    const midRatio  = (highScore + mediumScore) / totalScore;
+
+    // Thresholds – tweak to taste
+    if (highRatio >= 0.4 || highScore >= 12) {
+      row.band = 'high';
+    } else if (midRatio >= 0.5 || mediumScore >= 8) {
+      row.band = 'medium';
+    } else {
+      row.band = 'low';
+    }
+  }
+
+  return by;
+}
+
 
   // ----- Draw / redraw map -----
   function draw(){
@@ -1347,42 +1399,67 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
         geoLayer = L.geoJSON(geo, {
           style: f => {
-            const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-            const row  = agg[name];
-            if (!row) {
-              return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
-            }
-            const col = row.max === 3 ? palette.high :
-                        row.max === 2 ? palette.medium : palette.low;
-            return {
-              fillColor: col,
-              fillOpacity: .85,
-              color: row.mix ? '#ffffff' : '#111',
-              dashArray: row.mix ? '6 3' : null,
-              weight: row.mix ? 1.2 : .6
-            };
-          },
+  const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+  const row  = agg[name];
+
+  if (!row || row.band === 'none') {
+    return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
+  }
+
+  const col = palette[row.band] || palette.low;
+
+  return {
+    fillColor: col,
+    fillOpacity: .85,
+    color: row.mixFuture ? '#ffffff' : '#111',
+    dashArray: row.mixFuture ? '6 3' : null,
+    weight: row.mixFuture ? 1.2 : .6
+  };
+},
+
           onEachFeature: (f, layer) => {
-            const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-            const row  = agg[name];
-            const tot  = row
-              ? (row.counts.low + row.counts.medium + row.counts.high)
-              : 0;
-            const chips = row ? `
-              <span class="chip" style="background:${palette.high}"></span>${row.counts.high}
-              <span class="chip" style="background:${palette.medium}"></span>${row.counts.medium}
-              <span class="chip" style="background:${palette.low}"></span>${row.counts.low}
-            ` : 'No events';
+  const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+  const row  = agg[name];
 
-            layer.bindPopup(`<b>${name}</b><br>${tot} event(s) in next ${windowDays} days<br>${chips}`);
+  if (!row) {
+    layer.bindPopup(`<b>${name}</b><br>No protest data`);
+    return;
+  }
 
-            layer.on('click', () => {
-              const items = (row && row.items)
-                ? row.items.slice().sort((a,b)=>parseTime(a.time)-parseTime(b.time))
-                : [];
-              emitCountrySelected(name, items);
-            });
-          }
+  const h = row.hist;
+  const fwd = row.fut;
+  const histTotal = h.low + h.medium + h.high;
+  const futTotal  = fwd.low + fwd.medium + fwd.high;
+
+  const histLine = histTotal
+    ? `Last 6 months: `
+      + `<span class="chip" style="background:${palette.high}"></span>${h.high} `
+      + `<span class="chip" style="background:${palette.medium}"></span>${h.medium} `
+      + `<span class="chip" style="background:${palette.low}"></span>${h.low}`
+    : `Last 6 months: no data`;
+
+  const futLine = futTotal
+    ? `Next ${windowDays} days: `
+      + `<span class="chip" style="background:${palette.high}"></span>${fwd.high} `
+      + `<span class="chip" style="background:${palette.medium}"></span>${fwd.medium} `
+      + `<span class="chip" style="background:${palette.low}"></span>${fwd.low}`
+    : `Next ${windowDays} days: no scheduled events`;
+
+  layer.bindPopup(`
+    <b>${name}</b><br>
+    Overall band: <b>${row.band.toUpperCase()}</b><br>
+    ${histLine}<br>
+    ${futLine}
+  `);
+
+  layer.on('click', () => {
+    const items = row.items
+      ? row.items.slice().sort((a,b)=>parseTime(a.time)-parseTime(b.time))
+      : [];
+    emitCountrySelected(name, items);
+  });
+}
+
         }).addTo(map);
       });
   }
@@ -1488,6 +1565,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 </body>
 </html>
+
 
 
 
