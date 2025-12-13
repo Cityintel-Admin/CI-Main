@@ -487,7 +487,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <script src="filterEvents.js"></script>
 <script src="alerts-data.js"></script>
 <script src="metrics.js"></script>
+<script src="assets-data.js"></script>
+<script src="travellers-data.js"></script>
 
+		
 <script>
 (function compatProfileShim(){
   if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
@@ -1250,6 +1253,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     boxZoom: false         // prevent grey zoom box lines
   }).setView([18, 10], 2);
 
+	const assetLayer     = L.layerGroup().addTo(map);
+    const travellerLayer = L.layerGroup().addTo(map);
+
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
@@ -1267,6 +1273,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       return d;
     }
   });
+
+	L.control.layers(null, { "Company assets": assetLayer, "Travellers": travellerLayer}, {
+    position: 'topright', collapsed: true}).addTo(map);
+
   map.addControl(new Legend({position:'bottomright'}));
 
   let geoLayer = null;
@@ -1381,6 +1391,96 @@ function aggregate(alerts){
 }
 
 
+
+	
+// ----- Company assets & travellers on map -----
+function renderAssetsAndTravellers(){
+  assetLayer.clearLayers();
+  travellerLayer.clearLayers();
+
+  const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+  const trips  = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+
+  // Assets: blue-ish markers
+  assets.forEach(a => {
+    if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+
+    const m = L.circleMarker([a.lat, a.lon], {
+      radius: 6,
+      fillColor: '#4f8bff',
+      color: '#ffffff',
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.9
+    });
+
+    m.bindPopup(`
+      <b>${a.name}</b><br>
+      ${a.city || ''}, ${a.country || ''}<br>
+      <small>Type: ${a.type || 'asset'}</small>
+    `);
+
+    assetLayer.addLayer(m);
+  });
+
+  // Travellers: only those currently in-country (today between from/to)
+  const today = new Date();
+
+  trips.forEach(t => {
+    if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+
+    const from = new Date(t.from);
+    const to   = new Date(t.to);
+    if (isNaN(from) || isNaN(to) || today < from || today > to) return;
+
+    const m = L.circleMarker([t.lat, t.lon], {
+      radius: 6,
+      fillColor: '#f0b429',
+      color: '#111111',
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.9
+    });
+
+    m.bindPopup(`
+      <b>${t.name}</b> — ${t.role || ''}<br>
+      ${t.city || ''}, ${t.country || ''}<br>
+      <small>Stay: ${t.from} → ${t.to}<br>
+      Hotel: ${t.hotel || 'N/A'}</small>
+    `);
+
+    travellerLayer.addLayer(m);
+  });
+}
+
+
+function countPresenceForCountry(countryName){
+  const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+  const trips  = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+
+  const normCountry = c => (c || '').trim().toLowerCase();
+  const key = normCountry(countryName);
+
+  const today = new Date();
+
+  const assetMatches = assets.filter(a =>
+    normCountry(a.country) === key
+  );
+
+  const travellerMatches = trips.filter(t => {
+    if (normCountry(t.country) !== key) return false;
+    const from = new Date(t.from);
+    const to   = new Date(t.to);
+    if (isNaN(from) || isNaN(to)) return false;
+    return today >= from && today <= to;
+  });
+
+  return { assetMatches, travellerMatches };
+}
+
+
+	
+
   // ----- Draw / redraw map -----
   function draw(){
     fetch(TOPO_URL)
@@ -1417,12 +1517,15 @@ function aggregate(alerts){
   };
 },
 
+			
           onEachFeature: (f, layer) => {
   const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
   const row  = agg[name];
 
   if (!row) {
-    layer.bindPopup(`<b>${name}</b><br>No protest data`);
+    const presence = countPresenceForCountry(name);
+    layer.bindPopup(` <b>${name}</b><br> No protest data<br>  Assets in country: <b>${presence.assetMatches.length}</b><br>
+      Travellers in country (current): <b>${presence.travellerMatches.length}</b> `);
     return;
   }
 
@@ -1445,11 +1548,11 @@ function aggregate(alerts){
       + `<span class="chip" style="background:${palette.low}"></span>${fwd.low}`
     : `Next ${windowDays} days: no scheduled events`;
 
-  layer.bindPopup(`
-    <b>${name}</b><br>
-    Overall band: <b>${row.band.toUpperCase()}</b><br>
-    ${histLine}<br>
-    ${futLine}
+  const presence = countPresenceForCountry(name);
+
+  layer.bindPopup(` <b>${name}</b><br> Overall band: <b>${row.band.toUpperCase()}</b><br>
+    ${histLine}<br> ${futLine}<br><br> Assets in country: <b>${presence.assetMatches.length}</b><br>
+    Travellers in country (current): <b>${presence.travellerMatches.length}</b>
   `);
 
   layer.on('click', () => {
@@ -1559,12 +1662,14 @@ function aggregate(alerts){
 
   // Initial draw
   draw();
+  renderAssetsAndTravellers();
 })();
 </script>
 
 
 </body>
 </html>
+
 
 
 
