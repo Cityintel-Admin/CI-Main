@@ -4,6 +4,8 @@
 <head>
 
   <script src="auth.js"></script>
+  <script src="assets-data.js"></script>
+  <script src="travellers-data.js"></script>
 
 
 <script>
@@ -45,7 +47,62 @@
 })();
 </script>
 
+	
 
+	<script>
+(function syncPresenceFromStorage(){
+  function loadList(key, fallback){
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (e) {
+      console.warn('CityIntel: failed to load', key, 'from localStorage', e);
+      return fallback;
+    }
+  }
+
+  const seedAssets     = Array.isArray(window.CIAssets)     ? window.CIAssets     : [];
+  const seedTravellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+
+  window.CIAssets     = loadList('ci_assets', seedAssets);
+  window.CITravellers = loadList('ci_travellers', seedTravellers);
+})();
+</script>
+
+
+	
+<script>
+/**
+ * CIExposure – helper to find assets & travellers
+ * that match an event by city/country.
+ */
+(function(){
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  function exposureFor(city, country){
+    const cCity = norm(city);
+    const cCountry = norm(country);
+
+    const assets = (Array.isArray(window.CIAssets) ? window.CIAssets : []).filter(a =>
+      (!cCity    || norm(a.city)    === cCity) &&
+      (!cCountry || norm(a.country) === cCountry)
+    );
+
+    const travellers = (Array.isArray(window.CITravellers) ? window.CITravellers : []).filter(t =>
+      (!cCity    || norm(t.city)    === cCity) &&
+      (!cCountry || norm(t.country) === cCountry)
+    );
+
+    return { assets, travellers };
+  }
+
+  window.CIExposure = { exposureFor };
+})();
+</script>
+
+	
   
   <meta charset="utf-8" />
   <title>CityIntel — Live Feed</title>
@@ -865,6 +922,8 @@ document.addEventListener('DOMContentLoaded', () => {
        <div class="section-label"></div>
       <nav>
         <a href="index.html">Dashboard</a>
+        <a href="assets.html">Assets</a>
+		<a href="travellers.html">Travellers</a>  
         <a href="alerts.html">Alerts</a>
         <a href="events.html">Events</a>
 		<a href="live-feed.html">Live Feed</a>
@@ -1732,11 +1791,35 @@ function openDetailPanel(item, relatedList){
 	  // NEW: richer intel-style summary
   detailSummaryEl.textContent = buildIntelSummary(item, earlier);
 
-  // location / impact (still placeholder until we wire real office locations)
+    // location text
   detailLocationEl.textContent =
-    `Approx area: ${item.city || 'unknown'} (exact location may be refining).`;
-  detailImpactEl.textContent =
-    `Nearest office: CityIntel HQ, ~2km. Impact: Elevated security posture recommended.`;
+    `Approx area: ${item.city || 'unknown'}${item.country ? ', ' + item.country : ''}.`;
+
+	
+  // real exposure based on stored assets/travellers
+  let exposure = { assets: [], travellers: [] };
+  if (window.CIExposure && CIExposure.exposureFor) {
+    exposure = CIExposure.exposureFor(item.city || item.City,
+                                      item.country || item.Country);
+  }
+  const nA = exposure.assets.length;
+  const nT = exposure.travellers.length;
+
+  if (nA || nT) {
+    const assetStr = nA
+      ? `${nA} mapped asset${nA > 1 ? 's' : ''}`
+      : 'no mapped assets';
+    const travStr  = nT
+      ? `${nT} mapped traveller${nT > 1 ? 's' : ''}`
+      : 'no mapped travellers';
+
+    detailImpactEl.textContent =
+      `Exposure in this city: ${assetStr}; ${travStr}. Review posture for affected locations.`;
+  } else {
+    detailImpactEl.textContent =
+      'No mapped company assets or travellers currently in this city (based on stored data).';
+  }
+
 
   // Mini-map pin (lat/lon come from the event if present)
   if (typeof item.lat === 'number' && typeof item.lon === 'number') {
@@ -1745,6 +1828,7 @@ function openDetailPanel(item, relatedList){
     drawMiniMapPin(null, null);
   }
 
+	
   // earlier today in same city (re-use the list we already built)
   if (earlier.length) {
     detailEarlierEl.innerHTML =
@@ -1993,10 +2077,33 @@ function renderEventsIntoCard(cardEl, events, feed) {
 
       const groupEl  = document.createElement('div');
       const ageClass = getAgeClass(first.when);
-      groupEl.className = `event-group ${ageClass}`;
 
-      groupEl.innerHTML = `
-  <div class="eg-header">
+		
+      // NEW: exposure (assets + travellers) for this city/country
+      let exposureHtml = '';
+      if (window.CIExposure && CIExposure.exposureFor) {
+        const exp = CIExposure.exposureFor(first.city || first.City,
+                                           first.country || first.Country);
+        const nA = exp.assets.length;
+        const nT = exp.travellers.length;
+        if (nA || nT) {
+          exposureHtml = `
+            <div class="eg-exposure" style="margin-top:4px;font-size:12px;">
+              <span style="display:inline-block;padding:2px 6px;border-radius:999px;background:rgba(79,139,255,0.16);border:1px solid rgba(79,139,255,0.5);margin-right:6px;">
+                Assets: <b>${nA}</b>
+              </span>
+              <span style="display:inline-block;padding:2px 6px;border-radius:999px;background:rgba(240,180,41,0.16);border:1px solid rgba(240,180,41,0.5);">
+                Travellers: <b>${nT}</b>
+              </span>
+            </div>
+          `;
+        }
+      }
+
+		
+            groupEl.className = `event-group ${ageClass}`;
+            groupEl.innerHTML = `
+  	<div class="eg-header">
     <div class="eg-title">
       <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
       ${first.title || first.summary || '(no title)'}
@@ -2007,11 +2114,12 @@ function renderEventsIntoCard(cardEl, events, feed) {
     </div>
   </div>
 
-    <div class="eg-sub">
+  <div class="eg-sub">
     <div class="eg-risk" style="color:${riskColor}">${risk || 'n/a'}</div>
     <div class="eg-when">${whenNice} • ${ageLabel(first.when)}</div>
   </div>
 
+  ${exposureHtml}
 
   <div class="eg-body" style="display:none;">
     ${g.events.map(ev => `
@@ -2030,6 +2138,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
     </button>
   </div>
 `;
+
 
 
       // collapse / expand behaviour on header
