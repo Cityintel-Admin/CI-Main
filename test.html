@@ -6,7 +6,7 @@
   <script src="auth.js"></script>
   <script src="assets-data.js"></script>
   <script src="travellers-data.js"></script>
-
+  <script src="alerts-data.js"></script>
 
 <script>
 (function pageGuard(){
@@ -103,6 +103,11 @@
 </script>
 
 	
+	<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="anonymous">
+
   
   <meta charset="utf-8" />
   <title>CityIntel — Live Feed</title>
@@ -861,6 +866,62 @@
       border-color:#ff2a2a;
     }
 
+
+	  
+
+/* ---- Live Feed map card ---- */
+#liveRiskMap{
+  height:360px;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+/* small legend in corner of map */
+.live-map-legend{
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:rgba(15,16,20,0.96);
+  border-radius:10px;
+  padding:6px 8px;
+  border:1px solid #2e3238;
+  font-size:11px;
+  color:#e5e7eb;
+  z-index:500;
+}
+.live-map-legend-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:3px;
+}
+.live-map-legend-row:last-child{ margin-bottom:0; }
+.live-map-chip{
+  width:12px;
+  height:12px;
+  border-radius:3px;
+  border:1px solid #2e3238;
+}
+
+/* asset / traveller markers */
+.ci-asset-marker,
+.ci-trav-marker{
+  background:#111827;
+  border-radius:999px;
+  border:2px solid #000;
+  box-shadow:0 0 6px rgba(0,0,0,0.6);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  line-height:18px;
+  text-align:center;
+}
+.ci-asset-marker{ background:#3b82f6; }    /* blue */
+.ci-trav-marker{ background:#f97316; }    /* orange */
+
+
+	  
+
     @media (max-width:900px){
       .app{
         grid-template-columns:1fr;
@@ -947,6 +1008,25 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="live-now-stats live-now-empty">No alerts in the current window.</div>
     </div>
 
+
+	  
+<section id="liveMapCard" style="
+    margin: 4px 0 14px;
+    padding: 12px 14px 10px;
+    border-radius: 16px;
+    background: linear-gradient(180deg,#1a1c20,#131417);
+    border: 1px solid #24272c;
+    position: relative;
+  ">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <h3 style="margin:0;font-size:14px;font-weight:600;">Global Risk &amp; Exposure Map</h3>
+    <div style="font-size:11px;color:#9ca3af;">
+      Last 6 months risk • company assets &amp; travellers overlay
+    </div>
+  </div>
+  <div id="liveRiskMap"></div>
+</section>
+	  
 	  
     <div class="page-head">
       <div class="page-head-left">
@@ -1013,6 +1093,10 @@ document.addEventListener('DOMContentLoaded', () => {
         Impact to nearby assets here.
       </div>
 
+		
+	<div id="detailExposureList" class="small" style="margin-top:8px;"></div>
+
+		
 <canvas id="detailMiniMap" width="320" height="180"
     style="margin-top:10px;border-radius:10px;border:1px solid var(--g600);background:#0f1013;"></canvas>
   <div id="detailCoords" class="small" style="margin-top:6px;opacity:.8;"></div>		
@@ -1829,6 +1913,32 @@ function openDetailPanel(item, relatedList){
     `;
   }
 
+	  const detailExposureListEl = document.getElementById('detailExposureList');
+
+  if (detailExposureListEl) {
+    if (nA || nT) {
+      const assetLines = exposure.assets.map(a =>
+        `<li><b>${a.name || 'Asset'}</b>${a.type ? ` — ${a.type}` : ''}${
+          a.city || a.country ? ` (${[a.city, a.country].filter(Boolean).join(', ')})` : ''
+        }</li>`
+      ).join('');
+
+      const travLines = exposure.travellers.map(t =>
+        `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${
+          t.hotel ? ` — ${t.hotel}` : ''
+        }</li>`
+      ).join('');
+
+      detailExposureListEl.innerHTML = `
+        ${assetLines ? `<div style="margin-bottom:6px;"><b>Assets</b><ul>${assetLines}</ul></div>` : ''}
+        ${travLines ? `<div><b>Travellers</b><ul>${travLines}</ul></div>` : ''}
+      `;
+    } else {
+      detailExposureListEl.innerHTML =
+        `<span style="opacity:.85;">No mapped assets or travellers in this city.</span>`;
+    }
+  }
+
 
 
   // Mini-map pin (lat/lon come from the event if present)
@@ -1849,6 +1959,23 @@ function openDetailPanel(item, relatedList){
     detailEarlierEl.textContent = 'No earlier incidents recorded.';
   }
 
+
+  // notify map to jump / highlight this incident
+  try {
+    window.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+      detail: {
+        city:    item.city    || item.City    || null,
+        country: item.country || item.Country || null,
+        lat: (typeof item.lat === 'number') ? item.lat : null,
+        lon: (typeof item.lon === 'number') ? item.lon : null
+      }
+    }));
+  } catch (e) {
+    console.warn('ci:jumpToIncident dispatch failed', e);
+  }
+
+
+	
   // incident deep-link -> you already pass this into incident.html
   viewFullBtn.href = 'incident.html';
 
@@ -2590,6 +2717,292 @@ viewFullBtn.addEventListener('click', (e)=>{
 	
 </script>
 
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+
+
+	
+<script>
+(function(){
+  const el = document.getElementById('liveRiskMap');
+  if (!el || typeof L === 'undefined') return;
+
+  const LOOKBACK_DAYS = 180;
+  const palette = {
+    low:   '#6bcf6b',
+    medium:'#f0b429',
+    high:  '#ff5a5f',
+    none:  '#2e3238'
+  };
+
+  const alias = new Map([
+    ['england','united kingdom'],
+    ['scotland','united kingdom'],
+    ['wales','united kingdom'],
+    ['czech republic','czechia'],
+    ['vatican city','holy see']
+  ]);
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  // ---- Map init ----
+  const map = L.map('liveRiskMap', {
+    scrollWheelZoom: true,
+    worldCopyJump: true
+  }).setView([20, 0], 2);
+
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // Legend
+  const Legend = L.Control.extend({
+    onAdd: function(){
+      const div = L.DomUtil.create('div', 'live-map-legend');
+      div.innerHTML = `
+        <div class="live-map-legend-row">
+          <span class="live-map-chip" style="background:${palette.high};"></span> High risk
+        </div>
+        <div class="live-map-legend-row">
+          <span class="live-map-chip" style="background:${palette.medium};"></span> Medium
+        </div>
+        <div class="live-map-legend-row">
+          <span class="live-map-chip" style="background:${palette.low};"></span> Low
+        </div>
+        <div class="live-map-legend-row" style="margin-top:4px;">
+          <span style="width:10px;height:10px;border-radius:999px;background:#3b82f6;display:inline-block;"></span>
+          Assets
+        </div>
+        <div class="live-map-legend-row">
+          <span style="width:10px;height:10px;border-radius:999px;background:#f97316;display:inline-block;"></span>
+          Travellers
+        </div>
+      `;
+      return div;
+    }
+  });
+  map.addControl(new Legend({ position:'topleft' }));
+
+  // ---- Risk aggregation from alertsData (last 6 months) ----
+  function aggregateRisk(){
+    const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const now = Date.now();
+    const cutoff = now - LOOKBACK_DAYS * 864e5;
+    const by = {};
+
+    alerts.forEach(a => {
+      if (!a || !a.Country || !a.time) return;
+      const t = new Date(a.time);
+      const ms = t.getTime();
+      if (!ms || ms < cutoff || ms > now) return;
+
+      let c = a.Country;
+      const aliased = alias.get(norm(c));
+      if (aliased) c = aliased;
+
+      const rRaw = (a.risk || '').toString().toLowerCase();
+      const r = rRaw.startsWith('hi') ? 'high'
+              : rRaw.startsWith('me') ? 'medium'
+              : 'low';
+
+      if (!by[c]) by[c] = { low:0, medium:0, high:0 };
+      by[c][r]++;
+    });
+
+    const result = {};
+    Object.keys(by).forEach(name => {
+      const row = by[name];
+      const total = row.low + row.medium + row.high;
+      if (!total) return;
+
+      const shareHigh = row.high / total;
+      const shareMed  = row.medium / total;
+
+      let level = 'low';
+      if (shareHigh >= 0.4 || row.high >= 3) {
+        level = 'high';
+      } else if (shareMed >= 0.3 || row.medium >= 2 || row.high > 0) {
+        level = 'medium';
+      }
+
+      result[name] = { level, counts: row, total };
+    });
+    return result;
+  }
+
+  // ---- Draw country risk shading ----
+  let countryLayer = null;
+
+  function drawRisk(){
+    const agg = aggregateRisk();
+    if (!agg) return;
+
+    fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+      .then(r => r.json())
+      .then(topology => {
+        const geo = topojson.feature(topology, topology.objects.countries);
+        geo.features.forEach(f => {
+          f.properties.ADMIN = f.properties.name || f.properties.NAME || '';
+        });
+
+        if (countryLayer) countryLayer.remove();
+
+        countryLayer = L.geoJSON(geo, {
+          style: f => {
+            const name = (f.properties.ADMIN || '').trim();
+            const row = agg[name];
+            if (!row) {
+              return {
+                fillColor: palette.none,
+                fillOpacity: 0.18,
+                color: '#111',
+                weight: 0.4
+              };
+            }
+            const col = palette[row.level] || palette.low;
+            return {
+              fillColor: col,
+              fillOpacity: 0.85,
+              color: '#111',
+              weight: 0.6
+            };
+          },
+          onEachFeature: (f, layer) => {
+            const name = (f.properties.ADMIN || '').trim();
+            const row = agg[name];
+            if (!row) {
+              layer.bindPopup(
+                `<b>${name}</b><br>No incidents in last ${LOOKBACK_DAYS} days.`
+              );
+            } else {
+              const c = row.counts;
+              layer.bindPopup(
+                `<b>${name}</b><br>${row.total} incident(s) in last ${LOOKBACK_DAYS} days<br>
+                 <span style="color:${palette.high}">High: ${c.high}</span> ·
+                 <span style="color:${palette.medium}">Med: ${c.medium}</span> ·
+                 <span style="color:${palette.low}">Low: ${c.low}</span>`
+              );
+            }
+          }
+        }).addTo(map);
+      });
+  }
+
+  // ---- Assets & travellers markers ----
+  const assetLayer = L.layerGroup().addTo(map);
+  const travLayer  = L.layerGroup().addTo(map);
+
+  const assetIcon = L.divIcon({
+    className: 'ci-asset-marker',
+    html: 'A',
+    iconSize: [18, 18]
+  });
+  const travIcon  = L.divIcon({
+    className: 'ci-trav-marker',
+    html: 'T',
+    iconSize: [18, 18]
+  });
+
+  function refreshPresenceMarkers(){
+    assetLayer.clearLayers();
+    travLayer.clearLayers();
+
+    (window.CIAssets || []).forEach(a => {
+      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+      L.marker([a.lat, a.lon], { icon: assetIcon })
+        .addTo(assetLayer)
+        .bindPopup(
+          `<b>${a.name || 'Asset'}</b><br>` +
+          `${[a.city, a.country].filter(Boolean).join(', ')}`
+        );
+    });
+
+    (window.CITravellers || []).forEach(t => {
+      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+      L.marker([t.lat, t.lon], { icon: travIcon })
+        .addTo(travLayer)
+        .bindPopup(
+          `<b>${t.name || 'Traveller'}</b><br>` +
+          `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`
+        );
+    });
+  }
+
+  // ---- React when an incident is opened (jump to city) ----
+  function pulseAt(lat, lon, label){
+    map.setView([lat, lon], 7);
+    const marker = L.circleMarker([lat, lon], {
+      radius: 8,
+      color: '#ff4d4d',
+      fillColor: '#ff4d4d',
+      fillOpacity: 0.85,
+      weight: 2
+    }).addTo(map);
+    if (label) marker.bindPopup(label).openPopup();
+    setTimeout(() => map.removeLayer(marker), 8000);
+  }
+
+  window.addEventListener('ci:jumpToIncident', e => {
+    const d = e.detail || {};
+    const lat = typeof d.lat === 'number' ? d.lat : null;
+    const lon = typeof d.lon === 'number' ? d.lon : null;
+
+    if (lat != null && lon != null) {
+      pulseAt(lat, lon, 'Current incident');
+      return;
+    }
+
+    // Fallback: use any matching assets/travellers in that city/country
+    const city = (d.city || '').toString().trim().toLowerCase();
+    const country = (d.country || '').toString().trim().toLowerCase();
+    const pts = [];
+
+    (window.CIAssets || []).forEach(a => {
+      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+      if (city && (a.city || '').toLowerCase() !== city) return;
+      if (country && (a.country || '').toLowerCase() !== country) return;
+      pts.push([a.lat, a.lon]);
+    });
+
+    (window.CITravellers || []).forEach(t => {
+      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+      if (city && (t.city || '').toLowerCase() !== city) return;
+      if (country && (t.country || '').toLowerCase() !== country) return;
+      pts.push([t.lat, t.lon]);
+    });
+
+    if (pts.length) {
+      const avgLat = pts.reduce((s,p)=>s+p[0],0)/pts.length;
+      const avgLon = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+      pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
+    }
+  });
+
+  // initial draw
+  drawRisk();
+  refreshPresenceMarkers();
+
+  // refresh markers if assets/travellers change in another tab
+  window.addEventListener('storage', e => {
+    if (e.key === 'ci_assets' || e.key === 'ci_travellers') {
+      setTimeout(() => {
+        // quick resync
+        try{
+          const a = JSON.parse(localStorage.getItem('ci_assets') || '[]');
+          const t = JSON.parse(localStorage.getItem('ci_travellers') || '[]');
+          if (Array.isArray(a)) window.CIAssets = a;
+          if (Array.isArray(t)) window.CITravellers = t;
+        } catch {}
+        refreshPresenceMarkers();
+      }, 200);
+    }
+  });
+})();
+</script>
+
+	
 <!-- auth helpers / admin links -->
 
 <script src="admin-links.js"></script>
