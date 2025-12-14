@@ -2826,6 +2826,18 @@ viewFullBtn.addEventListener('click', (e)=>{
   ]);
   const norm = s => (s || '').toString().trim().toLowerCase();
 
+  function loadMiniFeeds(){
+    try {
+      const raw = localStorage.getItem('ci_live_feeds_v1');
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+
+	
   // ---- Map init ----
   const WORLD_BOUNDS = L.latLngBounds(
     [-60, -180],
@@ -2839,8 +2851,11 @@ viewFullBtn.addEventListener('click', (e)=>{
     maxBounds: WORLD_BOUNDS,
     maxBoundsViscosity: 1.0,
     minZoom: 2
+	zoomControl: false 
   });
 
+  L.control.zoom({ position: 'topright' }).addTo(map);
+	
   map.fitBounds(WORLD_BOUNDS);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -2849,9 +2864,42 @@ viewFullBtn.addEventListener('click', (e)=>{
   }).addTo(map);
 
   // Legend
-  const Legend = L.Control.extend({
+    const Legend = L.Control.extend({
     onAdd: function(){
       const div = L.DomUtil.create('div', 'live-map-legend');
+
+      // pull feeds from localStorage
+      const feeds = loadMiniFeeds() || [];
+      const feedHtml = feeds.length ? `
+        <div style="margin-top:6px;border-top:1px solid #2e3238;padding-top:4px;">
+          <div style="
+            font-size:10px;
+            letter-spacing:.06em;
+            text-transform:uppercase;
+            opacity:.75;
+            margin-bottom:3px;">
+            Feeds on this page
+          </div>
+          ${feeds.slice(0,4).map(f => {
+            const label =
+              (f.places && f.places.length)
+                ? f.places.join(', ')
+                : (f.keywords && f.keywords.length
+                    ? f.keywords.join(', ')
+                    : 'Custom feed');
+
+            return `
+              <div style="
+                font-size:11px;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;">
+                • ${label}
+              </div>`;
+          }).join('')}
+        </div>
+      ` : '';
+
       div.innerHTML = `
         <div class="live-map-legend-row">
           <span class="live-map-chip" style="background:${palette.high};"></span> High risk
@@ -2870,10 +2918,12 @@ viewFullBtn.addEventListener('click', (e)=>{
           <span style="width:10px;height:10px;border-radius:999px;background:#f97316;display:inline-block;"></span>
           Travellers
         </div>
+        ${feedHtml}
       `;
       return div;
     }
   });
+	
   map.addControl(new Legend({ position:'topleft' }));
 
   // ---- Risk aggregation from alertsData (last 6 months) ----
