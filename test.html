@@ -1628,6 +1628,50 @@ const FEED_EVENTS_KEY = 'ci_live_feed_events_v1';
 const HISTORY_WINDOWS = [12, 24, 48, 72];                    // For "Load earlier" – how far back we go on each click (in hours)
 
 
+
+// === FEED ↔ MAP SIDEBAR BRIDGE ==========================
+window.ciFeedSummaries = window.ciFeedSummaries || {};
+
+/**
+ * Store a small summary per feed so the map sidebar can render it.
+ */
+function publishFeedSummary(feed, events){
+  if (!feed || !feed.id) return;
+  const list = Array.isArray(events) ? events : [];
+
+  let hi = 0, med = 0, low = 0;
+  list.forEach(ev => {
+    const r = (ev.risk || '').toLowerCase();
+    if (r === 'high') hi++;
+    else if (r === 'med' || r === 'medium') med++;
+    else low++;
+  });
+
+  const label =
+    (feed.places && feed.places.length)
+      ? feed.places.join(', ')
+      : (feed.keywords && feed.keywords.length
+           ? feed.keywords.join(', ')
+           : 'Custom feed');
+
+  window.ciFeedSummaries[feed.id] = {
+    id: feed.id,
+    label,
+    high: hi,
+    med,
+    low,
+    total: list.length
+  };
+
+  // Let the map sidebar refresh if it's ready
+  if (typeof window.ciUpdateMapSidebar === 'function') {
+    window.ciUpdateMapSidebar(window.ciFeedSummaries);
+  }
+}
+
+
+
+	
 // per-feed UI cache (so cards can show stuff before network finishes)
 const FEED_UI_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
@@ -2556,7 +2600,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
 
   // update per-feed header stats
   updateFeedHeaderStats(feed, displayEvents);
-
+  publishFeedSummary(feed, displayEvents);
 	
   // Track some stats for the refresh scheduler
   cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
@@ -3082,6 +3126,12 @@ refreshSingleFeedCard(card, feed);
 	    // after all cards are created / refreshed
   recomputeGlobalStrip();
 }
+
+  // after all feeds rendered, nudge sidebar once more
+  if (typeof window.ciUpdateMapSidebar === 'function') {
+    window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+  }
+	
 }
 
 
@@ -3425,6 +3475,74 @@ viewFullBtn.addEventListener('click', (e)=>{
   renderSidebarFeeds();
   // let other scripts refresh it after feeds change
   window.ciRefreshMapSidebarFeeds = renderSidebarFeeds;
+
+
+
+  // === SIDEBAR FEED LIST RENDERER =========================
+  window.ciUpdateMapSidebar = function(summaryMap){
+    const host = document.getElementById('liveMapFeedList');
+    if (!host) return;
+
+    const summaries = Object.values(summaryMap || {});
+    host.innerHTML = '';
+
+    if (!summaries.length){
+      host.innerHTML = '<div class="live-map-feed-empty">No feeds configured yet.</div>';
+      return;
+    }
+
+    // sort: highest total first
+    summaries.sort((a,b) => (b.total||0) - (a.total||0));
+
+    summaries.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'live-map-feed-row';
+      row.dataset.feedid = s.id;
+
+      row.innerHTML = `
+        <div class="live-map-feed-label">${s.label || 'Feed'}</div>
+        <div class="live-map-feed-counts">
+          <span><span class="dot dot-high"></span>${s.high || 0}</span>
+          <span><span class="dot dot-med"></span>${s.med  || 0}</span>
+          <span><span class="dot dot-low"></span>${s.low  || 0}</span>
+          <span style="margin-left:auto;opacity:.75;">
+            ${s.total || 0} alerts
+          </span>
+        </div>
+      `;
+
+      host.appendChild(row);
+    });
+  };
+
+  // click in sidebar feed list → scroll to that feed card
+  document.addEventListener('click', (e) => {
+    const row = e.target.closest('.live-map-feed-row');
+    if (!row) return;
+    const feedId = row.dataset.feedid;
+    if (!feedId) return;
+
+    if (typeof window.ciScrollToFeed === 'function') {
+      window.ciScrollToFeed(feedId);
+    } else {
+      // simple fallback: scroll card into view by data-id
+      const card = document.querySelector(`.feed-card[data-id="${feedId}"]`);
+      if (card) card.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  });
+
+  // "+ Add feed" button in sidebar
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#liveMapAddFeedBtn');
+    if (!btn) return;
+    if (typeof window.ciOpenAddFeed === 'function') {
+      window.ciOpenAddFeed();
+    } else {
+      // fallback to main button
+      const mainBtn = document.getElementById('btnAddFeed');
+      if (mainBtn) mainBtn.click();
+    }
+  });
 
 
 	
