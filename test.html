@@ -1143,6 +1143,7 @@
   border-radius:16px;
   overflow:hidden;
   border:1px solid var(--gray-700);
+  order: 2; 	
 }
 
 /* This is critical – gives the Leaflet container height */
@@ -1161,6 +1162,7 @@
   display:flex;
   flex-direction:column;
   gap:12px;
+  order: 1; 
 }
 
 /* Legend styling */
@@ -3222,6 +3224,7 @@ viewFullBtn.addEventListener('click', (e)=>{
   if (!el || typeof L === 'undefined') return;
 
 window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
+ window.ciLastIncident = window.ciLastIncident || null;
 	
   const LOOKBACK_DAYS = 180;
   const palette = {
@@ -3487,7 +3490,8 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
     const lon = typeof d.lon === 'number' ? d.lon : null;
 
     if (lat != null && lon != null) {
-      pulseAt(lat, lon, 'Current incident');
+       window.ciLastIncident = { lat, lon, label: 'Current incident' };
+		pulseAt(lat, lon, 'Current incident');
       return;
     }
 
@@ -3512,6 +3516,11 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
     if (pts.length) {
       const avgLat = pts.reduce((s,p)=>s+p[0],0)/pts.length;
       const avgLon = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+      window.ciLastIncident = {
+        lat: avgLat,
+        lon: avgLon,
+        label: 'Incident city (assets/travellers nearby)'
+      };
       pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
     }
   });
@@ -3624,11 +3633,24 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
 
 
 	
+function redrawIncidentRadius(){
+    if (!window.ciLastIncident) return;
+    const { lat, lon, label } = window.ciLastIncident;
+    if (typeof lat !== 'number' || typeof lon !== 'number') return;
+    pulseAt(lat, lon, label || 'Current incident');
+  }
 
+	
+  // optional export so the radius pills can trigger a redraw
+  window.ciRedrawIncidentRadius = redrawIncidentRadius;
+	
+
+	
   // initial draw
   drawRisk();
   refreshPresenceMarkers();
 
+	
   // refresh markers if assets/travellers change in another tab
   window.addEventListener('storage', e => {
     if (e.key === 'ci_assets' || e.key === 'ci_travellers') {
@@ -3688,6 +3710,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // toggle active state
       pills.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+
+// NEW: immediately redraw the circle for the last incident
+      if (window.ciRedrawIncidentRadius) {
+        window.ciRedrawIncidentRadius();
+		}
     });
   });
 });
