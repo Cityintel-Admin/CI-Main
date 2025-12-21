@@ -1107,7 +1107,82 @@
   color:#fee2e2;
 }
 
-	  
+
+	/* --- Map sidebar: selected feed alerts list --- */
+.map-alerts-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:240px;     /* adjust if you want */
+  overflow-y:auto;
+  padding-right:2px;
+}
+
+.map-alert-item{
+  border-radius:12px;
+  border:1px solid #374151;
+  background:#0b1120;
+  padding:8px 10px;
+  cursor:pointer;
+}
+
+.map-alert-item:hover{
+  background:#111827;
+  border-color:#4b5563;
+}
+
+.map-alert-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:8px;
+  margin-bottom:6px;
+}
+
+.map-alert-title{
+  font-size:12px;
+  font-weight:600;
+  color:#e5e7eb;
+  line-height:1.25;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+.map-alert-when{
+  font-size:11px;
+  opacity:.75;
+  white-space:nowrap;
+}
+
+.map-alert-meta{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  align-items:center;
+  font-size:11px;
+  opacity:.9;
+}
+
+.map-risk-pill{
+  font-size:10px;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+}
+
+.map-risk-high{ background:rgba(255,90,95,.14); border-color:rgba(255,90,95,.35); color:#ff5a5f; }
+.map-risk-med { background:rgba(240,180,41,.14); border-color:rgba(240,180,41,.35); color:#f0b429; }
+.map-risk-low { background:rgba(51,196,141,.14); border-color:rgba(51,196,141,.35); color:#33c48d; }
+
+.map-alert-empty{
+  font-size:12px;
+  opacity:.75;
+  padding:8px 2px;
+}
+  
 	  
 
 /* brief highlight when we jump to a feed card */
@@ -1426,6 +1501,18 @@ document.addEventListener('DOMContentLoaded', () => {
         + Add feed
       </button>
     </div>
+
+ <!-- ✅ PASTE PART 1 HERE (directly under feeds summary) -->
+  <div class="live-map-sidebar-section" id="mapAlertsPanel" style="display:none;">
+    <div class="live-map-sidebar-title" id="mapAlertsTitle">Latest incidents</div>
+
+    <div id="mapAlertsList" class="map-alerts-list"></div>
+
+    <button type="button" class="live-map-add-btn" id="mapAlertsBackBtn">
+      ← Back to feeds
+    </button>
+  </div>
+	  
   </aside>
 
 
@@ -3551,6 +3638,7 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
       const btn = document.createElement('button');
       btn.className = 'live-map-feed-btn';
       btn.textContent = label;
+	  btn.dataset.feedid = feed.id;
       btn.addEventListener('click', () => {
         if (window.ciScrollToFeed) {
           window.ciScrollToFeed(feed.id);
@@ -3646,6 +3734,163 @@ function redrawIncidentRadius(){
   window.ciRedrawIncidentRadius = redrawIncidentRadius;
 	
 
+	
+
+// ===== Map sidebar: switch between Feeds panel and Alerts panel =====
+(function setupMapSidebarAlerts(){
+  const feedsPanel  = document.getElementById('mapFeedsPanel');
+  const alertsPanel = document.getElementById('mapAlertsPanel');
+  const alertsTitle = document.getElementById('mapAlertsTitle');
+  const alertsList  = document.getElementById('mapAlertsList');
+  const backBtn     = document.getElementById('mapAlertsBackBtn');
+
+  if (!feedsPanel || !alertsPanel || !alertsTitle || !alertsList || !backBtn) return;
+
+  function showFeeds(){
+    alertsPanel.style.display = 'none';
+    feedsPanel.style.display  = 'block';
+    alertsList.innerHTML = '';
+  }
+
+  function showAlerts(){
+    feedsPanel.style.display  = 'none';
+    alertsPanel.style.display = 'block';
+  }
+
+  backBtn.addEventListener('click', showFeeds);
+
+  function riskPill(risk){
+    const r = (risk || '').toLowerCase();
+    if (r === 'high') return `<span class="map-risk-pill map-risk-high">HIGH</span>`;
+    if (r === 'med' || r === 'medium') return `<span class="map-risk-pill map-risk-med">MED</span>`;
+    return `<span class="map-risk-pill map-risk-low">LOW</span>`;
+  }
+
+  function safe(s){
+    return String(s || '').replace(/[&<>"']/g, m =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function fmt(iso){
+    try{
+      return new Date(iso).toLocaleString('en-GB', {
+        timeZone:'Europe/London',
+        day:'2-digit', month:'short',
+        hour:'2-digit', minute:'2-digit',
+        hour12:false
+      }).replace(',', '');
+    } catch { return iso || ''; }
+  }
+
+  // Pull events for a feed from your existing caches (archive > ui cache > 15min cache)
+  function getFeedEvents(feedId){
+    // These helpers exist in your main script scope (not inside this IIFE),
+    // so we access them via window if needed.
+    const loadArchive   = window.loadArchive   || (typeof loadArchive === 'function' ? loadArchive : null);
+    const loadUiCache   = window.loadUiCache   || (typeof loadUiCache === 'function' ? loadUiCache : null);
+    const loadFeedEvents= window.loadFeedEvents|| (typeof loadFeedEvents === 'function' ? loadFeedEvents : null);
+
+    if (loadArchive){
+      const a = loadArchive(feedId);
+      if (Array.isArray(a) && a.length) return a;
+    }
+    if (loadUiCache){
+      const u = loadUiCache(feedId);
+      if (Array.isArray(u) && u.length) return u;
+    }
+    if (loadFeedEvents){
+      const c = loadFeedEvents(feedId);
+      if (c && Array.isArray(c.events) && c.events.length) return c.events;
+    }
+    return [];
+  }
+
+  // Render alerts list for a feed
+  function openFeedAlerts(feedId, label){
+    const events = getFeedEvents(feedId)
+      .slice()
+      .sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0))
+      .slice(0, 10);
+
+    alertsTitle.textContent = label ? `Latest incidents — ${label}` : 'Latest incidents';
+    alertsList.innerHTML = '';
+
+    if (!events.length){
+      alertsList.innerHTML = `<div class="map-alert-empty">No cached alerts yet — give it a refresh.</div>`;
+      showAlerts();
+      return;
+    }
+
+    events.forEach(ev => {
+      const title = ev.title || ev.summary || ev.description || '(no title)';
+      const city  = ev.city || 'Unknown';
+      const when  = ev.when ? fmt(ev.when) : '';
+
+      const row = document.createElement('div');
+      row.className = 'map-alert-item';
+      row.innerHTML = `
+        <div class="map-alert-top">
+          <div class="map-alert-title">${safe(title)}</div>
+          <div class="map-alert-when">${safe(when)}</div>
+        </div>
+        <div class="map-alert-meta">
+          ${riskPill(ev.risk)}
+          <span style="opacity:.85;">${safe(city)}</span>
+        </div>
+      `;
+
+      row.addEventListener('click', () => {
+        // Scroll to feed card
+        if (typeof window.ciScrollToFeed === 'function') {
+          window.ciScrollToFeed(feedId);
+        }
+
+        // Open the detail panel with this incident
+        if (typeof window.openDetailPanel === 'function') {
+          window.openDetailPanel(ev, events);
+        } else if (typeof openDetailPanel === 'function') {
+          openDetailPanel(ev, events);
+        }
+      });
+
+      alertsList.appendChild(row);
+    });
+
+    showAlerts();
+  }
+
+  // Intercept clicks on the feeds list to open alerts panel
+  document.addEventListener('click', (e) => {
+    // Works for both:
+    // 1) the detailed summary rows (.live-map-feed-row)
+    // 2) the simple buttons (.live-map-feed-btn)
+    const row = e.target.closest('.live-map-feed-row');
+    const btn = e.target.closest('.live-map-feed-btn');
+
+    if (!row && !btn) return;
+
+    const feedId = (row && row.dataset.feedid) || (btn && btn.dataset.feedid);
+    if (!feedId) return;
+
+    // Determine label
+    let label = '';
+    if (row){
+      const l = row.querySelector('.live-map-feed-label');
+      label = l ? l.textContent.trim() : '';
+    } else if (btn){
+      label = btn.textContent.trim();
+    }
+
+    openFeedAlerts(feedId, label);
+  });
+
+  // default view
+  showFeeds();
+})();
+
+
+
+	
 	
   // initial draw
   drawRisk();
