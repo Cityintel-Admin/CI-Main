@@ -21,7 +21,7 @@ window.alertsData =[
     risk: "low",
     time: "2026-01-17T10:00:00",
     source: "https://action.womensmarch.com/events/ocala-free-america-protest",
-    summary: "Protesters are encouraged to bring American flags (including upside-down flags as a signal of distress) to advocate for democratic norms. Organizers are specifically targeting issues such as mass surveillance, community raids, and the escalating fascist threat they associate with current administration policies.These 2026 rallies follow the "No Kings" protests held in 2025, which saw significant turnout in Ocala and surrounding areas."
+    summary: "Protesters are encouraged to bring American flags (including upside-down flags as a signal of distress) to advocate for democratic norms. Organizers are specifically targeting issues such as mass surveillance, community raids, and the escalating fascist threat they associate with current administration policies.These 2026 rallies follow the No Kings protests held in 2025, which saw significant turnout in Ocala and surrounding areas."
   },
 
     {
@@ -46,7 +46,6 @@ window.alertsData =[
     summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
   },
 
-  
 
 {
     title: " Venezuelan people protest",
@@ -9842,6 +9841,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
