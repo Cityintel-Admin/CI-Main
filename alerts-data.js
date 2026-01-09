@@ -14,6 +14,16 @@ window.alertsData =[
   },
 
 
+{
+    title: "Refugee Solidarity Vigil",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "high",
+    time: "2026-01-10T18:00:00",
+    source: "https://www.reuters.com/world/africa/benin-president-says-coup-bid-thwarted-vows-retribution-2025-12-07/",
+    summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
+  },
 
 
 
@@ -9798,6 +9808,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
