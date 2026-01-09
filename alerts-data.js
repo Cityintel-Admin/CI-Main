@@ -14,15 +14,27 @@ window.alertsData =[
   },
 
 
+
+
+
+
+
+
+
+
+
+
+    
+
 {
-    title: "Refugee Solidarity Vigil",
-    city: "London",
-    country: "England",
+    title: " Venezuelan people protest",
+    city: "Paris",
+    country: "france",
     continent: "Europe",
     risk: "high",
     time: "2026-01-10T18:00:00",
-    source: "https://www.reuters.com/world/africa/benin-president-says-coup-bid-thwarted-vows-retribution-2025-12-07/",
-    summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
+    source: "https://www.l-apres.fr/non_a_l_imperialisme_solidarite_avec_la_population_du_venezuela",
+    summary: " Left-wing groups in Paris have been particularly vocal, blasting the U.S. strikes and chanting "Hands off Venezuela, President Emmanuel Macron has stated that the Venezuelan people are "free from oppression," aligning with G7 leaders who are calling for a democratic transition."
   },
 
 
@@ -9808,6 +9820,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
