@@ -17,6 +17,18 @@ window.alertsData =[
 
 
 
+
+    {
+    title: "Italian taxi drivers call for a national strike",
+    city: "Rome",
+    country: "italy",
+    continent: "Europe",
+    risk: "low",
+    time: "2025-01-13T07:00:00",
+    source: "https://www.yotaxi.es/los-taxistas-italianos-convocan-huelga-nacional-el-13-de-enero-en-roma-contra-el-abuso-de-las-plataformas",
+    summary: "Protesters oppose the dominance of ride-hailing apps that they claim operate with fewer regulatory constraints while utilizing aggressive lobbying tactics.The strike targets proposed reforms that could increase the number of taxi licenses or further open the market to multinational companies Unions are demanding stricter enforcement of rules for Ncc (rental with driver) services, such as the requirement to return to a depot between trips, which they argue is necessary to prevent unfair competition"
+  },
+
 {
     title: "Refugee Solidarity Vigil",
     city: "Bath",
@@ -9824,6 +9836,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
