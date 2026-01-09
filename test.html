@@ -3769,13 +3769,13 @@ function redrawIncidentRadius(){
 
   if (!feedsPanel || !alertsPanel || !alertsTitle || !alertsList || !backBtn) return;
 
-  let openFeedId = null; // ✅ track which feed is currently “expanded”
-	
+  let openFeedId = null;
+
   function showFeeds(){
     alertsPanel.style.display = 'none';
     feedsPanel.style.display  = 'block';
     alertsList.innerHTML = '';
-	openFeedId = null; // ✅ reset
+    openFeedId = null;
   }
 
   function showAlerts(){
@@ -3783,19 +3783,6 @@ function redrawIncidentRadius(){
     alertsPanel.style.display = 'block';
   }
 
-  backBtn.addEventListener('click', showFeeds);
-
-
-	function openFeedAlerts(feedId, label){
-    // If clicking the SAME feed again while alerts are open → toggle back
-    const alertsOpen = alertsPanel.style.display !== 'none';
-    if (alertsOpen && openFeedId === feedId){
-      showFeeds();
-      return;
-    }
-
-    openFeedId = feedId;
-	
   function riskPill(risk){
     const r = (risk || '').toLowerCase();
     if (r === 'high') return `<span class="map-risk-pill map-risk-high">HIGH</span>`;
@@ -3819,31 +3806,35 @@ function redrawIncidentRadius(){
     } catch { return iso || ''; }
   }
 
-  // Pull events for a feed from your existing caches (archive > ui cache > 15min cache)
   function getFeedEvents(feedId){
-    // These helpers exist in your main script scope (not inside this IIFE),
-    // so we access them via window if needed.
-    const loadArchive   = window.loadArchive   || (typeof loadArchive === 'function' ? loadArchive : null);
-    const loadUiCache   = window.loadUiCache   || (typeof loadUiCache === 'function' ? loadUiCache : null);
-    const loadFeedEvents= window.loadFeedEvents|| (typeof loadFeedEvents === 'function' ? loadFeedEvents : null);
-
-    if (loadArchive){
-      const a = loadArchive(feedId);
+    // use your existing cache helpers (these are global functions in your page)
+    try{
+      const a = (typeof loadArchive === 'function') ? loadArchive(feedId) : [];
       if (Array.isArray(a) && a.length) return a;
-    }
-    if (loadUiCache){
-      const u = loadUiCache(feedId);
+    }catch{}
+
+    try{
+      const u = (typeof loadUiCache === 'function') ? loadUiCache(feedId) : [];
       if (Array.isArray(u) && u.length) return u;
-    }
-    if (loadFeedEvents){
-      const c = loadFeedEvents(feedId);
+    }catch{}
+
+    try{
+      const c = (typeof loadFeedEvents === 'function') ? loadFeedEvents(feedId) : null;
       if (c && Array.isArray(c.events) && c.events.length) return c.events;
-    }
+    }catch{}
+
     return [];
   }
 
-  // Render alerts list for a feed
   function openFeedAlerts(feedId, label){
+    // ✅ toggle: clicking the same feed again closes back to feeds
+    const alertsOpen = alertsPanel.style.display !== 'none';
+    if (alertsOpen && openFeedId === feedId){
+      showFeeds();
+      return;
+    }
+    openFeedId = feedId;
+
     const events = getFeedEvents(feedId)
       .slice()
       .sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0))
@@ -3877,17 +3868,10 @@ function redrawIncidentRadius(){
       `;
 
       row.addEventListener('click', () => {
-        // Scroll to feed card
-        if (typeof window.ciScrollToFeed === 'function') {
-          window.ciScrollToFeed(feedId);
-        }
+        if (typeof window.ciScrollToFeed === 'function') window.ciScrollToFeed(feedId);
 
-        // Open the detail panel with this incident
-        if (typeof window.openDetailPanel === 'function') {
-          window.openDetailPanel(ev, events);
-        } else if (typeof openDetailPanel === 'function') {
-          openDetailPanel(ev, events);
-        }
+        if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
+        else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
       });
 
       alertsList.appendChild(row);
@@ -3896,46 +3880,37 @@ function redrawIncidentRadius(){
     showAlerts();
   }
 
-  // Intercept clicks on the feeds list to open alerts panel
+  backBtn.addEventListener('click', showFeeds);
+
   document.addEventListener('click', (e) => {
-    // Works for both:
-    // 1) the detailed summary rows (.live-map-feed-row)
-    // 2) the simple buttons (.live-map-feed-btn)
     const row = e.target.closest('.live-map-feed-row');
     const btn = e.target.closest('.live-map-feed-btn');
-
     if (!row && !btn) return;
 
     const feedId = (row && row.dataset.feedid) || (btn && btn.dataset.feedid);
     if (!feedId) return;
 
-    // Determine label
     let label = '';
     if (row){
       const l = row.querySelector('.live-map-feed-label');
       label = l ? l.textContent.trim() : '';
-    } else if (btn){
+    } else {
       label = btn.textContent.trim();
     }
 
     openFeedAlerts(feedId, label);
   });
 
-		
- // Optional: ESC key closes back to feeds
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && alertsPanel.style.display !== 'none') {
-      showFeeds();
-    }
-  })
+    if (e.key === 'Escape' && alertsPanel.style.display !== 'none') showFeeds();
+  });
 
-		
-window.ciOpenMapFeedAlerts = openFeedAlerts;
+  // allow your existing feed button code to call this directly
+  window.ciOpenMapFeedAlerts = openFeedAlerts;
 
-	
-  // default view
   showFeeds();
 })();
+
 	
 	
   // initial draw
