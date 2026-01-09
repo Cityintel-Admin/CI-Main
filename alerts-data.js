@@ -13,10 +13,16 @@ window.alertsData =[
     summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
   },
 
-
-
-
-
+{
+    title: "Ocala Free America Protest",
+    city: "Ocala",
+    country: "USA",
+    continent: "United States",
+    risk: "low",
+    time: "2026-01-17T10:00:00",
+    source: "https://action.womensmarch.com/events/ocala-free-america-protest",
+    summary: "Protesters are encouraged to bring American flags (including upside-down flags as a signal of distress) to advocate for democratic norms. Organizers are specifically targeting issues such as mass surveillance, community raids, and the escalating fascist threat they associate with current administration policies.These 2026 rallies follow the "No Kings" protests held in 2025, which saw significant turnout in Ocala and surrounding areas."
+  },
 
     {
     title: "Italian taxi drivers call for a national strike",
@@ -24,7 +30,7 @@ window.alertsData =[
     country: "italy",
     continent: "Europe",
     risk: "low",
-    time: "2025-01-13T07:00:00",
+    time: "2026-01-13T07:00:00",
     source: "https://www.yotaxi.es/los-taxistas-italianos-convocan-huelga-nacional-el-13-de-enero-en-roma-contra-el-abuso-de-las-plataformas",
     summary: "Protesters oppose the dominance of ride-hailing apps that they claim operate with fewer regulatory constraints while utilizing aggressive lobbying tactics.The strike targets proposed reforms that could increase the number of taxi licenses or further open the market to multinational companies Unions are demanding stricter enforcement of rules for Ncc (rental with driver) services, such as the requirement to return to a depot between trips, which they argue is necessary to prevent unfair competition"
   },
@@ -9836,6 +9842,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
