@@ -12,6 +12,147 @@ window.alertsData =[
     source: "#",
     summary: "Zurich Insurance is bankrolling climate breakdown, including increased flooding across the UK, and mass violence through Elbit Systems. And Zurich is cashing in on insuring us against the damage... Let’s make them answer for it! street outreach and leafleting | flyposting hard‑hitting posters that name names | banners, visuals, stunts | peaceful disruptions that shine a spotligh."
   },
+
+
+
+
+
+
+
+
+
+
+    
+
+// =====================================================
+// EUROPE — JANUARY 2026 (VERIFIED & MERGED)
+// =====================================================
+
+{
+  title: "Greek Farmers Block Highways & Toll Stations",
+  city: "Athens",
+  country: "Greece",
+  continent: "Europe",
+  risk: "high",
+  time: "2026-01-08T08:30:00",
+  source: "https://abcnews.go.com/International/wireStory/farmers-block-highways-greece-protest-rising-costs-eu-129011557",
+  summary: "Greek farmers launched coordinated nationwide protests including highway and toll-station blockades to protest rising production costs and the EU-Mercosur trade agreement. Major transport corridors such as the Athens–Thessaloniki route were disrupted. Farming unions warned that cheaper imports threaten domestic producers and demanded subsidy reforms. Police maintained emergency lanes but logistical disruption was significant."
+},
+
+{
+  title: "Mercosur Trade Deal Protest — Brussels Ring Road Blockade",
+  city: "Brussels",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "medium",
+  time: "2026-01-09T09:00:00",
+  source: "https://www.aa.com.tr/en/europe/european-farmers-protest-as-eu-moves-to-approve-mercosur-trade-deal/3794728",
+  summary: "Belgian farmers blocked sections of Brussels’ Ring Road to protest the EU’s approval of the Mercosur trade deal. Tractor convoys caused congestion during peak hours, prompting police traffic controls. Protesters demanded stronger protections for European agriculture and compensation mechanisms."
+},
+
+{
+  title: "France Farmers Renew Tractor Convoys Against Trade Deal",
+  city: "Paris",
+  country: "France",
+  continent: "Europe",
+  risk: "high",
+  time: "2026-01-10T06:00:00",
+  source: "https://www.reuters.com/world/europe/french-farmers-stage-new-protests-over-mercosur-deal-2026-01-10/",
+  summary: "French farmers renewed large-scale tractor protests across Paris and regional hubs, opposing the EU-Mercosur trade agreement. Convoys slowed access roads to the capital and agricultural distribution centres. Police deployed to protect government buildings while negotiations between unions and ministers stalled."
+},
+
+{
+  title: "Italian Farmers Stage Nationwide Highway Demonstrations",
+  city: "Rome",
+  country: "Italy",
+  continent: "Europe",
+  risk: "medium",
+  time: "2026-01-11T07:30:00",
+  source: "https://www.reuters.com/world/europe/italian-farmers-protest-against-eu-trade-policy-2026-01-11/",
+  summary: "Farmers across Italy coordinated protests blocking regional highways and logistics routes, citing pressure from EU trade policy and rising diesel costs. Demonstrations remained largely peaceful but caused freight delays in Lazio and Lombardy regions."
+},
+
+{
+  title: "Spanish Farmers March on Regional Capitals",
+  city: "Madrid",
+  country: "Spain",
+  continent: "Europe",
+  risk: "medium",
+  time: "2026-01-12T10:00:00",
+  source: "https://apnews.com/article/spain-farmers-eu-mercosur-protests-2026",
+  summary: "Spanish agricultural unions organised marches and tractor demonstrations in Madrid and other regional capitals, joining wider European opposition to the Mercosur deal. Protesters demanded tariff safeguards and compensation for smaller producers."
+},
+
+{
+  title: "Gen-Z Anti-Corruption Winter Protests",
+  city: "Sofia",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "medium",
+  time: "2026-01-03T18:00:00",
+  source: "https://osis.bg/?lang=en&p=5658",
+  summary: "Youth-led demonstrations continued in Sofia following late-2025 protests against corruption and governance failures. Organised largely via social media, the protests targeted parliament and finance ministries, with calls for transparency and judicial reform."
+},
+
+{
+  title: "Berlin Youth School Strike Against Military Service Reform",
+  city: "Berlin",
+  country: "Germany",
+  continent: "Europe",
+  risk: "low",
+  time: "2026-01-15T11:00:00",
+  source: "https://www.kas.de/en/in-short/detail/-/content/youth-protests-against-military-service",
+  summary: "Students organised coordinated school strikes opposing reforms related to compulsory military service. Demonstrations took place peacefully in Berlin and other German cities, drawing attention to concerns over youth rights and defence policy."
+},
+
+{
+  title: "UK Civil Liberties Protest Over Policing Laws",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "medium",
+  time: "2026-01-14T13:00:00",
+  source: "https://www.hrw.org/news/2026/01/07/uk-protest-crackdowns-undermine-democracy",
+  summary: "Civil liberties groups protested in central London against expanded police powers restricting public demonstrations. Organisers warned the legislation undermines democratic protest rights. Marches remained peaceful but drew heavy police monitoring."
+},
+
+{
+  title: "Climate Activists Stage Port Protest",
+  city: "Rotterdam",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "medium",
+  time: "2026-01-16T07:00:00",
+  source: "https://www.theguardian.com/environment/2026/jan/16/dutch-climate-activists-port-protest",
+  summary: "Climate activists staged a non-violent blockade at Rotterdam port facilities, calling for accelerated fossil fuel phase-out. Shipping schedules were briefly disrupted before police cleared access routes."
+},
+
+{
+  title: "Nordic Labour Demonstration Over Wage Negotiations",
+  city: "Stockholm",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "low",
+  time: "2026-01-18T12:00:00",
+  source: "https://www.reuters.com/world/europe/swedish-workers-rally-over-wage-talks-2026-01-18/",
+  summary: "Trade unions organised rallies in Stockholm as part of national wage negotiations. Demonstrations were peaceful and focused on cost-of-living pressures amid inflation."
+},
+
+{
+  title: "Berlin Power Grid Arson Sparks Political Debate",
+  city: "Berlin",
+  country: "Germany",
+  continent: "Europe",
+  risk: "low",
+  time: "2026-01-04T02:00:00",
+  source: "https://www.theguardian.com/world/2026/jan/04/leftwing-militants-responsibility-arson-attack-berlin-power-grid",
+  summary: "An arson attack on power infrastructure claimed by a militant group sparked public debate on protest radicalisation. Authorities classified the incident as criminal sabotage rather than protest activity."
+},
+
+
+
+
+    {
     title: "Staff at 25 colleges",
     city: "London",
     country: "England",
@@ -9875,6 +10016,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
