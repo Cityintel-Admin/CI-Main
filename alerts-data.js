@@ -12,14 +12,14 @@ window.alertsData =[
     source: "#",
     summary: "Zurich Insurance is bankrolling climate breakdown, including increased flooding across the UK, and mass violence through Elbit Systems. And Zurich is cashing in on insuring us against the damage... Let’s make them answer for it! street outreach and leafleting | flyposting hard‑hitting posters that name names | banners, visuals, stunts | peaceful disruptions that shine a spotligh."
   },
-    title: "Refugee Solidarity Vigil",
-    city: "Bath",
+    title: "Staff at 25 colleges",
+    city: "London",
     country: "England",
     continent: "Europe",
     risk: "low",
-    time: "2025-10-20T12:30:00",
-    source: "#",
-    summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
+    time: "2026-01-12T07:30:00",
+    source: "https://www.bbc.co.uk/news/articles/cjdjxx14kn9o",
+    summary: "The industrial action, organized by the University and College Union (UCU), is part of the New Deal for FE campaign. Staff are demanding better pay to close the estimated £9,000 gap with school teachers, more manageable workloads, and a binding national bargaining framework. "
   },
 
     {
@@ -9881,6 +9881,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
