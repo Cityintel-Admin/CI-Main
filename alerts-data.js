@@ -20,14 +20,6 @@ window.alertsData =[
 
 
 
-
-
-    
-
-// =====================================================
-// EUROPE — JANUARY 2026 (VERIFIED & MERGED)
-// =====================================================
-
 {
   title: "Greek Farmers Block Highways & Toll Stations",
   city: "Athens",
@@ -10016,6 +10008,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
