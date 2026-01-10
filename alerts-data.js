@@ -15,16 +15,15 @@ window.alertsData =[
   }, 
 
   
-
-{
-    title: "Hands Along High Street Protests - Newburyport",
-    city: "Newburyport",
-    country: "USA",
-    continent: "USA",
+ {
+    title: "Stand with Iran",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
     risk: "low",
-    time: "2026-01-17T11:00:00",
-    source: "https://www.mobilize.us/mobilize/event/851508/",
-    summary: "Our peaceful and joyful weekly standouts continue at the Bartlet Mall in Newburyport, every Saturday from 11 AM - 12 We have great protest music and signs to borrow if you don't want to bring you own. Join our devoted group of activists"
+    time: "2026-01-11T14:00:00",
+    source: "https://x.com/Massood91/status/2010024857019527480"
+    summary: "Demonstration planned for 14:00 January 11 at Pariser Platz in Berlin, Germany"
   
   {
     title: "Stand with Iran",
@@ -10125,6 +10124,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
