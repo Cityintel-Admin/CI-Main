@@ -51,7 +51,7 @@ window.alertsData =[
     risk: "low",
     time: "2026-01-20T18:00:00",
     source: "https://www.cnews.fr/france/2026-01-10/budget-de-la-secu-les-medecins-manifestent-ce-samedi-dans-les-rues-de-paris",
-    summary: "The primary rally is scheduled to take place in front of the Ministry of Health in Paris. Escalation: On Sunday, January 11, nearly 2,000 practitioners plan a symbolic "exile" to Brussels to further highlight their concerns. "
+    summary: "The primary rally is scheduled to take place in front of the Ministry of Health in Paris. Escalation: On Sunday, January 11, nearly 2,000 practitioners plan a symbolic exile to Brussels to further highlight their concerns. "
   },
 {
     title: "Ocala Free America Protest",
@@ -97,12 +97,6 @@ window.alertsData =[
     source: "https://www.l-apres.fr/non_a_l_imperialisme_solidarite_avec_la_population_du_venezuela",
     summary: " Left-wing groups in Paris have been particularly vocal, blasting the U.S. strikes and chanting Hands off Venezuela, President Emmanuel Macron has stated that the Venezuelan people are free from oppression, aligning with G7 leaders who are calling for a democratic transition."
   },
-
-
-
-
-    
-
 
 {
   title: "Anti-Saied Crackdown Protests",
@@ -9881,6 +9875,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
