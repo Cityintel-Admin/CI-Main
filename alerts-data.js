@@ -13,6 +13,17 @@ window.alertsData =[
     summary: "Zurich Insurance is "
   },
 
+ {
+    title: "ICE OUT FOR GOOD - Anthem Indivisible",
+    city: "Anthem ",
+    country: "USA",
+    continent: "USA",
+    risk: "low",
+    time: "2026-01-11T08:30:00",
+    source: "#",
+    summary: "Wednesday, January 7th, an American citizen was killed by Immigration and Customs Enforcement (ICE) in Minneapolis, Minnesota. Then, on January 8, two people were shot by ICE/Border Patrol in Portland, Oregon during a targeted vehicle stop. This killing and assault is part of a broader pattern of unchecked violence, impunity, and abuse carried out by federal immigration enforcement agencies against members of our communities."
+  },   
+
 {
     title: "A Call for Justice at the Heart of Power: Somalilanders",
     city: "London",
@@ -24,8 +35,6 @@ window.alertsData =[
     summary: "The demonstration follows a major shift in the region's diplomatic status. On December 26, 2025, Israel became the first United Nations member state to formally recognize Somaliland as an independent nation Demand that the UK government follow Israel's lead and formally recognize Somaliland, citing its historical status as a British protectorate (British Somaliland) until 1960."
   },
 
-    
-
 {
     title: "Ending the repression and execution of peaceful protesters in Iran",
     city: "Brussels",
@@ -34,7 +43,7 @@ window.alertsData =[
     risk: "low",
     time: "2026-01-11T08:30:00",
     source: "#",
-    summary: "Ending the repression and execution of peaceful protesters in Iran. Demanding the European Union designate the Islamic Revolutionary Guard Corps (IRGC) as a terrorist organization. Calling for a "free and democratic republic" in Iran."
+    summary: "Ending the repression and execution of peaceful protesters in Iran. Demanding the European Union designate the Islamic Revolutionary Guard Corps (IRGC) as a terrorist organization. Calling for a free and democratic republic in Iran."
   },
  
 {
@@ -10036,6 +10045,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
