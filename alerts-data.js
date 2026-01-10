@@ -13,7 +13,16 @@ window.alertsData =[
     summary: "Zurich Insurance is "
   },
 
-
+{
+    title: "A Call for Justice at the Heart of Power: Somalilanders",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-14T12:00:00",
+    source: "https://x.com/HornDiplomat/status/2009983817449382026",
+    summary: "The demonstration follows a major shift in the region's diplomatic status. On December 26, 2025, Israel became the first United Nations member state to formally recognize Somaliland as an independent nation Demand that the UK government follow Israel's lead and formally recognize Somaliland, citing its historical status as a British protectorate (British Somaliland) until 1960."
+  },
 
     
 
@@ -10027,6 +10036,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
