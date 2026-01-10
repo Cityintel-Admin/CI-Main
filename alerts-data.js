@@ -8,11 +8,20 @@ window.alertsData =[
     country: "England",
     continent: "Europe",
     risk: "low",
-    time: "2025-10-20T18:00:00",
+    time: "2025-10-20T12:30:00",
     source: "#",
     summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
   },
-
+{
+    title: "Doctors to Protest",
+    city: "paris",
+    country: "France",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-20T18:00:00",
+    source: "https://www.cnews.fr/france/2026-01-10/budget-de-la-secu-les-medecins-manifestent-ce-samedi-dans-les-rues-de-paris",
+    summary: "The primary rally is scheduled to take place in front of the Ministry of Health in Paris. Escalation: On Sunday, January 11, nearly 2,000 practitioners plan a symbolic "exile" to Brussels to further highlight their concerns. "
+  },
 {
     title: "Ocala Free America Protest",
     city: "Ocala",
@@ -9841,6 +9850,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
