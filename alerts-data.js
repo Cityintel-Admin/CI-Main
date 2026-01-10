@@ -2,7 +2,8 @@
 // Note: times are local UK time (Europe/London). Adjust as needed.
 
 window.alertsData =[
-{
+
+  {
     title: "Expose Zurich Insurance",
     city: "London",
     country: "England",
@@ -10,7 +11,63 @@ window.alertsData =[
     risk: "low",
     time: "2026-01-20T08:30:00",
     source: "#",
-    summary: "Zurich Insurance is "
+    summary: " me"
+  },   
+
+{
+    title: "Challenging the War Machine Summit",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-31T08:30:00",
+    source: "#",
+    summary: " A summit of activists and academics to discuss strategies to challenge the UK’s war machine. EartH (Evolutionary Arts Hackney), Stoke Newington Road "
+  }, 
+
+    
+ {
+    title: "National Demonstration for Palestine",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-231T08:30:00",
+    source: "#",
+    summary: " A major demonstration to demand the UK government stop arming Israel."
+  }, 
+
+{
+    title: "Holocaust Memorial Day Commemoration ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-27T08:30:00",
+    source: "#",
+    summary: "Polish Social and Cultural Association POSK, King Street  A ceremony to commemorate the victims of the Holocaust.A ceremony to commemorate the victims of the Holocaust."
+  }, 
+  
+{
+    title: "Earthlings Experience (Vegan Activism) ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-17T08:30:00",
+    source: "#",
+    summary: "Empire Casino, Leicester Square A regular grassroots vegan street activism event raising awareness about animal rights."
+  },
+
+    {
+    title: "Sudan Solidarity Events",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-17T08:30:00",
+    source: "#",
+    summary: " A conference and a Pan-African Solidarity Day to build support for peace in Sudan. Saturday, January 17 (Conference) and Sunday, January 18 (Solidarity Day)  Brady Arts & Community Centre, Hanbury Street (Jan 17) and UNDR / HOUSE OF FLAVAZ, Thorpe Close (Jan 18)"
   },
 
  {
@@ -10045,6 +10102,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
