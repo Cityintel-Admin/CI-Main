@@ -12,6 +12,17 @@ window.alertsData =[
     source: "#",
     summary: "Candlelight vigil on the Guildhall steps. Peaceful, static assembly expected."
   },
+
+    {
+    title: "Labor protest",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-14T08:00:00",
+    source: "https://corporativa.amyts.es/noticias/noticia/?slug=amyts-informa-estos-son-los-servicios-minimos-impuestos-por-la-comunidad-de-madrid-para-la-huelga-del-14-y-15-de-enero-por-un-estatuto-medico-y-facultativo-y-que-rechazamos-por-abusivos",
+    summary: "The Asociación de Médicos y Titulados Superiores de Madrid (AMYTS) has rejected the minimum services mandated by the Community of Madrid for the medical strike on January 14 and 15, 2026. AMYTS describes these required services as abusive.."
+  },
 {
     title: "Doctors to Protest",
     city: "paris",
@@ -9850,6 +9861,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
