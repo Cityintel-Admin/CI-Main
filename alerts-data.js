@@ -10,16 +10,35 @@ window.alertsData =[
     risk: "low",
     time: "2026-01-20T08:30:00",
     source: "#",
-    summary: "Zurich Insurance is bankrolling climate breakdown, including increased flooding across the UK, and mass violence through Elbit Systems. And Zurich is cashing in on insuring us against the damage... Let’s make them answer for it! street outreach and leafleting | flyposting hard‑hitting posters that name names | banners, visuals, stunts | peaceful disruptions that shine a spotligh."
+    summary: "Zurich Insurance is "
   },
 
 
 
+    
 
-
-
-
-
+{
+    title: "Ending the repression and execution of peaceful protesters in Iran",
+    city: "Brussels",
+    country: "Belgem",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-11T08:30:00",
+    source: "#",
+    summary: "Ending the repression and execution of peaceful protesters in Iran. Demanding the European Union designate the Islamic Revolutionary Guard Corps (IRGC) as a terrorist organization. Calling for a "free and democratic republic" in Iran."
+  },
+ 
+{
+    title: "Expose Zurich Insurance",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-20T08:30:00",
+    source: "#",
+    summary: "Zurich Insurance is bankrolling climate breakdown, including increased flooding across the UK, and mass violence through Elbit Systems. And Zurich is cashing in on insuring us against the damage... Let’s make them answer for it! street outreach and leafleting | flyposting hard‑hitting posters that name names | banners, visuals, stunts | peaceful disruptions that shine a spotligh."
+  },
+    
 {
   title: "Greek Farmers Block Highways & Toll Stations",
   city: "Athens",
@@ -10008,6 +10027,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
