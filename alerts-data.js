@@ -15,16 +15,9 @@ window.alertsData =[
   }, 
 
   
- {
-    title: "Stand with Iran",
-    city: "Berlin",
-    country: "Germany",
-    continent: "Europe",
-    risk: "low",
-    time: "2026-01-11T14:00:00",
-    source: "https://x.com/Massood91/status/2010024857019527480"
-    summary: "Demonstration planned for 14:00 January 11 at Pariser Platz in Berlin, Germany"
-  
+
+
+
   {
     title: "Stand with Iran",
     city: "Berlin",
@@ -10124,6 +10117,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
