@@ -13,6 +13,17 @@ window.alertsData =[
     summary: "Demonstration planned for 14:00 January 11 at Pariser Platz in Berlin, Germany"
   }, 
 
+  {
+    title: "Stand with Iran",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "low",
+    time: "x",
+    summary: "The Kerala ruling Left Democratic Front (LDF) held a 'Satyagraha' protest on January 12 at the Martyrs' Column in Thiruvananthapuram. Led by Chief Minister Pinarayi Vijayan and other state officials, the protest condemned the Centre's alleged anti-people and financially strangling policies Chief Minister Pinarayi Vijayan will lead the protest, joined by state cabinet ministers, MLAs, and Members of Parliament.Primary Objective: To protest what the LDF describes as an economic blockade and vindictive financial policies by the Central Government that they claim are crippling the state's development and welfare schemes. The Satyagraha marks the beginning of a larger campaign leading up to the 2026 Kerala Assembly elections February 1: Launch of three regional Vehicle Jathas (marches) to mobilize public support: Northern Region: Led by CPI(M) state secretary M.V. Govindan, starting from Kasaragod (Manjeshwar) and ending in Palakkad. Central Region: Led by Kerala Congress (M) chairman Jose K. Mani, starting from Pathanamthitta (Angamaly) and ending in Ernakulam. Southern Region: Led by CPI state secretary Binoy Viswam, starting from Thrissur and ending in Thiruvananthapuram. January 30: Mass organizations for students, youth, and women will hold protests at all district headquarters to mark Mahatma Gandhi's death anniversary and oppose communalism. February 16: Scheduled conclusion of the broader agitation across Kerala"
+  }, 
+
+ 
     {
     title: "Anywaa communities ",
     city: "Ottawa",
@@ -10156,6 +10167,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
