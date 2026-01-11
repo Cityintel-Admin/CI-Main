@@ -9,11 +9,20 @@ window.alertsData =[
     country: "Germany",
     continent: "Europe",
     risk: "low",
-    time: "2026-01-11T14:00:00",
-    source: "https://x.com/Massood91/status/2010024857019527480",
+    time: "x",
     summary: "Demonstration planned for 14:00 January 11 at Pariser Platz in Berlin, Germany"
   }, 
 
+    {
+    title: "Anywaa communities ",
+    city: "Ottawa",
+    country: "Canada",
+    continent: "America,",
+    risk: "low",
+    time: "2026-01-12T11:00:00",
+    source: "https://www.facebook.com/UNHCREthiopia/mentions",
+    summary: "The protest aims to raise awareness about and seek justice for the violence and human rights abuses in the Gambella region of Ethiopia, particularly concerning the Anywaa (Anuak) people and conflicts with Nuer armed groups and refugees. The slogans on the flyer are SECURE OUR BORDERS, STOP ARMED REFUGEES FROM KILLING ETHIOPIAN CIVILIANS, and Justice Delayed Is Violence Continued Protect Anywaa Communities. 350 Sparks St. Unit #908, Ottawa, ON, Canada."
+  }, 
 
   {
     title: "Ban Hare Coursing",
@@ -119,7 +128,7 @@ window.alertsData =[
     title: "ICE OUT FOR GOOD - Anthem Indivisible",
     city: "Anthem ",
     country: "USA",
-    continent: "USA",
+    continent: "America,",
     risk: "low",
     time: "2026-01-11T08:30:00",
     source: "#",
@@ -10147,6 +10156,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
