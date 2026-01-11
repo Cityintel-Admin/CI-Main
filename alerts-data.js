@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+ 
+ {
+    title: "Stop the Wethersfield Buses",
+    city: " Braintree",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-12T18:00:00",
+    source: "https://x.com/WestHolly1987/status/2009947591190925794",
+    summary: "protest organised by the Stop the Wethersfield Buses campaign group. The protest is against the use of RAF Wethersfield as an asylum seeker accommodation centre and the provision of shuttle buses that transport asylum seekers into nearby towns like Braintree, Chelmsford, and Colchester. Purpose: To protest the daily bussing of single adult male asylum seekers from the Wethersfield site into local communities, citing concerns about public safety and transparency from the Home Office. "
+  }, 
 
   {
     title: "Defend Suffolk Democracy",
@@ -10192,6 +10203,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
