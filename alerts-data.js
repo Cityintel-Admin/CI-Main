@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
 
+  {
+    title: "Madrid for a Medical and Professional Statute",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "mid",
+    time: "2026-01-14T14:00:00",
+    source: "https://corporativa.amyts.es/noticias/noticia/?slug=actualidad-gran-manifestacion-en-madrid-por-un-estatuto-medico-y-facultativo-el-miercoles-14-de-enero-a-las-1000-horas-frente-al-congreso-para-acabar-en-el-ministerio-de-sanidad",
+    summary: "The march is spearheaded by the Association of Doctors and Higher Graduates of Madrid (AMYTS) and supported by the Group for a Medical and Facultative Statute (APEMYF), which brings together various regional unions.  Protesters are calling for a specific Medical and Facultative Statute separate from the general Framework Statute (Estatuto Marco) to address the unique responsibilities and working conditions of their profession. This demonstration coincides with a 48-hour medical strike in Madrid called for January 14 and 15, 2026 The protest will begin in front of the Congress of Deputies (Congreso de los Diputados) and will conclude at the Ministry of Health (Ministerio de Sanidad)."
+  }, 
+
     {
     title: "March for Life",
     city: "Bourg-en-Bresse Lyon ",
@@ -10125,6 +10136,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
