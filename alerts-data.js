@@ -14,10 +14,18 @@ window.alertsData =[
     summary: "Demonstration planned for 14:00 January 11 at Pariser Platz in Berlin, Germany"
   }, 
 
+
+    {
+    title: "March for Life",
+    city: "Bourg-en-Bresse Lyon ",
+    country: "France",
+    continent: "Europe",
+    risk: "low",
+    time: "2026-01-18T15:00:00",
+    source: "https://lesalonbeige.fr/marche-pour-la-vie-a-bourg-en-bresse-le-18-janvier/?utm_source=rss&utm_medium=rss&utm_campaign=marche-pour-la-vie-a-bourg-en-bresse-le-18-janvier",
+    summary: "The Marche pour la vie in Bourg-en-Bresse is scheduled for Sunday, January 18, 2026. This local event aligns with a national movement opposing abortion and euthanasia"
+  },
   
-
-
-
   {
     title: "Stand with Iran",
     city: "Berlin",
@@ -10117,6 +10125,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
