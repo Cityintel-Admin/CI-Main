@@ -30,7 +30,7 @@ window.alertsData =[
     country: "Ireland",
     continent: "Europe",
     risk: "low",
-    time: "2026-01-11T14:00:00",
+    time: "2026-01-31T11:00:00",
     source: "https://www.change.org/p/ban-blood-sports-in-ireland/u/34196876?recruiter=432577&recruited_by_id=7345dbc0-beea-012f-6283-4040acce234c&utm_source=share_update&utm_campaign=share_twitter_responsive&utm_medium=twitter",
     summary: "The peaceful Ban Hare Coursing protest is confirmed to take place outside Powerstown Park racecourse in Clonmel, Co. Tipperary, on Saturday, January 31, 2026, from 12 midday to 2pm. The protest is scheduled to coincide with the national coursing finals being held at that venue. Organizers including the Irish Council Against Blood Sports, urge people to attend to advocate for a ban on hare coursing in Ireland, highlighting the stress and injuries hares suffer during the practice"
   }, 
@@ -10156,6 +10156,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
