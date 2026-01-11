@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+
+  {
+    title: "We’ve had enough!“ – Demo in the Anti-Capitalist",
+    city: "Berlin Brandenburg Gate",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-17T12:00:00",
+    source: "https://www.anarchistischefoderation.de/fau-berlin-ruft-auf-zur-wir-haben-es-satt-demo-im-antikapitalistischen-block/",
+    summary: "The Freie Arbeiter*innen-Union (FAU) Berlin is calling for participation in the 16th "Wir haben es satt!" (We are fed up!) demonstration on January 17, 2026, in Berlin."
+  },
  
  {
     title: "Stop the Wethersfield Buses",
@@ -10203,6 +10214,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
