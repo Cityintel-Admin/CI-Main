@@ -3,23 +3,48 @@
 
 window.alertsData =[
 
-  {
-    title: "Stand with Iran",
-    city: "Berlin",
-    country: "Germany",
+ {
+    title: "Defend Suffolk Democracy",
+    city: "Endeavour House in Ipswich",
+    country: "England",
     continent: "Europe",
-    risk: "low",
-    time: "x",
-    summary: "Demonstration planned for 14:00 January 11 at Pariser Platz in Berlin, Germany"
+    risk: "Mid",
+    time: "2026-01-12T09:00:00",
+    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
+    summary: "T"
+  }, 
+
+
+  {
+    title: "Defend Suffolk Democracy",
+    city: "Endeavour House in Ipswich",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-12T09:00:00",
+    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
+    summary: "The demonstration, organized by opposition councillors and the Mid Suffolk Green Party, coincides with a full council meeting where members will debate a proposal to postpone local elections for a second time County council elections originally due in May 2025 were previously pushed back to 2026. The current proposal could delay them further, potentially until 2027 or 2028, to align with local government reorganisation and the creation of a new unitary authority"
   }, 
 
   {
-    title: "Stand with Iran",
-    city: "Berlin",
-    country: "Germany",
-    continent: "Europe",
-    risk: "low",
-    time: "x",
+    title: "moratorium on data center development Protest",
+    city: "Sheboygan, Wisconsin,",
+    country: "USA",
+    continent: "America",
+    risk: "Low",
+    time: "2026-01-12T17:30:00",
+    source: "https://x.com/PoolJudi/status/2010038273171771895",
+    summary: "The event is organized by local residents and advocacy groups to demand a moratorium on data center development in Sheboygan. This movement follows growing concerns over a proposed 62-acre development at the SouthPointe Business Enterprise Campus"
+  }, 
+
+  {
+    title: "Left Democratic Front LDF Protest",
+    city: "Martyrs' Column (Palayam Martyrs' Square) in Thiruvananthapuram.",
+    country: "India",
+    continent: "Asia",
+    risk: "mid",
+    time: "2026-01-12T00:00:00",
+    source: "https://www.change.org/p/ban-blood-sports-in-ireland/u/34196876?recruiter=432577&recruited_by_id=7345dbc0-beea-012f-6283-4040acce234c&utm_source=share_update&utm_campaign=share_twitter_responsive&utm_medium=twitter",
     summary: "The Kerala ruling Left Democratic Front (LDF) held a 'Satyagraha' protest on January 12 at the Martyrs' Column in Thiruvananthapuram. Led by Chief Minister Pinarayi Vijayan and other state officials, the protest condemned the Centre's alleged anti-people and financially strangling policies Chief Minister Pinarayi Vijayan will lead the protest, joined by state cabinet ministers, MLAs, and Members of Parliament.Primary Objective: To protest what the LDF describes as an economic blockade and vindictive financial policies by the Central Government that they claim are crippling the state's development and welfare schemes. The Satyagraha marks the beginning of a larger campaign leading up to the 2026 Kerala Assembly elections February 1: Launch of three regional Vehicle Jathas (marches) to mobilize public support: Northern Region: Led by CPI(M) state secretary M.V. Govindan, starting from Kasaragod (Manjeshwar) and ending in Palakkad. Central Region: Led by Kerala Congress (M) chairman Jose K. Mani, starting from Pathanamthitta (Angamaly) and ending in Ernakulam. Southern Region: Led by CPI state secretary Binoy Viswam, starting from Thrissur and ending in Thiruvananthapuram. January 30: Mass organizations for students, youth, and women will hold protests at all district headquarters to mark Mahatma Gandhi's death anniversary and oppose communalism. February 16: Scheduled conclusion of the broader agitation across Kerala"
   }, 
 
@@ -10167,6 +10192,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
