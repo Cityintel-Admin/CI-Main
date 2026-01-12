@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "solidarity trial accompaniment",
+    city: "Amtsgericht Tiergarten on Turmstrasse 91 in Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-14T10:00:00",
+    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
+    summary: "The exact specifics of the case scheduled for that precise time are not currently available in public news sources. The court is a municipal court which handles a wide variety of cases. For the most accurate details regarding the case, the organizers specific demands, or potential public transport disruptions, it is recommended to check with local Berlin activist networks, the Amtsgericht Tiergarten directly, or Berlin city police channels closer to the date."
+  }, 
+
+  {
     title: "free allantifas",
     city: "Hungarian Embassy Berlinh",
     country: "Germany",
@@ -10302,6 +10313,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
