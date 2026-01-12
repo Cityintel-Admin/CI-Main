@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+ {
+    title: "March for a Free Iran",
+    city: "BBC Broadcasting House to Downing Street London",
+    country: "England",
+    continent: "Europe",
+    risk: "Red",
+    time: "2026-01-18T14:00:00",
+    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
+    summary: "The march route is from the BBC Broadcasting House to Downing Street.  The demonstration is described as Marching in solidarity with the Iranian people and specifically calls out the Labour and BBC silence whilst protesters are being killed"
+  }, 
+
   {
     title: "solidarity trial accompaniment",
     city: "Amtsgericht Tiergarten on Turmstrasse 91 in Berlin",
@@ -10313,6 +10324,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
