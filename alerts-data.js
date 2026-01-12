@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+  {
+    title: "Defend Suffolk Democracy",
+    city: "Warnstreik",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-14T09:00:00",
+    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
+    summary: "A nationwide labor warning strike (Warnstreik) is scheduled for Wednesday, January 14, 2026, which is expected to cause significant school closures and class cancellations across several German states"
+  }, 
+
 
   {
     title: "We’ve had enough!“ – Demo in the Anti-Capitalist",
@@ -10214,6 +10225,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
