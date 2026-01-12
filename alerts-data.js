@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+ {
+    title: "protest for Iran",
+    city: " United Nations Office at Vienna (UNOV), located at the Vienna International Centreh",
+    country: "Austria",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-13T16:00:00",
+    source: "https://x.com/lisa_koeppl/status/2010740504586223797",
+    summary: "The protest is part of a global wave of demonstrations in response to the ongoing 2025–2026 Iranian Uprising. Protesters aim to denounce the Iranian government's violent crackdown on nationwide demonstrations that began in late December 2025 following a currency collapse."
+  }, 
+
   {
     title: "Republican People's Party Protest",
     city: " Beşiktaş Istanbul",
@@ -10335,6 +10346,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
