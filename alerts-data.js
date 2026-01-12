@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "free allantifas",
+    city: "Hungarian Embassy Berlinh",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-15T18:00:00",
+    source: "https://www.instagram.com/p/DTNe9cCDTxw",
+    summary: "On January 15th, there will be one week left until the verdict against the accused anti-fascists in the Budapest Complex is delivered. A trial unlike any other, almost unparalleled in its arbitrariness and brutality. Repression against antifascism is increasing worldwide; fascism, with Trump and the AfD, has long since become socially acceptable. Our solidarity with Maja, Tobi, and all the defendants does not end with this verdict! Now more than ever, we must stand together. We will continue to exert pressure, remain public and vocal: Antifascism is not a crime! As part of the international day of action for Maja, a rally will take place on January 15th at 6 pm in front of the Hungarian embassy to draw attention to the scandalous trial proceedings and the appalling prison conditions in Hungary."
+  }, 
+
+  {
     title: "Rally for a free Iran",
     city: "Europaplatz in Zurich",
     country: "Switzerland",
@@ -10291,6 +10302,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
