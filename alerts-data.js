@@ -14,6 +14,61 @@ window.alertsData =[
     summary: "T"
   }, 
 
+ {
+    title: "Insure Our Survival ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-12T09:00:00",
+    source: "",
+    summary: "A protest advertisement has been identified suggesting daily protests targeting Zurich at 70 Mark Lane, EC3R 7NQ from 1200hrs from today, 12 January 2026, to 16 January 2026. Turnout levels are difficult to estimate based on how this protest was shared, but typical attendance levels for previous daily Insure Our Survival (IOS) protests suggest a likely turnout level ranging in the high single-digits to low tens. Although this phase of the IOS campaign is publicly advertised as specifically targeting Zurich, opportunistic targeting of other insurers cannot be ruled out."
+  }, 
+
+  {
+    title: "Insure Our Survival ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-13T09:00:00",
+    source: "",
+    summary: "A protest advertisement has been identified suggesting daily protests targeting Zurich at 70 Mark Lane, EC3R 7NQ from 1200hrs from today, 12 January 2026, to 16 January 2026. Turnout levels are difficult to estimate based on how this protest was shared, but typical attendance levels for previous daily Insure Our Survival (IOS) protests suggest a likely turnout level ranging in the high single-digits to low tens. Although this phase of the IOS campaign is publicly advertised as specifically targeting Zurich, opportunistic targeting of other insurers cannot be ruled out."
+  }, 
+
+  {
+    title: "Insure Our Survival ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-14T09:00:00",
+    source: "",
+    summary: "A protest advertisement has been identified suggesting daily protests targeting Zurich at 70 Mark Lane, EC3R 7NQ from 1200hrs from today, 12 January 2026, to 16 January 2026. Turnout levels are difficult to estimate based on how this protest was shared, but typical attendance levels for previous daily Insure Our Survival (IOS) protests suggest a likely turnout level ranging in the high single-digits to low tens. Although this phase of the IOS campaign is publicly advertised as specifically targeting Zurich, opportunistic targeting of other insurers cannot be ruled out."
+  }, 
+
+  {
+    title: "Insure Our Survival ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-15T09:00:00",
+    source: "",
+    summary: "A protest advertisement has been identified suggesting daily protests targeting Zurich at 70 Mark Lane, EC3R 7NQ from 1200hrs from today, 12 January 2026, to 16 January 2026. Turnout levels are difficult to estimate based on how this protest was shared, but typical attendance levels for previous daily Insure Our Survival (IOS) protests suggest a likely turnout level ranging in the high single-digits to low tens. Although this phase of the IOS campaign is publicly advertised as specifically targeting Zurich, opportunistic targeting of other insurers cannot be ruled out."
+  }, 
+
+  {
+    title: "Insure Our Survival ",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-16T09:00:00",
+    source: "",
+    summary: "A protest advertisement has been identified suggesting daily protests targeting Zurich at 70 Mark Lane, EC3R 7NQ from 1200hrs from today, 12 January 2026, to 16 January 2026. Turnout levels are difficult to estimate based on how this protest was shared, but typical attendance levels for previous daily Insure Our Survival (IOS) protests suggest a likely turnout level ranging in the high single-digits to low tens. Although this phase of the IOS campaign is publicly advertised as specifically targeting Zurich, opportunistic targeting of other insurers cannot be ruled out."
+  }, 
+
   {
     title: "Defend Suffolk Democracy",
     city: "Warnstreik",
@@ -10225,6 +10280,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
