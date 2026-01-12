@@ -20,7 +20,7 @@ window.alertsData =[
     country: "Switzerland",
     continent: "Europe",
     risk: "Mid",
-    time: "2026-01-12T09:00:00",
+    time: "2026-01-13T18:00:00",
     source: "",
     summary: "The protest is expected to express solidarity with the ongoing uprising and women's rights movement within Iran. The demonstration aims to raise awareness in Switzerland about human rights violations in Iran and pressure the Swiss government to take a firmer stance against the Iranian regime. Organizers and participants often call for actions such as the closure of the Iranian embassy in Bern and the designation of the Islamic Revolutionary Guard Corps (IRGC) as a terrorist organization."
   }, 
@@ -10291,6 +10291,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
