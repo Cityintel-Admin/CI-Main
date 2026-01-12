@@ -14,12 +14,23 @@ window.alertsData =[
     summary: "T"
   }, 
 
+  {
+    title: "Republican People's Party Protest",
+    city: " Beşiktaş Istanbul",
+    country: "Turkey",
+    continent: "Europe",
+    risk: "high",
+    time: "2026-01-1T18:00:00",
+    source: "",
+    summary: "The event is part of the CHP's The Nation Stands by Its Will campaign, aimed at denouncing the ruling government and demanding political reforms, including early elections and the release of high-profile figures like Istanbul Mayor Ekrem İmamoğlu. Large crowds are anticipated, following a series of significant opposition rallies in 2025 and early 2026 that drew tens of thousands of participants"
+  }, 
+
  {
     title: "March for a Free Iran",
     city: "BBC Broadcasting House to Downing Street London",
     country: "England",
     continent: "Europe",
-    risk: "Red",
+    risk: "High",
     time: "2026-01-18T14:00:00",
     source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
     summary: "The march route is from the BBC Broadcasting House to Downing Street.  The demonstration is described as Marching in solidarity with the Iranian people and specifically calls out the Labour and BBC silence whilst protesters are being killed"
@@ -10324,6 +10335,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
