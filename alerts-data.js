@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+  {
+    title: "To protest the Yadan Bill",
+    city: "Place Édouard Herriot Assemblée Nationale Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-120T12:30:00",
+    source: "",
+    summary: "The proposed bill seeks to prohibit the denial of the State of Israel's existence and restrict expressions like from the river to the sea during pro-Palestine rallies, defining them as new forms of antisemitism."
+  }, 
+
  {
     title: "Protest in solidarity with Imran Khan",
     city: "University of Bradford",
@@ -10368,6 +10379,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
