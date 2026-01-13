@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+  {
+    title: "Protest to commemorate the murders of Stanislav Markelov and Anastasia Baburova,",
+    city: " Place Igor Stravinsky, Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-19T19:00:00",
+    source: "",
+    summary: "This is one of many annual memorial events held around the world to honor their memory and protest neo-Nazi terror and violence."
+  }, 
+
  {
     title: "protest for Iran",
     city: " United Nations Office at Vienna (UNOV), located at the Vienna International Centreh",
@@ -10346,6 +10357,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
