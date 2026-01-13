@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+ {
+    title: "Protest in solidarity with Imran Khan",
+    city: "University of Bradford",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-19T12:00:00",
+    source: "",
+    summary: "The event is a sit-in/protest organized by PTI (Pakistan Tehreek-e-Insaf) supporters and British Pakistanis, which has been a weekly occurrence outside diplomatic missions in the UK since Imran Khan's detention"
+  }, 
+
   {
     title: "Protest to commemorate the murders of Stanislav Markelov and Anastasia Baburova,",
     city: " Place Igor Stravinsky, Paris",
@@ -10357,6 +10368,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
