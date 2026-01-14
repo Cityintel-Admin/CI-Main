@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "A Call to the #Church: Stand for Families, Stand for Freedom, Stand for the Future",
+    city: "Scottish Parliament at Holyrood - Edinburgh",
+    country: "England",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-01-17T13:30:00",
+    source: "https://www.instagram.com/p/DTe6jbODL2w/?igsh=aGlyb3Blb3BoejVw",
+    summary: "The rally aims to call on the Scottish Government to affirm parental responsibility in education and protect educational freedoms against potential government overreach, specifically concerning the Westminster Children's Wellbeing and Schools Bill. "
+  },
+
+  {
     title: "To protest the Yadan Bill",
     city: "Place Édouard Herriot Assemblée Nationale Paris",
     country: "France",
@@ -10379,6 +10390,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
