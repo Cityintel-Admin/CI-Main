@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+  {
+    title: "antifascist solidarity rally",
+    city: "Igor Stravinsky Square in Paris",
+    country: "Paris",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-19T07:00:00",
+    source: "https://secoursrouge.org/paris-rassemblement-en-memoire-des-antifascistes-russes-stanislav-markelov-et-anastasia-babourova/",
+    summary: " Markelov and Baburova were assassinated in Moscow by a member of a clandestine neo-Nazi group. Activists view the Russian state as a reactionary avant-garde due to its state chauvinism and the protection allegedly given to far-right groups".
+  }, 
+ 
  {
     title: "The Human and Civil Rights Coalition ",
     city: "Capitol Square Southwest in Atlanta",
@@ -10401,6 +10412,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
