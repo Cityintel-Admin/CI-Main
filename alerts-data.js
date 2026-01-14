@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+  {
+    title: "Palestine solidarity protest",
+    city: "US Embassy in Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-14T14:00:00",
+    source: "",
+    summary: " Recent regional protests in Dublin have emphasized demands for the Irish government to implement sanctions on Israel, pass the Occupied Territories Bill, and end the use of Irish airspace for military transport."
+  }, 
+
    {
     title: "antifascist solidarity rally in memory of murdered Russian antifascists Stanislav Markelov and Anastasia Baburova.",
     city: "Igor Stravinsky Square in Paris",
@@ -10413,6 +10424,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
