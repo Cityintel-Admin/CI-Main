@@ -10,9 +10,43 @@ window.alertsData =[
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-12T09:00:00",
-    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
-    summary: "T"
+    source: "",
+    summary: "M"
   }, 
+
+  {
+    title: "Doctors strikeand protest",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-15T09:00:00",
+    source: "https://cronicasanitaria.es/2026/01/14/los-medicos-de-madrid-van-a-la-huelga-hoy-y-manana-para-reclamar-un-estatuto-propio/",
+    summary: "edical professionals are demanding a Medical Statute tailored specifically to their profession rather than a generic framework that applies to all health workers. Their specific demands include"
+  }, 
+
+ {
+    title: "Doctors strikeand protest",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-14T09:00:00",
+    source: "https://cronicasanitaria.es/2026/01/14/los-medicos-de-madrid-van-a-la-huelga-hoy-y-manana-para-reclamar-un-estatuto-propio/",
+    summary: "edical professionals are demanding a Medical Statute tailored specifically to their profession rather than a generic framework that applies to all health workers. Their specific demands include"
+  }, 
+
+ {
+    title: "solidarity rally for the Iranian people",
+    city: " Place du Panthéon, Paris.",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-17T15:00:00",
+    source: "https://x.com/ReformUK_CSNI/status/2009992209949724996",
+    summary: "The rally occurs amid reports of intensified anti-government protests in Iran that began in late December 2025, sparked initially by economic grievances such as hyperinflation but expanding to demand political regime change This gathering follows a large demonstration of approximately 2,000 people held on January 11 at Place de la République and a rally at Place du Trocadéro on January 4"
+  }, 
+
 
   {
     title: "Palestine solidarity protest",
@@ -10424,6 +10458,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
