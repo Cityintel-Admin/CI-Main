@@ -9,9 +9,20 @@ window.alertsData =[
     country: "England",
     continent: "Europe",
     risk: "Mid",
-    time: "2026-01-12T09:00:00",
+    time: "2026-01-20T11:30:00",
     source: "",
-    summary: "M"
+    summary: " "
+  }, 
+
+  {
+    title: "ACTION UPDATE Cut the Ties Protest ",
+    city: "statue of Wellington outside the Royal Exchange, near Bank Station London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-20T11:30:00",
+    source: "https://what3words.com/gone.plans.enable",
+    summary: "Bring your drums and flags. Limiting global heating to 1.5ºC may be dead but we are still in the fight for every 1/10 of a degree "
   }, 
 
   {
@@ -10458,6 +10469,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
