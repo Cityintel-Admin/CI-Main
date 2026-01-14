@@ -14,6 +14,17 @@ window.alertsData =[
     summary: "T"
   }, 
 
+ {
+    title: "The Human and Civil Rights Coalition ",
+    city: "Capitol Square Southwest in Atlanta",
+    country: "USA",
+    continent: "America",
+    risk: "Mid",
+    time: "2026-01-20T11:00:00",
+    source: "",
+    summary: "The state of Georgia's prisons has been under intense scrutiny following a damning 2024 Justice Department report that found conditions in violation of the Eighth Amendment, including assaults, stabbings, rapes, and killings. The report cited chronic overcrowding, understaffing, drug use, and a culture of cover-ups. This rally is a direct response to these issues, with family members and friends of inmates expected to protest and demand reform."
+  }, 
+ 
   {
     title: "A Call to the #Church: Stand for Families, Stand for Freedom, Stand for the Future",
     city: "Scottish Parliament at Holyrood - Edinburgh",
@@ -10390,6 +10401,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
