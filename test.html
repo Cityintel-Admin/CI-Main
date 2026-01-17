@@ -3598,7 +3598,8 @@ setTimeout(fixTiles, 900);
   let countryLayer = null;
 
   function drawRisk(){
-    const agg = aggregateRisk();
+   const alerts = window.alertsData || [];
+   const agg = aggregate(alerts);   // ✅ same as dashboard
     if (!agg) return;
 
     fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
@@ -3613,40 +3614,43 @@ setTimeout(fixTiles, 900);
 
         countryLayer = L.geoJSON(geo, {
           style: f => {
-            const name = (f.properties.ADMIN || '').trim();
-            const row = agg[name];
-            if (!row) {
-              return {
-                fillColor: palette.none,
-                fillOpacity: 0.18,
-                color: '#111',
-                weight: 0.4
-              };
-            }
-            const col = palette[row.level] || palette.low;
-            return {
-              fillColor: col,
-              fillOpacity: 0.85,
-              color: '#111',
-              weight: 0.6
-            };
-          },
+  const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+  const row  = agg[name];
+
+  if (!row || row.band === 'none') {
+    return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
+  }
+
+  const col = palette[row.band] || palette.low;
+
+  return {
+    fillColor: col,
+    fillOpacity: .85,
+    color: row.mixFuture ? '#ffffff' : '#111',
+    dashArray: row.mixFuture ? '6 3' : null,
+    weight: row.mixFuture ? 1.2 : .6
+  };
+},
           onEachFeature: (f, layer) => {
-            const name = (f.properties.ADMIN || '').trim();
-            const row = agg[name];
-            if (!row) {
-              layer.bindPopup(
-                `<b>${name}</b><br>No incidents in last ${LOOKBACK_DAYS} days.`
-              );
-            } else {
-              const c = row.counts;
-              layer.bindPopup(
-                `<b>${name}</b><br>${row.total} incident(s) in last ${LOOKBACK_DAYS} days<br>
-                 <span style="color:${palette.high}">High: ${c.high}</span> ·
-                 <span style="color:${palette.medium}">Med: ${c.medium}</span> ·
-                 <span style="color:${palette.low}">Low: ${c.low}</span>`
-              );
-            }
+  const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+  const row  = agg[name];
+
+  if (!row) {
+    layer.bindPopup(`<b>${name}</b><br>No protest data`);
+    return;
+  }
+
+  const h = row.hist || {low:0, medium:0, high:0};
+  const histTotal = h.low + h.medium + h.high;
+
+  layer.bindPopup(`
+    <b>${name}</b><br>
+    Overall band: <b>${(row.band||'none').toUpperCase()}</b><br>
+    Last 6 months: ${histTotal}
+    <br>
+    High: ${h.high} · Med: ${h.medium} · Low: ${h.low}
+  `);
+}
           }
         }).addTo(map);
       });
