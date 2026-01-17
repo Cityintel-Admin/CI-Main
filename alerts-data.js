@@ -14,6 +14,22 @@ window.alertsData =[
     summary: "The 2026 edition specifically targets the legalization of euthanasia and assisted suicide, which is currently being examined by the French Senate. The march also continues its traditional opposition to abortion. The demonstration will follow a loop route, starting and finishing at Place Vauban, which is located in front of the Invalides Nearly 10,000 participants are expected"
   }, 
 
+
+
+
+ 
+{
+    title: "March for Life",
+    city: "Place Vauban Paris",
+    country: "United States",
+    continent: "North America",
+    risk: "Mid",
+    time: "2026-01-16T11:30:00",
+    source: "",
+    summary: " "
+  }, 
+
+ 
   {
     title: "March for Life",
     city: "Place Vauban Paris",
@@ -10481,6 +10497,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
