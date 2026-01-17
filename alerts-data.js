@@ -6,6 +6,17 @@ window.alertsData =[
  {
     title: "Defend Suffolk Democracy",
     city: "Endeavour House in Ipswich",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-18T14:00:00",
+    source: "https://www.bvoltaire.fr/entretien-tuer-nest-ni-soigner-ni-soulager-denonce-la-marche-pour-la-vie/?utm_source=Quotidienne_BV",
+    summary: "The 2026 edition specifically targets the legalization of euthanasia and assisted suicide, which is currently being examined by the French Senate. The march also continues its traditional opposition to abortion. The demonstration will follow a loop route, starting and finishing at Place Vauban, which is located in front of the Invalides Nearly 10,000 participants are expected"
+  }, 
+
+  {
+    title: "March for Life",
+    city: "Place Vauban Paris",
     country: "England",
     continent: "Europe",
     risk: "Mid",
@@ -13,6 +24,7 @@ window.alertsData =[
     source: "",
     summary: " "
   }, 
+
 
   {
     title: "ACTION UPDATE Cut the Ties Protest ",
@@ -10469,6 +10481,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
