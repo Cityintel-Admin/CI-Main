@@ -3547,52 +3547,107 @@ setTimeout(fixTiles, 900);
   let incidentRadiusLayer = null;
 
 
-  // ---- Risk aggregation from alertsData (last 6 months) ----
-  function aggregate(){
-    const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
-    const now = Date.now();
-    const cutoff = now - LOOKBACK_DAYS * 864e5;
-    const by = {};
+ function aggregate(alerts){
+  const now        = new Date();
+  const futureEnd  = new Date(+now + windowDays * 86400000);
+  const histStart  = new Date(+now - HISTORY_DAYS * 86400000);
 
-    alerts.forEach(a => {
-      if (!a || !a.Country || !a.time) return;
-      const t = new Date(a.time);
-      const ms = t.getTime();
-      if (!ms || ms < cutoff || ms > now) return;
+  const by = {};
 
-      let c = a.Country;
-      const aliased = alias.get(norm(c));
-      if (aliased) c = aliased;
+  for (const a of alerts || []) {
+    if (!a) continue;
 
-      const rRaw = (a.risk || '').toString().toLowerCase();
-      const r = rRaw.startsWith('hi') ? 'high'
-              : rRaw.startsWith('me') ? 'medium'
-              : 'low';
+    const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
+    if (!dt) continue;
 
-      if (!by[c]) by[c] = { low:0, medium:0, high:0 };
-      by[c][r]++;
-    });
+    // Normalise country (same logic as before)
+    let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
+    if (!rawCountry) continue;
 
-    const result = {};
-    Object.keys(by).forEach(name => {
-      const row = by[name];
-      const total = row.low + row.medium + row.high;
-      if (!total) return;
+    const key = norm(rawCountry);
+    if (alias.has(key)) rawCountry = alias.get(key);
+    const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
 
-      const shareHigh = row.high / total;
-      const shareMed  = row.medium / total;
+    // Normalise risk band
+    const rk = norm(a.risk);
+    let band = 'low';
+    if (rk.startsWith('hi')) band = 'high';
+    else if (rk.startsWith('me')) band = 'medium';
 
-      let level = 'low';
-      if (shareHigh >= 0.4 || row.high >= 3) {
-        level = 'high';
-      } else if (shareMed >= 0.3 || row.medium >= 2 || row.high > 0) {
-        level = 'medium';
+    // Ensure bucket
+    if (!by[country]) {
+      by[country] = {
+        hist:   { low:0, medium:0, high:0 },
+        fut:    { low:0, medium:0, high:0 },
+        mixFuture: false,
+        band: 'low',
+        items: []
+      };
+    }
+    const row = by[country];
+
+    // History window (structural risk)
+    if (dt >= histStart && dt <= now) {
+      row.hist[band]++;
+    }
+
+    // Future window (current/forecast) – honour includePredictive
+    if (dt > now && dt <= futureEnd) {
+      if (!includePredictive && a.predictive === true) {
+        // skip predictive if checkbox is off
+      } else {
+        row.fut[band]++;
+        row.items.push(a);
       }
-
-      result[name] = { level, counts: row, total };
-    });
-    return result;
+    }
   }
+
+  // Derive mix + combined band for shading
+  for (const k in by) {
+    const row = by[k];
+
+    // Mixed future risk (for dashed outline)
+    const f = row.fut;
+    row.mixFuture =
+      (f.high > 0 && f.low > 0) ||
+      (f.medium > 0 && f.high > 0) ||
+      (f.medium > 0 && f.low > 0);
+
+    // Scores: history weight 1×, future weight 2×
+    const histHigh   = row.hist.high;
+    const histMed    = row.hist.medium;
+    const histLow    = row.hist.low;
+
+    const futHigh    = row.fut.high;
+    const futMed     = row.fut.medium;
+    const futLow     = row.fut.low;
+
+    const highScore   = 3 * (histHigh + 2 * futHigh);
+    const mediumScore = 2 * (histMed  + 2 * futMed);
+    const lowScore    = 1 * (histLow  + 2 * futLow);
+
+    const totalScore  = highScore + mediumScore + lowScore;
+
+    if (totalScore === 0) {
+      row.band = 'none';
+      continue;
+    }
+
+    const highRatio = highScore / totalScore;
+    const midRatio  = (highScore + mediumScore) / totalScore;
+
+    // Thresholds – tweak to taste
+    if (highRatio >= 0.4 || highScore >= 12) {
+      row.band = 'high';
+    } else if (midRatio >= 0.5 || mediumScore >= 8) {
+      row.band = 'medium';
+    } else {
+      row.band = 'low';
+    }
+  }
+
+  return by;
+}
 
   // ---- Draw country risk shading ----
   let countryLayer = null;
