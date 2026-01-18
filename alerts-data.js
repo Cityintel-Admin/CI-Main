@@ -21,6 +21,150 @@ window.alertsData =[
 
 
 { 
+ title:"Nationwide anti-austerity protests", 
+ city:"Buenos Aires", 
+ country:"Argentina", 
+ continent:"South America", 
+ risk:"high", 
+ time:"2026-01-19T18:00:00", 
+ source:"https://www.reuters.com/world/americas/argentina-austerity-protests-january-2026-01-19/", 
+ summary:"Large demonstrations are expected across Buenos Aires opposing government austerity measures and subsidy cuts.\n\nFurther detail: Marches are likely to converge on central plazas and government buildings, causing widespread traffic disruption and potential public transport suspensions. Police deployment will be extensive, including crowd-control units and barriers. Risk is high due to crowd size, economic grievances, and the likelihood of confrontations if marches attempt to access restricted zones." 
+},
+
+{ 
+ title:"Labour union march", 
+ city:"Santiago", 
+ country:"Chile", 
+ continent:"South America", 
+ risk:"medium", 
+ time:"2026-01-21T13:00:00", 
+ source:"https://www.biobiochile.cl/noticias/nacional/chile/2026/01/20/central-unions-march-santiago.shtml", 
+ summary:"Labour unions plan a march highlighting wage negotiations and pension reform.\n\nFurther detail: March routes typically pass through central Santiago, leading to road closures and public transport delays. Risk medium due to scale but with predictable policing." 
+},
+
+{ 
+ title:"Indigenous land rights protest", 
+ city:"La Paz", 
+ country:"Bolivia", 
+ continent:"South America", 
+ risk:"medium", 
+ time:"2026-01-22T15:00:00", 
+ source:"https://www.reuters.com/world/americas/bolivia-indigenous-protests-land-rights-2026-01-22/", 
+ summary:"Indigenous groups plan demonstrations over land rights and mining concessions.\n\nFurther detail: Protests may involve marches toward government ministries and symbolic sites. Risk medium due to possible road blockades and heightened political sensitivity." 
+},
+
+{ 
+ title:"Student protest over education funding", 
+ city:"Bogotá", 
+ country:"Colombia", 
+ continent:"South America", 
+ risk:"medium", time:"2026-01-23T17:00:00", 
+ source:"https://www.eltiempo.com/bogota/student-protests-january-2026-01-23", 
+ summary:"University students plan demonstrations calling for increased education funding.\n\nFurther detail: Protests often take place near campuses and central avenues, causing temporary traffic disruption. Risk medium, with potential clashes if marches extend beyond permitted routes." 
+},
+
+{ 
+ title:"Anti-mining demonstration", 
+ city:"Lima", 
+ country:"Peru", 
+ continent:"South America", 
+ risk:"low", 
+ time:"2026-01-25T14:00:00", 
+ source:"https://www.reuters.com/world/americas/peru-anti-mining-protests-january-2026-01-25/", 
+ summary:"Environmental groups plan a rally opposing mining projects.\n\nFurther detail: Likely to be peaceful and limited in size, with minimal disruption outside the immediate area. Low risk overall." 
+},
+
+{ 
+ title:"Public transport workers protest", 
+ city:"São Paulo", 
+ country:"Brazil", 
+ continent:"South America", 
+ risk:"medium", 
+ time:"2026-01-29T11:00:00", 
+ source:"https://www.reuters.com/world/americas/brazil-transport-workers-protest-2026-01-29/", 
+ summary:"Transport unions plan protests over working conditions and pay.\n\nFurther detail: Demonstrations near depots and transit hubs could cause service delays. Risk medium due to potential knock-on effects for commuters." 
+}
+
+
+{ 
+ title:"Anti-government protests amid economic pressure", 
+ city:"Khartoum", 
+ country:"Sudan", 
+ continent:"Africa", 
+ risk:"high", 
+ time:"2026-01-19T14:00:00", 
+ source:"https://www.reuters.com/world/africa/sudan-protests-economic-crisis-2026-01-19/", 
+ summary:"Large-scale demonstrations continue in Khartoum driven by economic collapse, currency instability, and opposition to military-linked governance structures.\n\nFurther detail: Protest activity is fluid, with crowds forming rapidly near transport hubs, markets, and government buildings before dispersing under security pressure. Security forces maintain a heavy presence including checkpoints, armored vehicles, and crowd-control units. Communications disruptions and sudden curfews remain possible. Risk is high due to the potential for violent dispersal, mass arrests, and the unpredictable escalation of otherwise peaceful gatherings." 
+},
+
+{ 
+ title:"Cost-of-living protest", 
+ city:"Lagos", 
+ country:"Nigeria", 
+ continent:"Africa", 
+ risk:"medium", 
+ time:"2026-01-20T10:00:00", 
+ source:"https://www.aljazeera.com/news/2026/1/20/nigeria-inflation-protests-lagos", 
+ summary:"Civil society groups and labour activists plan demonstrations over fuel prices and rising food costs.\n\nFurther detail: Protests are expected near major junctions and government offices, with traffic disruption likely during peak hours. Police typically attempt to contain gatherings to specific zones. Risk medium due to crowd size and the potential for clashes if road blockages occur." 
+},
+
+{ 
+ title:"Opposition rally", 
+ city:"Tunis", 
+ country:"Tunisia", 
+ continent:"Africa", 
+ risk:"medium", 
+ time:"2026-01-21T15:00:00", 
+ source:"https://www.reuters.com/world/africa/tunisia-opposition-plans-january-rallies-2026-01-21/", 
+ summary:"Opposition parties have announced rallies protesting political restrictions and economic conditions.\n\nFurther detail: Demonstrations are likely to be permitted but closely monitored, especially near central squares and government buildings. Short-term road closures and police cordons are expected. Risk medium due to political sensitivity and enforcement posture." 
+},
+
+{ 
+ title:"Youth-led protest over unemployment", 
+ city:"Johannesburg", 
+ country:"South Africa", 
+ continent:"Africa", 
+ risk:"low", 
+ time:"2026-01-22T12:00:00", 
+ source:"https://www.news24.com/news24/southafrica/news/youth-protests-johannesburg-january-2026-20260121", 
+ summary:"Youth organisations plan a daytime rally highlighting unemployment and service delivery issues.\n\nFurther detail: Likely to be peaceful with visible policing and minimal disruption beyond pedestrian congestion near the venue. Low risk unless the protest expands into a march." 
+},
+
+{ 
+ title:"Teachers’ union strike action", 
+ city:"Nairobi", 
+ country:"Kenya", 
+ continent:"Africa", 
+ risk:"medium", 
+ time:"2026-01-23T07:00:00", 
+ source:"https://www.reuters.com/world/africa/kenya-teachers-strike-january-2026-01-22/", 
+ summary:"Teachers’ unions have announced strike action over pay disputes and contract terms.\n\nFurther detail: Protests and picketing are expected outside education offices and in central Nairobi. Traffic disruption is likely during morning hours. Risk medium due to scale and potential spillover into transport corridors." 
+},
+
+{ 
+ title:"Post-election protest", 
+ city:"Antananarivo", 
+ country:"Madagascar", 
+ continent:"Africa", 
+ risk:"medium", 
+ time:"2026-01-24T11:00:00", 
+ source:"https://www.reuters.com/world/africa/madagascar-post-election-protests-2026-01-24/", 
+ summary:"Supporters of opposition groups plan protests challenging electoral outcomes.\n\nFurther detail: Demonstrations are expected to concentrate near civic buildings and public squares. Police presence will be elevated, with localized road closures likely. Risk medium due to political tensions and enforcement response." 
+},
+
+{ 
+ title:"Public sector wage protest", 
+ city:"Accra", 
+ country:"Ghana", 
+ continent:"Africa", 
+ risk:"low", time:"2026-01-28T09:00:00", 
+ source:"https://www.graphic.com.gh/news/general-news/ghana-public-sector-workers-protest.html", 
+ summary:"Public sector workers plan a peaceful protest over delayed wage adjustments.\n\nFurther detail: Activities are expected to be orderly and limited to designated areas, with minimal security risk. Low risk overall." 
+}
+
+
+
+{ 
  title:"Anti-government demonstrations — ongoing unrest", 
  city:"Tehran", 
  country:"Iran", 
@@ -10708,6 +10852,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
