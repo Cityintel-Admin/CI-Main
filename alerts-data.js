@@ -14,6 +14,223 @@ window.alertsData =[
     summary: " "
   }, 
 
+
+
+ 
+
+
+{ 
+  title:"Farmers' mobilisation — Strasbourg (EU Parliament focus)",
+  city:"Strasbourg", 
+  country:"France", 
+  continent:"Europe",
+  risk:"medium",
+  time:"2026-01-20T07:00:00",
+  source:"https://www.reuters.com/world/europe/french-farmers-block-roads-european-parliament-protest-2026-01-20/",
+  summary:"Farmers stage roadblocks around Strasbourg to pressure EU decision-makers on agriculture pricing, imports and regulation. Expect intermittent disruption on approach roads into Strasbourg, slow-moving tractor convoys, and short-notice diversions near institutional zones. Police usually facilitate emergency corridors and limit access to sensitive buildings. Risks are primarily mobility-related (gridlock, minor vehicle collisions, stranded transit) rather than interpersonal violence, though confrontations can spike if barriers are pushed or arrests occur."
+},
+
+{ 
+  title:"Defence industry protest — Farnborough (aerospace/arms fair)",
+  city:"Farnborough", 
+  country:"United Kingdom", 
+  continent:"Europe",
+  risk:"low",
+  time:"2026-01-22T10:30:00",
+  source:"https://palestinecampaign.org/events/",
+  summary:"Campaigners plan a protest linked to a defence/aerospace event in Farnborough, focusing on arms sales and export policy. Expect a stewarded static protest near venue approach routes and public-access points. Impacts are usually local (brief congestion, pedestrian management at crossings). Risk is low unless counter-groups attend or policing restricts proximity to entrances, which can raise tension."
+},
+
+{ 
+  title:"National demonstration — Central London (Gaza/ceasefire focus)",
+  city:"London", 
+  country:"United Kingdom", 
+  continent:"Europe",
+  risk:"medium",
+  time:"2026-01-31T12:00:00",
+  source:"https://palestinecampaign.org/events/",
+  summary:"A large central London march is scheduled, framed around Gaza/ceasefire demands and UK foreign policy.Expect assembly near major rail hubs, a moving march route through key arteries, and a finish rally that creates dense crowding. Bus corridors and taxi routes will be diverted; pedestrian flow control at bridges and junction pinch-points is typical. Risk is medium due to size, compression points and the possibility of counter-presence; most participants are peaceful, but minor disorder can occur at choke points or if groups attempt to deviate from the agreed route."
+},
+
+{ 
+title:"Workplace day of action",
+  city:"London / Manchester / Glasgow", 
+  country:"United Kingdom", 
+  continent:"Europe",
+  risk:"low",
+  time:"2026-02-12T07:30:00",
+  source:"https://palestinecampaign.org/events/",
+  summary:"Organisers advertise a workplace-focused day of action with localised gatherings (outside offices, campuses, transport nodes) across multiple UK cities. Expect small-to-medium assemblies, banner drops and short-duration pickets. Disruption is typically minimal and concentrated around individual buildings. Risk remains low unless a specific site draws a counter-group or an enforcement response."
+},
+
+
+{ 
+title:"Workplace day of action",
+  city:"Manchester", 
+  country:"United Kingdom", 
+  continent:"Europe",
+  risk:"low",
+  time:"2026-02-12T07:30:00",
+  source:"https://palestinecampaign.org/events/",
+  summary:"Organisers advertise a workplace-focused day of action with localised gatherings (outside offices, campuses, transport nodes) across multiple UK cities. Expect small-to-medium assemblies, banner drops and short-duration pickets. Disruption is typically minimal and concentrated around individual buildings. Risk remains low unless a specific site draws a counter-group or an enforcement response."
+},
+
+{ 
+title:"Workplace day of action",
+  city:"Glasgow", 
+  country:"United Kingdom", 
+  continent:"Europe",
+  risk:"low",
+  time:"2026-02-12T07:30:00",
+  source:"https://palestinecampaign.org/events/",
+  summary:"Organisers advertise a workplace-focused day of action with localised gatherings (outside offices, campuses, transport nodes) across multiple UK cities. Expect small-to-medium assemblies, banner drops and short-duration pickets. Disruption is typically minimal and concentrated around individual buildings. Risk remains low unless a specific site draws a counter-group or an enforcement response."
+},
+
+
+
+
+{ 
+  title:"Planned demonstration series — Bratislava ",
+  city:"Bratislava", 
+  country:"Slovakia", 
+  continent:"Europe",
+  risk:"low",
+  time:"2026-01-22T17:00:00",
+  source:"https://www.osac.gov/Content/Report/63809b67-aace-4a69-b20d-a48be539d736",
+  summary:"A series of organised demonstrations is expected in Bratislava during late January, with recurring evening gatherings. Expect city-centre assemblies near government buildings or main squares, police traffic controls at junctions, and short delays on public transport. Risk is low; disruption is mainly local and time-bounded."
+},
+
+{ 
+  title:"Planned demonstration series — Bratislava ",
+  city:"Bratislava", 
+  country:"Slovakia", 
+  continent:"Europe",
+  risk:"low",
+  time:"2026-01-28T17:00:00",
+  source:"https://www.osac.gov/Content/Report/63809b67-aace-4a69-b20d-a48be539d736",
+  summary:"Continuation of the late-January demonstration series in Bratislava. Expect the same operating pattern—city-centre gathering, light policing, and short-duration disruption. Risk remains low unless a counter-group forms or routes shift toward sensitive sites."
+},
+
+
+
+{ 
+  title:"Coordinated ‘walkout’ action",
+  city:"New York", 
+  country:"United States", 
+  continent:"North America",
+  risk:"medium",
+  time:"2026-01-20T15:00:00",
+  source:"https://www.actionnetwork.org/events/free-america-walkout",
+  summary:"A coordinated ‘walkout’ is scheduled across multiple U.S. cities, with organisers promoting synchronised gatherings and short marches. Expect variable turnout by city, with the most likely disruption around civic centres, campuses and transit hubs. Risk is medium because simultaneous events can create uneven crowd management and attract counter-demonstrations in specific locations."
+},
+
+
+{ 
+  title:"Coordinated ‘walkout’ action ",
+  city:"Chicago", 
+  country:"United States", 
+  continent:"North America",
+  risk:"medium",
+  time:"2026-01-20T15:00:00",
+  source:"https://www.actionnetwork.org/events/free-america-walkout",
+  summary:"A coordinated ‘walkout’ is scheduled across multiple U.S. cities, with organisers promoting synchronised gatherings and short marches. Expect variable turnout by city, with the most likely disruption around civic centres, campuses and transit hubs. Risk is medium because simultaneous events can create uneven crowd management and attract counter-demonstrations in specific locations."
+},
+
+
+{ 
+  title:"Coordinated ‘walkout’ action",
+  city:"Los Angeles", 
+  country:"United States", 
+  continent:"North America",
+  risk:"medium",
+  time:"2026-01-20T15:00:00",
+  source:"https://www.actionnetwork.org/events/free-america-walkout",
+  summary:"A coordinated ‘walkout’ is scheduled across multiple U.S. cities, with organisers promoting synchronised gatherings and short marches. Expect variable turnout by city, with the most likely disruption around civic centres, campuses and transit hubs. Risk is medium because simultaneous events can create uneven crowd management and attract counter-demonstrations in specific locations."
+},
+
+
+{ 
+  title:"Coordinated ‘walkout’ action",
+  city:"Washington DC", 
+  country:"United States", 
+  continent:"North America",
+  risk:"medium",
+  time:"2026-01-20T15:00:00",
+  source:"https://www.actionnetwork.org/events/free-america-walkout",
+  summary:"A coordinated ‘walkout’ is scheduled across multiple U.S. cities, with organisers promoting synchronised gatherings and short marches. Expect variable turnout by city, with the most likely disruption around civic centres, campuses and transit hubs. Risk is medium because simultaneous events can create uneven crowd management and attract counter-demonstrations in specific locations."
+},
+
+
+
+{ 
+  title:"March for Life — Washington, DC",
+  city:"Washington DC", 
+  country:"United States", 
+  continent:"North America",
+  risk:"medium",
+  time:"2026-01-23T12:00:00",
+  source:"https://marchforlife.org/event/2026-march-for-life/",
+  summary:"The annual March for Life is scheduled in Washington, DC, typically drawing large crowds and an elevated security posture. Expect significant road closures near the National Mall and along the march route toward federal institutions, plus transport congestion and crowding on public transit. Risk is medium due to turnout size and possible counter-presence, but the event is usually tightly managed."
+},
+
+{ 
+  title:"Solidarity rally — ‘Standing with Iranian People’",
+  city:"Washington, DC", 
+  country:"United States", 
+  continent:"North America",
+  risk:"low",
+  time:"2026-01-21T18:30:00",
+  source:"https://events.gwu.edu/standing-with-iranian-people",
+  summary:"A public solidarity rally is scheduled in Washington, DC, framed around support for Iranian protesters and human rights. Expect a static assembly with speeches and signage. Disruption is likely limited to sidewalks and a small perimeter. Risk is low unless counter-groups attend."
+},
+
+
+{ 
+  title:"Invasion Day rally — Sydney",
+  city:"Sydney", 
+  country:"Australia", 
+  continent:"Oceania",
+  risk:"medium",
+  time:"2026-01-26T12:00:00",
+  source:"https://www.blackpeoplesunion.com/invasion_day_2026",
+  summary:"An Invasion Day rally is scheduled in Sydney, focusing on Indigenous rights and opposition to Australia Day celebrations. Expect a large march with CBD movement, temporary road closures, public transport diversions, and dense crowding near assembly and rally points. Risk is medium due to size and compression points; most participants are peaceful, but tension can rise if policing restricts movement or if counter-presence appears."
+},
+
+{ 
+  title:"Invasion Day rally — Melbourne",
+  city:"Melbourne", 
+  country:"Australia", 
+  continent:"Oceania",
+  risk:"medium",
+  time:"2026-01-26T11:00:00",
+  source:"https://www.blackpeoplesunion.com/invasion_day_2026",
+  summary:"An Invasion Day rally is scheduled in Melbourne as part of coordinated national actions. Expect a CBD march, pedestrian congestion, and temporary tram/bus reroutes. Risk is medium; the most likely impacts are mobility disruption rather than violence."
+},
+
+{ 
+title:"Waitangi Day events & demonstrations — Auckland",
+  city:"Auckland", 
+  country:"New Zealand", 
+  continent:"Oceania",
+  risk:"low",
+  time:"2026-02-06T10:00:00",
+  source:"https://www.waitangiday.org.nz/",
+  summary:"Waitangi Day events and demonstrations are expected, with gatherings focused on Te Tiriti o Waitangi and Māori rights. Most activity is planned and family-attended. Disruption is local to venues and nearby streets, with low overall risk."
+},
+
+
+{ 
+title:"Waitangi Day events & demonstrations — Wellington",
+  city:"Wellington", 
+  country:"New Zealand", 
+  continent:"Oceania",
+  risk:"low",
+  time:"2026-02-06T10:00:00",
+  source:"https://www.waitangiday.org.nz/",
+  summary:"Waitangi Day events and demonstrations are expected, with gatherings focused on Te Tiriti o Waitangi and Māori rights. Most activity is planned and family-attended. Disruption is local to venues and nearby streets, with low overall risk."
+},
+
+ 
   {
     title: "National March for Frexit",
     city: "Place du Palais Royal, Paris",
@@ -11065,6 +11282,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
