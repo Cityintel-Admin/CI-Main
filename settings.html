@@ -100,6 +100,49 @@
 </section>
 
 
+<section class="card" id="orgCard">
+  <h2>Organisation</h2>
+  <p class="muted">Link users so you share the same Assets, Travellers and Feeds.</p>
+
+  <div id="orgStatus" class="muted" style="margin:10px 0;">Loading…</div>
+
+  <div id="orgConnected" style="display:none; gap:12px;">
+    <div class="row" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div><b>Org:</b> <span id="orgName"></span></div>
+      <div><b>Org ID:</b> <span id="orgId"></span></div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <label class="muted">Invite code (share with teammates)</label>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <input id="orgInvite" type="text" readonly style="min-width:220px;" />
+        <button id="copyInviteBtn" type="button">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin:16px 0; opacity:.2;" />
+
+  <div class="row" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+    <div style="min-width:240px;">
+      <label>Create new org</label>
+      <input id="createOrgName" type="text" placeholder="e.g. CityIntel (Test)" />
+    </div>
+    <button id="createOrgBtn" type="button">Create</button>
+  </div>
+
+  <div class="row" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-top:12px;">
+    <div style="min-width:240px;">
+      <label>Join with invite code</label>
+      <input id="joinInvite" type="text" placeholder="e.g. Z24BS84G" />
+    </div>
+    <button id="joinOrgBtn" type="button">Join</button>
+  </div>
+
+  <div id="orgMsg" class="muted" style="margin-top:10px;"></div>
+</section>
+
+      
 
       
       <!-- Office locations (used by incident Map / Distance) -->
@@ -458,11 +501,109 @@
 })();
 </script>
 
+
   
+  <script>
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  function getAuthHeaders() {
+    // Adjust these 3 lines to match your auth.js storage
+    const user = window.currentUser || window.user || JSON.parse(localStorage.getItem('cityintel_user') || 'null');
+    if (!user?.email) throw new Error('Not logged in (missing user.email)');
+
+    return {
+      'Content-Type': 'application/json',
+      'X-User-Email': user.email,
+      'X-User-Name': user.name || '',
+      'X-User-Id': user.id || ''
+    };
+  }
+
+  async function api(path, opts = {}) {
+    const headers = { ...(opts.headers || {}), ...getAuthHeaders() };
+    const res = await fetch(API_BASE + path, { ...opts, headers });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json?.ok === false) {
+      throw new Error(json?.error || `Request failed: ${res.status}`);
+    }
+    return json;
+  }
+
+  function setMsg(t) {
+    document.getElementById('orgMsg').textContent = t || '';
+  }
+
+  async function refreshOrgUI() {
+    const statusEl = document.getElementById('orgStatus');
+    const connectedEl = document.getElementById('orgConnected');
+    statusEl.textContent = 'Loading…';
+    connectedEl.style.display = 'none';
+    setMsg('');
+
+    const me = await api('/api/org/me', { method: 'GET', headers: {} });
+
+    if (!me.org) {
+      statusEl.textContent = 'Not linked to an organisation yet. Create one or join with an invite code.';
+      return;
+    }
+
+    statusEl.textContent = 'Connected ✅';
+    connectedEl.style.display = 'block';
+    document.getElementById('orgName').textContent = me.org.name || '—';
+    document.getElementById('orgId').textContent = me.org.id || '—';
+    document.getElementById('orgInvite').value = me.org.inviteCode || '';
+  }
+
+  document.getElementById('createOrgBtn').addEventListener('click', async () => {
+    try {
+      setMsg('Creating org…');
+      const name = (document.getElementById('createOrgName').value || '').trim() || 'My Organisation';
+      await api('/api/org/create', { method: 'POST', body: JSON.stringify({ name }) });
+      setMsg('Org created ✅');
+      await refreshOrgUI();
+    } catch (e) {
+      setMsg('Create failed: ' + e.message);
+    }
+  });
+
+  document.getElementById('joinOrgBtn').addEventListener('click', async () => {
+    try {
+      setMsg('Joining org…');
+      const inviteCode = (document.getElementById('joinInvite').value || '').trim();
+      if (!inviteCode) return setMsg('Enter an invite code first.');
+      await api('/api/org/join', { method: 'POST', body: JSON.stringify({ inviteCode }) });
+      setMsg('Joined ✅');
+      await refreshOrgUI();
+    } catch (e) {
+      setMsg('Join failed: ' + e.message);
+    }
+  });
+
+  document.getElementById('copyInviteBtn').addEventListener('click', async () => {
+    const v = document.getElementById('orgInvite').value || '';
+    if (!v) return;
+    try {
+      await navigator.clipboard.writeText(v);
+      setMsg('Invite code copied.');
+    } catch {
+      setMsg('Could not copy (browser blocked). Select + copy manually.');
+    }
+  });
+
+  // init
+  (async () => {
+    try { await refreshOrgUI(); }
+    catch (e) {
+      document.getElementById('orgStatus').textContent = 'Error loading org: ' + e.message;
+    }
+  })();
+</script>
+
   
 
 </body>
 </html>
+
 
 
 
