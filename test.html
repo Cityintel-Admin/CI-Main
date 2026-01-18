@@ -3805,30 +3805,104 @@ setTimeout(settleMap, 600);
 
   let windowDays       = 30;
 	
-  function refreshPresenceMarkers(){
-    assetLayer.clearLayers();
-    travLayer.clearLayers();
+  function parseDateAny(v){
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
 
-    (window.CIAssets || []).forEach(a => {
-      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
-      L.marker([a.lat, a.lon], { icon: assetIcon })
-        .addTo(assetLayer)
-        .bindPopup(
-          `<b>${a.name || 'Asset'}</b><br>` +
-          `${[a.city, a.country].filter(Boolean).join(', ')}`
-        );
-    });
+// Try to find a start/end window on the traveller object using common field names
+function getTripWindow(t){
+  const start =
+    parseDateAny(t.startDate) || parseDateAny(t.start) || parseDateAny(t.from) ||
+    parseDateAny(t.departDate) || parseDateAny(t.departureDate) ||
+    parseDateAny(t.travelStart) || parseDateAny(t.travel_start);
 
-    (window.CITravellers || []).forEach(t => {
-      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
-      L.marker([t.lat, t.lon], { icon: travIcon })
-        .addTo(travLayer)
-        .bindPopup(
-          `<b>${t.name || 'Traveller'}</b><br>` +
-          `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`
-        );
-    });
-  }
+  const end =
+    parseDateAny(t.endDate) || parseDateAny(t.end) || parseDateAny(t.to) ||
+    parseDateAny(t.returnDate) || parseDateAny(t.return) ||
+    parseDateAny(t.travelEnd) || parseDateAny(t.travel_end);
+
+  return { start, end };
+}
+
+function isTravellerActiveNow(t, now = new Date()){
+  const { start, end } = getTripWindow(t);
+
+  // If no dates exist, treat as “always visible”
+  if (!start && !end) return true;
+
+  // If only start exists: active from start onwards
+  if (start && !end) return now >= start;
+
+  // If only end exists: active until end
+  if (!start && end) return now <= end;
+
+  // Both exist: active within window (inclusive)
+  return now >= start && now <= end;
+}
+
+
+
+function parseDateStart(ymd){
+  if (!ymd) return null;
+  const d = new Date(ymd + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseDateEnd(ymd){
+  if (!ymd) return null;
+  // include the whole "to" day
+  const d = new Date(ymd + 'T23:59:59');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function tripStatus(t, now = new Date()){
+  const start = parseDateStart(t.from);
+  const end   = parseDateEnd(t.to);
+
+  if (!start || !end) return 'unknown';
+  if (now < start) return 'upcoming';
+  if (now > end) return 'past';
+  return 'active';
+}
+
+	
+function refreshPresenceMarkers(){
+  assetLayer.clearLayers();
+  travLayer.clearLayers();
+	
+const SHOW_UPCOMING = false; // set true if you want upcoming trips visible too
+
+(window.CITravellers || []).forEach(t => {
+  if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+
+  const status = tripStatus(t);
+  if (status === 'past') return;                 // ✅ removes old trips
+  if (!SHOW_UPCOMING && status === 'upcoming') return; // ✅ only appears when trip starts
+
+  L.marker([t.lat, t.lon], { icon: travIcon })
+    .addTo(travLayer)
+    .bindPopup(
+      `<b>${t.name || 'Traveller'}</b><br>` +
+      `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}<br>` +
+      `Trip: ${t.from || '?'} → ${t.to || '?'}`
+    );
+});
+
+}
+
+	// Run once on load
+refreshPresenceMarkers();
+
+// Re-check periodically so travellers appear/disappear as dates change
+setInterval(refreshPresenceMarkers, 60 * 1000); // every 1 minute
+
+// Also refresh when user returns to the tab
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshPresenceMarkers();
+});
+
 
 	
   // ---- React when an incident is opened (jump to city) ----
