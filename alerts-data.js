@@ -4,8 +4,74 @@
 window.alertsData =[
 
  {
-    title: "Defend Suffolk Democracy",
-    city: "Endeavour House in Ipswich",
+    title: "Protest the Guga Hunt",
+    city: "Scottish Parliament Edinburgh",
+    country: "Scotland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-21T08:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: " "
+  }, 
+
+  {
+    title: "National March for Frexit",
+    city: "Place du Palais Royal, Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "high",
+    time: "2026-01-31T14:00:00",
+    source: "https://soutien.les-patriotes.fr/",
+    summary: "The Patriots is a hard Eurosceptic political party in France led by Florian Philippot, which strongly advocates for France's withdrawal from both the European Union (EU) and NATO"
+  }, 
+
+  {
+    title: "Con Venezuela y Palestina contra el Imperialismo y el Sionismo",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-25T12:00:00",
+    source: "",
+    summary: "The demonstration is focused on expressing solidarity with Venezuela and Palestine and protesting against what the organizers describe as imperialism and Zionism"
+  }, 
+
+  {
+    title: "Protest the Guga Hunt",
+    city: "Scottish Parliament Edinburgh",
+    country: "Scotland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-21T08:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: "n Wednesday 21st, the Scottish Parliament will consider a petition calling for an end to the Guga hunt. A brutal and outdated practice that sees gannet chicks killed in the name of tradition. We will be gathering outside the Scottish Parliament to protest, speak out, and speak to members of the public and MSPs about the reality of the Guga hunt. Our aim is simple: to raise public awareness and urge people to support and share wildlife photographer Rachel Bigsby’s petition calling for this cruelty to end. If you care about birds, wildlife, or ending needless animal suffering, please join us. Even if you can only spare 30 minutes, your presence helps send a clear message to decision-makers that this cruelty has no place in modern Scotland."
+  }, 
+
+  {
+    title: "anti-racism protest and counter-demonstration",
+    city: "Bürgerhaus Bilk, Düsseldorf",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-22T18:00:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: " "
+  },
+
+  {
+    title: "Keep Hybrid work in the OPS ",
+    city: " 505 University Ave, Toronto ON",
+    country: "United States",
+    continent: "North America",
+    risk: "Mid",
+    time: "2026-01-23T08:30:00",
+    source: "",
+    summary: "The rally is part of ongoing pushback against the Ontario government's mandate, which required OPS employees to return to the office full-time (five days a week) starting January 5, 2026. The unions argue this decision was made arbitrarily, without consultation or evidence of productivity benefits, and violates the Ontario Labour Relations Act during their bargaining process. "
+  }, 
+
+ {
+    title: " March for Life",
+    city: "Paris",
     country: "France",
     continent: "Europe",
     risk: "Mid",
@@ -13,12 +79,6 @@ window.alertsData =[
     source: "https://www.bvoltaire.fr/entretien-tuer-nest-ni-soigner-ni-soulager-denonce-la-marche-pour-la-vie/?utm_source=Quotidienne_BV",
     summary: "The 2026 edition specifically targets the legalization of euthanasia and assisted suicide, which is currently being examined by the French Senate. The march also continues its traditional opposition to abortion. The demonstration will follow a loop route, starting and finishing at Place Vauban, which is located in front of the Invalides Nearly 10,000 participants are expected"
   }, 
-
-
-
-
-
-
 { 
   title:"PTIUK Protest Call — Brussels", 
   city:"Brussels", 
@@ -254,7 +314,6 @@ window.alertsData =[
  source:"https://www.reuters.com/world/americas/brazil-transport-workers-protest-2026-01-29/", 
  summary:"Transport unions plan protests over working conditions and pay.\n\nFurther detail: Demonstrations near depots and transit hubs could cause service delays. Risk medium due to potential knock-on effects for commuters." 
 }
-
 
 { 
  title:"Anti-government protests amid economic pressure", 
@@ -540,20 +599,6 @@ window.alertsData =[
  source:"https://www.news.com.au/national/politics/sydney-protesters-rally-at-us-consulate-in-solidarity-with-iran-movement/news-story/3e016e7e2531025d90c5b737568cf9c2", 
  summary:"Local reporting of a solidarity protest near the US consulate precinct in North Sydney.\n\nTypically short-duration, speech-heavy, and closely monitored by police, with limited disruption beyond nearby footpaths and brief traffic slowdowns. Use as a low-risk event unless there are counter-groups or sudden route changes." 
 },
-
-
- 
-{
-    title: "March for Life",
-    city: "Place Vauban Paris",
-    country: "United States",
-    continent: "North America",
-    risk: "Mid",
-    time: "2026-01-16T11:30:00",
-    source: "",
-    summary: " "
-  }, 
-
  
   {
     title: "March for Life",
@@ -11022,6 +11067,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
