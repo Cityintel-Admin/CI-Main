@@ -17,6 +17,117 @@ window.alertsData =[
 
 
 
+
+{ 
+ title:"Nationwide anti-regime protests — Tehran focus", 
+ city:"Tehran", 
+ country:"Iran", 
+ continent:"Asia", 
+ risk:"high", 
+ time:"2025-12-28T18:00:00", 
+ source:"https://www.theguardian.com/world/gallery/2026/jan/14/protests-in-iran-in-pictures", 
+ summary:"Demonstrations in Tehran as part of a wider nationwide protest wave that began in late December 2025. Initial gatherings concentrated in central streets and around symbolic locations, then spread to multiple districts as security presence intensified.\n\nAuthorities reportedly responded with heavier deployments, intermittent communications restrictions, and rapid dispersal tactics. Expect heightened checkpointing, disruption to central traffic corridors, and elevated arrest risk for participants and bystanders near crowd movements. Volatility is high: crowd size and route decisions can change quickly, and escalation risk increases near government sites, major squares, and transport hubs." 
+},
+
+{ 
+ title:"Nationwide anti-regime protests — tightened security posture", 
+ city:"Multiple cities", 
+ country:"Iran", 
+ continent:"Asia", 
+ risk:"high", 
+ time:"2026-01-14T12:00:00", 
+ source:"https://www.iranintl.com/en/202601148255", 
+ summary:"Security measures reportedly tightened across multiple Iranian cities as authorities expanded deployments to deter and disrupt further demonstrations.\n\nReports describe a clampdown atmosphere with increased patrols and controls that can resemble curfew-like conditions in some areas. For operational planning, assume variable mobility constraints, elevated stop/search activity, and sudden road closures around sensitive nodes (ministries, police compounds, major squares). Public gatherings may be dispersed quickly; risk of confrontation rises if crowds attempt to approach official buildings or critical infrastructure." 
+},
+
+{ 
+ title:"Currency/economic grievance-linked protest activity", 
+ city:"Tehran", 
+ country:"Iran", 
+ continent:"Asia", 
+ risk:"high", 
+ time:"2026-01-08T12:00:00", 
+ source:"https://uk.news.yahoo.com/iranian-official-says-verified-deaths-092711768.html", 
+ summary:"Public unrest amid broader protest dynamics, with economic pressure and governance grievances cited as key accelerants.\n\nWhere protests overlap with economic stressors (currency shocks, price spikes), demonstrations can draw more diverse participation and expand beyond traditional political hubs. Expect sporadic crowding around central commercial areas, exchanges/markets, and major intersections. Disruption risk includes temporary closure of shops, transport slowdowns, and heightened enforcement posture." 
+},
+
+{ 
+ title:"Iran protests — international attention and escalation rhetoric", 
+ city:"Tehran", 
+ country:"Iran", 
+ continent:"Asia", 
+ risk:"high", 
+ time:"2026-01-17T12:00:00", 
+ source:"https://www.theguardian.com/world/2026/jan/17/senior-iranian-cleric-calls-for-protester-executions-in-defiance-of-trump-claims", 
+ summary:"Continued unrest with elevated crackdown risk signaled by official rhetoric and reports of harsh enforcement.\n\nThis is a high-risk operating environment: detention risk, rapid dispersal, and unpredictable escalation. If you model this as an “event,” treat it as an ongoing high-volatility period rather than a single scheduled gathering. Consider tagging it as ‘rolling unrest’ so your UI can treat it differently from planned rallies." 
+},
+
+{ 
+ title:"Los Angeles ‘Free Iran’ solidarity rally", 
+ city:"Los Angeles, CA", 
+ country:"United States", 
+ continent:"North America", 
+ risk:"low", time:"2026-01-11T12:00:00", 
+ source:"https://time.com/7345482/worldwide-protests-solidarity-with-iranians/", 
+ summary:"Solidarity rally in Los Angeles supporting protesters in Iran.\n\nLikely characteristics: peaceful assembly, speeches, flags/signage, and a march segment depending on permits and police facilitation. Expect localized traffic impacts around the rally point and short-term congestion if turnout is high." 
+},
+
+{ 
+ title:"Ottawa solidarity rally for Iran protests", 
+ city:"Ottawa, ON", 
+ country:"Canada", 
+ continent:"North America", 
+ risk:"low", 
+ time:"2026-01-03T12:00:00", 
+ source:"https://iranfreedom.org/en/news/2026/01/iranians-in-ottawa-and-toronto-rally-to-support-iran-protests-calling-for-a-free-and-democratic-republic/82460/", 
+ summary:"Solidarity gathering in Ottawa in support of protests inside Iran.\n\nLikely peaceful and permit-compliant, with chanting and signage. Expect minimal disruption beyond localized pedestrian density and short traffic delays near the gathering point." 
+},
+
+{ 
+ title:"Toronto solidarity rally for Iran protests", 
+ city:"Toronto, ON", 
+ country:"Canada", 
+ continent:"North America", 
+ risk:"low", 
+ time:"2026-01-03T13:00:00", 
+ source:"https://iranfreedom.org/en/news/2026/01/iranians-in-ottawa-and-toronto-rally-to-support-iran-protests-calling-for-a-free-and-democratic-republic/82460/", 
+ summary:"Solidarity gathering in Toronto supporting Iran protests.\n\nExpect a static rally (and possible short march) with routine police presence. Disruption mainly limited to the immediate downtown/venue area." 
+},
+
+{ 
+ title:"Stockholm rally supporting Iran protests", 
+ city:"Stockholm", 
+ country:"Sweden", 
+ continent:"Europe", 
+ risk:"low", 
+ time:"2026-01-11T12:00:00", 
+ source:"https://iranfreedom.org/en/iranian-communities/2026/01/iranians-rally-in-stockholm-to-support-nationwide-protests-and-call-for-a-democratic-republic-in-iran/82629/", 
+ summary:"Rally in Stockholm expressing solidarity with nationwide protests in Iran.\n\nLikely to be peaceful with speeches, banners, and a contained footprint. Expect minor localized disruptions near the rally location, with normal policing and crowd management." 
+},
+
+{ 
+ title:"Sydney protest at/near US Consulate in solidarity with Iran uprising", 
+ city:"Sydney, NSW", 
+ country:"Australia", 
+ continent:"Oceania", 
+ risk:"low", 
+ time:"2026-01-16T12:00:00", 
+ source:"https://www.iranintl.com/en/202601164215", 
+ summary:"Rally in Sydney near the US Consulate supporting Iran’s national uprising.\n\nLikely peaceful with police monitoring. Anticipate short-term congestion around the consulate precinct and surrounding sidewalks/approach roads; minimal wider disruption unless turnout significantly exceeds expectations." 
+},
+
+{ 
+ title:"Sydney consulate-area solidarity protest (local coverage)", 
+ city:"North Sydney, NSW", 
+ country:"Australia", 
+ continent:"Oceania", 
+ risk:"low", 
+ time:"2026-01-13T12:00:00", 
+ source:"https://www.news.com.au/national/politics/sydney-protesters-rally-at-us-consulate-in-solidarity-with-iran-movement/news-story/3e016e7e2531025d90c5b737568cf9c2", 
+ summary:"Local reporting of a solidarity protest near the US consulate precinct in North Sydney.\n\nTypically short-duration, speech-heavy, and closely monitored by police, with limited disruption beyond nearby footpaths and brief traffic slowdowns. Use as a low-risk event unless there are counter-groups or sudden route changes." 
+},
+
+
  
 {
     title: "March for Life",
@@ -10497,6 +10608,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
