@@ -461,16 +461,55 @@
       }
     }
 
-    function saveTravellers(list){
-      try{
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      }catch(e){
-        console.warn('Failed to save ci_travellers to localStorage', e);
-      }
-      window.CITravellers = list; // keep global in sync for map
-    }
+    async function authHeaders(){
+  const me = (window.CIAuth && CIAuth.who && CIAuth.who()) || null;
+  if (!me?.email) throw new Error('Not logged in (missing CIAuth user)');
+  return {
+    'Content-Type': 'application/json',
+    'X-User-Email': me.email,
+    'X-User-Name': me.name || '',
+    'X-User-Id': me.id || ''
+  };
+}
 
-    let travellers = loadTravellers();
+async function saveTravellers(list){
+  // local first (keeps UI snappy)
+  localStorage.setItem('ci_travellers', JSON.stringify(list));
+  window.CITravellers = list;
+
+  // push to org (shared)
+  try{
+    const headers = await authHeaders();
+    await fetch('https://api.cityintelapi.com/api/org/travellers', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(list)
+    });
+  }catch(e){
+    console.warn('Org traveller save failed (still saved locally):', e);
+  }
+}
+
+    
+async function loadTravellersFromOrgOrLocal(seed){
+  try{
+    const headers = await authHeaders();
+    const res = await fetch('https://api.cityintelapi.com/api/org/travellers', { headers });
+    const json = await res.json();
+    if (json?.ok && Array.isArray(json.data)) {
+      localStorage.setItem('ci_travellers', JSON.stringify(json.data));
+      window.CITravellers = json.data;
+      return json.data;
+    }
+  }catch(e){
+    console.warn('Org traveller load failed, using local:', e);
+  }
+  return seed;
+}
+
+
+    let travellers = await loadTravellersFromOrgOrLocal(loadTravellers());
+
 
     const tbody        = document.getElementById('travellersBody');
     const form         = document.getElementById('travellerForm');
