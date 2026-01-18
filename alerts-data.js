@@ -17,6 +17,106 @@ window.alertsData =[
 
 
 
+ 
+
+
+{ 
+ title:"Anti-government demonstrations — ongoing unrest", 
+ city:"Tehran", 
+ country:"Iran", 
+ continent:"Asia", 
+ risk:"high", 
+ time:"2026-01-19T15:00:00", 
+ source:"https://www.reuters.com/world/middle-east/iran-braces-more-protests-amid-economic-pressure-2026-01-18/", 
+ summary:"Public demonstrations continue in Tehran amid sustained political and economic grievances. Gatherings are often fluid, forming rapidly in central districts and dispersing under security pressure.\n\nFurther detail: Authorities maintain a heightened security posture with rapid-response units, checkpoints, and intermittent movement controls. Demonstrations may escalate quickly if crowds approach symbolic locations such as government ministries, major squares, or university campuses. Transport disruption is likely in affected districts, with temporary road closures and slowed traffic. Risk is high due to the volatility of crowd behaviour, the potential for forceful dispersal, and the difficulty in predicting protest timing or routes." 
+},
+
+{ 
+ title:"Anti-government demonstrations — rolling unrest", 
+ city:"Mashhad", 
+ country:"Iran", 
+ continent:"Asia", 
+ risk:"high", 
+ time:"2026-01-20T16:00:00", 
+ source:"https://www.aljazeera.com/news/2026/1/20/iran-protests-economy-and-rights", 
+ summary:"Reports indicate continued protest activity in Mashhad linked to broader national unrest. Demonstrations are smaller than in Tehran but carry similar enforcement risks.\n\nFurther detail: Security forces typically move quickly to prevent marches from consolidating, leading to short-lived but intense confrontations. Disruption tends to be hyper-localized yet severe while it lasts, including blocked intersections and heavy police presence near markets and civic buildings. High risk reflects the likelihood of rapid escalation and enforcement action rather than protest scale." 
+},
+
+{ 
+ title:"Human Rights Day follow-on protests", 
+ city:"Hong Kong", country:"China (Hong Kong)",
+ continent:"Asia", risk:"medium", 
+ time:"2026-01-21T11:00:00", 
+ source:"https://www.reuters.com/world/asia-pacific/hong-kong-activists-mark-human-rights-cases-2026-01-21/", 
+ summary:"Small, symbolic gatherings linked to ongoing human rights advocacy are expected around court dates and anniversaries.\n\nFurther detail: These actions are typically brief and heavily monitored, with participants facing swift intervention if crowds grow or move off permitted areas. Expect police cordons, ID checks, and limited pedestrian disruption near government buildings or courts. Risk medium due to enforcement sensitivity rather than crowd size." 
+},
+
+{ 
+ title:"Farmers’ protest — winter mobilisation", 
+ city:"New Delhi", 
+ country:"India", 
+ continent:"Asia", 
+ risk:"medium", 
+ time:"2026-01-22T06:00:00", 
+ source:"https://www.reuters.com/world/india/indian-farmers-plan-renewed-protests-new-delhi-2026-01-21/", 
+ summary:"Farmers’ groups have announced renewed mobilisation toward Delhi during the winter session period.\n\nFurther detail: Authorities typically restrict convoy movement toward the capital, establishing barricades on approach highways. Disruption is most likely on arterial roads, freight corridors, and public transport routes feeding central Delhi. Risk medium: while protests are often disciplined, the scale and potential for standoffs at entry points elevate disruption and confrontation risk." 
+},
+
+{ 
+ title:"Solidarity rally for Iran protesters", 
+ city:"Istanbul", 
+ country:"Turkey", 
+ continent:"Asia", 
+ risk:"low", 
+ time:"2026-01-23T16:00:00", 
+ source:"https://www.iranintl.com/en/202601231045", 
+ summary:"Diaspora-led solidarity rally in Istanbul supporting protesters in Iran.\n\nFurther detail: Likely to be a static assembly with speeches and banners in a central public space. Police monitoring expected, with limited disruption beyond localized pedestrian congestion. Low risk unless counter-groups appear or the gathering attempts to march without authorization." 
+},
+
+{ 
+ title:"Cost-of-living protest", 
+ city:"Karachi", 
+ country:"Pakistan", 
+ continent:"Asia", 
+ risk:"medium", 
+ time:"2026-01-24T13:00:00", 
+ source:"https://www.dawn.com/news/1779450", 
+ summary:"Political and civil groups plan demonstrations over inflation and utility pricing.\n\nFurther detail: Protests often occur near press clubs and main intersections, leading to temporary road closures and traffic congestion. Risk medium due to the potential for clashes with police if crowds attempt to block major arteries or extend beyond agreed locations." 
+},
+
+{ 
+ title:"Lunar New Year labour protest", 
+ city:"Seoul", 
+ country:"South Korea", 
+ continent:"Asia", 
+ risk:"low", 
+ time:"2026-01-26T09:00:00", 
+ source:"https://en.yna.co.kr/view/AEN20260125004200315", 
+ summary:"Labour unions plan small-scale actions ahead of the Lunar New Year period, highlighting wage and job-security concerns.\n\nFurther detail: Activities are typically permitted and tightly managed, with minimal disruption beyond the immediate vicinity of rally sites. Low risk overall, with predictable policing and limited crowd movement." 
+},
+
+{ 
+ title:"Palestine solidarity rally", 
+ city:"Jakarta", 
+ country:"Indonesia", 
+ continent:"Asia", 
+ risk:"low", 
+ time:"2026-01-30T12:00:00", 
+ source:"https://www.thejakartapost.com/indonesia/2026/01/29/jakarta-palestine-rally.html", 
+ summary:"Solidarity rally expected in central Jakarta supporting Palestinians.\n\nFurther detail: Past rallies have been peaceful and well-policed, though traffic disruption around the venue is common. Low risk unless attendance exceeds expectations or routes expand unexpectedly." 
+},
+
+{ 
+ title:"Anti-austerity demonstration", 
+ city:"Colombo", 
+ country:"Sri Lanka", 
+ continent:"Asia", 
+ risk:"medium", 
+ time:"2026-01-31T05:30:00", 
+ source:"https://www.reuters.com/world/asia-pacific/sri-lanka-unions-plan-january-protests-over-austerity-2026-01-30/", 
+ summary:"Trade unions plan demonstrations opposing austerity measures and IMF-linked reforms.\n\nFurther detail: Protests often target government buildings and can disrupt commuter routes during peak hours. Risk medium due to potential crowd size and the likelihood of traffic disruption in central Colombo." 
+},
+
 
 { 
  title:"Nationwide anti-regime protests — Tehran focus", 
@@ -10608,6 +10708,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
