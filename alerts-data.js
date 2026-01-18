@@ -17,8 +17,178 @@ window.alertsData =[
 
 
 
- 
 
+
+{ 
+  title:"PTIUK Protest Call — Brussels", 
+  city:"Brussels", 
+  country:"Belgium", 
+  continent:"Europe", 
+  risk:"medium", 
+  time:"2026-02-08T12:00:00", 
+  source:"https://www.facebook.com/PTIUKOfficial/posts/sunday-8-february-2026mark-your-diaries-and-attend-in-full-force-with-families-a/1203504025297390/", 
+  summary:"A publicly advertised protest in Brussels has been called for 8 Feb 2026 by PTI UK-linked organisers. Turnout is intended to be high with family/group mobilisation.\n\nExact route and assembly point details can shift close to the date; expect gathering near prominent civic/political locations and possible marching elements. Policing and traffic management are likely around any central squares or institutions. Monitor organiser updates for time/place confirmation and any counter-presence." 
+},
+
+{ 
+  title:"PTIUK Protest Call — London", 
+  city:"London", 
+  country:"United Kingdom", 
+  continent:"Europe", 
+  risk:"medium", 
+  time:"2026-02-08T12:00:00", 
+  source:"https://www.facebook.com/PTIUKOfficial/posts/sunday-8-february-2026mark-your-diaries-and-attend-in-full-force-with-families-a/1203504025297390/", 
+  summary:"A publicly advertised London protest is planned for 8 Feb 2026 via PTI UK-linked organisers. The call-out suggests coordinated attendance and visibility.\n\nIf centrally located, anticipate short-term congestion near the assembly point and potential movement along key corridors. Police may set conditions around amplification, banners, and route choices. Watch for late changes to timing/location and any counter-demonstration announcements." 
+},
+
+{ 
+  title:"French Rail Network Controllers — Planned Strike Window", 
+  city:"Paris / Nationwide", 
+  country:"France", 
+  continent:"Europe", 
+  risk:"high", 
+  time:"2026-02-15T20:00:00", 
+  source:"https://www.facebook.com/TheConnexion/posts/strikes-and-protests-doctors-rail-staff-and-farmers-are-all-taking-action-in-fra/1838424650443639/", 
+  summary:"A strike window has been reported for French rail network controllers spanning mid-February, with potential nationwide knock-on disruption. Expect significant uncertainty for passenger rail services if action proceeds.\n\nOperational impact can include delayed/cancelled services, reduced frequency, and crowding at major hubs (Paris terminals and regional nodes). Secondary effects often spill into road congestion as commuters switch modes. Even when minimum service levels apply, service predictability can degrade across successive days. If additional unions join, disruption can widen beyond rail into associated transport sectors." 
+},
+
+{  
+  title:"North London Unity March (Anti–Far Right)", 
+  city:"London", 
+  country:"United Kingdom", 
+  continent:"Europe", 
+  risk:"medium", 
+  time:"2026-02-21T12:00:00", 
+  source:"https://standuptoracism.org.uk/stop-the-far-right-in-your-area-events-amp-protests/", 
+  summary:"A North London Unity March is listed for 21 Feb, framed as a mobilisation against far-right activity. Expect a march format with assembly, speeches, and a managed route.\n\nLikely impacts include short-term road closures and stewarded movement through local high streets/transport corridors. Police facilitation typically focuses on separation if counter-groups appear and on keeping routes clear. Risk is elevated to medium if there is known counter-presence or contentious local flashpoints." 
+},
+
+{ 
+  title:"Manchester Counter-Protest (Stop Britain First)", 
+  city:"Manchester", 
+  country:"United Kingdom", 
+  continent:"Europe", 
+  risk:"high", 
+  time:"2026-02-21T12:00:00", 
+  source:"https://standuptoracism.org.uk/stop-the-far-right-in-your-area-events-amp-protests/", 
+  summary:"A Manchester counter-protest is listed to oppose a Britain First mobilisation, raising the likelihood of competing crowds in the same operating area. Where counter-presence is expected, police often deploy layered cordons and route separation.\n\nOperationally, anticipate heightened public-order posture: controlled access zones, restrictions on movement near assembly points, and rapid intervention capacity if groups converge. Transport disruption can be more pronounced than typical marches (temporary closures, public-transport queuing, stop-and-search activity). Risk is higher if online messaging indicates intent to confront, if multiple arrival streams converge at the same time, or if there are ‘flash’ meet-up calls in the hours before start." 
+},
+
+{ 
+ title:"Britain First — Manchester Event (Announced)", 
+  city:"Manchester", country:"United Kingdom", 
+  continent:"Europe", risk:"high", 
+  time:"2026-02-21T12:00:00", 
+  source:"https://www.corpssecurity.co.uk/wp-content/uploads/2026/01/Activism-Trends-in-the-UK-An-Analytical-Assessment-for-2026.pdf", 
+  summary:"An announced Britain First event in Manchester is referenced in a 2026 UK activism assessment, indicating a planned mobilisation date. Such events can attract counter-demonstrations and prompt strong public-order policing.\n\nExpected dynamics include fixed assembly points, marching intentions (or static rally), and elevated risk of confrontation if opposing groups are present nearby. Localised disruption is likely around the city centre: cordoned streets, diverted bus routes, and crowd-control measures around rail stations as attendees arrive. Risk remains high because friction is driven less by the primary crowd size and more by the probability of competing groups and emotionally charged messaging." 
+},
+
+
+
+{ 
+  title:"National School Walkout / Student Protest (reported)", 
+  city:"Multiple (national)", 
+  country:"United States", 
+  continent:"North America", 
+  risk:"medium", 
+  time:"2026-01-20T14:00:00", 
+  source:"https://www.khou.com/article/news/local/national-protest-walkout-hisd/285-2e0a2ea9-ae20-4ec9-acfc-0bd09fd3c6ba", 
+  summary:"A nationally framed student walkout was reported around 20 Jan 2026, with local participation expected in some districts. These actions typically concentrate near school entrances, district offices, or central civic spaces.\n\nImpacts tend to be short and localised: pick-up/drop-off congestion, brief road holds, and increased campus security posture. Risk is generally medium if counter-messaging emerges online or if local law enforcement adopts a strict posture around trespass or road-blocking." 
+},
+
+{ 
+  title:"‘Blackout’ Protest (State Capitol grounds)", 
+  city:"St. Paul", 
+  country:"United States", 
+  continent:"North America", 
+  risk:"medium", 
+  time:"2026-01-23T17:00:00", 
+  source:"https://www.cbsnews.com/minnesota/news/blackout-protest-state-capitol-minnesota/", 
+  summary:"A ‘Blackout’ protest is reported for 23 Jan at the Minnesota State Capitol grounds, indicating a planned rally presence at a high-visibility political site. Expect crowding around entrances, media activity, and enhanced security screening posture.\n\nTraffic disruption is likely in the immediate Capitol complex with temporary lane closures, parking restrictions, and pedestrian overflow. Risk is medium: capitol-site events can escalate if there are competing groups, attempts to enter restricted areas, or if conditions are set around amplified sound and movement." 
+},
+
+
+{ 
+  title:"National Strike / Mobilisation (reported) — Lima focus", 
+  city:"Lima", 
+  country:"Peru", 
+  continent:"South America", 
+  risk:"high", 
+  time:"2026-01-20T12:00:00", 
+  source:"https://www.reuters.com/world/americas/peru-sees-protests-thousands-march-lima-amid-political-crisis-2026-01-20/", 
+  summary:"Mass mobilisation in Lima is reported amid political crisis dynamics, indicating high turnout potential and central-city disruption. Large marches in the capital often concentrate around government buildings, central plazas, and key arterial roads.\n\nExpect widespread transport impacts: short-notice road closures, police cordons, and rerouted public transit. Crowd-management measures can include separation lines, restricted access around ministries/congress, and rapid response units positioned at choke points. Escalation risks increase with prolonged standoffs, attempts to breach perimeters, or if smaller splinter groups break away from stewarded routes. Operational risk is high due to the combination of crowd size, politically charged messaging, and the likelihood of counter-moves by police/security forces." 
+},
+
+{ 
+  title:"National Strike Call (reported) — multi-sector action", 
+  city:"Multiple", 
+  country:"Peru", 
+  continent:"South America", 
+  risk:"high", 
+  time:"2026-01-19T10:00:00", 
+  source:"https://www.reuters.com/world/americas/peruvians-hold-national-strike-demand-president-step-down-2026-01-19/", 
+  summary:"A national strike is reported for 19 Jan with demands linked to top-level political change, signalling broad mobilisation potential beyond a single city. Multi-sector strikes can amplify disruption across transport, commercial activity, and public services.\n\nExpect uneven intensity by region: capital-city marches may drive the main visibility, while regional hubs may see roadblocks, intermittent stoppages, and labour-linked pickets. Security responses often prioritise clearing critical infrastructure corridors and maintaining access to airports/major highways. Risk is high where roadblocks form or where protest routes approach sensitive sites (government compounds, courts, police HQ)." 
+},
+
+
+
+{ 
+  title:"Farmers’ Tractor March / Protest Call (Republic Day period)", 
+  city:"New Delhi (and regional nodes)", 
+  country:"India", 
+  continent:"Asia", 
+  risk:"high", 
+  time:"2026-01-26T06:00:00", 
+  source:"https://www.unitednewsindia.com/farmers-union-kisan-morcha-announces-tractor-march-in-delhi-on-republic-day/india/news/3352323.html", 
+  summary:"A tractor march/protest call around Republic Day is reported, a period when security posture in Delhi is typically heightened. If realised, expect concentrated disruption on approach routes, ring-road corridors, and near symbolic civic areas.\n\nAuthorities commonly apply layered controls: barricades, diversion plans, and restrictions on vehicle convoys entering core zones. Risk is high because tractor mobilisations can involve large, slow-moving convoys, prolonged standoffs at choke points, and rapid scale-up if multiple feeder routes converge. Monitoring should focus on assembly points outside the core, convoy timing, and any last-minute route negotiations or denials." 
+},
+
+{ 
+  title:"Republic Day Farmers’ Protests (reported)", 
+  city:"New Delhi", 
+  country:"India", 
+  continent:"Asia", 
+  risk:"high", 
+  time:"2026-01-26T06:00:00", 
+  source:"https://www.youtube.com/watch?v=E2PnnUbWFyc", 
+  summary:"Republic Day-period farmers’ protest activity is reported with expectations of organised turnout and heightened policing. Expect sensitive routing around ceremonial/security zones and potential for concentrated congestion at barricaded junctions.\n\nEven with negotiated routes, Delhi’s traffic impacts can be severe: slow-moving convoys, temporary closures, and spillover congestion into satellite cities. Risk is high where police deny route access or where parallel groups attempt to reach restricted zones, increasing the chance of standoffs and forceful dispersal." 
+},
+
+{ 
+  title:"All-India General Strike (reported date)", 
+  city:"Multiple", 
+  country:"India", 
+  continent:"Asia", 
+  risk:"high", 
+  time:"2026-02-12T00:01:00", 
+  source:"https://www.unitednewsindia.com/10-central-trade-unions-announce-nationwide-strike-on-feb-12-13/india/news/3352371.html", 
+  summary:"A nationwide strike is reported for 12 Feb, typically implying broad labour disruption and protest actions across major cities. Such strikes can affect transport, public-sector offices, and supply chains.\n\nExpect uneven intensity by sector and city: some locations may see mass rallies near administrative hubs, while others experience mostly service slowdowns and picketing. Risk is high because strike days can create flashpoints at industrial gates, transport depots, and during attempts to keep essential services running." 
+},
+
+
+{ 
+  title:"Australia Day ‘Invasion Day’ Rallies (reported)", 
+  city:"Sydney", 
+  country:"Australia", 
+  continent:"Oceania", 
+  risk:"medium", 
+  time:"2026-01-26T10:00:00", 
+  source:"https://www.ntnews.com.au/news/northern-territory/forecast-for-australia-day-rallies-as-invasion-day-protests-take-place-nationally/news-story/bab10ec95e8360f19f053c06ceef8994", 
+  summary:"Australia Day / ‘Invasion Day’ rallies are reported nationally, with major-city turnouts expected in central areas. These events often include speeches, marches, and cultural elements.\n\nImpacts are usually predictable but noticeable: CBD road holds, temporary diversions, and concentrated pedestrian flows near civic squares and waterfront routes. Risk is medium; escalation is more likely if counter-demonstrations appear or if march routes intersect with tightly controlled event perimeters." 
+},
+
+{ 
+  title:"Australia Day ‘Invasion Day’ Rallies (reported)", 
+  city:"Melbourne", 
+  country:"Australia", 
+  continent:"Oceania", 
+  risk:"medium", 
+  time:"2026-01-26T10:00:00", 
+  source:"https://www.ntnews.com.au/news/northern-territory/forecast-for-australia-day-rallies-as-invasion-day-protests-take-place-nationally/news-story/bab10ec95e8360f19f053c06ceef8994", 
+  summary:"Australia Day / ‘Invasion Day’ rallies are reported nationally, with Melbourne typically a major mobilisation hub. Expect CBD marches and large static gatherings near prominent civic sites.\n\nTransport impacts can include tram/bus diversions, pedestrian overflow, and controlled access near assembly points. Risk remains medium unless there are confirmed counter-events or aggressive policing triggers (route disputes, attempts to enter restricted spaces)." 
+},
+
+ 
 
 { 
  title:"Nationwide anti-austerity protests", 
@@ -10852,6 +11022,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
