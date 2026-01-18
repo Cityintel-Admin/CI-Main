@@ -3844,28 +3844,43 @@ function isTravellerActiveNow(t, now = new Date()){
 
 
 
-function parseDateStart(ymd){
-  if (!ymd) return null;
-  const d = new Date(ymd + 'T00:00:00');
-  return isNaN(d.getTime()) ? null : d;
-}
+function parseYmdLoose(s, endOfDay=false){
+  if (!s) return null;
+  const raw = String(s).trim();
 
-function parseDateEnd(ymd){
-  if (!ymd) return null;
-  // include the whole "to" day
-  const d = new Date(ymd + 'T23:59:59');
-  return isNaN(d.getTime()) ? null : d;
+  // 1) YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const d = new Date(raw + (endOfDay ? 'T23:59:59' : 'T00:00:00'));
+    return isNaN(d) ? null : d;
+  }
+
+  // 2) DD/MM/YYYY (or DD-MM-YYYY)
+  const m = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) {
+    const dd = String(m[1]).padStart(2,'0');
+    const mm = String(m[2]).padStart(2,'0');
+    const yyyy = m[3];
+    const d = new Date(`${yyyy}-${mm}-${dd}` + (endOfDay ? 'T23:59:59' : 'T00:00:00'));
+    return isNaN(d) ? null : d;
+  }
+
+  // 3) ISO / anything Date() can parse
+  const d = new Date(raw);
+  return isNaN(d) ? null : d;
 }
 
 function tripStatus(t, now = new Date()){
-  const start = parseDateStart(t.from);
-  const end   = parseDateEnd(t.to);
+  const start = parseYmdLoose(t.from, false);
+  const end   = parseYmdLoose(t.to, true);
 
+  // If we can't parse dates, do NOT show it (prevents “stuck” travellers)
   if (!start || !end) return 'unknown';
+
   if (now < start) return 'upcoming';
   if (now > end) return 'past';
   return 'active';
 }
+
 
 	
 function refreshPresenceMarkers(){
@@ -3878,6 +3893,7 @@ const SHOW_UPCOMING = false; // set true if you want upcoming trips visible too
   if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
 
   const status = tripStatus(t);
+  if (status === 'unknown') return;
   if (status === 'past') return;                 // ✅ removes old trips
   if (!SHOW_UPCOMING && status === 'upcoming') return; // ✅ only appears when trip starts
 
