@@ -313,8 +313,8 @@ window.alertsData =[
  time:"2026-01-29T11:00:00", 
  source:"https://www.reuters.com/world/americas/brazil-transport-workers-protest-2026-01-29/", 
  summary:"Transport unions plan protests over working conditions and pay.\n\nFurther detail: Demonstrations near depots and transit hubs could cause service delays. Risk medium due to potential knock-on effects for commuters." 
-}
-
+},
+ 
 { 
  title:"Anti-government protests amid economic pressure", 
  city:"Khartoum", 
@@ -389,9 +389,7 @@ window.alertsData =[
  risk:"low", time:"2026-01-28T09:00:00", 
  source:"https://www.graphic.com.gh/news/general-news/ghana-public-sector-workers-protest.html", 
  summary:"Public sector workers plan a peaceful protest over delayed wage adjustments.\n\nFurther detail: Activities are expected to be orderly and limited to designated areas, with minimal security risk. Low risk overall." 
-}
-
-
+},
 
 { 
  title:"Anti-government demonstrations — ongoing unrest", 
@@ -11067,6 +11065,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
