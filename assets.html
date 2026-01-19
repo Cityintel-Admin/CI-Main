@@ -464,7 +464,71 @@
       window.CIAssets = list;
     }
 
-    let assets = loadAssets();
+    // --- Org-aware persistence (shares assets across org members) ---
+    const API_BASE = (window.API_BASE) || 'https://api.cityintelapi.com';
+    let ORG = null;
+
+    function getAuthHeaders(){
+      const me = (window.CIAuth && CIAuth.who && CIAuth.who()) || null;
+      if (!me?.email) throw new Error('Not logged in (missing user.email)');
+      return {
+        'Content-Type': 'application/json',
+        'X-User-Email': me.email,
+        'X-User-Name': me.name || '',
+        'X-User-Id': me.id || ''
+      };
+    }
+
+    async function api(path, opts = {}){
+      const headers = { ...(opts.headers || {}), ...getAuthHeaders() };
+      const res = await fetch(API_BASE + path, { ...opts, headers });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.ok === false) throw new Error(json?.error || `Request failed: ${res.status}`);
+      return json;
+    }
+
+    async function loadAssetsOrgAware(){
+      try{
+        const me = await api('/api/org/me', { method: 'GET' });
+        ORG = me?.org || null;
+        if (!ORG) return loadAssets();
+
+        const row = await api('/api/org/assets', { method: 'GET' });
+        const orgList = Array.isArray(row?.data) ? row.data : [];
+
+        // one-time migration: if org has nothing but this browser has local assets, seed the org
+        const local = loadAssets();
+        if ((!orgList || orgList.length === 0) && Array.isArray(local) && local.length){
+          await api('/api/org/assets', { method: 'PUT', body: JSON.stringify(local) });
+          return local;
+        }
+
+        return orgList;
+      }catch(e){
+        console.warn('Org asset load failed; falling back to local assets.', e);
+        return loadAssets();
+      }
+    }
+
+    function saveAssetsOrgAware(list){
+      // Always keep local cache + window global up to date
+      saveAssets(list);
+      // If in org, also persist server-side (fire-and-forget)
+      if (ORG){
+        api('/api/org/assets', { method: 'PUT', body: JSON.stringify(list) })
+          .catch(e => console.warn('Org asset save failed', e));
+      }
+    }
+
+    let assets = [];
+
+    async function initAssets(){
+      assets = await loadAssetsOrgAware();
+      // Keep local cache in sync so map/test can read it
+      saveAssetsOrgAware(assets);
+      renderTable();
+    }
+
 
     const tbody      = document.getElementById('assetsBody');
     const form       = document.getElementById('assetForm');
@@ -628,7 +692,7 @@ if (!parts.length) {
           assets.push(base);
         }
 
-        saveAssets(assets);
+        saveAssetsOrgAware(assets);
         renderTable();
         clearForm();
       });
@@ -650,14 +714,14 @@ if (!parts.length) {
         if (idx < 0 || !assets[idx]) return;
         if (!confirm(`Delete asset "${assets[idx].name}"?`)) return;
         assets.splice(idx,1);
-        saveAssets(assets);
+        saveAssetsOrgAware(assets);
         renderTable();
         clearForm();
       });
     }
 
     // Initial render
-    renderTable();
+    initAssets();
   })();
   </script>
 </body>
