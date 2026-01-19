@@ -19,7 +19,7 @@ window.alertsData =[
 {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "United States",
+    country: "US",
     continent: "North America",
     risk: "Mid",
     time: "2025-12-22T24:00:00",
@@ -41,7 +41,7 @@ window.alertsData =[
 {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "USA",
+    country: "united states",
     continent: "North America",
     risk: "high",
     time: "2025-01-11T24:00:00",
@@ -11403,6 +11403,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
