@@ -11,7 +11,18 @@ window.alertsData =[
     risk: "Mid",
     time: "2026-01-20T16:30:00",
     source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
-    summary: " "
+    summary: ""
+  }, 
+
+ {
+    title: "anti-imperialist and international antifascist organizations",
+    city: "Spanish Ministry of Foreign Affairs on Plaza del Marqués de Salamanca in Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-20T16:30:00",
+    source: "https://frenteantiimperialista.org/?p=25989",
+    summary: "Anti-imperialist and international antifascist organizations, Has been active in Madrid this month, specifically around the U.S. Embassy area  The area is generally subject to security protocols due to the presence of government and diplomatic buildings. Recent protests in Madrid have targeted the U.S. Embassy regarding actions in Venezuela and U.S. policies in general, as well as the Iranian Embassy in response to human rights issues. Authorities typically establish cordons, manage traffic, and adjust access routes during such events."
   }, 
 
   {
@@ -11301,6 +11312,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
