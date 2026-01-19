@@ -9,14 +9,33 @@ window.alertsData =[
     country: "Scotland",
     continent: "Europe",
     risk: "Mid",
-    time: "2026-01-21T08:30:00",
+    time: "2026-01-20T16:30:00",
     source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
     summary: " "
   }, 
 
+  {
+    title: "Climate Democracy Street Walk Norrmalm",
+    city: "Stockholm",
+    country: "Sweden",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-21T08:30:00",
+    source: "https://klimatkalendern.nu/events/98b6f9a3-475e-424f-bffa-cd448a95e041",
+    summary: " "
+  }, 
 
 
- 
+ {
+    title: "Jewish Voice for Peace",
+    city: "780 Third Avenue, also known as The Gardens at 780 in New York City.",
+    country: "New york",
+    continent: "North America",
+    risk: "Mid",
+    time: "2026-01-23T14:30:00",
+    source: "",
+    summary: "A protest is planned for Friday, January 23, 2026, at 2:30 p.m. in the 780 block of 3rd Avenue specifically at 780 Third Avenue, also known as The Gardens at 780 in New York City."
+  }, 
 
 
 { 
@@ -11282,6 +11301,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
