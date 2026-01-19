@@ -14,6 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
+  {
+    title: "Ghanaian PhD students in the UK",
+    city: "Ghana High Commission, located at 13 Belgrave Square, London,",
+    country: "england",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-20T15:00:00",
+    source: "https://www.eventbrite.co.uk/e/peaceful-demonstration-at-the-ghana-high-commission-in-london-tickets-1979860573271",
+    summary: "Students are protesting a sovereign funding default by the Ghana Scholarship Secretariat. Many report that the government has failed to pay tuition fees and living stipends for nearly two years, leading to mounting debt, eviction notices, and blocked access to university resources."
+  }, 
+
  {
     title: "anti-imperialist and international antifascist organizations",
     city: "Spanish Ministry of Foreign Affairs on Plaza del Marqués de Salamanca in Madrid",
@@ -11312,6 +11323,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
