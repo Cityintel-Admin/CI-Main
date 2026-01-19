@@ -104,40 +104,29 @@ async function loadOrgContext() {
 (function(){
   const norm = s => (s || '').toString().trim().toLowerCase();
 
-  // NOTE: This helper MUST be synchronous (no top-level await), otherwise the
-  // browser will throw: "await is only valid in async functions" and the rest
-  // of the page JS will stop executing.
-  //
-  // Data sources:
-  // - window.CIAssets / window.CITravellers are kept up to date by the
-  //   org-sync logic (or localStorage fallback).
   function exposureFor(city, country){
     const cCity = norm(city);
     const cCountry = norm(country);
 
-    const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
-    const travs  = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
 
-    const assetMatches = assets.filter(a => {
-      const acity = norm(a.city || a.location || a.site || a.name);
-      const acn   = norm(a.country);
-      // match by city if we have it, otherwise fall back to country
-      return (cCity && acity && acity === cCity) || (cCountry && acn && acn === cCountry);
-    });
+// SAVE
+await fetch('/api/org/assets', {
+  method: 'PUT',
+  headers: authHeaders,
+  body: JSON.stringify(updatedassets)
+});
 
-    // Travellers: only show if trip is CURRENTLY active
-    const now = Date.now();
-    const travellerMatches = travs.filter(t => {
-      const tcity = norm(t.city || t.destinationCity);
-      const tcn   = norm(t.country || t.destinationCountry);
-      const from  = Date.parse(t.from || t.start || t.startDate || t.departure || '');
-      const to    = Date.parse(t.to   || t.end   || t.endDate   || t.return   || '');
-      const active = (!isNaN(from) ? now >= from : true) && (!isNaN(to) ? now <= to : true);
-      if (!active) return false;
-      return (cCity && tcity && tcity === cCity) || (cCountry && tcn && tcn === cCountry);
-    });
+    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
 
-    return { assetMatches, travellerMatches };
+// SAVE
+await fetch('/api/org/travellers', {
+  method: 'PUT',
+  headers: authHeaders,
+  body: JSON.stringify(updatedtravellers)
+});
+
+    return { assets, travellers };
   }
 
   window.CIExposure = { exposureFor };
@@ -2643,11 +2632,10 @@ function openDetailPanel(item, relatedList){
   // real exposure based on stored assets/travellers
   let exposure = { assets: [], travellers: [] };
   if (window.CIExposure && CIExposure.exposureFor) {
-    exposure = CIExposure.exposureFor(item.city || item.City,
-                                      item.country || item.Country);
+    exposure = CIExposure.exposureFor(item.city || item.City, item.country || item.Country) || { assets: [], travellers: [] };
   }
-  const nA = exposure.assets.length;
-  const nT = exposure.travellers.length;
+  const nA = (exposure.assets || []).length;
+  const nT = (exposure.travellers || []).length;
 
   if (nA || nT) {
     const assetStr = nA
@@ -2978,14 +2966,9 @@ function renderEventsIntoCard(cardEl, events, feed) {
       // NEW: exposure (assets + travellers) for this city/country
             let exposureHtml = '';
       if (window.CIExposure && CIExposure.exposureFor) {
-        const exp = CIExposure.exposureFor(
-          first.city || first.City,
-          first.country || first.Country
-        ) || { assets: [], travellers: [] };
-
-		  
-        const nA = exp.assets.length;
-        const nT = exp.travellers.length;
+        const exp = CIExposure.exposureFor(first.city || first.City, first.country || first.Country) || { assets: [], travellers: [] };
+        const nA = (exp.assets || []).length;
+        const nT = (exp.travellers || []).length;
         if (nA || nT) {
           exposureHtml = `
             <div class="eg-exposure" style="margin-top:6px;font-size:12px;">
@@ -3541,9 +3524,6 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
     ['england','united kingdom'],
     ['scotland','united kingdom'],
     ['wales','united kingdom'],
-	['usa','united states'],
-	['us','united states'],
-	['united states','united states'],
     ['czech republic','czechia'],
     ['vatican city','holy see']
   ]);
@@ -4271,7 +4251,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
+	
 	
 <!-- auth helpers / admin links -->
 
