@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "solidarity rally with the Kurdish people in Rojava",
+    city: "Place du Luxembourg, 1050 Ixelles, Brussels",
+    country: "Belgium",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-21T10:00:00",
+    source: "",
+    summary: "Past pro-Kurdish demonstrations in Brussels at locations like Place du Luxembourg have, at times, led to clashes with police or counter-protesters, especially when tensions rise with the Turkish community. In such scenarios, Brussels police have previously deployed riot gear, water cannons, and tear gas to restore order."
+  }, 
+
+  {
     title: " National Demonstration for Peace",
     city: "Place du Palais Royal in Paris",
     country: "france",
@@ -11334,6 +11345,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
