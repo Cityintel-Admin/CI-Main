@@ -15,6 +15,28 @@ window.alertsData =[
   }, 
 
   {
+    title: "There is no Ceasefire March for Palestine",
+    city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
+    country: "Dublin",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-24T24:00:00",
+    source: "",
+    summary: "Protesters are demanding immediate sanctions against Israel, the enactment of the Occupied Territories Bill, and an end to the use of Shannon Airport by the U.S. military."
+  }, 
+
+  {
+    title: "Valérie Pécresse, President of the Île-de-France Region.",
+    city: "Scottish Parliament Edinburgh",
+    country: "Scotland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-20T16:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: ""
+  }, 
+
+  {
     title: "solidarity rally with the Kurdish people in Rojava",
     city: "Place du Luxembourg, 1050 Ixelles, Brussels",
     country: "Belgium",
@@ -11345,6 +11367,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
