@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: " National Demonstration for Peace",
+    city: "Place du Palais Royal in Paris",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:00:00",
+    source: "",
+    summary: "Organizers anticipate several hundred participants for the event, which is an authorized rally. For real-time updates regarding traffic or the event itself, follow local news sources or authorities such as Sytadin for traffic updates in Île-de-France"
+  }, 
+
+  {
     title: "Ghanaian PhD students in the UK",
     city: "Ghana High Commission, located at 13 Belgrave Square, London,",
     country: "england",
@@ -11323,6 +11334,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
