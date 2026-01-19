@@ -4,6 +4,131 @@
 <head>
 
   <script src="auth.js"></script>
+<script>
+// ------------------------------------------------------------------
+// Org-aware presence loader + CIExposure helper
+// Fixes: "await is only valid in async functions" and keeps travellers
+// off the map until their trip starts, and removes them after it ends.
+// ------------------------------------------------------------------
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  function getAuthHeaders(){
+    if (!window.CIAuth || !CIAuth.isLoggedIn()) return null;
+    const u = CIAuth.who() || {};
+    if (!u.email) return null;
+    return {
+      'Content-Type': 'application/json',
+      'X-User-Email': u.email,
+      'X-User-Name': u.name || '',
+      'X-User-Id': u.id || ('email:' + String(u.email).toLowerCase())
+    };
+  }
+
+  function loadListFromLS(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    }catch(e){
+      console.warn('CityIntel: failed to load', key, 'from localStorage', e);
+      return fallback;
+    }
+  }
+
+  async function api(path, opts){
+    const headers = getAuthHeaders();
+    if (!headers) throw new Error('Not logged in (missing CIAuth user)');
+    const res = await fetch(API_BASE + path, {
+      ...(opts||{}),
+      headers: { ...headers, ...(opts && opts.headers ? opts.headers : {}) }
+    });
+    const json = await res.json().catch(()=> ({}));
+    if (!res.ok || json?.ok === false) throw new Error(json?.error || ('HTTP '+res.status));
+    return json;
+  }
+
+  async function loadOrgPresence(){
+    const seedAssets     = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+    const seedTravellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+
+    const fallbackAssets = loadListFromLS('ci_assets', seedAssets);
+    const fallbackTrav   = loadListFromLS('ci_travellers', seedTravellers);
+
+    try{
+      const me = await api('/api/org/me', { method:'GET' });
+      window.currentOrg = me?.org || null;
+      if (!me?.org){
+        window.CIAssets = fallbackAssets;
+        window.CITravellers = fallbackTrav;
+        return;
+      }
+
+      const a = await api('/api/org/assets', { method:'GET' });
+      const t = await api('/api/org/travellers', { method:'GET' });
+
+      window.CIAssets = Array.isArray(a.data) ? a.data : fallbackAssets;
+      window.CITravellers = Array.isArray(t.data) ? t.data : fallbackTrav;
+
+      // keep localStorage in sync (useful for older pages still reading LS)
+      try{ localStorage.setItem('ci_assets', JSON.stringify(window.CIAssets||[])); }catch{}
+      try{ localStorage.setItem('ci_travellers', JSON.stringify(window.CITravellers||[])); }catch{}
+
+    }catch(e){
+      console.warn('CityIntel: org presence load failed; using localStorage.', e);
+      window.CIAssets = fallbackAssets;
+      window.CITravellers = fallbackTrav;
+    }
+  }
+
+  // Inclusive trip window: show only when trip has started; remove after end day
+  function travellerIsActive(tr, nowMs){
+    const now = nowMs || Date.now();
+    const fromRaw = tr?.from ?? tr?.start ?? tr?.startDate ?? tr?.start_date ?? tr?.departure ?? tr?.depart ?? tr?.dateFrom;
+    const toRaw   = tr?.to   ?? tr?.end   ?? tr?.endDate   ?? tr?.end_date   ?? tr?.return    ?? tr?.dateTo;
+
+    const from = Date.parse(fromRaw || '');
+    const to   = Date.parse(toRaw   || '');
+
+    if (isNaN(from) && isNaN(to)) return true;
+    if (!isNaN(from) && now < from) return false;
+
+    if (!isNaN(to)) {
+      const endOfDay = to + 24*60*60*1000 - 1;
+      if (now > endOfDay) return false;
+    }
+    return true;
+  }
+
+  function exposureFor(city, country){
+    const cCity = norm(city);
+    const cCountry = norm(country);
+
+    const assets = (Array.isArray(window.CIAssets) ? window.CIAssets : []).filter(a => {
+      const aCity = norm(a.city || a.City);
+      const aCountry = norm(a.country || a.Country);
+      return (cCity && aCity && aCity === cCity) || (cCountry && aCountry && aCountry === cCountry);
+    });
+
+    const travellers = (Array.isArray(window.CITravellers) ? window.CITravellers : []).filter(t => {
+      const tCity = norm(t.city || t.City || t.destinationCity || t.destination_city);
+      const tCountry = norm(t.country || t.Country || t.destinationCountry || t.destination_country);
+      const locMatch = (cCity && tCity && tCity === cCity) || (cCountry && tCountry && tCountry === cCountry);
+      return locMatch && travellerIsActive(t);
+    });
+
+    return { assets, travellers };
+  }
+
+  window.CIExposure = { exposureFor, loadOrgPresence, travellerIsActive };
+
+  // start the load (non-blocking)
+  loadOrgPresence();
+})();
+</script>
+
   <script src="assets-data.js"></script>
   <script src="travellers-data.js"></script>
   <script src="alerts-data.js"></script>
@@ -50,29 +175,6 @@
 
 	
 <script>
-async function loadOrgContext() {
-  const res = await fetch('https://api.cityintelapi.com/api/org/me', {
-    headers: {
-      'X-User-Email': user.email,
-      'X-User-Name': user.name,
-      'X-User-Id': user.id
-    }
-  });
-  const json = await res.json();
-
-  if (!json.org) {
-    // show "Create or Join Organisation" modal
-    showOrgOnboarding();
-    return;
-  }
-
-  window.currentOrg = json.org;
-}
-</script>
-
-	
-
-	<script>
 (function syncPresenceFromStorage(){
   function loadList(key, fallback){
     try {
@@ -96,45 +198,7 @@ async function loadOrgContext() {
 
 
 	
-<script>
-/**
- * CIExposure – helper to find assets & travellers
- * that match an event by city/country.
- */
-(function(){
-  const norm = s => (s || '').toString().trim().toLowerCase();
-
-  function exposureFor(city, country){
-    const cCity = norm(city);
-    const cCountry = norm(country);
-
-    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/assets', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedassets)
-});
-
-    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/travellers', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedtravellers)
-});
-
-    return { assets, travellers };
-  }
-
-  window.CIExposure = { exposureFor };
-})();
-</script>
-
-	
-	<link rel="stylesheet"
+<link rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="anonymous">
