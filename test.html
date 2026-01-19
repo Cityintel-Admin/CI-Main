@@ -1717,6 +1717,11 @@ document.addEventListener('DOMContentLoaded', () => {
   <aside class="global-map-side">
     <div class="live-radius-block">
   <div class="live-radius-label">Incident radius</div>
+
+  <div class="live-map-search" style="margin:10px 0 10px;display:flex;gap:8px;align-items:center;">
+    <input id="mapSearchInput" type="text" placeholder="Search city or country…" style="flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid #2e3238;background:#0f1114;color:#e9edf2;"/>
+    <button id="mapSearchBtn" type="button" style="padding:10px 12px;border-radius:12px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;cursor:pointer">Go</button>
+  </div>
   <div class="live-radius-pills">
     <button type="button" class="radius-pill active" data-radius-km="1">1 km</button>
     <button type="button" class="radius-pill" data-radius-km="5">5 km</button>
@@ -3516,6 +3521,48 @@ refreshSingleFeedCard(card, feed);
   // after all feeds rendered, nudge sidebar once more
   if (typeof window.ciUpdateMapSidebar === 'function') {
     window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+
+  function loadFeedDefs(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch { return []; }
+  }
+  function saveFeedDefs(feeds){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds)); } catch {}
+  }
+  function removeFeedCache(feedId){
+    try{
+      const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+      if (all && typeof all==='object' && feedId in all) { delete all[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all)); }
+    }catch{}
+  }
+  function ciRemoveFeedById(feedId){
+    const feeds = loadFeedDefs();
+    const next = feeds.filter(f => f && f.id !== feedId);
+    saveFeedDefs(next);
+    removeFeedCache(feedId);
+    // Refresh UI + in-memory summary
+    if (typeof loadMiniFeeds === 'function') {
+      const summaries = loadMiniFeeds();
+      window.ciFeedSummaries = summaries;
+      if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar(summaries || {});
+    }
+    if (typeof renderFeeds === 'function') renderFeeds();
+  }
+  window.ciRemoveFeedById = ciRemoveFeedById;
+  // Delegate remove clicks
+  (function wireMapFeedRemove(){
+    const host = document.getElementById('liveMapFeedsList');
+    if (!host) return;
+    host.addEventListener('click', (ev)=>{
+      const t = ev.target;
+      if (t && t.classList && t.classList.contains('live-map-feed-remove')) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id = t.getAttribute('data-feed-id');
+        if (id) ciRemoveFeedById(id);
+      }
+    });
+  })();
+
   }
 	
 }
@@ -3593,7 +3640,21 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
   ]);
   const norm = s => (s || '').toString().trim().toLowerCase();
 
-  function loadMiniFeeds(){
+  // Remove a feed from local storage (does NOT affect other org members)
+function removeFeedDef(feedId){
+  try{
+    const feeds = loadFeeds().filter(f => f.id !== feedId);
+    saveFeeds(feeds);
+    // clear cached events
+    try{
+      const raw = localStorage.getItem(FEED_EVENTS_KEY) || '{}';
+      const obj = JSON.parse(raw);
+      if (obj && obj[feedId]){ delete obj[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(obj)); }
+    }catch(_){}
+  }catch(e){ console.warn('removeFeedDef failed', e); }
+}
+
+function loadMiniFeeds(){
     try {
       const raw = localStorage.getItem('ci_live_feeds_v1');
       const arr = JSON.parse(raw);
@@ -3622,6 +3683,9 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
   });
 
   L.control.zoom({ position: 'topright' }).addTo(map);
+
+  // expose for small utilities (search, debugging)
+  window.ciMap = map;
 	
 	map.getContainer().addEventListener('wheel', (e) => {
   if (e.ctrlKey) {
@@ -4012,7 +4076,7 @@ setTimeout(settleMap, 600);
       row.dataset.feedid = s.id;
 
       row.innerHTML = `
-        <div class="live-map-feed-label">${s.label || 'Feed'}</div>
+        <div class="live-map-feed-label">${s.label || 'Feed'}<span class="live-map-feed-remove" data-feed-id="${s.id}" title="Remove" style="margin-left:8px;opacity:.7;font-weight:900;cursor:pointer">×</span></div>
         <div class="live-map-feed-counts">
           <span><span class="dot dot-high"></span>${s.high || 0}</span>
           <span><span class="dot dot-med"></span>${s.med  || 0}</span>
@@ -4028,6 +4092,21 @@ setTimeout(settleMap, 600);
   };
 window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
 
+  function loadFeedDefs(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch { return []; }
+  }
+  function saveFeedDefs(feeds){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds)); } catch {}
+  }
+  function removeFeedCache(feedId){
+    try{
+      const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+      if (all && typeof all==='object' && feedId in all) { delete all[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all)); }
+    }catch{}
+  }
+  
+
+
   // "+ Add feed" button in sidebar
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('#liveMapAddFeedBtn');
@@ -4038,6 +4117,49 @@ window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
       // fallback to main button
       const mainBtn = document.getElementById('btnAddFeed');
       if (mainBtn) mainBtn.click();
+    }
+  });
+
+  // Map search (city/country)
+  async function geocodeAndFlyTo(q){
+    q = String(q||'').trim();
+    if (!q) return;
+    try{
+      const u = new URL('https://nominatim.openstreetmap.org/search');
+      u.searchParams.set('format','json');
+      u.searchParams.set('q', q);
+      u.searchParams.set('limit','1');
+      const r = await fetch(u.toString(), { headers: { 'Accept':'application/json' } });
+      const j = await r.json();
+      const hit = Array.isArray(j) ? j[0] : null;
+      if (!hit) return alert('Not found: ' + q);
+      const lat = Number(hit.lat), lon = Number(hit.lon);
+      if (!isFinite(lat) || !isFinite(lon)) return;
+      if (window.ciMap) window.ciMap.setView([lat,lon], 6, { animate:true });
+    }catch(e){
+      console.warn('geocode failed', e);
+      alert('Search failed.');
+    }
+  }
+
+  (function wireMapSearch(){
+    const input = document.getElementById('mapSearchInput');
+    const btn = document.getElementById('mapSearchBtn');
+    if (!input || !btn) return;
+    btn.addEventListener('click', () => geocodeAndFlyTo(input.value));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); geocodeAndFlyTo(input.value); } });
+  })();
+
+// Remove feed button in sidebar list
+  document.addEventListener('click', (e) => {
+    const x = e.target.closest('.live-map-feed-remove');
+    if (!x) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = x.getAttribute('data-feed-id');
+    if (!id) return;
+    if (typeof window.ciRemoveFeedById === 'function') {
+      window.ciRemoveFeedById(id);
     }
   });
 
