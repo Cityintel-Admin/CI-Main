@@ -104,29 +104,40 @@ async function loadOrgContext() {
 (function(){
   const norm = s => (s || '').toString().trim().toLowerCase();
 
+  // NOTE: This helper MUST be synchronous (no top-level await), otherwise the
+  // browser will throw: "await is only valid in async functions" and the rest
+  // of the page JS will stop executing.
+  //
+  // Data sources:
+  // - window.CIAssets / window.CITravellers are kept up to date by the
+  //   org-sync logic (or localStorage fallback).
   function exposureFor(city, country){
     const cCity = norm(city);
     const cCountry = norm(country);
 
-    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
+    const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+    const travs  = Array.isArray(window.CITravellers) ? window.CITravellers : [];
 
-// SAVE
-await fetch('/api/org/assets', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedassets)
-});
+    const assetMatches = assets.filter(a => {
+      const acity = norm(a.city || a.location || a.site || a.name);
+      const acn   = norm(a.country);
+      // match by city if we have it, otherwise fall back to country
+      return (cCity && acity && acity === cCity) || (cCountry && acn && acn === cCountry);
+    });
 
-    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
+    // Travellers: only show if trip is CURRENTLY active
+    const now = Date.now();
+    const travellerMatches = travs.filter(t => {
+      const tcity = norm(t.city || t.destinationCity);
+      const tcn   = norm(t.country || t.destinationCountry);
+      const from  = Date.parse(t.from || t.start || t.startDate || t.departure || '');
+      const to    = Date.parse(t.to   || t.end   || t.endDate   || t.return   || '');
+      const active = (!isNaN(from) ? now >= from : true) && (!isNaN(to) ? now <= to : true);
+      if (!active) return false;
+      return (cCity && tcity && tcity === cCity) || (cCountry && tcn && tcn === cCountry);
+    });
 
-// SAVE
-await fetch('/api/org/travellers', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedtravellers)
-});
-
-    return { assets, travellers };
+    return { assetMatches, travellerMatches };
   }
 
   window.CIExposure = { exposureFor };
@@ -3805,120 +3816,30 @@ setTimeout(settleMap, 600);
 
   let windowDays       = 30;
 	
-  function parseDateAny(v){
-  if (!v) return null;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? null : d;
-}
+  function refreshPresenceMarkers(){
+    assetLayer.clearLayers();
+    travLayer.clearLayers();
 
-// Try to find a start/end window on the traveller object using common field names
-function getTripWindow(t){
-  const start =
-    parseDateAny(t.startDate) || parseDateAny(t.start) || parseDateAny(t.from) ||
-    parseDateAny(t.departDate) || parseDateAny(t.departureDate) ||
-    parseDateAny(t.travelStart) || parseDateAny(t.travel_start);
+    (window.CIAssets || []).forEach(a => {
+      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+      L.marker([a.lat, a.lon], { icon: assetIcon })
+        .addTo(assetLayer)
+        .bindPopup(
+          `<b>${a.name || 'Asset'}</b><br>` +
+          `${[a.city, a.country].filter(Boolean).join(', ')}`
+        );
+    });
 
-  const end =
-    parseDateAny(t.endDate) || parseDateAny(t.end) || parseDateAny(t.to) ||
-    parseDateAny(t.returnDate) || parseDateAny(t.return) ||
-    parseDateAny(t.travelEnd) || parseDateAny(t.travel_end);
-
-  return { start, end };
-}
-
-function isTravellerActiveNow(t, now = new Date()){
-  const { start, end } = getTripWindow(t);
-
-  // If no dates exist, treat as “always visible”
-  if (!start && !end) return true;
-
-  // If only start exists: active from start onwards
-  if (start && !end) return now >= start;
-
-  // If only end exists: active until end
-  if (!start && end) return now <= end;
-
-  // Both exist: active within window (inclusive)
-  return now >= start && now <= end;
-}
-
-
-
-function parseYmdLoose(s, endOfDay=false){
-  if (!s) return null;
-  const raw = String(s).trim();
-
-  // 1) YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const d = new Date(raw + (endOfDay ? 'T23:59:59' : 'T00:00:00'));
-    return isNaN(d) ? null : d;
+    (window.CITravellers || []).forEach(t => {
+      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+      L.marker([t.lat, t.lon], { icon: travIcon })
+        .addTo(travLayer)
+        .bindPopup(
+          `<b>${t.name || 'Traveller'}</b><br>` +
+          `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`
+        );
+    });
   }
-
-  // 2) DD/MM/YYYY (or DD-MM-YYYY)
-  const m = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-  if (m) {
-    const dd = String(m[1]).padStart(2,'0');
-    const mm = String(m[2]).padStart(2,'0');
-    const yyyy = m[3];
-    const d = new Date(`${yyyy}-${mm}-${dd}` + (endOfDay ? 'T23:59:59' : 'T00:00:00'));
-    return isNaN(d) ? null : d;
-  }
-
-  // 3) ISO / anything Date() can parse
-  const d = new Date(raw);
-  return isNaN(d) ? null : d;
-}
-
-function tripStatus(t, now = new Date()){
-  const start = parseYmdLoose(t.from, false);
-  const end   = parseYmdLoose(t.to, true);
-
-  // If we can't parse dates, do NOT show it (prevents “stuck” travellers)
-  if (!start || !end) return 'unknown';
-
-  if (now < start) return 'upcoming';
-  if (now > end) return 'past';
-  return 'active';
-}
-
-
-	
-function refreshPresenceMarkers(){
-  assetLayer.clearLayers();
-  travLayer.clearLayers();
-	
-const SHOW_UPCOMING = false; // set true if you want upcoming trips visible too
-
-(window.CITravellers || []).forEach(t => {
-  if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
-
-  const status = tripStatus(t);
-  if (status === 'unknown') return;
-  if (status === 'past') return;                 // ✅ removes old trips
-  if (!SHOW_UPCOMING && status === 'upcoming') return; // ✅ only appears when trip starts
-
-  L.marker([t.lat, t.lon], { icon: travIcon })
-    .addTo(travLayer)
-    .bindPopup(
-      `<b>${t.name || 'Traveller'}</b><br>` +
-      `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}<br>` +
-      `Trip: ${t.from || '?'} → ${t.to || '?'}`
-    );
-});
-
-}
-
-	// Run once on load
-refreshPresenceMarkers();
-
-// Re-check periodically so travellers appear/disappear as dates change
-setInterval(refreshPresenceMarkers, 60 * 1000); // every 1 minute
-
-// Also refresh when user returns to the tab
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) refreshPresenceMarkers();
-});
-
 
 	
   // ---- React when an incident is opened (jump to city) ----
@@ -4344,9 +4265,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-
-
-	
 	
 <!-- auth helpers / admin links -->
 
