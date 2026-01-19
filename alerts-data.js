@@ -14,6 +14,42 @@ window.alertsData =[
     summary: ""
   }, 
 
+
+
+{
+    title: "There is no Ceasefire March for Palestine",
+    city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
+    country: "Russia",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2025-12-22T24:00:00",
+    source: "",
+    summary: "Protesters are demanding immediate sanctions against Israel, the enactment of the Occupied Territories Bill, and an end to the use of Shannon Airport by the U.S. military."
+  }, 
+
+ {
+    title: "There is no Ceasefire March for Palestine",
+    city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
+    country: "Russia",
+    continent: "Europe",
+    risk: "high",
+    time: "2025-11-22T24:00:00",
+    source: "",
+    summary: "Protesters are demanding immediate sanctions against Israel, the enactment of the Occupied Territories Bill, and an end to the use of Shannon Airport by the U.S. military."
+  }, 
+
+{
+    title: "There is no Ceasefire March for Palestine",
+    city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
+    country: "Russia",
+    continent: "Europe",
+    risk: "high",
+    time: "2025-01-11T24:00:00",
+    source: "",
+    summary: "Protesters are demanding immediate sanctions against Israel, the enactment of the Occupied Territories Bill, and an end to the use of Shannon Airport by the U.S. military."
+  }, 
+
+ 
   {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
@@ -11367,6 +11403,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
