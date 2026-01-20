@@ -306,6 +306,11 @@
           <label for="assetAddress">Address (optional)</label>
           <input id="assetAddress" placeholder="e.g. 731 Lexington Ave, Manhattan">
           </div>        
+
+              <div class="field">
+                <label for="assetPostcode">Postcode / ZIP (optional)</label>
+                <input id="assetPostcode" placeholder="e.g. EC3V 9BS">
+              </div>
               
               <div class="field">
                 <label for="assetCity">City</label>
@@ -535,6 +540,7 @@
     const idxInput   = document.getElementById('assetIndex');
     const nameInput  = document.getElementById('assetName');
     const addressInput = document.getElementById('assetAddress');
+    const postcodeInput = document.getElementById('assetPostcode');
     const cityInput  = document.getElementById('assetCity');
     const countryInp = document.getElementById('assetCountry');
     const typeSelect = document.getElementById('assetType');
@@ -610,53 +616,75 @@
       });
     }
 
-    // Auto-locate: use name + city + country to find lat/lon
+    // Auto-locate: build a query from Address/Postcode/City/Country (preferred) or Name/City/Country.
+    // NOTE: Direct Nominatim can be flaky from browsers (rate limits / CORS). We try a CORS-friendly
+    // endpoint first (geocode.maps.co), then fall back to Nominatim.
     if (geoBtn) {
-  geoBtn.addEventListener('click', async () => {
-    const addr = addressInput.value.trim();
-    const pc   = assetPostcode.value.trim();
-    const city = cityInput.value.trim();
-    const ctry = countryInp.value.trim();
-    const name = nameInput.value.trim();
+      geoBtn.addEventListener('click', async (ev) => {
+        ev.preventDefault();
 
-let parts;
-if (addr || pc) {
-  parts = [addr, pc, city, ctry];
-} else {
-  parts = [name, city, ctry];
-}
+        const addr = (addressInput?.value || '').trim();
+        const pc   = (postcodeInput?.value || '').trim();
+        const city = (cityInput?.value || '').trim();
+        const ctry = (countryInp?.value || '').trim();
+        const name = (nameInput?.value || '').trim();
 
-parts = parts.filter(Boolean);
-if (!parts.length) {
-  alert('Please enter at least city and country first.');
-  return;
-}
+        let parts;
+        if (addr || pc) parts = [addr, pc, city, ctry];
+        else parts = [name, city, ctry];
+
+        parts = parts.filter(Boolean);
+        if (parts.length < 2) {
+          alert('Please enter at least City + Country (or a full Address).');
+          return;
+        }
 
         const query = parts.join(', ');
-        try {
-          geoBtn.textContent = 'Locating...';
-          geoBtn.disabled = true;
+        const setBusy = (on) => {
+          geoBtn.disabled = !!on;
+          geoBtn.textContent = on ? 'Locating…' : 'Auto-locate';
+        };
 
-          const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-          const res = await fetch(url, {
-            headers: { 'Accept': 'application/json' }
-          });
-          const data = await res.json();
-          console.log('Geo result for', query, data);
+        async function fetchJson(url) {
+          const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        }
+
+        try {
+          setBusy(true);
+
+          // 1) CORS-friendly wrapper (recommended)
+          let data = null;
+          try {
+            const url1 = `https://geocode.maps.co/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+            data = await fetchJson(url1);
+          } catch (_) {
+            // 2) fallback to Nominatim
+            const url2 = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+            data = await fetchJson(url2);
+          }
 
           if (!Array.isArray(data) || !data.length) {
-            alert('Location not found. Try adjusting the address or country.');
-          } else {
-            const r = data[0];
-            latInput.value = Number(r.lat).toFixed(6);
-            lonInput.value = Number(r.lon).toFixed(6);
+            alert('Location not found. Try a more specific address / city / country.');
+            return;
           }
+
+          const r = data[0];
+          const lat = Number(r.lat);
+          const lon = Number(r.lon);
+          if (!isFinite(lat) || !isFinite(lon)) {
+            alert('Geocoder returned an invalid location. Try again.');
+            return;
+          }
+
+          latInput.value = lat.toFixed(6);
+          lonInput.value = lon.toFixed(6);
         } catch (err) {
-          console.error('Geo lookup failed', err);
-          alert('Geocoding error. Please try again.');
+          console.error('Geocode failed:', err);
+          alert('Geocoding error. Please try again (or enter lat/lon manually).');
         } finally {
-          geoBtn.textContent = 'Auto-locate from name, city & country';
-          geoBtn.disabled = false;
+          setBusy(false);
         }
       });
     }
@@ -671,6 +699,7 @@ if (!parts.length) {
           id: (idx >= 0 && assets[idx] && assets[idx].id) || `asset-${Date.now()}-${Math.random().toString(16).slice(2,6)}`,
           name: nameInput.value.trim(),
           address: addressInput.value.trim(),
+          postcode: (postcodeInput?.value || '').trim(),
           city: cityInput.value.trim(),
           country: countryInp.value.trim(),
           type: typeSelect.value || 'office'
