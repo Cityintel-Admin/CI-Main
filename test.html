@@ -4,131 +4,6 @@
 <head>
 
   <script src="auth.js"></script>
-<script>
-// ------------------------------------------------------------------
-// Org-aware presence loader + CIExposure helper
-// Fixes: "await is only valid in async functions" and keeps travellers
-// off the map until their trip starts, and removes them after it ends.
-// ------------------------------------------------------------------
-(function(){
-  const API_BASE = 'https://api.cityintelapi.com';
-  const norm = s => (s || '').toString().trim().toLowerCase();
-
-  function getAuthHeaders(){
-    if (!window.CIAuth || !CIAuth.isLoggedIn()) return null;
-    const u = CIAuth.who() || {};
-    if (!u.email) return null;
-    return {
-      'Content-Type': 'application/json',
-      'X-User-Email': u.email,
-      'X-User-Name': u.name || '',
-      'X-User-Id': u.id || ('email:' + String(u.email).toLowerCase())
-    };
-  }
-
-  function loadListFromLS(key, fallback){
-    try{
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : fallback;
-    }catch(e){
-      console.warn('CityIntel: failed to load', key, 'from localStorage', e);
-      return fallback;
-    }
-  }
-
-  async function api(path, opts){
-    const headers = getAuthHeaders();
-    if (!headers) throw new Error('Not logged in (missing CIAuth user)');
-    const res = await fetch(API_BASE + path, {
-      ...(opts||{}),
-      headers: { ...headers, ...(opts && opts.headers ? opts.headers : {}) }
-    });
-    const json = await res.json().catch(()=> ({}));
-    if (!res.ok || json?.ok === false) throw new Error(json?.error || ('HTTP '+res.status));
-    return json;
-  }
-
-  async function loadOrgPresence(){
-    const seedAssets     = Array.isArray(window.CIAssets) ? window.CIAssets : [];
-    const seedTravellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
-
-    const fallbackAssets = loadListFromLS('ci_assets', seedAssets);
-    const fallbackTrav   = loadListFromLS('ci_travellers', seedTravellers);
-
-    try{
-      const me = await api('/api/org/me', { method:'GET' });
-      window.currentOrg = me?.org || null;
-      if (!me?.org){
-        window.CIAssets = fallbackAssets;
-        window.CITravellers = fallbackTrav;
-        return;
-      }
-
-      const a = await api('/api/org/assets', { method:'GET' });
-      const t = await api('/api/org/travellers', { method:'GET' });
-
-      window.CIAssets = Array.isArray(a.data) ? a.data : fallbackAssets;
-      window.CITravellers = Array.isArray(t.data) ? t.data : fallbackTrav;
-
-      // keep localStorage in sync (useful for older pages still reading LS)
-      try{ localStorage.setItem('ci_assets', JSON.stringify(window.CIAssets||[])); }catch{}
-      try{ localStorage.setItem('ci_travellers', JSON.stringify(window.CITravellers||[])); }catch{}
-
-    }catch(e){
-      console.warn('CityIntel: org presence load failed; using localStorage.', e);
-      window.CIAssets = fallbackAssets;
-      window.CITravellers = fallbackTrav;
-    }
-  }
-
-  // Inclusive trip window: show only when trip has started; remove after end day
-  function travellerIsActive(tr, nowMs){
-    const now = nowMs || Date.now();
-    const fromRaw = tr?.from ?? tr?.start ?? tr?.startDate ?? tr?.start_date ?? tr?.departure ?? tr?.depart ?? tr?.dateFrom;
-    const toRaw   = tr?.to   ?? tr?.end   ?? tr?.endDate   ?? tr?.end_date   ?? tr?.return    ?? tr?.dateTo;
-
-    const from = Date.parse(fromRaw || '');
-    const to   = Date.parse(toRaw   || '');
-
-    if (isNaN(from) && isNaN(to)) return true;
-    if (!isNaN(from) && now < from) return false;
-
-    if (!isNaN(to)) {
-      const endOfDay = to + 24*60*60*1000 - 1;
-      if (now > endOfDay) return false;
-    }
-    return true;
-  }
-
-  function exposureFor(city, country){
-    const cCity = norm(city);
-    const cCountry = norm(country);
-
-    const assets = (Array.isArray(window.CIAssets) ? window.CIAssets : []).filter(a => {
-      const aCity = norm(a.city || a.City);
-      const aCountry = norm(a.country || a.Country);
-      return (cCity && aCity && aCity === cCity) || (cCountry && aCountry && aCountry === cCountry);
-    });
-
-    const travellers = (Array.isArray(window.CITravellers) ? window.CITravellers : []).filter(t => {
-      const tCity = norm(t.city || t.City || t.destinationCity || t.destination_city);
-      const tCountry = norm(t.country || t.Country || t.destinationCountry || t.destination_country);
-      const locMatch = (cCity && tCity && tCity === cCity) || (cCountry && tCountry && tCountry === cCountry);
-      return locMatch && travellerIsActive(t);
-    });
-
-    return { assets, travellers };
-  }
-
-  window.CIExposure = { exposureFor, loadOrgPresence, travellerIsActive };
-
-  // start the load (non-blocking)
-  loadOrgPresence();
-})();
-</script>
-
   <script src="assets-data.js"></script>
   <script src="travellers-data.js"></script>
   <script src="alerts-data.js"></script>
@@ -175,6 +50,29 @@
 
 	
 <script>
+async function loadOrgContext() {
+  const res = await fetch('https://api.cityintelapi.com/api/org/me', {
+    headers: {
+      'X-User-Email': user.email,
+      'X-User-Name': user.name,
+      'X-User-Id': user.id
+    }
+  });
+  const json = await res.json();
+
+  if (!json.org) {
+    // show "Create or Join Organisation" modal
+    showOrgOnboarding();
+    return;
+  }
+
+  window.currentOrg = json.org;
+}
+</script>
+
+	
+
+	<script>
 (function syncPresenceFromStorage(){
   function loadList(key, fallback){
     try {
@@ -198,7 +96,45 @@
 
 
 	
-<link rel="stylesheet"
+<script>
+/**
+ * CIExposure – helper to find assets & travellers
+ * that match an event by city/country.
+ */
+(function(){
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  function exposureFor(city, country){
+    const cCity = norm(city);
+    const cCountry = norm(country);
+
+    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
+
+// SAVE
+await fetch('/api/org/assets', {
+  method: 'PUT',
+  headers: authHeaders,
+  body: JSON.stringify(updatedassets)
+});
+
+    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
+
+// SAVE
+await fetch('/api/org/travellers', {
+  method: 'PUT',
+  headers: authHeaders,
+  body: JSON.stringify(updatedtravellers)
+});
+
+    return { assets, travellers };
+  }
+
+  window.CIExposure = { exposureFor };
+})();
+</script>
+
+	
+	<link rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="anonymous">
@@ -1193,6 +1129,14 @@
 }
 	  
 	  
+
+
+  .live-map-feed-row{display:flex;gap:10px;align-items:center;justify-content:flex-start;}
+  .live-map-feed-actions{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+  .live-map-feed-main{display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-width:0}
+  .live-map-feed-btn-danger{background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.35);color:#ff5a5f}
+  .live-map-feed-btn-danger:hover{filter:brightness(1.1)}
+
 .live-map-feed-btn,
 .gm-feed-pill{
   cursor: pointer;
@@ -1717,11 +1661,6 @@ document.addEventListener('DOMContentLoaded', () => {
   <aside class="global-map-side">
     <div class="live-radius-block">
   <div class="live-radius-label">Incident radius</div>
-
-  <div class="live-map-search" style="margin:10px 0 10px;display:flex;gap:8px;align-items:center;">
-    <input id="mapSearchInput" type="text" placeholder="Search city or country…" style="flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid #2e3238;background:#0f1114;color:#e9edf2;"/>
-    <button id="mapSearchBtn" type="button" style="padding:10px 12px;border-radius:12px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;cursor:pointer">Go</button>
-  </div>
   <div class="live-radius-pills">
     <button type="button" class="radius-pill active" data-radius-km="1">1 km</button>
     <button type="button" class="radius-pill" data-radius-km="5">5 km</button>
@@ -2124,6 +2063,59 @@ function loadFeeds(){
 function saveFeeds(feeds){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
 }
+
+  function removeFeedById(feedId){
+    if (!feedId) return;
+    // Remove from feeds list
+    const feeds = loadFeeds().filter(f => f && f.id !== feedId);
+    saveFeeds(feeds);
+
+    // Remove cached events/archive for that feed (if present)
+    try{
+      const ev = loadFeedEvents();
+      if (ev && typeof ev === 'object') { delete ev[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(ev)); }
+    }catch(_){}
+    try{
+      const ar = loadFeedArchive();
+      if (ar && typeof ar === 'object') { delete ar[feedId]; localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(ar)); }
+    }catch(_){}
+  }
+
+  // Sidebar feed buttons (open/remove)
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.live-map-feed-btn');
+    if (!btn) return;
+
+    const row = btn.closest('.live-map-feed-row');
+    if (!row) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const feedId = row.dataset.feedid;
+    const label  = row.dataset.label || '';
+    const action = btn.getAttribute('data-action') || 'open';
+
+    if (action === 'remove'){
+      if (!confirm(`Remove feed "${label || feedId}"?`)) return;
+      removeFeedById(feedId);
+      // Re-render feeds (cards + sidebar + overlays)
+      if (typeof renderFeeds === 'function') {
+        try { await renderFeeds(); } catch(err){ console.warn('renderFeeds after remove failed', err); }
+      } else {
+        // fallback: just remove row element
+        row.remove();
+      }
+      return;
+    }
+
+    // open
+    if (typeof openFeedAlerts === 'function'){
+      try { openFeedAlerts(feedId, label); } catch(err){ console.warn('openFeedAlerts failed', err); }
+    }
+  }, {capture:true});
+
+
 
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
@@ -3521,67 +3513,6 @@ refreshSingleFeedCard(card, feed);
   // after all feeds rendered, nudge sidebar once more
   if (typeof window.ciUpdateMapSidebar === 'function') {
     window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
-
-  function loadFeedDefs(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch { return []; }
-  }
-  function saveFeedDefs(feeds){
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds)); } catch {}
-  }
-  function removeFeedCache(feedId){
-    try{
-      const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
-      if (all && typeof all==='object' && feedId in all) { delete all[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all)); }
-    }catch{}
-  }
-  function ciRemoveFeedById(feedId){
-    const feeds = loadFeedDefs();
-    const next = feeds.filter(f => f && f.id !== feedId);
-    saveFeedDefs(next);
-    removeFeedCache(feedId);
-    // Refresh UI + in-memory summary
-    if (typeof loadMiniFeeds === 'function') {
-      const summaries = loadMiniFeeds();
-      window.ciFeedSummaries = summaries;
-      if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar(summaries || {});
-    }
-    if (typeof renderFeeds === 'function') renderFeeds();
-  }
-  window.ciRemoveFeedById = ciRemoveFeedById;
-  // Delegate remove clicks (remove feed WITHOUT opening it)
-  (function wireMapFeedRemove(){
-    const host = document.getElementById('liveMapFeedsList');
-    if (!host) return;
-
-    host.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.live-map-feed-remove');
-      if (!btn) return;
-
-      // Do not trigger any parent click handlers
-      e.preventDefault();
-      e.stopPropagation();
-
-      const id = btn.getAttribute('data-id');
-      if (!id) return;
-
-      try {
-        // Prefer the shared remover if present, else fallback
-        if (typeof window.ciRemoveFeedById === 'function') {
-          await window.ciRemoveFeedById(id);
-        } else if (typeof removeFeedDef === 'function') {
-          removeFeedDef(id);
-        }
-
-        // Re-render any feed UI that exists on the page
-        if (typeof renderMiniFeeds === 'function') renderMiniFeeds();
-        if (typeof renderFeeds === 'function') renderFeeds();
-        if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar();
-      } catch (err) {
-        console.warn('feed remove failed', err);
-      }
-    });
-  })();;
-
   }
 	
 }
@@ -3659,21 +3590,7 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
   ]);
   const norm = s => (s || '').toString().trim().toLowerCase();
 
-  // Remove a feed from local storage (does NOT affect other org members)
-function removeFeedDef(feedId){
-  try{
-    const feeds = loadFeeds().filter(f => f.id !== feedId);
-    saveFeeds(feeds);
-    // clear cached events
-    try{
-      const raw = localStorage.getItem(FEED_EVENTS_KEY) || '{}';
-      const obj = JSON.parse(raw);
-      if (obj && obj[feedId]){ delete obj[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(obj)); }
-    }catch(_){}
-  }catch(e){ console.warn('removeFeedDef failed', e); }
-}
-
-function loadMiniFeeds(){
+  function loadMiniFeeds(){
     try {
       const raw = localStorage.getItem('ci_live_feeds_v1');
       const arr = JSON.parse(raw);
@@ -3702,9 +3619,6 @@ function loadMiniFeeds(){
   });
 
   L.control.zoom({ position: 'topright' }).addTo(map);
-
-  // expose for small utilities (search, debugging)
-  window.ciMap = map;
 	
 	map.getContainer().addEventListener('wheel', (e) => {
   if (e.ctrlKey) {
@@ -4088,20 +4002,28 @@ setTimeout(settleMap, 600);
     summaries.sort((a,b) => (b.total||0) - (a.total||0));
 
     summaries.forEach(s => {
-      const row = document.createElement('div');
+      const row = document.createElement('button');
 	  row.type = 'button';
 	  row.className = 'live-map-feed-row';
 
       row.dataset.feedid = s.id;
 
+      row.dataset.label = (s.label || 'Feed');
       row.innerHTML = `
-        <div class="live-map-feed-row__left">
-          <span class="live-map-feed-label">${s.label || s.id}</span>
-          <span class="live-map-feed-meta">${s.total || 0} alerts</span>
+        <div class="live-map-feed-actions">
+          <button class="live-map-feed-btn" data-action="open" title="Open feed">▶</button>
+          <button class="live-map-feed-btn live-map-feed-btn-danger" data-action="remove" title="Remove feed">×</button>
         </div>
-        <div class="live-map-feed-row__actions">
-          <button type="button" class="live-map-feed-open" title="Open" data-feed-id="${s.id}">▸</button>
-          <button type="button" class="live-map-feed-remove" title="Remove" data-feed-id="${s.id}">×</button>
+        <div class="live-map-feed-main">
+          <div class="live-map-feed-label">${s.label || 'Feed'}</div>
+          <div class="live-map-feed-counts">
+            <span><span class="dot dot-high"></span>${s.high || 0}</span>
+            <span><span class="dot dot-med"></span>${s.med  || 0}</span>
+            <span><span class="dot dot-low"></span>${s.low  || 0}</span>
+            <span style="margin-left:auto;opacity:.75;">
+              ${s.total || 0} alerts
+            </span>
+          </div>
         </div>
       `;
 
@@ -4109,21 +4031,6 @@ setTimeout(settleMap, 600);
     });
   };
 window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
-
-  function loadFeedDefs(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch { return []; }
-  }
-  function saveFeedDefs(feeds){
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds)); } catch {}
-  }
-  function removeFeedCache(feedId){
-    try{
-      const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
-      if (all && typeof all==='object' && feedId in all) { delete all[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all)); }
-    }catch{}
-  }
-  
-
 
   // "+ Add feed" button in sidebar
   document.addEventListener('click', (e) => {
@@ -4135,50 +4042,6 @@ window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
       // fallback to main button
       const mainBtn = document.getElementById('btnAddFeed');
       if (mainBtn) mainBtn.click();
-    }
-  });
-
-  // Map search (city/country)
-  async function geocodeAndFlyTo(q){
-    q = String(q||'').trim();
-    if (!q) return;
-    try{
-      const u = new URL('https://nominatim.openstreetmap.org/search');
-      u.searchParams.set('format','json');
-      u.searchParams.set('q', q);
-      u.searchParams.set('limit','1');
-      const r = await fetch(u.toString(), { headers: { 'Accept':'application/json' } });
-      const j = await r.json();
-      const hit = Array.isArray(j) ? j[0] : null;
-      if (!hit) return alert('Not found: ' + q);
-      const lat = Number(hit.lat), lon = Number(hit.lon);
-      if (!isFinite(lat) || !isFinite(lon)) return;
-      if (window.ciMap) window.ciMap.setView([lat,lon], 6, { animate:true });
-    }catch(e){
-      console.warn('geocode failed', e);
-      alert('Search failed.');
-    }
-  }
-
-  (function wireMapSearch(){
-    const input = document.getElementById('mapSearchInput');
-    const btn = document.getElementById('mapSearchBtn');
-    if (!input || !btn) return;
-    btn.addEventListener('click', () => geocodeAndFlyTo(input.value));
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); geocodeAndFlyTo(input.value); } });
-  })();
-
-// Remove feed button in sidebar list
-  document.addEventListener('click', (e) => {
-    const x = e.target.closest('.live-map-feed-remove');
-    if (!x) return;
-    e.preventDefault();
-    // Stop other document-level click handlers (open feed) from firing.
-    e.stopImmediatePropagation();
-    const id = x.getAttribute('data-feed-id');
-    if (!id) return;
-    if (typeof window.ciRemoveFeedById === 'function') {
-      window.ciRemoveFeedById(id);
     }
   });
 
@@ -4352,31 +4215,22 @@ function getFeedEvents(feedId){
   backBtn.addEventListener('click', showFeeds);
 
   document.addEventListener('click', (e) => {
-  const t = e.target;
+    const row = e.target.closest('.live-map-feed-row');
+    const btn = e.target.closest('.live-map-feed-btn');
+    if (!row && !btn) return;
 
-  // Remove feed
-  const rm = t.closest('.live-map-feed-remove');
-  if (rm) {
-    e.preventDefault();
-    e.stopPropagation();
-    const id = rm.dataset.feedId;
-    if (id && window.ciRemoveFeedById) window.ciRemoveFeedById(id);
-    return;
-  }
+    const feedId = (row && row.dataset.feedid) || (btn && btn.dataset.feedid);
+    if (!feedId) return;
 
-  // Open feed (explicit button)
-  const op = t.closest('.live-map-feed-open');
-  if (op) {
-    e.preventDefault();
-    e.stopPropagation();
-    const id = op.dataset.feedId;
-    if (!id) return;
-    const sum = (window.ciFeedSummaries || {})[id];
-    const label = sum?.label || id;
-    if (typeof openFeedAlerts === 'function') openFeedAlerts(id, label);
-    return;
-  }
+    let label = '';
+    if (row){
+      const l = row.querySelector('.live-map-feed-label');
+      label = l ? l.textContent.trim() : '';
+    } else {
+      label = btn.textContent.trim();
+    }
 
+    openFeedAlerts(feedId, label);
   });
 
   document.addEventListener('keydown', (e) => {
