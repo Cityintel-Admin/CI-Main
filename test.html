@@ -2065,21 +2065,49 @@ function saveFeeds(feeds){
 }
 
   function removeFeedById(feedId){
-    if (!feedId) return;
-    // Remove from feeds list
-    const feeds = loadFeeds().filter(f => f && f.id !== feedId);
-    saveFeeds(feeds);
+  if (!feedId) return;
 
-    // Remove cached events/archive for that feed (if present)
-    try{
-      const ev = loadFeedEvents();
-      if (ev && typeof ev === 'object') { delete ev[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(ev)); }
-    }catch(_){}
-    try{
-      const ar = loadFeedArchive();
-      if (ar && typeof ar === 'object') { delete ar[feedId]; localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(ar)); }
-    }catch(_){}
-  }
+  // 1) Remove from feeds list (persistent)
+  const feeds = loadFeeds().filter(f => f && f.id !== feedId);
+  saveFeeds(feeds);
+
+  // 2) Remove from in-memory sidebar summaries (THIS is why it only disappears after refresh)
+  try {
+    if (window.ciFeedSummaries && window.ciFeedSummaries[feedId]) {
+      delete window.ciFeedSummaries[feedId];
+    }
+  } catch(_) {}
+
+  // 3) Remove cached events map (per-feed)
+  try {
+    const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+    delete all[feedId];
+    localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all));
+  } catch(_) {}
+
+  // 4) Remove archive map (per-feed)
+  try {
+    const allA = JSON.parse(localStorage.getItem(FEED_ARCHIVE_KEY) || '{}');
+    delete allA[feedId];
+    localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(allA));
+  } catch(_) {}
+
+  // 5) If user currently has that feed open in the map-alerts panel, close it
+  try {
+    if (typeof openFeedId !== 'undefined' && openFeedId === feedId) {
+      openFeedId = null;
+      if (typeof showFeeds === 'function') showFeeds();
+    }
+  } catch(_) {}
+
+  // 6) Re-render map sidebar immediately
+  try {
+    if (typeof window.ciUpdateMapSidebar === 'function') {
+      window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+    }
+  } catch(_) {}
+}
+
 
   // Sidebar feed buttons (open/remove)
   document.addEventListener('click', async (e) => {
@@ -2097,17 +2125,21 @@ function saveFeeds(feeds){
     const action = btn.getAttribute('data-action') || 'open';
 
     if (action === 'remove'){
-      if (!confirm(`Remove feed "${label || feedId}"?`)) return;
-      removeFeedById(feedId);
-      // Re-render feeds (cards + sidebar + overlays)
-      if (typeof renderFeeds === 'function') {
-        try { await renderFeeds(); } catch(err){ console.warn('renderFeeds after remove failed', err); }
-      } else {
-        // fallback: just remove row element
-        row.remove();
-      }
-      return;
-    }
+  if (!confirm(`Remove feed "${label || feedId}"?`)) return;
+
+  // remove visually first (instant feedback)
+  row.remove();
+
+  // then remove from storage + caches + sidebar summaries
+  removeFeedById(feedId);
+
+  // optional: if you want the big feed cards area to also update immediately:
+  if (typeof renderFeeds === 'function') {
+    try { renderFeeds(); } catch(err){ console.warn('renderFeeds after remove failed', err); }
+  }
+  return;
+}
+
 
     // open
     if (typeof openFeedAlerts === 'function'){
