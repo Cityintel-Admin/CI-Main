@@ -4,6 +4,169 @@
 <head>
 
   <script src="auth.js"></script>
+<script>
+// ------------------------------------------------------------------
+// Org-aware presence loader + CIExposure helper
+// Fixes: "await is only valid in async functions" and keeps travellers
+// off the map until their trip starts, and removes them after it ends.
+// ------------------------------------------------------------------
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  function getAuthHeaders(){
+    if (!window.CIAuth || !CIAuth.isLoggedIn()) return null;
+    const u = CIAuth.who() || {};
+    if (!u.email) return null;
+    return {
+      'Content-Type': 'application/json',
+      'X-User-Email': u.email,
+      'X-User-Name': u.name || '',
+      'X-User-Id': u.id || ('email:' + String(u.email).toLowerCase())
+    };
+  }
+
+  function loadListFromLS(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    }catch(e){
+      console.warn('CityIntel: failed to load', key, 'from localStorage', e);
+      return fallback;
+    }
+  }
+
+  async function api(path, opts){
+    const headers = getAuthHeaders();
+    if (!headers) throw new Error('Not logged in (missing CIAuth user)');
+    const res = await fetch(API_BASE + path, {
+      ...(opts||{}),
+      headers: { ...headers, ...(opts && opts.headers ? opts.headers : {}) }
+    });
+    const json = await res.json().catch(()=> ({}));
+    if (!res.ok || json?.ok === false) throw new Error(json?.error || ('HTTP '+res.status));
+    return json;
+  }
+
+  async function loadOrgPresence(){
+    const seedAssets     = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+    const seedTravellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+
+    const fallbackAssets = loadListFromLS('ci_assets', seedAssets);
+    const fallbackTrav   = loadListFromLS('ci_travellers', seedTravellers);
+
+    try{
+      const me = await api('/api/org/me', { method:'GET' });
+      window.currentOrg = me?.org || null;
+      if (!me?.org){
+        window.CIAssets = fallbackAssets;
+        window.CITravellers = fallbackTrav;
+        return;
+      }
+
+      const a = await api('/api/org/assets', { method:'GET' });
+      const t = await api('/api/org/travellers', { method:'GET' });
+
+      window.CIAssets = Array.isArray(a.data) ? a.data : fallbackAssets;
+      window.CITravellers = Array.isArray(t.data) ? t.data : fallbackTrav;
+
+      // keep localStorage in sync (useful for older pages still reading LS)
+      try{ localStorage.setItem('ci_assets', JSON.stringify(window.CIAssets||[])); }catch{}
+      try{ localStorage.setItem('ci_travellers', JSON.stringify(window.CITravellers||[])); }catch{}
+
+    }catch(e){
+      console.warn('CityIntel: org presence load failed; using localStorage.', e);
+      window.CIAssets = fallbackAssets;
+      window.CITravellers = fallbackTrav;
+    }
+  }
+
+  // Inclusive trip window: show only when trip has started; remove after end day
+  function travellerIsActive(tr, nowMs){
+    const now = nowMs || Date.now();
+    const fromRaw = tr?.from ?? tr?.start ?? tr?.startDate ?? tr?.start_date ?? tr?.departure ?? tr?.depart ?? tr?.dateFrom;
+    const toRaw   = tr?.to   ?? tr?.end   ?? tr?.endDate   ?? tr?.end_date   ?? tr?.return    ?? tr?.dateTo;
+
+    const from = Date.parse(fromRaw || '');
+    const to   = Date.parse(toRaw   || '');
+
+    if (isNaN(from) && isNaN(to)) return true;
+    if (!isNaN(from) && now < from) return false;
+
+    if (!isNaN(to)) {
+      const endOfDay = to + 24*60*60*1000 - 1;
+      if (now > endOfDay) return false;
+    }
+    return true;
+  }
+
+  function exposureFor(ev, radiusKm){
+    const rKm = Number(radiusKm || 0) || null;
+
+    const assetsAll = getAssets();
+    const travAll = getTravellers();
+
+    // Only travellers active today (inclusive)
+    const today = new Date();
+    const isActiveTrip = (t)=>{
+      const from = t.from ? new Date(t.from) : null;
+      const to   = t.to   ? new Date(t.to)   : null;
+      if (from && isNaN(from)) return false;
+      if (to && isNaN(to)) return false;
+      if (from && today < from) return false;
+      if (to && today > to) return false;
+      return true;
+    };
+
+    const hasCenter = Number.isFinite(Number(ev?.lat)) && Number.isFinite(Number(ev?.lon));
+
+    if (hasCenter && rKm){
+      const cLat = Number(ev.lat), cLon = Number(ev.lon);
+
+      const assets = assetsAll.filter(a=>{
+        const lat = Number(a.lat), lon = Number(a.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+        return haversineKm(cLat,cLon,lat,lon) <= rKm;
+      });
+
+      const travellers = travAll.filter(t=>{
+        if (!isActiveTrip(t)) return false;
+        const lat = Number(t.lat), lon = Number(t.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+        return haversineKm(cLat,cLon,lat,lon) <= rKm;
+      });
+
+      return { assets, travellers };
+    }
+
+    // Fallback: city/country match (string based)
+    const city = normCity(ev?.city || ev?.location || ev?.place);
+    const country = normCountry(ev?.country);
+
+    const assets = assetsAll.filter(a =>
+      normCity(a.city) === city &&
+      (!country || normCountry(a.country) === country)
+    );
+
+    const travellers = travAll.filter(t =>
+      isActiveTrip(t) &&
+      normCity(t.city) === city &&
+      (!country || normCountry(t.country) === country)
+    );
+
+    return { assets, travellers };
+  };
+  }
+
+  window.CIExposure = { exposureFor, loadOrgPresence, travellerIsActive };
+
+  // start the load (non-blocking)
+  loadOrgPresence();
+})();
+</script>
+
   <script src="assets-data.js"></script>
   <script src="travellers-data.js"></script>
   <script src="alerts-data.js"></script>
@@ -50,29 +213,6 @@
 
 	
 <script>
-async function loadOrgContext() {
-  const res = await fetch('https://api.cityintelapi.com/api/org/me', {
-    headers: {
-      'X-User-Email': user.email,
-      'X-User-Name': user.name,
-      'X-User-Id': user.id
-    }
-  });
-  const json = await res.json();
-
-  if (!json.org) {
-    // show "Create or Join Organisation" modal
-    showOrgOnboarding();
-    return;
-  }
-
-  window.currentOrg = json.org;
-}
-</script>
-
-	
-
-	<script>
 (function syncPresenceFromStorage(){
   function loadList(key, fallback){
     try {
@@ -96,45 +236,7 @@ async function loadOrgContext() {
 
 
 	
-<script>
-/**
- * CIExposure – helper to find assets & travellers
- * that match an event by city/country.
- */
-(function(){
-  const norm = s => (s || '').toString().trim().toLowerCase();
-
-  function exposureFor(city, country){
-    const cCity = norm(city);
-    const cCountry = norm(country);
-
-    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/assets', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedassets)
-});
-
-    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/travellers', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedtravellers)
-});
-
-    return { assets, travellers };
-  }
-
-  window.CIExposure = { exposureFor };
-})();
-</script>
-
-	
-	<link rel="stylesheet"
+<link rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="anonymous">
@@ -1129,14 +1231,6 @@ await fetch('/api/org/travellers', {
 }
 	  
 	  
-
-
-  .live-map-feed-row{display:flex;gap:10px;align-items:center;justify-content:flex-start;}
-  .live-map-feed-actions{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
-  .live-map-feed-main{display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-width:0}
-  .live-map-feed-btn-danger{background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.35);color:#ff5a5f}
-  .live-map-feed-btn-danger:hover{filter:brightness(1.1)}
-
 .live-map-feed-btn,
 .gm-feed-pill{
   cursor: pointer;
@@ -1542,7 +1636,19 @@ await fetch('/api/org/travellers', {
 
 
 	
-  </style>
+  
+  /* Feed row actions */
+  .live-map-feed-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .live-map-feed-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .live-map-feed-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .live-map-feed-actions{display:flex;gap:6px;flex-shrink:0}
+  .feed-act{width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.12);
+            background:rgba(255,255,255,.04);color:#e9edf2;cursor:pointer;display:grid;place-items:center}
+  .feed-act:hover{background:rgba(255,255,255,.07)}
+  .feed-act.danger{border-color:rgba(255,90,95,.35);background:rgba(255,90,95,.12);color:#ffb4b6}
+  .feed-act.danger:hover{background:rgba(255,90,95,.18)}
+
+</style>
 </head>
 
 
@@ -2063,91 +2169,6 @@ function loadFeeds(){
 function saveFeeds(feeds){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
 }
-
-  function removeFeedById(feedId){
-  if (!feedId) return;
-
-  // 1) Remove from feeds list (persistent)
-  const feeds = loadFeeds().filter(f => f && f.id !== feedId);
-  saveFeeds(feeds);
-
-  // 2) Remove from in-memory sidebar summaries (THIS is why it only disappears after refresh)
-  try {
-    if (window.ciFeedSummaries && window.ciFeedSummaries[feedId]) {
-      delete window.ciFeedSummaries[feedId];
-    }
-  } catch(_) {}
-
-  // 3) Remove cached events map (per-feed)
-  try {
-    const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
-    delete all[feedId];
-    localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all));
-  } catch(_) {}
-
-  // 4) Remove archive map (per-feed)
-  try {
-    const allA = JSON.parse(localStorage.getItem(FEED_ARCHIVE_KEY) || '{}');
-    delete allA[feedId];
-    localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(allA));
-  } catch(_) {}
-
-  // 5) If user currently has that feed open in the map-alerts panel, close it
-  try {
-    if (typeof openFeedId !== 'undefined' && openFeedId === feedId) {
-      openFeedId = null;
-      if (typeof showFeeds === 'function') showFeeds();
-    }
-  } catch(_) {}
-
-  // 6) Re-render map sidebar immediately
-  try {
-    if (typeof window.ciUpdateMapSidebar === 'function') {
-      window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
-    }
-  } catch(_) {}
-}
-
-
-  // Sidebar feed buttons (open/remove)
-  document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.live-map-feed-btn');
-    if (!btn) return;
-
-    const row = btn.closest('.live-map-feed-row');
-    if (!row) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const feedId = row.dataset.feedid;
-    const label  = row.dataset.label || '';
-    const action = btn.getAttribute('data-action') || 'open';
-
-    if (action === 'remove'){
-  if (!confirm(`Remove feed "${label || feedId}"?`)) return;
-
-  // remove visually first (instant feedback)
-  row.remove();
-
-  // then remove from storage + caches + sidebar summaries
-  removeFeedById(feedId);
-
-  // optional: if you want the big feed cards area to also update immediately:
-  if (typeof renderFeeds === 'function') {
-    try { renderFeeds(); } catch(err){ console.warn('renderFeeds after remove failed', err); }
-  }
-  return;
-}
-
-
-    // open
-    if (typeof openFeedAlerts === 'function'){
-      try { openFeedAlerts(feedId, label); } catch(err){ console.warn('openFeedAlerts failed', err); }
-    }
-  }, {capture:true});
-
-
 
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
@@ -2725,7 +2746,7 @@ function openDetailPanel(item, relatedList){
   // real exposure based on stored assets/travellers
   let exposure = { assets: [], travellers: [] };
   if (window.CIExposure && CIExposure.exposureFor) {
-    exposure = CIExposure.exposureFor(item.city || item.City, item.country || item.Country) || { assets: [], travellers: [] };
+    exposure = CIExposure.exposureFor({ city: item.city || item.City, country: item.country || item.Country, lat: item.lat || item.Lat, lon: item.lon || item.Lon }, window.ciIncidentRadiusKm || 5) || { assets: [], travellers: [] };
   }
   const nA = (exposure.assets || []).length;
   const nT = (exposure.travellers || []).length;
@@ -3059,7 +3080,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
       // NEW: exposure (assets + travellers) for this city/country
             let exposureHtml = '';
       if (window.CIExposure && CIExposure.exposureFor) {
-        const exp = CIExposure.exposureFor(first.city || first.City, first.country || first.Country) || { assets: [], travellers: [] };
+        const exp = CIExposure.exposureFor({ city: first.city || first.City, country: first.country || first.Country, lat: first.lat || first.Lat, lon: first.lon || first.Lon }, window.ciIncidentRadiusKm || 5) || { assets: [], travellers: [] };
         const nA = (exp.assets || []).length;
         const nT = (exp.travellers || []).length;
         if (nA || nT) {
@@ -3545,6 +3566,45 @@ refreshSingleFeedCard(card, feed);
   // after all feeds rendered, nudge sidebar once more
   if (typeof window.ciUpdateMapSidebar === 'function') {
     window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+  // Feed row interactions: open or remove (without triggering open)
+  (function wireFeedRowActions(){
+    const host = document.getElementById('liveMapFeedsList');
+    if (!host || host.__ciWired) return;
+    host.__ciWired = true;
+
+    host.addEventListener('click', async (e) => {
+      const row = e.target.closest('.live-map-feed-row');
+      if (!row) return;
+      const feedId = row.dataset.feedid;
+
+      const actBtn = e.target.closest('button[data-action]');
+      const action = actBtn ? actBtn.dataset.action : null;
+
+      if (action === 'remove') {
+        e.preventDefault(); e.stopPropagation();
+        const label = row.querySelector('.live-map-feed-label')?.textContent?.trim() || 'this feed';
+        if (!confirm(`Remove feed "${label}"?`)) return;
+
+        try{
+          await removeFeedById(feedId);
+          // immediate UI update (no refresh needed)
+          row.remove();
+          if (typeof renderFeeds === 'function') renderFeeds();
+          if (window.ciActiveFeedId === feedId && typeof closeFeedCard === 'function') closeFeedCard();
+        }catch(err){
+          console.error(err);
+          alert('Could not remove feed. See console for details.');
+        }
+        return;
+      }
+
+      if (action === 'open' || !action) {
+        e.preventDefault(); e.stopPropagation();
+        if (typeof openFeedAlerts === 'function') openFeedAlerts(feedId);
+      }
+    });
+  })();
+
   }
 	
 }
@@ -3554,7 +3614,7 @@ refreshSingleFeedCard(card, feed);
 renderFeeds();
 
 // ---- link View Full Incident to incident.html ----
-viewFullBtn.addEventListener('click', (e)=>{ 
+viewFullBtn.addEventListener('click', (e)=>{
   e.preventDefault();
   // Build a minimal object to pass along
   const incidentData = {
@@ -4003,7 +4063,13 @@ setTimeout(settleMap, 600);
       pts.push([t.lat, t.lon]);
     });
 
-    if (pts.length) {
+    if (!pts.length) {
+        try{
+          const gc = await (window.ciGeocodePlace ? window.ciGeocodePlace(d.city || d.location || d.place, d.country) : null);
+          if (gc && Number.isFinite(gc.lat) && Number.isFinite(gc.lon)) pts.push([gc.lat, gc.lon]);
+        }catch(_){}
+      }
+      if (pts.length) {
       const avgLat = pts.reduce((s,p)=>s+p[0],0)/pts.length;
       const avgLon = pts.reduce((s,p)=>s+p[1],0)/pts.length;
       window.ciLastIncident = {
@@ -4030,24 +4096,23 @@ setTimeout(settleMap, 600);
       return;
     }
 
-    // sort: highest total first
     summaries.sort((a,b) => (b.total||0) - (a.total||0));
 
     summaries.forEach(s => {
-      const row = document.createElement('button');
-	  row.type = 'button';
-	  row.className = 'live-map-feed-row';
-
+      const row = document.createElement('div');
+      row.className = 'live-map-feed-row';
       row.dataset.feedid = s.id;
 
-      row.dataset.label = (s.label || 'Feed');
       row.innerHTML = `
-        <div class="live-map-feed-actions">
-          <button class="live-map-feed-btn" data-action="open" title="Open feed">▶</button>
-          <button class="live-map-feed-btn live-map-feed-btn-danger" data-action="remove" title="Remove feed">×</button>
-        </div>
         <div class="live-map-feed-main">
-          <div class="live-map-feed-label">${s.label || 'Feed'}</div>
+          <div class="live-map-feed-top">
+            <div class="live-map-feed-label">${s.label || 'Feed'}</div>
+            <div class="live-map-feed-actions">
+              <button type="button" class="feed-act" data-action="open" title="Open">▶</button>
+              <button type="button" class="feed-act danger" data-action="remove" title="Remove">✕</button>
+            </div>
+          </div>
+
           <div class="live-map-feed-counts">
             <span><span class="dot dot-high"></span>${s.high || 0}</span>
             <span><span class="dot dot-med"></span>${s.med  || 0}</span>
@@ -4058,7 +4123,6 @@ setTimeout(settleMap, 600);
           </div>
         </div>
       `;
-
       host.appendChild(row);
     });
   };
