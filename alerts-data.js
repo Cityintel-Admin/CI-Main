@@ -5,13 +5,46 @@ window.alertsData =[
 
  {
     title: "Protest the Guga Hunt",
-    city: "Scottish Parliament Edinburgh",
-    country: "Scotland",
+    city: "Parliament Square, Westminster London",
+    country: "England",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-20T16:30:00",
     source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
     summary: ""
+  }, 
+
+ {
+    title: "Abolish The Asylum System",
+    city: "Cresta Court Hotel in Altrincham",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-30T17:00:00",
+    source: "",
+    summary: "The protests are organised by local, grassroots, non-political groups under the general banner of Abolish The Asylum System, which demand action from the government on the migrant crisis. Key messages include prioritizing the safety of women and children before foreigner and citing a legal decision involving Justice Bean as a reason for their frustration."
+  }, 
+ 
+ {
+    title: "Abolish The Asylum System",
+    city: " Army Barracks in Crowborough ",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T10:00:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: "The protests are organised by local, grassroots, non-political groups under the general banner of Abolish The Asylum System, which demand action from the government on the migrant crisis. Key messages include prioritizing the safety of women and children before foreigner and citing a legal decision involving Justice Bean as a reason for their frustration"
+  }, 
+ 
+  {
+    title: "Confront Power at Parliament",
+    city: "Parliament Square, Westminster London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-28T11:00:00",
+    source: "",
+    summary: "The rally, organized in part by groups like Palestine Pulse and others, aims to protest the UK's role in the conflict, with slogans like END UK COMPLICITY IN GENOCIDE and STOP ARMING ISRAEL visible on the image and in related protests. The event is part of a larger series of demonstrations in London and across the UK by various pro-Palestine activist groups, including the Palestine Solidarity Campaign and the Stop the War Coalition. "
   }, 
 
   {
@@ -11412,6 +11445,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
