@@ -14,8 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
-
-
+  {
+    title: "The event, titled the National Demonstration for Palestine",
+    city: "Woburn Square Garden in London.",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "Climate Activists for a Free Palestine to join the march. The Climate Justice Coalition coordinates the Climate Justice Bloc on these national marches, linking the climate crisis with issues of global justice and human rights. The movement argues that there is no climate justice on occupied land The event also highlights the campaign to stop North Sea oil profits from going to companies linked to Israeli settlements"
+  }, 
+ 
 {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
@@ -11403,6 +11412,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
