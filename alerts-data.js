@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "Anti-racism community unity protest",
+    city: "Whitechapel Station London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "The UKIP group has reportedly been instructed to hold its demonstration in an alternative, less provocative location, with reports suggesting Marble Arch as a potential new site. Anyone attempting to participate in the UKIP protest within Tower Hamlets this Saturday could face arrest Police imposed conditions under the Public Order Act due to the high risk of serious violence and serious disorder in the area, particularly given the large Muslim population in Whitechapel and previous tensions during a similar banned UKIP event in October 2025."
+  }, 
+
+  {
     title: "Kurdish community protest DEBOUT POUR LE ROJAVA Stand up for Rojava",
     city: "Place André Honnorat, 75006 Paris",
     country: "France",
@@ -11522,6 +11533,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
