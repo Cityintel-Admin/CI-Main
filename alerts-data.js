@@ -10,8 +10,52 @@ window.alertsData =[
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-04T09:30:00",
-    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    source: "",
     summary: ""
+  }, 
+
+  {
+    title: "major Spanish railway unions including USO, CCOO, UGT, and the Sindicato Ferroviario (SF)",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-03T09:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: "The primary motivation for the 2026 walkout is a crisis in railway safety following two catastrophic derailments in late January 2026:"
+  }, 
+
+   {
+    title: "major Spanish railway unions including USO, CCOO, UGT, and the Sindicato Ferroviario (SF)",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-09T09:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: "The primary motivation for the 2026 walkout is a crisis in railway safety following two catastrophic derailments in late January 2026:"
+  }, 
+
+   {
+    title: "major Spanish railway unions including USO, CCOO, UGT, and the Sindicato Ferroviario (SF)",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-10T09:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: "The primary motivation for the 2026 walkout is a crisis in railway safety following two catastrophic derailments in late January 2026:"
+  }, 
+
+   {
+    title: "major Spanish railway unions including USO, CCOO, UGT, and the Sindicato Ferroviario (SF)",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-11T09:30:00",
+    source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
+    summary: "The primary motivation for the 2026 walkout is a crisis in railway safety following two catastrophic derailments in late January 2026:"
   }, 
 
   {
@@ -11456,6 +11500,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
