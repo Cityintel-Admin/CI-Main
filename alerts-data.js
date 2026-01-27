@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "A solidarity protest for American people fighting against US Immigration and Customs Enforcement",
+    city: "French Ministry of Foreign Affairs Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-T28:00:00",
+    source: "",
+    summary: "The protest was prompted by the deaths of individuals like Alex Pretti in Minnesota, who was reportedly killed by ICE agents, sparking significant protests in US cities as well."
+  }, 
+
+  {
     title: "major Spanish railway unions including USO, CCOO, UGT, and the Sindicato Ferroviario (SF)",
     city: "Madrid",
     country: "Spain",
@@ -11500,6 +11511,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
