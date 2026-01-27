@@ -105,26 +105,38 @@ async function loadOrgContext() {
   const norm = s => (s || '').toString().trim().toLowerCase();
 
   function exposureFor(city, country){
+    // Returns the currently-saved assets & travellers that match this city/country.
+    // (Used by the incident detail panel “Assets & Travellers” section.)
     const cCity = norm(city);
     const cCountry = norm(country);
 
-    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
+    const assets = (window.CIAssets || []).filter(a => {
+      const aCity = norm(a.city || a.City || "");
+      const aCountry = norm(a.country || a.Country || "");
+      if (cCity && aCity && aCity !== cCity) return false;
+      if (cCountry && aCountry && aCountry !== cCountry) return false;
+      // If incident city/country not available, keep assets that have any location (defensive)
+      return true;
+    });
 
-// SAVE
-await fetch('/api/org/assets', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedassets)
-});
+    const now = new Date();
+    const travellers = (window.CITravellers || []).filter(t => {
+      const tCity = norm(t.city || t.City || "");
+      const tCountry = norm(t.country || t.Country || "");
+      if (cCity && tCity && tCity !== cCity) return false;
+      if (cCountry && tCountry && tCountry !== cCountry) return false;
 
-    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/travellers', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedtravellers)
-});
+      // Optional trip window filter (keep only active/upcoming travellers if dates exist)
+      const from = t.from || t.From || t.start || t.startDate;
+      const to = t.to || t.To || t.end || t.endDate;
+      if (from || to) {
+        const fromD = from ? new Date(from) : null;
+        const toD = to ? new Date(to) : null;
+        if (fromD && isFinite(fromD) && now < fromD) return true; // upcoming
+        if (toD && isFinite(toD) && now > toD) return false;      // past
+      }
+      return true;
+    });
 
     return { assets, travellers };
   }
@@ -2066,19 +2078,32 @@ function saveFeeds(feeds){
 
   function removeFeedById(feedId){
     if (!feedId) return;
-    // Remove from feeds list
+
+    // 1) Remove from feeds list
     const feeds = loadFeeds().filter(f => f && f.id !== feedId);
     saveFeeds(feeds);
 
-    // Remove cached events/archive for that feed (if present)
+    // 2) Remove any cached per-feed data so UI reflects immediately (no refresh required)
     try{
-      const ev = loadFeedEvents();
-      if (ev && typeof ev === 'object') { delete ev[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(ev)); }
+      const raw = localStorage.getItem(FEED_EVENTS_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      if (obj && typeof obj === 'object') {
+        delete obj[feedId];
+        localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(obj));
+      }
     }catch(_){}
+
     try{
-      const ar = loadFeedArchive();
-      if (ar && typeof ar === 'object') { delete ar[feedId]; localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(ar)); }
+      const raw = localStorage.getItem(FEED_ARCHIVE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      if (obj && typeof obj === 'object') {
+        delete obj[feedId];
+        localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(obj));
+      }
     }catch(_){}
+
+    // 3) If this feed is currently selected, reset selection
+    if (selectedFeedId === feedId) selectedFeedId = null;
   }
 
   // Sidebar feed buttons (open/remove)
