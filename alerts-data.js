@@ -9,9 +9,20 @@ window.alertsData =[
     country: "England",
     continent: "Europe",
     risk: "Mid",
-    time: "2026-01-20T16:30:00",
+    time: "2026-02-04T09:30:00",
     source: "https://forms.office.com/Pages/ResponsePage.aspx?id=ntqy3vmHp0WKvIeSS54XABz34g3uKZ9HsZ8-2C8b7_lUMUcwRDNHMjgxMERYWk5UNjVPUExMV1RQUy4u",
     summary: ""
+  }, 
+
+  {
+    title: "RMT transport union has announced that outsourced Docklands Light Railway",
+    city: "City Hall London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-04T09:30:00",
+    source: "https://morningstaronline.co.uk/article/outsourced-cleaners-protest-outside-city-hall-over-sick-pay",
+    summary: "The union is calling on Mayor Sadiq Khan to end the corporate capture of TfL and bring cleaning services in-house. This follows TfL's recent decision to award a new five-year cleaning contract to the outsourcing firm Mitie, which the RMT claims contradicts the Mayor's previous support for insourcing"
   }, 
 
  {
@@ -11445,6 +11456,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
