@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "Kurdish community protest DEBOUT POUR LE ROJAVA Stand up for Rojava",
+    city: "Place André Honnorat, 75006 Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-28T19:00:00",
+    source: "",
+    summary: "The image is a poster for a Kurdish community protest regarding the situation in Rojava, an autonomous region in northern Syria that is currently facing attacks. The demonstration, organized by the CDK-F Conseil Démocratique Kurde en France, or Democratic Kurdish Council in France, is scheduled to be held in Paris."
+  }, 
+
+  {
     title: "A solidarity protest for American people fighting against US Immigration and Customs Enforcement",
     city: "French Ministry of Foreign Affairs Paris",
     country: "France",
@@ -11511,6 +11522,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
