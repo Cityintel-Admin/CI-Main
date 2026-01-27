@@ -5,13 +5,24 @@ window.alertsData =[
 
  {
     title: "Protest the Guga Hunt",
-    city: "Parliament Square, Westminster London",
+    city: "Russell Square to Whitehall London",
     country: "England",
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-04T09:30:00",
     source: "",
     summary: ""
+  }, 
+
+  {
+    title: "A National March for Palestine ",
+    city: "Russell Square to Whitehall. London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
   }, 
 
   {
@@ -11533,6 +11544,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
