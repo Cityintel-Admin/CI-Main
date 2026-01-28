@@ -105,38 +105,26 @@ async function loadOrgContext() {
   const norm = s => (s || '').toString().trim().toLowerCase();
 
   function exposureFor(city, country){
-    // Returns the currently-saved assets & travellers that match this city/country.
-    // (Used by the incident detail panel “Assets & Travellers” section.)
     const cCity = norm(city);
     const cCountry = norm(country);
 
-    const assets = (window.CIAssets || []).filter(a => {
-      const aCity = norm(a.city || a.City || "");
-      const aCountry = norm(a.country || a.Country || "");
-      if (cCity && aCity && aCity !== cCity) return false;
-      if (cCountry && aCountry && aCountry !== cCountry) return false;
-      // If incident city/country not available, keep assets that have any location (defensive)
-      return true;
-    });
+    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
 
-    const now = new Date();
-    const travellers = (window.CITravellers || []).filter(t => {
-      const tCity = norm(t.city || t.City || "");
-      const tCountry = norm(t.country || t.Country || "");
-      if (cCity && tCity && tCity !== cCity) return false;
-      if (cCountry && tCountry && tCountry !== cCountry) return false;
+// SAVE
+await fetch('/api/org/assets', {
+  method: 'PUT',
+  headers: authHeaders,
+  body: JSON.stringify(updatedassets)
+});
 
-      // Optional trip window filter (keep only active/upcoming travellers if dates exist)
-      const from = t.from || t.From || t.start || t.startDate;
-      const to = t.to || t.To || t.end || t.endDate;
-      if (from || to) {
-        const fromD = from ? new Date(from) : null;
-        const toD = to ? new Date(to) : null;
-        if (fromD && isFinite(fromD) && now < fromD) return true; // upcoming
-        if (toD && isFinite(toD) && now > toD) return false;      // past
-      }
-      return true;
-    });
+    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
+
+// SAVE
+await fetch('/api/org/travellers', {
+  method: 'PUT',
+  headers: authHeaders,
+  body: JSON.stringify(updatedtravellers)
+});
 
     return { assets, travellers };
   }
@@ -1975,8 +1963,6 @@ const HISTORY_WINDOWS = [12, 24, 48, 72];                    // For "Load earlie
 
 // === FEED ↔ MAP SIDEBAR BRIDGE ==========================
 window.ciFeedSummaries = window.ciFeedSummaries || {};
-// Expose which feed is open in the map sidebar incidents panel (if any)
-window.ciMapSidebarOpenFeedId = window.ciMapSidebarOpenFeedId || null;
 
 /**
  * Store a small summary per feed so the map sidebar can render it.
@@ -2080,82 +2066,62 @@ function saveFeeds(feeds){
 
   function removeFeedById(feedId){
     if (!feedId) return;
-
-    // 1) Remove from feeds list
+    // Remove from feeds list
     const feeds = loadFeeds().filter(f => f && f.id !== feedId);
     saveFeeds(feeds);
 
-    // 2) Remove any cached per-feed data so UI reflects immediately (no refresh required)
+    // Remove cached events/archive for that feed (if present)
     try{
-      const raw = localStorage.getItem(FEED_EVENTS_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      if (obj && typeof obj === 'object') {
-        delete obj[feedId];
-        localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(obj));
-      }
+      const ev = loadFeedEvents();
+      if (ev && typeof ev === 'object') { delete ev[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(ev)); }
     }catch(_){}
-
     try{
-      const raw = localStorage.getItem(FEED_ARCHIVE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      if (obj && typeof obj === 'object') {
-        delete obj[feedId];
-        localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(obj));
-      }
+      const ar = loadFeedArchive();
+      if (ar && typeof ar === 'object') { delete ar[feedId]; localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(ar)); }
     }catch(_){}
-
-    // 3) If this feed is currently open in the incidents panel, close back to the feed list
-    if (window.ciMapSidebarOpenFeedId === feedId && typeof window.ciOpenMapFeedAlerts === 'function') {
-      try { window.ciOpenMapFeedAlerts(feedId, ''); } catch(_){ /* no-op */ }
-    }
-    if (window.ciMapSidebarOpenFeedId === feedId) window.ciMapSidebarOpenFeedId = null;
   }
 
-  // Sidebar feed buttons (open/remove)
-  document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.live-map-feed-btn');
-    if (!btn) return;
+  // Sidebar feed buttons (open/remove) — keep actions separate so "X" never opens the feed
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.live-map-feed-btn');
+  if (!btn) return;
 
-    const row = btn.closest('.live-map-feed-row');
-    if (!row) return;
+  // Stop the row click / other handlers
+  e.preventDefault();
+  e.stopPropagation();
 
-    e.preventDefault();
-    e.stopPropagation();
+  const row = btn.closest('.live-map-feed-row');
+  const feedId = btn.getAttribute('data-feedid') || row?.getAttribute('data-feedid');
+  if (!feedId) return;
 
-    const feedId = row.dataset.feedid;
-    const label  = row.dataset.label || '';
-    const action = btn.getAttribute('data-action') || 'open';
+  const action = btn.getAttribute('data-action');
+  const label =
+    row?.getAttribute('data-label') ||
+    row?.querySelector('.live-map-feed-title')?.textContent?.trim() ||
+    feedId;
 
-    if (action === 'remove'){
-      if (!confirm(`Remove feed "${label || feedId}"?`)) return;
+  if (action === 'remove') {
+    // Optimistic UI: remove immediately, then persist + re-render counts
+    row?.remove();
 
-      removeFeedById(feedId);
-
-      // Remove immediately from the sidebar list (no refresh required)
-      row.remove();
-
-      // Re-render the sidebar counts using the last computed summary map
-      if (window.ciLiveSidebarSummaryMap && typeof window.ciUpdateMapSidebar === 'function') {
-        const nextSummary = { ...window.ciLiveSidebarSummaryMap };
-        delete nextSummary[feedId];
-        window.ciUpdateMapSidebar(nextSummary);
-      }
-
-      // Re-render full feeds UI only when the feeds grid exists (optional screen)
-      if (typeof renderFeeds === 'function' && document.getElementById('feedsGrid')) {
-        try { await renderFeeds(); } catch(err){ console.warn('renderFeeds after remove failed', err); }
-      }
-      return;
+    // If the user is currently viewing alerts for this feed, bounce them back
+    if (window.__activeMapFeedId && window.__activeMapFeedId === feedId) {
+      window.__activeMapFeedId = null;
+      showFeeds();
     }
 
-    // open
-    if (typeof openFeedAlerts === 'function'){
-      try { openFeedAlerts(feedId, label); } catch(err){ console.warn('openFeedAlerts failed', err); }
-    }
-  }, {capture:true});
+    await removeFeedById(feedId, label);
 
+    // Re-render the map sidebar list (counts + ordering)
+    if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar();
+    return;
+  }
 
-
+  if (action === 'open') {
+    window.__activeMapFeedId = feedId;
+    openFeedAlerts(feedId, label);
+  }
+}, { capture: true });
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
   const feeds = loadFeeds();
@@ -4026,7 +3992,6 @@ setTimeout(settleMap, 600);
 
   // === SIDEBAR FEED LIST RENDERER =========================
   window.ciUpdateMapSidebar = function(summaryMap){
-      window.ciLiveSidebarSummaryMap = summaryMap;
     const host = document.getElementById('liveMapFeedsList');
     if (!host) return;
 
@@ -4112,14 +4077,12 @@ function redrawIncidentRadius(){
   if (!feedsPanel || !alertsPanel || !alertsTitle || !alertsList || !backBtn) return;
 
   let openFeedId = null;
-  window.ciMapSidebarOpenFeedId = null;
 
   function showFeeds(){
     alertsPanel.style.display = 'none';
     feedsPanel.style.display  = 'block';
     alertsList.innerHTML = '';
-	    openFeedId = null;
-	    window.ciMapSidebarOpenFeedId = null;
+    openFeedId = null;
 	setTimeout(() => {
   try { map.invalidateSize(true); } catch(e){}
 }, 50);
@@ -4203,12 +4166,11 @@ function getFeedEvents(feedId){
   function openFeedAlerts(feedId, label){
     // ✅ toggle: clicking the same feed again closes back to feeds
     const alertsOpen = alertsPanel.style.display !== 'none';
-	    if (alertsOpen && openFeedId === feedId){
-	      showFeeds();
-	      return;
-	    }
-	    openFeedId = feedId;
-	    window.ciMapSidebarOpenFeedId = feedId;
+    if (alertsOpen && openFeedId === feedId){
+      showFeeds();
+      return;
+    }
+    openFeedId = feedId;
 
     const events = getFeedEvents(feedId)
       .slice()
