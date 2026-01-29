@@ -153,12 +153,20 @@ async function loadOrgContext() {
     return false;
   }
 
-  async function exposureFor(opts) {
+  // IMPORTANT: keep this synchronous. The UI calls it without `await`.
+  // Also support both call styles:
+  //   exposureFor({ city, country, lat, lng, radiusKm })
+  //   exposureFor(city, country, lat, lng, radiusKm)
+  function exposureFor(cityOrOpts, country, lat, lng, radiusKm) {
+    const opts = (cityOrOpts && typeof cityOrOpts === 'object')
+      ? cityOrOpts
+      : { city: cityOrOpts, country, lat, lng, radiusKm };
+
     const city = opts?.city || "";
-    const country = opts?.country || "";
-    const lat = toNum(opts?.lat);
-    const lng = toNum(opts?.lng);
-    const radiusKm = Number(opts?.radiusKm) || 1;
+    const ctry = opts?.country || "";
+    const la = toNum(opts?.lat);
+    const ln = toNum(opts?.lng);
+    const radKm = Number(opts?.radiusKm) || 1;
 
     const assets = safeJson("ci_assets", []);
     const travellers = safeJson("ci_travellers", []);
@@ -166,16 +174,17 @@ async function loadOrgContext() {
     let assetsNearby = [];
     let travellersNearby = [];
 
-    if (lat !== null && lng !== null) {
-      assetsNearby = assets.filter(a => itemWithinRadius(a, lat, lng, radiusKm));
-      travellersNearby = travellers.filter(t => itemWithinRadius(t, lat, lng, radiusKm));
+    if (la !== null && ln !== null) {
+      assetsNearby = assets.filter(a => itemWithinRadius(a, la, ln, radKm));
+      travellersNearby = travellers.filter(t => itemWithinRadius(t, la, ln, radKm));
     } else {
       // Fallback: city/country match (no lat/lng on incident)
-      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, country));
-      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, country));
+      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, ctry));
+      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, ctry));
     }
 
-    return { assetsNearby, travellersNearby };
+    // Return both new + legacy names (older UI expects `assets`/`travellers`).
+    return { assetsNearby, travellersNearby, assets: assetsNearby, travellers: travellersNearby };
   }
 
   window.CIExposure = window.CIExposure || {};
