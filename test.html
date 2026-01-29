@@ -97,39 +97,89 @@ async function loadOrgContext() {
 
 	
 <script>
-/**
- * CIExposure – helper to find assets & travellers
- * that match an event by city/country.
+/*
+ * CIExposure
+ * - Provides nearby assets/travellers for an incident location.
+ * - Data comes from localStorage (ci_assets / ci_travellers) so users never need lat/lng manually.
  */
-(function(){
-  const norm = s => (s || '').toString().trim().toLowerCase();
+(function () {
+  const norm = (s) => (s || "").toString().trim().toLowerCase();
 
-  function exposureFor(city, country){
-    const cCity = norm(city);
-    const cCountry = norm(country);
-
-    const assets = await fetch('/api/org/assets', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/assets', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedassets)
-});
-
-    const travellers = await fetch('/api/org/travellers', { headers: authHeaders }).then(r=>r.json());
-
-// SAVE
-await fetch('/api/org/travellers', {
-  method: 'PUT',
-  headers: authHeaders,
-  body: JSON.stringify(updatedtravellers)
-});
-
-    return { assets, travellers };
+  function safeJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (e) {
+      return fallback;
+    }
   }
 
-  window.CIExposure = { exposureFor };
+  function toNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Haversine distance (km)
+  function distanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function itemWithinRadius(item, centerLat, centerLng, radiusKm) {
+    const ilat = toNum(item.lat ?? item.latitude);
+    const ilng = toNum(item.lng ?? item.lon ?? item.longitude);
+    if (ilat === null || ilng === null) return false;
+    return distanceKm(centerLat, centerLng, ilat, ilng) <= radiusKm;
+  }
+
+  function itemMatchesCityCountry(item, city, country) {
+    const icity = norm(item.city || item.town || item.locality);
+    const icountry = norm(item.country);
+    const c = norm(city);
+    const k = norm(country);
+    // If we only have city, match city. If we have both, match both.
+    if (c && k) return icity === c && icountry === k;
+    if (c) return icity === c;
+    return false;
+  }
+
+  async function exposureFor(opts) {
+    const city = opts?.city || "";
+    const country = opts?.country || "";
+    const lat = toNum(opts?.lat);
+    const lng = toNum(opts?.lng);
+    const radiusKm = Number(opts?.radiusKm) || 1;
+
+    const assets = safeJson("ci_assets", []);
+    const travellers = safeJson("ci_travellers", []);
+
+    let assetsNearby = [];
+    let travellersNearby = [];
+
+    if (lat !== null && lng !== null) {
+      assetsNearby = assets.filter(a => itemWithinRadius(a, lat, lng, radiusKm));
+      travellersNearby = travellers.filter(t => itemWithinRadius(t, lat, lng, radiusKm));
+    } else {
+      // Fallback: city/country match (no lat/lng on incident)
+      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, country));
+      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, country));
+    }
+
+    return { assetsNearby, travellersNearby };
+  }
+
+  window.CIExposure = window.CIExposure || {};
+  window.CIExposure.exposureFor = exposureFor;
 })();
 </script>
 
@@ -1129,14 +1179,6 @@ await fetch('/api/org/travellers', {
 }
 	  
 	  
-
-
-  .live-map-feed-row{display:flex;gap:10px;align-items:center;justify-content:flex-start;}
-  .live-map-feed-actions{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
-  .live-map-feed-main{display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-width:0}
-  .live-map-feed-btn-danger{background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.35);color:#ff5a5f}
-  .live-map-feed-btn-danger:hover{filter:brightness(1.1)}
-
 .live-map-feed-btn,
 .gm-feed-pill{
   cursor: pointer;
@@ -2064,64 +2106,6 @@ function saveFeeds(feeds){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
 }
 
-  function removeFeedById(feedId){
-    if (!feedId) return;
-    // Remove from feeds list
-    const feeds = loadFeeds().filter(f => f && f.id !== feedId);
-    saveFeeds(feeds);
-
-    // Remove cached events/archive for that feed (if present)
-    try{
-      const ev = loadFeedEvents();
-      if (ev && typeof ev === 'object') { delete ev[feedId]; localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(ev)); }
-    }catch(_){}
-    try{
-      const ar = loadFeedArchive();
-      if (ar && typeof ar === 'object') { delete ar[feedId]; localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(ar)); }
-    }catch(_){}
-  }
-
-  // Sidebar feed buttons (open/remove) — keep actions separate so "X" never opens the feed
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('.live-map-feed-btn');
-  if (!btn) return;
-
-  // Stop the row click / other handlers
-  e.preventDefault();
-  e.stopPropagation();
-
-  const row = btn.closest('.live-map-feed-row');
-  const feedId = btn.getAttribute('data-feedid') || row?.getAttribute('data-feedid');
-  if (!feedId) return;
-
-  const action = btn.getAttribute('data-action');
-  const label =
-    row?.getAttribute('data-label') ||
-    row?.querySelector('.live-map-feed-title')?.textContent?.trim() ||
-    feedId;
-
-  if (action === 'remove') {
-    // Optimistic UI: remove immediately, then persist + re-render counts
-    row?.remove();
-
-    // If the user is currently viewing alerts for this feed, bounce them back
-    if (window.__activeMapFeedId && window.__activeMapFeedId === feedId) {
-      window.__activeMapFeedId = null;
-      showFeeds();
-    }
-
-    await removeFeedById(feedId, label);
-
-    // Re-render the map sidebar list (counts + ordering)
-    if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar();
-    return;
-  }
-
-  if (action === 'open') {
-    window.__activeMapFeedId = feedId;
-    openFeedAlerts(feedId, label);
-  }
-}, { capture: true });
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
   const feeds = loadFeeds();
@@ -2698,10 +2682,11 @@ function openDetailPanel(item, relatedList){
   // real exposure based on stored assets/travellers
   let exposure = { assets: [], travellers: [] };
   if (window.CIExposure && CIExposure.exposureFor) {
-    exposure = CIExposure.exposureFor(item.city || item.City, item.country || item.Country) || { assets: [], travellers: [] };
+    exposure = CIExposure.exposureFor(item.city || item.City,
+                                      item.country || item.Country);
   }
-  const nA = (exposure.assets || []).length;
-  const nT = (exposure.travellers || []).length;
+  const nA = exposure.assets.length;
+  const nT = exposure.travellers.length;
 
   if (nA || nT) {
     const assetStr = nA
@@ -3032,9 +3017,10 @@ function renderEventsIntoCard(cardEl, events, feed) {
       // NEW: exposure (assets + travellers) for this city/country
             let exposureHtml = '';
       if (window.CIExposure && CIExposure.exposureFor) {
-        const exp = CIExposure.exposureFor(first.city || first.City, first.country || first.Country) || { assets: [], travellers: [] };
-        const nA = (exp.assets || []).length;
-        const nT = (exp.travellers || []).length;
+        const exp = CIExposure.exposureFor(first.city || first.City,
+                                           first.country || first.Country);
+        const nA = exp.assets.length;
+        const nT = exp.travellers.length;
         if (nA || nT) {
           exposureHtml = `
             <div class="eg-exposure" style="margin-top:6px;font-size:12px;">
@@ -3873,6 +3859,24 @@ setTimeout(settleMap, 600);
     assetLayer.clearLayers();
     travLayer.clearLayers();
 
+	    // Flexible date parsing (supports YYYY-MM-DD, ISO, or dd/mm/yyyy)
+	    const parseDateMs = (v) => {
+	      if (!v) return null;
+	      const s = String(v).trim();
+	      if (!s) return null;
+	      // dd/mm/yyyy
+	      const m = s.match(/^([0-3]\d)\/([0-1]\d)\/(\d{4})$/);
+	      if (m) {
+	        const dd = Number(m[1]), mm = Number(m[2]) - 1, yy = Number(m[3]);
+	        const d = new Date(Date.UTC(yy, mm, dd, 0, 0, 0));
+	        const ms = d.getTime();
+	        return isNaN(ms) ? null : ms;
+	      }
+	      const ms = Date.parse(s);
+	      return isNaN(ms) ? null : ms;
+	    };
+	    const nowMs = Date.now();
+
     (window.CIAssets || []).forEach(a => {
       if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
       L.marker([a.lat, a.lon], { icon: assetIcon })
@@ -3883,9 +3887,17 @@ setTimeout(settleMap, 600);
         );
     });
 
-    (window.CITravellers || []).forEach(t => {
-      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
-      L.marker([t.lat, t.lon], { icon: travIcon })
+	    (window.CITravellers || []).forEach(t => {
+	      // Only show travellers who are currently travelling (auto-appear on start date, auto-hide after end date)
+	      const fromMs = parseDateMs(t.from || t.start || t.startDate);
+	      const toMs   = parseDateMs(t.to   || t.end   || t.endDate);
+	      if (fromMs && nowMs < fromMs) return;               // not started yet
+	      if (toMs   && nowMs > (toMs + 86400000 - 1)) return; // ended (inclusive to end day)
+
+	      const lat = (typeof t.lat === 'number') ? t.lat : Number(t.lat);
+	      const lon = (typeof t.lon === 'number') ? t.lon : Number(t.lon);
+	      if (!isFinite(lat) || !isFinite(lon)) return;
+	      L.marker([lat, lon], { icon: travIcon })
         .addTo(travLayer)
         .bindPopup(
           `<b>${t.name || 'Traveller'}</b><br>` +
@@ -4013,22 +4025,15 @@ setTimeout(settleMap, 600);
 
       row.dataset.feedid = s.id;
 
-      row.dataset.label = (s.label || 'Feed');
       row.innerHTML = `
-        <div class="live-map-feed-actions">
-          <button class="live-map-feed-btn" data-action="open" title="Open feed">▶</button>
-          <button class="live-map-feed-btn live-map-feed-btn-danger" data-action="remove" title="Remove feed">×</button>
-        </div>
-        <div class="live-map-feed-main">
-          <div class="live-map-feed-label">${s.label || 'Feed'}</div>
-          <div class="live-map-feed-counts">
-            <span><span class="dot dot-high"></span>${s.high || 0}</span>
-            <span><span class="dot dot-med"></span>${s.med  || 0}</span>
-            <span><span class="dot dot-low"></span>${s.low  || 0}</span>
-            <span style="margin-left:auto;opacity:.75;">
-              ${s.total || 0} alerts
-            </span>
-          </div>
+        <div class="live-map-feed-label">${s.label || 'Feed'}</div>
+        <div class="live-map-feed-counts">
+          <span><span class="dot dot-high"></span>${s.high || 0}</span>
+          <span><span class="dot dot-med"></span>${s.med  || 0}</span>
+          <span><span class="dot dot-low"></span>${s.low  || 0}</span>
+          <span style="margin-left:auto;opacity:.75;">
+            ${s.total || 0} alerts
+          </span>
         </div>
       `;
 
@@ -4323,6 +4328,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+
+
 
 	
 	
