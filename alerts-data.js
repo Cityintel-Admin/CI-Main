@@ -15,6 +15,272 @@ window.alertsData =[
   }, 
 
   {
+    title: "Unionized police officers plan to protest",
+    city: "Ajaccio: Station Square",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Arras: Place Marechal-Foch",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  },
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Bordeaux: City Hall",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  },
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Clermont-Ferrand: Place Gilbert Gaillard",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, {
+    title: "Unionized police officers plan to protest",
+    city: "Dijon: Police Headquarters",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Gernoble: Police Headquarters",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, {
+    title: "Unionized police officers plan to protest",
+    city: "La Rochelle: In front of La Rochelle Train Station",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Lyon: Place Marechal-Lyautey",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, {
+    title: "Unionized police officers plan to protest",
+    city: "Marseille: L'Ombriere at Vieux Port",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Metz: City Hall",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, {
+    title: "Unionized police officers plan to protest",
+    city: "Nice: Place Massena",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Nantes: Police Headquarters",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Nimes: In front of Nimes Prefecture.",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  },
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Paris: Place de la Bastille",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  },
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Perpignan: Place du Castillet",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Pau: City Hall",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Orleans: Place du Martrois",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+ 
+ {
+    title: "Unionized police officers plan to protest",
+    city: "Reims: Square Colbert",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+
+  {
+    title: "Unionized police officers plan to protest",
+    city: "Reims: Square Colbert",
+    country: "france",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "",
+    summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
+  }, 
+
+  {
+    title: "A National March for Palestine ",
+    city: "Rennes: In front of the Prefecture of Ille-et-Vilainen",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
+  }, 
+
+   {
+    title: "A National March for Palestine ",
+    city: "Rouen: City Hall",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
+  }, 
+
+    {
+    title: "A National March for Palestine ",
+    city: "Strasbourg: Police Headquarters",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
+  }, 
+
+   {
+    title: "Toulouse: In front of the Prefecture of Haute-Garonne ",
+    city: "Strasbourg: Police Headquarters",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
+  }, 
+
+   {
+    title: "A National March for Palestine ",
+    city: "Strasbourg: Police Headquarters",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
+  }, 
+
+   {
+    title: "A National March for Palestine ",
+    city: "Russell Square to Whitehall. London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "A National March for Palestine is scheduled for Saturday, 31 January 2026 in London. Organized by the Palestine Solidarity Campaign and a coalition of partner groups, the demonstration focuses on demanding an end to the ongoing conflict in Gaza and calling for the UK government to cease arms sales to Israel The coalition includes the Palestine Solidarity Campaign (PSC), Friends of Al-Aqsa (FOA), Stop the War Coalition, and the Campaign for Nuclear Disarmament (CND)."
+  }, 
+
+   {
     title: "A National March for Palestine ",
     city: "Russell Square to Whitehall. London",
     country: "England",
@@ -11544,6 +11810,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
