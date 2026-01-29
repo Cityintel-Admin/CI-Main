@@ -1171,7 +1171,38 @@ async function loadOrgContext() {
   background:#0b1120;
   color:#e5e7eb;
   padding:8px 10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
+.feed-open-btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  padding:0;
+  cursor:pointer;
+  min-width:0;
+}
+.feed-open-btn .feed-name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:700;}
+.feed-open-btn .feed-count{margin-left:auto; opacity:.85; font-weight:600; font-size:12px;}
+.live-map-feed-remove{
+  width:34px; height:34px;
+  border-radius:10px;
+  border:1px solid rgba(244,63,94,.55);
+  background:rgba(244,63,94,.12);
+  color:#fecaca;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  line-height:1;
+}
+.live-map-feed-remove:hover{background:rgba(244,63,94,.2);}
 
 .live-map-feed-row:hover{
   background:#111827;
@@ -2105,6 +2136,39 @@ function loadFeeds(){
 function saveFeeds(feeds){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
 }
+
+function removeFeedById(feedId){
+  const feeds = loadFeeds().filter(f => f.id !== feedId);
+  saveFeeds(feeds);
+
+  // Remove cached events + archive for this feed
+  try{
+    const eventsMap = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+    delete eventsMap[feedId];
+    localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(eventsMap));
+  }catch(_e){}
+
+  try{
+    const archiveMap = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '{}');
+    delete archiveMap[feedId];
+    localStorage.setItem(ARCHIVE_KEY, JSON.stringify(archiveMap));
+  }catch(_e){}
+
+  // Drop summary so UI updates immediately
+  if (window.ciFeedSummaries && window.ciFeedSummaries[feedId]) {
+    delete window.ciFeedSummaries[feedId];
+  }
+
+  // If the removed feed is currently open, close the panel
+  if (window.__ciOpenFeedId === feedId) {
+    window.__ciOpenFeedId = null;
+  }
+
+  if (typeof window.ciUpdateMapSidebar === 'function') {
+    window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+  }
+}
+window.ciRemoveFeedById = removeFeedById;
 
 // add a feed definition {id, places[], risks[]}
 function addFeedDef(def){
@@ -4019,24 +4083,32 @@ setTimeout(settleMap, 600);
     summaries.sort((a,b) => (b.total||0) - (a.total||0));
 
     summaries.forEach(s => {
-      const row = document.createElement('button');
-	  row.type = 'button';
-	  row.className = 'live-map-feed-row';
-
+      const row = document.createElement('div');
+      row.className = 'live-map-feed-row';
       row.dataset.feedid = s.id;
+      row.dataset.feedlabel = s.label;
 
-      row.innerHTML = `
-        <div class="live-map-feed-label">${s.label || 'Feed'}</div>
-        <div class="live-map-feed-counts">
-          <span><span class="dot dot-high"></span>${s.high || 0}</span>
-          <span><span class="dot dot-med"></span>${s.med  || 0}</span>
-          <span><span class="dot dot-low"></span>${s.low  || 0}</span>
-          <span style="margin-left:auto;opacity:.75;">
-            ${s.total || 0} alerts
-          </span>
-        </div>
+      const openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.className = 'feed-open-btn';
+      openBtn.innerHTML = `
+        <span class="feed-play">▶</span>
+        <span class="feed-name">${escapeHtml(s.label)}</span>
+        <span class="feed-dot red"></span><span>${s.high}</span>
+        <span class="feed-dot amber"></span><span>${s.med}</span>
+        <span class="feed-dot green"></span><span>${s.low}</span>
+        <span class="feed-count">${s.total} alerts</span>
       `;
 
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'live-map-feed-remove';
+      removeBtn.title = 'Remove feed';
+      removeBtn.setAttribute('aria-label', `Remove feed ${s.label}`);
+      removeBtn.textContent = '×';
+
+      row.appendChild(openBtn);
+      row.appendChild(removeBtn);
       host.appendChild(row);
     });
   };
@@ -4088,6 +4160,7 @@ function redrawIncidentRadius(){
     feedsPanel.style.display  = 'block';
     alertsList.innerHTML = '';
     openFeedId = null;
+    window.__ciOpenFeedId = null;
 	setTimeout(() => {
   try { map.invalidateSize(true); } catch(e){}
 }, 50);
@@ -4176,6 +4249,7 @@ function getFeedEvents(feedId){
       return;
     }
     openFeedId = feedId;
+    window.__ciOpenFeedId = feedId;
 
     const events = getFeedEvents(feedId)
       .slice()
@@ -4225,21 +4299,33 @@ function getFeedEvents(feedId){
   backBtn.addEventListener('click', showFeeds);
 
   document.addEventListener('click', (e) => {
+    // Remove feed button
+    const removeBtn = e.target.closest('.live-map-feed-remove');
+    if (removeBtn) {
+      const row = removeBtn.closest('.live-map-feed-row');
+      const feedId = row && row.dataset.feedid;
+      const label = (row && row.dataset.feedlabel) || feedId || '';
+      if (feedId && confirm(`Remove feed "${label}"?`)) {
+        if (typeof window.ciRemoveFeedById === 'function') window.ciRemoveFeedById(feedId);
+        // Close any open feed panel and return to feeds list
+        showFeeds();
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    // Open feed (from list row or old style feed button)
     const row = e.target.closest('.live-map-feed-row');
+    const openBtn = e.target.closest('.feed-open-btn');
     const btn = e.target.closest('.live-map-feed-btn');
     if (!row && !btn) return;
+    if (row && !openBtn) return; // ignore clicks that aren't on the open area
 
     const feedId = (row && row.dataset.feedid) || (btn && btn.dataset.feedid);
     if (!feedId) return;
 
-    let label = '';
-    if (row){
-      const l = row.querySelector('.live-map-feed-label');
-      label = l ? l.textContent.trim() : '';
-    } else {
-      label = btn.textContent.trim();
-    }
-
+    const label = (row && (row.dataset.feedlabel || '')) || (btn ? btn.textContent.trim() : '');
     openFeedAlerts(feedId, label);
   });
 
