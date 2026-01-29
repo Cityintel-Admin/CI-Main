@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "Bin-Strike Protests",
+    city: "Various locations, Birmingham",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-30T06:30:00",
+    source: "",
+    summary: "Picket protest in solidarity with bin workers "
+  }, 
+
+  {
     title: "Unionized police officers plan to protest",
     city: "Ajaccio: Station Square",
     country: "france",
@@ -11810,6 +11821,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
