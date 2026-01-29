@@ -166,7 +166,7 @@ window.alertsData =[
     time: "2026-02-01T15:00:00",
     source: "",
     summary: "Solidarity protest in support of the Iranian community, amid reports of ongoing mass protests against the Iranian government and unrest in the country."
-  }
+  },
 
  {
     title: "West Drayton and Hillingdon say NO!",
@@ -12097,6 +12097,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
