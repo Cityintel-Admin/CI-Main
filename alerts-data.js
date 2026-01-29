@@ -15,6 +15,160 @@ window.alertsData =[
   }, 
 
    {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Cannes",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-29T19:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+  {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Vannes",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-30T19:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+  {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Le Havre",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T17:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+ {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Rennes",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T15:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+   {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Montbéliard",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T10:30:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+ {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Lille",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T15:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+   {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Draguignan",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T19:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+ 
+ {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Brest",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T15:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+   {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Rochefort",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+   {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Nevers",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T11:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+   {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Bordeaux",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T18:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+   {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Lyon",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T14:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+
+ {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Lorient",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T14:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+ 
+ {
+    title: "Protest in solidarity with the Kurds of Rojava",
+    city: "Nice",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T13:00:00",
+    source: "",
+    summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
+  },
+ 
+ 
+
+   {
     title: "One struggle, one fight",
     city: "Newcastle",
     country: "England",
@@ -12101,6 +12255,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
