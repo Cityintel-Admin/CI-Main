@@ -14,6 +14,182 @@ window.alertsData =[
     summary: ""
   }, 
 
+   {
+    title: "One struggle, one fight",
+    city: "Newcastle",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:30:00",
+    source: "p. 9",
+    summary: "Regular protest in solidarity with refugees in the UK."
+  },
+
+  {
+    title: "Global Day of Solidarity",
+    city: "Newcastle",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:30:00",
+    source: "p. 9",
+    summary: "Pro-Palestine protest as part of a Global Day of Solidarity."
+  },
+
+   {
+    title: "Free Spanish Hounds March",
+    city: "Glasgow",
+    country: "Scotland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "p. 10",
+    summary: "Animal rights march led by Free Spanish Hounds."
+  },
+
+   {
+    title: "Free Spanish Hounds March",
+    city: "Glasgow",
+    country: "Scotland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "p. 10",
+    summary: "Animal rights march led by Free Spanish Hounds."
+  },
+
+ {
+    title: "Glasgow Warriors v Clovers",
+    city: "Glasgow",
+    country: "Scotland",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-01-31T14:00:00",
+    source: "p. 10",
+    summary: "Women's rugby match."
+  },
+
+   {
+    title: "There Is No Ceasefire!",
+    city: "Belfast",
+    country: "Northern Ireland",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T13:00:00",
+    source: "p. 10",
+    summary: "Pro-Palestine protest organised by Belfast Ireland Palestine Solidarity Campaign."
+  },
+
+ {
+    title: "Act Now!",
+    city: "Nine Elms",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T15:00:00",
+    source: "p. 4",
+    summary: "Protest in support of the Iranian community to demand the U.S. government increase political pressure."
+  },
+
+ {
+    title: "Free Iran",
+    city: "Manchester",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T15:00:00",
+    source: "p. 7",
+    summary: "A protest in support of the Iranian community in response to rising political tensions in Iran."
+  },
+
+ {
+    title: "Boycott Reebok",
+    city: "Manchester",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T13:00:00",
+    source: "p. 7",
+    summary: "Pro-Palestine demo to demand Reebok ends its sponsorship deal with Israel's football association."
+  },
+
+  {
+    title: "Free Spanish Hounds March",
+    city: "Manchester",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T11:00:00",
+    source: "p. 7",
+    summary: "Animal rights march led by Free Spanish Hounds over concerns of the mistreatment of Spanish hounds."
+  },
+
+ {
+    title: "Jim Larkin Commemoration",
+    city: "Dublin",
+    country: "Republic of Ireland",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-01-31T11:30:00",
+    source: "p. 11",
+    summary: "Annual commemoration of former Irish republican and trade union leader Jim Larkin."
+  },
+
+ {
+    title: "Croydon Day of action for Palestine",
+    city: "Croydon",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T11:00:00",
+    source: "",
+    summary: "Pro-Palestine day of action aimed at organisations with perceived links to the Israeli government."
+  },
+
+  {
+    title: "Peace & Equal rights for all",
+    city: "Kings Cross",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T13:00:00",
+    source: "",
+    summary: "Monthly pro-Palestine rally organised by UK Friends of Standing Together."
+  },
+
+  {
+    title: "Free Iran protest",
+    city: "Westminster",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T15:00:00",
+    source: "",
+    summary: "Solidarity protest in support of the Iranian community, amid reports of ongoing mass protests against the Iranian government and unrest in the country."
+  }
+
+ {
+    title: "West Drayton and Hillingdon say NO!",
+    city: "Hillingdon",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T12:00:00",
+    source: "",
+    summary: "Protest against migrants and asylum seekers residing in UK hotels."
+  },
+ 
+   {
+    title: "Free Spanish Hounds March",
+    city: "Belgravia",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-01T11:00:00",
+    source: "",
+    summary: "Animal rights march led by Free Spanish Hounds over concerns of the mistreatment of Spanish hounds."
+  },
+
   {
     title: "Protest Sea Life",
     city: "London Aquarium, Westminster Bridge Road",
@@ -11921,6 +12097,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
