@@ -15,6 +15,106 @@ window.alertsData =[
   }, 
 
   {
+    title: "Protest Sea Life",
+    city: "London Aquarium, Westminster Bridge Road",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:00:00",
+    source: "",
+    summary: "Animal rights protest raising concerns about the welfare of 15 gentoo penguins at the aquarium. "
+  }, 
+
+  {
+    title: "Act Now!",
+    city: "	U.S. Embassy, Nine Elms",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T15:00:00",
+    source: "",
+    summary: "Protest in support of the Iranian community to demand the U.S. government increase political pressure."
+  }, 
+
+ 
+ {
+    title: "PSC National March counter protestt",
+    city: "Aldwych London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:30:00",
+    source: "",
+    summary: "Pro-Israeli group 'Stop The Hate UK' plan to stage a counter-protest against the National March for Palestine. "
+  }, 
+
+  {
+    title: "National March For Palestine",
+    city: "Russell Square to Whitehall London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "Thousands of pro-Palestinian protesters expected to attend the next monthly march"
+  }, 
+
+ {
+    title: "Walk with Jesus Parade",
+    city: "Marble Arch, Hyde Park",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "UKIP leader, Nick Tenconi is calling for his supporters to attend a parade to celebrate Christianity"
+  }, 
+
+  {
+    title: "Keep UKIP out of Whitechapel",
+    city: "Whitechapel Station, Whitechapel",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "AThousands of pro-Palestinian protesters expected to attend the next monthly march."
+  },  
+
+  {
+    title: "UKIP parade",
+    city: "Aldgate Square > Marble Arch London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T10:00:00",
+    source: "",
+    summary: "A group of UKIP supporters intend to gather in Aldgate Square before joining the main 'Walk with Jesus' parade.."
+  }, 
+
+  {
+    title: "Stop War On Kurds",
+    city: "Syrian Embassy, Belgrave Square, Knightsbridge",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-0-30T14:00:00",
+    source: "",
+    summary: "Protest in support of the Kurdish community"
+  }, 
+
+  {
+    title: "People Power NUP Demo",
+    city: "BBC Portland Place, Marylebone",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-30T10:30:00",
+    source: "",
+    summary: "Protest in support of the Ugandan community"
+  }, 
+
+  {
     title: "Bin-Strike Protests",
     city: "Various locations, Birmingham",
     country: "England",
@@ -11821,6 +11921,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
