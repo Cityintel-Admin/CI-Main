@@ -15,31 +15,44 @@ window.alertsData =[
   }, 
 
  {
+    "title": "Police Union Citizen Mobilisation",
+    "city": "Paris",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Mid",
+    "time": "2026-01-31T14:00:00",
+    "source": "https://www.cnews.fr/france/2026-01-29/les-policiers-sont-en-premiere-ligne-face-la-faillite-de-letat-marion-marechal",
+    "summary": "A large-scale 'citizen mobilisation' is scheduled at Place de la Bastille, organised by police unions and supported by political figures including Marion Maréchal. The demonstration aims to protest against systemic security failures and perceived judicial impunity. Expect a heavy security presence and significant transport disruptions in the Bastille area."
+},
+
+ {
     "title": "Inter-Professional Nationwide Strike & March",
     "city": "Paris",
     "country": "France",
     "continent": "Europe",
-    "risk": "Moderate to High",
+    "risk": "High",
     "time": "2026-02-06T13:30:00",
     "source": "French Labor Unions / RFI",
     "summary": "Major unions have called for a nationwide strike and march to oppose pension reforms. In Paris, participants will gather at Gare de l'Est and march toward Place de la Nation. Significant transport disruptions and a heavy security presence are expected."
   },
+     
   {
     "title": "PauseAI Global Protest (AI Action Summit)",
     "city": "Paris",
     "country": "France",
     "continent": "Europe",
-    "risk": "Low (Localized)",
+    "risk": "Low",
     "time": "2026-02-10T10:00:00",
     "source": "PauseAI",
     "summary": "Protest scheduled outside the Paris AI Action Summit to demand a greater focus on AI safety and existential risks. Demonstrations are expected to run alongside the summit from Feb 10–11."
   },
+ 
   {
     "title": "Ubisoft 'Massive International Strike'",
     "city": "Paris (Montreuil/Headquarters)",
     "country": "France",
     "continent": "Europe",
-    "risk": "Moderate (Internal/Office Focus)",
+    "risk": "Mid",
     "time": "2026-02-10T09:00:00",
     "source": "STJV / Solidaires Informatique",
     "summary": "A three-day strike (Feb 10–12) called by five major unions at Ubisoft to protest mandatory five-day return-to-office orders and planned layoffs at the Paris headquarters."
@@ -60,7 +73,7 @@ window.alertsData =[
     "city": "Mediterranean Ports (Genoa, etc.)",
     "country": "Regional",
     "continent": "Europe",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-02-06T00:00:00",
     "source": "Port Workers' Unions / International Call",
     "summary": "Dockworkers across Mediterranean ports, including Genoa, have called for an international strike to reject the transport of weapons and war material. Expect significant disruption to maritime logistics and port operations."
@@ -71,7 +84,7 @@ window.alertsData =[
     "city": "Madrid",
     "country": "Spain",
     "continent": "Europe",
-    "risk": "Moderate (High Local Disruption)",
+    "risk": "High",
     "time": "2026-02-11T09:00:00",
     "source": "Unión de Uniones / Fruitnet",
     "summary": "Large-scale tractor protest targeting central Madrid to protest EU trade deals Mercosur Morocco and budget cuts. Expect major road blockades and traffic paralysis in the capital."
@@ -82,7 +95,7 @@ window.alertsData =[
     "city": "Athens/Thessaloniki",
     "country": "Greece",
     "continent": "Europe",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-02-03T00:00:00",
     "source": "Panhellenic Federation of Dairy Workers",
     "summary": "Nationwide 24-hour strike in response to a fatal industrial explosion in Trikala. Protests are expected in central squares and near labor ministry offices."
@@ -93,7 +106,7 @@ window.alertsData =[
     "city": "Nationwide (Madrid, Barcelona, Valencia)",
     "country": "Spain",
     "continent": "Europe",
-    "risk": "Low (Cultural Disruption)",
+    "risk": "Low",
     "time": "2026-02-02T09:00:00",
     "source": "The Art Newspaper / Art Barcelona",
     "summary": "Approximately 200 contemporary art galleries will close for six days (2–7 Feb) to protest the 21% VAT rate on art sales. Major cultural centers will be impacted."
@@ -104,7 +117,7 @@ window.alertsData =[
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
-    "risk": "Moderate (Transport Disruption)",
+    "risk": "Mid",
     "time": "2026-02-26T00:00:00",
     "source": "RMT Union",
     "summary": "24-hour strike by signalling and telecoms staff over a pay dispute. Significant disruptions expected on the Windrush Line and connecting services."
@@ -12462,6 +12475,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
