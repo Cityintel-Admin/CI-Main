@@ -14,6 +14,16 @@ window.alertsData =[
     summary: ""
   }, 
 
+ {
+    "title": "City Hall Outsourcing Protest & Cleaners Strike",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Low (Localized Disruption)",
+    "time": "2026-02-04T09:30:00",
+    "source": "RMT Union",
+    "summary": "Protest at City Hall (Kamal Chunchie Way) against TfL's cleaning contracts, coinciding with strike action by outsourced cleaners on the DLR."
+},
  
 
 {
@@ -12301,6 +12311,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
