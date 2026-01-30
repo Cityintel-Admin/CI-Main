@@ -14,6 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
+{
+  "title": "Nationwide Strike in Food and Dairy Sector",
+  "city": "Nationwide",
+  "country": "Greece",
+  "continent": "Europe",
+  "risk": "Low to Moderate",
+  "time": "2026-02-03T00:00:00",
+  "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
+  "summary": "A 24-hour nationwide strike is scheduled for 3 February 2026 by the Panhellenic Federation of Dairy, Food, and Beverage Workers in response to a fatal industrial explosion at the Violanta factory in Trikala on 26 January. The strike involves workers across the food sector demanding accountability for safety failures and improved health standards. Protests are expected in Athens, Thessaloniki, and Trikala near labor offices and central squares, with potential for localized transport and business disruptions."
+},
+ 
  { 
     title: "Manifestation Barcelone", 
     city: "Barcelona", 
@@ -12266,6 +12277,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
