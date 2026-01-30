@@ -14,6 +14,8 @@ window.alertsData =[
     summary: ""
   }, 
 
+ 
+
 {
   "title": "Nationwide Strike in Food and Dairy Sector",
   "city": "Nationwide",
@@ -24,6 +26,28 @@ window.alertsData =[
   "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
   "summary": "A 24-hour nationwide strike is scheduled for 3 February 2026 by the Panhellenic Federation of Dairy, Food, and Beverage Workers in response to a fatal industrial explosion at the Violanta factory in Trikala on 26 January. The strike involves workers across the food sector demanding accountability for safety failures and improved health standards. Protests are expected in Athens, Thessaloniki, and Trikala near labor offices and central squares, with potential for localized transport and business disruptions."
 },
+
+  {
+    "title": "National Shutdown / General Strike against ICE",
+    "city": "Nationwide",
+    "country": "United States",
+    "continent": "North America",
+    "risk": "Moderate",
+    "time": "2026-01-30T08:00:00",
+    "source": "The Guardian / Nationalshutdown.org",
+    "summary": "Nationwide call for 'no school, no work, no shopping' to protest ICE enforcement actions and recent fatal shootings. Significant disruptions to business and education expected in major cities like Minneapolis, New York, and LA."
+  },
+
+ {
+    "title": "Student Union Protest against Expulsions Law",
+    "city": "Volos",
+    "country": "Greece",
+    "continent": "Europe",
+    "risk": "Low to Moderate",
+    "time": "2026-01-30T10:00:00",
+    "source": "ThePressProject",
+    "summary": "Final day of demonstrations by Greek student unions during the Rectors' Conference in Volos to protest the new student expulsion law and pedagogical competence reforms."
+  },
  
  { 
     title: "Manifestation Barcelone", 
@@ -12277,6 +12301,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
