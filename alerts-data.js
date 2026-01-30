@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
  {
+    "title": "National March: 'Partigiane per la Terra, Non per la Loro Guerra'",
+    "city": "Torino (Turin)",
+    "country": "Italy",
+    "continent": "Europe",
+    "risk": "Mid",
+    "time": "2026-01-31T14:30:00",
+    "source": "Local Activist/Union Groups",
+    "summary": "A national march for ecology and the defence of local territories is scheduled to start at Porta Nuova in Turin on Saturday, 31 January, at 2:30 PM. The protest slogan translates to 'Partisans for the Earth, not for their war.' This demonstration is part of a larger national mobilisation following the eviction of the Askatasuna social centre, and is expected to attract activists from across Italy. High attendance is anticipated, with potential for road blockades and localized disruptions."
+},
+
+ {
     "title": "National March for Palestine",
     "city": "London",
     "country": "United Kingdom",
@@ -34,7 +45,7 @@ window.alertsData =[
     "risk": "Low",
     "time": "2026-01-31T14:30:00",
     "source": "Local Protest Organisers",
-    "summary": "A demonstration against the implementation of Digital ID and Digital Currency is scheduled for 31 January 2026. The gathering will take place near Notting Hill Gate Station at the junction with Pembridge Road. Participants intend to protest government surveillance and digital financial systems. Localised pedestrian and traffic disruption is expected in the Notting Hill area between 14:30 and 16:30."
+    "summary": "A demonstration against the implementation of Digital ID and Digital Currency is scheduled for 31 January. The gathering will take place near Notting Hill Gate Station at the junction with Pembridge Road. Participants intend to protest government surveillance and digital financial systems. Localised pedestrian and traffic disruption is expected in the Notting Hill area between 14:30 and 16:30"
 },
 
  {
@@ -47,7 +58,7 @@ window.alertsData =[
     "source": "https://www.cnews.fr/france/2026-01-29/les-policiers-sont-en-premiere-ligne-face-la-faillite-de-letat-marion-marechal",
     "summary": "A large-scale 'citizen mobilisation' is scheduled at Place de la Bastille, organised by police unions and supported by political figures including Marion Maréchal. The demonstration aims to protest against systemic security failures and perceived judicial impunity. Expect a heavy security presence and significant transport disruptions in the Bastille area."
 },
-
+ 
  {
     "title": "Inter-Professional Nationwide Strike & March",
     "city": "Paris",
@@ -12498,6 +12509,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
