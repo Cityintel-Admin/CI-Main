@@ -14,6 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
+   {
+    title: "FREE IRAN Großdemo Berlin",
+    city: "BBrandenburger Tor Brandenburg Gate",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-07T13:00:00",
+    source: "",
+    summary: "The event, which is being held in solidarity with the ongoing uprising in Iran, calls for No to dictatorship, neither Shah nor Mullahs Nein zur Diktatur weder Schah noch Mullahs. It is organized by the Exil-Iranische Gesellschaft in Berlin Exile Iranian Society in Berlin e.V.) and other groups supporting a free and democratic republic in Iran. The demonstration aims to demand the overthrow of the current dictatorship and express a rejection of all forms of tyranny. Organizers emphasize the need for international support for the Iranian people's struggle for liberty."
+  },
+
 {
     title: "Solidarität mit Palästina Demonstration",
     city: "Oranienplatz in Berlinn",
@@ -12530,6 +12541,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
