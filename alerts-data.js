@@ -19,7 +19,7 @@ window.alertsData =[
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
-    "risk": "Low (Localized Disruption)",
+    "risk": "Low",
     "time": "2026-02-04T09:30:00",
     "source": "RMT Union",
     "summary": "Protest at City Hall (Kamal Chunchie Way) against TfL's cleaning contracts, coinciding with strike action by outsourced cleaners on the DLR."
@@ -30,7 +30,7 @@ window.alertsData =[
     "city": "Nationwide",
     "country": "Greece",
     "continent": "Europe",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-02-03T00:00:00",
     "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
     "summary": "Nationwide strike following a fatal industrial explosion at the Violanta factory. Workers demand improved safety standards and accountability. Protests are expected in Athens and Thessaloniki."
@@ -41,7 +41,7 @@ window.alertsData =[
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-02-04T18:00:00",
     "source": "Palestine Solidarity Campaign / Counterfire",
     "summary": "Large-scale march calling for a ceasefire. Expect significant crowds and localized transport disruptions in central London."
@@ -52,7 +52,7 @@ window.alertsData =[
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-02-07T12:30:00",
     "source": "Stand Up To Racism",
     "summary": "Anti-racism march from Finsbury Park Mosque to Ducketts Common. Organised to oppose far-right extremism; potential for counter-protests."
@@ -74,7 +74,7 @@ window.alertsData =[
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-02-11T12:00:00",
     "source": "British Kashmiri Diaspora",
     "summary": "Demonstration outside the Indian High Commission. Increased security presence and road closures likely in the Aldwych area."
@@ -86,7 +86,7 @@ window.alertsData =[
   "city": "Nationwide",
   "country": "Greece",
   "continent": "Europe",
-  "risk": "Low to Moderate",
+  "risk": "Mid",
   "time": "2026-02-03T00:00:00",
   "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
   "summary": "A 24-hour nationwide strike is scheduled for 3 February 2026 by the Panhellenic Federation of Dairy, Food, and Beverage Workers in response to a fatal industrial explosion at the Violanta factory in Trikala on 26 January. The strike involves workers across the food sector demanding accountability for safety failures and improved health standards. Protests are expected in Athens, Thessaloniki, and Trikala near labor offices and central squares, with potential for localized transport and business disruptions."
@@ -97,7 +97,7 @@ window.alertsData =[
     "city": "Nationwide",
     "country": "United States",
     "continent": "North America",
-    "risk": "Moderate",
+    "risk": "Mid",
     "time": "2026-01-30T08:00:00",
     "source": "The Guardian / Nationalshutdown.org",
     "summary": "Nationwide call for 'no school, no work, no shopping' to protest ICE enforcement actions and recent fatal shootings. Significant disruptions to business and education expected in major cities like Minneapolis, New York, and LA."
@@ -12366,6 +12366,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
