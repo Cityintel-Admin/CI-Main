@@ -1,4 +1,4 @@
-// alerts-data.js  — Only Medium/High items included
+F// alerts-data.js  — Only Medium/High items included
 // Note: times are local UK time (Europe/London). Adjust as needed.
 
 window.alertsData =[
@@ -659,7 +659,7 @@ window.alertsData =[
     city: "Marble Arch, Hyde Park",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "High",
     time: "2026-01-31T12:00:00",
     source: "",
     summary: "UKIP leader, Nick Tenconi is calling for his supporters to attend a parade to celebrate Christianity"
@@ -670,7 +670,7 @@ window.alertsData =[
     city: "Whitechapel Station, Whitechapel",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "High",
     time: "2026-01-31T12:00:00",
     source: "",
     summary: "AThousands of pro-Palestinian protesters expected to attend the next monthly march."
@@ -681,7 +681,7 @@ window.alertsData =[
     city: "Aldgate Square > Marble Arch London",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "high",
     time: "2026-01-31T10:00:00",
     source: "",
     summary: "A group of UKIP supporters intend to gather in Aldgate Square before joining the main 'Walk with Jesus' parade.."
@@ -12520,6 +12520,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
