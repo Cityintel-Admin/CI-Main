@@ -14,18 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
- { 
-    title: "Solidarität mit Palästina Demonstration", 
-    city: "Berlin", 
-    country: "Germany", 
-    continent: "Europe", 
-    risk: "Mid", 
-    time: "2026-01-31T14:00:00", 
-    source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/index.php/detail/187"
-    summary: "A registered protest is scheduled for Saturday afternoon at Oranienplatz a common site for demonstrations in the Kreuzberg district of Berlin. The event theme is Freedom for Palestinian Prisoners. Solidarity with Palestine. No arms deliveries to Israel." 
+{
+    title: "Solidarität mit Palästina Demonstration",
+    city: "Oranienplatz in Berlinn",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:00:00",
+    source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/index.php/detail/187",
+    summary: "A registered protest is scheduled for Saturday afternoon at Oranienplatz a common site for demonstrations in the Kreuzberg district of Berlin. The event theme is Freedom for Palestinian Prisoners. Solidarity with Palestine. No arms deliveries to Israel."
   },
     
-
  {
     "title": "Protest Against Shell Shareholder Celebration (Odette Case Solidarity)",
     "city": "London",
@@ -12531,6 +12530,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
