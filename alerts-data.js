@@ -24,6 +24,61 @@ window.alertsData =[
     "source": "RMT Union",
     "summary": "Protest at City Hall (Kamal Chunchie Way) against TfL's cleaning contracts, coinciding with strike action by outsourced cleaners on the DLR."
 },
+
+ {
+    "title": "Nationwide Strike in Food and Dairy Sector",
+    "city": "Nationwide",
+    "country": "Greece",
+    "continent": "Europe",
+    "risk": "Moderate",
+    "time": "2026-02-03T00:00:00",
+    "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
+    "summary": "Nationwide strike following a fatal industrial explosion at the Violanta factory. Workers demand improved safety standards and accountability. Protests are expected in Athens and Thessaloniki."
+  },
+ 
+  {
+    "title": "National Demonstration for Palestine",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Moderate",
+    "time": "2026-02-04T18:00:00",
+    "source": "Palestine Solidarity Campaign / Counterfire",
+    "summary": "Large-scale march calling for a ceasefire. Expect significant crowds and localized transport disruptions in central London."
+  },
+ 
+  {
+    "title": "North London Unity March",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Moderate",
+    "time": "2026-02-07T12:30:00",
+    "source": "Stand Up To Racism",
+    "summary": "Anti-racism march from Finsbury Park Mosque to Ducketts Common. Organised to oppose far-right extremism; potential for counter-protests."
+  },
+ 
+  {
+    "title": "Together Alliance London Launch",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-02-10T18:30:00",
+    "source": "Together Alliance",
+    "summary": "Launch event at EartH (Stoke Newington) featuring 80+ organisations (Amnesty, Greenpeace) building momentum for a national demo in March."
+  },
+ 
+  {
+    "title": "Protest Outside Indian High Commission",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Moderate",
+    "time": "2026-02-11T12:00:00",
+    "source": "British Kashmiri Diaspora",
+    "summary": "Demonstration outside the Indian High Commission. Increased security presence and road closures likely in the Aldwych area."
+  },
  
 
 {
@@ -53,7 +108,7 @@ window.alertsData =[
     "city": "Volos",
     "country": "Greece",
     "continent": "Europe",
-    "risk": "Low to Moderate",
+    "risk": "Mid",
     "time": "2026-01-30T10:00:00",
     "source": "ThePressProject",
     "summary": "Final day of demonstrations by Greek student unions during the Rectors' Conference in Volos to protest the new student expulsion law and pedagogical competence reforms."
@@ -12311,6 +12366,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
