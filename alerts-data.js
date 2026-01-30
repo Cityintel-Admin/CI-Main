@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "Together Against The Far Right National Demonstration",
+    city: "Russell Square to Whitehall London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-03-19T10:00:00",
+    source: "https://cwue5.org/2026/01/29/important-anti-racism-rally-saturday-28th-march-central-london",
+    summary: "Anti-Racism Rally is planned as a national demonstration in central London to counter narratives of division and racism. The event is scheduled for March 28, 2026, at 12:00 PM, and is supported by the TUC"
+  }, 
+
+  {
     title: "Demonstration against the Ice",
     city: "Milano",
     country: "Italy",
@@ -12552,6 +12563,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
