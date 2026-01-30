@@ -14,6 +14,61 @@ window.alertsData =[
     summary: ""
   }, 
 
+   {
+    "title": "Anti-War Dockworkers Strike",
+    "city": "Mediterranean Ports (Genoa, etc.)",
+    "country": "Regional",
+    "continent": "Europe",
+    "risk": "Moderate",
+    "time": "2026-02-06T00:00:00",
+    "source": "Port Workers' Unions / International Call",
+    "summary": "Dockworkers across Mediterranean ports, including Genoa, have called for an international strike to reject the transport of weapons and war material. Expect significant disruption to maritime logistics and port operations."
+  },
+ 
+  {
+    "title": "Spanish Farmers 'Unión de Uniones' Tractor Protest",
+    "city": "Madrid",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Moderate (High Local Disruption)",
+    "time": "2026-02-11T09:00:00",
+    "source": "Unión de Uniones / Fruitnet",
+    "summary": "Large-scale tractor protest targeting central Madrid to protest EU trade deals (Mercosur/Morocco) and budget cuts. Expect major road blockades and traffic paralysis in the capital."
+  },
+ 
+  {
+    "title": "Nationwide Food & Dairy Sector Strike",
+    "city": "Athens/Thessaloniki",
+    "country": "Greece",
+    "continent": "Europe",
+    "risk": "Moderate",
+    "time": "2026-02-03T00:00:00",
+    "source": "Panhellenic Federation of Dairy Workers",
+    "summary": "Nationwide 24-hour strike in response to a fatal industrial explosion in Trikala. Protests are expected in central squares and near labor ministry offices."
+  },
+ 
+  {
+    "title": "Spanish Art Gallery National Strike",
+    "city": "Nationwide (Madrid, Barcelona, Valencia)",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low (Cultural Disruption)",
+    "time": "2026-02-02T09:00:00",
+    "source": "The Art Newspaper / Art Barcelona",
+    "summary": "Approximately 200 contemporary art galleries will close for six days (2–7 Feb) to protest the 21% VAT rate on art sales. Major cultural centers will be impacted."
+  },
+ 
+  {
+    "title": "London Overground (Windrush Line) Strike",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Moderate (Transport Disruption)",
+    "time": "2026-02-26T00:00:00",
+    "source": "RMT Union",
+    "summary": "24-hour strike by signalling and telecoms staff over a pay dispute. Significant disruptions expected on the Windrush Line and connecting services."
+  },
+
  {
     "title": "City Hall Outsourcing Protest & Cleaners Strike",
     "city": "London",
@@ -32,7 +87,7 @@ window.alertsData =[
     "continent": "Europe",
     "risk": "Mid",
     "time": "2026-02-03T00:00:00",
-    "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
+    "source": "Panhellenic Federation of Dairy Food and Beverage Workers",
     "summary": "Nationwide strike following a fatal industrial explosion at the Violanta factory. Workers demand improved safety standards and accountability. Protests are expected in Athens and Thessaloniki."
   },
  
@@ -43,7 +98,7 @@ window.alertsData =[
     "continent": "Europe",
     "risk": "Mid",
     "time": "2026-02-04T18:00:00",
-    "source": "Palestine Solidarity Campaign / Counterfire",
+    "source": "Palestine Solidarity Campaign Counterfire",
     "summary": "Large-scale march calling for a ceasefire. Expect significant crowds and localized transport disruptions in central London."
   },
  
@@ -66,7 +121,7 @@ window.alertsData =[
     "risk": "Low",
     "time": "2026-02-10T18:30:00",
     "source": "Together Alliance",
-    "summary": "Launch event at EartH (Stoke Newington) featuring 80+ organisations (Amnesty, Greenpeace) building momentum for a national demo in March."
+    "summary": "Launch event at EartH Stoke Newington featuring 80+ organisations Amnesty, Greenpeace building momentum for a national demo in March."
   },
  
   {
@@ -12366,6 +12421,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
