@@ -1,4 +1,4 @@
-F// alerts-data.js  — Only Medium/High items included
+// alerts-data.js  — Only Medium/High items included
 // Note: times are local UK time (Europe/London). Adjust as needed.
 
 window.alertsData =[
@@ -102,6 +102,7 @@ window.alertsData =[
     "source": "STJV / Solidaires Informatique",
     "summary": "A three-day strike (Feb 10–12) called by five major unions at Ubisoft to protest mandatory five-day return-to-office orders and planned layoffs at the Paris headquarters."
   },
+ 
   {
     "title": "Nationwide Food & Dairy Sector Strike (Greek Solidarity)",
     "city": "Paris (Solidarity Actions)",
@@ -431,8 +432,6 @@ window.alertsData =[
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
   },
  
- 
-
    {
     title: "One struggle, one fight",
     city: "Newcastle",
@@ -12520,6 +12519,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
