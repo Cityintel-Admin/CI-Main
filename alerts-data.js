@@ -14,6 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
+ { 
+    title: "Manifestation Barcelone", 
+    city: "Barcelona", 
+    country: "Spain", 
+    continent: "Europe", 
+    risk: "Mid", 
+    time: "2026-01-31T12:00:00", 
+    source: "https://www.equinoxmagazine.fr", 
+    summary: "Commuter rail users have [called for a protest](https://www.equinoxmagazine.fr) in Barcelona following recent rail accidents and infrastructure issues." 
+  }, 
+
    {
     title: "Protest in solidarity with the Kurds of Rojava",
     city: "Cannes",
@@ -12255,6 +12266,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
