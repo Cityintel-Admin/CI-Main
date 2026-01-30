@@ -15,6 +15,18 @@ window.alertsData =[
   }, 
 
  {
+    "title": "National March for Palestine",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Mid",
+    "time": "2026-01-31T12:00:00",
+    "source": "https://palestinesolidaritycampaign.org ",
+    "summary": "The first national march for Palestine of 2026 is scheduled to assemble at Russell Square at 12:00 PM before marching to Whitehall. Organized by the Palestine Solidarity Campaign and supported by groups the demonstration calls for an immediate ceasefire and an end to UK arms sales. Expect significant crowds heavy security and major transport disruptions across Central London."
+  },
+
+
+ {
     "title": "Anti-Digital ID & Digital Currency Protest",
     "city": "London",
      "country": "England",
@@ -24,7 +36,6 @@ window.alertsData =[
     "source": "Local Protest Organisers",
     "summary": "A demonstration against the implementation of Digital ID and Digital Currency is scheduled for 31 January 2026. The gathering will take place near Notting Hill Gate Station at the junction with Pembridge Road. Participants intend to protest government surveillance and digital financial systems. Localised pedestrian and traffic disruption is expected in the Notting Hill area between 14:30 and 16:30."
 },
-
 
  {
     "title": "Police Union Citizen Mobilisation",
@@ -47,7 +58,7 @@ window.alertsData =[
     "source": "French Labor Unions / RFI",
     "summary": "Major unions have called for a nationwide strike and march to oppose pension reforms. In Paris, participants will gather at Gare de l'Est and march toward Place de la Nation. Significant transport disruptions and a heavy security presence are expected."
   },
-     
+
   {
     "title": "PauseAI Global Protest (AI Action Summit)",
     "city": "Paris",
@@ -12487,6 +12498,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
