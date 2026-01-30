@@ -14,6 +14,17 @@ window.alertsData =[
     summary: ""
   }, 
 
+  {
+    title: "Demonstration against the Ice",
+    city: "Milano",
+    country: "Italy",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "",
+    summary: "Demonstration against the Ice, who will arrive to escort the representatives of the United States government."
+  },
+
    {
     title: "FREE IRAN Großdemo Berlin",
     city: "BBrandenburger Tor Brandenburg Gate",
@@ -12541,6 +12552,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
