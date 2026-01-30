@@ -15,6 +15,17 @@ window.alertsData =[
   }, 
 
  {
+    "title": "Protest Against Shell Shareholder Celebration (Odette Case Solidarity)",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Low (Localized disruption)",
+    "time": "2026-02-04T08:00:00",
+    "source": "Fossil Free London",
+    "summary": "Fossil Free London is organizing an early-morning creative protest at Jubilee Gardens (Belvedere Road side of Shell Centre) to expose Shell's profits versus the climate devastation of Typhoon Odette. The protest supports the Odette climate harms lawsuit. Expect a small gathering of activists using chants and creative signage; minimal traffic disruption expected."
+},
+
+ {
     "title": "National March: 'Partigiane per la Terra, Non per la Loro Guerra'",
     "city": "Torino (Turin)",
     "country": "Italy",
@@ -12509,6 +12520,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
