@@ -681,7 +681,7 @@ window.alertsData =[
     city: "Aldgate Square > Marble Arch London",
     country: "England",
     continent: "Europe",
-    risk: "high",
+    risk: "High",
     time: "2026-01-31T10:00:00",
     source: "",
     summary: "A group of UKIP supporters intend to gather in Aldgate Square before joining the main 'Walk with Jesus' parade.."
@@ -12520,6 +12520,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
