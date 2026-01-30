@@ -15,6 +15,18 @@ window.alertsData =[
   }, 
 
  {
+    "title": "Anti-Digital ID & Digital Currency Protest",
+    "city": "London",
+     "country": "England",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-01-31T14:30:00",
+    "source": "Local Protest Organisers",
+    "summary": "A demonstration against the implementation of Digital ID and Digital Currency is scheduled for 31 January 2026. The gathering will take place near Notting Hill Gate Station at the junction with Pembridge Road. Participants intend to protest government surveillance and digital financial systems. Localised pedestrian and traffic disruption is expected in the Notting Hill area between 14:30 and 16:30."
+},
+
+
+ {
     "title": "Police Union Citizen Mobilisation",
     "city": "Paris",
     "country": "France",
@@ -12475,6 +12487,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
