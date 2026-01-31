@@ -15,6 +15,73 @@ window.alertsData =[
   }, 
 
   {
+    title: "Inter-Professional Nationwide Strike & March",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-06T13:30:00",
+    source: "French Labor Unions / RFI",
+    summary: "Major unions have called for a nationwide strike and march to oppose pension reforms. In Paris, participants will gather at Gare de l'Est and march toward Place de la Nation. Significant transport disruptions and a heavy security presence are expected."
+  },
+
+  {
+    title: "PauseAI Global Protest (AI Action Summit)",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-10T10:00:00",
+    source: "PauseAI",
+    summary: "Protest scheduled outside the Paris AI Action Summit to demand a greater focus on AI safety and existential risks. Demonstrations are expected to run alongside the summit from Feb 10–11."
+  },
+ 
+  {
+    title: "Ubisoft 'Massive International Strike'",
+    city: "Paris (Montreuil/Headquarters)",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-10T09:00:00",
+    source: "STJV / Solidaires Informatique",
+    summary: "A three-day strike (Feb 10–12) called by five major unions at Ubisoft to protest mandatory five-day return-to-office orders and planned layoffs at the Paris headquarters."
+  },
+ 
+  {
+    title: "Nationwide Food & Dairy Sector Strike (Greek Solidarity)",
+    city: "Paris (Solidarity Actions)",
+    country: "France",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-03T00:00:00",
+    source: "European Trade Union Federations",
+    summary: "Localized solidarity actions or small-scale marches may occur in Paris following the call for a nationwide strike in the food sector in neighboring Greece over industrial safety standards [Search Context]."
+  },
+
+   {
+    title: "Anti-War Dockworkers Strike",
+    city: "Mediterranean Ports (Genoa, etc.)",
+    country: "Regional",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-06T00:00:00",
+    source: "Port Workers' Unions / International Call",
+    summary: "Dockworkers across Mediterranean ports, including Genoa, have called for an international strike to reject the transport of weapons and war material. Expect significant disruption to maritime logistics and port operations."
+  },
+ 
+  {
+    title: "Spanish Farmers 'Unión de Uniones' Tractor Protest",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-11T09:00:00",
+    source: "Unión de Uniones / Fruitnet",
+    summary: "Large-scale tractor protest targeting central Madrid to protest EU trade deals Mercosur Morocco and budget cuts. Expect major road blockades and traffic paralysis in the capital."
+  },
+ 
+
+  {
     title: "Demonstration in support of the Palestinian people and prisoners",
     city: "Paris",
     country: "France",
@@ -12446,6 +12513,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
