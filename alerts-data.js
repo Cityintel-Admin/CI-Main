@@ -369,14 +369,14 @@ window.alertsData =[
   },
 
  {
-    "title": "Student Union Protest against Expulsions Law",
-    "city": "Volos",
-    "country": "Greece",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-01-30T10:00:00",
-    "source": "ThePressProject",
-    "summary": "Final day of demonstrations by Greek student unions during the Rectors' Conference in Volos to protest the new student expulsion law and pedagogical competence reforms."
+    title: "Student Union Protest against Expulsions Law",
+    city: "Volos",
+    country: "Greece",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-30T10:00:00",
+    source: "ThePressProject",
+    summary: "Final day of demonstrations by Greek student unions during the Rectors' Conference in Volos to protest the new student expulsion law and pedagogical competence reforms."
   },
  
  { 
@@ -12629,6 +12629,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
