@@ -17,6 +17,28 @@ window.alertsData =[
   }, 
 
  {
+    title: "March Against Crime in Israeli-Arab Society",
+    city: "Tel Aviv",
+    country: "Israel",
+    continent: "Asia",
+    risk: "Mid",
+    time: "2026-01-31T17:30:00",
+    source: "https://www.haaretz.com",
+    summary: "Activists plan to march from the Tel Aviv Museum of Art to Habima Square to denounce rising crime rates impacting the Israeli-Arab community and demand government intervention. Thousands of participants are expected, which will likely cause significant traffic disruptions in central Tel Aviv."
+  },
+
+ {
+  title: "Protest Demanding Revocation of Deputy PM Belinda Balluku's Immunity",
+  city: "Tirana",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-01-31T18:00:00",
+  source: "https://www.telegraph.co.uk",
+  summary: "Activists plan to gather near the Prime Minister's Office to demand the revocation of Deputy PM Belinda Balluku's legal immunity amid a corruption investigation. High participation is expected, following a Jan. 24 protest where clashes occurred between police and demonstrators."
+},
+
+ {
     title: "Romani activist protest against Minister Janos Lazar",
     city: "Budapest",
     country: "Hungary",
@@ -12785,6 +12807,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
