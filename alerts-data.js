@@ -37,12 +37,12 @@ window.alertsData =[
   },
  
   {
-    title": "IRAN WILL BE FREE Support the Iranian People's Struggle for Regime Change",
-    city": "Berlin",
-    country": "Germany",
-    continent": "Europe",
-    risk": "Low",
-    time": "2026-02-07T13:00:00",
+    title: "IRAN WILL BE FREE Support the Iranian People's Struggle for Regime Change",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-07T13:00:00",
     source": "https://iranfreedom.org",
     summary": "A major demonstration organized by the Iranian Resistance and Iran Spring to demand freedom and a democratic republic in Iran, opposing both monarchy and the current theocracy."
   },
@@ -81,13 +81,13 @@ window.alertsData =[
   },
 
   {
-    title": "Important Anti-Racism Rally: Reject Narratives of Division and Racism",
-    city": "London",
-    country": "United Kingdom",
-    continent": "Europe",
-    risk": "Low",
-    time": "2026-03-28T12:00:00",
-    source": "https://cwue5.org",
+    title: "Important Anti-Racism Rally: Reject Narratives of Division and Racism",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-28T12:00:00",
+    source: "https://cwue5.org",
     summary: "A national demonstration in Central London organised by the Together Alliance to counter far-right narratives and promote community solidarity"
   },
 
@@ -12444,6 +12444,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
