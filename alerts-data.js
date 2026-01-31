@@ -125,248 +125,60 @@ window.alertsData =[
   },
     
  {
-    "title": "Protest Against Shell Shareholder Celebration (Odette Case Solidarity)",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-02-04T08:00:00",
-    "source": "Fossil Free London",
-    "summary": "Fossil Free London is organizing an early-morning creative protest at Jubilee Gardens (Belvedere Road side of Shell Centre) to expose Shell's profits versus the climate devastation of Typhoon Odette. The protest supports the Odette climate harms lawsuit. Expect a small gathering of activists using chants and creative signage; minimal traffic disruption expected."
+    title: "Protest Against Shell Shareholder Celebration (Odette Case Solidarity)",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-04T08:00:00",
+    source: "Fossil Free London",
+    summary: "Fossil Free London is organizing an early-morning creative protest at Jubilee Gardens (Belvedere Road side of Shell Centre) to expose Shell's profits versus the climate devastation of Typhoon Odette. The protest supports the Odette climate harms lawsuit. Expect a small gathering of activists using chants and creative signage; minimal traffic disruption expected."
 },
 
  {
-    "title": "National March: 'Partigiane per la Terra, Non per la Loro Guerra'",
-    "city": "Torino (Turin)",
-    "country": "Italy",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-01-31T14:30:00",
-    "source": "Local Activist/Union Groups",
-    "summary": "A national march for ecology and the defence of local territories is scheduled to start at Porta Nuova in Turin on Saturday, 31 January, at 2:30 PM. The protest slogan translates to 'Partisans for the Earth, not for their war.' This demonstration is part of a larger national mobilisation following the eviction of the Askatasuna social centre, and is expected to attract activists from across Italy. High attendance is anticipated, with potential for road blockades and localized disruptions."
+    title: "National March: 'Partigiane per la Terra, Non per la Loro Guerra'",
+    city: "Torino (Turin)",
+    country: "Italy",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:30:00",
+    source: "Local Activist/Union Groups",
+    summary: "A national march for ecology and the defence of local territories is scheduled to start at Porta Nuova in Turin on Saturday, 31 January, at 2:30 PM. The protest slogan translates to 'Partisans for the Earth, not for their war.' This demonstration is part of a larger national mobilisation following the eviction of the Askatasuna social centre, and is expected to attract activists from across Italy. High attendance is anticipated, with potential for road blockades and localized disruptions."
 },
 
  {
-    "title": "National March for Palestine",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-01-31T12:00:00",
-    "source": "https://palestinesolidaritycampaign.org ",
-    "summary": "The first national march for Palestine of 2026 is scheduled to assemble at Russell Square at 12:00 PM before marching to Whitehall. Organized by the Palestine Solidarity Campaign and supported by groups the demonstration calls for an immediate ceasefire and an end to UK arms sales. Expect significant crowds heavy security and major transport disruptions across Central London."
+    title: "National March for Palestine",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T12:00:00",
+    source: "https://palestinesolidaritycampaign.org ",
+    summary: "The first national march for Palestine of 2026 is scheduled to assemble at Russell Square at 12:00 PM before marching to Whitehall. Organized by the Palestine Solidarity Campaign and supported by groups the demonstration calls for an immediate ceasefire and an end to UK arms sales. Expect significant crowds heavy security and major transport disruptions across Central London."
   },
 
 
  {
-    "title": "Anti-Digital ID & Digital Currency Protest",
-    "city": "London",
-     "country": "England",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-01-31T14:30:00",
-    "source": "Local Protest Organisers",
-    "summary": "A demonstration against the implementation of Digital ID and Digital Currency is scheduled for 31 January. The gathering will take place near Notting Hill Gate Station at the junction with Pembridge Road. Participants intend to protest government surveillance and digital financial systems. Localised pedestrian and traffic disruption is expected in the Notting Hill area between 14:30 and 16:30"
+    title: "Anti-Digital ID & Digital Currency Protest",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-01-31T14:30:00",
+    source: "Local Protest Organisers",
+    summary: "A demonstration against the implementation of Digital ID and Digital Currency is scheduled for 31 January. The gathering will take place near Notting Hill Gate Station at the junction with Pembridge Road. Participants intend to protest government surveillance and digital financial systems. Localised pedestrian and traffic disruption is expected in the Notting Hill area between 14:30 and 16:30"
 },
 
  {
-    "title": "Police Union Citizen Mobilisation",
-    "city": "Paris",
-    "country": "France",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-01-31T14:00:00",
-    "source": "https://www.cnews.fr/france/2026-01-29/les-policiers-sont-en-premiere-ligne-face-la-faillite-de-letat-marion-marechal",
-    "summary": "A large-scale 'citizen mobilisation' is scheduled at Place de la Bastille, organised by police unions and supported by political figures including Marion Maréchal. The demonstration aims to protest against systemic security failures and perceived judicial impunity. Expect a heavy security presence and significant transport disruptions in the Bastille area."
+    title: "Police Union Citizen Mobilisation",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:00:00",
+    source: "https://www.cnews.fr/france/2026-01-29/les-policiers-sont-en-premiere-ligne-face-la-faillite-de-letat-marion-marechal",
+    summary: "A large-scale 'citizen mobilisation' is scheduled at Place de la Bastille, organised by police unions and supported by political figures including Marion Maréchal. The demonstration aims to protest against systemic security failures and perceived judicial impunity. Expect a heavy security presence and significant transport disruptions in the Bastille area."
 },
- 
- {
-    "title": "Inter-Professional Nationwide Strike & March",
-    "city": "Paris",
-    "country": "France",
-    "continent": "Europe",
-    "risk": "High",
-    "time": "2026-02-06T13:30:00",
-    "source": "French Labor Unions / RFI",
-    "summary": "Major unions have called for a nationwide strike and march to oppose pension reforms. In Paris, participants will gather at Gare de l'Est and march toward Place de la Nation. Significant transport disruptions and a heavy security presence are expected."
-  },
-
-  {
-    "title": "PauseAI Global Protest (AI Action Summit)",
-    "city": "Paris",
-    "country": "France",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-02-10T10:00:00",
-    "source": "PauseAI",
-    "summary": "Protest scheduled outside the Paris AI Action Summit to demand a greater focus on AI safety and existential risks. Demonstrations are expected to run alongside the summit from Feb 10–11."
-  },
- 
-  {
-    "title": "Ubisoft 'Massive International Strike'",
-    "city": "Paris (Montreuil/Headquarters)",
-    "country": "France",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-10T09:00:00",
-    "source": "STJV / Solidaires Informatique",
-    "summary": "A three-day strike (Feb 10–12) called by five major unions at Ubisoft to protest mandatory five-day return-to-office orders and planned layoffs at the Paris headquarters."
-  },
- 
-  {
-    "title": "Nationwide Food & Dairy Sector Strike (Greek Solidarity)",
-    "city": "Paris (Solidarity Actions)",
-    "country": "France",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-02-03T00:00:00",
-    "source": "European Trade Union Federations",
-    "summary": "Localized solidarity actions or small-scale marches may occur in Paris following the call for a nationwide strike in the food sector in neighboring Greece over industrial safety standards [Search Context]."
-  },
-
-   {
-    "title": "Anti-War Dockworkers Strike",
-    "city": "Mediterranean Ports (Genoa, etc.)",
-    "country": "Regional",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-06T00:00:00",
-    "source": "Port Workers' Unions / International Call",
-    "summary": "Dockworkers across Mediterranean ports, including Genoa, have called for an international strike to reject the transport of weapons and war material. Expect significant disruption to maritime logistics and port operations."
-  },
- 
-  {
-    "title": "Spanish Farmers 'Unión de Uniones' Tractor Protest",
-    "city": "Madrid",
-    "country": "Spain",
-    "continent": "Europe",
-    "risk": "High",
-    "time": "2026-02-11T09:00:00",
-    "source": "Unión de Uniones / Fruitnet",
-    "summary": "Large-scale tractor protest targeting central Madrid to protest EU trade deals Mercosur Morocco and budget cuts. Expect major road blockades and traffic paralysis in the capital."
-  },
- 
-  {
-    "title": "Nationwide Food & Dairy Sector Strike",
-    "city": "Athens/Thessaloniki",
-    "country": "Greece",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-03T00:00:00",
-    "source": "Panhellenic Federation of Dairy Workers",
-    "summary": "Nationwide 24-hour strike in response to a fatal industrial explosion in Trikala. Protests are expected in central squares and near labor ministry offices."
-  },
- 
-  {
-    "title": "Spanish Art Gallery National Strike",
-    "city": "Nationwide (Madrid, Barcelona, Valencia)",
-    "country": "Spain",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-02-02T09:00:00",
-    "source": "The Art Newspaper / Art Barcelona",
-    "summary": "Approximately 200 contemporary art galleries will close for six days (2–7 Feb) to protest the 21% VAT rate on art sales. Major cultural centers will be impacted."
-  },
- 
-  {
-    "title": "London Overground (Windrush Line) Strike",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-26T00:00:00",
-    "source": "RMT Union",
-    "summary": "24-hour strike by signalling and telecoms staff over a pay dispute. Significant disruptions expected on the Windrush Line and connecting services."
-  },
-
- {
-    "title": "City Hall Outsourcing Protest & Cleaners Strike",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-02-04T09:30:00",
-    "source": "RMT Union",
-    "summary": "Protest at City Hall (Kamal Chunchie Way) against TfL's cleaning contracts, coinciding with strike action by outsourced cleaners on the DLR."
-},
-
- {
-    "title": "Nationwide Strike in Food and Dairy Sector",
-    "city": "Nationwide",
-    "country": "Greece",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-03T00:00:00",
-    "source": "Panhellenic Federation of Dairy Food and Beverage Workers",
-    "summary": "Nationwide strike following a fatal industrial explosion at the Violanta factory. Workers demand improved safety standards and accountability. Protests are expected in Athens and Thessaloniki."
-  },
- 
-  {
-    "title": "National Demonstration for Palestine",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-04T18:00:00",
-    "source": "Palestine Solidarity Campaign Counterfire",
-    "summary": "Large-scale march calling for a ceasefire. Expect significant crowds and localized transport disruptions in central London."
-  },
- 
-  {
-    "title": "North London Unity March",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-07T12:30:00",
-    "source": "Stand Up To Racism",
-    "summary": "Anti-racism march from Finsbury Park Mosque to Ducketts Common. Organised to oppose far-right extremism; potential for counter-protests."
-  },
- 
-  {
-    "title": "Together Alliance London Launch",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Low",
-    "time": "2026-02-10T18:30:00",
-    "source": "Together Alliance",
-    "summary": "Launch event at EartH Stoke Newington featuring 80+ organisations Amnesty, Greenpeace building momentum for a national demo in March."
-  },
- 
-  {
-    "title": "Protest Outside Indian High Commission",
-    "city": "London",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Mid",
-    "time": "2026-02-11T12:00:00",
-    "source": "British Kashmiri Diaspora",
-    "summary": "Demonstration outside the Indian High Commission. Increased security presence and road closures likely in the Aldwych area."
-  },
- 
-
-{
-  "title": "Nationwide Strike in Food and Dairy Sector",
-  "city": "Nationwide",
-  "country": "Greece",
-  "continent": "Europe",
-  "risk": "Mid",
-  "time": "2026-02-03T00:00:00",
-  "source": "Panhellenic Federation of Dairy, Food, and Beverage Workers",
-  "summary": "A 24-hour nationwide strike is scheduled for 3 February 2026 by the Panhellenic Federation of Dairy, Food, and Beverage Workers in response to a fatal industrial explosion at the Violanta factory in Trikala on 26 January. The strike involves workers across the food sector demanding accountability for safety failures and improved health standards. Protests are expected in Athens, Thessaloniki, and Trikala near labor offices and central squares, with potential for localized transport and business disruptions."
-},
-
-  {
-    "title": "National Shutdown / General Strike against ICE",
-    "city": "Nationwide",
-    "country": "United States",
-    "continent": "North America",
-    "risk": "Mid",
-    "time": "2026-01-30T08:00:00",
-    "source": "The Guardian / Nationalshutdown.org",
-    "summary": "Nationwide call for 'no school, no work, no shopping' to protest ICE enforcement actions and recent fatal shootings. Significant disruptions to business and education expected in major cities like Minneapolis, New York, and LA."
-  },
 
  {
     title: "Student Union Protest against Expulsions Law",
@@ -12629,6 +12441,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
