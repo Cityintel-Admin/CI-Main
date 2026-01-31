@@ -17,6 +17,17 @@ window.alertsData =[
   }, 
 
  {
+    title: "Anti-US ICE Presence Protest at Piazza XXV Aprile",
+    city: "Milan",
+    country: "Italy",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T14:30:00",
+    source: "https://www.rifondazione.it",
+    summary: "Activists from the Communist Refoundation Party and civil society groups will protest at Piazza XXV Aprile to denounce the presence of US ICE agents acting as security for athletes during the 2026 Winter Olympics. While the exact turnout is unknown, the demonstration may cause localized transport disruptions in central Milan."
+  },
+
+ {
     title: "March Against Crime in Israeli-Arab Society",
     city: "Tel Aviv",
     country: "Israel",
@@ -12807,6 +12818,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
