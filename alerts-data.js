@@ -16,6 +16,19 @@ window.alertsData =[
     summary: ""
   }, 
 
+ {
+    title: "Romani activist protest against Minister Janos Lazar",
+    city: "Budapest",
+    country: "Hungary",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-01-31T17:00:00",
+    source: "https://balkaninsight.com",
+    summary: "Several hundred Romani activists and opposition members are expected to gather in Kossuth Square to protest allegedly derogatory comments made by Minister Janos Lazar. Political analysts suggest these comments could trigger a significant backlash among the Romani community, a demographic whose support is considered necessary for the ruling Fidesz party to secure victory in the upcoming April 12 elections. Some analysts speculate the remarks might be a calculated strategy to court voters from the far-right Mi Hazank party."
+  },
+
+
+
   {
     title: "Protest Israel's President",
     city: "Sydney",
@@ -12772,6 +12785,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
