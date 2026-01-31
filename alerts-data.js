@@ -14,6 +14,40 @@ window.alertsData =[
     summary: ""
   }, 
 
+ 
+  {
+    title: "Nationwide Food & Dairy Sector Strike",
+    city: "Athens/Thessaloniki",
+    country: "Greece",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-03T00:00:00",
+    source: "Panhellenic Federation of Dairy Workers",
+    summary: "Nationwide 24-hour strike in response to a fatal industrial explosion in Trikala. Protests are expected in central squares and near labor ministry offices."
+  },
+ 
+  {
+    title: "Spanish Art Gallery National Strike",
+    city: "Nationwide (Madrid, Barcelona, Valencia)",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-02T09:00:00",
+    source: "The Art Newspaper / Art Barcelona",
+    summary: "Approximately 200 contemporary art galleries will close for six days (2–7 Feb) to protest the 21% VAT rate on art sales. Major cultural centers will be impacted."
+  },
+ 
+  {
+    title: "London Overground (Windrush Line) Strike",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-26T00:00:00",
+    source: "RMT Union",
+    summary: "24-hour strike by signalling and telecoms staff over a pay dispute. Significant disruptions expected on the Windrush Line and connecting services."
+  },
+
   {
     title: "Inter-Professional Nationwide Strike & March",
     city: "Paris",
@@ -12513,6 +12547,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
