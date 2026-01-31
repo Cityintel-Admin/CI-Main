@@ -1,3 +1,5 @@
+
+
 // alerts-data.js  — Only Medium/High items included
 // Note: times are local UK time (Europe/London). Adjust as needed.
 
@@ -13,6 +15,139 @@ window.alertsData =[
     source: "",
     summary: ""
   }, 
+
+  {
+    title: "Protest Israel's President",
+    city: "Sydney",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "A nationwide protest was organized across Australia to oppose the visit of Israeli President Isaac Herzog, who was accused of being a 'war criminal' due to the ongoing conflict in Gaza."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Melbourne",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "Protesters gathered at Flinders Street Station to demonstrate against President Herzog's arrival in Australia on February 9, 2026, amid calls for his arrest for alleged war crimes."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Perth",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.instagram.com",
+    summary: "The protest in Perth took place at Forrest Place to highlight opposition to the Australian government's invitation to President Herzog, who many groups argued should not be welcomed."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Canberra",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.facebook.com",
+    summary: "Demonstrations were held at Garema Place as part of the national day of action against the Israeli president's visit to Australia."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Brisbane",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.facebook.com",
+    summary: "The Brisbane protest occurred at King George Square, where activists urged the community to join the march and demand an end to the government's complicity in the conflict."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Hobart",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "Hobart was listed as a protest location, though specific time and location details (TBC) were pending confirmation at the time the poster was circulated."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Adelaide",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "Protesters in Adelaide met at Parliament at 5:30 PM to participate in the coordinated national demonstration against the Israeli President's visit."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Cairns",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "A protest was scheduled for 5:30 PM at 204 Mulgrave Rd in Cairns, intended as a vigil in solidarity with the nationwide march."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Townsville",
+    country: "Australia",
+    continent": "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T06:00:00",
+    source: "https://www.greenleft.org.au",
+    summary: "The Townsville event was a vigil held at Strand Park at 6 PM to align with the other national protests on February 9, 2026."
+  },
+
+
+  {
+    title: "Protest Israel's President",
+    city: "Bathurst",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.facebook.com",
+    summary: "Protesters met at Kings Parade in Bathurst to join the national movement opposing President Herzog's visit to Australia."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Goulburn",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "The Goulburn protest location was specified as 'The Big Merino' at 5:30 PM on Monday, February 9."
+  },
+
+  {
+    title: "Protest Israel's President",
+    city: "Darwin",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Mid",
+    time: "2026-02-09T05:30:00",
+    source: "https://www.greenleft.org.au",
+    summary: "Darwin residents gathered at Parliament to join the synchronised nationwide protests against the Israeli President's visit."
+  },
 
   {
     title: "City Hall Outsourcing Protest & Cleaners Strike",
@@ -12637,6 +12772,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
