@@ -108,7 +108,7 @@ window.alertsData =[
     title: "Protest Israel's President",
     city: "Townsville",
     country: "Australia",
-    continent": "Oceania",
+    continent: "Oceania",
     risk: "Mid",
     time: "2026-02-09T06:00:00",
     source: "https://www.greenleft.org.au",
@@ -12772,6 +12772,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
