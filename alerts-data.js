@@ -62,7 +62,7 @@ window.alertsData =[
     title: "Unpunished Evil Grows Russian Troops Out! Stand With Ukraine!",
     city: "London",
     country: "United Kingdom",
-    continent": "Europe",
+    continent: "Europe",
     risk: "Low",
     time: "2026-02-21T14:00:00",
     source: "https://x.com",
@@ -12446,6 +12446,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
