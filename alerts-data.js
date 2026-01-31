@@ -43,7 +43,7 @@ window.alertsData =[
     continent: "Europe",
     risk: "Low",
     time: "2026-02-07T13:00:00",
-    source": "https://iranfreedom.org",
+    source: "https://iranfreedom.org",
     summary": "A major demonstration organized by the Iranian Resistance and Iran Spring to demand freedom and a democratic republic in Iran, opposing both monarchy and the current theocracy."
   },
  
@@ -12446,6 +12446,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
