@@ -223,6 +223,7 @@ window.alertsData =[
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
   },
+ 
   {
     title: "Protest in solidarity with the Kurds of Rojava",
     city: "Le Havre",
@@ -255,6 +256,7 @@ window.alertsData =[
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
   },
+ 
  {
     title: "Protest in solidarity with the Kurds of Rojava",
     city: "Lille",
@@ -12444,6 +12446,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
