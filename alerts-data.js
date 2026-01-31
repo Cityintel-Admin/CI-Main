@@ -26,7 +26,7 @@ window.alertsData =[
   },
 
  {
-    "title": "Important Anti-Racism Rally: Reject Narratives of Division and Racism",
+    "title": "Important Anti-Racism Rally Reject Narratives of Division and Racism",
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
@@ -35,8 +35,9 @@ window.alertsData =[
     "source": "https://cwue5.org",
     "summary": "A national demonstration in Central London organised by the Together Alliance to counter far-right narratives and promote community solidarity."
   },
+ 
   {
-    "title": "IRAN WILL BE FREE: Support the Iranian People's Struggle for Regime Change",
+    "title": "IRAN WILL BE FREE Support the Iranian People's Struggle for Regime Change",
     "city": "Berlin",
     "country": "Germany",
     "continent": "Europe",
@@ -45,8 +46,9 @@ window.alertsData =[
     "source": "https://iranfreedom.org",
     "summary": "A major demonstration organized by the Iranian Resistance and Iran Spring to demand freedom and a democratic republic in Iran, opposing both monarchy and the current theocracy."
   },
+ 
   {
-    "title": "Mielenosoitus Iranin Kansan Vallankumouksen Puolesta (Demonstration in Support of the Iranian People's Revolution)",
+    "title": "Mielenosoitus Iranin Kansan Vallankumouksen Puolesta Demonstration in Support of the Iranian People's Revolution",
     "city": "Helsinki",
     "country": "Finland",
     "continent": "Europe",
@@ -55,8 +57,9 @@ window.alertsData =[
     "source": "https://x.com",
     "summary": "A public demonstration held at Kamppi Narinkkatori in Helsinki to show solidarity with the Iranian people and the national revolution, often associated with support for Reza Pahlavi."
   },
+ 
   {
-    "title": "Unpunished Evil Grows: Russian Troops Out! Stand With Ukraine!",
+    "title": "Unpunished Evil Grows Russian Troops Out! Stand With Ukraine!",
     "city": "London",
     "country": "United Kingdom",
     "continent": "Europe",
@@ -67,7 +70,7 @@ window.alertsData =[
   },
 
   {
-    "title": "Mielenosoitus Iranin Kansan Vallankumouksen Puolesta (Demonstration in Support of the Iranian People's Revolution)",
+    "title": "Mielenosoitus Iranin Kansan Vallankumouksen Puolesta Demonstration in Support of the Iranian People's Revolution",
     "city": "Helsinki",
     "country": "Finland",
     "continent": "Europe",
@@ -85,10 +88,10 @@ window.alertsData =[
     "risk": "Low",
     "time": "2026-03-28T12:00:00",
     "source": "https://cwue5.org",
-    "summary": "A national demonstration in Central London organised by the Together Alliance to counter far-right narratives and promote community solidarity."
+    "summary": "A national demonstration in Central London organised by the Together Alliance to counter far-right narratives and promote community solidarity"
   },
 
-  {
+{
     title: "Together Against The Far Right National Demonstration",
     city: "Russell Square to Whitehall London",
     country: "England",
@@ -12637,6 +12640,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
