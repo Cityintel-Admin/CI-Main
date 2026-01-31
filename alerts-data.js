@@ -683,7 +683,9 @@ window.alertsData =[
     time: "2026-01-31T11:00:00",
     source: "",
     summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
-  }, {
+  }, 
+ 
+ {
     title: "Unionized police officers plan to protest",
     city: "Dijon: Police Headquarters",
     country: "france",
@@ -801,6 +803,7 @@ window.alertsData =[
     source: "",
     summary: "Unionized police officers plan to protest across France from 11:00 on Jan. 31. The purpose of the demonstrations is to denounce an alleged lack of resources and personnel, raise awareness about unsanitary working environments, and call for public support to address these issues. Organizers have not indicated whether emergency police services would be disrupted. Attendance will likely vary by location; gatherings in larger urban areas, such as Paris, could draw thousands of participants. Opposing groups have indicated a willingness to hold counter protests."
   }, 
+ 
  {
     title: "Unionized police officers plan to protest",
     city: "Pau: City Hall",
@@ -12441,6 +12444,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
