@@ -14,6 +14,28 @@ window.alertsData =[
     summary: ""
   }, 
 
+  {
+    title: "City Hall Outsourcing Protest & Cleaners Strike",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-04T09:30:00",
+    source: "RMT Union",
+    summary: "Protest at City Hall (Kamal Chunchie Way) against TfL's cleaning contracts, coinciding with strike action by outsourced cleaners on the DLR."
+},
+
+ {
+    title: "Nationwide Strike in Food and Dairy Sector",
+    city: "Nationwide",
+    country: "Greece",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-03T00:00:00",
+    source: "Panhellenic Federation of Dairy Food and Beverage Workers",
+    summary: "Nationwide strike following a fatal industrial explosion at the Violanta factory. Workers demand improved safety standards and accountability. Protests are expected in Athens and Thessaloniki."
+  },
+
  {
     title: "National Shutdown / General Strike against ICE",
     city: "Nationwide",
@@ -12615,6 +12637,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
