@@ -705,6 +705,14 @@ async function loadOrgContext() {
       transform:translateX(0%);
     }
 
+    /* Desktop: reserve space so the incident detail panel doesn't cover the map */
+    @media (min-width: 1100px){
+      body.detail-open .main{
+        margin-right:360px;
+        transition:margin-right 220ms ease;
+      }
+    }
+
     .detail-head{
       display:flex;
       align-items:flex-start;
@@ -1318,6 +1326,11 @@ async function loadOrgContext() {
 .map-alert-item:hover{
   background:#111827;
   border-color:#4b5563;
+}
+
+.map-alert-item.active{
+  border-color:#ef4444;
+  box-shadow:0 0 0 2px rgba(239,68,68,0.25) inset;
 }
 
 .map-alert-top{
@@ -2858,6 +2871,12 @@ function openDetailPanel(item, relatedList){
   window.__lastDetailItem = item;
 
   detailPanel.classList.add('open');
+  document.body.classList.add('detail-open');
+
+  // Desktop layout reserves space for the drawer; Leaflet needs a resize
+  if (map && map.invalidateSize) {
+    setTimeout(() => map.invalidateSize(), 250);
+  }
 }
 
 
@@ -2870,6 +2889,12 @@ function closeDetailPanel() {
     ctx.clearRect(0, 0, cvs.width, cvs.height);
   }
   detailPanel.classList.remove('open');
+  document.body.classList.remove('detail-open');
+
+  // Re-expand the map area smoothly
+  if (map && map.invalidateSize) {
+    setTimeout(() => map.invalidateSize(), 250);
+  }
 }
 
 // attach listeners ONCE
@@ -3989,6 +4014,16 @@ setTimeout(settleMap, 600);
     // centre on the incident
     map.setView([lat, lon], 7);
 
+    // If the detail drawer is open on desktop, shift the view left so the marker isn't hidden
+    try {
+      const panel = document.getElementById('detailPanel');
+      if (panel && panel.classList.contains('open') && window.innerWidth >= 1100) {
+        const w = panel.getBoundingClientRect().width || 360;
+        // panBy +x moves the map right, therefore the marker appears more to the left (visible).
+        map.panBy([Math.round(w/2), 0], {animate: false});
+      }
+    } catch(e) {}
+
     // clear previous highlight if any
     if (incidentRadiusLayer) {
       map.removeLayer(incidentRadiusLayer);
@@ -4168,6 +4203,40 @@ function redrawIncidentRadius(){
 
   let openFeedId = null;
 
+  // --- helpers -----------------------------------------------------------
+  function extractLatLon(ev){
+    // Normalised fields
+    if (typeof ev?.lat === 'number' && typeof ev?.lon === 'number') return { lat: ev.lat, lon: ev.lon };
+    if (typeof ev?.latitude === 'number' && typeof ev?.longitude === 'number') return { lat: ev.latitude, lon: ev.longitude };
+
+    // Some providers send GeoJSON as a string
+    try {
+      const g = typeof ev?.geometry === 'string' ? JSON.parse(ev.geometry) : ev?.geometry;
+      if (g?.type === 'Point' && Array.isArray(g.coordinates) && g.coordinates.length >= 2) {
+        const [lon, lat] = g.coordinates;
+        if (typeof lat === 'number' && typeof lon === 'number') return { lat, lon };
+      }
+    } catch(_e){}
+
+    return null;
+  }
+
+  function jumpToEvent(ev){
+    const ll = extractLatLon(ev);
+    if (!ll) return false;
+    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', { detail: { lat: ll.lat, lon: ll.lon, zoom: 12 } }));
+    return true;
+  }
+
+  function pickDefaultEvent(events){
+    if (!Array.isArray(events) || events.length === 0) return null;
+    // Prefer newest event with coordinates; otherwise just newest.
+    for (const ev of events) {
+      if (extractLatLon(ev)) return ev;
+    }
+    return events[0];
+  }
+
   function showFeeds(){
     alertsPanel.style.display = 'none';
     feedsPanel.style.display  = 'block';
@@ -4278,7 +4347,27 @@ function getFeedEvents(feedId){
       return;
     }
 
-    events.forEach(ev => {
+    const rows = [];
+
+    const selectEvent = (ev, rowEl) => {
+      // highlight selection
+      rows.forEach(r => r.classList.remove('active'));
+      if (rowEl) rowEl.classList.add('active');
+
+      // open right-hand detail panel
+      if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
+      else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
+
+      // jump map if we have coordinates
+      const ll = extractLatLon(ev);
+      if (ll){
+        document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+          detail: { lat: ll.lat, lon: ll.lon, title: ev.title || ev.summary || ev.description || label || '' }
+        }));
+      }
+    };
+
+    events.forEach((ev, idx) => {
       const title = ev.title || ev.summary || ev.description || '(no title)';
       const city  = ev.city || 'Unknown';
       const when  = ev.when ? fmt(ev.when) : '';
@@ -4299,14 +4388,24 @@ function getFeedEvents(feedId){
       row.addEventListener('click', () => {
         if (typeof window.ciScrollToFeed === 'function') window.ciScrollToFeed(feedId);
 
-        if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
-        else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
+        selectEvent(ev, row);
       });
 
       alertsList.appendChild(row);
+      rows.push(row);
     });
 
     showAlerts();
+
+    // Default behaviour for live intelligence:
+    // auto-select the most recent alert (prefer one with coordinates).
+    const firstWithCoords = events.findIndex(ev => !!extractLatLon(ev));
+    const pickIndex = firstWithCoords >= 0 ? firstWithCoords : 0;
+    const pickRow = rows[pickIndex];
+    if (pickRow) {
+      // ensure panel is visible before selecting (prevents occasional layout glitches)
+      requestAnimationFrame(() => selectEvent(events[pickIndex], pickRow));
+    }
   }
 
   backBtn.addEventListener('click', showFeeds);
