@@ -15,7 +15,18 @@ window.alertsData =[
     source: "",
     summary: ""
   }, 
+{
+    title: "Architectural Workers’ Protest Bjarke Ingels Group",
+    city: "1 Finsbury Avenue, EC2M 2PF",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-03T13:0:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/february/city-of-london-bjarke-ingles-group-architectural-workers-protest-disgusting-redundancy-plans?utm_source=copilot.com",
+    summary: "Opposition to redundancy plans affecting around 140 workers"
+  }, 
 
+ 
  {
     title: "Anti-US ICE Presence Protest at Piazza XXV Aprile",
     city: "Milan",
@@ -12818,6 +12829,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
