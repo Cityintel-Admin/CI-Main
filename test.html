@@ -4221,6 +4221,126 @@ function redrawIncidentRadius(){
     return null;
   }
 
+
+// --- Step 1: coordinate fallback + geocode cache (for live feeds that have no geometry) ---
+const CIGeocode = (() => {
+  const CACHE_KEY = "ci_geocode_cache_v1";
+  const mem = new Map();
+
+  function norm(s){
+    return String(s || "").trim().toLowerCase();
+  }
+
+  function loadCache(){
+    try{
+      const raw = localStorage.getItem(CACHE_KEY);
+      if(!raw) return {};
+      const obj = JSON.parse(raw);
+      return (obj && typeof obj === "object") ? obj : {};
+    }catch(_){ return {}; }
+  }
+
+  function saveCache(obj){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(obj)); }catch(_){}
+  }
+
+  function pickCityText(ev){
+    return (ev && (ev.city || ev.event_location_name || ev.location || ev.event_location || ev.caption || ev.title)) || "";
+  }
+
+  function findFromAssetsOrTravellers(city){
+    const key = norm(city);
+    if(!key) return null;
+
+    const asset = (window.CIAssets || []).find(a => norm(a.city) === key || norm(a.location) === key);
+    if(asset && Number.isFinite(+asset.lat) && Number.isFinite(+asset.lng)){
+      return { lat:+asset.lat, lng:+asset.lng, source:"asset" };
+    }
+
+    const trav = (window.CITravellers || []).find(t => norm(t.city) === key || norm(t.location) === key);
+    if(trav && Number.isFinite(+trav.lat) && Number.isFinite(+trav.lng)){
+      return { lat:+trav.lat, lng:+trav.lng, source:"traveller" };
+    }
+
+    return null;
+  }
+
+  async function nominatimLookup(query){
+    const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(query);
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+    if(!res.ok) throw new Error("Geocode HTTP " + res.status);
+    const arr = await res.json();
+    if(!Array.isArray(arr) || !arr.length) return null;
+    const hit = arr[0];
+    const lat = parseFloat(hit.lat);
+    const lng = parseFloat(hit.lon);
+    if(!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng, source:"geocode" };
+  }
+
+  async function resolveCityLatLng(city){
+    const key = norm(city);
+    if(!key) return null;
+    if(mem.has(key)) return mem.get(key);
+
+    // 1) assets/travellers already mapped in that city
+    const fromExposure = findFromAssetsOrTravellers(city);
+    if(fromExposure){
+      mem.set(key, fromExposure);
+      return fromExposure;
+    }
+
+    // 2) cache
+    const cache = loadCache();
+    if(cache[key] && Number.isFinite(+cache[key].lat) && Number.isFinite(+cache[key].lng)){
+      const v = { lat:+cache[key].lat, lng:+cache[key].lng, source:"cache" };
+      mem.set(key, v);
+      return v;
+    }
+
+    // 3) online geocode (best-effort)
+    try{
+      const v = await nominatimLookup(city);
+      if(v){
+        cache[key] = { lat:v.lat, lng:v.lng, t: Date.now() };
+        saveCache(cache);
+        mem.set(key, v);
+        return v;
+      }
+    }catch(_){ /* ignore */ }
+
+    mem.set(key, null);
+    return null;
+  }
+
+  async function resolveEventLatLng(ev){
+    // First: existing geometry / coordinates
+    const direct = extractLatLon(ev);
+    if(direct) return { ...direct, source: "event" };
+
+    // Try a city-ish string
+    const cityText = pickCityText(ev);
+    // heuristic: if "Toronto, Canada" etc -> keep as-is, nominatim is fine
+    const resolved = await resolveCityLatLng(cityText);
+    if(resolved) return resolved;
+
+    // as a last resort, try just the 'city' field if caption/title were noisy
+    if(ev && ev.city && ev.city !== cityText){
+      const resolved2 = await resolveCityLatLng(ev.city);
+      if(resolved2) return resolved2;
+    }
+
+    return null;
+  }
+
+  return { resolveEventLatLng };
+})();
+
   function jumpToEvent(ev){
     const ll = extractLatLon(ev);
     if (!ll) return false;
@@ -4349,23 +4469,24 @@ function getFeedEvents(feedId){
 
     const rows = [];
 
-    const selectEvent = (ev, rowEl) => {
-      // highlight selection
-      rows.forEach(r => r.classList.remove('active'));
-      if (rowEl) rowEl.classList.add('active');
 
-      // open right-hand detail panel
-      if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
-      else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
+const selectEvent = async (ev, rowEl) => {
+  // highlight selection
+  rows.forEach(r => r.classList.remove('active'));
+  if (rowEl) rowEl.classList.add('active');
 
-      // jump map if we have coordinates
-      const ll = extractLatLon(ev);
-      if (ll){
-        document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
-          detail: { lat: ll.lat, lon: ll.lon, title: ev.title || ev.summary || ev.description || label || '' }
-        }));
-      }
-    };
+  // open right-hand detail panel
+  if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
+  else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
+
+  // jump map (live feeds sometimes have no geometry; we best-effort geocode the city)
+  const ll = await CIGeocode.resolveEventLatLng(ev);
+  if (ll){
+    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+      detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
+    }));
+  }
+};
 
     events.forEach((ev, idx) => {
       const title = ev.title || ev.summary || ev.description || '(no title)';
