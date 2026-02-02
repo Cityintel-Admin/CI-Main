@@ -4245,100 +4245,107 @@ const CIGeocode = (() => {
   }
 
   function pickCityText(ev){
-    return (ev && (ev.city || ev.event_location_name || ev.location || ev.event_location || ev.caption || ev.title)) || "";
+  // Best-effort human-readable location string for an event.
+  // Priority: explicit city fields -> structured location name -> parse from title/caption.
+  if(!ev) return "";
+  const city =
+    (ev.city && String(ev.city).trim()) ||
+    (ev.event_location_city && String(ev.event_location_city).trim()) ||
+    (ev.location_city && String(ev.location_city).trim());
+  if(city) return city;
+
+  const locName = (ev.event_location_name && String(ev.event_location_name).trim()) || "";
+  if(locName) return locName;
+
+  const title = (ev.title || ev.caption || ev.description || "").toString();
+
+  // Pattern 1: "<City>: ..."
+  let m = title.match(/^([A-Za-zÀ-ÿ'’\-\s\.]{2,40})\s*:\s+/);
+  if(m) return m[1].trim();
+
+  // Pattern 2: "in <City>, <Country/Region>"
+  m = title.match(/\bin\s+([A-Za-zÀ-ÿ'’\-\s\.]{2,40})(?:,\s*([A-Za-zÀ-ÿ'’\-\s\.]{2,40}))?/i);
+  if(m){
+    const c = m[1].trim();
+    const r = (m[2]||"").trim();
+    return r ? `${c}, ${r}` : c;
+  }
+  return "";
+}
+
+function inferFeedGeoHint(feed){
+  // If a feed is a country/region feed, use it to disambiguate city geocoding.
+  if(!feed) return "";
+  const places = Array.isArray(feed.places) ? feed.places : [];
+  if(places.length!==1) return "";
+  const p = String(places[0]||"").trim();
+  if(!p) return "";
+  const norm = p.toLowerCase();
+  const map = {
+    "uk":"United Kingdom",
+    "united kingdom":"United Kingdom",
+    "great britain":"United Kingdom",
+    "england":"United Kingdom",
+    "scotland":"United Kingdom",
+    "wales":"United Kingdom",
+    "ireland":"Ireland",
+    "usa":"United States",
+    "us":"United States",
+    "united states":"United States",
+    "canada":"Canada",
+    "spain":"Spain",
+    "france":"France",
+    "italy":"Italy",
+    "germany":"Germany",
+    "eu":"Europe",
+    "europe":"Europe"
+  };
+  return map[norm] || p;
+}
+
+function buildGeocodeQuery(raw, feed){
+  const s = (raw||"").toString().trim();
+  if(!s) return "";
+  // If it already has commas or digits (address), don't append hints.
+  const hasAddr = /[0-9]/.test(s) || s.includes(",");
+  if(hasAddr) return s;
+  const hint = inferFeedGeoHint(feed);
+  if(!hint) return s;
+  // Avoid "London, United Kingdom, United Kingdom"
+  if(s.toLowerCase().includes(hint.toLowerCase())) return s;
+  return `${s}, ${hint}`;
+}
+
+async function resolveEventLatLng(ev, feed){
+  // Priority: explicit geometry/latlng -> geocode best available location string.
+  if(!ev) return null;
+
+  // Explicit geometry from providers (Topo etc.)
+  const geomStr = ev.geometry || ev.geom || ev.location_geometry;
+  if(geomStr){
+    const g = tryParseJson(geomStr);
+    if(g && g.type==="Point" && Array.isArray(g.coordinates) && g.coordinates.length>=2){
+      const lng = Number(g.coordinates[0]);
+      const lat = Number(g.coordinates[1]);
+      if(Number.isFinite(lat) && Number.isFinite(lng)) return {lat,lng};
+    }
   }
 
-  function findFromAssetsOrTravellers(city){
-    const key = norm(city);
-    if(!key) return null;
+  // Some feeds may provide lat/lng directly
+  const lat = Number(ev.lat ?? ev.latitude);
+  const lng = Number(ev.lng ?? ev.lon ?? ev.longitude);
+  if(Number.isFinite(lat) && Number.isFinite(lng)) return {lat,lng};
 
-    const asset = (window.CIAssets || []).find(a => norm(a.city) === key || norm(a.location) === key);
-    if(asset && Number.isFinite(+asset.lat) && Number.isFinite(+asset.lng)){
-      return { lat:+asset.lat, lng:+asset.lng, source:"asset" };
-    }
+  // Best available text to geocode
+  const locName = (ev.event_location_name && String(ev.event_location_name).trim()) || "";
+  const cityText = pickCityText(ev);
+  const q1 = buildGeocodeQuery(locName, feed);
+  const q2 = buildGeocodeQuery(cityText, feed);
+  const query = q1 || q2;
+  if(!query) return null;
 
-    const trav = (window.CITravellers || []).find(t => norm(t.city) === key || norm(t.location) === key);
-    if(trav && Number.isFinite(+trav.lat) && Number.isFinite(+trav.lng)){
-      return { lat:+trav.lat, lng:+trav.lng, source:"traveller" };
-    }
-
-    return null;
-  }
-
-  async function nominatimLookup(query){
-    const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(query);
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Accept": "application/json"
-      }
-    });
-    if(!res.ok) throw new Error("Geocode HTTP " + res.status);
-    const arr = await res.json();
-    if(!Array.isArray(arr) || !arr.length) return null;
-    const hit = arr[0];
-    const lat = parseFloat(hit.lat);
-    const lng = parseFloat(hit.lon);
-    if(!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    return { lat, lng, source:"geocode" };
-  }
-
-  async function resolveCityLatLng(city){
-    const key = norm(city);
-    if(!key) return null;
-    if(mem.has(key)) return mem.get(key);
-
-    // 1) assets/travellers already mapped in that city
-    const fromExposure = findFromAssetsOrTravellers(city);
-    if(fromExposure){
-      mem.set(key, fromExposure);
-      return fromExposure;
-    }
-
-    // 2) cache
-    const cache = loadCache();
-    if(cache[key] && Number.isFinite(+cache[key].lat) && Number.isFinite(+cache[key].lng)){
-      const v = { lat:+cache[key].lat, lng:+cache[key].lng, source:"cache" };
-      mem.set(key, v);
-      return v;
-    }
-
-    // 3) online geocode (best-effort)
-    try{
-      const v = await nominatimLookup(city);
-      if(v){
-        cache[key] = { lat:v.lat, lng:v.lng, t: Date.now() };
-        saveCache(cache);
-        mem.set(key, v);
-        return v;
-      }
-    }catch(_){ /* ignore */ }
-
-    mem.set(key, null);
-    return null;
-  }
-
-  async function resolveEventLatLng(ev){
-    // First: existing geometry / coordinates
-    const direct = extractLatLon(ev);
-    if(direct) return { ...direct, source: "event" };
-
-    // Try a city-ish string
-    const cityText = pickCityText(ev);
-    // heuristic: if "Toronto, Canada" etc -> keep as-is, nominatim is fine
-    const resolved = await resolveCityLatLng(cityText);
-    if(resolved) return resolved;
-
-    // as a last resort, try just the 'city' field if caption/title were noisy
-    if(ev && ev.city && ev.city !== cityText){
-      const resolved2 = await resolveCityLatLng(ev.city);
-      if(resolved2) return resolved2;
-    }
-
-    return null;
-  }
-
-  return { resolveEventLatLng };
+  const latlng = await geocodeBestEffort(query);
+  return latlng || null;
 })();
 
   function jumpToEvent(ev){
@@ -4480,7 +4487,7 @@ const selectEvent = async (ev, rowEl) => {
   else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
 
   // jump map (live feeds sometimes have no geometry; we best-effort geocode the city)
-  const ll = await CIGeocode.resolveEventLatLng(ev);
+  const ll = await CIGeocode.resolveEventLatLng(ev, feed);
   if (ll){
     document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
       detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
