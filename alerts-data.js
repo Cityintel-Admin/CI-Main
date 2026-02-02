@@ -15,6 +15,10 @@ window.alertsData =[
     source: "",
     summary: ""
   }, 
+
+{ title: "Pro‑Palestine Demonstration", city: "London", country: "United Kingdom", continent: "Europe", risk: "Medium", time: "2026-02-01T13:00:00", source: "Public protest announcements / news reports", summary: "Large pro‑Palestine march in central London, with police monitoring slogans and crowd behaviour." }, { title: "Kurdish Community Protest at Iranian Embassy", city: "London", country: "United Kingdom", continent: "Europe", risk: "Low", time: "2026-02-01T12:00:00", source: "Community group announcements", summary: "Protest outside the Iranian Embassy opposing the Islamic Republic and supporting Kurdish communities." },
+
+ 
 {
     title: "Architectural Workers’ Protest Bjarke Ingels Group",
     city: "1 Finsbury Avenue, EC2M 2PF",
@@ -12829,6 +12833,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
