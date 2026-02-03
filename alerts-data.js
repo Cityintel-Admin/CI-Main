@@ -235,7 +235,7 @@ window.alertsData =[
  {
     title: "National Shutdown / General Strike against ICE",
     city: "Nationwide",
-    country: "United States",
+    country: "United States of America",
     continent: "North America",
     risk: "Mid",
     time: "2026-01-30T08:00:00",
@@ -1460,7 +1460,7 @@ window.alertsData =[
  {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "United States",
+    country: "United States of America",
     continent: "North America",
     risk: "high",
     time: "2025-11-22T24:00:00",
@@ -1471,7 +1471,7 @@ window.alertsData =[
 {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "united states",
+    country: "United States of America",
     continent: "North America",
     risk: "high",
     time: "2025-01-11T24:00:00",
@@ -1667,7 +1667,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action",
   city:"New York", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -1679,7 +1679,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action ",
   city:"Chicago", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -1691,7 +1691,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action",
   city:"Los Angeles", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -1703,7 +1703,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action",
   city:"Washington DC", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -1716,7 +1716,7 @@ title:"Workplace day of action",
 { 
   title:"March for Life — Washington, DC",
   city:"Washington DC", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-23T12:00:00",
@@ -1727,7 +1727,7 @@ title:"Workplace day of action",
 { 
   title:"Solidarity rally — ‘Standing with Iranian People’",
   city:"Washington, DC", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America",
   risk:"low",
   time:"2026-01-21T18:30:00",
@@ -1829,7 +1829,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Keep Hybrid work in the OPS ",
     city: " 505 University Ave, Toronto ON",
-    country: "United States",
+    country: "United States of America",
     continent: "North America",
     risk: "Mid",
     time: "2026-01-23T08:30:00",
@@ -1916,7 +1916,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 { 
   title:"National School Walkout / Student Protest (reported)", 
   city:"Multiple (national)", 
-  country:"United States", 
+  country:"United States of America", 
   continent:"North America", 
   risk:"medium", 
   time:"2026-01-20T14:00:00", 
@@ -12833,6 +12833,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
