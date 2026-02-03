@@ -16,6 +16,50 @@ window.alertsData =[
     summary: ""
   }, 
 
+ {
+    title: "Unpunished Evil Grows: Stand with Ukraine Protest",
+    city: "London, Piccadilly Circus",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-21T14:00:00",
+    source: "",
+    summary: "A protest marking the fourth anniversary of Russia's full-scale invasion of Ukraine, organized by VSESVIT, Campaign for Ukraine, and the Hromada Collective. The event highlights the ongoing human cost of the war and calls for Russian troops to leave Ukraine and for accountability for war crimes."
+  },
+
+   {
+    title: "Protest for Release of Kidnapped Venezuelan President Nicolas Maduro and Cilia Flores",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-03T18:00:00",
+    source: "",
+    summary: "A protest outside the US Embassy in London organized by the 'British Chapter Antifascist International' to demand the release of the Venezuelan President Nicolás Maduro and First Lady Cilia Flores, who were reportedly detained by US forces about a month prior to this event. The event is a 'Global Day of Action' for Venezuela and similar rallies have occurred worldwide."
+  },
+
+  {
+    title: "Protest against Sri Lanka's 78th Independent Day - Black Day for Tamils",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2025-02-04T11:00:00",
+    source: "https://www.tamilguardian.com",
+    summary: "An annual protest organized by the Movement for Self-Determination of Tamil Eelam (MSDTE) and other diaspora groups to mark Sri Lanka's Independence Day as a 'Black Day' for Tamils, calling for self-determination and justice for alleged genocide. The protest historically begins outside the Sri Lankan High Commission and may involve marches through central London to Parliament Square. Previous similar events have involved large crowds, potential traffic disruption, and minor clashes with authorities, though typically managed as a public order event."
+  },
+
+   {
+    title: "Anti-Zionist Movement Launch Birmingham / Our Fight Stop The Hate March",
+    city: "Birmingham",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-08T15:00:00",
+    source: "https://www.eventbrite.com",
+    summary: "A Palestinian-led grassroots movement event at The Old Print Works aimed at ending Zionism through education, action, and solidarity. The event has generated some controversy and is not listed on the venue's official website."
+  },
+
 {
     title: "Architectural Workers’ Protest Bjarke Ingels Group",
     city: "1 Finsbury Avenue, EC2M 2PF",
@@ -12830,6 +12874,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
