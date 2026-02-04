@@ -4010,18 +4010,44 @@ setTimeout(settleMap, 600);
 
 	
   // ---- React when an incident is opened (jump to city) ----
-    function pulseAt(lat, lon, label){
+    function pulseAt(lat, lon, label, opts = {}) {
+    const z = Number.isFinite(Number(opts.zoom)) ? Number(opts.zoom) : 6;
+
     // centre on the incident
-    map.setView([lat, lon], 7);
+    map.setView([lat, lon], z);
 
     // If the detail drawer is open on desktop, shift the view left so the marker isn't hidden
     try {
       const panel = document.getElementById('detailPanel');
-      if (panel && panel.classList.contains('open') && window.innerWidth >= 1100) {
-        const w = panel.getBoundingClientRect().width || 360;
-        // panBy +x moves the map right, therefore the marker appears more to the left (visible).
-        map.panBy([Math.round(w/2), 0], {animate: false});
+      const isOpen = panel && panel.classList.contains('open');
+      if (isOpen) {
+        // pan left by ~40% of the panel width (keeps the pin visible even if the panel overlaps on smaller widths)
+        const w = panel.getBoundingClientRect().width || 420;
+        map.panBy([-(w * 0.4), 0], { animate: true, duration: 0.35 });
       }
+    } catch (_) {}
+
+    // show a small "pulse" marker to draw attention
+    if (window.__ciPulseMarker) {
+      try { map.removeLayer(window.__ciPulseMarker); } catch(_) {}
+    }
+    window.__ciPulseMarker = L.circleMarker([lat, lon], {
+      radius: 10,
+      weight: 2,
+      opacity: 0.9,
+      fillOpacity: 0.2
+    }).addTo(map);
+
+    if (label) window.__ciPulseMarker.bindTooltip(label, { direction: 'top', offset: [0, -8] }).openTooltip();
+
+    // auto-remove pulse after a short moment
+    setTimeout(() => {
+      if (window.__ciPulseMarker) {
+        try { map.removeLayer(window.__ciPulseMarker); } catch(_) {}
+        window.__ciPulseMarker = null;
+      }
+    }, 1800);
+  }
     } catch(e) {}
 
     // clear previous highlight if any
@@ -4071,27 +4097,69 @@ setTimeout(settleMap, 600);
   }
 
 
-  window.addEventListener('ci:jumpToIncident', e => {
-    const d = e.detail || {};
-    const lat = typeof d.lat === 'number' ? d.lat : null;
-    const lon = typeof d.lon === 'number' ? d.lon : null;
+    // Accept both window and document dispatches for ci:jumpToIncident
+  document.addEventListener('ci:jumpToIncident', (e) => {
+    try { window.dispatchEvent(new CustomEvent('ci:jumpToIncident', { detail: (e && e.detail) || {} })); } catch(_) {}
+  });
 
-    if (lat != null && lon != null) {
-       window.ciLastIncident = { lat, lon, label: 'Current incident' };
-		pulseAt(lat, lon, 'Current incident');
-      return;
-    }
+window.addEventListener('ci:jumpToIncident', e => {
+    (async () => {
+      const d = e.detail || {};
 
-    const city    = (d.city || '').toString().trim().toLowerCase();
-    const country = (d.country || '').toString().trim().toLowerCase();
-    const pts = [];
+      // Accept lat/lon as numbers OR numeric strings
+      const lat = Number(d.lat);
+      const lon = Number(d.lon);
+      const label = d.label || d.title || d.city || 'Incident';
+      const zoom = Number.isFinite(Number(d.zoom)) ? Number(d.zoom) : 6;
 
-    (window.CIAssets || []).forEach(a => {
-      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
-      if (city && (a.city || '').toLowerCase() !== city) return;
-      if (country && (a.country || '').toLowerCase() !== country) return;
-      pts.push([a.lat, a.lon]);
-    });
+      // 1) direct coordinates (preferred)
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
+        window.ciLastIncident = { lat, lon, label, at: Date.now() };
+        pulseAt(lat, lon, label, { zoom });
+        return;
+      }
+
+      // 2) impact zone polygon -> fit bounds (and keep it slightly zoomed out)
+      if (d.impact_zone) {
+        try {
+          const zone = (typeof d.impact_zone === 'string') ? JSON.parse(d.impact_zone) : d.impact_zone;
+          if (zone && zone.type === 'Polygon' && zone.coordinates && zone.coordinates[0] && zone.coordinates[0].length) {
+            const latlngs = zone.coordinates[0].map(pt => [pt[1], pt[0]]).filter(p => Number.isFinite(p[0]) && Number.isFinite(p[1]));
+            if (latlngs.length >= 3) {
+              const b = L.latLngBounds(latlngs);
+              map.fitBounds(b, { padding: [30, 30], maxZoom: 7 });
+              return;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 3) geometry point
+      if (d.geometry) {
+        try {
+          const g = (typeof d.geometry === 'string') ? JSON.parse(d.geometry) : d.geometry;
+          if (g && g.type === 'Point' && Array.isArray(g.coordinates) && g.coordinates.length >= 2) {
+            const glon = Number(g.coordinates[0]);
+            const glat = Number(g.coordinates[1]);
+            if (Number.isFinite(glat) && Number.isFinite(glon)) {
+              pulseAt(glat, glon, label, { zoom });
+              return;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 4) last resort: try a lightweight city lookup (frontend-only)
+      if (d.city) {
+        try {
+          const resolved = await (window.CIGeocode?.resolveCityLatLng?.(d.city, d.country) || Promise.resolve(null));
+          if (resolved && Number.isFinite(resolved.lat) && Number.isFinite(resolved.lon)) {
+            pulseAt(resolved.lat, resolved.lon, label, { zoom });
+          }
+        } catch (_) {}
+      }
+    })();
+  });
 
     (window.CITravellers || []).forEach(t => {
       if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
