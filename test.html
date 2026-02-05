@@ -157,34 +157,78 @@ async function loadOrgContext() {
   // Also support both call styles:
   //   exposureFor({ city, country, lat, lng, radiusKm })
   //   exposureFor(city, country, lat, lng, radiusKm)
-  function exposureFor(cityOrOpts, country, lat, lng, radiusKm) {
-    const opts = (cityOrOpts && typeof cityOrOpts === 'object')
-      ? cityOrOpts
-      : { city: cityOrOpts, country, lat, lng, radiusKm };
+  function exposureFor(cityOrKey, alertLat, alertLng, radiusKm) {
+    const data = getExposureData();
+    const assets = Array.isArray(data.assets) ? data.assets : [];
+    const travellers = Array.isArray(data.travellers) ? data.travellers : [];
 
-    const city = opts?.city || "";
-    const ctry = opts?.country || "";
-    const la = toNum(opts?.lat);
-    const ln = toNum(opts?.lng);
-    const radKm = Number(opts?.radiusKm) || 1;
+    const clat = toNum(alertLat);
+    const clng = toNum(alertLng);
 
-    const assets = safeJson("ci_assets", []);
-    const travellers = safeJson("ci_travellers", []);
-
-    let assetsNearby = [];
-    let travellersNearby = [];
-
-    if (la !== null && ln !== null) {
-      assetsNearby = assets.filter(a => itemWithinRadius(a, la, ln, radKm));
-      travellersNearby = travellers.filter(t => itemWithinRadius(t, la, ln, radKm));
-    } else {
-      // Fallback: city/country match (no lat/lng on incident)
-      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, ctry));
-      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, ctry));
+    function itemLatLng(item) {
+      const ilat = toNum(item?.lat ?? item?.latitude);
+      const ilng = toNum(item?.lng ?? item?.lon ?? item?.long ?? item?.longitude);
+      if (ilat === null || ilng === null) return null;
+      return { lat: ilat, lng: ilng };
     }
 
-    // Return both new + legacy names (older UI expects `assets`/`travellers`).
-    return { assetsNearby, travellersNearby, assets: assetsNearby, travellers: travellersNearby };
+    function tierForKm(km) {
+      if (km === null || !isFinite(km)) return null;
+      if (km <= 1) return "within 1 km";
+      if (km <= 5) return "within 5 km";
+      if (km <= 10) return "within 10 km";
+      return ">10 km";
+    }
+
+    function enrich(item) {
+      const ll = itemLatLng(item);
+      const km = (clat === null || clng === null || !ll) ? null : distanceKm(clat, clng, ll.lat, ll.lng);
+      return { ...item, distanceKm: km, distanceTier: tierForKm(km) };
+    }
+
+    const radius = toNum(radiusKm) ?? 10;
+
+    // If we don't have incident coordinates, fall back to city matching (legacy)
+    if (clat === null || clng === null) {
+      const cityKey = String(cityOrKey || "").toLowerCase().trim();
+      const assetsCity = assets
+        .filter(a => String(a.city || a.location_city || "").toLowerCase().trim() === cityKey)
+        .map(enrich);
+      const travellersCity = travellers
+        .filter(t => String(t.city || t.location_city || "").toLowerCase().trim() === cityKey)
+        .map(enrich);
+      return { assets: assetsCity, travellers: travellersCity, tiers: null };
+    }
+
+    const assetsEnriched = assets.map(enrich);
+    const travellersEnriched = travellers.map(enrich);
+
+    const assetsNearby = assetsEnriched
+      .filter(a => a.distanceKm !== null && a.distanceKm <= radius)
+      .sort((a,b)=>(a.distanceKm??1e9)-(b.distanceKm??1e9));
+    const travellersNearby = travellersEnriched
+      .filter(t => t.distanceKm !== null && t.distanceKm <= radius)
+      .sort((a,b)=>(a.distanceKm??1e9)-(b.distanceKm??1e9));
+
+    function countTiers(arr) {
+      const c = { "within 1 km": 0, "within 5 km": 0, "within 10 km": 0, ">10 km": 0, "unknown": 0 };
+      for (const it of arr) {
+        const tier = it.distanceTier;
+        if (!tier) { c.unknown++; continue; }
+        c[tier] = (c[tier] || 0) + 1;
+      }
+      return c;
+    }
+
+    return {
+      assets: assetsNearby,
+      travellers: travellersNearby,
+      tiers: {
+        assets: countTiers(assetsEnriched),
+        travellers: countTiers(travellersEnriched),
+        radiusKm: radius
+      }
+    };
   }
 
   window.CIExposure = window.CIExposure || {};
@@ -1641,7 +1685,9 @@ async function loadOrgContext() {
 
 
 	
-  </style>
+  
+  .exposure-distance{opacity:.75;font-size:12px;margin-left:6px;}
+</style>
 </head>
 
 
@@ -2805,17 +2851,19 @@ function openDetailPanel(item, relatedList){
 
   if (detailExposureListEl) {
     if (nA || nT) {
-      const assetLines = exposure.assets.map(a =>
-        `<li><b>${a.name || 'Asset'}</b>${a.type ? ` — ${a.type}` : ''}${
-          a.city || a.country ? ` (${[a.city, a.country].filter(Boolean).join(', ')})` : ''
-        }</li>`
-      ).join('');
+      const assetLines = exposure.assets.map(a => {
+        const dist = (a.distanceKm !== null && isFinite(a.distanceKm))
+          ? ` <span class="exposure-distance">(${a.distanceKm.toFixed(1)} km${a.distanceTier ? `, ${a.distanceTier}` : ''})</span>`
+          : '';
+        return `<li><b>${a.name || 'Asset'}</b>${a.type ? ` — ${a.type}` : ''}${a.location ? ` — ${a.location}` : ''}${dist}</li>`;
+      }).join('');
 
-      const travLines = exposure.travellers.map(t =>
-        `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${
-          t.hotel ? ` — ${t.hotel}` : ''
-        }</li>`
-      ).join('');
+      const travLines = exposure.travellers.map(t => {
+        const dist = (t.distanceKm !== null && isFinite(t.distanceKm))
+          ? ` <span class="exposure-distance">(${t.distanceKm.toFixed(1)} km${t.distanceTier ? `, ${t.distanceTier}` : ''})</span>`
+          : '';
+        return `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${t.hotel ? ` — ${t.hotel}` : ''}${dist}</li>`;
+      }).join('');
 
       detailExposureListEl.innerHTML = `
         ${assetLines ? `<div style="margin-bottom:6px;"><b>Assets</b><ul>${assetLines}</ul></div>` : ''}
