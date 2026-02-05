@@ -4101,7 +4101,36 @@ window.addEventListener('ci:jumpToIncident', e => {
         } catch (_) {}
       }
 
-      // 4) last resort: try a lightweight city lookup (frontend-only)
+      // 4) If no incident coords but we have mapped assets/travellers in this city,
+      // use their centroid as a proxy so we still jump to the right area.
+      if (!latlng && d.city) {
+        const norm = (s) => (s || '').toString().trim().toLowerCase();
+        const wantCity = norm(d.city);
+        const wantCountry = norm(d.country || d.country_code);
+        const pts = [];
+        (window.CIAssets || []).forEach((a) => {
+          if (norm(a.city) !== wantCity) return;
+          if (wantCountry && norm(a.country || a.country_code) !== wantCountry) return;
+          const lat = Number(a.lat);
+          const lon = Number(a.lon);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) pts.push([lat, lon]);
+        });
+        (window.CITravellers || []).forEach((t) => {
+          if (norm(t.city) !== wantCity) return;
+          if (wantCountry && norm(t.country || t.country_code) !== wantCountry) return;
+          const lat = Number(t.lat);
+          const lon = Number(t.lon);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) pts.push([lat, lon]);
+        });
+        if (pts.length) {
+          const avgLat = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+          const avgLon = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+          pulseAt(avgLat, avgLon, label, { zoom });
+          return;
+        }
+      }
+
+      // 5) last resort: try a lightweight city lookup (frontend-only)
       if (d.city) {
         try {
           const resolved = await (window.CIGeocode?.resolveCityLatLng?.(d.city, d.country) || Promise.resolve(null));
@@ -4113,24 +4142,7 @@ window.addEventListener('ci:jumpToIncident', e => {
     })();
   });
 
-    (window.CITravellers || []).forEach(t => {
-      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
-      if (city && (t.city || '').toLowerCase() !== city) return;
-      if (country && (t.country || '').toLowerCase() !== country) return;
-      pts.push([t.lat, t.lon]);
-    });
 
-    if (pts.length) {
-      const avgLat = pts.reduce((s,p)=>s+p[0],0)/pts.length;
-      const avgLon = pts.reduce((s,p)=>s+p[1],0)/pts.length;
-      window.ciLastIncident = {
-        lat: avgLat,
-        lon: avgLon,
-        label: 'Incident city (assets/travellers nearby)'
-      };
-      pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
-    }
-  });
 
 
 
