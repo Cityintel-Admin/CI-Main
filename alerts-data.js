@@ -16,6 +16,16 @@ window.alertsData =[
     summary: ""
   }, 
 
+ {
+    title: "Emergency Winter Payment Protest",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low (Scheduled, organized protest)",
+    time: "28th February at 1pm",
+    source: "Irish Wheelchair Association.",
+    summary: "A protest organized by the IWA to demand an Emergency Winter Payment, advocating for disabled people's rights under the banner 'Choice, not charity'."
+  },
  
  {
     title: "Major Demonstration for a Free Iran at Brandenburg Gate",
@@ -12963,6 +12973,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
