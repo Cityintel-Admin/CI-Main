@@ -21,10 +21,21 @@ window.alertsData =[
     city: "London",
     country: "UK",
     continent: "Europe",
-    risk: "Low to Moderate (Standard protest; potential for crowd and traffic disruption)",
+    risk: "Low",
     time: "Sunday, 8 February, 14:00 - 16:00 (March starts at 16:00)",
     source: "Organizers (Iranian Diaspora/Activist Groups)",
     summary: "A protest scheduled in London to support a Free Iran movement. The event starts in front of 10 Downing Street and includes a march to the Islamic Republic embassy."
+  },
+
+  {
+    title: "Protest: Against Milano-Cortina Winter Olympics (Corteo Nazionale)",
+    city: "Milan",
+    country: "Italy",
+    continent: "Europe",
+    risk: "Mid",
+    time: "February 7, 2026, at 15:00 (3:00 PM)",
+    source: "",
+    summary: "A national march organized by activist groups in Milan to protest against the Milano-Cortina 2026 Winter Olympics, gathering at Piazza Romana/Medaglie d'Oro station."
   },
  
  {
@@ -32,7 +43,7 @@ window.alertsData =[
     city: "London",
     country: "UK",
     continent: "Europe",
-    risk: "Low to Moderate (Standard protest; potential for crowd and traffic disruption)",
+    risk: "Low ",
     time: "Sunday, 8 February, 14:00 - 16:00 (March starts at 16:00)",
     source: "Organizers (Iranian Diaspora/Activist Groups)",
     summary: "A protest scheduled in London to support a Free Iran movement. The event starts in front of 10 Downing Street and includes a march to the Islamic Republic embassy."
@@ -43,7 +54,7 @@ window.alertsData =[
     city: "Madrid",
     country: "Spain",
     continent: "Europe",
-    risk: "Low (Scheduled public demonstration)",
+    risk: "Low",
     time: "Friday, February 6, 2026, at 20:00 (8:00 PM)",
     source: "",
     summary: "A protest organized under the slogan 'Without Housing There Is No Future' to advocate for a dignified future for Spanish youth, meeting in the Moncloa area of Madrid."
@@ -54,7 +65,7 @@ window.alertsData =[
   "city": "Madrid",
   "country": "Spain",
   "continent": "Europe",
-  "risk": "Low (Organized public talk)",
+  "risk": "Low",
   "time": "February 11th at 18:30",
   "source": "",
   "summary": "A talk featuring journalist and libertarian militant Franz García about the rise of the extreme right and the criminalization of protests in Peru."
@@ -65,7 +76,7 @@ window.alertsData =[
     city: "Abuja",
     country: "Nigeria",
     continent: "Africa",
-    risk: "Moderate (Organized public demonstration; potential for traffic disruption and security incidents)",
+    risk: "Mid",
     time: "Friday, February 6, 2026, at 8:00 AM",
     source: "Grassroots Activists / Social Media Campaign",
     "summary": "A public 'walk' and protest scheduled for Diamond Junction, Wuse 2, calling for action against proposed changes to Nigeria's electoral framework. Participants are instructed to wear black tshirts."
@@ -76,7 +87,7 @@ window.alertsData =[
     city: "Berlin",
     country: "Germany",
     continent: "Europe",
-    risk: "Moderate (Disruption to opera performances; potential for minor labor disputes)",
+    risk: "Mid",
     time: "February 7, 2026 (all day)",
     source: "ver.di Berlin-Brandenburg / pnr24.de",
     summary: "The ver.di union has called for a strike at the Deutsche Oper on 02/07. The union condemns attempts by the Berlin Opera Foundation to use external forces to undermine the strike action."
@@ -13039,6 +13050,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
