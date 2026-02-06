@@ -16,6 +16,17 @@ window.alertsData =[
     summary: ""
   }, 
 
+  {
+    title: "Mobilisation Contre l'Euthanasie et le Suicide Assisté",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Low",
+    time: "February 16th at 6:30 PM (18h30)",
+    source: "Alliance VITA, Fondation Jérôme Lejeune, CPEDi, AFC",
+    summary: "A mobilization event organized by pro-life associations to protest against euthanasia and assisted suicide legislation, held near the Invalides metro station in Paris."
+  },
+
  {
     title: "Emergency Winter Payment Protest",
     city: "Dublin",
@@ -12962,6 +12973,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
