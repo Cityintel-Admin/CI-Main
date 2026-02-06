@@ -16,6 +16,18 @@ window.alertsData =[
     summary: ""
   }, 
 
+ 
+ ,{
+    title: "Major Demonstration for a Free Iran at Brandenburg Gate",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Mid",
+    time: "13:00 Feb. 7, 2026",
+    source: "German Solidarity Committee for a Free Iran (DSFI)",
+    summary: "Activists plan to stage a large scale demonstration supporting the Iranian uprising and marking the anniversary of the 1979 revolution. Organizers anticipate tens of thousands of attendees at the Brandenburg Gate."
+  },
+
   {
     title: "Protest against Electoral Act amendments",
     city: "Abuja",
@@ -12951,6 +12963,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
