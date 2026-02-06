@@ -17,6 +17,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "Strike at Deutsche Oper, Berlin; Strike-breaking attempts condemned by ver.di",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Moderate (Disruption to opera performances; potential for minor labor disputes)",
+    time: "February 7, 2026 (all day)",
+    source: "ver.di Berlin-Brandenburg / pnr24.de",
+    summary: "The ver.di union has called for a strike at the Deutsche Oper on 02/07. The union condemns attempts by the Berlin Opera Foundation to use external forces to undermine the strike action."
+  },
+
+  {
     title: "Mobilisation Contre l'Euthanasie et le Suicide Assisté",
     city: "Paris",
     country: "France",
@@ -12973,6 +12984,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
