@@ -16,6 +16,38 @@ window.alertsData =[
     summary: ""
   }, 
 
+   {
+    title: "Iranian protest",
+    city: "Central London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-07T13:00:00",
+    source: "",
+    summary: "An anti-Iranian government march following a route from the Embassy of the Islamic Republic of Iran to Trafalgar Square."
+  },
+  {
+    title: "Digital ID protest",
+    city: "London",
+    country: "England",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-07T12:00:00",
+    "source: "",
+    summary: "A protest against the use of digital ID within the UK, taking place at Hyde Park Corner Station."
+  },
+ 
+  {
+    title: "Anti-racism march",
+    city: "North London",
+    country: "England",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-07T12:30:00",
+    source: "",
+    summary: "An anti-racism march against the far-right, gathering at Finsbury Park Mosque and marching to Ducketts Common."
+  },
+
  {
     title: "Unpunished Evil Grows: Stand with Ukraine Protest",
     city: "London, Piccadilly Circus",
@@ -12874,6 +12906,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
