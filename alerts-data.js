@@ -17,6 +17,17 @@ window.alertsData =[
   }, 
 
   {
+    title: "Political Visit: Jordan Bardella (RN) in Carcassonne",
+    city: "Carcassonne",
+    country: "France",
+    continent: "Europe",
+    risk: "Moderate (High-profile political visit ahead of elections; potential for minor protests or traffic disruption)",
+    time: "Saturday, February 7, 2026, at 3:00 PM (15:00)",
+    source: "",
+    summary: "Jordan Bardella, President of the National Rally, is visiting Carcassonne's Cité (Porte Narbonnaise) to meet future candidates and the public as part of the upcoming municipal election campaign."
+  },
+
+  {
     title: "Protest for Free Iran (London)",
     city: "London",
     country: "UK",
@@ -13050,6 +13061,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
