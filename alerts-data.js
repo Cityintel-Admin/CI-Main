@@ -48,7 +48,7 @@ window.alertsData =[
     time: "2026-02-06T08:00:00",
     source: "Local Activist Groups",
     summary: "Activists are gathering at Diamond Junction in Wuse II to march to the National Assembly in protest of 2027 election law changes".
-  },
+},
 
   {
     title: "Save Solace Women’s Aid Services",
@@ -12974,6 +12974,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
