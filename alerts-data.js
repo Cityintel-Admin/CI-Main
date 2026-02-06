@@ -17,6 +17,39 @@ window.alertsData =[
   }, 
 
   {
+    title: "Protest: Sin Vivienda No Hay Futuro",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low (Scheduled public demonstration)",
+    time: "Friday, February 6, 2026, at 20:00 (8:00 PM)",
+    source: "",
+    summary: "A protest organized under the slogan 'Without Housing There Is No Future' to advocate for a dignified future for Spanish youth, meeting in the Moncloa area of Madrid."
+  },
+
+ {
+  "title": "Auge de la extrema derecha y criminalización de la protesta en Perú",
+  "city": "Madrid",
+  "country": "Spain",
+  "continent": "Europe",
+  "risk": "Low (Organized public talk)",
+  "time": "February 11th at 18:30",
+  "source": "",
+  "summary": "A talk featuring journalist and libertarian militant Franz García about the rise of the extreme right and the criminalization of protests in Peru."
+},
+
+ {
+    title: "Protest Against Mutilation of Electoral Reform Act",
+    city: "Abuja",
+    country: "Nigeria",
+    continent: "Africa",
+    risk: "Moderate (Organized public demonstration; potential for traffic disruption and security incidents)",
+    time: "Friday, February 6, 2026, at 8:00 AM",
+    source": "Grassroots Activists / Social Media Campaign",
+    "summary": "A public 'walk' and protest scheduled for Diamond Junction, Wuse 2, calling for action against proposed changes to Nigeria's electoral framework. Participants are instructed to wear black t-shirts."
+  },
+
+  {
     title: "Strike at Deutsche Oper, Berlin; Strike-breaking attempts condemned by ver.di",
     city: "Berlin",
     country: "Germany",
@@ -12984,6 +13017,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
