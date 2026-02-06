@@ -16,6 +16,39 @@ window.alertsData =[
     summary: ""
   }, 
 
+  {
+    title: "Save Solace Women’s Aid Services",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-06T17:30:00",
+    source: "United Voices of the World (UVW)",
+    summary: "Domestic abuse workers and supporters are rallying at Tower Hamlets Town Hall to oppose staffing cuts and service closures."
+  },
+ 
+  {
+    title: "Anti-U.S. and Anti-War Rally",
+    city: "Manila",
+    country: "Philippines",
+    continent: "Asia",
+    risk: "Moderate",
+    time: "2026-02-06T10:00:00",
+    source: "U.S. Embassy in the Philippines",
+    summary: "Demonstrations near the U.S. Embassy on Kalaw Avenue protesting foreign military presence and conflict in Gaza and Venezuela."
+  },
+     
+  {
+    title: "Global Day of Action: No Work for War",
+    city: "Multiple (Mediterranean Ports)",
+    country: "Italy, Greece, Turkey, Morocco",
+    continent: "Europe/Africa",
+    risk: "Moderate",
+    time: "2026-02-06T08:00:00",
+    source: "International Dockworkers Council",
+    summary: "A coordinated international strike by dockworkers across 20+ ports to protest military aggression and the transport of weapons."
+  },
+
    {
     title: "Iranian protest",
     city: "Central London",
@@ -26,6 +59,7 @@ window.alertsData =[
     source: "",
     summary: "An anti-Iranian government march following a route from the Embassy of the Islamic Republic of Iran to Trafalgar Square."
   },
+ 
   {
     title: "Digital ID protest",
     city: "London",
@@ -12906,6 +12940,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
