@@ -68,7 +68,7 @@ window.alertsData =[
     risk: "Moderate (Organized public demonstration; potential for traffic disruption and security incidents)",
     time: "Friday, February 6, 2026, at 8:00 AM",
     source": "Grassroots Activists / Social Media Campaign",
-    "summary": "A public 'walk' and protest scheduled for Diamond Junction, Wuse 2, calling for action against proposed changes to Nigeria's electoral framework. Participants are instructed to wear black t-shirts."
+    "summary": "A public 'walk' and protest scheduled for Diamond Junction, Wuse 2, calling for action against proposed changes to Nigeria's electoral framework. Participants are instructed to wear black tshirts."
   },
 
   {
@@ -13039,6 +13039,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
