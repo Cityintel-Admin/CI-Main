@@ -6,15 +6,26 @@
 window.alertsData =[
 
  {
-    title: "Protest the Guga Hunt",
-    city: "Russell Square to Whitehall London",
-    country: "England",
+    title: "",
+    city: "",
+    country: "",
     continent: "Europe",
-    risk: "Mid",
-    time: "2026-02-04T09:30:00",
+    risk: "",
+    time: "",
     source: "",
     summary: ""
   }, 
+
+  {
+    title: "Protest against Electoral Act amendments",
+    city: "Abuja",
+    country: "Nigeria",
+    continent: "Africa",
+    risk: "Mid",
+    time: "2026-02-06T08:00:00",
+    source: "Local Activist Groups",
+    summary: "Activists are gathering at Diamond Junction in Wuse II to march to the National Assembly in protest of 2027 election law changes".
+  },
 
   {
     title: "Save Solace Women’s Aid Services",
@@ -12940,6 +12951,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
