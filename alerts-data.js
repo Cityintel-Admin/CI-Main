@@ -17,7 +17,7 @@ window.alertsData =[
   }, 
 
  
- ,{
+ {
     title: "Major Demonstration for a Free Iran at Brandenburg Gate",
     city: "Berlin",
     country: "Germany",
@@ -12963,6 +12963,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
