@@ -22,6 +22,7 @@
   // ------------- Local admin users -------------
   // Carlton — Admin:  cjladmin@cityintel.com  /  Kieron12!
   // Morris  — Admin:  mm@cityintel.com        /  Morrisintel@01
+  // Dale  — Admin:  dmck@cityintel.com        / Dmckcity@01
   const USERS = {
     'cjladmin@cityintel.com': {
       name: 'Carlton - Admin',
@@ -186,6 +187,7 @@
   })();
 
 })(window);
+
 
 
 
