@@ -17,6 +17,28 @@ window.alertsData =[
   }, 
 
   {
+    title: "Protest for Free Iran (London)",
+    city: "London",
+    country: "UK",
+    continent: "Europe",
+    risk: "Low to Moderate (Standard protest; potential for crowd and traffic disruption)",
+    time: "Sunday, 8 February, 14:00 - 16:00 (March starts at 16:00)",
+    source: "Organizers (Iranian Diaspora/Activist Groups)",
+    summary: "A protest scheduled in London to support a Free Iran movement. The event starts in front of 10 Downing Street and includes a march to the Islamic Republic embassy."
+  },
+ 
+ {
+    title: "Protest for Free Iran (London)",
+    city: "London",
+    country: "UK",
+    continent: "Europe",
+    risk: "Low to Moderate (Standard protest; potential for crowd and traffic disruption)",
+    time: "Sunday, 8 February, 14:00 - 16:00 (March starts at 16:00)",
+    source: "Organizers (Iranian Diaspora/Activist Groups)",
+    summary: "A protest scheduled in London to support a Free Iran movement. The event starts in front of 10 Downing Street and includes a march to the Islamic Republic embassy."
+  },
+
+  {
     title: "Protest: Sin Vivienda No Hay Futuro",
     city: "Madrid",
     country: "Spain",
@@ -13017,6 +13039,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
