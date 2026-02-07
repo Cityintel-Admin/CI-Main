@@ -23,6 +23,46 @@
     color:#e9edf2; border:1px solid #2e3238; border-radius:12px; padding:8px 10px; font:12px system-ui;
   }
   .chip{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+
+/* ============================================================
+   Panic alarm banner enhancements (center + pulse)
+   Works with injected banners from shared scripts.
+   ============================================================ */
+@keyframes ciPanicPulse {
+  0%   { opacity: 1; }
+  50%  { opacity: .35; }
+  100% { opacity: 1; }
+}
+.ci-panic-banner,
+#panicBanner,
+#panicAlarmBanner,
+.panic-banner,
+.panic-alarm-banner,
+.emergency-banner {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px;
+  text-align: center;
+}
+.ci-panic-banner .ci-panic-left { 
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.ci-panic-banner .ci-panic-right {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.ci-panic-banner { position: relative; }
+.ci-panic-pulse {
+  animation: ciPanicPulse 1.05s infinite;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
 </style>
 
   <meta charset="utf-8" />
@@ -423,16 +463,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </style>
 </head>
 <body>
-  <div id="panic-banner" style="display:none;position:sticky;top:0;z-index:9999;
-    background:#4b1d1d;border-bottom:1px solid rgba(255,90,95,.35);color:#fecaca;
-    padding:10px 14px;font:14px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
-    <b style="color:#fff">PANIC ALARM ACTIVE</b>
-    <span id="panic-banner-text" style="margin-left:10px"></span>
-    <a href="panicalarm.html" style="margin-left:12px;color:#fff;text-decoration:underline">Open</a>
-    <button id="panic-banner-close" style="float:right;background:transparent;border:1px solid rgba(255,255,255,.25);
-      color:#fff;border-radius:10px;padding:4px 10px;cursor:pointer;">Hide</button>
-  </div>
-
   <div class="app">
     <!-- SIDEBAR -->
     <aside class="sidebar">
@@ -448,6 +478,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 		<a href="travellers.html">Travellers</a>
         <a href="alerts.html">Alerts</a>
         <a href="events.html">Events</a>
+		<a href="live-feed.html">Live Feed</a>
 		<a href="test.html">Test Feed</a>  
 	<a href="brief.html">Intelligence Brief</a>
 	<a href="trends.html">Trends & Forecasts</a>
@@ -540,7 +571,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
         <!-- Bottom row -->
         <section class="card" style="grid-column: span 12;">
-          <h3>Protest Risk Regional Heatmap</h3>
+          <h3>Risk Heatmap</h3>
           <div id="risk-heatmap" class="heatmap"></div>
           <div class="legend" style="margin-top:10px">
             <span style="display:inline-block;width:20px;height:14px;background:#20312b;border-radius:4px;border:1px solid #2e3238"></span> Low
@@ -1785,64 +1816,108 @@ function countPresenceForCountry(countryName){
 
 
 <script>
-(function(){
-  const API_BASE = (window.API_BASE) || 'https://api.cityintelapi.com';
-  const banner = document.getElementById('panic-banner');
-  const txt = document.getElementById('panic-banner-text');
-  const btnHide = document.getElementById('panic-banner-close');
-  if (!banner) return;
-
-  function getAuthHeaders(){
-    const u = (window.CIAuth && CIAuth.who && CIAuth.who()) || null;
-    if (!u?.email) return null;
-    return {
-      'Content-Type':'application/json',
-      'X-User-Email': u.email,
-      'X-User-Name': u.name || '',
-      'X-User-Id': u.id || ''
-    };
+/**
+ * CityIntel: Panic banner UX enhancer
+ * - Centers the banner message
+ * - Adds pulsing effect to "PANIC ALARM ACTIVE"
+ * Non-invasive: only touches banner when it exists.
+ */
+(function () {
+  function isPanicBanner(el) {
+    if (!el || el.nodeType !== 1) return false;
+    const id = (el.id || '').toLowerCase();
+    const cls = (el.className || '').toString().toLowerCase();
+    if (id.includes('panic') || cls.includes('panic')) return true;
+    const txt = (el.textContent || '').toUpperCase();
+    return txt.includes('PANIC ALARM ACTIVE');
   }
 
-  async function fetchPanic(){
-    const headers = getAuthHeaders();
-    if (!headers) { banner.style.display='none'; return; }
-    const res = await fetch(API_BASE + '/api/org/panic', { method:'GET', headers });
-    const json = await res.json().catch(()=> ({}));
-    const data = json?.data || {};
-    if (data.active){
-      const who = data.byEmail || data.byName || '—';
-      const note = data.note ? (' — ' + data.note) : '';
-      txt.textContent = `Activated by ${who}${note}`;
-      banner.style.display = '';
+  function enhanceBanner(banner) {
+    if (!banner || banner.__ciEnhanced) return;
+    banner.__ciEnhanced = true;
+
+    // Mark for CSS
+    banner.classList.add('ci-panic-banner');
+
+    // Find the "Hide" control if present (button or link)
+    const hideBtn = Array.from(banner.querySelectorAll('button,a')).find(n =>
+      (n.textContent || '').trim().toLowerCase() === 'hide'
+    );
+
+    // Wrap left content (everything except hide button) so we can center it
+    const left = document.createElement('div');
+    left.className = 'ci-panic-left';
+
+    const right = document.createElement('div');
+    right.className = 'ci-panic-right';
+
+    // Move nodes into wrappers
+    const nodes = Array.from(banner.childNodes);
+    for (const node of nodes) {
+      if (hideBtn && (node === hideBtn || (node.nodeType === 1 && node.contains && node.contains(hideBtn)))) {
+        // skip: we'll move hideBtn separately
+        continue;
+      }
+      left.appendChild(node);
+    }
+    banner.appendChild(left);
+
+    if (hideBtn) {
+      right.appendChild(hideBtn);
+      banner.appendChild(right);
+    }
+
+    // Add pulse to the "PANIC ALARM ACTIVE" text (best effort)
+    const textNodes = [];
+    (function collectText(n) {
+      if (!n) return;
+      if (n.nodeType === Node.TEXT_NODE) {
+        if ((n.nodeValue || '').toUpperCase().includes('PANIC ALARM ACTIVE')) textNodes.push(n);
+        return;
+      }
+      if (n.nodeType === Node.ELEMENT_NODE) {
+        for (const c of Array.from(n.childNodes)) collectText(c);
+      }
+    })(left);
+
+    if (textNodes.length) {
+      // Wrap the first matching text node in a span
+      const tn = textNodes[0];
+      const span = document.createElement('span');
+      span.className = 'ci-panic-pulse';
+      span.textContent = tn.nodeValue;
+      tn.parentNode.replaceChild(span, tn);
     } else {
-      banner.style.display = 'none';
+      // If we can't locate exact text node, pulse the left wrapper
+      left.classList.add('ci-panic-pulse');
     }
   }
 
-  btnHide && btnHide.addEventListener('click', ()=>{
-    banner.style.display='none';
-    try{ localStorage.setItem('ci_panic_banner_hide_until', String(Date.now() + 10*60*1000)); }catch{}
-  });
+  function scan() {
+    // Check common ids/classes first
+    const candidates = [
+      document.getElementById('panicBanner'),
+      document.getElementById('panicAlarmBanner'),
+      ...Array.from(document.querySelectorAll('.panic-banner,.panic-alarm-banner,.emergency-banner'))
+    ].filter(Boolean);
 
-  async function tick(){
-    try{
-      const hideUntil = Number(localStorage.getItem('ci_panic_banner_hide_until')||0);
-      if (hideUntil && Date.now() < hideUntil) { banner.style.display='none'; return; }
-    }catch{}
-    try{ await fetchPanic(); }catch{}
+    // If none, do a small scan for "PANIC ALARM ACTIVE"
+    if (!candidates.length) {
+      const all = Array.from(document.querySelectorAll('body *'));
+      for (const el of all) {
+        if (isPanicBanner(el)) { candidates.push(el); break; }
+      }
+    }
+
+    candidates.forEach(enhanceBanner);
   }
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', tick);
-  } else tick();
-
-  setInterval(tick, 10000);
+  // Run now and observe for later insertion
+  scan();
+  const obs = new MutationObserver(() => scan());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
-
 </body>
 </html>
-
-
-
 
