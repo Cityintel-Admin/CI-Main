@@ -15,6 +15,50 @@ window.alertsData =[
     source: "",
     summary: ""
   },
+
+  {
+    "title": "Overseas Pakistani 'Black Day' Protest",
+    "city": "Washington, DC",
+    "country": "United States",
+    "continent": "North America",
+    "risk": "Medium",
+    "time": "2026-02-07T13:00:00",
+    "source": "Pakistan Tehreek-e-Insaf (PTI)",
+    "summary": "Protest at the Embassy of Pakistan marking 'Black Day' to protest the 2024 election results."
+  },
+ 
+  {
+    "title": "Overseas Pakistani 'Black Day' Protest",
+    "city": "London",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Medium",
+    "time": "2026-02-08T13:00:00",
+    "source": "Pakistan Tehreek-e-Insaf (PTI)",
+    "summary": "Protest demonstration at 10 Downing Street regarding Pakistan's political situation."
+  },
+ 
+  {
+    "title": "Overseas Pakistani 'Black Day' Conference",
+    "city": "Brussels",
+    "country": "Belgium",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-02-08T16:00:00",
+    "source": "Pakistan Tehreek-e-Insaf (PTI)",
+    "summary": "Political conference at Pl. du Luxembourg 7 to protest the 2024 general elections."
+  },
+ 
+  {
+    "title": "Overseas Pakistani 'Black Day' Protest",
+    "city": "Melbourne",
+    "country": "Australia",
+    "continent": "Oceania",
+    "risk": "Low",
+    "time": "2026-02-08T12:00:00",
+    "source": "Pakistan Tehreek-e-Insaf (PTI)",
+    "summary": "Protest gathering at BBQ Lounge Tullamarine as part of global PTI demonstrations."
+  },
  
  {
     title: "Mobilization against 'Slave Labor' Reform",
@@ -13234,6 +13278,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
