@@ -17,6 +17,28 @@ window.alertsData =[
   }, 
 
   {
+    title: "University of Essex Strike and Rally",
+    city: "Colchester/Southend",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "12:00",
+    source: "Counterfire Events (09 February 2026)",
+    summary: "Staff and students (UCU, Unite, and Unison) protesting management plans to cut jobs and close the Southend campus."
+  },
+ 
+  {
+    title: "Medical Aid for Palestinians Fundraiser",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "LOW",
+    time: "19:30",
+    source: "The Cavendish Arms (09 February 2026)",
+    summary: "A fundraising evening of comedy and spoken word poetry at The Cavendish Arms to raise money for Medical Aid for Palestinians (MAP)."
+  },
+
+  {
     title: "Pro-Palestine fundraising walk",
     city: "London",
     country: "United Kingdom",
@@ -13160,6 +13182,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
