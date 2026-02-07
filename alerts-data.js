@@ -16,13 +16,24 @@ window.alertsData =[
     summary: ""
   }, 
 
+  {
+    title: "Anti-US Embassy Protests",
+    city: "Bogotá",
+    country: "Colombia",
+    continent: "South America",
+    risk: "Medium",
+    time: "2026-02-06T13:00:00",
+    source: "US Embassy Alert",
+    summary: "Demonstrations held near the US Embassy driven by regional tensions regarding foreign intervention in Venezuela."
+  },
+
  {
     title: "Pensioner and Labor Reform Protests",
     city: "Buenos Aires",
     country: "Argentina",
     continent: "South America",
     risk: "Med",
-    time: "2026-02-04",
+    time: "2026-02-04T13:00:00",
     source: "",
     summary: "Massive demonstrations occurred at the National Congress regarding pension improvements and amendments to the Glacier Law."
   },
@@ -32,7 +43,7 @@ window.alertsData =[
     country: "Colombia",
     continent: "South America",
     risk: "Med",
-    time: "2026-02-03",
+    time: "2026-02-03T13:00:00",
     source: "World Politics Review",
     summary: "Truckers and merchants blocked crossings between Colombia and Ecuador to protest a 30% tariff trade war between the two nations."
   },
@@ -42,7 +53,7 @@ window.alertsData =[
     country: "Brazil",
     continent: "South America",
     risk: "Med",
-    time: "2026-02-03",
+    time: "2026-02-03T13:00:00",
     source: "The Pig Site / Local Logistics",
     summary: "Indigenous groups blocked truck access to the Cargill grain terminal to protest river dredging decrees on the Tapajós River."
   },
@@ -52,7 +63,7 @@ window.alertsData =[
     country: "Colombia",
     continent: "South America",
     risk: "Med",
-    time: "2026-02-06",
+    time: "2026-02-06T13:00:00",
     source: "US Embassy Alert",
     summary: "Demonstrations held near the US Embassy driven by regional tensions regarding foreign intervention in Venezuela."
   },
@@ -63,20 +74,9 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
-    time: "12:00",
-    source: "Counterfire Events (09 February 2026)",
+    time: "2026-02-09T13:00:00",
+    source: "Counterfire Events",
     summary: "Staff and students (UCU, Unite, and Unison) protesting management plans to cut jobs and close the Southend campus."
-  },
- 
-  {
-    title: "Medical Aid for Palestinians Fundraiser",
-    city: "London",
-    country: "United Kingdom",
-    continent: "Europe",
-    risk: "LOW",
-    time: "19:30",
-    source: "The Cavendish Arms (09 February 2026)",
-    summary: "A fundraising evening of comedy and spoken word poetry at The Cavendish Arms to raise money for Medical Aid for Palestinians (MAP)."
   },
 
   {
@@ -85,8 +85,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "LOW",
-    time: "10:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T10:00:00",
+    source: "",
     summary: "A fundraising walk along the Thames from the Thames Barrier to Tower Bridge to raise funds for the flotilla to Gaza."
   },
  
@@ -96,8 +96,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
-    time: "13:00 - 17:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T13:00:00",
+    source: "",
     summary: "A regular protest against the ongoing issues in Iran outside the Iranian Embassy in Knightsbridge."
   },
  
@@ -107,8 +107,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
-    time: "13:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T13:00:00",
+    source: "",
     summary: "Protest in support of former Pakistani PM Imran Khan at 10 Downing Street. Protesters may march to the FCDO."
   },
  
@@ -118,8 +118,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "med",
-    time: "14:00 - 16:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T13:00:00",
+    source: "",
     summary: "A protest march against the Islamic Republic amid ongoing political tensions, from Downing Street to the Iranian Embassy."
   },
  
@@ -129,8 +129,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "LOW",
-    time: "14:00 - 17:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T13:00:00",
+    source: "",
     summary: "Ealing Cut Ties with Genocide intend to protest against Ealing Council due to their perceived links to the Israel government."
   },
  
@@ -140,8 +140,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "HIGH",
-    time: "15:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-15T13:00:00",
+    source: "",
     summary: "Protest march led by pro-Israeli group Stop The Hate UK. Counter protests by pro-Palestine groups are possible."
   },
  
@@ -151,8 +151,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
-    time: "14:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T16:00:00",
+    source: "",
     summary: "A pro-Kurdish march to protest against ongoing military operations in North and East Syria."
   },
  
@@ -162,8 +162,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "med",
-    time: "12:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T13:00:00",
+    source: "",
     summary: "A pro-Palestine march led by Newcastle Palestine Solidarity Campaign from Central Station to Grey's Monument."
   },
  
@@ -173,8 +173,8 @@ window.alertsData =[
     country: "United Kingdom",
     continent: "Europe",
     risk: "med",
-    time: "14:00",
-    source: "Southeast Bi-Weekly (05 February 2026)",
+    time: "2026-02-05T14:00:00",
+    source: "",
     summary: "PTI West of Scotland intent to hold a car rally in support of former Pakistani PM Imran Khan."
   },
 
@@ -184,7 +184,7 @@ window.alertsData =[
     country: "France",
     continent: "Europe",
     risk: "Med",
-    time: "Saturday, February 7, 2026, at 3:00 PM (15:00)",
+    time: "2026-02-07T15:00:00",
     source: "",
     summary: "Jordan Bardella, President of the National Rally, is visiting Carcassonne's Cité (Porte Narbonnaise) to meet future candidates and the public as part of the upcoming municipal election campaign."
   },
@@ -195,7 +195,7 @@ window.alertsData =[
     country: "UK",
     continent: "Europe",
     risk: "Low",
-    time: "Sunday, 8 February, 14:00 - 16:00 (March starts at 16:00)",
+    time: "2026-02-08T16:00:00",
     source: "Organizers (Iranian Diaspora/Activist Groups)",
     summary: "A protest scheduled in London to support a Free Iran movement. The event starts in front of 10 Downing Street and includes a march to the Islamic Republic embassy."
   },
@@ -206,7 +206,7 @@ window.alertsData =[
     country: "Italy",
     continent: "Europe",
     risk: "Med",
-    time: "February 7, 2026, at 15:00 (3:00 PM)",
+    time: "2026-02-07T15:00:00",
     source: "",
     summary: "A national march organized by activist groups in Milan to protest against the Milano-Cortina 2026 Winter Olympics, gathering at Piazza Romana/Medaglie d'Oro station."
   },
@@ -217,7 +217,7 @@ window.alertsData =[
     country: "UK",
     continent: "Europe",
     risk: "Low ",
-    time: "Sunday, 8 February, 14:00 - 16:00 (March starts at 16:00)",
+    time: "2026-02-08T18:00:00",
     source: "Organizers (Iranian Diaspora/Activist Groups)",
     summary: "A protest scheduled in London to support a Free Iran movement. The event starts in front of 10 Downing Street and includes a march to the Islamic Republic embassy."
   },
@@ -228,7 +228,7 @@ window.alertsData =[
     country: "Spain",
     continent: "Europe",
     risk: "Low",
-    time: "Friday, February 6, 2026, at 20:00 (8:00 PM)",
+    time: "2026-02-06T08:00:00",
     source: "",
     summary: "A protest organized under the slogan 'Without Housing There Is No Future' to advocate for a dignified future for Spanish youth, meeting in the Moncloa area of Madrid."
   },
@@ -239,7 +239,7 @@ window.alertsData =[
   "country": "Spain",
   "continent": "Europe",
   "risk": "Low",
-  "time": "February 11th at 18:30",
+  "time": "2026-02-11T13:00:00",
   "source": "",
   "summary": "A talk featuring journalist and libertarian militant Franz García about the rise of the extreme right and the criminalization of protests in Peru."
 },
@@ -250,7 +250,7 @@ window.alertsData =[
     country: "Nigeria",
     continent: "Africa",
     risk: "Med",
-    time: "Friday, February 6, 2026, at 8:00 AM",
+    time: "2026-02-06T10:00:00",
     source: "Grassroots Activists / Social Media Campaign",
     "summary": "A public 'walk' and protest scheduled for Diamond Junction, Wuse 2, calling for action against proposed changes to Nigeria's electoral framework. Participants are instructed to wear black tshirts."
   },
@@ -261,7 +261,7 @@ window.alertsData =[
     country: "Germany",
     continent: "Europe",
     risk: "Med",
-    time: "February 7, 2026 (all day)",
+    time: "2026-02-07T10:00:00",
     source: "ver.di Berlin-Brandenburg / pnr24.de",
     summary: "The ver.di union has called for a strike at the Deutsche Oper on 02/07. The union condemns attempts by the Berlin Opera Foundation to use external forces to undermine the strike action."
   },
@@ -272,7 +272,7 @@ window.alertsData =[
     country: "France",
     continent: "Europe",
     risk: "Low",
-    time: "February 16th at 6:30 PM (18h30)",
+    time: "2026-02-16T18:30:00",
     source: "Alliance VITA, Fondation Jérôme Lejeune, CPEDi, AFC",
     summary: "A mobilization event organized by pro-life associations to protest against euthanasia and assisted suicide legislation, held near the Invalides metro station in Paris."
   },
@@ -283,7 +283,7 @@ window.alertsData =[
     country: "Ireland",
     continent: "Europe",
     risk: "Low",
-    time: "28th February at 1pm",
+    time: "2026-02-28T13:00:00",
     source: "Irish Wheelchair Association.",
     summary: "A protest organized by the IWA to demand an Emergency Winter Payment, advocating for disabled people's rights under the banner 'Choice, not charity."
   },
@@ -294,7 +294,7 @@ window.alertsData =[
     country: "Germany",
     continent: "Europe",
     risk: "Mid",
-    time: "13:00 Feb. 7, 2026",
+    time: "2026-02-07T13:00:00",
     source: "German Solidarity Committee for a Free Iran (DSFI)",
     summary: "Activists plan to stage a large scale demonstration supporting the Iranian uprising and marking the anniversary of the 1979 revolution. Organizers anticipate tens of thousands of attendees at the Brandenburg Gate."
   },
@@ -13223,6 +13223,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
