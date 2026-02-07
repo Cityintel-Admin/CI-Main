@@ -23,46 +23,6 @@
     color:#e9edf2; border:1px solid #2e3238; border-radius:12px; padding:8px 10px; font:12px system-ui;
   }
   .chip{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
-
-/* ============================================================
-   Panic alarm banner enhancements (center + pulse)
-   Works with injected banners from shared scripts.
-   ============================================================ */
-@keyframes ciPanicPulse {
-  0%   { opacity: 1; }
-  50%  { opacity: .35; }
-  100% { opacity: 1; }
-}
-.ci-panic-banner,
-#panicBanner,
-#panicAlarmBanner,
-.panic-banner,
-.panic-alarm-banner,
-.emergency-banner {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 10px;
-  text-align: center;
-}
-.ci-panic-banner .ci-panic-left { 
-  margin: 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.ci-panic-banner .ci-panic-right {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.ci-panic-banner { position: relative; }
-.ci-panic-pulse {
-  animation: ciPanicPulse 1.05s infinite;
-  font-weight: 800;
-  letter-spacing: .3px;
-}
 </style>
 
   <meta charset="utf-8" />
@@ -461,6 +421,24 @@ tr:hover td{background:rgba(255,255,255,0.02)}
  
 	  
   </style>
+<style id="ciPanicBannerStyles">
+/* CityIntel — Panic banner enhancer (banner-only) */
+.ci-panic-banner-enhanced{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+}
+.ci-panic-left{flex:1 1 auto; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; text-align:center;}
+.ci-panic-right{flex:0 0 auto; display:flex; align-items:center; gap:10px;}
+.ci-panic-pulse{
+  font-weight:700;
+  animation: ciPanicPulse 1s infinite;
+}
+@keyframes ciPanicPulse{
+  0%,100%{ opacity:1; filter:none; }
+  50%{ opacity:.45; filter: drop-shadow(0 0 10px rgba(255,80,80,.65)); }
+}
+</style>
 </head>
 <body>
   <div class="app">
@@ -1814,52 +1792,75 @@ function countPresenceForCountry(countryName){
 </script>
 
 
-
-<script>
-/**
- * CityIntel: Panic banner UX enhancer
- * - Centers the banner message
- * - Adds pulsing effect to "PANIC ALARM ACTIVE"
- * Non-invasive: only touches banner when it exists.
- */
+<script id="ciPanicBannerEnhancer">
 (function () {
-  function isPanicBanner(el) {
+  function isBanner(el) {
     if (!el || el.nodeType !== 1) return false;
-    const id = (el.id || '').toLowerCase();
-    const cls = (el.className || '').toString().toLowerCase();
-    if (id.includes('panic') || cls.includes('panic')) return true;
-    const txt = (el.textContent || '').toUpperCase();
-    return txt.includes('PANIC ALARM ACTIVE');
+    const txt = (el.textContent || "").toUpperCase();
+    if (!txt.includes("PANIC ALARM ACTIVE")) return false;
+    const id  = (el.id || "").toLowerCase();
+    const cls = (el.className || "").toString().toLowerCase();
+    // common hints
+    if (id.includes("panic") || cls.includes("panic")) return true;
+    // fallback: banner-like element near top
+    const r = el.getBoundingClientRect();
+    return r.top < 120 && r.height < 140;
+  }
+
+  function wrapPanicText(container) {
+    // Wrap the first text-node occurrence of "PANIC ALARM ACTIVE" in a span for pulsing
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+    let node;
+    while ((node = walker.nextNode())) {
+      const v = node.nodeValue || "";
+      const i = v.toUpperCase().indexOf("PANIC ALARM ACTIVE");
+      if (i === -1) continue;
+
+      const before = v.slice(0, i);
+      const match  = v.slice(i, i + "PANIC ALARM ACTIVE".length);
+      const after  = v.slice(i + "PANIC ALARM ACTIVE".length);
+
+      const frag = document.createDocumentFragment();
+      if (before) frag.appendChild(document.createTextNode(before));
+
+      const span = document.createElement("span");
+      span.className = "ci-panic-pulse";
+      span.textContent = match;
+      frag.appendChild(span);
+
+      if (after) frag.appendChild(document.createTextNode(after));
+
+      node.parentNode.replaceChild(frag, node);
+      return;
+    }
   }
 
   function enhanceBanner(banner) {
     if (!banner || banner.__ciEnhanced) return;
     banner.__ciEnhanced = true;
 
-    // Mark for CSS
-    banner.classList.add('ci-panic-banner');
+    banner.classList.add("ci-panic-banner-enhanced");
 
-    // Find the "Hide" control if present (button or link)
-    const hideBtn = Array.from(banner.querySelectorAll('button,a')).find(n =>
-      (n.textContent || '').trim().toLowerCase() === 'hide'
-    );
+    // Identify the "Hide" control (button or link) so we can keep it on the right.
+    const clickable = Array.from(banner.querySelectorAll("button,a,input[type='button'],input[type='submit']"));
+    const hideBtn = clickable.find(n => ((n.textContent || "").trim().toLowerCase() === "hide"));
 
-    // Wrap left content (everything except hide button) so we can center it
-    const left = document.createElement('div');
-    left.className = 'ci-panic-left';
+    // Build wrappers
+    const left = document.createElement("div");
+    left.className = "ci-panic-left";
 
-    const right = document.createElement('div');
-    right.className = 'ci-panic-right';
+    const right = document.createElement("div");
+    right.className = "ci-panic-right";
 
-    // Move nodes into wrappers
-    const nodes = Array.from(banner.childNodes);
-    for (const node of nodes) {
-      if (hideBtn && (node === hideBtn || (node.nodeType === 1 && node.contains && node.contains(hideBtn)))) {
-        // skip: we'll move hideBtn separately
-        continue;
-      }
-      left.appendChild(node);
+    // Move existing children into wrappers
+    const children = Array.from(banner.childNodes);
+    for (const ch of children) {
+      if (hideBtn && (ch === hideBtn || (ch.nodeType === 1 && ch.contains && ch.contains(hideBtn)))) continue;
+      left.appendChild(ch);
     }
+
+    // Re-add in correct order
+    banner.innerHTML = "";
     banner.appendChild(left);
 
     if (hideBtn) {
@@ -1867,57 +1868,38 @@ function countPresenceForCountry(countryName){
       banner.appendChild(right);
     }
 
-    // Add pulse to the "PANIC ALARM ACTIVE" text (best effort)
-    const textNodes = [];
-    (function collectText(n) {
-      if (!n) return;
-      if (n.nodeType === Node.TEXT_NODE) {
-        if ((n.nodeValue || '').toUpperCase().includes('PANIC ALARM ACTIVE')) textNodes.push(n);
-        return;
-      }
-      if (n.nodeType === Node.ELEMENT_NODE) {
-        for (const c of Array.from(n.childNodes)) collectText(c);
-      }
-    })(left);
-
-    if (textNodes.length) {
-      // Wrap the first matching text node in a span
-      const tn = textNodes[0];
-      const span = document.createElement('span');
-      span.className = 'ci-panic-pulse';
-      span.textContent = tn.nodeValue;
-      tn.parentNode.replaceChild(span, tn);
-    } else {
-      // If we can't locate exact text node, pulse the left wrapper
-      left.classList.add('ci-panic-pulse');
-    }
+    // Pulse the "PANIC ALARM ACTIVE" label
+    wrapPanicText(left);
   }
 
-  function scan() {
-    // Check common ids/classes first
+  function scanAndEnhance() {
+    // Try explicit IDs first
     const candidates = [
-      document.getElementById('panicBanner'),
-      document.getElementById('panicAlarmBanner'),
-      ...Array.from(document.querySelectorAll('.panic-banner,.panic-alarm-banner,.emergency-banner'))
+      document.getElementById("panicBanner"),
+      document.getElementById("panicAlarmBanner")
     ].filter(Boolean);
 
-    // If none, do a small scan for "PANIC ALARM ACTIVE"
-    if (!candidates.length) {
-      const all = Array.from(document.querySelectorAll('body *'));
-      for (const el of all) {
-        if (isPanicBanner(el)) { candidates.push(el); break; }
-      }
-    }
+    // Add a light scan near top
+    const topEls = Array.from(document.querySelectorAll("body *")).slice(0, 200);
+    for (const el of topEls) if (isBanner(el)) { candidates.push(el); break; }
 
-    candidates.forEach(enhanceBanner);
+    for (const el of candidates) {
+      if (isBanner(el)) enhanceBanner(el);
+    }
   }
 
-  // Run now and observe for later insertion
-  scan();
-  const obs = new MutationObserver(() => scan());
+  // Run now and watch for later insertion
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scanAndEnhance, { once: true });
+  } else {
+    scanAndEnhance();
+  }
+
+  const obs = new MutationObserver(() => scanAndEnhance());
   obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 </body>
 </html>
+
 
