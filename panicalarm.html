@@ -4,203 +4,234 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CityIntel — Panic Alarm</title>
-  <script src="auth.js"></script>
-  <style>
-    :root{--brand-red:#D01616;--bg:#0f1114;--panel:#15181d;--line:#2a2f36;--text:#e9edf2;--muted:#8e97a3}
-    body{margin:0;font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#0b0c0e,#111214);color:var(--text)}
-    .wrap{max-width:860px;margin:28px auto;padding:20px}
-    .card{background:linear-gradient(180deg,#161a20,#121419);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#0e1116;color:var(--text);font-weight:700}
-    .pill.ok{border-color:rgba(51,196,141,.35);background:rgba(51,196,141,.10);color:#bff4df}
-    .pill.bad{border-color:rgba(255,90,95,.35);background:rgba(255,90,95,.12);color:#ffd3d4}
-    .btn{border:none;border-radius:999px;padding:12px 16px;font-weight:800;cursor:pointer}
-    .btn.primary{background:var(--brand-red);color:white;border:1px solid #9c0f0f}
-    .btn.neutral{background:#fff;color:#111;border:1px solid #cfd3d8}
-    .btn.danger{background:#ff5a5f;color:#111;border:1px solid #d34b4f}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    input, textarea{width:100%;max-width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0e1116;color:var(--text)}
-    textarea{min-height:90px;resize:vertical}
-    .muted{color:var(--muted)}
-    .tiny{font-size:12px}
-    a{color:#e9edf2}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="row">
-        <h2 style="margin:0">Panic Alarm</h2>
-        <a href="index.html" class="muted" style="text-decoration:none">Back to Dashboard</a>
-      </div>
-      <p class="muted" style="margin:8px 0 0">
-        Use this only in an emergency test / real scenario. This will notify everyone in your organisation.
-      </p>
-    </div>
-
-    <div class="card" id="loginCard" style="display:none">
-      <h3 style="margin:0 0 6px">You’re not signed in</h3>
-      <p class="muted" style="margin:0 0 10px">Please log in first.</p>
-      <a class="btn primary" href="login.html?next=panicalarm.html" style="display:inline-block;text-decoration:none">Log in</a>
-    </div>
-
-    <div class="card" id="mainCard" style="display:none">
-      <div class="row" style="align-items:flex-start">
-        <div>
-          <div id="statusPill" class="pill">Loading…</div>
-          <div class="tiny muted" id="statusMeta" style="margin-top:6px"></div>
-        </div>
-        <div class="row" style="justify-content:flex-end">
-          <button class="btn neutral" id="btnRefresh" type="button">Refresh</button>
-        </div>
-      </div>
-
-      <hr style="margin:14px 0;opacity:.2" />
-
-      <div style="display:grid;grid-template-columns:1fr;gap:12px">
-        <div>
-          <label style="display:block;font-weight:700;margin:0 0 6px">Message (optional)</label>
-          <textarea id="panicMessage" placeholder="e.g. I need urgent assistance at [location]."></textarea>
-          <div class="tiny muted" style="margin-top:6px">Tip: include your location and what you need.</div>
-        </div>
-
-        <div class="row" style="justify-content:flex-start">
-          <button class="btn danger" id="btnActivate" type="button">Activate Panic Alarm</button>
-          <button class="btn neutral" id="btnCancel" type="button">Reset Panic Alarm</button>
-        </div>
-
-        <div class="tiny muted" id="msgLine"></div>
-      </div>
-    </div>
-  </div>
-
-<script>
-(function pageGuard(){
-  if (!window.CIAuth || !CIAuth.isLoggedIn || !CIAuth.isLoggedIn()){
-    document.getElementById('loginCard').style.display = '';
-    return;
-  }
-  document.getElementById('mainCard').style.display = '';
-})();
-</script>
-
+  
 <script>
 (function(){
-  const API_BASE = (window.API_BASE) || 'https://api.cityintelapi.com';
+  const API_ORIGIN = (window.CI_API_ORIGIN || 'https://api.cityintelapi.com').replace(/\/+$/,'');
 
-  const el = {
-    pill: document.getElementById('statusPill'),
-    meta: document.getElementById('statusMeta'),
-    msg:  document.getElementById('panicMessage'),
-    line: document.getElementById('msgLine'),
-    activate: document.getElementById('btnActivate'),
-    cancel: document.getElementById('btnCancel'),
-    refresh: document.getElementById('btnRefresh'),
-  };
+  // --- Shared link support (no login) ---------------------------------
+  // If the URL has ?org=<ORG_ID>&token=<INVITE_OR_SHARED_TOKEN>, we will
+  // send those on requests so people can trigger/reset without having a user login.
+  //
+  // Your Worker must accept these headers/query values on a dedicated route.
+  // If your route names differ, change SHARED_* constants below.
+  const qp = new URLSearchParams(location.search);
+  const SHARED_ORG   = (qp.get('org') || '').trim();
+  const SHARED_TOKEN = (qp.get('token') || '').trim();
 
-  function setLine(t){ el.line.textContent = t || ''; }
+  // Default routes (adjust if your Worker uses different ones)
+  const SHARED_GET_PATH    = '/api/org/panic';           // can be same as normal if your worker allows shared GET
+  const SHARED_SET_PATH    = '/api/org/panic/shared';    // suggested: shared trigger/reset route
+  const SHARED_LOG_PATH    = '/api/org/panic/log';       // optional: recent activations (if implemented)
 
-  function getAuthHeaders(){
-    const u = (window.CIAuth && CIAuth.who && CIAuth.who()) || null;
-    if (!u?.email) throw new Error('Not logged in');
+  function hasSharedAccess(){
+    return !!(SHARED_ORG && SHARED_TOKEN);
+  }
+
+  function sharedHeaders(){
     return {
-      'Content-Type':'application/json',
-      'X-User-Email': u.email,
-      'X-User-Name': u.name || '',
-      'X-User-Id': u.id || ''
+      'X-Org-Id': SHARED_ORG,
+      'X-Org-Token': SHARED_TOKEN,
     };
   }
 
-  async function api(path, opts={}){
-    const headers = { ...(opts.headers||{}), ...getAuthHeaders() };
-    const res = await fetch(API_BASE + path, { ...opts, headers });
-    const json = await res.json().catch(()=> ({}));
-    if (!res.ok || json?.ok === false) throw new Error(json?.error || ('HTTP '+res.status));
-    return json;
+  // --- Auth / user -----------------------------------------------------
+  const isLoggedIn = (window.CIAuth && CIAuth.isLoggedIn && CIAuth.isLoggedIn());
+  const user = (window.CIAuth && CIAuth.getUser) ? (CIAuth.getUser() || {}) : {};
+  const currentUser = isLoggedIn ? user : { email:'', name:'' };
+
+  const el = {
+    statusBadge: document.getElementById('statusBadge'),
+    statusLine: document.getElementById('statusLine'),
+    activate: document.getElementById('activateBtn'),
+    cancel: document.getElementById('cancelBtn'),
+    refresh: document.getElementById('refreshBtn'),
+    msg: document.getElementById('msg'),
+    first: document.getElementById('firstName'),
+    last: document.getElementById('lastName'),
+    loc: document.getElementById('locationText'),
+  };
+
+  // Prefill name fields from logged-in account if available
+  if (currentUser?.name) {
+    const parts = String(currentUser.name).trim().split(/\s+/);
+    if (parts.length) el.first.value = parts[0] || '';
+    if (parts.length > 1) el.last.value = parts.slice(1).join(' ') || '';
   }
 
-  function render(payload){
-    const p = payload?.data || payload || {};
-    const active = !!p.active;
+  function setLine(t){ el.statusLine.textContent = t; }
 
-    el.pill.className = 'pill ' + (active ? 'bad' : 'ok');
-    el.pill.textContent = active ? 'PANIC ALARM ACTIVE' : 'No active panic alarm';
-    const by = p.byEmail || p.by || '—';
-    const at = p.at ? new Date(p.at).toLocaleString() : '—';
-    const note = p.note || '';
-    el.meta.textContent =
-      (active ? `Activated by: ${by} • ${at}` : `Last update: ${at}`) + (note ? ` • Note: ${note}` : '');
+  function fmtWhen(iso){
+    if (!iso) return '';
+    try{
+      const d = new Date(iso);
+      return d.toLocaleString();
+    }catch{ return String(iso); }
+  }
+
+  async function api(path, opts={}){
+    const headers = Object.assign(
+      { 'Content-Type': 'application/json' },
+      opts.headers || {}
+    );
+
+    // Logged-in path (existing)
+    if (isLoggedIn && currentUser?.email) {
+      headers['X-User-Email'] = currentUser.email;
+      headers['X-User-Name']  = currentUser.name || '';
+      if (currentUser.id) headers['X-User-Id'] = currentUser.id;
+    }
+
+    // Shared path (no login)
+    if (!isLoggedIn && hasSharedAccess()) {
+      Object.assign(headers, sharedHeaders());
+    }
+
+    const res = await fetch(API_ORIGIN + path, { ...opts, headers });
+    const txt = await res.text();
+    let data = null;
+    try{ data = txt ? JSON.parse(txt) : null; }catch{ data = null; }
+
+    if (!res.ok) {
+      const msg = (data && (data.error || data.message)) ? (data.error || data.message) : (`HTTP ${res.status}`);
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  function buildDisplayName(){
+    const first = (el.first.value || '').trim();
+    const last  = (el.last.value  || '').trim();
+    const full = [first, last].filter(Boolean).join(' ');
+    return full;
+  }
+
+  function requireIdentity(){
+    // If logged-in, we still want name fields filled (for better log context),
+    // but we can fallback to account name.
+    const displayName = buildDisplayName() || (currentUser.name || '').trim();
+    const email = (currentUser.email || '').trim();
+
+    // Shared access: require a name because there is no user identity.
+    if (!isLoggedIn) {
+      if (!hasSharedAccess()) {
+        throw new Error('You are not logged in. Use a shared panic link or sign in.');
+      }
+      if (!displayName) {
+        throw new Error('Please enter your first name and surname.');
+      }
+    }
+
+    return { displayName, email };
   }
 
   async function load(){
-    setLine('Loading status…');
+    setLine('Loading…');
     try{
-      const res = await api('/api/org/panic', { method:'GET' });
-      render(res);
-      setLine('');
-    }catch(e){
-      setLine('Could not load panic status: ' + e.message);
+      // prefer normal route (works for logged-in)
+      let st = await api('/api/org/panic', { method:'GET' });
+
+      const active = !!st?.data?.active;
+      const by = st?.data?.byEmail || st?.data?.byName || '—';
+      const when = st?.data?.at ? fmtWhen(st.data.at) : '—';
+      const note = st?.data?.note ? String(st.data.note) : '';
+
+      if (active){
+        el.statusBadge.textContent = 'PANIC ALARM ACTIVE';
+        el.statusBadge.style.background = 'rgba(255, 59, 48, .20)';
+        el.statusBadge.style.borderColor = 'rgba(255, 59, 48, .35)';
+        setLine(`Activated by: ${by} • ${when}${note ? ' • Note: ' + note : ''}`);
+        el.activate.disabled = true;
+        el.cancel.disabled = false;
+      } else {
+        el.statusBadge.textContent = 'No active panic alarm';
+        el.statusBadge.style.background = 'rgba(46, 204, 113, .10)';
+        el.statusBadge.style.borderColor = 'rgba(46, 204, 113, .25)';
+        setLine('No active alarm for your organisation.');
+        el.activate.disabled = false;
+        el.cancel.disabled = true;
+      }
+    } catch(e){
+      setLine('Load failed: ' + e.message);
     }
   }
 
-  async function setPanic(active){
-    const u = CIAuth.who();
+  async function setPanic(nextActive){
     const now = new Date().toISOString();
-    if (active){
-      const payload = {
-        active: true,
-        at: now,
-        byEmail: u.email,
-        byName: u.name || '',
-        note: (el.msg.value || '').trim()
-      };
-      await api('/api/org/panic', { method:'PUT', body: JSON.stringify(payload) });
-    } else {
-      const reason = prompt('Cancel / reset note (optional):', 'Resolved / false alarm') || '';
-      const payload = {
-        active: false,
-        at: now,
-        byEmail: u.email,
-        byName: u.name || '',
-        note: reason.trim()
-      };
-      await api('/api/org/panic', { method:'PUT', body: JSON.stringify(payload) });
-    }
+    const ident = requireIdentity();
+
+    const loc = (el.loc.value || '').trim();
+    const msg = (el.msg.value || '').trim();
+
+    // We store a single "note" string for now (simple v1).
+    // Format is readable and easy to evolve later into structured fields.
+    const noteParts = [];
+    const dn = ident.displayName;
+    if (dn) noteParts.push(`Name: ${dn}`);
+    if (loc) noteParts.push(`Location: ${loc}`);
+    if (msg) noteParts.push(`Message: ${msg}`);
+    const note = noteParts.join(' | ');
+
+    const payload = {
+      active: !!nextActive,
+      at: now,
+      byEmail: ident.email || '',
+      byName: dn || ident.email || '',
+      note
+    };
+
+    // If shared access (no login), hit the shared route (recommended).
+    // If your Worker allows shared PUT on /api/org/panic, you can change SHARED_SET_PATH.
+    const path = (!isLoggedIn && hasSharedAccess()) ? SHARED_SET_PATH : '/api/org/panic';
+
+    await api(path, { method:'PUT', body: JSON.stringify(payload) });
   }
 
   el.refresh.addEventListener('click', load);
 
   el.activate.addEventListener('click', async ()=>{
-    if (!confirm('Activate panic alarm for your organisation?')) return;
-    el.activate.disabled = true;
     try{
+      if (!confirm('Activate panic alarm for your organisation?')) return;
+      el.activate.disabled = true;
       await setPanic(true);
       await load();
       setLine('Panic Alarm Activated.');
-    }catch(e){
+    } catch(e){
       setLine('Activate failed: ' + e.message);
-    }finally{
+    } finally {
       el.activate.disabled = false;
     }
   });
 
   el.cancel.addEventListener('click', async ()=>{
-    if (!confirm('Cancel / reset the panic alarm for your organisation?')) return;
-    el.cancel.disabled = true;
     try{
+      if (!confirm('Cancel / reset the panic alarm for your organisation?')) return;
+
+      // ask for an optional resolution note (will be appended into note)
+      const reason = prompt('Cancel / reset note (optional):', 'Resolved / false alarm') || '';
+      if (reason && !el.msg.value) el.msg.value = reason;
+
+      el.cancel.disabled = true;
       await setPanic(false);
       await load();
       setLine('Panic Alarm Cleared.');
-    }catch(e){
+    } catch(e){
       setLine('Reset failed: ' + e.message);
-    }finally{
+    } finally {
       el.cancel.disabled = false;
     }
   });
 
+  // If not logged in but shared token exists, make it obvious the page is usable
+  if (!isLoggedIn && hasSharedAccess()){
+    const pill = document.getElementById('userPill');
+    if (pill) pill.textContent = 'Shared Access';
+  }
+
   load();
-  setInterval(load, 10000);
+  setInterval(load, 30_000);
 })();
 </script>
+
 </body>
 </html>
