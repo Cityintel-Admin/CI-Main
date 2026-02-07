@@ -16,6 +16,47 @@ window.alertsData =[
     summary: ""
   }, 
 
+ {
+    title: "Pensioner and Labor Reform Protests",
+    city: "Buenos Aires",
+    country: "Argentina",
+    continent: "South America",
+    risk: "Med",
+    time: "2026-02-04",
+    source: "",
+    summary: "Massive demonstrations occurred at the National Congress regarding pension improvements and amendments to the Glacier Law."
+  },
+  {
+    title: "Border Blockade and Trade War",
+    city: "Ipiales (Border)",
+    country: "Colombia",
+    continent: "South America",
+    risk: "Med",
+    time: "2026-02-03",
+    source: "World Politics Review",
+    summary: "Truckers and merchants blocked crossings between Colombia and Ecuador to protest a 30% tariff trade war between the two nations."
+  },
+  {
+    title: "Grain Terminal Blockade",
+    city: "Santarém",
+    country: "Brazil",
+    continent: "South America",
+    risk: "Med",
+    time: "2026-02-03",
+    source: "The Pig Site / Local Logistics",
+    summary: "Indigenous groups blocked truck access to the Cargill grain terminal to protest river dredging decrees on the Tapajós River."
+  },
+  {
+    title: "Anti-US Embassy Protests",
+    city: "Bogotá",
+    country: "Colombia",
+    continent: "South America",
+    risk: "Med",
+    time: "2026-02-06",
+    source: "US Embassy Alert",
+    summary: "Demonstrations held near the US Embassy driven by regional tensions regarding foreign intervention in Venezuela."
+  },
+
   {
     title: "University of Essex Strike and Rally",
     city: "Colchester/Southend",
@@ -54,7 +95,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "13:00 - 17:00",
     source: "Southeast Bi-Weekly (05 February 2026)",
     summary: "A regular protest against the ongoing issues in Iran outside the Iranian Embassy in Knightsbridge."
@@ -65,7 +106,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "13:00",
     source: "Southeast Bi-Weekly (05 February 2026)",
     summary: "Protest in support of former Pakistani PM Imran Khan at 10 Downing Street. Protesters may march to the FCDO."
@@ -76,7 +117,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "mid",
+    risk: "med",
     time: "14:00 - 16:00",
     source: "Southeast Bi-Weekly (05 February 2026)",
     summary: "A protest march against the Islamic Republic amid ongoing political tensions, from Downing Street to the Iranian Embassy."
@@ -109,7 +150,7 @@ window.alertsData =[
     city: "Manchester",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "14:00",
     source: "Southeast Bi-Weekly (05 February 2026)",
     summary: "A pro-Kurdish march to protest against ongoing military operations in North and East Syria."
@@ -120,7 +161,7 @@ window.alertsData =[
     city: "Newcastle",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "mid",
+    risk: "med",
     time: "12:00",
     source: "Southeast Bi-Weekly (05 February 2026)",
     summary: "A pro-Palestine march led by Newcastle Palestine Solidarity Campaign from Central Station to Grey's Monument."
@@ -131,7 +172,7 @@ window.alertsData =[
     city: "Glasgow",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "mid",
+    risk: "med",
     time: "14:00",
     source: "Southeast Bi-Weekly (05 February 2026)",
     summary: "PTI West of Scotland intent to hold a car rally in support of former Pakistani PM Imran Khan."
@@ -142,7 +183,7 @@ window.alertsData =[
     city: "Carcassonne",
     country: "France",
     continent: "Europe",
-    risk: "Moderate (High-profile political visit ahead of elections; potential for minor protests or traffic disruption)",
+    risk: "Med",
     time: "Saturday, February 7, 2026, at 3:00 PM (15:00)",
     source: "",
     summary: "Jordan Bardella, President of the National Rally, is visiting Carcassonne's Cité (Porte Narbonnaise) to meet future candidates and the public as part of the upcoming municipal election campaign."
@@ -164,7 +205,7 @@ window.alertsData =[
     city: "Milan",
     country: "Italy",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "February 7, 2026, at 15:00 (3:00 PM)",
     source: "",
     summary: "A national march organized by activist groups in Milan to protest against the Milano-Cortina 2026 Winter Olympics, gathering at Piazza Romana/Medaglie d'Oro station."
@@ -208,7 +249,7 @@ window.alertsData =[
     city: "Abuja",
     country: "Nigeria",
     continent: "Africa",
-    risk: "Mid",
+    risk: "Med",
     time: "Friday, February 6, 2026, at 8:00 AM",
     source: "Grassroots Activists / Social Media Campaign",
     "summary": "A public 'walk' and protest scheduled for Diamond Junction, Wuse 2, calling for action against proposed changes to Nigeria's electoral framework. Participants are instructed to wear black tshirts."
@@ -219,7 +260,7 @@ window.alertsData =[
     city: "Berlin",
     country: "Germany",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "February 7, 2026 (all day)",
     source: "ver.di Berlin-Brandenburg / pnr24.de",
     summary: "The ver.di union has called for a strike at the Deutsche Oper on 02/07. The union condemns attempts by the Berlin Opera Foundation to use external forces to undermine the strike action."
@@ -241,7 +282,7 @@ window.alertsData =[
     city: "Dublin",
     country: "Ireland",
     continent: "Europe",
-    risk: "Low (Scheduled, organized protest)",
+    risk: "Low",
     time: "28th February at 1pm",
     source: "Irish Wheelchair Association.",
     summary: "A protest organized by the IWA to demand an Emergency Winter Payment, advocating for disabled people's rights under the banner 'Choice, not charity."
@@ -274,7 +315,7 @@ window.alertsData =[
     city: "Manila",
     country: "Philippines",
     continent: "Asia",
-    risk: "Moderate",
+    risk: "Med",
     time: "2026-02-06T10:00:00",
     source: "U.S. Embassy in the Philippines",
     summary: "Demonstrations near the U.S. Embassy on Kalaw Avenue protesting foreign military presence and conflict in Gaza and Venezuela."
@@ -285,7 +326,7 @@ window.alertsData =[
     city: "Multiple (Mediterranean Ports)",
     country: "Italy, Greece, Turkey, Morocco",
     continent: "Europe/Africa",
-    risk: "Moderate",
+    risk: "Med",
     time: "2026-02-06T08:00:00",
     source: "International Dockworkers Council",
     summary: "A coordinated international strike by dockworkers across 20+ ports to protest military aggression and the transport of weapons."
@@ -296,7 +337,7 @@ window.alertsData =[
     city: "Central London",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-07T13:00:00",
     source: "",
     summary: "An anti-Iranian government march following a route from the Embassy of the Islamic Republic of Iran to Trafalgar Square."
@@ -329,7 +370,7 @@ window.alertsData =[
     city: "London, Piccadilly Circus",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-21T14:00:00",
     source: "",
     summary: "A protest marking the fourth anniversary of Russia's full-scale invasion of Ukraine, organized by VSESVIT, Campaign for Ukraine, and the Hromada Collective. The event highlights the ongoing human cost of the war and calls for Russian troops to leave Ukraine and for accountability for war crimes."
@@ -351,7 +392,7 @@ window.alertsData =[
     city: "London",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2025-02-04T11:00:00",
     source: "https://www.tamilguardian.com",
     summary: "An annual protest organized by the Movement for Self-Determination of Tamil Eelam (MSDTE) and other diaspora groups to mark Sri Lanka's Independence Day as a 'Black Day' for Tamils, calling for self-determination and justice for alleged genocide. The protest historically begins outside the Sri Lankan High Commission and may involve marches through central London to Parliament Square. Previous similar events have involved large crowds, potential traffic disruption, and minor clashes with authorities, though typically managed as a public order event."
@@ -362,7 +403,7 @@ window.alertsData =[
     city: "Birmingham",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T15:00:00",
     source: "https://www.eventbrite.com",
     summary: "A Palestinian-led grassroots movement event at The Old Print Works aimed at ending Zionism through education, action, and solidarity. The event has generated some controversy and is not listed on the venue's official website."
@@ -385,7 +426,7 @@ window.alertsData =[
     city: "Milan",
     country: "Italy",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-01-31T14:30:00",
     source: "https://www.rifondazione.it",
     summary: "Activists from the Communist Refoundation Party and civil society groups will protest at Piazza XXV Aprile to denounce the presence of US ICE agents acting as security for athletes during the 2026 Winter Olympics. While the exact turnout is unknown, the demonstration may cause localized transport disruptions in central Milan."
@@ -396,7 +437,7 @@ window.alertsData =[
     city: "Tel Aviv",
     country: "Israel",
     continent: "Asia",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-01-31T17:30:00",
     source: "https://www.haaretz.com",
     summary: "Activists plan to march from the Tel Aviv Museum of Art to Habima Square to denounce rising crime rates impacting the Israeli-Arab community and demand government intervention. Thousands of participants are expected, which will likely cause significant traffic disruptions in central Tel Aviv."
@@ -407,7 +448,7 @@ window.alertsData =[
   city: "Tirana",
   country: "Albania",
   continent: "Europe",
-  risk: "Mid",
+  risk: "Med",
   time: "2026-01-31T18:00:00",
   source: "https://www.telegraph.co.uk",
   summary: "Activists plan to gather near the Prime Minister's Office to demand the revocation of Deputy PM Belinda Balluku's legal immunity amid a corruption investigation. High participation is expected, following a Jan. 24 protest where clashes occurred between police and demonstrators."
@@ -418,7 +459,7 @@ window.alertsData =[
     city: "Budapest",
     country: "Hungary",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-01-31T17:00:00",
     source: "https://balkaninsight.com",
     summary: "Several hundred Romani activists and opposition members are expected to gather in Kossuth Square to protest allegedly derogatory comments made by Minister Janos Lazar. Political analysts suggest these comments could trigger a significant backlash among the Romani community, a demographic whose support is considered necessary for the ruling Fidesz party to secure victory in the upcoming April 12 elections. Some analysts speculate the remarks might be a calculated strategy to court voters from the far-right Mi Hazank party."
@@ -431,7 +472,7 @@ window.alertsData =[
     city: "Sydney",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "A nationwide protest was organized across Australia to oppose the visit of Israeli President Isaac Herzog, who was accused of being a 'war criminal' due to the ongoing conflict in Gaza."
@@ -442,7 +483,7 @@ window.alertsData =[
     city: "Melbourne",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "Protesters gathered at Flinders Street Station to demonstrate against President Herzog's arrival in Australia on February 9, 2026, amid calls for his arrest for alleged war crimes."
@@ -453,7 +494,7 @@ window.alertsData =[
     city: "Perth",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.instagram.com",
     summary: "The protest in Perth took place at Forrest Place to highlight opposition to the Australian government's invitation to President Herzog, who many groups argued should not be welcomed."
@@ -464,7 +505,7 @@ window.alertsData =[
     city: "Canberra",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.facebook.com",
     summary: "Demonstrations were held at Garema Place as part of the national day of action against the Israeli president's visit to Australia."
@@ -475,7 +516,7 @@ window.alertsData =[
     city: "Brisbane",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.facebook.com",
     summary: "The Brisbane protest occurred at King George Square, where activists urged the community to join the march and demand an end to the government's complicity in the conflict."
@@ -486,7 +527,7 @@ window.alertsData =[
     city: "Hobart",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "Hobart was listed as a protest location, though specific time and location details (TBC) were pending confirmation at the time the poster was circulated."
@@ -497,7 +538,7 @@ window.alertsData =[
     city: "Adelaide",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "Protesters in Adelaide met at Parliament at 5:30 PM to participate in the coordinated national demonstration against the Israeli President's visit."
@@ -508,7 +549,7 @@ window.alertsData =[
     city: "Cairns",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "A protest was scheduled for 5:30 PM at 204 Mulgrave Rd in Cairns, intended as a vigil in solidarity with the nationwide march."
@@ -519,7 +560,7 @@ window.alertsData =[
     city: "Townsville",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T06:00:00",
     source: "https://www.greenleft.org.au",
     summary: "The Townsville event was a vigil held at Strand Park at 6 PM to align with the other national protests on February 9, 2026."
@@ -531,7 +572,7 @@ window.alertsData =[
     city: "Bathurst",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.facebook.com",
     summary: "Protesters met at Kings Parade in Bathurst to join the national movement opposing President Herzog's visit to Australia."
@@ -542,7 +583,7 @@ window.alertsData =[
     city: "Goulburn",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "The Goulburn protest location was specified as 'The Big Merino' at 5:30 PM on Monday, February 9."
@@ -553,7 +594,7 @@ window.alertsData =[
     city: "Darwin",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-09T05:30:00",
     source: "https://www.greenleft.org.au",
     summary: "Darwin residents gathered at Parliament to join the synchronised nationwide protests against the Israeli President's visit."
@@ -575,7 +616,7 @@ window.alertsData =[
     city: "Nationwide",
     country: "Greece",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-03T00:00:00",
     source: "Panhellenic Federation of Dairy Food and Beverage Workers",
     summary: "Nationwide strike following a fatal industrial explosion at the Violanta factory. Workers demand improved safety standards and accountability. Protests are expected in Athens and Thessaloniki."
@@ -586,7 +627,7 @@ window.alertsData =[
     city: "Nationwide",
     country: "United States of America",
     continent: "United States of America",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-30T08:00:00",
     source: "The Guardian / Nationalshutdown.org",
     summary: "Nationwide call for 'no school, no work, no shopping' to protest ICE enforcement actions and recent fatal shootings. Significant disruptions to business and education expected in major cities like Minneapolis, New York, and LA."
@@ -598,7 +639,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-04T18:00:00",
     source: "Palestine Solidarity Campaign Counterfire",
     summary: "Large-scale march calling for a ceasefire. Expect significant crowds and localiSed transport disruptions in central London."
@@ -609,7 +650,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-07T12:30:00",
     source: "Stand Up To Racism",
     summary: "Anti-racism march from Finsbury Park Mosque to Ducketts Common. Organised to oppose far-right extremism; potential for counter-protests."
@@ -631,7 +672,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-11T12:00:00",
     source: "British Kashmiri Diaspora",
     summary: "Demonstration outside the Indian High Commission. Increased security presence and road closures likely in the Aldwych area."
@@ -643,7 +684,7 @@ window.alertsData =[
   city: "Nationwide",
   country: "Greece",
   continent: "Europe",
-  risk: "Mid",
+  risk: "med",
   time: "2026-02-03T00:00:00",
   source: "Panhellenic Federation of Dairy, Food, and Beverage Workers",
   summary: "A 24-hour nationwide strike is scheduled for 3 February 2026 by the Panhellenic Federation of Dairy, Food, and Beverage Workers in response to a fatal industrial explosion at the Violanta factory in Trikala on 26 January. The strike involves workers across the food sector demanding accountability for safety failures and improved health standards. Protests are expected in Athens, Thessaloniki, and Trikala near labor offices and central squares, with potential for localized transport and business disruptions."
@@ -655,7 +696,7 @@ window.alertsData =[
     city: "Athens/Thessaloniki",
     country: "Greece",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-03T00:00:00",
     source: "Panhellenic Federation of Dairy Workers",
     summary: "Nationwide 24-hour strike in response to a fatal industrial explosion in Trikala. Protests are expected in central squares and near labor ministry offices."
@@ -677,7 +718,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-26T00:00:00",
     source: "RMT Union",
     summary: "24-hour strike by signalling and telecoms staff over a pay dispute. Significant disruptions expected on the Windrush Line and connecting services."
@@ -710,7 +751,7 @@ window.alertsData =[
     city: "Paris (Montreuil/Headquarters)",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-10T09:00:00",
     source: "STJV / Solidaires Informatique",
     summary: "A three-day strike (Feb 10–12) called by five major unions at Ubisoft to protest mandatory five-day return-to-office orders and planned layoffs at the Paris headquarters."
@@ -732,7 +773,7 @@ window.alertsData =[
     city: "Mediterranean Ports (Genoa, etc.)",
     country: "Regional",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-06T00:00:00",
     source: "Port Workers' Unions / International Call",
     summary: "Dockworkers across Mediterranean ports, including Genoa, have called for an international strike to reject the transport of weapons and war material. Expect significant disruption to maritime logistics and port operations."
@@ -832,7 +873,7 @@ window.alertsData =[
     city: "Milano",
     country: "Italy",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T12:00:00",
     source: "",
     summary: "Demonstration against the Ice, who will arrive to escort the representatives of the United States government."
@@ -843,7 +884,7 @@ window.alertsData =[
     city: "BBrandenburger Tor Brandenburg Gate",
     country: "Germany",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-07T13:00:00",
     source: "",
     summary: "The event, which is being held in solidarity with the ongoing uprising in Iran, calls for No to dictatorship, neither Shah nor Mullahs Nein zur Diktatur weder Schah noch Mullahs. It is organized by the Exil-Iranische Gesellschaft in Berlin Exile Iranian Society in Berlin e.V.) and other groups supporting a free and democratic republic in Iran. The demonstration aims to demand the overthrow of the current dictatorship and express a rejection of all forms of tyranny. Organizers emphasize the need for international support for the Iranian people's struggle for liberty."
@@ -854,7 +895,7 @@ window.alertsData =[
     city: "Oranienplatz in Berlinn",
     country: "Germany",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T14:00:00",
     source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/index.php/detail/187",
     summary: "A registered protest is scheduled for Saturday afternoon at Oranienplatz a common site for demonstrations in the Kreuzberg district of Berlin. The event theme is Freedom for Palestinian Prisoners. Solidarity with Palestine. No arms deliveries to Israel."
@@ -876,7 +917,7 @@ window.alertsData =[
     city: "Torino (Turin)",
     country: "Italy",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T14:30:00",
     source: "Local Activist/Union Groups",
     summary: "A national march for ecology and the defence of local territories is scheduled to start at Porta Nuova in Turin on Saturday, 31 January, at 2:30 PM. The protest slogan translates to 'Partisans for the Earth, not for their war.' This demonstration is part of a larger national mobilisation following the eviction of the Askatasuna social centre, and is expected to attract activists from across Italy. High attendance is anticipated, with potential for road blockades and localized disruptions."
@@ -887,7 +928,7 @@ window.alertsData =[
     city: "London",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T12:00:00",
     source: "https://palestinesolidaritycampaign.org ",
     summary: "The first national march for Palestine of 2026 is scheduled to assemble at Russell Square at 12:00 PM before marching to Whitehall. Organized by the Palestine Solidarity Campaign and supported by groups the demonstration calls for an immediate ceasefire and an end to UK arms sales. Expect significant crowds heavy security and major transport disruptions across Central London."
@@ -910,7 +951,7 @@ window.alertsData =[
     city: "Paris",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T14:00:00",
     source: "https://www.cnews.fr/france/2026-01-29/les-policiers-sont-en-premiere-ligne-face-la-faillite-de-letat-marion-marechal",
     summary: "A large-scale 'citizen mobilisation' is scheduled at Place de la Bastille, organised by police unions and supported by political figures including Marion Maréchal. The demonstration aims to protest against systemic security failures and perceived judicial impunity. Expect a heavy security presence and significant transport disruptions in the Bastille area."
@@ -921,7 +962,7 @@ window.alertsData =[
     city: "Volos",
     country: "Greece",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-30T10:00:00",
     source: "ThePressProject",
     summary: "Final day of demonstrations by Greek student unions during the Rectors' Conference in Volos to protest the new student expulsion law and pedagogical competence reforms."
@@ -932,7 +973,7 @@ window.alertsData =[
     city: "Barcelona", 
     country: "Spain", 
     continent: "Europe", 
-    risk: "Mid", 
+    risk: "med", 
     time: "2026-01-31T12:00:00", 
     source: "https://www.equinoxmagazine.fr", 
     summary: "Commuter rail users have [called for a protest](https://www.equinoxmagazine.fr) in Barcelona following recent rail accidents and infrastructure issues." 
@@ -943,7 +984,7 @@ window.alertsData =[
     city: "Cannes",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-29T19:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -954,7 +995,7 @@ window.alertsData =[
     city: "Vannes",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-30T19:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -965,7 +1006,7 @@ window.alertsData =[
     city: "Le Havre",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T17:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -976,7 +1017,7 @@ window.alertsData =[
     city: "Rennes",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T15:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -987,7 +1028,7 @@ window.alertsData =[
     city: "Montbéliard",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T10:30:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -998,7 +1039,7 @@ window.alertsData =[
     city: "Lille",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T15:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1009,7 +1050,7 @@ window.alertsData =[
     city: "Draguignan",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T19:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1020,7 +1061,7 @@ window.alertsData =[
     city: "Brest",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T15:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1031,7 +1072,7 @@ window.alertsData =[
     city: "Rochefort",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T14:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1042,7 +1083,7 @@ window.alertsData =[
     city: "Nevers",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T11:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1053,7 +1094,7 @@ window.alertsData =[
     city: "Bordeaux",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T18:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1064,7 +1105,7 @@ window.alertsData =[
     city: "Lyon",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T14:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1075,7 +1116,7 @@ window.alertsData =[
     city: "Lorient",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T14:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1086,7 +1127,7 @@ window.alertsData =[
     city: "Nice",
     country: "France",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T13:00:00",
     source: "",
     summary: "Protests in solidarity with the Kurds of Rojava attacked by gangs from Damascus, DAECH/ISIS, and Turkey."
@@ -1097,7 +1138,7 @@ window.alertsData =[
     city: "Newcastle",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T11:30:00",
     source: "p. 9",
     summary: "Regular protest in solidarity with refugees in the UK."
@@ -1108,7 +1149,7 @@ window.alertsData =[
     city: "Newcastle",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T12:30:00",
     source: "p. 9",
     summary: "Pro-Palestine protest as part of a Global Day of Solidarity."
@@ -1119,7 +1160,7 @@ window.alertsData =[
     city: "Glasgow",
     country: "Scotland",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T11:00:00",
     source: "p. 10",
     summary: "Animal rights march led by Free Spanish Hounds."
@@ -1130,7 +1171,7 @@ window.alertsData =[
     city: "Glasgow",
     country: "Scotland",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T11:00:00",
     source: "p. 10",
     summary: "Animal rights march led by Free Spanish Hounds."
@@ -1152,7 +1193,7 @@ window.alertsData =[
     city: "Belfast",
     country: "Northern Ireland",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T13:00:00",
     source: "p. 10",
     summary: "Pro-Palestine protest organised by Belfast Ireland Palestine Solidarity Campaign."
@@ -1163,7 +1204,7 @@ window.alertsData =[
     city: "Nine Elms",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T15:00:00",
     source: "p. 4",
     summary: "Protest in support of the Iranian community to demand the U.S. government increase political pressure."
@@ -1174,7 +1215,7 @@ window.alertsData =[
     city: "Manchester",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T15:00:00",
     source: "p. 7",
     summary: "A protest in support of the Iranian community in response to rising political tensions in Iran."
@@ -1185,7 +1226,7 @@ window.alertsData =[
     city: "Manchester",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T13:00:00",
     source: "p. 7",
     summary: "Pro-Palestine demo to demand Reebok ends its sponsorship deal with Israel's football association."
@@ -1196,7 +1237,7 @@ window.alertsData =[
     city: "Manchester",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-01-31T11:00:00",
     source: "p. 7",
     summary: "Animal rights march led by Free Spanish Hounds over concerns of the mistreatment of Spanish hounds."
@@ -1218,7 +1259,7 @@ window.alertsData =[
     city: "Croydon",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T11:00:00",
     source: "",
     summary: "Pro-Palestine day of action aimed at organisations with perceived links to the Israeli government."
@@ -1229,7 +1270,7 @@ window.alertsData =[
     city: "Kings Cross",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T13:00:00",
     source: "",
     summary: "Monthly pro-Palestine rally organised by UK Friends of Standing Together."
@@ -1240,7 +1281,7 @@ window.alertsData =[
     city: "Westminster",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T15:00:00",
     source: "",
     summary: "Solidarity protest in support of the Iranian community, amid reports of ongoing mass protests against the Iranian government and unrest in the country."
@@ -1251,7 +1292,7 @@ window.alertsData =[
     city: "Hillingdon",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "med",
     time: "2026-02-01T12:00:00",
     source: "",
     summary: "Protest against migrants and asylum seekers residing in UK hotels."
@@ -13182,6 +13223,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
