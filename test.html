@@ -157,78 +157,34 @@ async function loadOrgContext() {
   // Also support both call styles:
   //   exposureFor({ city, country, lat, lng, radiusKm })
   //   exposureFor(city, country, lat, lng, radiusKm)
-  function exposureFor(cityOrKey, alertLat, alertLng, radiusKm) {
-    const data = getExposureData();
-    const assets = Array.isArray(data.assets) ? data.assets : [];
-    const travellers = Array.isArray(data.travellers) ? data.travellers : [];
+  function exposureFor(cityOrOpts, country, lat, lng, radiusKm) {
+    const opts = (cityOrOpts && typeof cityOrOpts === 'object')
+      ? cityOrOpts
+      : { city: cityOrOpts, country, lat, lng, radiusKm };
 
-    const clat = toNum(alertLat);
-    const clng = toNum(alertLng);
+    const city = opts?.city || "";
+    const ctry = opts?.country || "";
+    const la = toNum(opts?.lat);
+    const ln = toNum(opts?.lng);
+    const radKm = Number(opts?.radiusKm) || 1;
 
-    function itemLatLng(item) {
-      const ilat = toNum(item?.lat ?? item?.latitude);
-      const ilng = toNum(item?.lng ?? item?.lon ?? item?.long ?? item?.longitude);
-      if (ilat === null || ilng === null) return null;
-      return { lat: ilat, lng: ilng };
+    const assets = safeJson("ci_assets", []);
+    const travellers = safeJson("ci_travellers", []);
+
+    let assetsNearby = [];
+    let travellersNearby = [];
+
+    if (la !== null && ln !== null) {
+      assetsNearby = assets.filter(a => itemWithinRadius(a, la, ln, radKm));
+      travellersNearby = travellers.filter(t => itemWithinRadius(t, la, ln, radKm));
+    } else {
+      // Fallback: city/country match (no lat/lng on incident)
+      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, ctry));
+      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, ctry));
     }
 
-    function tierForKm(km) {
-      if (km === null || !isFinite(km)) return null;
-      if (km <= 1) return "within 1 km";
-      if (km <= 5) return "within 5 km";
-      if (km <= 10) return "within 10 km";
-      return ">10 km";
-    }
-
-    function enrich(item) {
-      const ll = itemLatLng(item);
-      const km = (clat === null || clng === null || !ll) ? null : distanceKm(clat, clng, ll.lat, ll.lng);
-      return { ...item, distanceKm: km, distanceTier: tierForKm(km) };
-    }
-
-    const radius = toNum(radiusKm) ?? 10;
-
-    // If we don't have incident coordinates, fall back to city matching (legacy)
-    if (clat === null || clng === null) {
-      const cityKey = String(cityOrKey || "").toLowerCase().trim();
-      const assetsCity = assets
-        .filter(a => String(a.city || a.location_city || "").toLowerCase().trim() === cityKey)
-        .map(enrich);
-      const travellersCity = travellers
-        .filter(t => String(t.city || t.location_city || "").toLowerCase().trim() === cityKey)
-        .map(enrich);
-      return { assets: assetsCity, travellers: travellersCity, tiers: null };
-    }
-
-    const assetsEnriched = assets.map(enrich);
-    const travellersEnriched = travellers.map(enrich);
-
-    const assetsNearby = assetsEnriched
-      .filter(a => a.distanceKm !== null && a.distanceKm <= radius)
-      .sort((a,b)=>(a.distanceKm??1e9)-(b.distanceKm??1e9));
-    const travellersNearby = travellersEnriched
-      .filter(t => t.distanceKm !== null && t.distanceKm <= radius)
-      .sort((a,b)=>(a.distanceKm??1e9)-(b.distanceKm??1e9));
-
-    function countTiers(arr) {
-      const c = { "within 1 km": 0, "within 5 km": 0, "within 10 km": 0, ">10 km": 0, "unknown": 0 };
-      for (const it of arr) {
-        const tier = it.distanceTier;
-        if (!tier) { c.unknown++; continue; }
-        c[tier] = (c[tier] || 0) + 1;
-      }
-      return c;
-    }
-
-    return {
-      assets: assetsNearby,
-      travellers: travellersNearby,
-      tiers: {
-        assets: countTiers(assetsEnriched),
-        travellers: countTiers(travellersEnriched),
-        radiusKm: radius
-      }
-    };
+    // Return both new + legacy names (older UI expects `assets`/`travellers`).
+    return { assetsNearby, travellersNearby, assets: assetsNearby, travellers: travellersNearby };
   }
 
   window.CIExposure = window.CIExposure || {};
@@ -1685,9 +1641,7 @@ async function loadOrgContext() {
 
 
 	
-  
-  .exposure-distance{opacity:.75;font-size:12px;margin-left:6px;}
-</style>
+  </style>
 </head>
 
 
@@ -2851,19 +2805,17 @@ function openDetailPanel(item, relatedList){
 
   if (detailExposureListEl) {
     if (nA || nT) {
-      const assetLines = exposure.assets.map(a => {
-        const dist = (a.distanceKm !== null && isFinite(a.distanceKm))
-          ? ` <span class="exposure-distance">(${a.distanceKm.toFixed(1)} km${a.distanceTier ? `, ${a.distanceTier}` : ''})</span>`
-          : '';
-        return `<li><b>${a.name || 'Asset'}</b>${a.type ? ` — ${a.type}` : ''}${a.location ? ` — ${a.location}` : ''}${dist}</li>`;
-      }).join('');
+      const assetLines = exposure.assets.map(a =>
+        `<li><b>${a.name || 'Asset'}</b>${a.type ? ` — ${a.type}` : ''}${
+          a.city || a.country ? ` (${[a.city, a.country].filter(Boolean).join(', ')})` : ''
+        }</li>`
+      ).join('');
 
-      const travLines = exposure.travellers.map(t => {
-        const dist = (t.distanceKm !== null && isFinite(t.distanceKm))
-          ? ` <span class="exposure-distance">(${t.distanceKm.toFixed(1)} km${t.distanceTier ? `, ${t.distanceTier}` : ''})</span>`
-          : '';
-        return `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${t.hotel ? ` — ${t.hotel}` : ''}${dist}</li>`;
-      }).join('');
+      const travLines = exposure.travellers.map(t =>
+        `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${
+          t.hotel ? ` — ${t.hotel}` : ''
+        }</li>`
+      ).join('');
 
       detailExposureListEl.innerHTML = `
         ${assetLines ? `<div style="margin-bottom:6px;"><b>Assets</b><ul>${assetLines}</ul></div>` : ''}
@@ -4058,139 +4010,107 @@ setTimeout(settleMap, 600);
 
 	
   // ---- React when an incident is opened (jump to city) ----
-    function pulseAt(lat, lon, label, opts = {}) {
-    const z = Number.isFinite(Number(opts.zoom)) ? Number(opts.zoom) : 6;
-
+    function pulseAt(lat, lon, label){
     // centre on the incident
-    map.setView([lat, lon], z);
+    map.setView([lat, lon], 7);
 
     // If the detail drawer is open on desktop, shift the view left so the marker isn't hidden
     try {
       const panel = document.getElementById('detailPanel');
-      const isOpen = panel && panel.classList.contains('open');
-      if (isOpen) {
-        // pan left by ~40% of the panel width (keeps the pin visible even if the panel overlaps on smaller widths)
-        const w = panel.getBoundingClientRect().width || 420;
-        map.panBy([-(w * 0.4), 0], { animate: true, duration: 0.35 });
+      if (panel && panel.classList.contains('open') && window.innerWidth >= 1100) {
+        const w = panel.getBoundingClientRect().width || 360;
+        // panBy +x moves the map right, therefore the marker appears more to the left (visible).
+        map.panBy([Math.round(w/2), 0], {animate: false});
       }
-    } catch (_) {}
+    } catch(e) {}
 
-    // show a small "pulse" marker to draw attention
-    if (window.__ciPulseMarker) {
-      try { map.removeLayer(window.__ciPulseMarker); } catch(_) {}
+    // clear previous highlight if any
+    if (incidentRadiusLayer) {
+      map.removeLayer(incidentRadiusLayer);
+      incidentRadiusLayer = null;
     }
-    window.__ciPulseMarker = L.circleMarker([lat, lon], {
-      radius: 10,
-      weight: 2,
+
+
+
+		
+    // 1) radius circle (e.g. 15km)
+    const radiusKm = window.ciIncidentRadiusKm || 5;
+    const radiusCircle = L.circle([lat, lon], {
+      radius: radiusKm * 1000,           // metres
+      color: '#ff4d4d',
+      weight: 1.5,
       opacity: 0.9,
-      fillOpacity: 0.2
-    }).addTo(map);
+      dashArray: '4 4',
+      fillColor: '#ff4d4d',
+      fillOpacity: 0.15
+    });
 
-    if (label) window.__ciPulseMarker.bindTooltip(label, { direction: 'top', offset: [0, -8] }).openTooltip();
+    // 2) central dot (your existing pulse marker)
+    const centreDot = L.circleMarker([lat, lon], {
+      radius: 6,
+      color: '#ff4d4d',
+      weight: 2,
+      fillColor: '#ff4d4d',
+      fillOpacity: 0.9
+    });
 
-    // auto-remove pulse after a short moment
+    // group them so we can remove in one go
+    incidentRadiusLayer = L.layerGroup([radiusCircle, centreDot]).addTo(map);
+
+    if (label) {
+      centreDot.bindPopup(label).openPopup();
+    }
+
+    // optional: fade out after 300s
     setTimeout(() => {
-      if (window.__ciPulseMarker) {
-        try { map.removeLayer(window.__ciPulseMarker); } catch(_) {}
-        window.__ciPulseMarker = null;
+      if (incidentRadiusLayer) {
+        map.removeLayer(incidentRadiusLayer);
+        incidentRadiusLayer = null;
       }
-    }, 1800);
+    }, 30_0000);
   }
 
-    // Accept both window and document dispatches for ci:jumpToIncident
-  document.addEventListener('ci:jumpToIncident', (e) => {
-    try { window.dispatchEvent(new CustomEvent('ci:jumpToIncident', { detail: (e && e.detail) || {} })); } catch(_) {}
+
+  window.addEventListener('ci:jumpToIncident', e => {
+    const d = e.detail || {};
+    const lat = typeof d.lat === 'number' ? d.lat : null;
+    const lon = typeof d.lon === 'number' ? d.lon : null;
+
+    if (lat != null && lon != null) {
+       window.ciLastIncident = { lat, lon, label: 'Current incident' };
+		pulseAt(lat, lon, 'Current incident');
+      return;
+    }
+
+    const city    = (d.city || '').toString().trim().toLowerCase();
+    const country = (d.country || '').toString().trim().toLowerCase();
+    const pts = [];
+
+    (window.CIAssets || []).forEach(a => {
+      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+      if (city && (a.city || '').toLowerCase() !== city) return;
+      if (country && (a.country || '').toLowerCase() !== country) return;
+      pts.push([a.lat, a.lon]);
+    });
+
+    (window.CITravellers || []).forEach(t => {
+      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+      if (city && (t.city || '').toLowerCase() !== city) return;
+      if (country && (t.country || '').toLowerCase() !== country) return;
+      pts.push([t.lat, t.lon]);
+    });
+
+    if (pts.length) {
+      const avgLat = pts.reduce((s,p)=>s+p[0],0)/pts.length;
+      const avgLon = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+      window.ciLastIncident = {
+        lat: avgLat,
+        lon: avgLon,
+        label: 'Incident city (assets/travellers nearby)'
+      };
+      pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
+    }
   });
-
-window.addEventListener('ci:jumpToIncident', e => {
-    (async () => {
-      const d = e.detail || {};
-
-      // Accept lat/lon as numbers OR numeric strings
-      const lat = Number(d.lat);
-      const lon = Number(d.lon);
-      const label = d.label || d.title || d.city || 'Incident';
-      const zoom = Number.isFinite(Number(d.zoom)) ? Number(d.zoom) : 6;
-
-      // 1) direct coordinates (preferred)
-      if (Number.isFinite(lat) && Number.isFinite(lon)) {
-        window.ciLastIncident = { lat, lon, label, at: Date.now() };
-        pulseAt(lat, lon, label, { zoom });
-        return;
-      }
-
-      // 2) impact zone polygon -> fit bounds (and keep it slightly zoomed out)
-      if (d.impact_zone) {
-        try {
-          const zone = (typeof d.impact_zone === 'string') ? JSON.parse(d.impact_zone) : d.impact_zone;
-          if (zone && zone.type === 'Polygon' && zone.coordinates && zone.coordinates[0] && zone.coordinates[0].length) {
-            const latlngs = zone.coordinates[0].map(pt => [pt[1], pt[0]]).filter(p => Number.isFinite(p[0]) && Number.isFinite(p[1]));
-            if (latlngs.length >= 3) {
-              const b = L.latLngBounds(latlngs);
-              map.fitBounds(b, { padding: [30, 30], maxZoom: 7 });
-              return;
-            }
-          }
-        } catch (_) {}
-      }
-
-      // 3) geometry point
-      if (d.geometry) {
-        try {
-          const g = (typeof d.geometry === 'string') ? JSON.parse(d.geometry) : d.geometry;
-          if (g && g.type === 'Point' && Array.isArray(g.coordinates) && g.coordinates.length >= 2) {
-            const glon = Number(g.coordinates[0]);
-            const glat = Number(g.coordinates[1]);
-            if (Number.isFinite(glat) && Number.isFinite(glon)) {
-              pulseAt(glat, glon, label, { zoom });
-              return;
-            }
-          }
-        } catch (_) {}
-      }
-
-      // 4) If no incident coords but we have mapped assets/travellers in this city,
-      // use their centroid as a proxy so we still jump to the right area.
-      if (!latlng && d.city) {
-        const norm = (s) => (s || '').toString().trim().toLowerCase();
-        const wantCity = norm(d.city);
-        const wantCountry = norm(d.country || d.country_code);
-        const pts = [];
-        (window.CIAssets || []).forEach((a) => {
-          if (norm(a.city) !== wantCity) return;
-          if (wantCountry && norm(a.country || a.country_code) !== wantCountry) return;
-          const lat = Number(a.lat);
-          const lon = Number(a.lon);
-          if (Number.isFinite(lat) && Number.isFinite(lon)) pts.push([lat, lon]);
-        });
-        (window.CITravellers || []).forEach((t) => {
-          if (norm(t.city) !== wantCity) return;
-          if (wantCountry && norm(t.country || t.country_code) !== wantCountry) return;
-          const lat = Number(t.lat);
-          const lon = Number(t.lon);
-          if (Number.isFinite(lat) && Number.isFinite(lon)) pts.push([lat, lon]);
-        });
-        if (pts.length) {
-          const avgLat = pts.reduce((s, p) => s + p[0], 0) / pts.length;
-          const avgLon = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-          pulseAt(avgLat, avgLon, label, { zoom });
-          return;
-        }
-      }
-
-      // 5) last resort: try a lightweight city lookup (frontend-only)
-      if (d.city) {
-        try {
-          const resolved = await (window.CIGeocode?.resolveCityLatLng?.(d.city, d.country) || Promise.resolve(null));
-          if (resolved && Number.isFinite(resolved.lat) && Number.isFinite(resolved.lon)) {
-            pulseAt(resolved.lat, resolved.lon, label, { zoom });
-          }
-        } catch (_) {}
-      }
-    })();
-  });
-
-
 
 
 
