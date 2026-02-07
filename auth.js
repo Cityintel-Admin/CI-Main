@@ -33,7 +33,14 @@
       name: 'Morris - Admin',
       role: 'Admin',
       passHash: 'ef2c36181af9977b4359eedab2d21a6715d266e0d5a35200f333d743adb2cc5e'
+    },
+     'dmck@cityintel.com': {
+      name: 'Dale - Admin',
+      role: 'Admin',
+      passHash: '28ab5eae3e75c3f6f08236614a2ace864a77e6ed0ecce115dc502eef21c0aaf1'
     }
+
+    
   };
 
   // ------------- Utilities -------------
@@ -187,6 +194,7 @@
   })();
 
 })(window);
+
 
 
 
