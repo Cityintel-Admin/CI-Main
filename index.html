@@ -421,23 +421,52 @@ tr:hover td{background:rgba(255,255,255,0.02)}
  
 	  
   </style>
-<style id="ciPanicBannerStyles">
-/* CityIntel — Panic banner enhancer (banner-only) */
-.ci-panic-banner-enhanced{
-  display:flex !important;
-  align-items:center !important;
-  gap:12px !important;
-}
-.ci-panic-left{flex:1 1 auto; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; text-align:center;}
-.ci-panic-right{flex:0 0 auto; display:flex; align-items:center; gap:10px;}
-.ci-panic-pulse{
-  font-weight:700;
-  animation: ciPanicPulse 1s infinite;
-}
-@keyframes ciPanicPulse{
-  0%,100%{ opacity:1; filter:none; }
-  50%{ opacity:.45; filter: drop-shadow(0 0 10px rgba(255,80,80,.65)); }
-}
+<style id="ci-panic-banner-css">
+  /* Panic banner (injected) */
+  #ciPanicBanner{
+    position:fixed; top:0; left:0; right:0;
+    z-index:9999;
+    background: rgba(80, 15, 18, 0.92);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  #ciPanicBanner .ci-inner{
+    display:flex; align-items:center; justify-content:center;
+    gap:14px;
+    padding:10px 14px;
+  }
+  #ciPanicBanner .ci-left, #ciPanicBanner .ci-right{ flex:0 0 auto; display:flex; align-items:center; gap:10px; }
+  #ciPanicBanner .ci-center{ flex:1 1 auto; display:flex; justify-content:center; align-items:center; gap:12px; text-align:center; min-width: 0; }
+  #ciPanicBanner .ci-badge{
+    font-weight:800; letter-spacing:.02em; text-transform:uppercase;
+    padding:6px 10px; border-radius:999px;
+    background: rgba(220, 38, 38, 0.18);
+    border: 1px solid rgba(220, 38, 38, 0.35);
+  }
+  #ciPanicBanner .ci-badge.ci-pulse{
+    animation: ciPanicPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes ciPanicPulse{
+    0%,100%{ transform: scale(1); filter: brightness(1); }
+    50%{ transform: scale(1.04); filter: brightness(1.15); }
+  }
+  #ciPanicBanner .ci-meta{
+    opacity:.9; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width: 60vw;
+  }
+  #ciPanicBanner a{ color: inherit; text-decoration: underline; }
+  #ciPanicBanner button{
+    cursor:pointer;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(20,20,20,0.35);
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-weight: 600;
+  }
+  body.ci-has-panic-banner{ padding-top: 46px; }
 </style>
 </head>
 <body>
@@ -1792,111 +1821,101 @@ function countPresenceForCountry(countryName){
 </script>
 
 
-<script id="ciPanicBannerEnhancer">
-(function () {
-  function isBanner(el) {
-    if (!el || el.nodeType !== 1) return false;
-    const txt = (el.textContent || "").toUpperCase();
-    if (!txt.includes("PANIC ALARM ACTIVE")) return false;
-    const id  = (el.id || "").toLowerCase();
-    const cls = (el.className || "").toString().toLowerCase();
-    // common hints
-    if (id.includes("panic") || cls.includes("panic")) return true;
-    // fallback: banner-like element near top
-    const r = el.getBoundingClientRect();
-    return r.top < 120 && r.height < 140;
+<script id="ci-panic-banner-js">
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const POLL_MS = 7000;
+
+  function getProfile(){
+    try { return JSON.parse(localStorage.getItem('ci_profile')||'null'); } catch { return null; }
+  }
+  function makeHeaders(){
+    const p = getProfile();
+    if (!p || !p.email) return null;
+    return {
+      'X-User-Email': p.email,
+      'X-User-Name': p.name || 'CityIntel User',
+      'X-User-Id': p.id || ('email:' + String(p.email).toLowerCase()),
+    };
   }
 
-  function wrapPanicText(container) {
-    // Wrap the first text-node occurrence of "PANIC ALARM ACTIVE" in a span for pulsing
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-    let node;
-    while ((node = walker.nextNode())) {
-      const v = node.nodeValue || "";
-      const i = v.toUpperCase().indexOf("PANIC ALARM ACTIVE");
-      if (i === -1) continue;
+  function ensureBanner(){
+    let el = document.getElementById('ciPanicBanner');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'ciPanicBanner';
+    el.style.display = 'none';
+    el.innerHTML = `
+      <div class="ci-inner">
+        <div class="ci-left"></div>
+        <div class="ci-center">
+          <span class="ci-badge ci-pulse">PANIC ALARM ACTIVE</span>
+          <span class="ci-meta" id="ciPanicMeta"></span>
+          <a id="ciPanicOpen" href="panicalarm.html">Open</a>
+        </div>
+        <div class="ci-right">
+          <button id="ciPanicHide" type="button">Hide</button>
+        </div>
+      </div>`;
+    document.body.prepend(el);
 
-      const before = v.slice(0, i);
-      const match  = v.slice(i, i + "PANIC ALARM ACTIVE".length);
-      const after  = v.slice(i + "PANIC ALARM ACTIVE".length);
+    el.querySelector('#ciPanicHide')?.addEventListener('click', () => {
+      try { localStorage.setItem('ci_panic_banner_hidden', '1'); } catch {}
+      el.style.display = 'none';
+      document.body.classList.remove('ci-has-panic-banner');
+    });
 
-      const frag = document.createDocumentFragment();
-      if (before) frag.appendChild(document.createTextNode(before));
+    return el;
+  }
 
-      const span = document.createElement("span");
-      span.className = "ci-panic-pulse";
-      span.textContent = match;
-      frag.appendChild(span);
-
-      if (after) frag.appendChild(document.createTextNode(after));
-
-      node.parentNode.replaceChild(frag, node);
-      return;
+  function setBannerVisible(visible){
+    const el = ensureBanner();
+    if (visible) {
+      if (localStorage.getItem('ci_panic_banner_hidden') === '1') return;
+      el.style.display = '';
+      document.body.classList.add('ci-has-panic-banner');
+    } else {
+      el.style.display = 'none';
+      document.body.classList.remove('ci-has-panic-banner');
     }
   }
 
-  function enhanceBanner(banner) {
-    if (!banner || banner.__ciEnhanced) return;
-    banner.__ciEnhanced = true;
+  async function refresh(){
+    const headers = makeHeaders();
+    if (!headers) { setBannerVisible(false); return; }
 
-    banner.classList.add("ci-panic-banner-enhanced");
+    try{
+      const res = await fetch(API_BASE + '/api/org/panic', { headers });
+      const json = await res.json().catch(()=>null);
+      const data = json && (json.data ?? json);
+      const state = (data && typeof data === 'object') ? data : null;
 
-    // Identify the "Hide" control (button or link) so we can keep it on the right.
-    const clickable = Array.from(banner.querySelectorAll("button,a,input[type='button'],input[type='submit']"));
-    const hideBtn = clickable.find(n => ((n.textContent || "").trim().toLowerCase() === "hide"));
+      // expected shape: { active, activated_by, activated_at, message }
+      const active = !!(state && state.active);
+      if (!active) { setBannerVisible(false); return; }
 
-    // Build wrappers
-    const left = document.createElement("div");
-    left.className = "ci-panic-left";
+      const meta = [];
+      if (state.activated_by) meta.push(`Activated by ${state.activated_by}`);
+      if (state.activated_at) meta.push(state.activated_at);
+      if (state.message) meta.push(`Note: ${state.message}`);
+      const metaEl = document.getElementById('ciPanicMeta');
+      if (metaEl) metaEl.textContent = meta.join(' • ');
 
-    const right = document.createElement("div");
-    right.className = "ci-panic-right";
-
-    // Move existing children into wrappers
-    const children = Array.from(banner.childNodes);
-    for (const ch of children) {
-      if (hideBtn && (ch === hideBtn || (ch.nodeType === 1 && ch.contains && ch.contains(hideBtn)))) continue;
-      left.appendChild(ch);
-    }
-
-    // Re-add in correct order
-    banner.innerHTML = "";
-    banner.appendChild(left);
-
-    if (hideBtn) {
-      right.appendChild(hideBtn);
-      banner.appendChild(right);
-    }
-
-    // Pulse the "PANIC ALARM ACTIVE" label
-    wrapPanicText(left);
-  }
-
-  function scanAndEnhance() {
-    // Try explicit IDs first
-    const candidates = [
-      document.getElementById("panicBanner"),
-      document.getElementById("panicAlarmBanner")
-    ].filter(Boolean);
-
-    // Add a light scan near top
-    const topEls = Array.from(document.querySelectorAll("body *")).slice(0, 200);
-    for (const el of topEls) if (isBanner(el)) { candidates.push(el); break; }
-
-    for (const el of candidates) {
-      if (isBanner(el)) enhanceBanner(el);
+      setBannerVisible(true);
+    } catch(e){
+      // silent fail; don't spam UI
     }
   }
 
-  // Run now and watch for later insertion
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", scanAndEnhance, { once: true });
-  } else {
-    scanAndEnhance();
+  // reset hide when alarm becomes active again later (optional)
+  function clearHideOnNewActivation(metaText){
+    // keep simple; do nothing for now
   }
 
-  const obs = new MutationObserver(() => scanAndEnhance());
-  obs.observe(document.documentElement, { childList: true, subtree: true });
+  // Run now + poll
+  ensureBanner();
+  refresh();
+  setInterval(refresh, POLL_MS);
 })();
 </script>
 </body>
