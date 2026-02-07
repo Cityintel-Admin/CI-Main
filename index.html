@@ -423,6 +423,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </style>
 </head>
 <body>
+  <div id="panic-banner" style="display:none;position:sticky;top:0;z-index:9999;
+    background:#4b1d1d;border-bottom:1px solid rgba(255,90,95,.35);color:#fecaca;
+    padding:10px 14px;font:14px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+    <b style="color:#fff">PANIC ACTIVE</b>
+    <span id="panic-banner-text" style="margin-left:10px"></span>
+    <a href="panicalarm.html" style="margin-left:12px;color:#fff;text-decoration:underline">Open</a>
+    <button id="panic-banner-close" style="float:right;background:transparent;border:1px solid rgba(255,255,255,.25);
+      color:#fff;border-radius:10px;padding:4px 10px;cursor:pointer;">Hide</button>
+  </div>
+
   <div class="app">
     <!-- SIDEBAR -->
     <aside class="sidebar">
@@ -1774,19 +1784,63 @@ function countPresenceForCountry(countryName){
 </script>
 
 
+
+<script>
+(function(){
+  const API_BASE = (window.API_BASE) || 'https://api.cityintelapi.com';
+  const banner = document.getElementById('panic-banner');
+  const txt = document.getElementById('panic-banner-text');
+  const btnHide = document.getElementById('panic-banner-close');
+  if (!banner) return;
+
+  function getAuthHeaders(){
+    const u = (window.CIAuth && CIAuth.who && CIAuth.who()) || null;
+    if (!u?.email) return null;
+    return {
+      'Content-Type':'application/json',
+      'X-User-Email': u.email,
+      'X-User-Name': u.name || '',
+      'X-User-Id': u.id || ''
+    };
+  }
+
+  async function fetchPanic(){
+    const headers = getAuthHeaders();
+    if (!headers) { banner.style.display='none'; return; }
+    const res = await fetch(API_BASE + '/api/org/panic', { method:'GET', headers });
+    const json = await res.json().catch(()=> ({}));
+    const data = json?.data || {};
+    if (data.active){
+      const who = data.byEmail || data.byName || '—';
+      const note = data.note ? (' — ' + data.note) : '';
+      txt.textContent = `Activated by ${who}${note}`;
+      banner.style.display = '';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  btnHide && btnHide.addEventListener('click', ()=>{
+    banner.style.display='none';
+    try{ localStorage.setItem('ci_panic_banner_hide_until', String(Date.now() + 10*60*1000)); }catch{}
+  });
+
+  async function tick(){
+    try{
+      const hideUntil = Number(localStorage.getItem('ci_panic_banner_hide_until')||0);
+      if (hideUntil && Date.now() < hideUntil) { banner.style.display='none'; return; }
+    }catch{}
+    try{ await fetchPanic(); }catch{}
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', tick);
+  } else tick();
+
+  setInterval(tick, 10000);
+})();
+</script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
