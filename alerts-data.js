@@ -14,7 +14,18 @@ window.alertsData =[
     time: "",
     source: "",
     summary: ""
-  }, 
+  },
+ 
+ {
+    title: "Mobilization against 'Slave Labor' Reform",
+    city: "Buenos Aires",
+    country: "Argentina",
+    continent: "South America",
+    risk: "Medium",
+    time: "2026-02-11T13:00:00",
+    source: "Frente de Izquierda / Partido Obrero",
+    summary: "Massive popular mobilization to the National Congress to reject President Javier Milei's labor reform bill, which protesters have labeled 'slave labor' (esclavista). Organized by groups including the CSC and Partido Obrero, the action calls for an 'active strike' and a struggle plan leading to a general strike to protect labor rights and collective bargaining."
+},
 
   {
     title: "Anti-US Embassy Protests",
@@ -13223,6 +13234,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
