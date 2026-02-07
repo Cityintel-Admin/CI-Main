@@ -17,6 +17,105 @@ window.alertsData =[
   }, 
 
   {
+    title: "Pro-Palestine fundraising walk",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "LOW",
+    time: "10:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "A fundraising walk along the Thames from the Thames Barrier to Tower Bridge to raise funds for the flotilla to Gaza."
+  },
+ 
+  {
+    title: "Weekly Iran protest",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "13:00 - 17:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "A regular protest against the ongoing issues in Iran outside the Iranian Embassy in Knightsbridge."
+  },
+ 
+  {
+    title: "Black Day - PTI protest",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "13:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "Protest in support of former Pakistani PM Imran Khan at 10 Downing Street. Protesters may march to the FCDO."
+  },
+ 
+  {
+    title: "United for Freedom and Democracy march",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "mid",
+    time: "14:00 - 16:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "A protest march against the Islamic Republic amid ongoing political tensions, from Downing Street to the Iranian Embassy."
+  },
+ 
+  {
+    title: "Ealing Council protest",
+    city: "Ealing",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "LOW",
+    time: "14:00 - 17:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "Ealing Cut Ties with Genocide intend to protest against Ealing Council due to their perceived links to the Israel government."
+  },
+ 
+  {
+    title: "Fight for Jews protest",
+    city: "Birmingham",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "HIGH",
+    time: "15:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "Protest march led by pro-Israeli group Stop The Hate UK. Counter protests by pro-Palestine groups are possible."
+  },
+ 
+  {
+    title: "Status for Rojava march",
+    city: "Manchester",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "14:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "A pro-Kurdish march to protest against ongoing military operations in North and East Syria."
+  },
+ 
+  {
+    title: "March for Palestine",
+    city: "Newcastle",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "mid",
+    time: "12:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "A pro-Palestine march led by Newcastle Palestine Solidarity Campaign from Central Station to Grey's Monument."
+  },
+ 
+  {
+    title: "Free Imran Khan car rally",
+    city: "Glasgow",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "mid",
+    time: "14:00",
+    source: "Southeast Bi-Weekly (05 February 2026)",
+    summary: "PTI West of Scotland intent to hold a car rally in support of former Pakistani PM Imran Khan."
+  },
+
+  {
     title: "Political Visit: Jordan Bardella (RN) in Carcassonne",
     city: "Carcassonne",
     country: "France",
@@ -13061,6 +13160,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
