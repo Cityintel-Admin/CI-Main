@@ -4400,10 +4400,39 @@ const CIGeocode = (() => {
     }
   }
 
+
+  // Haversine distance (km) for geo sanity checks (e.g., some feeds swap lat/lon)
+  function geoDistanceKm(lat1, lon1, lat2, lon2){
+    const R = 6371;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
   async function resolveEventLatLng(ev){
     // First: existing geometry / coordinates
     const direct = extractLatLon(ev);
-    if(direct) return { ...direct, source: "event" };
+    if(direct){
+      // Some feeds occasionally invert lat/lon. If we also know the city,
+      // compare against a city centroid and flip only when it clearly helps.
+      const cityGuess = pickCityText(ev);
+      if(cityGuess){
+        const cityLL = await resolveCityLatLng(cityGuess);
+        if(cityLL){
+          const d1 = geoDistanceKm(direct.lat, direct.lon, cityLL.lat, cityLL.lng);
+          const d2 = geoDistanceKm(direct.lon, direct.lat, cityLL.lat, cityLL.lng); // swapped
+          if(d2 + 1 < d1 && d1 > 150){
+            return { lat: direct.lon, lon: direct.lat, source: "event_swapped" };
+          }
+        }
+      }
+      return { ...direct, source: "event" };
+    }
 
     // Try a city-ish string
     const cityText = pickCityText(ev);
