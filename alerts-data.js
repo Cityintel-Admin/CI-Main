@@ -6303,7 +6303,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
     
 
 
-    { title:"Lift The Ban — November Action (UK)", city:"London", country:"United Kingdom", continent:"Europe", risk:"medium", time:"2025-11-18T10:00:00", source:"https://actionnetwork.org/forms/lift-the-ban-november-2025", summary:"Thousands are expected in a multi-day UK campaign beginning 18 Nov, aimed at overturning immigration and asylum policy changes. Organisers plan marches in London and regional hubs; expected disruption on key arterial roads and transport networks." },
+  { title:"Lift The Ban — November Action (UK)", city:"London", country:"United Kingdom", continent:"Europe", risk:"medium", time:"2025-11-18T10:00:00", source:"https://actionnetwork.org/forms/lift-the-ban-november-2025", summary:"Thousands are expected in a multi-day UK campaign beginning 18 Nov, aimed at overturning immigration and asylum policy changes. Organisers plan marches in London and regional hubs; expected disruption on key arterial roads and transport networks." },
   
   { title:"General Strike over Budget & Welfare (Italy)", city:"Rome", country:"Italy", continent:"Europe", risk:"high", time:"2025-11-29T09:00:00", source:"https://www.wantedinrome.com/news/italy-faces-general-strike-over-budget-on-28-november.html", summary:"National unions across Italy call a general strike on 29 Nov with demonstrations centred in Rome. Protesters target government budget plan and cuts to welfare and public services; public transport and airports likely heavily affected." },
   
@@ -6356,7 +6356,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
 { title:"Teachers' Day of Action Window", city:'Christchurch', country:'New Zealand', continent:'Oceania', risk:'medium', time:'2026-02-27T10:30:00', source:'Analyst forecast referencing negotiation timelines', predictive:true, predictive_type:'modeled', summary:'Blurb: Teachers rally in city centre; family-friendly.\n\nFurther: Moderate congestion; risk medium.' },
 
-{ title:'Housing Affordability Rally Window', city:'Brisbane', country:'Australia', continent:'Oceania', risk:'low', time:'2026-02-08T11:00:00', source:'Analyst forecast referencing rent and vacancy cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic march from Roma Street forums.\n\nFurther: Peaceful; risk low.' },
+{ title:'Housing Affordability Rally Window', city:'Brisbane', country:'Australia', continent:'Oceania', risk:'low', time:'2026-02-08T11:00:00', source:'', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic march from Roma Street forums.\n\nFurther: Peaceful; risk low.' },
 
 { title:'Cost-of-Living Rally Window', city:'Adelaide', country:'Australia', continent:'Oceania', risk:'low', time:'2026-02-10T12:00:00', source:'Analyst forecast referencing utility tariff cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Rally at Victoria Square.\n\nFurther: Compact; risk low.' },
 
@@ -13379,6 +13379,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
