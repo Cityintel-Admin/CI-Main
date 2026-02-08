@@ -214,8 +214,29 @@
 <script>
   // must be after the header DOM exists
   document.addEventListener('DOMContentLoaded', function(){
-    CIAuth.injectUserChip(document.getElementById('topActions'));
-    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+    // Inject user chip (compatible with pages that may not expose CIAuth.injectUserChip)
+    (function injectUserChipFallback(){
+      const host=document.getElementById('topActions');
+      if(!host) return;
+      const profileStr=localStorage.getItem('ci_profile');
+      let profile={};
+      try{profile=profileStr?JSON.parse(profileStr):{};}catch(e){profile={};}
+      const isLoggedIn=!!(profile && (profile.email||profile.id));
+      // If markup already has a chip, just update label.
+      const chip=document.getElementById('userChip');
+      if(chip){
+        const label=chip.querySelector('.label')||chip;
+        if(isLoggedIn){
+          label.textContent=(profile.name||'User');
+          chip.classList.remove('guest');
+          chip.classList.add('loggedin');
+        } else {
+          label.textContent='Guest / Shared';
+          chip.classList.add('guest');
+        }
+      }
+    })();
+CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
   });
 </script>
 
@@ -448,293 +469,290 @@
 
 <script>
 (function(){
-  const API_BASE = 'https://api.cityintelapi.com';
-  const bar = document.getElementById('trial-banner');
-  const txt = document.getElementById('trial-text');
-
-  function who(){ try { return JSON.parse(localStorage.getItem('ci_profile')||'{}'); } catch { return {}; } }
-  function pad(n){ return String(n).padStart(2,'0'); }
-
-  async function getStatus(email){
-    const u = new URL(API_BASE + '/api/sub-status');
-    u.searchParams.set('email', email);
-    const r = await fetch(u);
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
-  }
-
-  function startCountdown(endIso){
-    const end = new Date(endIso).getTime();
-    function tick(){
-      const now = Date.now();
-      const ms = end - now;
-      if (ms <= 0){
-        // trial ended → bounce to subscribe
-        bar.style.display = 'none';
-        location.href = 'subscribe.html?reason=trial_ended';
-        return;
-      }
-      const s = Math.floor(ms/1000);
-      const d = Math.floor(s/86400);
-      const h = Math.floor((s%86400)/3600);
-      const m = Math.floor((s%3600)/60);
-      const sec = s%60;
-      const parts = [];
-      if (d) parts.push(d+'d');
-      parts.push(pad(h)+'h', pad(m)+'m', pad(sec)+'s');
-      txt.textContent = 'Trial active — ends in ' + parts.join(' ');
-      bar.style.display = '';
-    }
-    tick();
-    return setInterval(tick, 1000);
-  }
-
-  (async function init(){
-    const p = who();
-    if (!p.email) return; // not logged in
-
-    try{
-      const data = await getStatus(p.email);
-      if (data.trialEndsAt){
-        startCountdown(data.trialEndsAt);
-      }
-    }catch(e){
-      // silent
-      console.warn('trial banner error', e);
-    }
-  })();
-})();
-</script>
-	
-<script src="admin-links.js"></script>
-	
-
-<script>
-(() => {
   const API_BASE = "https://api.cityintelapi.com";
 
-  const el = (id) => document.getElementById(id);
+// --- auth header helper (mirrors settings.html pattern) ---
+function getProfile() {
+  try { return JSON.parse(localStorage.getItem("ci_profile") || "{}"); }
+  catch { return {}; }
+}
+function getAuthHeaders() {
+  const profile = getProfile();
+  const headers = { "Content-Type": "application/json" };
+  if (profile?.email) headers["X-User-Email"] = profile.email;
+  if (profile?.name) headers["X-User-Name"] = profile.name;
+  if (profile?.id) headers["X-User-Id"] = profile.id;
+  return headers;
+}
+function isLoggedIn() {
+  const p = getProfile();
+  return !!(p && (p.email || p.id));
+}
 
-  const toastEl = el("toast");
-  function toast(msg, ok=true){
-    if(!toastEl) return;
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
-    toastEl.style.borderColor = ok ? "rgba(52,211,153,.35)" : "rgba(255,64,64,.35)";
-    toastEl.style.background = ok ? "rgba(16,185,129,.12)" : "rgba(255,64,64,.10)";
-    setTimeout(()=>toastEl.classList.remove("show"), 4500);
+// --- DOM ---
+const els = {
+  statusText: document.getElementById("statusText"),
+  statusMeta: document.getElementById("statusMeta"),
+  statusDot: document.getElementById("statusDot"),
+  btnRefresh: document.getElementById("btnRefresh"),
+  btnActivate: document.getElementById("btnActivate"),
+  btnReset: document.getElementById("btnReset"),
+  btnShare: document.getElementById("btnShare"),
+  btnUseLocation: document.getElementById("btnUseLocation"),
+  inviteCode: document.getElementById("inviteCode"),
+  firstName: document.getElementById("firstName"),
+  surname: document.getElementById("surname"),
+  location: document.getElementById("locationInput"),
+  message: document.getElementById("messageInput"),
+  noteLine: document.getElementById("noteLine"),
+};
+
+// --- state ---
+let joinedViaInvite = false;
+
+// --- shared / guest join (when invite code supplied) ---
+async function ensureJoinedIfInvitePresent(inviteCode) {
+  if (!inviteCode) return;
+  if (joinedViaInvite) return;
+  // If logged-in, we don't need the invite join flow.
+  if (isLoggedIn()) return;
+
+  const res = await fetch(`${API_BASE}/api/org/join`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ inviteCode }),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`Join failed (${res.status}) ${t}`);
   }
+  joinedViaInvite = true;
+}
 
-  function who(){
-    try {
-      if (window.CIAuth && typeof CIAuth.who === "function") return CIAuth.who();
-    } catch(_) {}
-    return null;
+// --- panic API (v5-compatible) ---
+async function fetchPanic() {
+  const res = await fetch(`${API_BASE}/api/org/panic`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`Status failed (${res.status}) ${t}`);
   }
-  function isLoggedIn(){
-    try { if (window.CIAuth && typeof CIAuth.isLoggedIn === "function") return CIAuth.isLoggedIn(); } catch(_) {}
-    return false;
+  return await res.json();
+}
+
+async function updatePanic(active, opts = {}) {
+  const payload = {
+    active,
+    message: opts.message || "",
+    source: opts.source || (isLoggedIn() ? "loggedin" : "shared"),
+    location: opts.location || "",
+    actorName: opts.actorName || "",
+    actorEmail: opts.actorEmail || "",
+    actorId: opts.actorId || "",
+    activated_at: opts.activated_at || "",
+    resolved_at: opts.resolved_at || "",
+  };
+
+  const res = await fetch(`${API_BASE}/api/org/panic`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`Update failed (${res.status}) ${t}`);
   }
-  function authHeaders(){
-    try {
-      if (window.CIAuth) {
-        const token = (typeof CIAuth.getToken === "function") ? CIAuth.getToken() : null;
-        const user = (typeof CIAuth.getUser === "function") ? CIAuth.getUser() : null;
-        if (token) {
-          const h = { "Content-Type":"application/json", "X-Admin-Token": token };
-          if (user?.email) h["X-User-Email"] = user.email;
-          if (user?.id) h["X-User-Id"] = user.id;
-          if (user?.name) h["X-User-Name"] = user.name;
-          return h;
-        }
-      }
-    } catch(_) {}
-    return { "Content-Type":"application/json" };
-  }
+  return await res.json().catch(() => ({}));
+}
 
-  function getInviteFromUrl(){
-    const u = new URL(location.href);
-    return (u.searchParams.get("org") || u.searchParams.get("invite") || "").trim();
-  }
+// --- UI helpers ---
+function setPill(active) {
+  if (els.statusText) els.statusText.textContent = active ? "PANIC ALARM ACTIVE" : "No active panic alarm";
+  if (els.statusDot) els.statusDot.style.background = active ? "rgba(255,60,60,0.95)" : "rgba(44,255,170,0.85)";
+  document.body.classList.toggle("panic-active", !!active);
+}
 
-  function setStatus(state){
-    const dot = el("statusDot");
-    const text = el("statusText");
-    if(!dot || !text) return;
+function setMetaLine(text) {
+  if (els.statusMeta) els.statusMeta.textContent = text || "";
+}
 
-    dot.classList.remove("ok","bad");
-    if(state === "active"){ dot.classList.add("bad"); text.textContent = "PANIC ALARM ACTIVE"; }
-    else if(state === "inactive"){ dot.classList.add("ok"); text.textContent = "No active panic alarm"; }
-    else { text.textContent = "Checking status…"; }
-  }
+function toast(msg, kind = "info") {
+  // Lightweight toast using existing #toast node if present, otherwise statusMeta.
+  const t = document.getElementById("toast");
+  if (!t) { setMetaLine(msg); return; }
+  t.textContent = msg;
+  t.dataset.kind = kind;
+  t.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
 
-  function setMeta(line){ const m = el("statusMeta"); if(m) m.textContent = line || ""; }
+function currentActor() {
+  const profile = getProfile();
+  const fn = (els.firstName?.value || "").trim();
+  const sn = (els.surname?.value || "").trim();
+  const full = [fn, sn].filter(Boolean).join(" ").trim();
 
-  async function fetchStatus(){
-    setStatus("checking");
-    setMeta("");
-    try {
-      const invite = el("inviteCode")?.value?.trim() || getInviteFromUrl();
-      const url = new URL(API_BASE + "/api/org/panic/status");
-      if (!isLoggedIn() && invite) url.searchParams.set("org", invite);
-
-      const res = await fetch(url.toString(), { method:"GET", headers: authHeaders() });
-      if(!res.ok) throw new Error("Status " + res.status);
-      const data = await res.json();
-
-      const active = !!(data?.active);
-      setStatus(active ? "active" : "inactive");
-
-      if(active){
-        const by = data.activated_by || data.activatedBy || "unknown";
-        const at = data.activated_at || data.activatedAt || "";
-        const msg = data.message ? " • Note: " + data.message : "";
-        setMeta(`Activated by: ${by}${at ? " • " + at : ""}${msg}`);
-      } else {
-        const at = data.updated_at || data.updatedAt || data.resolved_at || data.resolvedAt || "";
-        setMeta(at ? ("Last update: " + at) : "");
-      }
-
-      // If logged in, make invite field feel optional
-      const help = el("inviteHelp");
-      if (help) help.textContent = isLoggedIn()
-        ? "You are logged in — invite code not required."
-        : "If you are using a shared link, invite code is required.";
-    } catch (e){
-      setStatus("inactive");
-      setMeta("Status check failed");
-      toast("Status check failed. If using a shared link, enter invite code then refresh.", false);
-    }
-  }
-
-  function buildSharedLink(){
-    const u = new URL(location.href);
-    u.searchParams.set("org", (el("inviteCode")?.value?.trim() || getInviteFromUrl() || "").trim());
-    // remove other params that aren't needed
-    u.searchParams.delete("invite");
-    return u.toString();
-  }
-
-  async function copyShare(){
-    const code = (el("inviteCode")?.value?.trim() || getInviteFromUrl() || "").trim();
-    if(!code){ toast("Enter invite code first (Settings → join code).", false); return; }
-    const link = buildSharedLink();
-    try {
-      await navigator.clipboard.writeText(link);
-      el("shareHint").textContent = "Copied!";
-      setTimeout(()=>{ el("shareHint").textContent = ""; }, 2500);
-      toast("Share link copied.");
-    } catch {
-      // fallback
-      const ta = document.createElement("textarea");
-      ta.value = link;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-      toast("Share link copied.");
-    }
-  }
-
-  async function activate(){
-    const invite = (el("inviteCode")?.value?.trim() || getInviteFromUrl() || "").trim();
-    const first = (el("firstName")?.value || "").trim();
-    const last = (el("surname")?.value || "").trim();
-    const loc = (el("locationText")?.value || "").trim();
-    const msg = (el("message")?.value || "").trim();
-
-    if(!isLoggedIn() && !invite){
-      toast("Invite code is required for shared use.", false);
-      return;
-    }
-    if(!first || !last){
-      toast("Please enter first name and surname.", false);
-      return;
-    }
-
-    const payload = {
-      invite_code: invite || undefined,
-      first_name: first,
-      surname: last,
-      location: loc || undefined,
-      message: msg || undefined
+  if (isLoggedIn()) {
+    return {
+      name: profile.name || full || "User",
+      email: profile.email || "",
+      id: profile.id || "",
+      source: "loggedin",
     };
+  }
+  return {
+    name: full || "Shared user",
+    email: "",
+    id: "",
+    source: "shared",
+  };
+}
 
-    const isShared = !isLoggedIn();
-    const endpoint = isShared ? "/api/org/panic/activate-shared" : "/api/org/panic/activate";
-
-    try{
-      const res = await fetch(API_BASE + endpoint, {
-        method:"POST",
-        headers: authHeaders(),
-        body: JSON.stringify(payload)
-      });
-      if(!res.ok) throw new Error("Activate " + res.status);
-      toast("Panic alarm activated.");
-      await fetchStatus();
-    } catch(e){
-      toast("Activate failed.", false);
+// Prefill name fields for logged-in users (optional)
+(function prefillLoggedInFields() {
+  if (!isLoggedIn()) return;
+  const profile = getProfile();
+  if (profile?.name && els.firstName && els.surname) {
+    const parts = String(profile.name).trim().split(/\s+/);
+    if (parts.length === 1) {
+      if (!els.firstName.value) els.firstName.value = parts[0];
+    } else {
+      if (!els.firstName.value) els.firstName.value = parts.slice(0, -1).join(" ");
+      if (!els.surname.value) els.surname.value = parts.slice(-1).join(" ");
     }
   }
-
-  async function reset(){
-    const invite = (el("inviteCode")?.value?.trim() || getInviteFromUrl() || "").trim();
-    const msg = (el("message")?.value || "").trim();
-    const isShared = !isLoggedIn();
-
-    const payload = { invite_code: invite || undefined, message: msg || undefined };
-    const endpoint = isShared ? "/api/org/panic/reset-shared" : "/api/org/panic/reset";
-
-    try{
-      const res = await fetch(API_BASE + endpoint, { method:"POST", headers: authHeaders(), body: JSON.stringify(payload) });
-      if(!res.ok) throw new Error("Reset " + res.status);
-      toast("Panic alarm reset.");
-      await fetchStatus();
-    } catch(e){
-      toast("Reset failed.", false);
-    }
+  // Invite code is not required when logged in.
+  if (els.inviteCode) {
+    els.inviteCode.placeholder = "not required when logged in";
   }
-
-  async function useLocation(){
-    const btn = el("useLocationBtn");
-    if(!navigator.geolocation){ toast("Geolocation not supported on this device.", false); return; }
-    if(btn){ btn.disabled = true; btn.textContent = "Locating…"; }
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      try{
-        const { latitude, longitude } = pos.coords;
-        // Lightweight reverse lookup via OpenStreetMap Nominatim (no key) — can be removed if you prefer not to call external services.
-        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`;
-        const res = await fetch(url, { headers: { "Accept":"application/json" }});
-        const data = await res.json();
-        const place = data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || data?.address?.state || data?.display_name;
-        if (el("locationText")) el("locationText").value = place ? String(place) : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-        toast("Location filled.");
-      } catch {
-        toast("Location found, but couldn't convert to place name.", false);
-      } finally {
-        if(btn){ btn.disabled = false; btn.textContent = "Use my location"; }
-      }
-    }, () => {
-      if(btn){ btn.disabled = false; btn.textContent = "Use my location"; }
-      toast("Location permission denied.", false);
-    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 });
-  }
-
-  // Wire up
-  el("refreshBtn")?.addEventListener("click", fetchStatus);
-  el("activateBtn")?.addEventListener("click", activate);
-  el("resetBtn")?.addEventListener("click", reset);
-  el("copyShareBtn")?.addEventListener("click", copyShare);
-  el("useLocationBtn")?.addEventListener("click", useLocation);
-
-  // Pre-fill invite code from URL
-  const urlCode = getInviteFromUrl();
-  if (urlCode && el("inviteCode")) el("inviteCode").value = urlCode;
-
-  // Initial
-  fetchStatus();
 })();
+
+async function refresh() {
+  try {
+    setMetaLine("Checking status...");
+    const data = await fetchPanic();
+
+    const active = !!data?.active;
+    setPill(active);
+
+    // Display metadata from server when available
+    if (active) {
+      const by = data?.activated_by || data?.actorEmail || data?.actorName || "";
+      const at = data?.activated_at || "";
+      const msg = data?.message ? ` • Note: ${data.message}` : "";
+      setMetaLine(`Activated by: ${by}${at ? " • " + at : ""}${msg}`);
+    } else {
+      const upd = data?.updated_at || data?.resolved_at || "";
+      const msg = data?.message ? ` • Note: ${data.message}` : "";
+      setMetaLine(`${upd ? "Last update: " + upd : ""}${msg}`);
+    }
+
+    // Update note line if present
+    if (els.noteLine) {
+      const note = (data?.message || "").trim();
+      els.noteLine.textContent = note ? `Note: ${note}` : "";
+    }
+  } catch (e) {
+    setPill(false);
+    setMetaLine("Status check failed");
+    console.error(e);
+  }
+}
+
+// --- actions ---
+async function onActivate() {
+  try {
+    const invite = (els.inviteCode?.value || "").trim();
+    await ensureJoinedIfInvitePresent(invite);
+
+    const actor = currentActor();
+    const message = (els.message?.value || "").trim();
+    const location = (els.location?.value || "").trim();
+
+    await updatePanic(true, {
+      message,
+      location,
+      actorName: actor.name,
+      actorEmail: actor.email,
+      actorId: actor.id,
+      source: actor.source,
+      activated_at: new Date().toISOString(),
+    });
+
+    toast("Panic alarm activated", "ok");
+    await refresh();
+  } catch (e) {
+    console.error(e);
+    toast("Activate failed.", "err");
+  }
+}
+
+async function onReset() {
+  try {
+    const invite = (els.inviteCode?.value || "").trim();
+    await ensureJoinedIfInvitePresent(invite);
+
+    const actor = currentActor();
+    const message = (els.message?.value || "").trim() || "Resolved / false alarm";
+    const location = (els.location?.value || "").trim();
+
+    await updatePanic(false, {
+      message,
+      location,
+      actorName: actor.name,
+      actorEmail: actor.email,
+      actorId: actor.id,
+      source: actor.source,
+      resolved_at: new Date().toISOString(),
+    });
+
+    toast("Panic alarm reset", "ok");
+    await refresh();
+  } catch (e) {
+    console.error(e);
+    toast("Reset failed.", "err");
+  }
+}
+
+function onCopyShareLink() {
+  // Share link is just this page URL; invite code itself is not embedded.
+  // Org will distribute invite code separately (or via Settings).
+  const url = window.location.href.split("#")[0];
+  navigator.clipboard?.writeText(url).then(
+    () => toast("Share link copied", "ok"),
+    () => toast("Copy failed (clipboard blocked)", "err")
+  );
+}
+
+function onUseLocation() {
+  if (!navigator.geolocation) return toast("Geolocation not supported", "err");
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      // v1: store as text only (no exact coords). We can approximate as "Lat, Lon" if user wants.
+      const lat = pos.coords.latitude.toFixed(4);
+      const lon = pos.coords.longitude.toFixed(4);
+      if (els.location) els.location.value = `${lat}, ${lon}`;
+      toast("Location added", "ok");
+    },
+    () => toast("Location permission denied", "err"),
+    { enableHighAccuracy: false, timeout: 8000 }
+  );
+}
+
+// Wire up
+els.btnRefresh?.addEventListener("click", refresh);
+els.btnActivate?.addEventListener("click", onActivate);
+els.btnReset?.addEventListener("click", onReset);
+els.btnShare?.addEventListener("click", onCopyShareLink);
+els.btnUseLocation?.addEventListener("click", onUseLocation);
+
+// Initial load
+refresh();
 </script>
 
 </body>
 </html>
+
