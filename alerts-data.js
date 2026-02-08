@@ -16,6 +16,17 @@ window.alertsData =[
     summary: ""
   },
 
+ {
+    title: "Stop the Nuclear Nightmare: National Demonstration",
+    city: "Faslane, Helensburgh",
+    country: "UK",
+    continent: "Europe",
+    risk: "Moderate",
+    time: "2026-03-14T13:00:00",
+    source: "Scottish CND (Campaign for Nuclear Disarmament)",
+    summary: "A national protest at the North Gate of HMNB Clyde (Faslane) opposing the UK's nuclear weapons. Organized by a coalition including Scottish CND, Medact, and the Iona Community ahead of the Scottish elections."
+  },
+
   {
     title: "Maqbool Bhat Memorial Protest & March",
     city: "London",
@@ -13379,6 +13390,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
