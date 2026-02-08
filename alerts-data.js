@@ -17,11 +17,22 @@ window.alertsData =[
   },
 
   {
+    title: "Maqbool Bhat Memorial Protest & March",
+    city: "London",
+    country: "UK",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-02-11T13:00:00",
+    source: "Pro-Independence British Kashmiris",
+    summary: "A march from Parliament Square to the Indian High Commission to mark the anniversary of Maqbool Bhat's hanging in 1984. Organized by British Kashmiri groups seeking independence."
+  },
+
+  {
     title: "Worldwide marking BlackDay on February 8th, organized by Pakistan Tehreek-e-Insaf",
     city: "London 	10 Downing Street",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -32,7 +43,7 @@ window.alertsData =[
     city: "Glasgow Car Rally from Consulate of Pakistan ",
     country: "England",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T14:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -43,7 +54,7 @@ window.alertsData =[
     city: "	Brussels	Pl. Du Luxembourg 7 Conference ",
     country: "Belguim",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T16:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -54,7 +65,7 @@ window.alertsData =[
     city: "Stockholm	Karlavägen 65",
     country: "Sweden",
     continent: "Europe",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T16:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -65,7 +76,7 @@ window.alertsData =[
     city: "Melbourne	BBQ Lounge Tullamarine",
     country: "Australia",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -76,7 +87,7 @@ window.alertsData =[
     city: "Auckland	Mt Roskill War Memorial Hall",
     country: "New Zealand",
     continent: "Oceania",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -87,7 +98,7 @@ window.alertsData =[
     city: "Mississauga	Huron Park Recreation Centre",
     country: "Canada",
     continent: "North America",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -98,7 +109,7 @@ window.alertsData =[
     city: "Ottawa	Pakistan High Commission",
     country: "Canada",
     continent: "North America",
-    risk: "Mid",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Rallies and gatherings are scheduled across multiple continents to demand the release of Imran Khan and the restoration of what the party calls the public mandate The protests, organized by Pakistan Tehreek-e-Insaf (PTI) and the Tehreek-e-Tahafuz-e-Ayin-e-Pakistan (TTAP) alliance, include a nationwide shutter-down and wheel-jam strike in Pakistan. Despite a recent suicide bombing in Islamabad, PTI leaders confirmed they will proceed with the demonstrations, though they have also designated the day for national mourning"
@@ -109,7 +120,7 @@ window.alertsData =[
     city: "Ottawa	Pakistan High Commission",
     country: "Canada",
     continent: "North America",
-    risk: "Medium",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Protest at the Embassy of Pakistan marking 'Black Day' to protest the 2024 election results."
@@ -120,7 +131,7 @@ window.alertsData =[
     city: "Michigan	Car Rally starting at Raintree Troy",
     country: "United States",
     continent: "North America",
-    risk: "Medium",
+    risk: "Med",
     time: "2026-02-08T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Protest at the Embassy of Pakistan marking 'Black Day' to protest the 2024 election results."
@@ -132,7 +143,7 @@ window.alertsData =[
     city: "Washington, DC",
     country: "United States",
     continent: "North America",
-    risk: "Medium",
+    risk: "Med",
     time: "2026-02-07T13:00:00",
     source: "https://x.com/Cityintel1/status/2020281721485246838",
     summary: "Protest at the Embassy of Pakistan marking 'Black Day' to protest the 2024 election results."
@@ -144,7 +155,7 @@ window.alertsData =[
     city: "Brussels",
     country: "Belgium",
     continent: "Europe",
-    risk: "Low",
+    risk: "Med",
     time: "2026-02-08T16:00:00",
     source: "Pakistan Tehreek-e-Insaf (PTI)",
     summary: "Political conference at Pl. du Luxembourg 7 to protest the 2024 general elections."
@@ -155,7 +166,7 @@ window.alertsData =[
     city: "Buenos Aires",
     country: "Argentina",
     continent: "South America",
-    risk: "Medium",
+    risk: "Med",
     time: "2026-02-11T13:00:00",
     source: "Frente de Izquierda / Partido Obrero",
     summary: "Massive popular mobilization to the National Congress to reject President Javier Milei's labor reform bill, which protesters have labeled 'slave labor' (esclavista). Organized by groups including the CSC and Partido Obrero, the action calls for an 'active strike' and a struggle plan leading to a general strike to protect labor rights and collective bargaining."
@@ -166,7 +177,7 @@ window.alertsData =[
     city: "Bogotá",
     country: "Colombia",
     continent: "South America",
-    risk: "Medium",
+    risk: "Med",
     time: "2026-02-06T13:00:00",
     source: "US Embassy Alert",
     summary: "Demonstrations held near the US Embassy driven by regional tensions regarding foreign intervention in Venezuela."
@@ -13368,6 +13379,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
