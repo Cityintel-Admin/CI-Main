@@ -249,9 +249,53 @@
       50%{filter: drop-shadow(0 0 14px rgba(255,59,59,0.55));}
     }
     .pulse{animation: panicPulse 1.2s ease-in-out infinite;}
+  
+    /* Brandbar (matches other CityIntel pages) */
+    .brandbar{
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 84px;
+      z-index: 50;
+      background: radial-gradient(1200px 200px at 10% 30%, rgba(170, 30, 40, .55), rgba(10,10,10,.05)),
+                  linear-gradient(90deg, rgba(10,10,10,.92), rgba(45,10,12,.92) 35%, rgba(10,10,10,.92));
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+    }
+    .brandbar-inner{
+      height: 100%;
+      display:flex;
+      align-items:center;
+      padding: 0 22px;
+    }
+    .brandbar-left{
+      display:flex; align-items:center; gap:14px;
+    }
+    .brandbar-logo{
+      width: 52px; height: 52px;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    }
+    .brandbar-wordmark{
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+    .app{ padding-top: 84px; }
+
   </style>
 </head>
 <body>
+
+  <div class="brandbar">
+    <div class="brandbar-inner">
+      <div class="brandbar-left">
+        <img class="brandbar-logo" src="CityintLogo.jpg" alt="CityIntel">
+        <div class="brandbar-wordmark">CityIntel</div>
+      </div>
+    </div>
+  </div>
+
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
@@ -264,7 +308,7 @@
       <div class="hint">
         This page can be used by logged-in staff <b>or</b> shared for emergency use on mobile.
         <br><br>
-        If you’re using a shared link, enter your <b>Org Code</b> and your name.
+        If you’re using a shared link, enter your <b>Invite code</b> and your name.
       </div>
     </aside>
 
@@ -305,7 +349,7 @@
 
           <div class="grid">
             <div>
-              <label>Org Code (for shared links)</label>
+              <label>Invite code (for shared links)</label>
               <input id="orgCode" placeholder="e.g. 8-char invite code" autocomplete="off" />
               <div class="helper">If you are logged in, this can be left blank. If you are using a shared link, this is required.</div>
             </div>
@@ -359,421 +403,269 @@
   <div class="toast" id="toast"></div>
 
 <script>
-/**
- * Panic Alarm v4 (branded + shared-link ready + robust endpoint fallbacks)
- *
- * Why the “share” trigger might have done nothing:
- * - your worker’s /api/org/panic routes require X-User-* headers (logged in)
- * - a shared link has no login, so those requests fail
- *
- * This page now tries multiple endpoints (new + legacy) so it will work
- * even if route names change while we iterate.
- */
-
 (function(){
-  const API_ORIGIN =
-    (window.CI_API_ORIGIN && String(window.CI_API_ORIGIN)) ||
-    localStorage.getItem('CI_API_ORIGIN') ||
-    'https://api.cityintelapi.com';
+  const API_BASE = "https://api.cityintelapi.com";
 
-  // ---------- tiny UI helpers ----------
   const $ = (id) => document.getElementById(id);
-  const toastEl = $('toast');
-  let toastTimer = null;
-  function toast(msg){
+  const statusPill = $("statusPill");
+  const statusText = $("statusText");
+  const statusMeta = $("statusMeta");
+
+  const inviteInput = $("orgCode");
+  const firstNameInput = $("firstName");
+  const lastNameInput  = $("lastName");
+  const locationInput  = $("locationText");
+  const messageInput   = $("message");
+
+  const btnActivate  = $("btnActivate");
+  const btnResolve   = $("btnResolve");
+  const btnRefresh   = $("btnRefresh");
+  const btnCopyLink  = $("btnCopyLink");
+  const btnUseLoc    = $("btnUseLocation");
+
+  const toastEl = $("toast");
+
+  function toast(msg, type="info"){
+    if(!toastEl){ alert(msg); return; }
     toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 3800);
+    toastEl.className = "toast show " + type;
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(()=>{ toastEl.className = "toast"; }, 2800);
   }
 
-  function safeJson(res){
-    return res.json().catch(async ()=>({ ok:false, error: await res.text().catch(()=>String(res.status)) }));
-  }
-
-  function qs(name){
-    const u = new URL(location.href);
-    return u.searchParams.get(name);
-  }
-
-  // ---------- “auth” / mode ----------
-  // Logged-in mode uses whatever the rest of your site uses (localStorage values).
-  // Shared mode uses org code (invite code) + name fields.
-  function getUserFromStorage(){
-    const email = localStorage.getItem('ci_user_email') || localStorage.getItem('cityintel_email') || '';
-    const name  = localStorage.getItem('ci_user_name')  || localStorage.getItem('cityintel_name')  || '';
-    const id    = localStorage.getItem('ci_user_id')    || localStorage.getItem('cityintel_userid') || '';
-    return { email, name, id };
-  }
-
-  const user = getUserFromStorage();
-  const isLoggedIn = !!user.email;
-
-  // Pre-fill org code from URL (share link)
-  const urlOrg = qs('org') || qs('orgCode') || '';
-  if (urlOrg) $('orgCode').value = urlOrg;
-
-  // Update pill
-  function updateUserPill(){
-    const label = isLoggedIn ? (user.name || user.email) : 'Guest / Shared';
-    $('userLabel').textContent = label;
-    const badge = (label || 'G').trim().slice(0,1).toUpperCase();
-    $('userBadge').textContent = badge || 'G';
-  }
-  updateUserPill();
-
-  function baseHeaders(){
-    const h = { 'Content-Type': 'application/json' };
-    // Logged-in headers (your worker’s requireUser uses these)
-    if (isLoggedIn) {
-      h['X-User-Email'] = user.email;
-      if (user.name) h['X-User-Name'] = user.name;
-      if (user.id) h['X-User-Id'] = user.id;
+  // Stable per-device guest identity (no passwords)
+  function getGuestEmail(){
+    const key = "ci_guest_email_v1";
+    let v = localStorage.getItem(key);
+    if(!v){
+      const rid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
+      v = `shared+${rid}@cityintel.local`;
+      localStorage.setItem(key, v);
     }
-    return h;
+    return v;
   }
-
-  // ---------- Endpoint fallbacks ----------
-  async function apiTry(paths, init){
-    let lastErr = null;
-    for (const p of paths){
-      try{
-        const res = await fetch(API_ORIGIN + p, init);
-        const data = await safeJson(res);
-        if (res.ok && (data?.ok !== false)) {
-          return { ok:true, data, path:p };
-        }
-        // treat 404/405 as “try next”
-        const maybeTryNext = [404,405].includes(res.status);
-        lastErr = { status: res.status, data, path:p };
-        if (!maybeTryNext) return { ok:false, ...lastErr };
-      }catch(e){
-        lastErr = { status: 0, data:{ ok:false, error:String(e?.message||e) }, path:p };
-      }
-    }
-    return { ok:false, ...lastErr };
+  function getUserName(){
+    const fn = (firstNameInput?.value || "").trim();
+    const ln = (lastNameInput?.value  || "").trim();
+    return (fn + " " + ln).trim() || "Shared User";
   }
-
-  // Worker routes we’ll try:
-  // - shared status:   GET  /api/org/panic/shared-status?orgCode=XXXX
-  // - shared activate: POST /api/org/panic/shared-activate
-  // - shared resolve:  POST /api/org/panic/shared-resolve
-  //
-  // plus legacy:
-  // - GET/PUT /api/org/panic (requires X-User-Email)
-  // - GET /api/org/panic-log (new) /api/org/panic/log (alt)
-  async function getStatus(){
-    const orgCode = $('orgCode').value.trim();
-
-    // Shared status first if org code is present
-    if (orgCode){
-      const r = await apiTry([
-        `/api/org/panic/shared-status?orgCode=${encodeURIComponent(orgCode)}`,
-        `/api/org/panic/shared?orgCode=${encodeURIComponent(orgCode)}`,           // alt
-      ], { method:'GET', headers: baseHeaders() });
-      if (r.ok) return r.data;
-    }
-
-    // Logged-in / legacy org_panic table
-    const r2 = await apiTry([
-      `/api/org/panic/status`,
-      `/api/org/panic`,
-    ], { method:'GET', headers: baseHeaders() });
-
-    if (r2.ok) return r2.data;
-    return { ok:false, error: r2?.data?.error || `status check failed (${r2?.status||'?'})` };
-  }
-
-  async function activate(){
-    const first = $('firstName').value.trim();
-    const last  = $('lastName').value.trim();
-    const msg   = $('message').value.trim();
-    const loc   = $('locationText').value.trim();
-    const orgCode = $('orgCode').value.trim();
-
-    if (!isLoggedIn && !orgCode){
-      toast('Enter your Org Code to use a shared link.');
-      $('orgCode').focus();
-      return;
-    }
-    if (!first || !last){
-      toast('Please enter your first name and surname.');
-      (!first ? $('firstName') : $('lastName')).focus();
-      return;
-    }
-
-    const payload = {
-      firstName:first,
-      lastName:last,
-      message: msg || null,
-      location: loc || null,
-      // keep a clear “activated_by” text for logs
-      activatedBy: `${first} ${last}`.trim(),
-      mode: isLoggedIn ? 'logged-in' : 'shared',
-      orgCode: orgCode || null,
-      userEmail: isLoggedIn ? user.email : null,
+  function headers(){
+    return {
+      "Content-Type":"application/json",
+      "X-User-Email": getGuestEmail(),
+      "X-User-Name": getUserName()
     };
+  }
 
-    // Prefer shared endpoints if orgCode present OR if not logged in
-    const preferShared = !!orgCode || !isLoggedIn;
+  // Query param: invite
+  const qp = new URLSearchParams(location.search);
+  const inviteFromUrl = (qp.get("invite") || "").trim();
+  if(inviteFromUrl && inviteInput) inviteInput.value = inviteFromUrl;
 
-    const attempts = preferShared
-      ? [
-          `/api/org/panic/shared-activate`,
-          `/api/org/panic/activate-shared`,
-          `/api/org/panic/activate`,      // some versions might accept orgCode in body
-        ]
-      : [
-          `/api/org/panic/activate`,
-          `/api/org/panic/set`,
-        ];
+  function getInvite(){
+    return (inviteInput?.value || "").trim() || (localStorage.getItem("ci_last_invite_v1") || "").trim();
+  }
+  function setInvite(v){
+    if(v) localStorage.setItem("ci_last_invite_v1", v.trim());
+  }
 
-    // Legacy fallback: PUT /api/org/panic (org scoped via requireUser)
-    const legacyPut = async () => apiTry([`/api/org/panic`], {
-      method:'PUT',
-      headers: baseHeaders(),
-      body: JSON.stringify({ active:true, activatedBy: payload.activatedBy, message: msg || null, location: loc || null })
+  // Shared join: uses existing /api/org/join
+  async function ensureJoinedIfInvitePresent(){
+    const invite = getInvite();
+    if(!invite) return;
+
+    setInvite(invite);
+
+    const joinedKey = "ci_joined_invite_v1";
+    if(localStorage.getItem(joinedKey) === invite) return;
+
+    const res = await fetch(`${API_BASE}/api/org/join`, {
+      method:"POST",
+      headers: headers(),
+      body: JSON.stringify({ inviteCode: invite })
     });
 
-    const r = await apiTry(attempts, {
-      method:'POST',
-      headers: baseHeaders(),
+    if(res.ok){
+      localStorage.setItem(joinedKey, invite);
+      toast("Shared access verified for this organisation.", "ok");
+      return;
+    }
+    let detail = "";
+    try{ detail = await res.text(); }catch(e){}
+    throw new Error(`Shared access failed (${res.status}). ${detail}`.trim());
+  }
+
+  async function fetchStatus(){
+    await ensureJoinedIfInvitePresent();
+    const res = await fetch(`${API_BASE}/api/org/panic`, { method:"GET", headers: headers() });
+    if(!res.ok){
+      let detail=""; try{ detail=await res.text(); }catch(e){}
+      throw new Error(`Status fetch failed (${res.status}). ${detail}`.trim());
+    }
+    return res.json();
+  }
+
+  async function updatePanic(active){
+    await ensureJoinedIfInvitePresent();
+    const payload = {
+      active,
+      message: (messageInput?.value || "").trim(),
+      location: (locationInput?.value || "").trim(),
+      first_name: (firstNameInput?.value || "").trim(),
+      last_name: (lastNameInput?.value || "").trim()
+    };
+    const res = await fetch(`${API_BASE}/api/org/panic`, {
+      method:"PUT",
+      headers: headers(),
       body: JSON.stringify(payload)
     });
-
-    if (!r.ok){
-      // try legacy only if logged in
-      if (isLoggedIn){
-        const l = await legacyPut();
-        if (l.ok){ toast('Panic alarm activated.'); await refresh(); return; }
-      }
-      toast(`Activate failed: ${r?.data?.error || r?.data?.detail || 'unknown error'}`);
-      console.warn('activate fail', r);
-      return;
+    if(!res.ok){
+      let detail=""; try{ detail=await res.text(); }catch(e){}
+      throw new Error(`Update failed (${res.status}). ${detail}`.trim());
     }
-
-    toast('Panic alarm activated.');
-    await refresh();
+    return res.json().catch(()=> ({}));
   }
 
-  async function resolve(){
-    const note = ($('message').value || '').trim();
-    const orgCode = $('orgCode').value.trim();
-    const first = $('firstName').value.trim();
-    const last  = $('lastName').value.trim();
-
-    if (!isLoggedIn && !orgCode){
-      toast('Enter your Org Code to reset via a shared link.');
-      $('orgCode').focus();
-      return;
-    }
-
-    const who = (first && last) ? `${first} ${last}` : (user.name || user.email || 'Unknown');
-    const payload = {
-      resolvedBy: who,
-      note: note || null,
-      orgCode: orgCode || null,
-      mode: isLoggedIn ? 'logged-in' : 'shared',
-      userEmail: isLoggedIn ? user.email : null,
-    };
-
-    const preferShared = !!orgCode || !isLoggedIn;
-    const attempts = preferShared
-      ? [
-          `/api/org/panic/shared-resolve`,
-          `/api/org/panic/resolve-shared`,
-          `/api/org/panic/resolve`,
-        ]
-      : [
-          `/api/org/panic/resolve`,
-        ];
-
-    // Legacy fallback: PUT /api/org/panic active:false
-    const legacyPut = async () => apiTry([`/api/org/panic`], {
-      method:'PUT',
-      headers: baseHeaders(),
-      body: JSON.stringify({ active:false, message: note || null })
-    });
-
-    const ok = confirm(
-      `Reset the panic alarm?\n\n` +
-      `Add a short note (optional) in the message box first.\n\n` +
-      `This action will clear the banner for everyone in the organisation.`
-    );
-    if (!ok) return;
-
-    const r = await apiTry(attempts, {
-      method:'POST',
-      headers: baseHeaders(),
-      body: JSON.stringify(payload)
-    });
-
-    if (!r.ok){
-      if (isLoggedIn){
-        const l = await legacyPut();
-        if (l.ok){ toast('Panic alarm reset.'); await refresh(); return; }
-      }
-      toast(`Reset failed: ${r?.data?.error || r?.data?.detail || 'unknown error'}`);
-      console.warn('resolve fail', r);
-      return;
-    }
-
-    toast('Panic alarm reset.');
-    await refresh();
+  function formatTs(ts){
+    if(!ts) return "";
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? ts : d.toLocaleString();
   }
 
-  async function fetchLog(){
-    const orgCode = $('orgCode').value.trim();
-    // Logs are organisation scoped; for shared mode we might have a “shared-log” route.
-    if (orgCode){
-      const r = await apiTry([
-        `/api/org/panic/shared-log?orgCode=${encodeURIComponent(orgCode)}`,
-        `/api/org/panic-log/shared?orgCode=${encodeURIComponent(orgCode)}`,
-      ], { method:'GET', headers: baseHeaders() });
-      if (r.ok) return r.data;
-    }
-
-    const r2 = await apiTry([
-      `/api/org/panic-log`,
-      `/api/org/panic/log`,
-    ], { method:'GET', headers: baseHeaders() });
-
-    if (r2.ok) return r2.data;
-    return null;
-  }
-
-  // ---------- UI render ----------
-  function renderStatus(s){
-    const active = !!(s && (s.active === true || s?.data?.active === true));
-    const info = s?.data || s || {};
-    const pill = $('statusPill');
-    pill.classList.toggle('status-active', active);
-    pill.classList.toggle('status-inactive', !active);
-
-    const statusText = active ? 'PANIC ALARM ACTIVE' : 'No active panic alarm';
-    $('statusText').textContent = statusText;
-
-    // pulse only when active
-    $('statusText').classList.toggle('pulse', active);
-
-    const parts = [];
-    if (active){
-      if (info.activatedBy) parts.push(`<b>Activated by:</b> ${escapeHtml(info.activatedBy)}`);
-      if (info.activatedAt) parts.push(`<b>Time:</b> ${escapeHtml(info.activatedAt)}`);
-      if (info.location) parts.push(`<b>Location:</b> ${escapeHtml(info.location)}`);
-      if (info.message) parts.push(`<b>Note:</b> ${escapeHtml(info.message)}`);
-    } else {
-      if (info.updatedAt) parts.push(`<b>Last update:</b> ${escapeHtml(info.updatedAt)}`);
-      if (info.message) parts.push(`<b>Note:</b> ${escapeHtml(info.message)}`);
-      if (info.resolvedAt) parts.push(`<b>Resolved:</b> ${escapeHtml(info.resolvedAt)}`);
-    }
-    $('statusMeta').innerHTML = parts.join(' &nbsp; • &nbsp; ') || `<span style="color:rgba(233,238,247,0.60)">—</span>`;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  }
-
-  function renderLog(log){
-    const mini = $('logMini');
-    if (!log || log.ok === false) { mini.style.display='none'; return; }
-
-    // expect either {rows:[...]} or {data:[...]} or array directly
-    const rows = Array.isArray(log?.rows) ? log.rows
-              : Array.isArray(log?.data) ? log.data
-              : Array.isArray(log) ? log
-              : [];
-
-    if (!rows.length){ mini.style.display='none'; return; }
-
-    mini.style.display='block';
-    $('logCountPill').textContent = `${rows.length} recent`;
-
-    const latest = rows[0];
-    const chips = [];
-
-    if (latest.activated_by || latest.activatedBy) chips.push(`By: ${(latest.activated_by || latest.activatedBy)}`);
-    if (latest.activated_at || latest.activatedAt) chips.push(`At: ${(latest.activated_at || latest.activatedAt)}`);
-    if (latest.message) chips.push(`Msg: ${(latest.message)}`);
-    if (latest.resolved_at || latest.resolvedAt) chips.push(`Resolved: ${(latest.resolved_at || latest.resolvedAt)}`);
-
-    const rowEl = $('logRow');
-    rowEl.innerHTML = '';
-    for (const c of chips.slice(0,4)){
-      const span = document.createElement('div');
-      span.className='pill';
-      span.textContent=c;
-      rowEl.appendChild(span);
-    }
-
-    $('logHint').textContent = 'If you need monthly counts, export this table in D1 or we can add an Analytics view later.';
+  function setActiveUI(active){
+    statusPill?.classList.toggle("active", !!active);
+    statusPill?.classList.toggle("inactive", !active);
+    if(statusText) statusText.textContent = active ? "PANIC ALARM ACTIVE" : "No active panic alarm";
+    document.documentElement.classList.toggle("ci-panic-active", !!active);
   }
 
   async function refresh(){
-    const s = await getStatus();
-    if (s?.ok === false){
-      renderStatus({ active:false, message: s.error || 'Status unavailable' });
-      toast(s.error || 'Status unavailable');
-      console.warn('status fail', s);
-      return;
-    }
-    renderStatus(s);
+    try{
+      const data = await fetchStatus();
+      const active = !!data?.active;
+      setActiveUI(active);
 
-    const log = await fetchLog();
-    renderLog(log);
+      const by = data?.activated_by || data?.activatedBy || "";
+      const at = data?.activated_at || data?.activatedAt || data?.updated_at || data?.updatedAt || "";
+      const msg = data?.message || "";
+      const loc = data?.location || "";
+      const nm  = data?.name || data?.activated_name || "";
+
+      if(active){
+        const parts=[];
+        if(by) parts.push(`Activated by: ${by}`);
+        if(nm) parts.push(`Name: ${nm}`);
+        if(at) parts.push(`Time: ${formatTs(at)}`);
+        if(loc) parts.push(`Location: ${loc}`);
+        if(msg) parts.push(`Note: ${msg}`);
+        statusMeta.textContent = parts.join(" • ") || "Active";
+      }else{
+        const parts=[];
+        if(at) parts.push(`Last update: ${formatTs(at)}`);
+        if(msg) parts.push(`Note: ${msg}`);
+        statusMeta.textContent = parts.join(" • ") || "Inactive";
+      }
+    }catch(err){
+      toast(err.message || String(err), "err");
+    }
   }
 
-  // ---------- Share link ----------
-  async function copyShareLink(){
-    const orgCode = $('orgCode').value.trim();
-    if (!orgCode){
-      toast('Enter your Org Code first, then copy a share link.');
-      $('orgCode').focus();
+  btnRefresh?.addEventListener("click", refresh);
+
+  btnActivate?.addEventListener("click", async ()=>{
+    try{
+      const invite = getInvite();
+      if(invite){
+        // shared mode: require name
+        if(!firstNameInput.value.trim() || !lastNameInput.value.trim()){
+          toast("Enter first name + surname for shared use.", "warn");
+          return;
+        }
+      }
+      await updatePanic(true);
+      toast("Panic alarm activated.", "ok");
+      await refresh();
+    }catch(err){
+      toast(err.message || String(err), "err");
+    }
+  });
+
+  btnResolve?.addEventListener("click", async ()=>{
+    try{
+      await updatePanic(false);
+      toast("Panic alarm reset.", "ok");
+      await refresh();
+    }catch(err){
+      toast(err.message || String(err), "err");
+    }
+  });
+
+  btnCopyLink?.addEventListener("click", async ()=>{
+    const invite = getInvite();
+    if(!invite){
+      toast("Enter the invite code first (used to build the shared link).", "warn");
+      inviteInput?.focus();
       return;
     }
     const u = new URL(location.href);
-    u.searchParams.set('org', orgCode);
-    // keep it clean: remove any irrelevant params
-    u.searchParams.delete('orgCode');
-    await navigator.clipboard.writeText(u.toString());
-    toast('Share link copied.');
-  }
+    u.searchParams.set("invite", invite);
+    const shareUrl = u.toString();
+    try{
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(shareUrl);
+        toast("Shared link copied.", "ok");
+      }else{
+        prompt("Copy this link:", shareUrl);
+      }
+    }catch(e){
+      prompt("Copy this link:", shareUrl);
+    }
+  });
 
-  // ---------- Location ----------
-  async function useMyLocation(){
-    if (!navigator.geolocation){
-      toast('Geolocation not supported on this device.');
+  btnUseLoc?.addEventListener("click", ()=>{
+    if(!navigator.geolocation){
+      toast("Geolocation not supported.", "warn");
       return;
     }
-    toast('Requesting location…');
+    btnUseLoc.disabled = true;
     navigator.geolocation.getCurrentPosition(
       (pos)=>{
         const { latitude, longitude } = pos.coords || {};
-        if (typeof latitude === 'number' && typeof longitude === 'number'){
-          $('locationText').value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-          toast('Location added (lat,lon).');
-        } else {
-          toast('Could not read coordinates.');
+        if(typeof latitude === "number" && typeof longitude === "number"){
+          locationInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          toast("Location captured.", "ok");
+        }else{
+          toast("Could not read location.", "warn");
         }
+        btnUseLoc.disabled = false;
       },
       (err)=>{
-        toast(`Location denied / unavailable (${err?.code || '?'})`);
+        toast(err?.message || "Location permission denied.", "warn");
+        btnUseLoc.disabled = false;
       },
-      { enableHighAccuracy:false, timeout:8000, maximumAge:120000 }
+      { enableHighAccuracy:false, timeout:8000, maximumAge:60000 }
     );
-  }
+  });
 
-  // ---------- wire events ----------
-  $('btnRefresh').addEventListener('click', refresh);
-  $('btnActivate').addEventListener('click', activate);
-  $('btnResolve').addEventListener('click', resolve);
-  $('btnCopyLink').addEventListener('click', copyShareLink);
-  $('btnUseLocation').addEventListener('click', useMyLocation);
+  // If user pastes a full URL into invite field, extract invite=
+  inviteInput?.addEventListener("blur", ()=>{
+    const v = (inviteInput.value || "").trim();
+    if(!v) return;
+    try{
+      if(v.startsWith("http://") || v.startsWith("https://")){
+        const u = new URL(v);
+        const inv = (u.searchParams.get("invite") || u.searchParams.get("org") || "").trim();
+        if(inv){
+          inviteInput.value = inv;
+          toast("Extracted invite code from URL.", "ok");
+        }
+      }
+    }catch(e){}
+  });
 
-  // Initial refresh
   refresh();
-
 })();
 </script>
+
 </body>
 </html>
