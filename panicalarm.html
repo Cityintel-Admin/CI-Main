@@ -1,50 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-
-<script src="auth.js"></script>
-
-	
-	<script>
-(function pageGuard(){
-  const NEED_LOGIN = true;          // this page requires a login
-  const NEED_SUB = false;           // set to true on pages that require an active sub
-
-  // Must be logged in?
-  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
-    const here = location.pathname.split('/').pop() || 'index.html';
-    const next = encodeURIComponent(here + location.search + location.hash);
-    location.href = 'login.html?next=' + next;
-    return;
-  }
-
-  // Must be subscribed?
-  if (NEED_SUB) {
-    const isSub = localStorage.getItem('ci_subscribed') === 'true';
-    if (!isSub) {
-      location.href = 'subscribe.html';
-      return;
-    }
-  }
-})();
-</script>
-	
-	
-	<script>
-(function compatProfileShim(){
-  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-  const u = CIAuth.who();
-  if (!u) return;
-  localStorage.setItem('ci_profile', JSON.stringify({
-    name: u.name || 'CityIntel User',
-    email: u.email,
-    role: u.role || 'Admin',
-    is_admin: (u.role||'').toLowerCase()==='admin'
-  }));
-  // Do NOT auto-set ci_subscribed here anymore
-})();
-</script>
-  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CityIntel — Panic Alarm</title>
@@ -327,7 +283,9 @@
     }
     .app{ padding-top: 84px; }
 
-  </style>
+  
+#topActions, .top-actions{display:flex;align-items:center;gap:12px;}
+</style>
 </head>
 <body>
 
@@ -358,7 +316,7 @@
     <div class="content">
       <div class="topbar">
         <div class="user-pill" id="userPill" title="Current mode">
-          <div class="badge" id="userBadge">G</div>
+          <div id="topActions" class="top-actions"></div>
           <div id="userLabel">Guest / Shared</div>
         </div>
       </div>
@@ -447,299 +405,54 @@
 
 <script src="./auth.js"></script>
 <script>
-(function(){
+
+(async function(){
   const API_BASE = "https://api.cityintelapi.com";
 
   
     let authProfile = null; // {email,name,id,org_id?}
-    async function initAuth() {
-      try {
-        if (window.CIAuth && typeof window.CIAuth.who === 'function') {
-          authProfile = await window.CIAuth.who();
-        } else {
-          const raw = localStorage.getItem('ci_profile');
-          if (raw) authProfile = JSON.parse(raw);
-        }
-      } catch (e) { authProfile = null; }
-
-      // Update user pill UI
-      try {
-        const badge = document.getElementById('userBadge');
-        const label = document.getElementById('userLabel');
-        if (authProfile && (authProfile.email || authProfile.name)) {
-          const name = (authProfile.name || authProfile.email || 'User').toString();
-          label.textContent = name;
-          badge.textContent = name.trim().slice(0,1).toUpperCase();
-          const invite = document.getElementById("orgCode");
-          if (invite) { invite.placeholder = "Not required (logged in)"; invite.disabled = true; }
-
-        } else {
-          label.textContent = 'Guest / Shared';
-          badge.textContent = 'G';
-        }
-      } catch (e) {}
+    async function initAuth(){
+  try{
+    if(window.CIAuth && typeof window.CIAuth.compatProfileShim === "function"){
+      window.CIAuth.compatProfileShim();
     }
-const $ = (id) => document.getElementById(id);
-  const statusPill = $("statusPill");
-  const statusText = $("statusText");
-  const statusMeta = $("statusMeta");
+    const who = (window.CIAuth && typeof window.CIAuth.who === "function") ? await window.CIAuth.who() : null;
+    if(who && who.email){
+      state.isLoggedIn = true;
+      state.userEmail = who.email;
+      state.userName = who.name || who.email;
+      state.orgId = who.org_id || state.orgId;
 
-  const inviteInput = $("orgCode");
-  const firstNameInput = $("firstName");
-  const lastNameInput  = $("lastName");
-  const locationInput  = $("locationText");
-  const messageInput   = $("message");
+      const inviteWrap = document.getElementById("inviteWrap");
+      if(inviteWrap) inviteWrap.style.display = "none";
+      const inviteHelp = document.getElementById("inviteHelp");
+      if(inviteHelp) inviteHelp.textContent = "Logged in — invite code not required.";
+      const modePill = document.getElementById("modePill");
+      if(modePill) modePill.textContent = "Logged in";
 
-  const btnActivate  = $("btnActivate");
-  const btnResolve   = $("btnResolve");
-  const btnRefresh   = $("btnRefresh");
-  const btnCopyLink  = $("btnCopyLink");
-  const btnUseLoc    = $("btnUseLocation");
-
-  const toastEl = $("toast");
-
-  function toast(msg, type="info"){
-    if(!toastEl){ alert(msg); return; }
-    toastEl.textContent = msg;
-    toastEl.className = "toast show " + type;
-    clearTimeout(toastEl._t);
-    toastEl._t = setTimeout(()=>{ toastEl.className = "toast"; }, 2800);
-  }
-
-  // Stable per-device guest identity (no passwords)
-  function getGuestEmail(){
-    const key = "ci_guest_email_v1";
-    let v = localStorage.getItem(key);
-    if(!v){
-      const rid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
-      v = `shared+${rid}@cityintel.local`;
-      localStorage.setItem(key, v);
-    }
-    return v;
-  }
-  function getUserName(){
-    const fn = (firstNameInput?.value || "").trim();
-    const ln = (lastNameInput?.value  || "").trim();
-    return (fn + " " + ln).trim() || "Shared User";
-  }
-  function headers(){
-    return {
-      "Content-Type":"application/json",
-      "X-User-Email": getGuestEmail(),
-      "X-User-Name": getUserName()
-    };
-  }
-
-  // Query param: invite
-  const qp = new URLSearchParams(location.search);
-  const inviteFromUrl = (qp.get("invite") || "").trim();
-  if(inviteFromUrl && inviteInput) inviteInput.value = inviteFromUrl;
-
-  function getInvite(){
-    return (inviteInput?.value || "").trim() || (localStorage.getItem("ci_last_invite_v1") || "").trim();
-  }
-  function setInvite(v){
-    if(v) localStorage.setItem("ci_last_invite_v1", v.trim());
-  }
-
-  // Shared join: uses existing /api/org/join
-  async function ensureJoinedIfInvitePresent() {
-      if (authProfile && (authProfile.email || authProfile.id)) return true;
-
-    const invite = getInvite();
-    if(!invite) return;
-
-    setInvite(invite);
-
-    const joinedKey = "ci_joined_invite_v1";
-    if(localStorage.getItem(joinedKey) === invite) return;
-
-    const res = await fetch(`${API_BASE}/api/org/join`, {
-      method:"POST",
-      headers: headers(),
-      body: JSON.stringify({ inviteCode: invite })
-    });
-
-    if(res.ok){
-      localStorage.setItem(joinedKey, invite);
-      toast("Shared access verified for this organisation.", "ok");
-      return;
-    }
-    let detail = "";
-    try{ detail = await res.text(); }catch(e){}
-    throw new Error(`Shared access failed (${res.status}). ${detail}`.trim());
-  }
-
-  async function fetchStatus(){
-    await ensureJoinedIfInvitePresent();
-    const res = await fetch(`${API_BASE}/api/org/panic`, { method:"GET", headers: headers() });
-    if(!res.ok){
-      let detail=""; try{ detail=await res.text(); }catch(e){}
-      throw new Error(`Status fetch failed (${res.status}). ${detail}`.trim());
-    }
-    return res.json();
-  }
-
-  async function updatePanic(active){
-    await ensureJoinedIfInvitePresent();
-    const payload = {
-      active,
-      message: (messageInput?.value || "").trim(),
-      location: (locationInput?.value || "").trim(),
-      first_name: (firstNameInput?.value || "").trim(),
-      last_name: (lastNameInput?.value || "").trim()
-    };
-    const res = await fetch(`${API_BASE}/api/org/panic`, {
-      method:"PUT",
-      headers: headers(),
-      body: JSON.stringify(payload)
-    });
-    if(!res.ok){
-      let detail=""; try{ detail=await res.text(); }catch(e){}
-      throw new Error(`Update failed (${res.status}). ${detail}`.trim());
-    }
-    return res.json().catch(()=> ({}));
-  }
-
-  function formatTs(ts){
-    if(!ts) return "";
-    const d = new Date(ts);
-    return Number.isNaN(d.getTime()) ? ts : d.toLocaleString();
-  }
-
-  function setActiveUI(active){
-    statusPill?.classList.toggle("active", !!active);
-    statusPill?.classList.toggle("inactive", !active);
-    if(statusText) statusText.textContent = active ? "PANIC ALARM ACTIVE" : "No active panic alarm";
-    document.documentElement.classList.toggle("ci-panic-active", !!active);
-  }
-
-  async function refresh(){
-    try{
-      const data = await fetchStatus();
-      const active = !!data?.active;
-      setActiveUI(active);
-
-      const by = data?.activated_by || data?.activatedBy || "";
-      const at = data?.activated_at || data?.activatedAt || data?.updated_at || data?.updatedAt || "";
-      const msg = data?.message || "";
-      const loc = data?.location || "";
-      const nm  = data?.name || data?.activated_name || "";
-
-      if(active){
-        const parts=[];
-        if(by) parts.push(`Activated by: ${by}`);
-        if(nm) parts.push(`Name: ${nm}`);
-        if(at) parts.push(`Time: ${formatTs(at)}`);
-        if(loc) parts.push(`Location: ${loc}`);
-        if(msg) parts.push(`Note: ${msg}`);
-        statusMeta.textContent = parts.join(" • ") || "Active";
-      }else{
-        const parts=[];
-        if(at) parts.push(`Last update: ${formatTs(at)}`);
-        if(msg) parts.push(`Note: ${msg}`);
-        statusMeta.textContent = parts.join(" • ") || "Inactive";
+      const fullName = (who.name || "").trim();
+      if(fullName){
+        const parts = fullName.split(/\s+/);
+        if(firstNameInput && !firstNameInput.value) firstNameInput.value = parts[0] || "";
+        if(surnameInput && !surnameInput.value) surnameInput.value = parts.slice(1).join(" ") || "";
       }
-    }catch(err){
-      toast(err.message || String(err), "err");
+
+      if(window.CIAuth && typeof window.CIAuth.injectUserChip === "function"){
+        const host = document.getElementById("topActions");
+        if(host) window.CIAuth.injectUserChip(host);
+      } else {
+        const host = document.getElementById("topActions");
+        if(host) host.textContent = who.name || who.email;
+      }
+    } else {
+      const modePill = document.getElementById("modePill");
+      if(modePill) modePill.textContent = "Guest / Shared";
     }
+  }catch(e){
+    console.warn("initAuth failed", e);
   }
-
-  btnRefresh?.addEventListener("click", refresh);
-
-  btnActivate?.addEventListener("click", async ()=>{
-    try{
-      const invite = getInvite();
-      if(invite){
-        // shared mode: require name
-        if(!firstNameInput.value.trim() || !lastNameInput.value.trim()){
-          toast("Enter first name + surname for shared use.", "warn");
-          return;
-        }
-      }
-      await updatePanic(true);
-      toast("Panic alarm activated.", "ok");
-      await refresh();
-    }catch(err){
-      toast(err.message || String(err), "err");
-    }
-  });
-
-  btnResolve?.addEventListener("click", async ()=>{
-    try{
-      await updatePanic(false);
-      toast("Panic alarm reset.", "ok");
-      await refresh();
-    }catch(err){
-      toast(err.message || String(err), "err");
-    }
-  });
-
-  btnCopyLink?.addEventListener("click", async ()=>{
-    const invite = getInvite();
-    if(!invite){
-      toast("Enter the invite code first (used to build the shared link).", "warn");
-      inviteInput?.focus();
-      return;
-    }
-    const u = new URL(location.href);
-    u.searchParams.set("invite", invite);
-    const shareUrl = u.toString();
-    try{
-      if(navigator.clipboard?.writeText){
-        await navigator.clipboard.writeText(shareUrl);
-        toast("Shared link copied.", "ok");
-      }else{
-        prompt("Copy this link:", shareUrl);
-      }
-    }catch(e){
-      prompt("Copy this link:", shareUrl);
-    }
-  });
-
-  btnUseLoc?.addEventListener("click", ()=>{
-    if(!navigator.geolocation){
-      toast("Geolocation not supported.", "warn");
-      return;
-    }
-    btnUseLoc.disabled = true;
-    navigator.geolocation.getCurrentPosition(
-      (pos)=>{
-        const { latitude, longitude } = pos.coords || {};
-        if(typeof latitude === "number" && typeof longitude === "number"){
-          locationInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-          toast("Location captured.", "ok");
-        }else{
-          toast("Could not read location.", "warn");
-        }
-        btnUseLoc.disabled = false;
-      },
-      (err)=>{
-        toast(err?.message || "Location permission denied.", "warn");
-        btnUseLoc.disabled = false;
-      },
-      { enableHighAccuracy:false, timeout:8000, maximumAge:60000 }
-    );
-  });
-
-  // If user pastes a full URL into invite field, extract invite=
-  inviteInput?.addEventListener("blur", ()=>{
-    const v = (inviteInput.value || "").trim();
-    if(!v) return;
-    try{
-      if(v.startsWith("http://") || v.startsWith("https://")){
-        const u = new URL(v);
-        const inv = (u.searchParams.get("invite") || u.searchParams.get("org") || "").trim();
-        if(inv){
-          inviteInput.value = inv;
-          toast("Extracted invite code from URL.", "ok");
-        }
-      }
-    }catch(e){}
-  });
-
-  refresh();
 })();
+
 </script>
 
 </body>
