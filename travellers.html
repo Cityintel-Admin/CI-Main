@@ -274,7 +274,7 @@
                 <th>Email</th>
                 <th>City</th>
                 <th>Country</th>
-              <th>From</th>
+                <th>From</th>
                 <th>To</th>
                 <th style="width:80px">Actions</th>
               </tr>
@@ -553,47 +553,100 @@ async function loadTravellersFromOrgOrLocal(seed){
     const deleteBtn    = document.getElementById('travDeleteBtn');
     const geoBtn       = document.getElementById('travGeoBtn');
 
-    function renderTable() {
+    // --- helpers (self-contained; do not rely on external scripts) ---
+    function escapeHtml(v){
+      return String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escapeAttr(v){
+      // attribute-safe (also escapes quotes)
+      return escapeHtml(v);
+    }
+
+    function fmtDateForDisplay(v){
+      if(!v) return "";
+      const s = String(v).trim();
+      if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+      // common YYYY-MM-DD
+      const m = s.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
+      if(m) return m[3] + "/" + m[2] + "/" + m[1];
+      const d = new Date(s);
+      if(!isNaN(d.getTime())){
+        const dd = String(d.getDate()).padStart(2,"0");
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const yyyy = d.getFullYear();
+        return dd + "/" + mm + "/" + yyyy;
+      }
+      return s;
+    }
+
+    function clearForm(){
+      try { form.reset(); } catch(_e) {}
+      // explicit clears for optional fields (keeps placeholders)
+      [firstInput,surnameInput,roleInput,phoneInput,emailInput,hotelInput,addressInput,postcodeInput,cityInput,countryInput,fromInput,toInput,latInput,lonInput]
+        .filter(Boolean)
+        .forEach(el => {
+          if(el.type === "date") el.value = "";
+          else el.value = "";
+        });
+      // reset edit marker if used
+      form.removeAttribute("data-edit-idx");
+    }
+    function renderTable(){
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      if (!travellers || travellers.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="9" class="muted">No travellers found.</td>`;
-        tbody.appendChild(tr);
+      if (!travellers.length){
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="color:#8e97a3;padding:10px">
+              No travellers yet. Use the form on the right to add active or upcoming trips.
+            </td>
+          </tr>`;
         return;
       }
 
-      travellers.forEach((t) => {
+      travellers.forEach((t, idx)=>{
         const tr = document.createElement('tr');
-
-        const fullName = (
-          [t.first_name || '', t.surname || ''].join(' ').trim() || t.name || ''
-        ).trim();
-
         tr.innerHTML = `
-          <td>${escapeHtml(fullName)}</td>
-          <td>${escapeHtml(t.role || '')}</td>
-          <td>${escapeHtml(t.phone || '')}</td>
-          <td>${escapeHtml(t.email || '')}</td>
-          <td>${escapeHtml(t.city || '')}</td>
-          <td>${escapeHtml(t.country || '')}</td>
-          <td>${escapeHtml(fmtDateForDisplay(t.from))}</td>
-          <td>${escapeHtml(fmtDateForDisplay(t.to))}</td>
-          <td class="actions">
-            <button class="btn btn-xs" data-action="edit" data-id="${escapeAttr(t.id)}">Edit</button>
+          <td>${t.name || ''}</td>
+          <td>${t.role || ''}</td>
+          <td>${t.city || ''}</td>
+          <td>${t.country || ''}</td>
+          <td>${t.from || ''}</td>
+          <td>${t.to || ''}</td>
+          <td>
+            <button class="btn" data-action="edit" data-idx="${idx}" style="padding:3px 8px;font-size:11px;">Edit</button>
           </td>
         `;
-
-        tr.querySelector('[data-action="edit"]')?.addEventListener('click', () => {
-          fillFormFromTraveller(t);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
         tbody.appendChild(tr);
       });
     }
 
+    function clearForm(){
+      idxInput.value = '';
+      nameInput.value = '';
+      if (firstInput) firstInput.value = '';
+      if (surnameInput) surnameInput.value = '';
+      roleInput.value = '';
+      if (phoneInput) phoneInput.value = '';
+      if (emailInput) emailInput.value = '';
+      hotelInput.value = '';
+      addressInput.value = '';
+      postcodeInput.value = '';
+      cityInput.value = '';
+      countryInput.value = '';
+      fromInput.value = '';
+      toInput.value = '';
+      latInput.value = '';
+      lonInput.value = '';
+      deleteBtn.style.display = 'none';
+    }
 
     function fillFormFromTraveller(t, idx){
       idxInput.value = String(idx);
