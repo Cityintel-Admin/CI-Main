@@ -322,11 +322,30 @@
           <label for="phone">Phone (optional)</label>
           <input id="phone" type="tel" placeholder="e.g. +44 7..." autocomplete="tel" />
         </div>
+          <div class="field">
+            <label for="email">Email (optional)</label>
+            <input id="email" type="email" placeholder="e.g. name@company.com" autocomplete="email">
+          </div>
 
 <div class="field field-full">
           <label for="message">Message (optional)</label>
           <textarea id="message" rows="4" placeholder="e.g. I need urgent assistance at [location]."></textarea>
-          <div class="help muted">Tip: include what you need and who should respond (security / HR / local office lead).</div>
+          <div class="help muted">Tip: include what you need and who should respond
+          <div class="reset-row" style="margin-top:12px; display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+            <div style="min-width:220px; flex:1 1 220px;">
+              <label style="display:block; margin-bottom:6px; color:#cfd3da; font-size:12px; letter-spacing:.02em;">Reset reason (when closing)</label>
+              <select id="resetReason" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:#e9edf4;">
+                <option value="Resolved">Resolved</option>
+                <option value="False alarm">False alarm</option>
+                <option value="Test / drill">Test / drill</option>
+                <option value="Other">Other (add note)</option>
+              </select>
+            </div>
+            <div style="min-width:280px; flex:2 1 280px;">
+              <label style="display:block; margin-bottom:6px; color:#cfd3da; font-size:12px; letter-spacing:.02em;">Reset note (optional)</label>
+              <input id="resetNote" placeholder="Optional details for the audit trail" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:#e9edf4;">
+            </div>
+          </div> (security / HR / local office lead).</div>
         </div>
       </div>
 
@@ -467,7 +486,44 @@
     try{
       const d = new Date(ts);
       if (isNaN(d.getTime())) return String(ts);
-      return d.toLocaleString(undefined, { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+      return d.toLocaleString(undefined, { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit" }
+  function normName(s){
+    return String(s||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+  }
+  function normPhone(s){
+    const digits = String(s||"").replace(/\D/g,"");
+    return digits;
+  }
+  function matchTraveller(actor){
+    try{
+      const list = JSON.parse(localStorage.getItem("ci_travellers") || "[]");
+      if (!Array.isArray(list) || !list.length) return null;
+
+      const aName  = normName(actor.name || "");
+      const aEmail = String(actor.email || "").trim().toLowerCase();
+      const aPhone = normPhone(actor.phone || "");
+
+      // 1) email match
+      if (aEmail){
+        const hit = list.find(t => String(t.email||"").trim().toLowerCase() === aEmail);
+        if (hit) return hit;
+      }
+      // 2) phone match (digits)
+      if (aPhone && aPhone.length >= 7){
+        const hit = list.find(t => normPhone(t.phone||"") === aPhone);
+        if (hit) return hit;
+      }
+      // 3) name match
+      if (aName){
+        const hit = list.find(t => normName(t.name||"") === aName);
+        if (hit) return hit;
+      }
+      return null;
+    }catch(e){
+      return null;
+    }
+  }
+);
     }catch(e){ return String(ts); }
   }
 // --- auth header helper (mirrors settings.html pattern) ---
@@ -540,6 +596,9 @@ const els = {
   message: document.getElementById("message"),
 
   noteLine: document.getElementById("noteLine"),
+    email: document.getElementById("email"),
+    resetReason: document.getElementById("resetReason"),
+    resetNote: document.getElementById("resetNote"),
 };
 
 // Hide invite block for logged-in users
@@ -598,9 +657,20 @@ async function fetchPanic() {
   return (json && (json.data ?? json)) || {};
 }
 
-async function updatePanic(active, opts = {}) {
+async function updatePanic(active,
+      resetReason: (!active ? ((els.resetReason && els.resetReason.value) || 'Resolved') : undefined),
+      resetNote: (!active ? ((els.resetNote && els.resetNote.value || '').trim()) : undefined), opts = {
+    const actor = currentActor();
+    const traveller = matchTraveller(actor);
+}) {
   const payload = {
+      travellerId: traveller?.id || "",
+      travellerName: traveller?.name || "",
+      travellerEmail: traveller?.email || "",
+      travellerPhone: traveller?.phone || "",
     active,
+      resetReason: (!active ? ((els.resetReason && els.resetReason.value) || 'Resolved') : undefined),
+      resetNote: (!active ? ((els.resetNote && els.resetNote.value || '').trim()) : undefined),
     message: opts.message || "",
     source: opts.source || (isLoggedIn() ? "loggedin" : "shared"),
     location: opts.location || "",
@@ -658,7 +728,7 @@ function currentActor() {
   if (isLoggedIn()) {
     return {
       name: (full || profile.name || "User"),
-      email: profile.email || "",
+      email: ((els.email && els.email.value || "").trim() || (p.email || "")),
       id: profile.id || "",
       phone,
       source: "loggedin",
