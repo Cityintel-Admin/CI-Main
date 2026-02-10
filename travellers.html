@@ -463,176 +463,262 @@
   <script>
     
   (async function travellerManager(){
-    const STORAGE_KEY = 'ci_travellers';
+  // --- elements ---
+  const tbody = document.getElementById('travellersBody');
+  const form = document.getElementById('travellerForm');
 
-    function seedFromGlobal(){
-      return Array.isArray(window.CITravellers) ? window.CITravellers : [];
-    }
+  const $ = (id)=>document.getElementById(id);
 
-    function loadTravellers(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return seedFromGlobal();
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : seedFromGlobal();
-      } catch(e){
-        console.warn('Failed to parse ci_travellers from localStorage', e);
-        return seedFromGlobal();
-      }
-    }
-
-    async function authHeaders(){
-  const me = (window.CIAuth && CIAuth.who && CIAuth.who()) || null;
-  if (!me?.email) throw new Error('Not logged in (missing CIAuth user)');
-  return {
-    'Content-Type': 'application/json',
-    'X-User-Email': me.email,
-    'X-User-Name': me.name || '',
-    'X-User-Id': me.id || ''
+  const els = {
+    first: $('travFirst'),
+    surname: $('travSurname'),
+    role: $('travRole'),
+    phone: $('travPhone'),
+    email: $('travEmail'),
+    hotel: $('travHotel'),
+    address: $('travAddress'),
+    postcode: $('travPostcode'),
+    city: $('travCity'),
+    country: $('travCountry'),
+    from: $('travFrom'),
+    to: $('travTo'),
+    lat: $('travLat'),
+    lon: $('travLon'),
+    cancelEdit: $('cancelEditBtn'),
+    saveBtn: $('saveTravellerBtn'),
   };
-}
 
-async function saveTravellers(list){
-  // local first (keeps UI snappy)
-  localStorage.setItem('ci_travellers', JSON.stringify(list));
-  window.CITravellers = list;
+  function escapeHtml(v){
+    return String(v ?? '').replace(/[&<>"']/g, (c)=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
 
-  // push to org (shared)
-  try{
-    const headers = await authHeaders();
-    await fetch('https://api.cityintelapi.com/api/org/travellers', {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(list)
+  function splitName(full){
+    const s = String(full ?? '').trim();
+    if(!s) return { first_name:'', surname:'' };
+    const parts = s.split(/\s+/);
+    if(parts.length===1) return { first_name: parts[0], surname: '' };
+    return { first_name: parts[0], surname: parts.slice(1).join(' ') };
+  }
+
+  function normaliseTraveller(t){
+    const obj = (t && typeof t === 'object') ? t : {};
+    const full = (obj.name ?? obj.full_name ?? '').toString().trim();
+    const fn = (obj.first_name ?? '').toString().trim();
+    const sn = (obj.surname ?? '').toString().trim();
+    const derived = splitName(full);
+
+    const first_name = fn || derived.first_name;
+    const surname = sn || derived.surname;
+    const name = (first_name || surname) ? `${first_name}${surname ? ' ' + surname : ''}`.trim() : full;
+
+    return {
+      id: obj.id || `trav-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      first_name,
+      surname,
+      name,
+      role: obj.role ?? '',
+      phone: obj.phone ?? '',
+      email: obj.email ?? '',
+      hotel: obj.hotel ?? '',
+      address: obj.address ?? '',
+      postcode: obj.postcode ?? '',
+      city: obj.city ?? '',
+      country: obj.country ?? '',
+      from: obj.from ?? '',
+      to: obj.to ?? '',
+      lat: (obj.lat ?? '') === null ? '' : (obj.lat ?? ''),
+      lon: (obj.lon ?? '') === null ? '' : (obj.lon ?? ''),
+    };
+  }
+
+  function clearForm(){
+    form.dataset.editId = '';
+    els.first.value = '';
+    els.surname.value = '';
+    els.role.value = '';
+    els.phone.value = '';
+    els.email.value = '';
+    els.hotel.value = '';
+    els.address.value = '';
+    els.postcode.value = '';
+    els.city.value = '';
+    els.country.value = '';
+    els.from.value = '';
+    els.to.value = '';
+    els.lat.value = '';
+    els.lon.value = '';
+    if(els.cancelEdit) els.cancelEdit.style.display = 'none';
+    if(els.saveBtn) els.saveBtn.textContent = 'Save traveller';
+  }
+
+  function fillFormFromTraveller(t){
+    const x = normaliseTraveller(t);
+    form.dataset.editId = x.id;
+    els.first.value = x.first_name || '';
+    els.surname.value = x.surname || '';
+    els.role.value = x.role || '';
+    els.phone.value = x.phone || '';
+    els.email.value = x.email || '';
+    els.hotel.value = x.hotel || '';
+    els.address.value = x.address || '';
+    els.postcode.value = x.postcode || '';
+    els.city.value = x.city || '';
+    els.country.value = x.country || '';
+    els.from.value = x.from || '';
+    els.to.value = x.to || '';
+    els.lat.value = x.lat ?? '';
+    els.lon.value = x.lon ?? '';
+    if(els.cancelEdit) els.cancelEdit.style.display = 'inline-flex';
+    if(els.saveBtn) els.saveBtn.textContent = 'Update traveller';
+  }
+
+  function renderTable(list){
+    if(!tbody) return;
+    const rows = (list || []).map(normaliseTraveller);
+
+    // Sort by from date then name (stable-ish)
+    rows.sort((a,b)=>{
+      const ad = a.from ? Date.parse(a.from) : 0;
+      const bd = b.from ? Date.parse(b.from) : 0;
+      if(ad !== bd) return ad - bd;
+      return (a.name||'').localeCompare(b.name||'');
     });
-  }catch(e){
-    console.warn('Org traveller save failed (still saved locally):', e);
+
+    tbody.innerHTML = rows.map(t => `
+      <tr data-id="${escapeHtml(t.id)}">
+        <td>${escapeHtml(t.name)}</td>
+        <td>${escapeHtml(t.role)}</td>
+        <td>${escapeHtml(t.phone)}</td>
+        <td>${escapeHtml(t.email)}</td>
+        <td>${escapeHtml(t.city)}</td>
+        <td>${escapeHtml(t.country)}</td>
+        <td>${escapeHtml(t.from)}</td>
+        <td>${escapeHtml(t.to)}</td>
+        <td><button class="btn btn-sm" data-action="edit" data-id="${escapeHtml(t.id)}">Edit</button></td>
+      </tr>
+    `).join('');
   }
-}
 
-    
-async function loadTravellersFromOrgOrLocal(seed){
-  try{
-    const headers = await authHeaders();
-    const res = await fetch('https://api.cityintelapi.com/api/org/travellers', { headers });
-    const json = await res.json();
-    if (json?.ok && Array.isArray(json.data)) {
-      localStorage.setItem('ci_travellers', JSON.stringify(json.data));
-      window.CITravellers = json.data;
-      return json.data;
-    }
-  }catch(e){
-    console.warn('Org traveller load failed, using local:', e);
-  }
-  return seed;
-}
-
-
-    let travellers = await loadTravellersFromOrgOrLocal(loadTravellers());
-
-
-    const tbody        = document.getElementById('travellersBody');
-    const form         = document.getElementById('travellerForm');
-    const idxInput     = document.getElementById('travIndex');
-    const firstInput   = document.getElementById('travFirst');
-    const surnameInput = document.getElementById('travSurname');
-    const phoneInput   = document.getElementById('travPhone');
-    const emailInput   = document.getElementById('travEmail');
-    const nameInput    = document.getElementById('travName');
-    const roleInput    = document.getElementById('travRole');
-    const hotelInput   = document.getElementById('travHotel');
-    const addressInput = document.getElementById('travAddress');
-    const postcodeInput  = document.getElementById('travPostcode');
-    const cityInput    = document.getElementById('travCity');
-    const countryInput = document.getElementById('travCountry');
-    const fromInput    = document.getElementById('travFrom');
-    const toInput      = document.getElementById('travTo');
-    const latInput     = document.getElementById('travLat');
-    const lonInput     = document.getElementById('travLon');
-    const resetBtn     = document.getElementById('travResetBtn');
-    const deleteBtn    = document.getElementById('travDeleteBtn');
-    const geoBtn       = document.getElementById('travGeoBtn');
-
-    // --- helpers (self-contained; do not rely on external scripts) ---
-    function escapeHtml(v){
-      return String(v ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    function escapeAttr(v){
-      // attribute-safe (also escapes quotes)
-      return escapeHtml(v);
-    }
-
-    function fmtDateForDisplay(v){
-      if(!v) return "";
-      const s = String(v).trim();
-      if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
-      // common YYYY-MM-DD
-      const m = s.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
-      if(m) return m[3] + "/" + m[2] + "/" + m[1];
-      const d = new Date(s);
-      if(!isNaN(d.getTime())){
-        const dd = String(d.getDate()).padStart(2,"0");
-        const mm = String(d.getMonth()+1).padStart(2,"0");
-        const yyyy = d.getFullYear();
-        return dd + "/" + mm + "/" + yyyy;
+  async function loadTravellers(){
+    try{
+      const list = await loadTravellersFromOrgOrLocal([]);
+      return Array.isArray(list) ? list : [];
+    }catch(e){
+      console.warn('Failed to load travellers, using local fallback', e);
+      try{
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      }catch(_){
+        return [];
       }
-      return s;
     }
-
-    function clearForm(){
-      try { form.reset(); } catch(_e) {}
-      // explicit clears for optional fields (keeps placeholders)
-      [firstInput,surnameInput,roleInput,phoneInput,emailInput,hotelInput,addressInput,postcodeInput,cityInput,countryInput,fromInput,toInput,latInput,lonInput]
-        .filter(Boolean)
-        .forEach(el => {
-          if(el.type === "date") el.value = "";
-          else el.value = "";
-        });
-      // reset edit marker if used
-      form.removeAttribute("data-edit-idx");
-    }
-    function renderTable() {
-  const tbody = els.tbody;
-  const list = Array.isArray(state.travellers) ? state.travellers : [];
-  tbody.innerHTML = "";
-
-  const filtered = state.search
-    ? list.filter(t => {
-        const hay = [
-          t.full_name,
-          t.name,
-          t.first_name,
-          t.surname,
-          t.role,
-          t.city,
-          t.country,
-          t.phone,
-          t.email
-        ].filter(Boolean).join(" ").toLowerCase();
-        return hay.includes(state.search.toLowerCase());
-      })
-    : list;
-
-  if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="muted">No travellers yet.</td></tr>`;
-    return;
   }
 
-  for (const t of filtered) {
-    const tr = document.createElement("tr");
+  async function saveTravellers(list){
+    // Keep legacy JSON blob working, but store expanded fields.
+    const payload = (list || []).map(normaliseTraveller).map(t => ({
+      id: t.id,
+      name: t.name,
+      first_name: t.first_name,
+      surname: t.surname,
+      role: t.role,
+      phone: t.phone,
+      email: t.email,
+      hotel: t.hotel,
+      address: t.address,
+      postcode: t.postcode,
+      city: t.city,
+      country: t.country,
+      from: t.from,
+      to: t.to,
+      lat: t.lat === '' ? null : Number(t.lat),
+      lon: t.lon === '' ? null : Number(t.lon),
+    }));
 
-    const displayName = (() => {
-      const fn = (t.first_name || "").trim();
-      const sn = (t.surname || "").trim();
-      if (fn || sn) return `${fn}${fn && sn ? " " : ""}${sn}`.trim();
-      return (t.full_name || t.name || "").trim();
-    })();
+    // local cache
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+
+    // remote
+    const res = await fetch('https://api.cityintelapi.com/api/org/travellers', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ travellers: payload }),
+    });
+
+    if(!res.ok){
+      const txt = await res.text().catch(()=> '');
+      throw new Error(`Save failed (${res.status}): ${txt || res.statusText}`);
+    }
+  }
+
+  // --- boot ---
+  let travellers = (await loadTravellers()).map(normaliseTraveller);
+  renderTable(travellers);
+
+  // table events
+  tbody?.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-action="edit"]');
+    if(!btn) return;
+    const id = btn.getAttribute('data-id');
+    const t = travellers.find(x => String(x.id) === String(id));
+    if(t) fillFormFromTraveller(t);
+  });
+
+  // cancel edit
+  els.cancelEdit?.addEventListener('click', (e)=>{
+    e.preventDefault();
+    clearForm();
+  });
+
+  // submit
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const editId = form.dataset.editId || '';
+    const t = normaliseTraveller({
+      id: editId || undefined,
+      first_name: els.first.value,
+      surname: els.surname.value,
+      role: els.role.value,
+      phone: els.phone.value,
+      email: els.email.value,
+      hotel: els.hotel.value,
+      address: els.address.value,
+      postcode: els.postcode.value,
+      city: els.city.value,
+      country: els.country.value,
+      from: els.from.value,
+      to: els.to.value,
+      lat: els.lat.value,
+      lon: els.lon.value,
+    });
+
+    if(!t.name){
+      alert('Please enter at least a first name or surname.');
+      return;
+    }
+
+    if(editId){
+      travellers = travellers.map(x => String(x.id) === String(editId) ? t : x);
+    }else{
+      travellers = [...travellers, t];
+    }
+
+    try{
+      await saveTravellers(travellers);
+      // Reload from server so we reflect whatever the worker returns
+      travellers = (await loadTravellers()).map(normaliseTraveller);
+      renderTable(travellers);
+      clearForm();
+    }catch(err){
+      console.error(err);
+      alert(err?.message || 'Save failed.');
+    }
+  });
+
+  // initial clear state
+  clearForm();
+})();;
 
     const phone = (t.phone || "").trim();
     const email = (t.email || "").trim();
