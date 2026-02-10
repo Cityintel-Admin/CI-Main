@@ -597,58 +597,71 @@ async function loadTravellersFromOrgOrLocal(seed){
       // reset edit marker if used
       form.removeAttribute("data-edit-idx");
     }
-    function renderTable(){
-      if (!tbody) return;
-      tbody.innerHTML = '';
+    function renderTable() {
+  const tbody = els.tbody;
+  const list = Array.isArray(state.travellers) ? state.travellers : [];
+  tbody.innerHTML = "";
 
-      if (!travellers.length){
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" style="color:#8e97a3;padding:10px">
-              No travellers yet. Use the form on the right to add active or upcoming trips.
-            </td>
-          </tr>`;
-        return;
-      }
+  const filtered = state.search
+    ? list.filter(t => {
+        const hay = [
+          t.full_name,
+          t.name,
+          t.first_name,
+          t.surname,
+          t.role,
+          t.city,
+          t.country,
+          t.phone,
+          t.email
+        ].filter(Boolean).join(" ").toLowerCase();
+        return hay.includes(state.search.toLowerCase());
+      })
+    : list;
 
-      travellers.forEach((t, idx)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${t.name || ''}</td>
-          <td>${t.role || ''}</td>
-          <td>${t.city || ''}</td>
-          <td>${t.country || ''}</td>
-          <td>${t.from || ''}</td>
-          <td>${t.to || ''}</td>
-          <td>
-            <button class="btn" data-action="edit" data-idx="${idx}" style="padding:3px 8px;font-size:11px;">Edit</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="muted">No travellers yet.</td></tr>`;
+    return;
+  }
 
-    function clearForm(){
-      idxInput.value = '';
-      nameInput.value = '';
-      if (firstInput) firstInput.value = '';
-      if (surnameInput) surnameInput.value = '';
-      roleInput.value = '';
-      if (phoneInput) phoneInput.value = '';
-      if (emailInput) emailInput.value = '';
-      hotelInput.value = '';
-      addressInput.value = '';
-      postcodeInput.value = '';
-      cityInput.value = '';
-      countryInput.value = '';
-      fromInput.value = '';
-      toInput.value = '';
-      latInput.value = '';
-      lonInput.value = '';
-      deleteBtn.style.display = 'none';
-    }
+  for (const t of filtered) {
+    const tr = document.createElement("tr");
 
-    function fillFormFromTraveller(t, idx){
+    const displayName = (() => {
+      const fn = (t.first_name || "").trim();
+      const sn = (t.surname || "").trim();
+      if (fn || sn) return `${fn}${fn && sn ? " " : ""}${sn}`.trim();
+      return (t.full_name || t.name || "").trim();
+    })();
+
+    const phone = (t.phone || "").trim();
+    const email = (t.email || "").trim();
+    const phoneCell = phone ? `<a class="link" href="tel:${encodeURIComponent(phone)}">${escapeHtml(phone)}</a>` : `<span class="muted">—</span>`;
+    const emailCell = email ? `<a class="link" href="mailto:${encodeURIComponent(email)}">${escapeHtml(email)}</a>` : `<span class="muted">—</span>`;
+
+    tr.innerHTML = `
+      <td>${escapeHtml(displayName || "—")}</td>
+      <td>${escapeHtml((t.role || "").trim() || "—")}</td>
+      <td>${phoneCell}</td>
+      <td>${emailCell}</td>
+      <td>${escapeHtml((t.city || "").trim() || "—")}</td>
+      <td>${escapeHtml((t.country || "").trim() || "—")}</td>
+      <td>${escapeHtml(fmtDateForDisplay(t.from) || "—")}</td>
+      <td>${escapeHtml(fmtDateForDisplay(t.to) || "—")}</td>
+      <td><button class="btn btn-sm" data-edit="${escapeHtml(t.id)}">Edit</button></td>
+    `;
+
+    tr.querySelector("[data-edit]").addEventListener("click", () => {
+      const id = t.id;
+      const found = state.travellers.find(x => x.id === id);
+      if (found) fillFormFromTraveller(found);
+    });
+
+    tbody.appendChild(tr);
+  }
+}
+
+function fillFormFromTraveller(t, idx){
       idxInput.value = String(idx);
       const displayName = (t.first_name || t.surname) ? [t.first_name, t.surname].filter(Boolean).join(' ').trim() : (t.name || '');
       const parts = displayName.split(/\s+/).filter(Boolean);
