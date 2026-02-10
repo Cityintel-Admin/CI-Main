@@ -172,8 +172,44 @@
 }
 
 	  
-  
-  .panic-meta{white-space:normal !important;line-height:1.35;word-break:break-word;}
+  /* v7b: status meta wrapping */
+#statusMeta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  line-height:1.35;
+  margin-top:6px;
+}
+.resetWrap{
+  margin-top:14px;
+  padding-top:10px;
+  border-top:1px solid rgba(255,255,255,0.08);
+}
+.resetRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:8px;
+}
+.resetLabel{
+  min-width:120px;
+  color:rgba(255,255,255,0.8);
+  font-size:13px;
+}
+#resetReason, #resetNote{
+  width:100%;
+  max-width:520px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.10);
+  color:#fff;
+  border-radius:10px;
+  padding:10px 12px;
+  outline:none;
+}
+#resetReason:focus, #resetNote:focus{
+  border-color: rgba(220, 65, 65, 0.55);
+  box-shadow: 0 0 0 3px rgba(220, 65, 65, 0.18);
+}
 </style>
 
 <style>
@@ -208,8 +244,6 @@
   .toast { margin-top: 12px; font-weight: 800; display:none; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.35); }
   .toast.show { display:block; }
   .share-row { display:flex; align-items:center; gap:10px; }
-
-  .panic-meta{white-space:normal !important;line-height:1.35;word-break:break-word;}
 </style>
 
 </head>
@@ -277,7 +311,7 @@
         <button id="refreshBtn" class="btn">Refresh</button>
       </div>
 
-      <div class="status-meta muted" id="statusMeta" class="panic-meta"></div>
+      <div class="status-meta muted" id="statusMeta"></div>
       <div class="divider"></div>
 
       <div class="form-grid">
@@ -312,10 +346,10 @@
           <label for="phone">Phone (optional)</label>
           <input id="phone" type="tel" placeholder="e.g. +44 7..." autocomplete="tel" />
         </div>
-          <div class="field">
-            <label for="email">Email (optional)</label>
-            <input id="email" type="email" placeholder="e.g. name@company.com" autocomplete="email">
-          </div>
+            <div class="field">
+              <label for="email">Email (optional)</label>
+              <input id="email" type="email" placeholder="e.g. name@company.com" autocomplete="email" />
+            </div>
 
 <div class="field field-full">
           <label for="message">Message (optional)</label>
@@ -325,7 +359,22 @@
       </div>
 
       <div class="actions">
-        <button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
+              <div class="resetWrap" id="resetWrap">
+        <div class="resetRow">
+          <label for="resetReason" class="resetLabel">Reset reason</label>
+          <select id="resetReason">
+            <option value="resolved">Resolved</option>
+            <option value="false_alarm">False alarm</option>
+            <option value="test">Test</option>
+            <option value="other">Other (add note)</option>
+          </select>
+        </div>
+        <div class="resetRow" id="resetNoteRow" style="display:none;">
+          <label for="resetNote" class="resetLabel">Reset note</label>
+          <input id="resetNote" type="text" placeholder="Short reason (required for Other)" />
+        </div>
+      </div>
+<button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
         <button id="resetBtn" class="btn">Reset Panic Alarm</button>
       </div>
 
@@ -455,50 +504,6 @@
 (function(){
   const API_BASE = "https://api.cityintelapi.com";
 
-
-
-  function fmtTs(ts){
-    if(!ts) return "";
-    try{
-      const d = new Date(ts);
-      if (isNaN(d.getTime())) return String(ts);
-      return d.toLocaleString(undefined, { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit" });
-    }catch(e){ return String(ts); }
-  }
-
-
-  function normName(s){
-    return String(s||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
-  }
-  function normPhone(s){
-    return String(s||"").replace(/\D/g,"");
-  }
-  function matchTraveller(actor){
-    try{
-      const list = JSON.parse(localStorage.getItem("ci_travellers") || "[]");
-      if (!Array.isArray(list) || !list.length) return null;
-
-      const aName  = normName(actor.name || "");
-      const aEmail = String(actor.email || "").trim().toLowerCase();
-      const aPhone = normPhone(actor.phone || "");
-
-      if (aEmail){
-        const hit = list.find(t => String(t.email||"").trim().toLowerCase() === aEmail);
-        if (hit) return hit;
-      }
-      if (aPhone && aPhone.length >= 7){
-        const hit = list.find(t => normPhone(t.phone||"") === aPhone);
-        if (hit) return hit;
-      }
-      if (aName){
-        const hit = list.find(t => normName(t.name||"") === aName);
-        if (hit) return hit;
-      }
-      return null;
-    }catch(e){
-      return null;
-    }
-  }
 // --- auth header helper (mirrors settings.html pattern) ---
 function getProfile() {
   try { return JSON.parse(localStorage.getItem("ci_profile") || "{}"); }
@@ -565,13 +570,15 @@ const els = {
   firstName: document.getElementById("firstName"),
   surname: document.getElementById("surname"),
   phone: document.getElementById("phone"),
+  email: document.getElementById("email"),
   location: document.getElementById("locationText"),
   message: document.getElementById("message"),
 
   noteLine: document.getElementById("noteLine"),
-  email: document.getElementById("email"),
+
   resetReason: document.getElementById("resetReason"),
   resetNote: document.getElementById("resetNote"),
+  resetNoteRow: document.getElementById("resetNoteRow"),
 };
 
 // Hide invite block for logged-in users
@@ -630,21 +637,22 @@ async function fetchPanic() {
   return (json && (json.data ?? json)) || {};
 }
 
-async function updatePanic(active,
-      resetReason: (!active ? ((els.resetReason && els.resetReason.value) || 'Resolved') : undefined),
-      resetNote: (!active ? ((els.resetNote && els.resetNote.value || '').trim()) : undefined), opts = {}) {
+async function updatePanic(active, opts = {}) {
   const payload = {
-      travellerId: traveller?.id || "",
-      travellerName: traveller?.name || "",
-      travellerEmail: traveller?.email || "",
-      travellerPhone: traveller?.phone || "",
     active,
-      resetReason: (!active ? ((els.resetReason && els.resetReason.value) || 'Resolved') : undefined),
-      resetNote: (!active ? ((els.resetNote && els.resetNote.value || '').trim()) : undefined),
     message: opts.message || "",
     source: opts.source || (isLoggedIn() ? "loggedin" : "shared"),
     location: opts.location || "",
     phone: opts.phone || "",
+    email: opts.email || "",
+
+    travellerId: opts.travellerId || "",
+    travellerName: opts.travellerName || "",
+    travellerEmail: opts.travellerEmail || "",
+    travellerPhone: opts.travellerPhone || "",
+
+    resolved_reason: opts.resolved_reason || "",
+    resolved_note: opts.resolved_note || "",
     actorName: opts.actorName || "",
     actorEmail: opts.actorEmail || "",
     actorId: opts.actorId || "",
@@ -801,14 +809,19 @@ async function onActivate() {
     const phone = (els.phone?.value || "").trim();
 
     await updatePanic(true, {
-      message,
-      location,
-      phone,
+      message: actorMessage,
+      source: isLoggedIn() ? "loggedin" : "shared",
+      location: actorLocation,
+      phone: actorPhone,
+      email: actorEmail,
       actorName: actor.name,
       actorEmail: actor.email,
-      actorId: actor.id,
-      source: actor.source,
-      activated_at: new Date().toISOString(),
+      actorId: actor.email ? ("email:" + actor.email.toLowerCase()) : "",
+      activated_at: nowIso,
+      travellerId,
+      travellerName,
+      travellerEmail,
+      travellerPhone,
     });
 
     toast("Panic alarm activated", "ok");
