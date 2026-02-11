@@ -481,33 +481,44 @@
   // Load travellers from the Worker API (org-scoped), with safe local fallback.
   // This avoids hard-failing the whole page if auth/org context isn't available yet.
   async function loadTravellersFromOrgOrLocal(fallbackList){
-    const apiBase = (window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/$/, '');
-    const tryJson = async (url, opts) => {
-      const r = await fetch(url, opts);
-      if(!r.ok) throw new Error(`HTTP ${r.status}`);
-      return await r.json();
-    };
+  const apiBase = (window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/$/, '');
+  const tryJson = async (url, opts) => {
+    const r = await fetch(url, opts);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  };
 
-    // Try to build headers from whatever auth helper exists.
-    const headers = { 'Accept': 'application/json' };
-    try{
-      const token = (window.CIAuth && typeof CIAuth.getToken === 'function') ? CIAuth.getToken() :
-        (localStorage.getItem('ci_token') || localStorage.getItem('token') || '');
-      if(token) headers['Authorization'] = `Bearer ${token}`;
+  // 1) Try WITHOUT auth headers first (avoids CORS preflight problems if the API doesn't allow Authorization).
+  try{
+    const data = await tryJson(`${apiBase}/api/org/travellers`, { headers: { 'Accept':'application/json' } });
+    const list = Array.isArray(data) ? data : (data.travellers || data.items || data.rows || []);
+    if(Array.isArray(list)){
+      try{ localStorage.setItem('ci_travellers_cache', JSON.stringify(list)); }catch(_e){}
+      return list;
+    }
+  }catch(_e){}
 
-      const orgId = (window.CIAuth && typeof CIAuth.getOrgId === 'function') ? CIAuth.getOrgId() :
-        (localStorage.getItem('ci_org_id') || localStorage.getItem('org_id') || '');
-      if(orgId) headers['X-Org-Id'] = orgId;
-    }catch(_e){}
+  // 2) Try WITH auth headers (requires Worker to include `Authorization` in Access-Control-Allow-Headers)
+  try{
+    const data = await tryJson(`${apiBase}/api/org/travellers`, { headers: { 'Accept':'application/json', ...authHeaders() } });
+    const list = Array.isArray(data) ? data : (data.travellers || data.items || data.rows || []);
+    if(Array.isArray(list)){
+      try{ localStorage.setItem('ci_travellers_cache', JSON.stringify(list)); }catch(_e){}
+      return list;
+    }
+  }catch(e){
+    console.warn('Traveller API unavailable, using local fallback', e);
+  }
 
-    // 1) Worker API (preferred)
-    try{
-      const data = await tryJson(`${apiBase}/api/org/travellers`, { headers });
-      const list = Array.isArray(data) ? data : (data.travellers || data.items || data.rows || []);
-      if(Array.isArray(list)){
-        try{ localStorage.setItem('ci_travellers_cache', JSON.stringify(list)); }catch(_e){}
-        return list;
-      }
+  // 3) Local cache
+  try{
+    const cached = localStorage.getItem('ci_travellers_cache');
+    if(cached) return JSON.parse(cached);
+  }catch(_e){}
+
+  // 4) Passed fallback list
+  return Array.isArray(fallbackList) ? fallbackList : [];
+}
     }catch(e){
       // continue to fallback(s)
       console.warn('Traveller API unavailable, using local fallback', e);
@@ -646,31 +657,10 @@
   }
 
   async function saveTravellers(list){
-    // Keep legacy JSON blob working, but store expanded fields.
-    const payload = (list || []).map(normaliseTraveller).map(t => ({
-      id: t.id,
-      name: t.name,
-      first_name: t.first_name,
-      surname: t.surname,
-      role: t.role,
-      phone: t.phone,
-      email: t.email,
-      hotel: t.hotel,
-      address: t.address,
-      postcode: t.postcode,
-      city: t.city,
-      country: t.country,
-      from: t.from,
-      to: t.to,
-      lat: t.lat === '' ? null : Number(t.lat),
-      lon: t.lon === '' ? null : Number(t.lon),
-    }));
-
-    // local cache
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-
-    // remote
-    const res = await fetch('https://api.cityintelapi.com/api/org/travellers', {
+  const payload = Array.isArray(list) ? list : [];
+  const url = 'https://api.cityintelapi.com/api/org/travellers';
+  try{
+    const res = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ travellers: payload }),
@@ -680,6 +670,15 @@
       const txt = await res.text().catch(()=> '');
       throw new Error(`Save failed (${res.status}): ${txt || res.statusText}`);
     }
+
+    // refresh cache
+    try{ localStorage.setItem('ci_travellers_cache', JSON.stringify(payload)); }catch(_e){}
+  }catch(e){
+    // Most common failure on GitHub Pages is CORS preflight rejecting the Authorization header.
+    console.warn('SaveTravellers error', e);
+    throw e;
+  }
+}
   }
 
   // --- boot ---
