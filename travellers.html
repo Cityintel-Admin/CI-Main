@@ -478,6 +478,21 @@
     }[c]));
   }
 
+  // Build headers expected by the Worker CORS policy (NO X-Authorization-Removed header)
+  function authHeaders(){
+    const sess = (window.CIAuth && typeof CIAuth.getSession === 'function') ? CIAuth.getSession() : null;
+    const email = (sess && sess.email) || localStorage.getItem('ci_user_email') || localStorage.getItem('CI_USER_EMAIL') || '';
+    const name  = (sess && sess.name)  || localStorage.getItem('ci_user_name')  || localStorage.getItem('CI_USER_NAME')  || '';
+    const userId = (sess && sess.userId) || localStorage.getItem('ci_user_id') || localStorage.getItem('CI_USER_ID') || '';
+    const adminToken = (sess && sess.adminToken) || localStorage.getItem('ci_admin_token') || localStorage.getItem('CI_ADMIN_TOKEN') || '';
+    const h = { 'Content-Type': 'application/json' };
+    if (email) h['X-User-Email'] = email;
+    if (name)  h['X-User-Name']  = name;
+    if (userId) h['X-User-Id']   = userId;
+    if (adminToken) h['X-Admin-Token'] = adminToken;
+    return h;
+  }
+
   // Load travellers from the Worker API (org-scoped), with safe local fallback.
   // This avoids hard-failing the whole page if auth/org context isn't available yet.
   async function loadTravellersFromOrgOrLocal(fallbackList){
@@ -488,7 +503,7 @@
     return await r.json();
   };
 
-  // 1) Try WITHOUT auth headers first (avoids CORS preflight problems if the API doesn't allow Authorization).
+  // 1) Try WITHOUT auth headers first (avoids CORS preflight problems if the API doesn't allow X-Authorization-Removed).
   try{
     const data = await tryJson(`${apiBase}/api/org/travellers`, { headers: { 'Accept':'application/json' } });
     const list = Array.isArray(data) ? data : (data.travellers || data.items || data.rows || []);
@@ -498,7 +513,7 @@
     }
   }catch(_e){}
 
-  // 2) Try WITH auth headers (requires Worker to include `Authorization` in Access-Control-Allow-Headers)
+  // 2) Try WITH auth headers (requires Worker to include `X-Authorization-Removed` in Access-Control-Allow-Headers)
   try{
     const data = await tryJson(`${apiBase}/api/org/travellers`, { headers: { 'Accept':'application/json', ...authHeaders() } });
     const list = Array.isArray(data) ? data : (data.travellers || data.items || data.rows || []);
@@ -519,20 +534,6 @@
   // 4) Passed fallback list
   return Array.isArray(fallbackList) ? fallbackList : [];
 }
-    }catch(e){
-      // continue to fallback(s)
-      console.warn('Traveller API unavailable, using local fallback', e);
-    }
-
-    // 2) Local cache
-    try{
-      const cached = localStorage.getItem('ci_travellers_cache');
-      if(cached) return JSON.parse(cached);
-    }catch(_e){}
-
-    // 3) Passed fallback list
-    return Array.isArray(fallbackList) ? fallbackList : [];
-  }
 
 
   function splitName(full){
@@ -674,7 +675,7 @@
     // refresh cache
     try{ localStorage.setItem('ci_travellers_cache', JSON.stringify(payload)); }catch(_e){}
   }catch(e){
-    // Most common failure on GitHub Pages is CORS preflight rejecting the Authorization header.
+    // Most common failure on GitHub Pages is CORS preflight rejecting the X-Authorization-Removed header.
     console.warn('SaveTravellers error', e);
     throw e;
   }
