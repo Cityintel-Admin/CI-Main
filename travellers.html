@@ -478,6 +478,52 @@
     }[c]));
   }
 
+  // Load travellers from the Worker API (org-scoped), with safe local fallback.
+  // This avoids hard-failing the whole page if auth/org context isn't available yet.
+  async function loadTravellersFromOrgOrLocal(fallbackList){
+    const apiBase = (window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/$/, '');
+    const tryJson = async (url, opts) => {
+      const r = await fetch(url, opts);
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      return await r.json();
+    };
+
+    // Try to build headers from whatever auth helper exists.
+    const headers = { 'Accept': 'application/json' };
+    try{
+      const token = (window.CIAuth && typeof CIAuth.getToken === 'function') ? CIAuth.getToken() :
+        (localStorage.getItem('ci_token') || localStorage.getItem('token') || '');
+      if(token) headers['Authorization'] = `Bearer ${token}`;
+
+      const orgId = (window.CIAuth && typeof CIAuth.getOrgId === 'function') ? CIAuth.getOrgId() :
+        (localStorage.getItem('ci_org_id') || localStorage.getItem('org_id') || '');
+      if(orgId) headers['X-Org-Id'] = orgId;
+    }catch(_e){}
+
+    // 1) Worker API (preferred)
+    try{
+      const data = await tryJson(`${apiBase}/api/org/travellers`, { headers });
+      const list = Array.isArray(data) ? data : (data.travellers || data.items || data.rows || []);
+      if(Array.isArray(list)){
+        try{ localStorage.setItem('ci_travellers_cache', JSON.stringify(list)); }catch(_e){}
+        return list;
+      }
+    }catch(e){
+      // continue to fallback(s)
+      console.warn('Traveller API unavailable, using local fallback', e);
+    }
+
+    // 2) Local cache
+    try{
+      const cached = localStorage.getItem('ci_travellers_cache');
+      if(cached) return JSON.parse(cached);
+    }catch(_e){}
+
+    // 3) Passed fallback list
+    return Array.isArray(fallbackList) ? fallbackList : [];
+  }
+
+
   function splitName(full){
     const s = String(full ?? '').trim();
     if(!s) return { first_name:'', surname:'' };
