@@ -172,45 +172,7 @@
 }
 
 	  
-  /* v7b: status meta wrapping */
-#statusMeta{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  line-height:1.35;
-  margin-top:6px;
-}
-.resetWrap{
-  margin-top:14px;
-  padding-top:10px;
-  border-top:1px solid rgba(255,255,255,0.08);
-}
-.resetRow{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:8px;
-}
-.resetLabel{
-  min-width:120px;
-  color:rgba(255,255,255,0.8);
-  font-size:13px;
-}
-#resetReason, #resetNote{
-  width:100%;
-  max-width:520px;
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,255,255,0.10);
-  color:#fff;
-  border-radius:10px;
-  padding:10px 12px;
-  outline:none;
-}
-#resetReason:focus, #resetNote:focus{
-  border-color: rgba(220, 65, 65, 0.55);
-  box-shadow: 0 0 0 3px rgba(220, 65, 65, 0.18);
-}
-</style>
+  </style>
 
 <style>
   .page { max-width: 1120px; margin: 0 auto; padding: 22px 18px 60px; }
@@ -247,6 +209,37 @@
 </style>
 
 </head>
+
+
+<script>
+  // must be after the header DOM exists
+  document.addEventListener('DOMContentLoaded', function(){
+    // Inject user chip (compatible with pages that may not expose CIAuth.injectUserChip)
+    (function injectUserChipFallback(){
+      const host=document.getElementById('topActions');
+      if(!host) return;
+      const profileStr=localStorage.getItem('ci_profile');
+      let profile={};
+      try{profile=profileStr?JSON.parse(profileStr):{};}catch(e){profile={};}
+      const isLoggedIn=!!(profile && (profile.email||profile.id));
+      // If markup already has a chip, just update label.
+      const chip=document.getElementById('userChip');
+      if(chip){
+        const label=chip.querySelector('.label')||chip;
+        if(isLoggedIn){
+          label.textContent=(profile.name||'User');
+          chip.classList.remove('guest');
+          chip.classList.add('loggedin');
+        } else {
+          label.textContent='Guest / Shared';
+          chip.classList.add('guest');
+        }
+      }
+    })();
+CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
+
 <body>
 
   <div class="brandbar">
@@ -315,7 +308,7 @@
       <div class="divider"></div>
 
       <div class="form-grid">
-        <div class="field" id="inviteBlock">
+        <div class="field">
           <label for="inviteCode">Invite code (for shared links)</label>
           <input id="inviteCode" type="text" placeholder="e.g. 8‑char invite code" autocomplete="off" />
           <div class="help muted" id="inviteHelp">If you are logged in, this can be left blank. If you are using a shared link, this is required.</div>
@@ -340,18 +333,7 @@
           <input id="surname" type="text" placeholder="Surname" autocomplete="family-name" />
         </div>
 
-        
-
-        <div class="field">
-          <label for="phone">Phone (optional)</label>
-          <input id="phone" type="tel" placeholder="e.g. +44 7..." autocomplete="tel" />
-        </div>
-            <div class="field">
-              <label for="email">Email (optional)</label>
-              <input id="email" type="email" placeholder="e.g. name@company.com" autocomplete="email" />
-            </div>
-
-<div class="field field-full">
+        <div class="field field-full">
           <label for="message">Message (optional)</label>
           <textarea id="message" rows="4" placeholder="e.g. I need urgent assistance at [location]."></textarea>
           <div class="help muted">Tip: include what you need and who should respond (security / HR / local office lead).</div>
@@ -359,22 +341,7 @@
       </div>
 
       <div class="actions">
-              <div class="resetWrap" id="resetWrap">
-        <div class="resetRow">
-          <label for="resetReason" class="resetLabel">Reset reason</label>
-          <select id="resetReason">
-            <option value="resolved">Resolved</option>
-            <option value="false_alarm">False alarm</option>
-            <option value="test">Test</option>
-            <option value="other">Other (add note)</option>
-          </select>
-        </div>
-        <div class="resetRow" id="resetNoteRow" style="display:none;">
-          <label for="resetNote" class="resetLabel">Reset note</label>
-          <input id="resetNote" type="text" placeholder="Short reason (required for Other)" />
-        </div>
-      </div>
-<button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
+        <button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
         <button id="resetBtn" class="btn">Reset Panic Alarm</button>
       </div>
 
@@ -509,42 +476,12 @@ function getProfile() {
   try { return JSON.parse(localStorage.getItem("ci_profile") || "{}"); }
   catch { return {}; }
 }
-
-function getOrCreateGuestProfile(inviteCode) {
-  const key = "ci_guest_profile_v1";
-  try {
-    const existing = JSON.parse(localStorage.getItem(key) || "null");
-    if (existing?.email) return existing;
-  } catch {}
-
-  const rnd = Math.random().toString(36).slice(2, 10);
-  const email = `guest+${String(inviteCode || "noinvite").toLowerCase()}-${rnd}@cityintel.local`;
-  const profile = { email, name: "Guest", id: "email:" + email.toLowerCase() };
-  localStorage.setItem(key, JSON.stringify(profile));
-  return profile;
-}
-
-function getAuthHeaders(inviteCodeMaybe = "") {
+function getAuthHeaders() {
   const profile = getProfile();
   const headers = { "Content-Type": "application/json" };
-
-  // Logged-in
-  if (profile?.email) {
-    headers["X-User-Email"] = profile.email;
-    if (profile?.name) headers["X-User-Name"] = profile.name;
-    headers["X-User-Id"] = profile.id || ("email:" + String(profile.email).toLowerCase());
-    return headers;
-  }
-
-  // Shared (guest) – only when invite present
-  const invite = String(inviteCodeMaybe || "").trim();
-  if (invite) {
-    const g = getOrCreateGuestProfile(invite);
-    headers["X-User-Email"] = g.email;
-    headers["X-User-Name"] = g.name || "Guest";
-    headers["X-User-Id"] = g.id || ("email:" + String(g.email).toLowerCase());
-  }
-
+  if (profile?.email) headers["X-User-Email"] = profile.email;
+  if (profile?.name) headers["X-User-Name"] = profile.name;
+  if (profile?.id) headers["X-User-Id"] = profile.id;
   return headers;
 }
 function isLoggedIn() {
@@ -557,48 +494,18 @@ const els = {
   statusText: document.getElementById("statusText"),
   statusMeta: document.getElementById("statusMeta"),
   statusDot: document.getElementById("statusDot"),
-
-  // Buttons (match HTML)
-  btnRefresh: document.getElementById("refreshBtn"),
-  btnActivate: document.getElementById("activateBtn"),
-  btnReset: document.getElementById("resetBtn"),
-  btnShare: document.getElementById("copyShareBtn"),
-  btnUseLocation: document.getElementById("useLocationBtn"),
-
-  // Inputs
+  btnRefresh: document.getElementById("btnRefresh"),
+  btnActivate: document.getElementById("btnActivate"),
+  btnReset: document.getElementById("btnReset"),
+  btnShare: document.getElementById("btnShare"),
+  btnUseLocation: document.getElementById("btnUseLocation"),
   inviteCode: document.getElementById("inviteCode"),
   firstName: document.getElementById("firstName"),
   surname: document.getElementById("surname"),
-  phone: document.getElementById("phone"),
-  email: document.getElementById("email"),
-  location: document.getElementById("locationText"),
-  message: document.getElementById("message"),
-
+  location: document.getElementById("locationInput"),
+  message: document.getElementById("messageInput"),
   noteLine: document.getElementById("noteLine"),
-
-  resetReason: document.getElementById("resetReason"),
-  resetNote: document.getElementById("resetNote"),
-  resetNoteRow: document.getElementById("resetNoteRow"),
 };
-
-// Hide invite block for logged-in users
-(function toggleInviteBlock(){
-  const b = document.getElementById("inviteBlock");
-  if (!b) return;
-  b.style.display = isLoggedIn() ? "none" : "";
-})();
-
-// Auto-fill invite code from URL hash: #invite=XXXXXXXX
-(function autofillInviteFromHash(){
-  try {
-    const h = location.hash || "";
-    const m = h.match(/invite=([^&]+)/);
-    if (m && els.inviteCode && !els.inviteCode.value) {
-      els.inviteCode.value = decodeURIComponent(m[1]);
-    }
-  } catch {}
-})();
-
 
 // --- state ---
 let joinedViaInvite = false;
@@ -612,7 +519,7 @@ async function ensureJoinedIfInvitePresent(inviteCode) {
 
   const res = await fetch(`${API_BASE}/api/org/join`, {
     method: "POST",
-    headers: getAuthHeaders(inviteCode),
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ inviteCode }),
   });
   if (!res.ok) {
@@ -624,17 +531,18 @@ async function ensureJoinedIfInvitePresent(inviteCode) {
 
 // --- panic API (v5-compatible) ---
 async function fetchPanic() {
-  const invite = (els.inviteCode?.value || "").trim();
   const res = await fetch(`${API_BASE}/api/org/panic`, {
     method: "GET",
-    headers: getAuthHeaders(invite),
+    headers: getAuthHeaders(),
   });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
     throw new Error(`Status failed (${res.status}) ${t}`);
   }
-  const json = await res.json().catch(()=>null);
-  return (json && (json.data ?? json)) || {};
+  const j = await res.json().catch(() => ({}));
+    const state = (j && typeof j === 'object') ? (j.json ?? j.data ?? j) : ({});
+    try { localStorage.setItem('ci_panic_cache', JSON.stringify(state)); } catch (e) {}
+    return state;
 }
 
 async function updatePanic(active, opts = {}) {
@@ -643,16 +551,6 @@ async function updatePanic(active, opts = {}) {
     message: opts.message || "",
     source: opts.source || (isLoggedIn() ? "loggedin" : "shared"),
     location: opts.location || "",
-    phone: opts.phone || "",
-    email: opts.email || "",
-
-    travellerId: opts.travellerId || "",
-    travellerName: opts.travellerName || "",
-    travellerEmail: opts.travellerEmail || "",
-    travellerPhone: opts.travellerPhone || "",
-
-    resolved_reason: opts.resolved_reason || "",
-    resolved_note: opts.resolved_note || "",
     actorName: opts.actorName || "",
     actorEmail: opts.actorEmail || "",
     actorId: opts.actorId || "",
@@ -662,15 +560,17 @@ async function updatePanic(active, opts = {}) {
 
   const res = await fetch(`${API_BASE}/api/org/panic`, {
     method: "PUT",
-    headers: getAuthHeaders((els.inviteCode?.value || "").trim()),
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
     throw new Error(`Update failed (${res.status}) ${t}`);
   }
-  const json = await res.json().catch(()=>null);
-  return (json && (json.data ?? json)) || {};
+  const j = await res.json().catch(() => ({}));
+    const state = (j && typeof j === 'object') ? (j.json ?? j.data ?? j) : ({});
+    try { localStorage.setItem('ci_panic_cache', JSON.stringify(state)); } catch (e) {}
+    return state;
 }
 
 // --- UI helpers ---
@@ -700,36 +600,19 @@ function currentActor() {
   const fn = (els.firstName?.value || "").trim();
   const sn = (els.surname?.value || "").trim();
   const full = [fn, sn].filter(Boolean).join(" ").trim();
-  const phone = (els.phone?.value || "").trim();
-  const invite = (els.inviteCode?.value || "").trim();
 
   if (isLoggedIn()) {
     return {
-      name: (full || profile.name || "User"),
+      name: profile.name || full || "User",
       email: profile.email || "",
       id: profile.id || "",
-      phone,
       source: "loggedin",
     };
   }
-
-  // Shared / guest (requires invite for API access)
-  if (invite) {
-    const g = getOrCreateGuestProfile(invite);
-    return {
-      name: full || "Shared user",
-      email: g.email,
-      id: g.id,
-      phone,
-      source: "shared",
-    };
-  }
-
   return {
     name: full || "Shared user",
     email: "",
     id: "",
-    phone,
     source: "shared",
   };
 }
@@ -763,22 +646,10 @@ async function refresh() {
 
     // Display metadata from server when available
     if (active) {
-      const name = (data?.actorName || "").trim();
-      const email = (data?.actorEmail || "").trim();
-      const who = name ? (email ? `${name} (${email})` : name) : (email || "Unknown");
-      const atIso = (data?.activated_at || "").trim();
-      const loc = (data?.location || "").trim();
-      const phone = (data?.phone || "").trim();
-      const note = (data?.message || "").trim();
-
-      const bits = [];
-      bits.push(`Activated by: ${who}`);
-      if (phone) bits.push(`Phone: ${phone}`);
-      if (loc) bits.push(`Location: ${loc}`);
-      if (atIso) bits.push(atIso);
-      if (note) bits.push(`Note: ${note}`);
-
-      setMetaLine(bits.join(" • "));
+      const by = data?.activated_by || data?.actorEmail || data?.actorName || "";
+      const at = data?.activated_at || "";
+      const msg = data?.message ? ` • Note: ${data.message}` : "";
+      setMetaLine(`Activated by: ${by}${at ? " • " + at : ""}${msg}`);
     } else {
       const upd = data?.updated_at || data?.resolved_at || "";
       const msg = data?.message ? ` • Note: ${data.message}` : "";
@@ -806,19 +677,17 @@ async function onActivate() {
     const actor = currentActor();
     const message = (els.message?.value || "").trim();
     const location = (els.location?.value || "").trim();
-    const phone = (els.phone?.value || "").trim();
 
     await updatePanic(true, {
-      message: message || "Panic alarm activated",
-      source: isLoggedIn() ? "loggedin" : "shared",
+      message,
       location,
-      phone: phone || actor.phone || "",
-      email: (els.email?.value || actor.email || "").trim(),
       actorName: actor.name,
       actorEmail: actor.email,
-      actorId: actor.email ? ("email:" + actor.email.toLowerCase()) : "",
+      actorId: actor.id,
+      source: actor.source,
       activated_at: new Date().toISOString(),
     });
+
     toast("Panic alarm activated", "ok");
     await refresh();
   } catch (e) {
@@ -855,9 +724,9 @@ async function onReset() {
 }
 
 function onCopyShareLink() {
-  const base = window.location.href.split("#")[0];
-  const invite = (els.inviteCode?.value || "").trim();
-  const url = invite ? `${base}#invite=${encodeURIComponent(invite)}` : base;
+  // Share link is just this page URL; invite code itself is not embedded.
+  // Org will distribute invite code separately (or via Settings).
+  const url = window.location.href.split("#")[0];
   navigator.clipboard?.writeText(url).then(
     () => toast("Share link copied", "ok"),
     () => toast("Copy failed (clipboard blocked)", "err")
@@ -888,8 +757,6 @@ els.btnUseLocation?.addEventListener("click", onUseLocation);
 
 // Initial load
 refresh();
-
-})();
 </script>
 
 </body>
