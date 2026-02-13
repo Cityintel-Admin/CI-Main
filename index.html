@@ -1887,7 +1887,8 @@ function countPresenceForCountry(countryName){
     try{
       const res = await fetch(API_BASE + '/api/org/panic', { headers });
       const json = await res.json().catch(()=>null);
-      const state = json && (json.json ?? (json.data && (json.data.json ?? json.data)) ?? json);
+      const data = json && (json.data ?? json);
+      const state = (data && typeof data === 'object') ? data : null;
 
       // expected shape: { active, activated_by, activated_at, message }
       const active = !!(state && state.active);
@@ -1917,6 +1918,62 @@ function countPresenceForCountry(countryName){
   setInterval(refresh, POLL_MS);
 })();
 </script>
+
+<script>
+(function(){
+  const CI_API_BASE = (window.CI_API_BASE || "https://api.cityintelapi.com").replace(/\/+$/,"");
+  function getUserEmailFromLocal() {
+    try { const raw = localStorage.getItem("ci_profile"); if(raw){ const p=JSON.parse(raw); if(p?.email) return String(p.email).trim(); } } catch {}
+    return "";
+  }
+  function withEmailParam(url) {
+    try {
+      const email = getUserEmailFromLocal();
+      if (!email) return url;
+      const u = new URL(url, location.origin);
+      if (!u.searchParams.get("email")) u.searchParams.set("email", email);
+      return u.toString();
+    } catch { return url; }
+  }
+  const banner = document.createElement("div");
+  banner.id="panicBanner";
+  banner.style.position="fixed";
+  banner.style.left="0";
+  banner.style.right="0";
+  banner.style.top="0";
+  banner.style.zIndex="9999";
+  banner.style.padding="10px 14px";
+  banner.style.display="none";
+  banner.style.background="rgba(220,38,38,0.95)";
+  banner.style.color="#fff";
+  banner.style.fontWeight="800";
+  banner.style.textAlign="center";
+  banner.style.boxShadow="0 8px 24px rgba(0,0,0,0.35)";
+  document.addEventListener("DOMContentLoaded", ()=>document.body.appendChild(banner));
+
+  async function poll(){
+    try{
+      const res = await fetch(withEmailParam(`${CI_API_BASE}/api/org/panic`));
+      if(!res.ok) return;
+      const data = await res.json();
+      const active = !!(data && (data.active === true || data.isActive === true));
+      if(active){
+        const who = data.actorName || data.actor_name || data.actorEmail || data.actor_email || "";
+        const loc = data.location || "";
+        banner.textContent = `PANIC ALARM ACTIVE${who?` • ${who}`:""}${loc?` • ${loc}`:""} — open Panic Alarm page`;
+        banner.style.display="block";
+        document.body.style.paddingTop="44px";
+      }else{
+        banner.style.display="none";
+        document.body.style.paddingTop="";
+      }
+    }catch{}
+  }
+  setInterval(poll, 10000);
+  poll();
+})();
+</script>
+
 </body>
 </html>
 
