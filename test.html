@@ -5,7 +5,7 @@
 
   <script src="auth.js"></script>
   <script src="assets-data.js"></script>
-<script src="alerts-data.js"></script>
+  <script src="alerts-data.js"></script>
 
 <script>
 (function pageGuard(){
@@ -72,25 +72,54 @@ async function loadOrgContext() {
 	
 
 	<script>
-(function syncPresenceFromStorage(){
-  function loadList(key, fallback){
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : fallback;
-    } catch (e) {
-      console.warn('CityIntel: failed to load', key, 'from localStorage', e);
-      return fallback;
-    }
-  }
 
-  const seedAssets     = Array.isArray(window.CIAssets)     ? window.CIAssets     : [];
-  const seedTravellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+<script>
+const CI_API_BASE = (window.CI_API_BASE || "https://api.cityintelapi.com").replace(/\/+$/,"");
+function getUserEmailFromLocal() {
+  try { const raw = localStorage.getItem("ci_profile"); if(raw){ const p = JSON.parse(raw); if(p?.email) return String(p.email).trim(); } } catch {}
+  return "";
+}
+function withEmailParam(url) {
+  try {
+    const email = getUserEmailFromLocal();
+    if (!email) return url;
+    const u = new URL(url, location.origin);
+    if (!u.searchParams.get("email")) u.searchParams.set("email", email);
+    return u.toString();
+  } catch { return url; }
+}
+async function hydrateTravellersFromOrg() {
+  const res = await fetch(withEmailParam(`${CI_API_BASE}/api/org/travellers`));
+  if (!res.ok) return;
+  const data = await res.json();
+  const list = Array.isArray(data?.travellers) ? data.travellers : (Array.isArray(data) ? data : []);
+  localStorage.setItem("ci_travellers", JSON.stringify(list));
+}
+async function hydrateAssetsFromOrg() {
+  try {
+    const res = await fetch(withEmailParam(`${CI_API_BASE}/api/org/assets`));
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data?.assets) ? data.assets : (Array.isArray(data) ? data : []);
+    localStorage.setItem("ci_assets", JSON.stringify(list));
+  } catch {}
+}
+</script>
 
-  window.CIAssets     = loadList('ci_assets', seedAssets);
-  window.CITravellers = loadList('ci_travellers', seedTravellers);
+<script>
+(async function syncPresenceFromStorage(){
+  const key = "ci_presence";
+  let presence = null;
+  try { presence = JSON.parse(localStorage.getItem(key) || "null"); } catch {}
+  if (!presence || typeof presence !== "object") presence = {};
+  await Promise.allSettled([hydrateTravellersFromOrg(), hydrateAssetsFromOrg()]);
+  const travellers = (()=>{ try { return JSON.parse(localStorage.getItem("ci_travellers")||"[]"); } catch { return []; } })();
+  const assets = (()=>{ try { return JSON.parse(localStorage.getItem("ci_assets")||"[]"); } catch { return []; } })();
+  presence.travellers = Array.isArray(travellers) ? travellers : [];
+  presence.assets = Array.isArray(assets) ? assets : [];
+  localStorage.setItem(key, JSON.stringify(presence));
 })();
+</script>
 </script>
 
 
@@ -1664,24 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   
 <body>
-
-  <!-- Panic banner -->
-  <div id="panicBanner" style="display:none; position:sticky; top:0; z-index:9999; margin:12px; padding:12px 14px; border-radius:14px; background:rgba(220,38,38,0.15); border:1px solid rgba(220,38,38,0.35); box-shadow:0 10px 30px rgba(0,0,0,0.35);">
-    <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="display:inline-flex; width:10px; height:10px; border-radius:999px; background:#ef4444; box-shadow:0 0 0 4px rgba(239,68,68,0.22);"></span>
-        <div>
-          <div style="font-weight:700;">Active panic alarm</div>
-          <div id="panicBannerMeta" style="opacity:.85; font-size:12px;"></div>
-        </div>
-      </div>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <a href="panicalarm.html" style="text-decoration:none; padding:8px 12px; border-radius:999px; border:1px solid rgba(239,68,68,0.55); background:rgba(239,68,68,0.18); color:#fff;">Open</a>
-        <button id="panicBannerDismiss" style="cursor:pointer; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:#fff;">Dismiss</button>
-      </div>
-    </div>
-  </div>
-
+    
 <div class="brandbar">
   <img src="CityintLogo.jpg" alt="CityIntel Logo">
   <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
@@ -4662,65 +4674,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	
 	
-
-<script>
-// --- D1 travellers bootstrap (replaces missing travellers-data.js) ---
-(async function bootstrapTravellersFromD1(){
-  try {
-    const API_BASE = window.API_BASE || (window.CI_API_BASE || 'https://api.cityintelapi.com');
-    if (!window.getAuthHeaders) return;
-    if (sessionStorage.getItem('ci_travellers_bootstrapped') === '1') return;
-
-    const res = await fetch(API_BASE + '/api/org/travellers', { headers: window.getAuthHeaders() });
-    const j = await res.json().catch(()=>null);
-    const travellers = (j && (j.json ?? j.data ?? j.travellers)) || [];
-
-    if (Array.isArray(travellers)) {
-      localStorage.setItem('ci_travellers', JSON.stringify(travellers));
-    }
-
-    sessionStorage.setItem('ci_travellers_bootstrapped','1');
-    // Reload once so the map/table code (which reads localStorage on boot) can pick up the travellers.
-    location.reload();
-  } catch (e) {
-    console.warn('Travellers bootstrap failed', e);
-  }
-})();
-
-// --- Panic banner (poll) ---
-(function setupPanicBanner(){
-  const banner = document.getElementById('panicBanner');
-  const title = document.getElementById('panicBannerTitle');
-  const meta = document.getElementById('panicBannerMeta');
-  if (!banner || !window.getAuthHeaders) return;
-
-  const API_BASE = window.API_BASE || (window.CI_API_BASE || 'https://api.cityintelapi.com');
-  async function tick(){
-    try{
-      const res = await fetch(API_BASE + '/api/org/panic', { headers: window.getAuthHeaders() });
-      const j = await res.json().catch(()=>null);
-      const panic = (j && (j.json ?? j.data ?? j.panic)) || null;
-      if (panic && panic.active) {
-        banner.style.display = 'flex';
-        const who = [panic.first_name, panic.surname].filter(Boolean).join(' ') || 'Staff member';
-        title.textContent = 'Panic alarm active';
-        meta.textContent = who + (panic.location ? (' • ' + panic.location) : '') + (panic.updated_at ? (' • ' + String(panic.updated_at).slice(0,19).replace('T',' ')) : '');
-      } else {
-        banner.style.display = 'none';
-      }
-    }catch(e){ /* ignore */ }
-  }
-  tick();
-  setInterval(tick, 5000);
-
-  // instant update when other tabs write cache
-  window.addEventListener('storage', (ev)=>{ if(ev.key==='ci_panic_cache') tick(); });
-})();
-</script>
-
 <!-- auth helpers / admin links -->
 
 <script src="admin-links.js"></script>
+
+
+<script>
+(function(){
+  const banner = document.createElement("div");
+  banner.id = "panicBanner";
+  banner.style.position="fixed";
+  banner.style.left="0";
+  banner.style.right="0";
+  banner.style.top="0";
+  banner.style.zIndex="9999";
+  banner.style.padding="10px 14px";
+  banner.style.display="none";
+  banner.style.background="rgba(220,38,38,0.95)";
+  banner.style.color="#fff";
+  banner.style.fontWeight="700";
+  banner.style.textAlign="center";
+  banner.style.boxShadow="0 8px 24px rgba(0,0,0,0.35)";
+  banner.textContent="PANIC ALARM ACTIVE";
+  document.addEventListener("DOMContentLoaded", ()=>document.body.appendChild(banner));
+
+  async function poll(){
+    try{
+      const res = await fetch(withEmailParam(`${CI_API_BASE}/api/org/panic`));
+      if(!res.ok) return;
+      const data = await res.json();
+      const active = !!(data && (data.active === true || data.isActive === true));
+      if(active){
+        const who = data.actorName || data.actor_name || data.actorEmail || data.actor_email || "";
+        const loc = data.location || "";
+        banner.textContent = `PANIC ALARM ACTIVE${who?` • ${who}`:""}${loc?` • ${loc}`:""}`;
+        banner.style.display="block";
+        document.body.style.paddingTop="44px";
+      }else{
+        banner.style.display="none";
+        document.body.style.paddingTop="";
+      }
+    }catch{}
+  }
+  setInterval(poll, 10000);
+  poll();
+})();
+</script>
 
 </body>
 </html>
