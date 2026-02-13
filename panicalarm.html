@@ -471,19 +471,66 @@ CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
 (function(){
   const API_BASE = "https://api.cityintelapi.com";
 
+// Prefer query-param identity to avoid CORS preflight issues with custom headers.
+function getUserEmailFromLocal() {
+  try {
+    const raw = localStorage.getItem("ci_profile");
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && p.email) return String(p.email).trim();
+    }
+  } catch {}
+  return "";
+}
+function withEmailParam(url) {
+  try {
+    const email = getUserEmailFromLocal();
+    if (!email) return url;
+    const u = new URL(url, location.origin);
+    if (!u.searchParams.get("email")) u.searchParams.set("email", email);
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+const api = (path) => withEmailParam(`${API_BASE}${path}`);
+
+function normalizeEmail(v){ return String(v||"").trim().toLowerCase(); }
+function normalizeName(v){ return String(v||"").trim().replace(/\s+/g," ").toLowerCase(); }
+function normalizePhone(v){ return String(v||"").replace(/\D+/g,""); }
+async function findTravellerMatch({ firstName, surname, phone, email }) {
+  const e = normalizeEmail(email);
+  const p = normalizePhone(phone);
+  const n = normalizeName(`${firstName||""} ${surname||""}`);
+  if (!e || !p || !n) return null; // require all three for linking
+  try {
+    const res = await fetch(api(`/api/org/travellers`));
+    if (!res.ok) return null;
+    const data = await res.json();
+    const list = Array.isArray(data?.travellers) ? data.travellers : (Array.isArray(data) ? data : []);
+    for (const t of list) {
+      const te = normalizeEmail(t.email || "");
+      const tp = normalizePhone(t.phone || "");
+      const tn = normalizeName(t.full_name || t.name || `${t.first_name||""} ${t.surname||""}`);
+      if (te === e && tp === p && tn === n) {
+        return { id: t.id || t.traveller_id || null, name: t.full_name || t.name || n, email: t.email || e, phone: t.phone || phone };
+      }
+    }
+  } catch {}
+  return null;
+}
+
+
 // --- auth header helper (mirrors settings.html pattern) ---
 function getProfile() {
   try { return JSON.parse(localStorage.getItem("ci_profile") || "{}"); }
   catch { return {}; }
 }
 function getAuthHeaders() {
-  const profile = getProfile();
-  const headers = { "Content-Type": "application/json" };
-  if (profile?.email) headers["X-User-Email"] = profile.email;
-  if (profile?.name) headers["X-User-Name"] = profile.name;
-  if (profile?.id) headers["X-User-Id"] = profile.id;
-  return headers;
+  // Keep headers minimal; identity is sent via ?email=... query param (see api()).
+  return { "Content-Type": "application/json" };
 }
+
 function isLoggedIn() {
   const p = getProfile();
   return !!(p && (p.email || p.id));
@@ -517,7 +564,7 @@ async function ensureJoinedIfInvitePresent(inviteCode) {
   // If logged-in, we don't need the invite join flow.
   if (isLoggedIn()) return;
 
-  const res = await fetch(`${API_BASE}/api/org/join`, {
+  const res = await fetch(api(`/api/org/join`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ inviteCode }),
@@ -531,7 +578,7 @@ async function ensureJoinedIfInvitePresent(inviteCode) {
 
 // --- panic API (v5-compatible) ---
 async function fetchPanic() {
-  const res = await fetch(`${API_BASE}/api/org/panic`, {
+  const res = await fetch(api(`/api/org/panic`), {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -539,10 +586,7 @@ async function fetchPanic() {
     const t = await res.text().catch(() => "");
     throw new Error(`Status failed (${res.status}) ${t}`);
   }
-  const j = await res.json().catch(() => ({}));
-    const state = (j && typeof j === 'object') ? (j.json ?? j.data ?? j) : ({});
-    try { localStorage.setItem('ci_panic_cache', JSON.stringify(state)); } catch (e) {}
-    return state;
+  return await res.json();
 }
 
 async function updatePanic(active, opts = {}) {
@@ -558,7 +602,7 @@ async function updatePanic(active, opts = {}) {
     resolved_at: opts.resolved_at || "",
   };
 
-  const res = await fetch(`${API_BASE}/api/org/panic`, {
+  const res = await fetch(api(`/api/org/panic`), {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
@@ -567,10 +611,7 @@ async function updatePanic(active, opts = {}) {
     const t = await res.text().catch(() => "");
     throw new Error(`Update failed (${res.status}) ${t}`);
   }
-  const j = await res.json().catch(() => ({}));
-    const state = (j && typeof j === 'object') ? (j.json ?? j.data ?? j) : ({});
-    try { localStorage.setItem('ci_panic_cache', JSON.stringify(state)); } catch (e) {}
-    return state;
+  return await res.json().catch(() => ({}));
 }
 
 // --- UI helpers ---
@@ -674,17 +715,32 @@ async function onActivate() {
     const invite = (els.inviteCode?.value || "").trim();
     await ensureJoinedIfInvitePresent(invite);
 
-    const actor = currentActor();
+    const firstName = (els.firstName?.value || "").trim();
+    const surname = (els.surname?.value || "").trim();
+    const phone = (els.phone?.value || "").trim();
+    const email = (els.email?.value || "").trim();
+
+    const profileActor = currentActor();
+    const actorName = (firstName || surname) ? `${firstName} ${surname}`.trim() : (profileActor.name || "");
+    const actorEmail = email || profileActor.email || "";
+    const actorPhone = phone || "";
+    const actorId = profileActor.id || null;
+
     const message = (els.message?.value || "").trim();
     const location = (els.location?.value || "").trim();
+
+    const travellerMatch = await findTravellerMatch({ firstName, surname, phone, email });
 
     await updatePanic(true, {
       message,
       location,
-      actorName: actor.name,
-      actorEmail: actor.email,
-      actorId: actor.id,
-      source: actor.source,
+      actorName,
+      actorEmail,
+      actorPhone,
+      actorId,
+      source: profileActor.source || (invite ? "invite" : "unknown"),
+      traveller_id: travellerMatch?.id || null,
+      traveller_match: travellerMatch,
       activated_at: new Date().toISOString(),
     });
 
@@ -695,6 +751,7 @@ async function onActivate() {
     toast("Activate failed.", "err");
   }
 }
+
 
 async function onReset() {
   try {
