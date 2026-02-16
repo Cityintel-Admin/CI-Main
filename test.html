@@ -54,13 +54,36 @@
 
   const API_ORIGIN = 'https://api.cityintelapi.com';
 
-  function getClientEmail(){
-    try{
-      const u = new URL(window.location.href);
-      const qp = u.searchParams.get('email');
-      if(qp) return qp;
-    }catch(_){}
-    try{ return localStorage.getItem('ci_user_email') || ''; }catch(_){ return ''; }
+  function getClientEmail() {
+    // Primary: cached explicit email
+    const explicit = (localStorage.getItem('ci_user_email') || '').trim();
+    if (explicit) return explicit;
+
+    // Common: profile blob stored by auth.js
+    try {
+      const raw = localStorage.getItem('ci_profile');
+      if (raw) {
+        const p = JSON.parse(raw);
+        const e = (p?.email || p?.user?.email || '').trim();
+        if (e) return e;
+      }
+    } catch {}
+
+    // Fallback: CIAuth helper (if present)
+    try {
+      if (window.CIAuth && typeof window.CIAuth.getProfile === 'function') {
+        const p = window.CIAuth.getProfile();
+        const e = (p?.email || '').trim();
+        if (e) return e;
+      }
+      if (window.CIAuth && typeof window.CIAuth.who === 'function') {
+        const p = window.CIAuth.who();
+        const e = (p?.email || '').trim();
+        if (e) return e;
+      }
+    } catch {}
+
+    return '';
   }
 
   function withEmailParam(url){
@@ -131,48 +154,101 @@
   }
 
 
-  function ensurePanicBanner(){
-    let el = document.getElementById('ciPanicBanner');
-    if(el) return el;
+  function ensurePanicBanner() {
+    let el = document.getElementById('panicBanner');
+    if (el) return el;
+
     el = document.createElement('div');
-    el.id = 'ciPanicBanner';
-    el.style.position = 'sticky';
-    el.style.top = '0';
-    el.style.zIndex = '9999';
-    el.style.display = 'none';
-    el.style.padding = '10px 14px';
-    el.style.borderRadius = '10px';
-    el.style.margin = '10px 0';
-    el.style.background = 'rgba(220,38,38,0.18)';
-    el.style.border = '1px solid rgba(220,38,38,0.45)';
-    el.style.color = '#fff';
-    el.style.fontWeight = '700';
-    el.style.backdropFilter = 'blur(10px)';
-    el.innerHTML = '🚨 <span id="ciPanicBannerText">Active panic alarm</span>';
-    const container = document.querySelector('.content') || document.querySelector('main') || document.body;
-    container.prepend(el);
+    el.id = 'panicBanner';
+    el.style.cssText = `
+      position: sticky; top: 0; z-index: 9999;
+      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 14px;
+      color: #fff;
+      display: none;
+    `;
+
+    el.innerHTML = `
+      <div style="display:flex; gap:12px; align-items:flex-start; justify-content:space-between; max-width: 1400px; margin: 0 auto;">
+        <div style="min-width:0;">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <span style="font-weight:800; letter-spacing:.4px;">PANIC ALARM ACTIVE</span>
+            <span id="panicMeta" style="opacity:.9; font-size:12px;"></span>
+          </div>
+          <div id="panicDetails" style="margin-top:4px; font-size:13px; line-height:1.35; opacity:.95;"></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+          <a id="panicOpen" href="panicalarm.html" style="
+            color:#fff; text-decoration:underline; font-weight:700; padding:6px 8px;
+            border-radius:10px; background: rgba(255,255,255,.08);
+          ">Open</a>
+          <button id="panicHide" type="button" style="
+            background: rgba(255,255,255,.10);
+            color:#fff; border:1px solid rgba(255,255,255,.15);
+            padding:6px 10px; border-radius:999px; cursor:pointer;
+            font-weight:700;
+          ">Hide</button>
+        </div>
+      </div>
+    `;
+
+    document.body.insertBefore(el, document.body.firstChild);
+    el.querySelector('#panicHide')?.addEventListener('click', () => {
+      el.style.display = 'none';
+      try { sessionStorage.setItem('ci_hide_panic_banner', '1'); } catch {}
+    });
+
     return el;
   }
 
-  async function startPanicPolling(){
+  async function startPanicPolling() {
     const banner = ensurePanicBanner();
-    async function tick(){
-      const p = await fetchPanic();
-      const isActive = !!(p && (p.active === true || p.status === 'active'));
-      if(isActive){
-        const who = [p.firstName, p.surname].filter(Boolean).join(' ').trim();
-        const loc = (p.location || p.city || '').trim();
-        const msgBits = [];
-        if(who) msgBits.push(who);
-        if(loc) msgBits.push('— ' + loc);
-        const txt = msgBits.join(' ');
-        const span = document.getElementById('ciPanicBannerText');
-        if(span) span.textContent = txt ? ('Panic alarm active: ' + txt) : 'Panic alarm active';
-        banner.style.display = '';
-      }else{
-        banner.style.display = 'none';
+    if (!banner) return;
+
+    const tick = async () => {
+      try {
+        if (sessionStorage.getItem('ci_hide_panic_banner') === '1') {
+          banner.style.display = 'none';
+          return;
+        }
+
+        const st = await fetchPanic();
+        if (st && st.active) {
+          const when = st.activated_at || st.activatedAt || st.time || '';
+          const loc = st.location || st.loc || '';
+          const metaParts = [];
+          if (when) metaParts.push(String(when));
+          if (loc) metaParts.push(loc);
+
+          const name = st.name || st.actorName || st.fullName || st.displayName || '';
+          const email = st.email || st.actorEmail || '';
+          const phone = st.phone || st.actorPhone || '';
+          const msg = st.message || st.msg || '';
+
+          const metaEl = banner.querySelector('#panicMeta');
+          const detailsEl = banner.querySelector('#panicDetails');
+          if (metaEl) metaEl.textContent = metaParts.join(' • ');
+
+          if (detailsEl) {
+            const lines = [];
+            const whoBits = [name].filter(Boolean);
+            if (email) whoBits.push(email);
+            if (phone) whoBits.push(phone);
+            if (whoBits.length) lines.push(`<div><strong>${escapeHtml(whoBits.join(' — '))}</strong></div>`);
+            if (msg) lines.push(`<div style="opacity:.95;">${escapeHtml(msg)}</div>`);
+            detailsEl.innerHTML = lines.join('') || '<div style="opacity:.9;">Panic alarm active.</div>';
+          }
+
+          banner.style.display = '';
+        } else {
+          banner.style.display = 'none';
+        }
+      } catch (e) {
+        // Silent
       }
-    }
+    };
+
     await tick();
     setInterval(tick, 5000);
   }
