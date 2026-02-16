@@ -50,10 +50,6 @@
   <title>CityIntel — Panic Alarm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-/* panic-form-layout-v2 */
-.input{min-width:0;}
-#email{width:100%;}/* allow full width */
-
     :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
     body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
     .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
@@ -201,7 +197,6 @@
   .form-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px 14px; }
   .field-full { grid-column: 1 / -1; }
   label { display:block; font-weight:800; margin:0 0 6px; }
-  .nowrap { white-space: nowrap; }
   input, textarea { width:100%; border-radius: 14px; border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.35); color:#fff; padding: 10px 12px; outline:none; }
   input:focus, textarea:focus { border-color: rgba(255,255,255,.22); }
   .help { margin-top:6px; font-size: 12.5px; }
@@ -214,44 +209,6 @@
 </style>
 
 </head>
-
-
-<script>
-  // must be after the header DOM exists
-  document.addEventListener('DOMContentLoaded', function(){
-    // Inject user chip (compatible with pages that may not expose CIAuth.injectUserChip)
-    (function injectUserChipFallback(){
-      const host=document.getElementById('topActions');
-      if(!host) return;
-      const profileStr=localStorage.getItem('ci_profile');
-      let profile={};
-      try{profile=profileStr?JSON.parse(profileStr):{};}catch(e){profile={};}
-      const isLoggedIn=!!(profile && (profile.email||profile.id));
-      // If markup already has a chip, just update label.
-      const chip=document.getElementById('userChip');
-      if(chip){
-        const label=chip.querySelector('.label')||chip;
-        if(isLoggedIn){
-          label.textContent=(profile.name||'User');
-          chip.classList.remove('guest');
-          chip.classList.add('loggedin');
-        } else {
-          label.textContent='Guest / Shared';
-          chip.classList.add('guest');
-        }
-      }
-    })();
-  // Sidebar links: guard for older auth.js builds
-  try {
-    if (window.CIAuth && typeof window.CIAuth.updateSidebarForRole === 'function') {
-      window.CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
-    }
-  } catch (e) {
-    console.warn('Sidebar role link update skipped:', e);
-  }
-  });
-</script>
-
 <body>
 
   <div class="brandbar">
@@ -320,7 +277,7 @@
       <div class="divider"></div>
 
       <div class="form-grid">
-        <div class="field">
+        <div class="field" id="inviteBlock">
           <label for="inviteCode">Invite code (for shared links)</label>
           <input id="inviteCode" type="text" placeholder="e.g. 8‑char invite code" autocomplete="off" />
           <div class="help muted" id="inviteHelp">If you are logged in, this can be left blank. If you are using a shared link, this is required.</div>
@@ -343,42 +300,25 @@
         <div class="field">
           <label for="surname">Surname</label>
           <input id="surname" type="text" placeholder="Surname" autocomplete="family-name" />
+        </div>
+
         
+
+        <div class="field">
+          <label for="phone">Phone (optional)</label>
+          <input id="phone" type="tel" placeholder="e.g. +44 7..." autocomplete="tel" />
         </div>
 
-        <div class="grid-2">
-          <div class="field">
-            <label for="phone">Phone (optional)</label>
-            <input id="phone" class="input" placeholder="e.g. +44 7700 900123" />
-          </div>
-          <div class="field">
-            <label for="email">Email (optional)</label>
-            <input id="email" class="input" placeholder="e.g. name@company.com" style="width:100%; text-overflow:ellipsis;" />
-          </div>
-        </div>
-
-        <div class="field field-full">
+<div class="field field-full">
           <label for="message">Message (optional)</label>
-
           <textarea id="message" rows="4" placeholder="e.g. I need urgent assistance at [location]."></textarea>
           <div class="help muted">Tip: include what you need and who should respond (security / HR / local office lead).</div>
-
-        <div class="field field-full" style="margin-top:10px;">
-          <label for="resetReason">Reset reason</label>
-          <select id="resetReason" class="input" style="width:100%;">
-            <option value="resolved">Resolved</option>
-            <option value="false_alarm">False activation</option>
-            <option value="test">Test</option>
-            <option value="duplicate">Duplicate</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
         </div>
       </div>
 
       <div class="actions">
-        <button id="btnActivate" class="btn danger" type="button">Activate Panic Alarm</button>
-        <button id="btnReset" class="btn" type="button">Reset Panic Alarm</button>
+        <button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
+        <button id="resetBtn" class="btn">Reset Panic Alarm</button>
       </div>
 
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -512,12 +452,42 @@ function getProfile() {
   try { return JSON.parse(localStorage.getItem("ci_profile") || "{}"); }
   catch { return {}; }
 }
-function getAuthHeaders() {
+
+function getOrCreateGuestProfile(inviteCode) {
+  const key = "ci_guest_profile_v1";
+  try {
+    const existing = JSON.parse(localStorage.getItem(key) || "null");
+    if (existing?.email) return existing;
+  } catch {}
+
+  const rnd = Math.random().toString(36).slice(2, 10);
+  const email = `guest+${String(inviteCode || "noinvite").toLowerCase()}-${rnd}@cityintel.local`;
+  const profile = { email, name: "Guest", id: "email:" + email.toLowerCase() };
+  localStorage.setItem(key, JSON.stringify(profile));
+  return profile;
+}
+
+function getAuthHeaders(inviteCodeMaybe = "") {
   const profile = getProfile();
   const headers = { "Content-Type": "application/json" };
-  if (profile?.email) headers["X-User-Email"] = profile.email;
-  if (profile?.name) headers["X-User-Name"] = profile.name;
-  if (profile?.id) headers["X-User-Id"] = profile.id;
+
+  // Logged-in
+  if (profile?.email) {
+    headers["X-User-Email"] = profile.email;
+    if (profile?.name) headers["X-User-Name"] = profile.name;
+    headers["X-User-Id"] = profile.id || ("email:" + String(profile.email).toLowerCase());
+    return headers;
+  }
+
+  // Shared (guest) – only when invite present
+  const invite = String(inviteCodeMaybe || "").trim();
+  if (invite) {
+    const g = getOrCreateGuestProfile(invite);
+    headers["X-User-Email"] = g.email;
+    headers["X-User-Name"] = g.name || "Guest";
+    headers["X-User-Id"] = g.id || ("email:" + String(g.email).toLowerCase());
+  }
+
   return headers;
 }
 function isLoggedIn() {
@@ -530,21 +500,43 @@ const els = {
   statusText: document.getElementById("statusText"),
   statusMeta: document.getElementById("statusMeta"),
   statusDot: document.getElementById("statusDot"),
-  btnRefresh: document.getElementById("btnRefresh"),
-  btnActivate: document.getElementById("btnActivate"),
-  btnReset: document.getElementById("btnReset"),
-  btnShare: document.getElementById("btnShare"),
-  btnUseLocation: document.getElementById("btnUseLocation"),
+
+  // Buttons (match HTML)
+  btnRefresh: document.getElementById("refreshBtn"),
+  btnActivate: document.getElementById("activateBtn"),
+  btnReset: document.getElementById("resetBtn"),
+  btnShare: document.getElementById("copyShareBtn"),
+  btnUseLocation: document.getElementById("useLocationBtn"),
+
+  // Inputs
   inviteCode: document.getElementById("inviteCode"),
   firstName: document.getElementById("firstName"),
   surname: document.getElementById("surname"),
   phone: document.getElementById("phone"),
-  email: document.getElementById("email"),
-  location: document.getElementById("locationInput"),
-  message: document.getElementById("messageInput"),
-  resetReason: document.getElementById("resetReason"),
+  location: document.getElementById("locationText"),
+  message: document.getElementById("message"),
+
   noteLine: document.getElementById("noteLine"),
 };
+
+// Hide invite block for logged-in users
+(function toggleInviteBlock(){
+  const b = document.getElementById("inviteBlock");
+  if (!b) return;
+  b.style.display = isLoggedIn() ? "none" : "";
+})();
+
+// Auto-fill invite code from URL hash: #invite=XXXXXXXX
+(function autofillInviteFromHash(){
+  try {
+    const h = location.hash || "";
+    const m = h.match(/invite=([^&]+)/);
+    if (m && els.inviteCode && !els.inviteCode.value) {
+      els.inviteCode.value = decodeURIComponent(m[1]);
+    }
+  } catch {}
+})();
+
 
 // --- state ---
 let joinedViaInvite = false;
@@ -558,7 +550,7 @@ async function ensureJoinedIfInvitePresent(inviteCode) {
 
   const res = await fetch(`${API_BASE}/api/org/join`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(inviteCode),
     body: JSON.stringify({ inviteCode }),
   });
   if (!res.ok) {
@@ -570,9 +562,10 @@ async function ensureJoinedIfInvitePresent(inviteCode) {
 
 // --- panic API (v5-compatible) ---
 async function fetchPanic() {
+  const invite = (els.inviteCode?.value || "").trim();
   const res = await fetch(`${API_BASE}/api/org/panic`, {
     method: "GET",
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders(invite),
   });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
@@ -596,7 +589,7 @@ async function updatePanic(active, opts = {}) {
 
   const res = await fetch(`${API_BASE}/api/org/panic`, {
     method: "PUT",
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders((els.inviteCode?.value || "").trim()),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -606,41 +599,27 @@ async function updatePanic(active, opts = {}) {
   return await res.json().catch(() => ({}));
 }
 
-
-async function refreshStatus() {
-    const els = getEls();
-    try {
-      const st = await fetchPanic();
-      const active = !!(st && st.active);
-      setStatusPill(active);
-
-      const when = st?.activated_at || st?.activatedAt || '';
-      const name = st?.name || st?.actorName || st?.fullName || '';
-      const email = st?.email || st?.actorEmail || '';
-      const phone = st?.phone || st?.actorPhone || '';
-      const message = st?.message || st?.msg || '';
-      const loc = st?.location || '';
-
-      const bits = [];
-      if (active) {
-        if (when) bits.push(String(when));
-        if (name) bits.push(name);
-        if (email) bits.push(email);
-        if (phone) bits.push(phone);
-        if (loc) bits.push(loc);
-        if (message) bits.push(message);
-        if (els.statusText) els.statusText.textContent = bits.join(' • ');
-      } else {
-        if (els.statusText) els.statusText.textContent = 'No active panic alarm';
-      }
-
-      return st;
-    } catch (e) {
-      setStatusPill(false);
-      if (els.statusText) els.statusText.textContent = 'Status unavailable';
-      return null;
-    }
+// Tries to update the alarm, but validates by re-reading status (some backends may return non-2xx even if the write succeeded)
+async function updatePanicAndVerify(desiredActive, opts = {}) {
+  let err = null;
+  try {
+    await updatePanic(desiredActive, opts);
+  } catch (e) {
+    err = e;
   }
+
+  // Always re-fetch status to determine the truth on screen
+  let status = null;
+  try {
+    status = await fetchPanic();
+  } catch (e2) {
+    // If even status can't be fetched, surface original error if any
+    throw err || e2;
+  }
+
+  const okDesired = !!status && !!status.active === !!desiredActive;
+  return { okDesired, status, err };
+}
 
 // --- UI helpers ---
 function setPill(active) {
@@ -652,8 +631,6 @@ function setPill(active) {
 function setMetaLine(text) {
   if (els.statusMeta) els.statusMeta.textContent = text || "";
 }
-
-function markPanicChanged(){try{localStorage.setItem('cityintel_panic_changed', String(Date.now()));}catch(e){}}
 
 function toast(msg, kind = "info") {
   // Lightweight toast using existing #toast node if present, otherwise statusMeta.
@@ -671,32 +648,39 @@ function currentActor() {
   const fn = (els.firstName?.value || "").trim();
   const sn = (els.surname?.value || "").trim();
   const full = [fn, sn].filter(Boolean).join(" ").trim();
-
   const phone = (els.phone?.value || "").trim();
-
-  // For logged-in users, trust the profile email (don't rely on editable input)
-  const emailFromInput = (els.email?.value || "").trim();
-  const email = (profile?.email || emailFromInput || "").trim();
+  const invite = (els.inviteCode?.value || "").trim();
 
   if (isLoggedIn()) {
     return {
       name: profile.name || full || "User",
-      email,
-      phone,
+      email: profile.email || "",
       id: profile.id || "",
+      phone,
       source: "loggedin",
+    };
+  }
+
+  // Shared / guest (requires invite for API access)
+  if (invite) {
+    const g = getOrCreateGuestProfile(invite);
+    return {
+      name: full || "Shared user",
+      email: g.email,
+      id: g.id,
+      phone,
+      source: "shared",
     };
   }
 
   return {
     name: full || "Shared user",
-    email,
-    phone,
+    email: "",
     id: "",
+    phone,
     source: "shared",
   };
 }
-
 
 // Prefill name fields for logged-in users (optional)
 (function prefillLoggedInFields() {
@@ -714,17 +698,6 @@ function currentActor() {
   // Invite code is not required when logged in.
   if (els.inviteCode) {
     els.inviteCode.placeholder = "not required when logged in";
-  }
-
-  // For logged-in users, prefill and lock the email field (shared links can type it)
-  if (els.email) {
-    if (profile?.email) {
-      els.email.value = profile.email;
-      els.email.disabled = true;
-      els.email.placeholder = profile.email;
-    } else {
-      els.email.disabled = false;
-    }
   }
 })();
 
@@ -761,82 +734,81 @@ async function refresh() {
 }
 
 // --- actions ---
-
-function currentInviteCode() {
-  return (els.inviteCode?.value || "").trim();
-}
-function currentLocation() {
-  return (els.location?.value || "").trim();
-}
-function currentMessage() {
-  return (els.message?.value || "").trim();
-}
-
 async function onActivate() {
+  clearMsg();
+
+  // If they are using a shared link (no profile), require an invite code + name
   try {
-    const invite = (els.inviteCode?.value || "").trim();
-    await ensureJoinedIfInvitePresent(invite);
+    await ensureSharedJoin();
+  } catch (e) {
+    // ensureSharedJoin already shows a message
+    return;
+  }
 
+  setBusy(true);
+  try {
     const actor = currentActor();
-    const message = (els.message?.value || "").trim();
-    const location = (els.location?.value || "").trim();
+    const loc = await collectLocationText();
 
-    await updatePanic(true, {
-      message,
-      location,
-      actorName: actor.name,
-      actorEmail: actor.email,
-      actorId: actor.id,
-      source: actor.source,
-      activated_at: new Date().toISOString(),
-      phone: (els.phone?.value || '').trim(),
-    });
+    const payload = {
+      actor,
+      locationText: loc.locationText,
+      locationSource: loc.locationSource,
+      message: (els.message.value || '').trim(),
+    };
 
-    toast("Panic alarm activated", "ok");
-      markPanicChanged();
-      await refreshStatus();
-    await refresh();
+    const { okDesired, status, err } = await updatePanicAndVerify(true, payload);
+
+    renderStatus(status);
+
+    if (okDesired) {
+      toast('Panic alarm activated');
+    } else {
+      // Backend said no / unknown; still show what we read back
+      setMsg('Activate may not have completed. Please refresh to confirm.');
+      if (err) console.warn('Activate error (but status read-back succeeded):', err);
+    }
   } catch (e) {
     console.error(e);
-    toast("Activate failed.", "err");
+    setMsg('Activate failed.');
+  } finally {
+    setBusy(false);
   }
 }
 
 async function onReset() {
+  clearMsg();
+
+  setBusy(true);
   try {
-    const invite = (els.inviteCode?.value || "").trim();
-    await ensureJoinedIfInvitePresent(invite);
+    const reason = (els.resetReason && els.resetReason.value) ? els.resetReason.value : 'Resolved';
 
-    const actor = currentActor();
-    const message = (els.message?.value || "").trim() || "Resolved / false alarm";
-    const location = (els.location?.value || "").trim();
+    const payload = {
+      resetReason: reason,
+    };
 
-    await updatePanic(false, {
-      message,
-      location,
-      actorName: actor.name,
-      actorEmail: actor.email,
-      actorId: actor.id,
-      source: actor.source,
-      resolved_at: new Date().toISOString(),
-      reason: (els.resetReason?.value || '').trim() || undefined,
-      phone: (els.phone?.value || '').trim(),
-    });
+    const { okDesired, status, err } = await updatePanicAndVerify(false, payload);
 
-    toast("Panic alarm reset", "ok");
-    markPanicChanged();
-    await refreshStatus();
-    await refresh();
+    renderStatus(status);
+
+    if (okDesired) {
+      toast('Panic alarm reset');
+    } else {
+      setMsg('Reset may not have completed. Please refresh to confirm.');
+      if (err) console.warn('Reset error (but status read-back succeeded):', err);
+    }
   } catch (e) {
     console.error(e);
-    toast("Reset failed.", "err");
+    setMsg('Reset failed.');
+  } finally {
+    setBusy(false);
   }
 }
 
 function onCopyShareLink() {
-  // Share link is just this page URL; invite code itself is not embedded.
-  // Org will distribute invite code separately (or via Settings).
-  const url = window.location.href.split("#")[0];
+  const base = window.location.href.split("#")[0];
+  const invite = (els.inviteCode?.value || "").trim();
+  const url = invite ? `${base}#invite=${encodeURIComponent(invite)}` : base;
   navigator.clipboard?.writeText(url).then(
     () => toast("Share link copied", "ok"),
     () => toast("Copy failed (clipboard blocked)", "err")
@@ -867,8 +839,10 @@ els.btnUseLocation?.addEventListener("click", onUseLocation);
 
 // Initial load
 refresh();
+
 })();
 </script>
 
 </body>
 </html>
+
