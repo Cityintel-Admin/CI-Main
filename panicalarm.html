@@ -50,6 +50,10 @@
   <title>CityIntel — Panic Alarm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+/* panic-form-layout-v2 */
+.input{min-width:0;}
+#email{width:100%;}/* allow full width */
+
     :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
     body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
     .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
@@ -345,11 +349,11 @@
         <div class="grid-2">
           <div class="field">
             <label for="phone">Phone (optional)</label>
-            <input id="phone" type="tel" placeholder="e.g. +44 7700 900123" autocomplete="tel" />
+            <input id="phone" class="input" placeholder="e.g. +44 7700 900123" />
           </div>
           <div class="field">
-            <label for="email" class="nowrap">Email (optional)</label>
-            <input id="email" type="email" placeholder="e.g. name@company.com" autocomplete="email" />
+            <label for="email">Email (optional)</label>
+            <input id="email" class="input" placeholder="e.g. name@company.com" style="width:100%; text-overflow:ellipsis;" />
           </div>
         </div>
 
@@ -358,6 +362,17 @@
 
           <textarea id="message" rows="4" placeholder="e.g. I need urgent assistance at [location]."></textarea>
           <div class="help muted">Tip: include what you need and who should respond (security / HR / local office lead).</div>
+
+        <div class="field field-full" style="margin-top:10px;">
+          <label for="resetReason">Reset reason</label>
+          <select id="resetReason" class="input" style="width:100%;">
+            <option value="resolved">Resolved</option>
+            <option value="false_alarm">False activation</option>
+            <option value="test">Test</option>
+            <option value="duplicate">Duplicate</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
         </div>
       </div>
 
@@ -527,6 +542,7 @@ const els = {
   email: document.getElementById("email"),
   location: document.getElementById("locationInput"),
   message: document.getElementById("messageInput"),
+  resetReason: document.getElementById("resetReason"),
   noteLine: document.getElementById("noteLine"),
 };
 
@@ -591,20 +607,40 @@ async function updatePanic(active, opts = {}) {
 }
 
 
-async function refreshStatus(){
-  try{
-    const st = await refreshStatus();
-      const active = !!(st && (st.active || st.isActive || st.panicActive));
-    const ts = st?.activatedAt || st?.createdAt || st?.updatedAt || "";
-    const who = st?.actor?.displayName || st?.actor?.name || st?.actorName || "";
-    const loc = st?.location || st?.place || "";
-    setMetaLine(active ? `Active ${ts}${who?` • ${who}`:''}${loc?` • ${loc}`:''}` : "");
-    return st;
-  }catch(e){
-    // keep current UI but show a subtle hint
-    return null;
+async function refreshStatus() {
+    const els = getEls();
+    try {
+      const st = await fetchPanic();
+      const active = !!(st && st.active);
+      setStatusPill(active);
+
+      const when = st?.activated_at || st?.activatedAt || '';
+      const name = st?.name || st?.actorName || st?.fullName || '';
+      const email = st?.email || st?.actorEmail || '';
+      const phone = st?.phone || st?.actorPhone || '';
+      const message = st?.message || st?.msg || '';
+      const loc = st?.location || '';
+
+      const bits = [];
+      if (active) {
+        if (when) bits.push(String(when));
+        if (name) bits.push(name);
+        if (email) bits.push(email);
+        if (phone) bits.push(phone);
+        if (loc) bits.push(loc);
+        if (message) bits.push(message);
+        if (els.statusText) els.statusText.textContent = bits.join(' • ');
+      } else {
+        if (els.statusText) els.statusText.textContent = 'No active panic alarm';
+      }
+
+      return st;
+    } catch (e) {
+      setStatusPill(false);
+      if (els.statusText) els.statusText.textContent = 'Status unavailable';
+      return null;
+    }
   }
-}
 
 // --- UI helpers ---
 function setPill(active) {
@@ -753,6 +789,7 @@ async function onActivate() {
       actorId: actor.id,
       source: actor.source,
       activated_at: new Date().toISOString(),
+      phone: (els.phone?.value || '').trim(),
     });
 
     toast("Panic alarm activated", "ok");
@@ -782,9 +819,13 @@ async function onReset() {
       actorId: actor.id,
       source: actor.source,
       resolved_at: new Date().toISOString(),
+      reason: (els.resetReason?.value || '').trim() || undefined,
+      phone: (els.phone?.value || '').trim(),
     });
 
     toast("Panic alarm reset", "ok");
+    markPanicChanged();
+    await refreshStatus();
     await refresh();
   } catch (e) {
     console.error(e);
