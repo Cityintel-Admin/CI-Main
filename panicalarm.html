@@ -140,7 +140,9 @@
     .field-full { grid-column: 1 / -1; }
     label { display:block; font-weight:800; margin:0 0 6px; }
     input, textarea, select { width:100%; border-radius: 14px; border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.35); color:#fff; padding: 10px 12px; outline:none; }
-    input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22); }
+    
+    select option { background:#fff; color:#111; }
+input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22); }
     .help { margin-top:6px; font-size: 12.5px; }
     .inline { display:flex; gap:10px; align-items:center; }
     .inline input { flex:1; }
@@ -492,7 +494,7 @@
   }
 
   function renderStatus(data) {
-    const active = !!data?.active;
+    const active = (data?.active === true || data?.active === 'true' || data?.active === 1 || data?.active === '1');
     setPill(active);
 
     if (active) {
@@ -608,9 +610,10 @@
   // --- panic API ---
   async function fetchPanic() {
     const invite = (els.inviteCode?.value || "").trim();
-    const res = await fetch(`${API_BASE}/api/org/panic`, {
+    const res = await fetch(`${API_BASE}/api/org/panic?ts=${Date.now()}`, {
       method: "GET",
       headers: getAuthHeaders(invite),
+      cache: "no-store",
     });
     if (!res.ok) {
       const t = await res.text().catch(() => "");
@@ -643,7 +646,7 @@
       resetReason: opts.resetReason || "",
     };
 
-    const res = await fetch(`${API_BASE}/api/org/panic`, {
+    const res = await fetch(`${API_BASE}/api/org/panic?ts=${Date.now()}`, {
       method: "PUT",
       headers: getAuthHeaders((els.inviteCode?.value || "").trim()),
       body: JSON.stringify(payload),
@@ -663,14 +666,22 @@
       err = e;
     }
 
+    const isActiveVal = (v) => (v === true || v === 'true' || v === 1 || v === '1');
+
     let status = null;
-    try {
-      status = await fetchPanic();
-    } catch (e2) {
-      throw err || e2;
+    const attempts = 5;
+    for (let i = 0; i < attempts; i++) {
+      try {
+        status = await fetchPanic();
+        const activeNow = isActiveVal(status?.active);
+        if (activeNow === !!desiredActive) break;
+      } catch (e2) {
+        if (i === attempts - 1) throw err || e2;
+      }
+      await new Promise(r => setTimeout(r, 250));
     }
 
-    const okDesired = !!status && !!status.active === !!desiredActive;
+    const okDesired = !!status && ( (status?.active === true || status?.active === 'true' || status?.active === 1 || status?.active === '1') === !!desiredActive );
     return { okDesired, status, err };
   }
 
