@@ -283,7 +283,7 @@
           <div class="help muted" id="inviteHelp">If you are logged in, this can be left blank. If you are using a shared link, this is required.</div>
         </div>
 
-        <div class="field">
+        <div class="field field-full">
           <label for="locationText">Location (optional)</label>
           <div class="inline">
             <input id="locationText" type="text" placeholder="e.g. Lagos Airport / London HQ / City name" autocomplete="off" />
@@ -303,6 +303,10 @@
         </div>
 
         
+		  <div class="field">
+  <label for="email">Email (optional)</label>
+  <input id="email" type="email" placeholder="e.g. name@company.com" autocomplete="email" />
+</div>
 
         <div class="field">
           <label for="phone">Phone (optional)</label>
@@ -318,6 +322,12 @@
 
       <div class="actions">
         <button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
+		  <select id="resetReason" class="btn" title="Reset reason">
+          <option value="Test">Test</option>
+          <option value="Mistake">Mistake</option>
+          <option value="False activation">False activation</option>
+          <option value="Confirmed safe" selected>Confirmed safe</option>
+          </select>
         <button id="resetBtn" class="btn">Reset Panic Alarm</button>
       </div>
 
@@ -513,9 +523,11 @@ const els = {
   firstName: document.getElementById("firstName"),
   surname: document.getElementById("surname"),
   phone: document.getElementById("phone"),
+  email: document.getElementById("email"),
   location: document.getElementById("locationText"),
   message: document.getElementById("message"),
-
+  resetReason: document.getElementById("resetReason"),
+	
   noteLine: document.getElementById("noteLine"),
 };
 
@@ -581,10 +593,19 @@ async function updatePanic(active, opts = {}) {
     source: opts.source || (isLoggedIn() ? "loggedin" : "shared"),
     location: opts.location || "",
     actorName: opts.actorName || "",
+	actorPhone: opts.actorPhone || "",
     actorEmail: opts.actorEmail || "",
     actorId: opts.actorId || "",
     activated_at: opts.activated_at || "",
     resolved_at: opts.resolved_at || "",
+
+	firstName: opts.firstName || "",
+	surname: opts.surname || "",
+	name: opts.name || "",
+	email: opts.email || "",
+	phone: opts.phone || "",
+	resetReason: opts.resetReason || "",
+	locationSource: opts.locationSource || "",
   };
 
   const res = await fetch(`${API_BASE}/api/org/panic`, {
@@ -649,12 +670,13 @@ function currentActor() {
   const sn = (els.surname?.value || "").trim();
   const full = [fn, sn].filter(Boolean).join(" ").trim();
   const phone = (els.phone?.value || "").trim();
+  const emailInput = (els.email?.value || "").trim();
   const invite = (els.inviteCode?.value || "").trim();
 
   if (isLoggedIn()) {
     return {
       name: profile.name || full || "User",
-      email: profile.email || "",
+      email: emailInput || profile.email || "",
       id: profile.id || "",
       phone,
       source: "loggedin",
@@ -666,7 +688,7 @@ function currentActor() {
     const g = getOrCreateGuestProfile(invite);
     return {
       name: full || "Shared user",
-      email: g.email,
+      email: emailInput || g.email,
       id: g.id,
       phone,
       source: "shared",
@@ -751,11 +773,24 @@ async function onActivate() {
     const loc = await collectLocationText();
 
     const payload = {
-      actor,
-      locationText: loc.locationText,
-      locationSource: loc.locationSource,
-      message: (els.message.value || '').trim(),
-    };
+  // fields index.html banner expects
+  firstName: (els.firstName.value || "").trim(),
+  surname: (els.surname.value || "").trim(),
+  location: loc.locationText || "",
+  locationSource: loc.locationSource || "",
+
+  // useful contact fields
+  email: actor.email || "",
+  phone: actor.phone || "",
+  message: (els.message.value || "").trim(),
+
+  // back-compat / audit
+  actorName: actor.name || "",
+  actorEmail: actor.email || "",
+  actorId: actor.id || "",
+  actorPhone: actor.phone || "",
+  activated_at: new Date().toISOString(),
+};
 
     const { okDesired, status, err } = await updatePanicAndVerify(true, payload);
 
@@ -781,11 +816,12 @@ async function onReset() {
 
   setBusy(true);
   try {
-    const reason = (els.resetReason && els.resetReason.value) ? els.resetReason.value : 'Resolved';
+    const reason = els.resetReason?.value || "Confirmed safe";
+	const payload = {
+    resetReason: reason,
+    resolved_at: new Date().toISOString(),
+};
 
-    const payload = {
-      resetReason: reason,
-    };
 
     const { okDesired, status, err } = await updatePanicAndVerify(false, payload);
 
