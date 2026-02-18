@@ -16,6 +16,18 @@ window.alertsData =[
     summary: ""
   },
 
+  {
+    title: "Stop the state clampdown",
+    city: "Westminster Magistrates Court London",
+    country: "England",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-02-23T09:00:00",
+    source: "https://www.counterfire.org/article/stop-the-state-clampdown/",
+    summary: "Chris Nineham, who faces trial from 23 February, assesses the state’s continuing efforts to repress and silence us"
+  },
+
+
    {
     title: "Workers Against the Far Right Conference",
     city: "London",
@@ -13511,6 +13523,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
