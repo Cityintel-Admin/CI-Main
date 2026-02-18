@@ -421,6 +421,53 @@ tr:hover td{background:rgba(255,255,255,0.02)}
  
 	  
   </style>
+<style id="ci-panic-banner-css">
+  /* Panic banner (injected) */
+  #ciPanicBanner{
+    position:fixed; top:0; left:0; right:0;
+    z-index:9999;
+    background: rgba(80, 15, 18, 0.92);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  #ciPanicBanner .ci-inner{
+    display:flex; align-items:center; justify-content:center;
+    gap:14px;
+    padding:10px 14px;
+  }
+  #ciPanicBanner .ci-left, #ciPanicBanner .ci-right{ flex:0 0 auto; display:flex; align-items:center; gap:10px; }
+  #ciPanicBanner .ci-center{ flex:1 1 auto; display:flex; justify-content:center; align-items:center; gap:12px; text-align:center; min-width: 0; }
+  #ciPanicBanner .ci-badge{
+    font-weight:800; letter-spacing:.02em; text-transform:uppercase;
+    padding:6px 10px; border-radius:999px;
+    background: rgba(220, 38, 38, 0.18);
+    border: 1px solid rgba(220, 38, 38, 0.35);
+  }
+  #ciPanicBanner .ci-badge.ci-pulse{
+    animation: ciPanicPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes ciPanicPulse{
+    0%,100%{ transform: scale(1); filter: brightness(1); }
+    50%{ transform: scale(1.04); filter: brightness(1.15); }
+  }
+  #ciPanicBanner .ci-meta{
+    opacity:.9; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width: 60vw;
+  }
+  #ciPanicBanner a{ color: inherit; text-decoration: underline; }
+  #ciPanicBanner button{
+    cursor:pointer;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(20,20,20,0.35);
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-weight: 600;
+  }
+  body.ci-has-panic-banner{ padding-top: 46px; }
+</style>
 </head>
 <body>
   <div class="app">
@@ -766,6 +813,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     await tick();
     setInterval(tick, 8000);
   }
+
+
 
 </script>
 
@@ -1951,6 +2000,119 @@ function countPresenceForCountry(countryName){
 
 
 <script id="ci-panic-banner-js">
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const POLL_MS = 7000;
+
+  function getProfile(){
+    try { return JSON.parse(localStorage.getItem('ci_profile')||'null'); } catch { return null; }
+  }
+  function makeHeaders(){
+    const p = getProfile();
+    if (!p || !p.email) return null;
+    return {
+      'X-User-Email': p.email,
+      'X-User-Name': p.name || 'CityIntel User',
+      'X-User-Id': p.id || ('email:' + String(p.email).toLowerCase()),
+    };
+  }
+
+  function ensureBanner(){
+    let el = document.getElementById('ciPanicBanner');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'ciPanicBanner';
+    el.style.display = 'none';
+    el.innerHTML = `
+      <div class="ci-inner">
+        <div class="ci-left"></div>
+        <div class="ci-center">
+          <span class="ci-badge ci-pulse">PANIC ALARM ACTIVE</span>
+          <span class="ci-meta" id="ciPanicMeta"></span>
+          <a id="ciPanicOpen" href="panicalarm.html">Open</a>
+        </div>
+        <div class="ci-right">
+          <button id="ciPanicHide" type="button">Hide</button>
+        </div>
+      </div>`;
+    document.body.prepend(el);
+
+    el.querySelector('#ciPanicHide')?.addEventListener('click', () => {
+      try { localStorage.setItem('ci_panic_banner_hidden', '1'); } catch {}
+      el.style.display = 'none';
+      document.body.classList.remove('ci-has-panic-banner');
+    });
+
+    return el;
+  }
+
+  function setBannerVisible(visible){
+    const el = ensureBanner();
+    if (visible) {
+      if (localStorage.getItem('ci_panic_banner_hidden') === '1') return;
+      el.style.display = '';
+      document.body.classList.add('ci-has-panic-banner');
+    } else {
+      el.style.display = 'none';
+      document.body.classList.remove('ci-has-panic-banner');
+    }
+  }
+
+  async function refresh(){
+    const headers = makeHeaders();
+    if (!headers) { setBannerVisible(false); return; }
+
+    try{
+      const res = await fetch(API_BASE + '/api/org/panic', { headers });
+      const json = await res.json().catch(()=>null);
+      const data = json && (json.data ?? json);
+      const state = (data && typeof data === 'object') ? data : null;
+
+      // expected shape: { active, activated_by, activated_at, message }
+      const active = !!(state && state.active);
+      if (!active) { setBannerVisible(false); return; }
+
+
+const name = (
+  ((state.firstName || state.surname) ? `${state.firstName || ''} ${state.surname || ''}`.trim() : '') ||
+  state.actorName || state.activated_by || state.actorEmail || state.email || ''
+).trim();
+
+const location = (state.location || '').trim();
+const email = (state.email || state.actorEmail || '').trim();
+const phone = (state.phone || state.actorPhone || '').trim();
+const msg = (state.message || '').trim();
+
+const when = (state.activated_at || state.activatedAt || '').trim();
+const contacts = [];
+if (email) contacts.push(email);
+if (phone) contacts.push(phone);
+
+let metaText = name || 'Panic alarm';
+if (location) metaText += ` at ${location}`;
+if (msg) metaText += ` — ${msg}`;
+if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+if (when) metaText += ` — ${when}`;
+
+const metaEl = document.getElementById('ciPanicMeta');
+if (metaEl) metaEl.textContent = metaText;
+
+      setBannerVisible(true);
+    } catch(e){
+      // silent fail; don't spam UI
+    }
+  }
+
+  // reset hide when alarm becomes active again later (optional)
+  function clearHideOnNewActivation(metaText){
+    // keep simple; do nothing for now
+  }
+
+  // Run now + poll
+  ensureBanner();
+  refresh();
+  setInterval(refresh, POLL_MS);
+})();
 </script>
 </body>
 </html>
