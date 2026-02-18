@@ -11,9 +11,119 @@ window.alertsData =[
     country: "",
     continent: "Europe",
     risk: "",
-    time: "",
+    time: "2026-03-14T13:00:00",
     source: "",
     summary: ""
+  },
+
+  {
+    title: "Solidaridad Internacionalista con el Pueblo Trabajador Cubano",
+    city: "Madrid",
+    country: "España",
+    continent: "Europe",
+    risk: "Bajo",
+    time: "2026-03-01T12:00:00",
+    source: "Cartel de convocatoria de concentración",
+    summary: "Concentración en la Plaza de las Provincias frente al Ministerio de Exteriores para exigir el fin del bloqueo y el asedio imperialista sobre Cuba."
+  },
+ 
+  {
+    title: "National March: There Is No Ceasefire in Palestine!",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Bajo/Medio",
+    time: "2026-02-21T13:00:00",
+    source: "Ireland-Palestine Solidarity Campaign (IPSC)",
+    summary: "Gran manifestación nacional desde el Garden of Remembrance hasta el Dáil para exigir sanciones, embargo de armas y el fin del uso militar de Shannon."
+  },
+
+  {
+    title: "No Kings No Fascism - Für Demokratie Überall",
+    city: "Munich",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Medio",
+    time: "2026-03-28T12:15:00",
+    source: "Cartel de convocatoria de protesta social",
+    summary: "Manifestación masiva en Odeonsplatz bajo el lema 'No Kings, No Fascism' para defender la democracia y los derechos humanos frente al autoritarismo y la represión global."
+  },
+
+  {
+    title: "Save WA Fishing Rally",
+    city: "Perth",
+    country: "Australia",
+    continent: "Oceania",
+    risk: "Low",
+    time: "2026-02-26T10:45:00",
+    source: "The Nationals WA",
+    summary: "A protest rally at the Parliament of Western Australia against the state government's demersal fishing bans. Speeches are scheduled to begin at 11:00 AM."
+  },
+
+  {
+    title: "Freiheit für alle Nationalisten – Laßt unsere Kameraden raus!",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-14T13:00:00",
+    source: "Right-wing nationalist mobilization poster",
+    summary: "A nationalist demonstration demanding the release of imprisoned 'comrades.' The poster uses historical rhetoric from Kaiser Wilhelm II ('I no longer recognize parties, I only recognize Germans!') to emphasize national unity over political division."
+  },
+
+  {
+    title: "Rally: Stop Puberty Blocker Trials / Parliament Debate",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low/Medium",
+    time: "2026-03-09T15:00:00",
+    source: "CitizenGO / UK Parliament Petitions Committee",
+    summary: "A rally outside Parliament at 3:00 PM followed by a Westminster Hall debate at 4:30 PM regarding a petition to cancel puberty blocker clinical trials for minors."
+  },
+
+  {
+    title: "Grève massive du périscolaire parisien",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Medio",
+    time: "2026-02-20T07:00:00",
+    source: "Communiqué de presse SUPAP-FSU / Intersyndicale",
+    summary: "Huelga masiva de personal de animación y ASEM en cientos de escuelas de París para protestar por la precariedad laboral, la falta de personal y la degradación del servicio tras años de inacción municipal."
+  },
+
+   {
+    title: "Sverige står upp för Ukraina",
+    city: "Stockholm",
+    country: "Sweden",
+    continent: "Europe",
+    risk: "Bajo",
+    time: "2026-02-24T18:00:00",
+    source: "Nordic Ukraine Forum",
+    summary: "Manifestación en Sergels Torg en el cuarto aniversario de la invasión rusa a gran escala para mostrar apoyo a Ucrania."
+  },
+
+ {
+    title: "Solidaridad Internacionalista con el Pueblo Trabajador Cubano",
+    city: "Madrid",
+    country: "España",
+    continent: "Europe",
+    risk: "Bajo",
+    time: "2026-03-01T12:00:00",
+    source: "Cartel de convocatoria de concentración",
+    summary: "Concentración en la Plaza de las Provincias frente al Ministerio de Exteriores para exigir el fin del bloqueo y el asedio imperialista sobre Cuba."
+  },
+
+ {
+    title: "National Protest for Iberdrola Collective Agreement",
+    city: "Madrid",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Significant traffic and transit disruptions in the Madrid city center due to a major union-led protest march.",
+    time: "2026-02-28T12:00:00",
+    source: "UGT FICA and CCOO Industria",
+    summary: "Major Spanish labor unions have called for a large-scale demonstration in central Madrid to protest the 'blockade' of collective bargaining negotiations with Iberdrola. The march aims to secure wage increases linked to the Consumer Price Index (IPC) to combat a reported 15-18% loss in purchasing power over the last four years. Other key demands include improved teleworking rights and increased company contributions to employee pension plans."
   },
 
  {
@@ -13390,6 +13500,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
