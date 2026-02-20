@@ -2853,7 +2853,7 @@ document.addEventListener('click', (e) => {
 
   // open detail panel with full list as related
   if (ev) {
-    openDetailPanel(ev, events);
+    openDetailPanel(ev, events, window.__ciLastSelectedLL || null);
   }
 });
 
@@ -2988,7 +2988,7 @@ function drawMiniMapPin(lat, lon) {
 }
 
 	
-function openDetailPanel(item, relatedList){
+function openDetailPanel(item, relatedList, centerLL){
   // remember last opened (used when radius changes)
   try { window.__ciLastDetailItem = item; window.__ciLastDetailList = Array.isArray(relatedList) ? relatedList : (relatedList ? [relatedList] : []); } catch(e) {}
   // item = {title, city, risk, when, ...}
@@ -3064,6 +3064,10 @@ function openDetailPanel(item, relatedList){
         lat = null;
         lng = null;
       }
+    }
+    if (centerLL && Number.isFinite(centerLL.lat) && Number.isFinite(centerLL.lng)) {
+      lat = centerLL.lat;
+      lng = centerLL.lng;
     }
 
     const radiusKm = Number(window.ciIncidentRadiusKm || 1);
@@ -4812,15 +4816,21 @@ const selectEvent = async (ev, rowEl) => {
   if (rowEl) rowEl.classList.add('active');
 
   // open right-hand detail panel
-  if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
-  else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
+  // Resolve the anchor lat/lon we will use for BOTH: (a) the radius circle, and (b) exposure filtering.
+  // This keeps the map + side panel perfectly in sync.
+  const ll = await CIGeocode.resolveEventLatLng(ev);
+
+  window.__ciLastSelectedEvent = ev;
+  window.__ciLastSelectedEvents = events;
+  window.__ciLastSelectedLL = ll || null;
+
+  if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events, ll);
+  else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events, ll);
 
   // jump map (live feeds sometimes have no geometry; we best-effort geocode the city)
-  const ll = await CIGeocode.resolveEventLatLng(ev);
   if (ll){
-    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
-      detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
-    }));
+    window.__ciLastJump = { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' };
+    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', { detail: window.__ciLastJump }));
   }
 };
 
@@ -4984,7 +4994,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const detailPanel = document.getElementById('detailPanel');
       if (detailPanel && detailPanel.classList.contains('open') && window.__ciLastDetailItem) {
-        openDetailPanel(window.__ciLastDetailItem, window.__ciLastDetailList || []);
+        openDetailPanel(window.__ciLastDetailItem, window.__ciLastDetailList || [], window.__ciLastSelectedLL || (window.__ciLastJump ? { lat: window.__ciLastJump.lat, lng: window.__ciLastJump.lon } : null));
       }
     } catch (e) {}
   });
