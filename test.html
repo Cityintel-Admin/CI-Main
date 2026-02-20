@@ -170,18 +170,35 @@
     `;
 
     el.innerHTML = `
-      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
-        <div style="text-align:center; min-width:0;">
-          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
-          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+      <div style="display:flex; gap:12px; align-items:flex-start; justify-content:space-between; max-width: 1400px; margin: 0 auto;">
+        <div style="min-width:0;">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <span style="font-weight:800; letter-spacing:.4px;">PANIC ALARM ACTIVE</span>
+            <span id="panicMeta" style="opacity:.9; font-size:12px;"></span>
+          </div>
+          <div id="panicDetails" style="margin-top:4px; font-size:13px; line-height:1.35; opacity:.95;"></div>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
+          <a id="panicOpen" href="panicalarm.html" style="
+            color:#fff; text-decoration:underline; font-weight:700; padding:6px 8px;
+            border-radius:10px; background: rgba(255,255,255,.08);
+          ">Open</a>
+          <button id="panicHide" type="button" style="
+            background: rgba(255,255,255,.10);
+            color:#fff; border:1px solid rgba(255,255,255,.15);
+            padding:6px 10px; border-radius:999px; cursor:pointer;
+            font-weight:700;
+          ">Hide</button>
         </div>
       </div>
     `;
 
     document.body.insertBefore(el, document.body.firstChild);
+    el.querySelector('#panicHide')?.addEventListener('click', () => {
+      el.style.display = 'none';
+      try { sessionStorage.setItem('ci_hide_panic_banner', '1'); } catch {}
+    });
+
     return el;
   }
 
@@ -191,50 +208,23 @@
 
     const tick = async () => {
       try {
-        const st = await fetchPanic();
-        if (st && st.active) {
-          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
-          const when = formatPanicWhen(whenRaw);
-          const loc = String(st.location || st.loc || '').trim();
-
-          const name = (
-            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
-             st.name || st.actorName || st.fullName || st.displayName || '')
-          ).trim();
-          const email = String(st.email || st.actorEmail || '').trim();
-          const phone = String(st.phone || st.actorPhone || '').trim();
-          const msg = String(st.message || st.msg || '').trim();
-
-          const contacts = [];
-          if (email) contacts.push(email);
-          if (phone) contacts.push(phone);
-
-          let metaText = name || 'Panic alarm';
-          if (loc) metaText += ` at ${loc}`;
-          if (msg) metaText += ` — ${msg}`;
-          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
-          if (when) metaText += ` — ${when}`;
-
-          const metaEl = banner.querySelector('#panicMeta');
-          if (metaEl) metaEl.textContent = metaText;
-
-          banner.style.display = 'block';
-        } else {
+        if (sessionStorage.getItem('ci_hide_panic_banner') === '1') {
           banner.style.display = 'none';
-        } 
+          return;
+        }
 
-        const st = await fetchPanic();
-        if (st && st.active) {
-          const when = st.activated_at || st.activatedAt || st.time || '';
-          const loc = st.location || st.loc || '';
+        const panicState = await fetchPanic();
+        if (panicState && panicState.active) {
+          const when = panicState.activated_at || panicState.activatedAt || panicState.time || '';
+          const loc = panicState.location || panicState.loc || '';
           const metaParts = [];
           if (when) metaParts.push(String(when));
           if (loc) metaParts.push(loc);
 
-          const name = st.name || st.actorName || st.fullName || st.displayName || '';
-          const email = st.email || st.actorEmail || '';
-          const phone = st.phone || st.actorPhone || '';
-          const msg = st.message || st.msg || '';
+          const name = panicState.name || panicState.actorName || panicState.fullName || panicState.displayName || '';
+          const email = panicState.email || panicState.actorEmail || '';
+          const phone = panicState.phone || panicState.actorPhone || '';
+          const msg = panicState.message || panicState.msg || '';
 
           const metaEl = banner.querySelector('#panicMeta');
           const detailsEl = banner.querySelector('#panicDetails');
@@ -254,11 +244,7 @@
         } else {
           banner.style.display = 'none';
         }
-
-        // sync map overlay
-        try { CI_updatePanicMapOverlay(st); } catch (e) {}
-      }
-      catch (e) {
+      } catch (e) {
         // Silent
       }
     };
@@ -2471,67 +2457,6 @@ function escapeHtml(s='') {
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-// Keep a map marker in sync with panic status (uses window.ciMap if present)
-function CI_updatePanicMapOverlay(st){
-  const map = window.ciMap;
-  if (!map || typeof L === 'undefined') return;
-  window.__ciPanicOverlay = window.__ciPanicOverlay || { marker:null, circle:null };
-  const ov = window.__ciPanicOverlay;
-
-  const active = !!(st && (st.active === true || st.active === 1 || st.active === "1"));
-  const lat = st && typeof st.lat === 'number' ? st.lat : (st && typeof st.latitude === 'number' ? st.latitude : null);
-  const lng = st && typeof st.lng === 'number' ? st.lng : (st && typeof st.longitude === 'number' ? st.longitude : null);
-  const acc = st && typeof st.accuracy === 'number' ? st.accuracy : null;
-
-  if (!active || lat == null || lng == null){
-    if (ov.marker){ try{ map.removeLayer(ov.marker); }catch(e){} ov.marker=null; }
-    if (ov.circle){ try{ map.removeLayer(ov.circle); }catch(e){} ov.circle=null; }
-    return;
-  }
-
-  const icon = L.divIcon({
-    className: 'ci-panic-pin',
-    html: '<div class="ci-panic-pin__dot" title="Panic alarm activated"></div>',
-    iconSize: [18,18],
-    iconAnchor: [9,9]
-  });
-
-  if (!ov.marker){
-    ov.marker = L.marker([lat,lng], { icon, zIndexOffset: 9999, keyboard:false }).addTo(map);
-  } else {
-    ov.marker.setLatLng([lat,lng]);
-  }
-
-  if (acc && acc > 0 && acc < 5000){
-    if (!ov.circle){
-      ov.circle = L.circle([lat,lng], { radius: acc, weight: 1, opacity: 0.9, fillOpacity: 0.08, dashArray: '4 6' }).addTo(map);
-    } else {
-      ov.circle.setLatLng([lat,lng]);
-      ov.circle.setRadius(acc);
-    }
-  } else if (ov.circle){
-    try{ map.removeLayer(ov.circle); }catch(e){} ov.circle=null;
-  }
-
-  const name = (st && (st.actorName || st.name || st.userName)) || 'Unknown';
-  const email = (st && (st.actorEmail || st.email)) || '';
-  const phone = (st && (st.actorPhone || st.phone)) || '';
-  const msg = (st && (st.message || st.note)) || '';
-  const ts = st && (st.activated_at || st.activatedAt || st.updatedAt || st.timestamp || st.createdAt) ? String(st.activated_at || st.activatedAt || st.updatedAt || st.timestamp || st.createdAt) : '';
-  const popup = `
-    <div style="min-width:220px">
-      <div style="font-weight:800;margin-bottom:6px;color:#fff">PANIC ALARM ACTIVE</div>
-      <div style="font-size:12px;opacity:.95">${escapeHtml(name)}</div>
-      ${email ? `<div style="font-size:12px;opacity:.9">${escapeHtml(email)}</div>` : ''}
-      ${phone ? `<div style="font-size:12px;opacity:.9">${escapeHtml(phone)}</div>` : ''}
-      ${msg ? `<div style="margin-top:6px;font-size:12px;opacity:.9">${escapeHtml(msg)}</div>` : ''}
-      ${ts ? `<div style="margin-top:6px;font-size:11px;opacity:.75">${escapeHtml(ts)}</div>` : ''}
-    </div>
-  `;
-  try { ov.marker.bindPopup(popup); } catch(e) {}
-}
-
-
 // ---- 7-day per-feed archive (new) ----
 const FEED_ARCHIVE_KEY = 'ci_live_feed_archive_v1';
 
@@ -2928,7 +2853,7 @@ document.addEventListener('click', (e) => {
 
   // open detail panel with full list as related
   if (ev) {
-    openDetailPanel(ev, events, window.__ciLastSelectedLL || null);
+    openDetailPanel(ev, events);
   }
 });
 
@@ -3063,9 +2988,7 @@ function drawMiniMapPin(lat, lon) {
 }
 
 	
-function openDetailPanel(item, relatedList, centerLL){
-  // remember last opened (used when radius changes)
-  try { window.__ciLastDetailItem = item; window.__ciLastDetailList = Array.isArray(relatedList) ? relatedList : (relatedList ? [relatedList] : []); } catch(e) {}
+function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
 
@@ -3094,61 +3017,10 @@ function openDetailPanel(item, relatedList, centerLL){
   // real exposure based on stored assets/travellers
   let exposure = { assets: [], travellers: [] };
   if (window.CIExposure && CIExposure.exposureFor) {
-    const city = item.city || item.City || "";
-    const country = item.country || item.Country || "";
-
-    // Prefer exact incident coordinates when present; otherwise derive a best-effort coordinate so
-    // radius selection can still change exposure results (fallback: average of mapped assets/travellers
-    // in the same city).
-    const rawLat = (item.lat ?? item.latitude ?? item.Latitude);
-    const rawLng = (item.lng ?? item.lon ?? item.longitude ?? item.Longitude);
-
-    let lat = (typeof rawLat === "number" ? rawLat : (rawLat ? Number(rawLat) : null));
-    let lng = (typeof rawLng === "number" ? rawLng : (rawLng ? Number(rawLng) : null));
-
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      const cityKey = String(city || "").trim().toLowerCase();
-      const countryKey = String(country || "").trim().toLowerCase();
-
-      const assets = (() => { try { return JSON.parse(localStorage.getItem('ci_assets') || '[]'); } catch { return []; } })();
-      const travellers = (() => { try { return JSON.parse(localStorage.getItem('ci_travellers') || '[]'); } catch { return []; } })();
-
-      const pts = [];
-      const pushPt = (o) => {
-        const la = Number(o.lat ?? o.latitude);
-        const lo = Number(o.lng ?? o.lon ?? o.longitude);
-        if (Number.isFinite(la) && Number.isFinite(lo)) pts.push([la, lo]);
-      };
-
-      for (const a of assets) {
-        const aCity = String(a.city || a.City || '').trim().toLowerCase();
-        const aCountry = String(a.country || a.Country || '').trim().toLowerCase();
-        if (aCity && aCity === cityKey && (!countryKey || !aCountry || aCountry === countryKey)) pushPt(a);
-      }
-      for (const t of travellers) {
-        const tCity = String(t.city || t.City || '').trim().toLowerCase();
-        const tCountry = String(t.country || t.Country || '').trim().toLowerCase();
-        if (tCity && tCity === cityKey && (!countryKey || !tCountry || tCountry === countryKey)) pushPt(t);
-      }
-
-      if (pts.length) {
-        const sum = pts.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0]);
-        lat = sum[0] / pts.length;
-        lng = sum[1] / pts.length;
-      } else {
-        lat = null;
-        lng = null;
-      }
-    }
-    if (centerLL && Number.isFinite(centerLL.lat) && Number.isFinite(centerLL.lng)) {
-      lat = centerLL.lat;
-      lng = centerLL.lng;
-    }
-
-    const radiusKm = Number(window.ciIncidentRadiusKm || 1);
-    exposure = CIExposure.exposureFor(city, country, { lat, lng, radiusKm });
+    exposure = CIExposure.exposureFor(item.city || item.City,
+                                      item.country || item.Country);
   }
-const nA = exposure.assets.length;
+  const nA = exposure.assets.length;
   const nT = exposure.travellers.length;
 
   if (nA || nT) {
@@ -3247,9 +3119,8 @@ const nA = exposure.assets.length;
   document.body.classList.add('detail-open');
 
   // Desktop layout reserves space for the drawer; Leaflet needs a resize
-  const _m = (window.ciMap || window.map || null);
-  if (_m && _m.invalidateSize) {
-    setTimeout(() => _m.invalidateSize(), 250);
+  if (map && map.invalidateSize) {
+    setTimeout(() => map.invalidateSize(), 250);
   }
 }
 
@@ -3266,9 +3137,8 @@ function closeDetailPanel() {
   document.body.classList.remove('detail-open');
 
   // Re-expand the map area smoothly
-  const _m = (window.ciMap || window.map || null);
-  if (_m && _m.invalidateSize) {
-    setTimeout(() => _m.invalidateSize(), 250);
+  if (map && map.invalidateSize) {
+    setTimeout(() => map.invalidateSize(), 250);
   }
 }
 
@@ -4086,12 +3956,7 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
 	zoomControl: false 
   });
 
-  
-
-  // Expose map for other modules / handlers (detail panel)
-  window.ciMap = map;
-  window.map = map;
-L.control.zoom({ position: 'topright' }).addTo(map);
+  L.control.zoom({ position: 'topright' }).addTo(map);
 	
 	map.getContainer().addEventListener('wheel', (e) => {
   if (e.ctrlKey) {
@@ -4740,69 +4605,6 @@ const CIGeocode = (() => {
     }
   }
 
-  // Lightweight city → lat/lng resolver used by resolveEventLatLng.
-  // Priority:
-  //  1) small built-in list (fast + no network)
-  //  2) localStorage cache (persists across sessions)
-  //  3) backend geocode lookup (Worker endpoint)
-  const __CI_CITY_FALLBACKS = {
-    // Core demo/test cities
-    'london':  { lat: 51.5074, lng: -0.1278 },
-    'new york':{ lat: 40.7128, lng: -74.0060 },
-    'toronto': { lat: 43.6532, lng: -79.3832 },
-    'lagos':   { lat: 6.5244,  lng: 3.3792 },
-    'brussels':{ lat: 50.8503, lng: 4.3517 },
-    'accra':   { lat: 5.6037,  lng: -0.1870 },
-    'singapore':{ lat: 1.3521, lng: 103.8198 },
-    'bucharest':{ lat: 44.4268, lng: 26.1025 },
-    'montevideo':{ lat: -34.9011, lng: -56.1645 },
-    'jakarta': { lat: -6.2088, lng: 106.8456 },
-    'santiago':{ lat: -33.4489, lng: -70.6693 },
-    'fresno':  { lat: 36.7378, lng: -119.7871 }
-  };
-
-  function __ciNormCityKey(s){
-    return String(s || '').trim().toLowerCase().replace(/\s+/g,' ');
-  }
-
-  function __ciLoadCityCache(){
-    try {
-      const raw = localStorage.getItem('ci_city_cache');
-      const obj = raw ? JSON.parse(raw) : null;
-      return (obj && typeof obj === 'object') ? obj : {};
-    } catch(e){
-      return {};
-    }
-  }
-
-  function __ciSaveCityCache(cache){
-    try { localStorage.setItem('ci_city_cache', JSON.stringify(cache)); } catch(e){}
-  }
-
-  async function resolveCityLatLng(cityText){
-    const key = __ciNormCityKey(cityText);
-    if(!key) return null;
-
-    // Built-in fallbacks
-    if(__CI_CITY_FALLBACKS[key]) return { ...__CI_CITY_FALLBACKS[key], source: 'city_fallback' };
-
-    // Cache
-    const cache = __ciLoadCityCache();
-    if(cache[key] && Number.isFinite(cache[key].lat) && Number.isFinite(cache[key].lng)){
-      return { lat: cache[key].lat, lng: cache[key].lng, source: 'city_cache' };
-    }
-
-    // Backend geocode
-    const geo = await backendGeocodeLookup(cityText);
-    if(geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)){
-      cache[key] = { lat: geo.lat, lng: geo.lng };
-      __ciSaveCityCache(cache);
-      return { lat: geo.lat, lng: geo.lng, source: 'city_geocode' };
-    }
-
-    return null;
-  }
-
   async function resolveEventLatLng(ev){
     // First: existing geometry / coordinates
     const direct = extractLatLon(ev);
@@ -4961,21 +4763,15 @@ const selectEvent = async (ev, rowEl) => {
   if (rowEl) rowEl.classList.add('active');
 
   // open right-hand detail panel
-  // Resolve the anchor lat/lon we will use for BOTH: (a) the radius circle, and (b) exposure filtering.
-  // This keeps the map + side panel perfectly in sync.
-  const ll = await CIGeocode.resolveEventLatLng(ev);
-
-  window.__ciLastSelectedEvent = ev;
-  window.__ciLastSelectedEvents = events;
-  window.__ciLastSelectedLL = ll || null;
-
-  if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events, ll);
-  else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events, ll);
+  if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
+  else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
 
   // jump map (live feeds sometimes have no geometry; we best-effort geocode the city)
+  const ll = await CIGeocode.resolveEventLatLng(ev);
   if (ll){
-    window.__ciLastJump = { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' };
-    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', { detail: window.__ciLastJump }));
+    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+      detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
+    }));
   }
 };
 
@@ -5123,26 +4919,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pills.forEach(btn => {
     btn.addEventListener('click', () => {
-    const km = Number(btn.getAttribute('data-radius-km')) || 5;
-    window.ciIncidentRadiusKm = km;
+      const km = Number(btn.getAttribute('data-radius-km')) || 5;
+      window.ciIncidentRadiusKm = km;
 
-    // toggle active state
-    document.querySelectorAll('.radius-pill').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+      // toggle active state
+      pills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-    // redraw circle (if an incident is selected)
-    if (window.ciRedrawIncidentRadius) {
-      window.ciRedrawIncidentRadius();
-    }
-
-    // If a detail panel is open, re-render exposure counts/lists for the new radius
-    try {
-      const detailPanel = document.getElementById('detailPanel');
-      if (detailPanel && detailPanel.classList.contains('open') && window.__ciLastDetailItem) {
-        openDetailPanel(window.__ciLastDetailItem, window.__ciLastDetailList || [], window.__ciLastSelectedLL || (window.__ciLastJump ? { lat: window.__ciLastJump.lat, lng: window.__ciLastJump.lon } : null));
-      }
-    } catch (e) {}
-  });
+// NEW: immediately redraw the circle for the last incident
+      if (window.ciRedrawIncidentRadius) {
+        window.ciRedrawIncidentRadius();
+		}
+    });
   });
 });
 </script>
