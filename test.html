@@ -170,35 +170,18 @@
     `;
 
     el.innerHTML = `
-      <div style="display:flex; gap:12px; align-items:flex-start; justify-content:space-between; max-width: 1400px; margin: 0 auto;">
-        <div style="min-width:0;">
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <span style="font-weight:800; letter-spacing:.4px;">PANIC ALARM ACTIVE</span>
-            <span id="panicMeta" style="opacity:.9; font-size:12px;"></span>
-          </div>
-          <div id="panicDetails" style="margin-top:4px; font-size:13px; line-height:1.35; opacity:.95;"></div>
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <a id="panicOpen" href="panicalarm.html" style="
-            color:#fff; text-decoration:underline; font-weight:700; padding:6px 8px;
-            border-radius:10px; background: rgba(255,255,255,.08);
-          ">Open</a>
-          <button id="panicHide" type="button" style="
-            background: rgba(255,255,255,.10);
-            color:#fff; border:1px solid rgba(255,255,255,.15);
-            padding:6px 10px; border-radius:999px; cursor:pointer;
-            font-weight:700;
-          ">Hide</button>
+          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
         </div>
       </div>
     `;
 
     document.body.insertBefore(el, document.body.firstChild);
-    el.querySelector('#panicHide')?.addEventListener('click', () => {
-      el.style.display = 'none';
-      try { sessionStorage.setItem('ci_hide_panic_banner', '1'); } catch {}
-    });
-
     return el;
   }
 
@@ -208,9 +191,36 @@
 
     const tick = async () => {
       try {
-        if (sessionStorage.getItem('ci_hide_panic_banner') === '1') {
+        const st = await fetchPanic();
+        if (st && st.active) {
+          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const when = formatPanicWhen(whenRaw);
+          const loc = String(st.location || st.loc || '').trim();
+
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
+
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
+
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
+
+          const metaEl = banner.querySelector('#panicMeta');
+          if (metaEl) metaEl.textContent = metaText;
+
+          banner.style.display = 'block';
+        } else {
           banner.style.display = 'none';
-          return;
         }
 
         const st = await fetchPanic();
