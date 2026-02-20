@@ -244,7 +244,11 @@
         } else {
           banner.style.display = 'none';
         }
-      } catch (e) {
+
+        // sync map overlay
+        try { CI_updatePanicMapOverlay(st); } catch (e) {}
+      }
+      catch (e) {
         // Silent
       }
     };
@@ -2456,6 +2460,67 @@ function escapeHtml(s='') {
   return s.replace(/[&<>"']/g, m =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+
+// Keep a map marker in sync with panic status (uses window.ciMap if present)
+function CI_updatePanicMapOverlay(st){
+  const map = window.ciMap;
+  if (!map || typeof L === 'undefined') return;
+  window.__ciPanicOverlay = window.__ciPanicOverlay || { marker:null, circle:null };
+  const ov = window.__ciPanicOverlay;
+
+  const active = !!(st && (st.active === true || st.active === 1 || st.active === "1"));
+  const lat = st && typeof st.lat === 'number' ? st.lat : (st && typeof st.latitude === 'number' ? st.latitude : null);
+  const lng = st && typeof st.lng === 'number' ? st.lng : (st && typeof st.longitude === 'number' ? st.longitude : null);
+  const acc = st && typeof st.accuracy === 'number' ? st.accuracy : null;
+
+  if (!active || lat == null || lng == null){
+    if (ov.marker){ try{ map.removeLayer(ov.marker); }catch(e){} ov.marker=null; }
+    if (ov.circle){ try{ map.removeLayer(ov.circle); }catch(e){} ov.circle=null; }
+    return;
+  }
+
+  const icon = L.divIcon({
+    className: 'ci-panic-pin',
+    html: '<div class="ci-panic-pin__dot" title="Panic alarm activated"></div>',
+    iconSize: [18,18],
+    iconAnchor: [9,9]
+  });
+
+  if (!ov.marker){
+    ov.marker = L.marker([lat,lng], { icon, zIndexOffset: 9999, keyboard:false }).addTo(map);
+  } else {
+    ov.marker.setLatLng([lat,lng]);
+  }
+
+  if (acc && acc > 0 && acc < 5000){
+    if (!ov.circle){
+      ov.circle = L.circle([lat,lng], { radius: acc, weight: 1, opacity: 0.9, fillOpacity: 0.08, dashArray: '4 6' }).addTo(map);
+    } else {
+      ov.circle.setLatLng([lat,lng]);
+      ov.circle.setRadius(acc);
+    }
+  } else if (ov.circle){
+    try{ map.removeLayer(ov.circle); }catch(e){} ov.circle=null;
+  }
+
+  const name = (st && (st.actorName || st.name || st.userName)) || 'Unknown';
+  const email = (st && (st.actorEmail || st.email)) || '';
+  const phone = (st && (st.actorPhone || st.phone)) || '';
+  const msg = (st && (st.message || st.note)) || '';
+  const ts = st && (st.activated_at || st.activatedAt || st.updatedAt || st.timestamp || st.createdAt) ? String(st.activated_at || st.activatedAt || st.updatedAt || st.timestamp || st.createdAt) : '';
+  const popup = `
+    <div style="min-width:220px">
+      <div style="font-weight:800;margin-bottom:6px;color:#fff">PANIC ALARM ACTIVE</div>
+      <div style="font-size:12px;opacity:.95">${escapeHtml(name)}</div>
+      ${email ? `<div style="font-size:12px;opacity:.9">${escapeHtml(email)}</div>` : ''}
+      ${phone ? `<div style="font-size:12px;opacity:.9">${escapeHtml(phone)}</div>` : ''}
+      ${msg ? `<div style="margin-top:6px;font-size:12px;opacity:.9">${escapeHtml(msg)}</div>` : ''}
+      ${ts ? `<div style="margin-top:6px;font-size:11px;opacity:.75">${escapeHtml(ts)}</div>` : ''}
+    </div>
+  `;
+  try { ov.marker.bindPopup(popup); } catch(e) {}
+}
+
 
 // ---- 7-day per-feed archive (new) ----
 const FEED_ARCHIVE_KEY = 'ci_live_feed_archive_v1';
