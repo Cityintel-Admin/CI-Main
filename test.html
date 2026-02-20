@@ -143,29 +143,32 @@
     return [];
   }
 
+  function formatPanicWhen(input) {
+    if (!input) return '';
+    const d = new Date(input);
+    if (Number.isNaN(d.getTime())) return String(input);
+    const pad = (n) => String(n).padStart(2, '0');
+    const day = pad(d.getDate());
+    const mon = pad(d.getMonth() + 1);
+    const year = d.getFullYear();
+    const hh = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    const ss = pad(d.getSeconds());
+    return `${day}-${mon}-${year} Time: ${hh}:${mm}:${ss}`;
+  }
+
   async function fetchPanic(){
     const headers = await authHeaders();
+    if (!headers) return null;
     const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
     const json = await res.json().catch(()=>null);
-    if(json && json.ok){
-      return json.data || null;
+    if(json && (json.ok === true || json.ok === undefined)){
+      return json.data ?? json;
     }
     return null;
   }
 
-
-  
-function formatPanicWhen(iso){
-  try{
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return String(iso||"");
-    const pad=n=>String(n).padStart(2,"0");
-    // dd-mm-yyyy Time: HH:MM:SS (matches index banner)
-    return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} Time: ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  }catch(e){ return String(iso||""); }
-}
-
-function ensurePanicBanner() {
+  function ensurePanicBanner() {
     let el = document.getElementById('panicBanner');
     if (el) return el;
 
@@ -179,14 +182,15 @@ function ensurePanicBanner() {
       color: #fff;
       display: none;
     `;
+
     el.innerHTML = `
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="flex:1;text-align:center;">
-          <div style="font-weight:900;letter-spacing:.08em;">PANIC ALARM ACTIVE</div>
-          <div id="panicMeta" style="font-size:12px;opacity:.95;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
         </div>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <button id="panicOpen" style="background:transparent;border:none;color:#fff;font-weight:800;cursor:pointer;text-decoration:underline;">Open</button>
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
         </div>
       </div>
     `;
@@ -201,62 +205,145 @@ function ensurePanicBanner() {
 
     const tick = async () => {
       try {
-        if (sessionStorage.getItem('ci_hide_panic_banner') === '1') {
-          banner.style.display = 'none';
-          return;
-        }
-
         const st = await fetchPanic();
         if (st && st.active) {
-          
-const name = st?.name || st?.by_name || st?.activated_by || st?.activatedBy || 'User';
-const role = st?.role || st?.by_role || st?.by_title || '';
-const email = st?.email || st?.contact_email || '';
-const phone = st?.phone || st?.contact_phone || '';
-const msg = st?.note || st?.message || '';
-const whenIso = st?.activated_at || st?.activatedAt || '';
-const whenStr = whenIso ? formatPanicWhen(whenIso) : '';
+          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const when = formatPanicWhen(whenRaw);
+          const loc = String(st.location || st.loc || '').trim();
 
-// location: prefer precise lat/lng, else free-text location
-const lat = (typeof st?.lat === 'number') ? st.lat : (typeof st?.location?.lat === 'number' ? st.location.lat : null);
-const lng = (typeof st?.lng === 'number') ? st.lng : (typeof st?.location?.lng === 'number' ? st.location.lng : null);
-const locTxt = (typeof lat === 'number' && typeof lng === 'number')
-  ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
-  : (st?.location_text ? String(st.location_text).slice(0,60) : (st?.location ? String(st.location).slice(0,60) : ''));
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
 
-const who = role ? `${name} - ${role}` : String(name);
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
 
-let metaText = who;
-if (locTxt) metaText += ` at ${locTxt}`;
-if (msg) metaText += ` — ${String(msg).slice(0,80)}`;
-const contacts = [email, phone].filter(Boolean).map(v=>String(v).trim()).filter(Boolean);
-if (contacts.length) metaText += ` (${contacts.join(', ').slice(0,90)})`;
-if (whenStr) metaText += ` — ${whenStr}`;
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
 
-metaEl.textContent = metaText;
+          const metaEl = banner.querySelector('#panicMeta');
+          if (metaEl) metaEl.textContent = metaText;
 
-// Keep test.html banner visually identical to index.html (two lines only)
-if (detailsEl) {
-  detailsEl.textContent = '';
-  detailsEl.style.display = 'none';
-}
-
-        banner.style.display = '';
+          banner.style.display = 'block';
         } else {
           banner.style.display = 'none';
         }
-      } catch (e) {
-        // Silent
+
+        try { CI_updatePanicMapOverlayIndex(st); } catch(e) {}
+      }
+      catch (e) {
+        // keep silent
       }
     };
 
     await tick();
-    setInterval(tick, 5000);
+    setInterval(tick, 8000);
   }
 
+  startPanicPolling();
+}
 
-  // Start panic alarm banner polling (auto)
-  document.addEventListener('DOMContentLoaded', () => { try { startPanicPolling(); } catch(e){} });
+  async function fetchPanic(){
+    const headers = await authHeaders();
+    if (!headers) return null;
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && (json.ok === true || json.ok === undefined)){
+      return json.data ?? json;
+    }
+    return null;
+  }
+
+  function ensurePanicBanner() {
+    let el = document.getElementById('panicBanner');
+    if (el) return el;
+
+    el = document.createElement('div');
+    el.id = 'panicBanner';
+    el.style.cssText = `
+      position: sticky; top: 0; z-index: 9999;
+      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 14px;
+      color: #fff;
+      display: none;
+    `;
+
+    el.innerHTML = `
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
+        </div>
+      </div>
+    `;
+
+    document.body.insertBefore(el, document.body.firstChild);
+    return el;
+  }
+
+  async function startPanicPolling() {
+    const banner = ensurePanicBanner();
+    if (!banner) return;
+
+    const tick = async () => {
+      try {
+        const st = await fetchPanic();
+        if (st && st.active) {
+          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const when = formatPanicWhen(whenRaw);
+          const loc = String(st.location || st.loc || '').trim();
+
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
+
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
+
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
+
+          const metaEl = banner.querySelector('#panicMeta');
+          if (metaEl) metaEl.textContent = metaText;
+
+          banner.style.display = 'block';
+        } else {
+          banner.style.display = 'none';
+        }
+
+        try { CI_updatePanicMapOverlayIndex(st); } catch(e) {}
+      }
+      catch (e) {
+        // keep silent
+      }
+    };
+
+    await tick();
+    setInterval(tick, 8000);
+  }
+
+  startPanicPolling();
+} catch(e){} });
 </script>
 
 <script>
@@ -1890,6 +1977,74 @@ async function loadOrgContext() {
 .trav-name{ font-weight: 700; }
 .trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
 
+</style>
+<style id="ci-panic-banner-css">
+  /* Panic banner (matches test.html layout) */
+  #ciPanicBanner{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9999;
+    background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 10px 14px;
+    color: #fff;
+    display: none;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  #ciPanicBanner .ci-wrap{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    justify-content:space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  #ciPanicBanner .ci-titleRow{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  #ciPanicBanner .ci-title{
+    font-weight:800;
+    letter-spacing:.4px;
+  }
+  #ciPanicBanner .ci-meta{
+    opacity:.9;
+    font-size:12px;
+  }
+  #ciPanicBanner .ci-details{
+    margin-top:4px;
+    font-size:13px;
+    line-height:1.35;
+    opacity:.95;
+  }
+  #ciPanicBanner .ci-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-shrink:0;
+  }
+  #ciPanicBanner .ci-actions a{
+    color:#fff;
+    text-decoration:underline;
+    font-weight:700;
+    padding:6px 8px;
+    border-radius:10px;
+    background: rgba(255,255,255,.08);
+  }
+  #ciPanicBanner .ci-actions button{
+    background: rgba(255,255,255,.10);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.15);
+    padding:6px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  body.ci-has-panic-banner{ padding-top: 56px; }
 </style>
 </head>
 
