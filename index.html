@@ -1953,109 +1953,94 @@ function countPresenceForCountry(countryName){
       .replace(/"/g,'&quot;')
       .replace(/'/g,'&#39;');
   }
-
   async function fetchPanic(){
-    const headers = authHeaders();
+    const headers = await authHeaders();
     if (!headers) return null;
     const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
     const json = await res.json().catch(()=>null);
     if(json && (json.ok === true || json.ok === undefined)){
-      // Some endpoints return {ok,data}, others return raw
       return json.data ?? json;
     }
     return null;
   }
 
-  function ensureBanner(){
-    let el = document.getElementById('ciPanicBanner');
+  function ensurePanicBanner() {
+    let el = document.getElementById('panicBanner');
     if (el) return el;
 
     el = document.createElement('div');
-    el.id = 'ciPanicBanner';
+    el.id = 'panicBanner';
+    el.style.cssText = `
+      position: sticky; top: 0; z-index: 9999;
+      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 14px;
+      color: #fff;
+      display: none;
+    `;
+
     el.innerHTML = `
-      <div class="ci-wrap">
-        <div style="min-width:0;">
-          <div class="ci-titleRow">
-            <span class="ci-title">PANIC ALARM ACTIVE</span>
-            <span id="ciPanicMeta" class="ci-meta"></span>
-          </div>
-          <div id="ciPanicDetails" class="ci-details"></div>
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
         </div>
-        <div class="ci-actions">
-          <a id="ciPanicOpen" href="panicalarm.html">Open</a>
-          <button id="ciPanicHide" type="button">Hide</button>
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
         </div>
       </div>
     `;
 
-    document.body.prepend(el);
-
-    el.querySelector('#ciPanicHide')?.addEventListener('click', () => {
-      el.style.display = 'none';
-      document.body.classList.remove('ci-has-panic-banner');
-      try { sessionStorage.setItem('ci_hide_panic_banner', '1'); } catch {}
-    });
-
+    document.body.insertBefore(el, document.body.firstChild);
     return el;
   }
 
-  function setVisible(visible){
-    const el = ensureBanner();
-    if (visible){
-      if (sessionStorage.getItem('ci_hide_panic_banner') === '1') return;
-      el.style.display = '';
-      document.body.classList.add('ci-has-panic-banner');
-    } else {
-      el.style.display = 'none';
-      document.body.classList.remove('ci-has-panic-banner');
-    }
+  async function startPanicPolling() {
+    const banner = ensurePanicBanner();
+    if (!banner) return;
+
+    const tick = async () => {
+      try {
+        const st = await fetchPanic();
+        if (st && st.active) {
+          const when = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const loc = String(st.location || st.loc || '').trim();
+
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
+
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
+
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
+
+          const metaEl = banner.querySelector('#panicMeta');
+          if (metaEl) metaEl.textContent = metaText;
+
+          banner.style.display = 'block';
+        } else {
+          banner.style.display = 'none';
+        }
+      } catch (e) {
+        // keep silent
+      }
+    };
+
+    await tick();
+    setInterval(tick, 8000);
   }
 
-  async function tick(){
-    try{
-      if (sessionStorage.getItem('ci_hide_panic_banner') === '1') {
-        setVisible(false);
-        return;
-      }
-
-      const st = await fetchPanic();
-      if (!st || !st.active) { setVisible(false); return; }
-
-      const when = st.activated_at || st.activatedAt || st.time || '';
-      const loc  = st.location || st.loc || '';
-      const metaParts = [];
-      if (when) metaParts.push(String(when));
-      if (loc) metaParts.push(loc);
-
-      const name  = st.name || st.actorName || st.fullName || st.displayName || st.activated_by || '';
-      const email = st.email || st.actorEmail || '';
-      const phone = st.phone || st.actorPhone || '';
-      const msg   = st.message || st.msg || '';
-
-      const metaEl = document.getElementById('ciPanicMeta');
-      const detailsEl = document.getElementById('ciPanicDetails');
-      if (metaEl) metaEl.textContent = metaParts.join(' • ');
-
-      if (detailsEl) {
-        const lines = [];
-        const whoBits = [name].filter(Boolean);
-        if (email) whoBits.push(email);
-        if (phone) whoBits.push(phone);
-        if (whoBits.length) lines.push(`<div><strong>${escapeHtml(whoBits.join(' — '))}</strong></div>`);
-        if (msg) lines.push(`<div style="opacity:.95;">${escapeHtml(msg)}</div>`);
-        detailsEl.innerHTML = lines.join('') || '<div style="opacity:.9;">Panic alarm active.</div>';
-      }
-
-      setVisible(true);
-    } catch(e){
-      // silent
-    }
-  }
-
-  ensureBanner();
-  tick();
-  setInterval(tick, POLL_MS);
-})();
+  startPanicPolling();
 </script>
 </body>
 </html>
