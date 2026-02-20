@@ -4658,6 +4658,69 @@ const CIGeocode = (() => {
     }
   }
 
+  // Lightweight city → lat/lng resolver used by resolveEventLatLng.
+  // Priority:
+  //  1) small built-in list (fast + no network)
+  //  2) localStorage cache (persists across sessions)
+  //  3) backend geocode lookup (Worker endpoint)
+  const __CI_CITY_FALLBACKS = {
+    // Core demo/test cities
+    'london':  { lat: 51.5074, lng: -0.1278 },
+    'new york':{ lat: 40.7128, lng: -74.0060 },
+    'toronto': { lat: 43.6532, lng: -79.3832 },
+    'lagos':   { lat: 6.5244,  lng: 3.3792 },
+    'brussels':{ lat: 50.8503, lng: 4.3517 },
+    'accra':   { lat: 5.6037,  lng: -0.1870 },
+    'singapore':{ lat: 1.3521, lng: 103.8198 },
+    'bucharest':{ lat: 44.4268, lng: 26.1025 },
+    'montevideo':{ lat: -34.9011, lng: -56.1645 },
+    'jakarta': { lat: -6.2088, lng: 106.8456 },
+    'santiago':{ lat: -33.4489, lng: -70.6693 },
+    'fresno':  { lat: 36.7378, lng: -119.7871 }
+  };
+
+  function __ciNormCityKey(s){
+    return String(s || '').trim().toLowerCase().replace(/\s+/g,' ');
+  }
+
+  function __ciLoadCityCache(){
+    try {
+      const raw = localStorage.getItem('ci_city_cache');
+      const obj = raw ? JSON.parse(raw) : null;
+      return (obj && typeof obj === 'object') ? obj : {};
+    } catch(e){
+      return {};
+    }
+  }
+
+  function __ciSaveCityCache(cache){
+    try { localStorage.setItem('ci_city_cache', JSON.stringify(cache)); } catch(e){}
+  }
+
+  async function resolveCityLatLng(cityText){
+    const key = __ciNormCityKey(cityText);
+    if(!key) return null;
+
+    // Built-in fallbacks
+    if(__CI_CITY_FALLBACKS[key]) return { ...__CI_CITY_FALLBACKS[key], source: 'city_fallback' };
+
+    // Cache
+    const cache = __ciLoadCityCache();
+    if(cache[key] && Number.isFinite(cache[key].lat) && Number.isFinite(cache[key].lng)){
+      return { lat: cache[key].lat, lng: cache[key].lng, source: 'city_cache' };
+    }
+
+    // Backend geocode
+    const geo = await backendGeocodeLookup(cityText);
+    if(geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)){
+      cache[key] = { lat: geo.lat, lng: geo.lng };
+      __ciSaveCityCache(cache);
+      return { lat: geo.lat, lng: geo.lng, source: 'city_geocode' };
+    }
+
+    return null;
+  }
+
   async function resolveEventLatLng(ev){
     // First: existing geometry / coordinates
     const direct = extractLatLon(ev);
