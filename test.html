@@ -3021,15 +3021,53 @@ function openDetailPanel(item, relatedList){
   if (window.CIExposure && CIExposure.exposureFor) {
     const city = item.city || item.City || "";
     const country = item.country || item.Country || "";
-    // If the incident/feed has coordinates, use them so radius selection actually changes the exposure list.
-    const lat = (item.lat ?? item.latitude ?? item.Latitude);
-    const lng = (item.lng ?? item.lon ?? item.longitude ?? item.Longitude);
+
+    // Prefer exact incident coordinates when present; otherwise derive a best-effort coordinate so
+    // radius selection can still change exposure results (fallback: average of mapped assets/travellers
+    // in the same city).
+    const rawLat = (item.lat ?? item.latitude ?? item.Latitude);
+    const rawLng = (item.lng ?? item.lon ?? item.longitude ?? item.Longitude);
+
+    let lat = (typeof rawLat === "number" ? rawLat : (rawLat ? Number(rawLat) : null));
+    let lng = (typeof rawLng === "number" ? rawLng : (rawLng ? Number(rawLng) : null));
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      const cityKey = String(city || "").trim().toLowerCase();
+      const countryKey = String(country || "").trim().toLowerCase();
+
+      const assets = (() => { try { return JSON.parse(localStorage.getItem('ci_assets') || '[]'); } catch { return []; } })();
+      const travellers = (() => { try { return JSON.parse(localStorage.getItem('ci_travellers') || '[]'); } catch { return []; } })();
+
+      const pts = [];
+      const pushPt = (o) => {
+        const la = Number(o.lat ?? o.latitude);
+        const lo = Number(o.lng ?? o.lon ?? o.longitude);
+        if (Number.isFinite(la) && Number.isFinite(lo)) pts.push([la, lo]);
+      };
+
+      for (const a of assets) {
+        const aCity = String(a.city || a.City || '').trim().toLowerCase();
+        const aCountry = String(a.country || a.Country || '').trim().toLowerCase();
+        if (aCity && aCity === cityKey && (!countryKey || !aCountry || aCountry === countryKey)) pushPt(a);
+      }
+      for (const t of travellers) {
+        const tCity = String(t.city || t.City || '').trim().toLowerCase();
+        const tCountry = String(t.country || t.Country || '').trim().toLowerCase();
+        if (tCity && tCity === cityKey && (!countryKey || !tCountry || tCountry === countryKey)) pushPt(t);
+      }
+
+      if (pts.length) {
+        const sum = pts.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0]);
+        lat = sum[0] / pts.length;
+        lng = sum[1] / pts.length;
+      } else {
+        lat = null;
+        lng = null;
+      }
+    }
+
     const radiusKm = Number(window.ciIncidentRadiusKm || 1);
-    exposure = CIExposure.exposureFor(city, country, {
-      lat: (typeof lat === "number" ? lat : (lat ? Number(lat) : null)),
-      lng: (typeof lng === "number" ? lng : (lng ? Number(lng) : null)),
-      radiusKm
-    });
+    exposure = CIExposure.exposureFor(city, country, { lat, lng, radiusKm });
   }
 const nA = exposure.assets.length;
   const nT = exposure.travellers.length;
@@ -4934,7 +4972,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.ciIncidentRadiusKm = km;
 
     // toggle active state
-    document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.radius-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     // redraw circle (if an incident is selected)
