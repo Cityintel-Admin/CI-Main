@@ -154,7 +154,18 @@
   }
 
 
-  function ensurePanicBanner() {
+  
+function formatPanicWhen(iso){
+  try{
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return String(iso||"");
+    const pad=n=>String(n).padStart(2,"0");
+    // dd-mm-yyyy Time: HH:MM:SS (matches index banner)
+    return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} Time: ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }catch(e){ return String(iso||""); }
+}
+
+function ensurePanicBanner() {
     let el = document.getElementById('panicBanner');
     if (el) return el;
 
@@ -204,26 +215,40 @@
           if (when) metaParts.push(String(when));
           if (loc) metaParts.push(loc);
 
-          const name = st.name || st.actorName || st.fullName || st.displayName || '';
-          const email = st.email || st.actorEmail || '';
-          const phone = st.phone || st.actorPhone || '';
-          const msg = st.message || st.msg || '';
+          
+const name = st?.name || st?.by_name || st?.activated_by || st?.activatedBy || 'User';
+const role = st?.role || st?.by_role || st?.by_title || '';
+const email = st?.email || st?.contact_email || '';
+const phone = st?.phone || st?.contact_phone || '';
+const msg = st?.note || st?.message || '';
+const whenIso = st?.activated_at || st?.activatedAt || '';
+const when = whenIso ? formatPanicWhen(whenIso) : '';
 
-          const metaEl = banner.querySelector('#panicMeta');
-          const detailsEl = banner.querySelector('#panicDetails');
-          if (metaEl) metaEl.textContent = metaParts.join(' • ');
+// location: prefer precise lat/lng, else free-text location
+const lat = (typeof st?.lat === 'number') ? st.lat : (typeof st?.location?.lat === 'number' ? st.location.lat : null);
+const lng = (typeof st?.lng === 'number') ? st.lng : (typeof st?.location?.lng === 'number' ? st.location.lng : null);
+const locTxt = (typeof lat === 'number' && typeof lng === 'number')
+  ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+  : (st?.location_text ? String(st.location_text).slice(0,60) : (st?.location ? String(st.location).slice(0,60) : ''));
 
-          if (detailsEl) {
-            const lines = [];
-            const whoBits = [name].filter(Boolean);
-            if (email) whoBits.push(email);
-            if (phone) whoBits.push(phone);
-            if (whoBits.length) lines.push(`<div><strong>${escapeHtml(whoBits.join(' — '))}</strong></div>`);
-            if (msg) lines.push(`<div style="opacity:.95;">${escapeHtml(msg)}</div>`);
-            detailsEl.innerHTML = lines.join('') || '<div style="opacity:.9;">Panic alarm active.</div>';
-          }
+const who = role ? `${name} - ${role}` : String(name);
 
-          banner.style.display = '';
+let metaText = who;
+if (locTxt) metaText += ` at ${locTxt}`;
+if (msg) metaText += ` — ${String(msg).slice(0,80)}`;
+const contacts = [email, phone].filter(Boolean).map(v=>String(v).trim()).filter(Boolean);
+if (contacts.length) metaText += ` (${contacts.join(', ').slice(0,90)})`;
+if (when) metaText += ` — ${when}`;
+
+metaEl.textContent = metaText;
+
+// Keep test.html banner visually identical to index.html (two lines only)
+if (detailsEl) {
+  detailsEl.textContent = '';
+  detailsEl.style.display = 'none';
+}
+
+        banner.style.display = '';
         } else {
           banner.style.display = 'none';
         }
