@@ -170,35 +170,18 @@
     `;
 
     el.innerHTML = `
-      <div style="display:flex; gap:12px; align-items:flex-start; justify-content:space-between; max-width: 1400px; margin: 0 auto;">
-        <div style="min-width:0;">
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <span style="font-weight:800; letter-spacing:.4px;">PANIC ALARM ACTIVE</span>
-            <span id="panicMeta" style="opacity:.9; font-size:12px;"></span>
-          </div>
-          <div id="panicDetails" style="margin-top:4px; font-size:13px; line-height:1.35; opacity:.95;"></div>
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <a id="panicOpen" href="panicalarm.html" style="
-            color:#fff; text-decoration:underline; font-weight:700; padding:6px 8px;
-            border-radius:10px; background: rgba(255,255,255,.08);
-          ">Open</a>
-          <button id="panicHide" type="button" style="
-            background: rgba(255,255,255,.10);
-            color:#fff; border:1px solid rgba(255,255,255,.15);
-            padding:6px 10px; border-radius:999px; cursor:pointer;
-            font-weight:700;
-          ">Hide</button>
+          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
         </div>
       </div>
     `;
 
     document.body.insertBefore(el, document.body.firstChild);
-    el.querySelector('#panicHide')?.addEventListener('click', () => {
-      el.style.display = 'none';
-      try { sessionStorage.setItem('ci_hide_panic_banner', '1'); } catch {}
-    });
-
     return el;
   }
 
@@ -208,51 +191,93 @@
 
     const tick = async () => {
       try {
-        if (sessionStorage.getItem('ci_hide_panic_banner') === '1') {
-          banner.style.display = 'none';
-          return;
-        }
+        const st = await fetchPanic();
+        if (st && st.active) {
+          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const when = formatPanicWhen(whenRaw);
+          const loc = String(st.location || st.loc || '').trim();
 
-        const panicState = await fetchPanic();
-        if (panicState && panicState.active) {
-          const when = panicState.activated_at || panicState.activatedAt || panicState.time || '';
-          const loc = panicState.location || panicState.loc || '';
-          const metaParts = [];
-          if (when) metaParts.push(String(when));
-          if (loc) metaParts.push(loc);
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
 
-          const name = panicState.name || panicState.actorName || panicState.fullName || panicState.displayName || '';
-          const email = panicState.email || panicState.actorEmail || '';
-          const phone = panicState.phone || panicState.actorPhone || '';
-          const msg = panicState.message || panicState.msg || '';
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
+
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
 
           const metaEl = banner.querySelector('#panicMeta');
-          const detailsEl = banner.querySelector('#panicDetails');
-          if (metaEl) metaEl.textContent = metaParts.join(' • ');
+          if (metaEl) metaEl.textContent = metaText;
 
-          if (detailsEl) {
-            const lines = [];
-            const whoBits = [name].filter(Boolean);
-            if (email) whoBits.push(email);
-            if (phone) whoBits.push(phone);
-            if (whoBits.length) lines.push(`<div><strong>${escapeHtml(whoBits.join(' — '))}</strong></div>`);
-            if (msg) lines.push(`<div style="opacity:.95;">${escapeHtml(msg)}</div>`);
-            detailsEl.innerHTML = lines.join('') || '<div style="opacity:.9;">Panic alarm active.</div>';
-          }
-
-          banner.style.display = '';
+          banner.style.display = 'block';
         } else {
           banner.style.display = 'none';
         }
-      } catch (e) {
-        // Silent
+
+        try { CI_updatePanicMapOverlayIndex(st); } catch(e) {}
+      }
+      catch (e) {
+        // keep silent
       }
     };
 
     await tick();
-    setInterval(tick, 5000);
+    setInterval(tick, 8000);
   }
 
+  startPanicPolling();
+})();
+
+function CI_updatePanicMapOverlayIndex(st){
+  const map = window.ciIndexMap;
+  if (!map || typeof L === 'undefined') return;
+  window.__ciPanicOverlayIndex = window.__ciPanicOverlayIndex || { marker:null, circle:null };
+  const ov = window.__ciPanicOverlayIndex;
+
+  const active = !!(st && (st.active === true || st.active === 1 || st.active === "1"));
+  const lat = st && typeof st.lat === 'number' ? st.lat : (st && typeof st.latitude === 'number' ? st.latitude : null);
+  const lng = st && typeof st.lng === 'number' ? st.lng : (st && typeof st.longitude === 'number' ? st.longitude : null);
+  const acc = st && typeof st.accuracy === 'number' ? st.accuracy : null;
+
+  if (!active || lat == null || lng == null){
+    if (ov.marker){ try{ map.removeLayer(ov.marker); }catch(e){} ov.marker=null; }
+    if (ov.circle){ try{ map.removeLayer(ov.circle); }catch(e){} ov.circle=null; }
+    return;
+  }
+
+  const icon = L.divIcon({
+    className: 'ci-panic-pin',
+    html: '<div class="ci-panic-pin__dot" title="Panic alarm activated"></div>',
+    iconSize: [18,18],
+    iconAnchor: [9,9]
+  });
+
+  if (!ov.marker){
+    ov.marker = L.marker([lat,lng], { icon, zIndexOffset: 9999, keyboard:false }).addTo(map);
+  } else {
+    ov.marker.setLatLng([lat,lng]);
+  }
+
+  if (acc && acc > 0 && acc < 5000){
+    if (!ov.circle){
+      ov.circle = L.circle([lat,lng], { radius: acc, weight: 1, opacity: 0.9, fillOpacity: 0.08, dashArray: '4 6' }).addTo(map);
+    } else {
+      ov.circle.setLatLng([lat,lng]);
+      ov.circle.setRadius(acc);
+    }
+  } else if (ov.circle){
+    try{ map.removeLayer(ov.circle); }catch(e){} ov.circle=null;
+  }
+}
 </script>
 
 <script>
@@ -1886,6 +1911,74 @@ async function loadOrgContext() {
 .trav-name{ font-weight: 700; }
 .trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
 
+</style>
+<style id="ci-panic-banner-css">
+  /* Panic banner (matches test.html layout) */
+  #ciPanicBanner{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9999;
+    background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 10px 14px;
+    color: #fff;
+    display: none;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  #ciPanicBanner .ci-wrap{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    justify-content:space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  #ciPanicBanner .ci-titleRow{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  #ciPanicBanner .ci-title{
+    font-weight:800;
+    letter-spacing:.4px;
+  }
+  #ciPanicBanner .ci-meta{
+    opacity:.9;
+    font-size:12px;
+  }
+  #ciPanicBanner .ci-details{
+    margin-top:4px;
+    font-size:13px;
+    line-height:1.35;
+    opacity:.95;
+  }
+  #ciPanicBanner .ci-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-shrink:0;
+  }
+  #ciPanicBanner .ci-actions a{
+    color:#fff;
+    text-decoration:underline;
+    font-weight:700;
+    padding:6px 8px;
+    border-radius:10px;
+    background: rgba(255,255,255,.08);
+  }
+  #ciPanicBanner .ci-actions button{
+    background: rgba(255,255,255,.10);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.15);
+    padding:6px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  body.ci-has-panic-banner{ padding-top: 56px; }
 </style>
 </head>
 
