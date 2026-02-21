@@ -23,6 +23,44 @@
     color:#e9edf2; border:1px solid #2e3238; border-radius:12px; padding:8px 10px; font:12px system-ui;
   }
   .chip{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+/* asset / traveller markers (match test.html) */
+.ci-asset-marker,
+.ci-trav-marker{
+  background:#111827;
+  border-radius:999px;
+  border:2px solid #000;
+  box-shadow:0 0 6px rgba(0,0,0,0.6);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  line-height:18px;
+  text-align:center;
+}
+.ci-asset-marker{ background:#3b82f6; }    /* blue */
+.ci-trav-marker{ background:#f97316; }     /* orange */
+
+/* Traveller group marker (multiple travellers in same place) */
+.trav-group-icon { background: transparent; border: none; }
+.trav-bubble{
+  width:34px; height:34px;
+  border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(255, 140, 0, 0.95);
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  border: 2px solid rgba(255,255,255,.75);
+  font-weight: 800;
+  color: #0b0f16;
+}
+.trav-bubble span{ transform: translateY(-.5px); }
+.trav-popup{ font-family: inherit; }
+.trav-popup-title{ font-weight: 800; margin-bottom: 8px; }
+.trav-popup-list{ max-height: 240px; overflow:auto; padding-right: 4px; }
+.trav-popup-item{ padding: 8px 0; border-top: 1px solid rgba(255,255,255,.12); }
+.trav-popup-item:first-child{ border-top: none; padding-top: 0; }
+.trav-name{ font-weight: 700; }
+.trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
+
+
 </style>
 
   <meta charset="utf-8" />
@@ -1477,14 +1515,20 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   const palette   = { low:'#6bcf6b', medium:'#f0b429', high:'#ff5a5f', none:'#2e3238' };
   const riskScore = { low:1, medium:2, high:3 };
 
-	  // Custom markers for assets & travellers
-  const assetIcon = L.divIcon({ className: 'ci-marker ci-marker-asset',
-    html: '<span>🏢</span>', iconSize: [24, 24], iconAnchor: [12, 12] });
+	  // Custom markers for assets & travellers (match test.html icons/styles)
+  const assetIcon = L.divIcon({
+    className: 'ci-asset-marker',
+    html: 'A',
+    iconSize: [18, 18]
+  });
 
-  const travellerIcon = L.divIcon({ className: 'ci-marker ci-marker-traveller',
-    html: '<span>👤</span>', iconSize: [24, 24], iconAnchor: [12, 12] });
+  const travellerIcon = L.divIcon({
+    className: 'ci-trav-marker',
+    html: 'T',
+    iconSize: [18, 18]
+  });
 
-  let windowDays       = 30;      // default
+let windowDays       = 30;      // default
   let includePredictive = false;
 
   const norm = s => (s || '').trim().toLowerCase();
@@ -1659,45 +1703,106 @@ function renderAssetsAndTravellers(){
   assetLayer.clearLayers();
   travellerLayer.clearLayers();
 
+  // Flexible date parsing (supports YYYY-MM-DD, ISO, or dd/mm/yyyy)
+  const parseDateMs = (v) => {
+    if (!v) return null;
+    const s = String(v).trim();
+    if (!s) return null;
+    // dd/mm/yyyy
+    const m = s.match(/^([0-3]\d)\/([0-1]\d)\/(\d{4})$/);
+    if (m) {
+      const dd = Number(m[1]), mm = Number(m[2]) - 1, yy = Number(m[3]);
+      const d = new Date(Date.UTC(yy, mm, dd, 0, 0, 0));
+      const ms = d.getTime();
+      return isNaN(ms) ? null : ms;
+    }
+    const ms = Date.parse(s);
+    return isNaN(ms) ? null : ms;
+  };
+  const nowMs = Date.now();
+
   const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
   const trips  = Array.isArray(window.CITravellers) ? window.CITravellers : [];
 
-  // Assets: blue-ish markers
-    // Assets: blue badge markers
+  // Assets
   assets.forEach(a => {
-    if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+    const lat = (typeof a.lat === 'number') ? a.lat : Number(a.lat);
+    const lon = (typeof a.lon === 'number') ? a.lon : Number(a.lon);
+    if (!isFinite(lat) || !isFinite(lon)) return;
 
-    const m = L.marker([a.lat, a.lon], { icon: assetIcon });
-    m.bindPopup(`
-      <b>${a.name}</b><br>
-      ${a.address ? a.address + '<br>' : ''}
-      ${a.city || ''}, ${a.country || ''}<br>
-      <small>Type: ${a.type || 'asset'}</small>
-    `);
-    assetLayer.addLayer(m);
+    L.marker([lat, lon], { icon: assetIcon })
+      .addTo(assetLayer)
+      .bindPopup(
+        `<b>${escapeHtml(a.name || 'Asset')}</b><br>` +
+        `${escapeHtml([a.city, a.country].filter(Boolean).join(', '))}`
+      );
   });
 
-  // Travellers: amber badge markers
-  const today = new Date();
+  // Group travellers by coordinates so multiple travellers at same hotel/location show as a single marker with a count.
+  const travGroups = new Map();
   trips.forEach(t => {
-    if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+    // Only show travellers who are currently travelling (auto-appear on start date, auto-hide after end date)
+    const fromMs = parseDateMs(t.from || t.start || t.startDate);
+    const toMs   = parseDateMs(t.to   || t.end   || t.endDate);
+    if (fromMs && nowMs < fromMs) return;                // not started yet
+    if (toMs   && nowMs > (toMs + 86400000 - 1)) return; // ended (inclusive to end day)
 
-    const from = new Date(t.from);
-    const to   = new Date(t.to);
-    if (isNaN(from) || isNaN(to) || today < from || today > to) return;
+    const lat = (typeof t.lat === 'number') ? t.lat : Number(t.lat);
+    const lon = (typeof t.lon === 'number') ? t.lon : Number(t.lon);
+    if (!isFinite(lat) || !isFinite(lon)) return;
 
-    const m = L.marker([t.lat, t.lon], { icon: travellerIcon });
-    m.bindPopup(`
-      <b>${t.name}</b> — ${t.role || ''}<br>
-      ${t.city || ''}, ${t.country || ''}<br>
-      <small>Stay: ${t.from} → ${t.to}<br>
-      ${t.hotel ? 'Hotel: ' + t.hotel + '<br>' : ''}
-      ${t.address ? 'Address: ' + t.address : ''}
-      </small>
-    `);
-    travellerLayer.addLayer(m);
+    // Round to reduce "almost same" coordinate drift (e.g. geocoder differences)
+    const key = `${lat.toFixed(4)},${lon.toFixed(4)}`;
+    if (!travGroups.has(key)) travGroups.set(key, { lat, lon, items: [] });
+    travGroups.get(key).items.push(t);
   });
 
+  for (const { lat, lon, items } of travGroups.values()) {
+    const count = items.length;
+
+    if (count === 1) {
+      const t = items[0];
+      L.marker([lat, lon], { icon: travellerIcon })
+        .addTo(travellerLayer)
+        .bindPopup(
+          `<b>${escapeHtml(t.name || 'Traveller')}</b><br>` +
+          `${escapeHtml(`${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`.trim())}`
+        );
+      continue;
+    }
+
+    const icon = L.divIcon({
+      className: 'trav-group-icon',
+      html: `<div class="trav-bubble"><span>${count}</span></div>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 34],
+      popupAnchor: [0, -30],
+    });
+
+    const listHtml = items.map(t => {
+      const roleHotel = `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`.trim();
+      const from = (t.from || t.start || t.startDate) ? String(t.from || t.start || t.startDate) : '';
+      const to   = (t.to   || t.end   || t.endDate)   ? String(t.to   || t.end   || t.endDate)   : '';
+      const dates = (from || to) ? `<div class="trav-dates">${escapeHtml(from)}${from && to ? ' → ' : ''}${escapeHtml(to)}</div>` : '';
+      return `
+        <div class="trav-popup-item">
+          <div class="trav-name">${escapeHtml(t.name || 'Traveller')}</div>
+          ${roleHotel ? `<div class="trav-meta">${escapeHtml(roleHotel)}</div>` : ''}
+          ${dates}
+        </div>
+      `;
+    }).join('');
+
+    L.marker([lat, lon], { icon })
+      .addTo(travellerLayer)
+      .bindPopup(
+        `<div class="trav-popup">
+           <div class="trav-popup-title">${count} travellers at this location</div>
+           <div class="trav-popup-list">${listHtml}</div>
+         </div>`,
+        { maxWidth: 360 }
+      );
+  }
 }
 
 
