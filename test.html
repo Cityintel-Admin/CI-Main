@@ -153,107 +153,188 @@
     return null;
   }
 
-
-  function ensurePanicBanner() {
-  // Create banner container if it doesn't exist yet (match index.html look/feel)
-  let el = document.getElementById('ciPanicBanner');
-  if (el) return el;
-
-  el = document.createElement('div');
-  el.id = 'ciPanicBanner';
-  el.className = 'ci-panic-banner';
-  el.style.display = 'none';
-  el.innerHTML = `
-    <div class="ci-inner">
-      <div class="ci-left"></div>
-      <div class="ci-center">
-        <span class="ci-badge">PANIC ALARM ACTIVE</span>
-        <div id="ciPanicBannerText" class="ci-meta"></div>
-      </div>
-      <div class="ci-right">
-        <a class="ci-btn" href="panicalarm.html" title="Open Panic Alarm">Open</a>
-      </div>
+<!-- Panic Alarm Banner (synced with index.html) -->
+<div id="ciPanicBar" style="display:none">
+  <div class="ci-panic-inner">
+    <div class="ci-panic-center">
+      <div class="ci-panic-title">PANIC ALARM ACTIVE</div>
+      <div class="ci-panic-meta" id="ciPanicMeta"></div>
     </div>
-  `.trim();
+    <div class="ci-panic-actions">
+      <button id="ciPanicOpen" class="ci-panic-btn">Open</button>
+      <button id="ciPanicHide" class="ci-panic-btn secondary" style="display:none">Hide</button>
+    </div>
+  </div>
+</div>
 
-  // Prefer inserting before the app shell so it sits at top of content
-  const mount = document.body;
-  const first = mount.firstElementChild;
-  if (first) mount.insertBefore(el, first);
-  else mount.appendChild(el);
+<style>
+  #ciPanicBar{
+    position: sticky;
+    top: 0;
+    z-index: 99999;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 10px 14px;
+    color: #fff;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    box-sizing: border-box;
+  }
+  #ciPanicBar .ci-panic-inner{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  #ciPanicBar .ci-panic-center{
+    text-align:center;
+    flex: 1 1 auto;
+    line-height: 1.2;
+  }
+  #ciPanicBar .ci-panic-title{
+    font-weight: 800;
+    letter-spacing: .6px;
+    font-size: 14px;
+    text-transform: uppercase;
+  }
+  #ciPanicBar .ci-panic-meta{
+    margin-top: 3px;
+    opacity: .95;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #ciPanicBar .ci-panic-actions{
+    flex: 0 0 auto;
+    display:flex;
+    gap: 8px;
+    align-items:center;
+  }
+  #ciPanicBar .ci-panic-btn{
+    appearance:none;
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    background: rgba(255,255,255,.12);
+    transition: transform .08s ease, background .15s ease;
+  }
+  #ciPanicBar .ci-panic-btn:hover{ background: rgba(255,255,255,.18); }
+  #ciPanicBar .ci-panic-btn:active{ transform: translateY(1px); }
+  #ciPanicBar .ci-panic-btn.secondary{ background: rgba(0,0,0,.25); }
+  @media (max-width: 720px){
+    #ciPanicBar .ci-panic-inner{ align-items:center; }
+    #ciPanicBar .ci-panic-meta{ max-width: 60vw; }
+  }
+</style>
 
-  return el;
-}
+<script>
+(function(){
+  // Keep banner logic self-contained and identical in output format to index.html,
+  // but reuse existing API_ORIGIN when present.
+  const API_BASE = (typeof window.API_ORIGIN === 'string' && window.API_ORIGIN)
+    ? window.API_ORIGIN
+    : 'https://api.cityintelapi.com';
 
-function _ciFormatPanicMeta(alarm) {
-  if (!alarm || typeof alarm !== 'object') return '';
+  const LS_EMAIL_KEY = 'ci:userEmail';
+  const LS_PHONE_KEY = 'ci:userPhone';
+  const LS_NAME_KEY  = 'ci:userName';
 
-  const byFirst = (alarm.byFirst || alarm.firstName || alarm.activated_by_first || '').toString().trim();
-  const byLast  = (alarm.byLast  || alarm.surname   || alarm.activated_by_last  || alarm.activated_by_role || '').toString().trim();
-  const namePart = (byFirst && byLast) ? `${byFirst} - ${byLast}` : (byFirst || byLast || 'Unknown');
-
-  const lat = alarm.lat ?? alarm.latitude ?? alarm.location_lat;
-  const lng = alarm.lng ?? alarm.longitude ?? alarm.location_lng;
-  const locText = (alarm.locationText || alarm.location || alarm.loc || '').toString().trim();
-
-  let where = '';
-  if (Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))) {
-    const latNum = Number(lat);
-    const lngNum = Number(lng);
-    where = `${latNum.toFixed(4)}, ${lngNum.toFixed(4)}`;
-  } else if (locText) {
-    where = locText;
+  function getUser(){
+    const email = localStorage.getItem(LS_EMAIL_KEY) || '';
+    const phone = localStorage.getItem(LS_PHONE_KEY) || '';
+    const name  = localStorage.getItem(LS_NAME_KEY)  || '';
+    return { email, phone, name };
   }
 
-  const note = (alarm.note || alarm.message || alarm.msg || '').toString().trim();
-  const email = (alarm.email || alarm.contactEmail || '').toString().trim();
-  const phone = (alarm.phone || alarm.contactPhone || '').toString().trim();
-  const contacts = [email, phone].filter(Boolean).join(', ');
-
-  // When formatting: "DD-MM-YYYY Time: HH:MM:SS" (local time)
-  const whenRaw = alarm.when || alarm.timestamp || alarm.time || alarm.created_at;
-  let whenStr = '';
-  const d = whenRaw ? new Date(whenRaw) : null;
-  if (d && !isNaN(d.getTime())) {
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = String(d.getFullYear());
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mi = String(d.getMinutes()).padStart(2, '0');
-    const ss = String(d.getSeconds()).padStart(2, '0');
-    whenStr = `${dd}-${mm}-${yyyy} Time: ${hh}:${mi}:${ss}`;
+  function fmtCoords(loc){
+    if (!loc) return '';
+    if (typeof loc === 'string') return loc;
+    if (typeof loc === 'object'){
+      if (Array.isArray(loc) && loc.length>=2) return `${loc[0]}, ${loc[1]}`;
+      if ('lat' in loc && 'lng' in loc) return `${loc.lat}, ${loc.lng}`;
+    }
+    return '';
   }
 
-  // Compose like index screenshot:
-  // "Carlton - Admin at 51.5123, 0.0262 — HELP (email, phone) — 20-02-2026 Time: 18:01:58"
-  let out = namePart;
-  if (where) out += ` at ${where}`;
-  if (note) out += ` — ${note}`;
-  if (contacts) out += ` (${contacts})`;
-  if (whenStr) out += ` — ${whenStr}`;
-  return out;
-}
+  async function fetchPanic(){
+    const { email } = getUser();
+    const url = `${API_BASE}/api/org/panic?email=${encodeURIComponent(email || '')}`;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`panic fetch failed: ${res.status}`);
+    return await res.json();
+  }
 
+  function metaText(payload){
+    const d = payload && payload.data ? payload.data : null;
+    if (!d || !d.active) return '';
+    const actorName = (d.actorName || d.actor || '').trim();
+    const loc = fmtCoords(d.location);
+    const msg = (d.message || '').trim();
+    const email = (d.actorEmail || d.email || '').trim();
+    const phone = (d.actorPhone || d.phone || '').trim();
+    const updated = (payload.updatedAt || d.updatedAt || '').trim();
+    const timePart = updated ? `— ${new Date(updated).toLocaleString()}` : '';
+    // Match index: "Carlton - Admin at 51.5123, 0.0262 — HELP (email, phone) — date"
+    const who = actorName ? `${actorName}${loc ? ' at ' + loc : ''}` : (loc ? loc : '');
+    const contact = (email || phone) ? ` (${[email, phone].filter(Boolean).join(', ')})` : '';
+    const msgPart = msg ? ` — ${msg}${contact}` : (contact ? ` —${contact}` : '');
+    return `${who}${msgPart}${timePart}`.replace(/^\s+|\s+$/g,'');
+  }
 
-async function fetchPanicState() {
-  const res = await fetch('/api/org/panic', { cache: 'no-store' });
-  if (!res.ok) throw new Error('panic fetch failed: ' + res.status);
-  return await res.json();
-}
+  const bar = document.getElementById('ciPanicBar');
+  const metaEl = document.getElementById('ciPanicMeta');
+  const btnOpen = document.getElementById('ciPanicOpen');
+  const btnHide = document.getElementById('ciPanicHide');
 
-async function startPanicPolling() {
-  const banner = ensurePanicBanner();
-  const textEl = banner.querySelector('#ciPanicBannerText');
+  let opened = true;
+  let timer = null;
+  let inFlight = false;
 
-  const tick = async () => {
-    try {
-      const state = await fetchPanicState();
-      if (state && state.active) {
-        const alarm = state.alarm || state.current || state;
-        const meta = _ciFormatPanicMeta(alarm);
-        if (textEl) textEl.textContent = meta;
-        banner.style.display = '';
+  async function tick(){
+    if (inFlight) return;
+    inFlight = true;
+    try{
+      const payload = await fetchPanic();
+      const d = payload && payload.data ? payload.data : null;
+      const active = !!(d && d.active);
+      if (active){
+        metaEl.textContent = metaText(payload);
+        bar.style.display = opened ? 'block' : 'none';
+        btnHide.style.display = opened ? 'inline-block' : 'none';
+        btnOpen.style.display = opened ? 'none' : 'inline-block';
       } else {
+        bar.style.display = 'none';
+      }
+    } catch(e){
+      // If API fails, don't spam UI; just hide banner.
+      bar.style.display = 'none';
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  function start(){
+    if (timer) return;
+    tick();
+    timer = setInterval(tick, 5000);
+  }
+
+  btnOpen.addEventListener('click', () => { opened = true; bar.style.display = 'block'; btnHide.style.display='inline-block'; btnOpen.style.display='none'; });
+  btnHide.addEventListener('click', () => { opened = false; bar.style.display = 'none'; btnHide.style.display='none'; btnOpen.style.display='inline-block'; });
+
+  window.CI_PANIC = window.CI_PANIC || {};
+  window.CI_PANIC.start = start;
+
+  // Provide legacy entrypoint used by the page bootstrap
+  window.startPanicPolling = function(){ start(); };
+})();
+</script>
         banner.style.display = 'none';
       }
     } catch (e) {
@@ -1922,20 +2003,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   
 <body>
-  <!-- CityIntel Panic Banner (synced with index.html) -->
-  <div id="ciPanicBanner" aria-live="polite">
-    <div class="ci-panic-inner">
-      <div class="ci-panic-center">
-        <div class="ci-panic-title">PANIC ALARM ACTIVE</div>
-        <div class="ci-panic-meta" id="ciPanicMeta"></div>
-      </div>
-      <div class="ci-panic-actions">
-        <button class="ci-panic-btn primary" id="ciPanicOpenBtn" type="button">Open</button>
-        <button class="ci-panic-btn" id="ciPanicHideBtn" type="button">Hide</button>
-      </div>
-    </div>
-  </div>
-
     
 <div class="brandbar">
   <img src="CityintLogo.jpg" alt="CityIntel Logo">
@@ -4970,8 +5037,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script src="admin-links.js"></script>
 
-<script>
-// Panic Alarm Banner (synced with index.html)
-</script>
 </body>
 </html>
