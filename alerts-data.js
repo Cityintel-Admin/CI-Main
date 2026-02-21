@@ -16,6 +16,28 @@ window.alertsData =[
     summary: ""
   },
 
+  {
+    title: "Find Tim Challenge - Dublin",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low (Fan-based scavenger hunt event)",
+    time: "2026-02-22T12:00:00",
+    source: "Tim Hayden (#LoveYourJourney / Hagley West)",
+    summary: "Part of a global 'Find Tim' challenge hosted by Tim Hayden, CEO of Hagley West watches. Fans attempt to locate him in a public space to win a watch. Expect localized crowds in the Dublin city center."
+  },
+ 
+  {
+    title: "Find Tim Challenge - Belfast",
+    city: "Belfast",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low (Fan-based scavenger hunt event)",
+    time: "2026-02-25T12:00:00",
+    source: "Tim Hayden (#LoveYourJourney / Hagley West)",
+    summary: "The Northern Ireland leg of the 'Find Tim' challenge. Fans compete to find Tim Hayden at an unannounced public location in Belfast. Typically involves a sudden gathering of participants once the live location is shared on social media."
+  },
+
    {
     title: "Protest Opposite Osu Cemetery",
     city: "Accra",
@@ -26,6 +48,7 @@ window.alertsData =[
     source: "Public Notice (Awaiting official confirmation from Ghana Police Service)",
     summary: "Reported demonstration planned for Castle Road. While multiple international conferences and a health expo are officially scheduled in the vicinity (Accra International Conference Centre), there is no verified activist-led mass protest currently confirmed for this specific location and time."
   },
+
   {
     title: "National Palestine Solidarity March",
     city: "London",
@@ -13597,6 +13620,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
