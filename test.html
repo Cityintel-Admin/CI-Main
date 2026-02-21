@@ -168,35 +168,34 @@
     return null;
   }
 
-  function ensurePanicBanner() {
-    let el = document.getElementById('panicBanner');
-    if (el) return el;
-
-    el = document.createElement('div');
-    el.id = 'panicBanner';
-    el.style.cssText = `
-      position: sticky; top: 0; z-index: 9999;
-      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      padding: 10px 14px;
-      color: #fff;
-      display: none;
-    `;
-
-    el.innerHTML = `
-      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
-        <div style="text-align:center; min-width:0;">
-          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
-          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+  function ensurePanicBanner(){
+    if(document.getElementById("ciPanicBanner")) return;
+    const banner = document.createElement("div");
+    banner.id = "ciPanicBanner";
+    banner.className = "ci-banner";
+    banner.hidden = true;
+    banner.innerHTML = `
+      <div class="ci-wrap">
+        <div class="ci-spacer"></div>
+        <div class="ci-mid">
+          <div class="ci-badge">PANIC ALARM ACTIVE</div>
+          <div class="ci-meta" id="ciPanicMeta"></div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
+        <div class="ci-actions">
+          <a href="panicalarm.html" class="ci-link" id="ciPanicOpen">Open</a>
+          <button type="button" class="ci-btn" id="ciPanicHide">Hide</button>
         </div>
-      </div>
-    `;
-
-    document.body.insertBefore(el, document.body.firstChild);
-    return el;
+      </div>`;
+    // Insert at very top of <body> (wait for DOM if needed)
+    const mount = () => {
+      const host = document.body;
+      if(host) host.insertBefore(banner, host.firstChild);
+      else document.addEventListener("DOMContentLoaded", mount, { once: true });
+    };
+    mount();
+    const hideBtn = banner.querySelector("#ciPanicHide");
+    hideBtn?.addEventListener("click", ()=>{ banner.hidden = true; });
+    return banner;
   }
 
   async function startPanicPolling() {
@@ -207,7 +206,7 @@
       try {
         const st = await fetchPanic();
         if (st && st.active) {
-          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const whenRaw = st.when || st.ts || st.at || st.activated_at || st.time || st.timestamp || st.datetime;
           const when = formatPanicWhen(whenRaw);
           const loc = String(st.location || st.loc || '').trim();
 
@@ -229,15 +228,15 @@
           if (contacts.length) metaText += ` (${contacts.join(', ')})`;
           if (when) metaText += ` — ${when}`;
 
-          const metaEl = banner.querySelector('#panicMeta');
+          const metaEl = banner.querySelector("#ciPanicMeta");
           if (metaEl) metaEl.textContent = metaText;
 
-          banner.style.display = 'block';
+          banner.hidden = false;
         } else {
-          banner.style.display = 'none';
+          banner.hidden = true;
         }
 
-        try { CI_updatePanicMapOverlayIndex(st); } catch(e) {}
+        try { (window.CI_updatePanicMapOverlayTest||window.CI_updatePanicMapOverlayIndex)?.(st); } catch(e) {}
       }
       catch (e) {
         // keep silent
@@ -249,101 +248,6 @@
   }
 
   startPanicPolling();
-}
-
-  async function fetchPanic(){
-    const headers = await authHeaders();
-    if (!headers) return null;
-    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
-    const json = await res.json().catch(()=>null);
-    if(json && (json.ok === true || json.ok === undefined)){
-      return json.data ?? json;
-    }
-    return null;
-  }
-
-  function ensurePanicBanner() {
-    let el = document.getElementById('panicBanner');
-    if (el) return el;
-
-    el = document.createElement('div');
-    el.id = 'panicBanner';
-    el.style.cssText = `
-      position: sticky; top: 0; z-index: 9999;
-      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      padding: 10px 14px;
-      color: #fff;
-      display: none;
-    `;
-
-    el.innerHTML = `
-      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
-        <div style="text-align:center; min-width:0;">
-          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
-          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
-        </div>
-      </div>
-    `;
-
-    document.body.insertBefore(el, document.body.firstChild);
-    return el;
-  }
-
-  async function startPanicPolling() {
-    const banner = ensurePanicBanner();
-    if (!banner) return;
-
-    const tick = async () => {
-      try {
-        const st = await fetchPanic();
-        if (st && st.active) {
-          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
-          const when = formatPanicWhen(whenRaw);
-          const loc = String(st.location || st.loc || '').trim();
-
-          const name = (
-            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
-             st.name || st.actorName || st.fullName || st.displayName || '')
-          ).trim();
-          const email = String(st.email || st.actorEmail || '').trim();
-          const phone = String(st.phone || st.actorPhone || '').trim();
-          const msg = String(st.message || st.msg || '').trim();
-
-          const contacts = [];
-          if (email) contacts.push(email);
-          if (phone) contacts.push(phone);
-
-          let metaText = name || 'Panic alarm';
-          if (loc) metaText += ` at ${loc}`;
-          if (msg) metaText += ` — ${msg}`;
-          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
-          if (when) metaText += ` — ${when}`;
-
-          const metaEl = banner.querySelector('#panicMeta');
-          if (metaEl) metaEl.textContent = metaText;
-
-          banner.style.display = 'block';
-        } else {
-          banner.style.display = 'none';
-        }
-
-        try { CI_updatePanicMapOverlayIndex(st); } catch(e) {}
-      }
-      catch (e) {
-        // keep silent
-      }
-    };
-
-    await tick();
-    setInterval(tick, 8000);
-  }
-
-  startPanicPolling();
-} catch(e){} });
 </script>
 
 <script>
