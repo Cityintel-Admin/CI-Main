@@ -143,113 +143,142 @@
     return [];
   }
 
-  function   function formatPanicWhen(input) {
-      if (!input) return '';
-      const d = new Date(input);
-      if (Number.isNaN(d.getTime())) return String(input);
-      const pad = (n) => String(n).padStart(2, '0');
-      const day = pad(d.getDate());
-      const mon = pad(d.getMonth() + 1);
-      const year = d.getFullYear();
-      const hh = pad(d.getHours());
-      const mm = pad(d.getMinutes());
-      const ss = pad(d.getSeconds());
-      return `${day}-${mon}-${year} Time: ${hh}:${mm}:${ss}`;
+  async function fetchPanic(){
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && json.ok){
+      return json.data || null;
     }
+    return null;
+  }
 
-    async function fetchPanic(){
-      const headers = await authHeaders();
-      if (!headers) return null;
-      const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
-      const json = await res.json().catch(()=>null);
-      if(json && (json.ok === true || json.ok === undefined)){
-        return json.data ?? json;
+
+  function ensurePanicBanner() {
+  // Create banner container if it doesn't exist yet (match index.html look/feel)
+  let el = document.getElementById('ciPanicBanner');
+  if (el) return el;
+
+  el = document.createElement('div');
+  el.id = 'ciPanicBanner';
+  el.className = 'ci-panic-banner';
+  el.style.display = 'none';
+  el.innerHTML = `
+    <div class="ci-inner">
+      <div class="ci-left"></div>
+      <div class="ci-center">
+        <span class="ci-badge">PANIC ALARM ACTIVE</span>
+        <div id="ciPanicBannerText" class="ci-meta"></div>
+      </div>
+      <div class="ci-right">
+        <a class="ci-btn" href="panicalarm.html" title="Open Panic Alarm">Open</a>
+      </div>
+    </div>
+  `.trim();
+
+  // Prefer inserting before the app shell so it sits at top of content
+  const mount = document.body;
+  const first = mount.firstElementChild;
+  if (first) mount.insertBefore(el, first);
+  else mount.appendChild(el);
+
+  return el;
+}
+
+function _ciFormatPanicMeta(alarm) {
+  if (!alarm || typeof alarm !== 'object') return '';
+
+  const byFirst = (alarm.byFirst || alarm.firstName || alarm.activated_by_first || '').toString().trim();
+  const byLast  = (alarm.byLast  || alarm.surname   || alarm.activated_by_last  || alarm.activated_by_role || '').toString().trim();
+  const namePart = (byFirst && byLast) ? `${byFirst} - ${byLast}` : (byFirst || byLast || 'Unknown');
+
+  const lat = alarm.lat ?? alarm.latitude ?? alarm.location_lat;
+  const lng = alarm.lng ?? alarm.longitude ?? alarm.location_lng;
+  const locText = (alarm.locationText || alarm.location || alarm.loc || '').toString().trim();
+
+  let where = '';
+  if (Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))) {
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    where = `${latNum.toFixed(4)}, ${lngNum.toFixed(4)}`;
+  } else if (locText) {
+    where = locText;
+  }
+
+  const note = (alarm.note || alarm.message || alarm.msg || '').toString().trim();
+  const email = (alarm.email || alarm.contactEmail || '').toString().trim();
+  const phone = (alarm.phone || alarm.contactPhone || '').toString().trim();
+  const contacts = [email, phone].filter(Boolean).join(', ');
+
+  // When formatting: "DD-MM-YYYY Time: HH:MM:SS" (local time)
+  const whenRaw = alarm.when || alarm.timestamp || alarm.time || alarm.created_at;
+  let whenStr = '';
+  const d = whenRaw ? new Date(whenRaw) : null;
+  if (d && !isNaN(d.getTime())) {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = String(d.getFullYear());
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    whenStr = `${dd}-${mm}-${yyyy} Time: ${hh}:${mi}:${ss}`;
+  }
+
+  // Compose like index screenshot:
+  // "Carlton - Admin at 51.5123, 0.0262 — HELP (email, phone) — 20-02-2026 Time: 18:01:58"
+  let out = namePart;
+  if (where) out += ` at ${where}`;
+  if (note) out += ` — ${note}`;
+  if (contacts) out += ` (${contacts})`;
+  if (whenStr) out += ` — ${whenStr}`;
+  return out;
+}
+
+
+async function fetchPanicState() {
+  const res = await fetch('/api/org/panic', { cache: 'no-store' });
+  if (!res.ok) throw new Error('panic fetch failed: ' + res.status);
+  return await res.json();
+}
+
+async function startPanicPolling() {
+  const banner = ensurePanicBanner();
+  const textEl = banner.querySelector('#ciPanicBannerText');
+
+  const tick = async () => {
+    try {
+      const state = await fetchPanicState();
+      if (state && state.active) {
+        const alarm = state.alarm || state.current || state;
+        const meta = _ciFormatPanicMeta(alarm);
+        if (textEl) textEl.textContent = meta;
+        banner.style.display = '';
+      } else {
+        banner.style.display = 'none';
       }
-      return null;
+    } catch (e) {
+      // Silent fail: never break the dashboard if panic polling errors.
     }
+  };
 
-    function ensurePanicBanner() {
-      let el = document.getElementById('panicBanner');
-      if (el) return el;
+  await tick();
+  setInterval(tick, 5000);
+}
 
-      el = document.createElement('div');
-      el.id = 'panicBanner';
-      el.style.cssText = `
-        position: sticky; top: 0; z-index: 9999;
-        background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
-        border-bottom: 1px solid rgba(255,255,255,.08);
-        padding: 10px 14px;
-        color: #fff;
-        display: none;
-      `;
+</script>
 
-      el.innerHTML = `
-        <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
-          <div style="text-align:center; min-width:0;">
-            <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
-            <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-            <a id="panicOpen" href="panicalarm.html" style="color:#fff; text-decoration: underline; font-weight:800;">Open</a>
-          </div>
-        </div>
-      `;
-
-      document.body.insertBefore(el, document.body.firstChild);
-      return el;
-    }
-
-    async function startPanicPolling() {
-      const banner = ensurePanicBanner();
-      if (!banner) return;
-
-      const tick = async () => {
-        try {
-          const st = await fetchPanic();
-          if (st && st.active) {
-            const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
-            const when = formatPanicWhen(whenRaw);
-            const loc = String(st.location || st.loc || '').trim();
-
-            const name = (
-              (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
-               st.name || st.actorName || st.fullName || st.displayName || '')
-            ).trim();
-            const email = String(st.email || st.actorEmail || '').trim();
-            const phone = String(st.phone || st.actorPhone || '').trim();
-            const msg = String(st.message || st.msg || '').trim();
-
-            const contacts = [];
-            if (email) contacts.push(email);
-            if (phone) contacts.push(phone);
-
-            let metaText = name || 'Panic alarm';
-            if (loc) metaText += ` at ${loc}`;
-            if (msg) metaText += ` — ${msg}`;
-            if (contacts.length) metaText += ` (${contacts.join(', ')})`;
-            if (when) metaText += ` — ${when}`;
-
-            const metaEl = banner.querySelector('#panicMeta');
-            if (metaEl) metaEl.textContent = metaText;
-
-            banner.style.display = 'block';
-          } else {
-            banner.style.display = 'none';
-          }
-
-          try { CI_updatePanicMapOverlayIndex(st); } catch(e) {}
-        }
-        catch (e) {
-          // keep silent
-        }
-      };
-
-      await tick();
-      setInterval(tick, 8000);
-    }
-
-    startPanicPolling();
-
+<script>
+(function compatProfileShim(){
+  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+  const u = CIAuth.who();
+  if (!u) return;
+  localStorage.setItem('ci_profile', JSON.stringify({
+    name: u.name || 'CityIntel User',
+    email: u.email,
+    role: u.role || 'Admin',
+    is_admin: (u.role||'').toLowerCase()==='admin'
+  }));
+  // Do NOT auto-set ci_subscribed here anymore
 })();
 </script>
 
@@ -1869,74 +1898,6 @@ async function loadOrgContext() {
 .trav-name{ font-weight: 700; }
 .trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
 
-</style>
-<style id="ci-panic-banner-css">
-  /* Panic banner (matches test.html layout) */
-  #ciPanicBanner{
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 9999;
-    background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    padding: 10px 14px;
-    color: #fff;
-    display: none;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  #ciPanicBanner .ci-wrap{
-    display:flex;
-    gap:12px;
-    align-items:flex-start;
-    justify-content:space-between;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  #ciPanicBanner .ci-titleRow{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
-  #ciPanicBanner .ci-title{
-    font-weight:800;
-    letter-spacing:.4px;
-  }
-  #ciPanicBanner .ci-meta{
-    opacity:.9;
-    font-size:12px;
-  }
-  #ciPanicBanner .ci-details{
-    margin-top:4px;
-    font-size:13px;
-    line-height:1.35;
-    opacity:.95;
-  }
-  #ciPanicBanner .ci-actions{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    flex-shrink:0;
-  }
-  #ciPanicBanner .ci-actions a{
-    color:#fff;
-    text-decoration:underline;
-    font-weight:700;
-    padding:6px 8px;
-    border-radius:10px;
-    background: rgba(255,255,255,.08);
-  }
-  #ciPanicBanner .ci-actions button{
-    background: rgba(255,255,255,.10);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.15);
-    padding:6px 10px;
-    border-radius:999px;
-    cursor:pointer;
-    font-weight:700;
-  }
-  body.ci-has-panic-banner{ padding-top: 56px; }
 </style>
 </head>
 
