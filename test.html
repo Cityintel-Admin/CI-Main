@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -50,7 +51,6 @@
     }
   }
 })();
-
 
   const API_ORIGIN = 'https://api.cityintelapi.com';
 
@@ -143,36 +143,15 @@
     return [];
   }
 
-  function formatPanicWhen(input) {
-    if (!input) return '';
-    const d = new Date(input);
-    if (Number.isNaN(d.getTime())) return String(input);
-    const pad = (n) => String(n).padStart(2, '0');
-    const day = pad(d.getDate());
-    const mon = pad(d.getMonth() + 1);
-    const year = d.getFullYear();
-    const hh = pad(d.getHours());
-    const mm = pad(d.getMinutes());
-    const ss = pad(d.getSeconds());
-    return `${day}-${mon}-${year} Time: ${hh}:${mm}:${ss}`;
-  }
-
   async function fetchPanic(){
     const headers = await authHeaders();
-    if (!headers) return null;
     const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
     const json = await res.json().catch(()=>null);
-    if(json && (json.ok === true || json.ok === undefined)){
-      return json.data ?? json;
+    if(json && json.ok){
+      return json.data || null;
     }
     return null;
   }
-
-    // -------------------------------
-  // PANIC ALARM BANNER (synced)
-  // -------------------------------
-  // Uses same API origin as index.html
-  const PANIC_API_ORIGIN = (typeof API_ORIGIN === 'string' && API_ORIGIN) ? API_ORIGIN : 'https://api.cityintelapi.com';
 
   function ensurePanicBanner() {
     let el = document.getElementById('panicBanner');
@@ -180,148 +159,86 @@
 
     el = document.createElement('div');
     el.id = 'panicBanner';
-    el.style.cssText = [
-      "position: sticky",
-      "top: 0px",
-      "z-index: 9999",
-      "background: linear-gradient(90deg, rgba(120,0,0,0.95), rgba(80,0,0,0.95))",
-      "border-bottom: 1px solid rgba(255,255,255,0.08)",
-      "padding: 10px 14px",
-      "color: #fff",
-      "display: none"
-    ].join(";");
+    el.style.cssText = `
+      position: sticky; top: 0; z-index: 9999;
+      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 14px;
+      color: #fff;
+      display: none;
+    `;
 
-    const inner = document.createElement('div');
-    inner.style.cssText = [
-      "max-width: 1100px",
-      "margin: 0 auto",
-      "display: flex",
-      "align-items: center",
-      "justify-content: space-between",
-      "gap: 12px"
-    ].join(";");
-
-    const left = document.createElement('div');
-    left.style.cssText = "min-width:0";
-
-    const title = document.createElement('div');
-    title.textContent = 'PANIC ALARM ACTIVE';
-    title.style.cssText = "font-weight:800; letter-spacing:0.06em; font-size:14px; text-transform:uppercase";
-
-    const detail = document.createElement('div');
-    detail.id = 'panicBannerDetail';
-    detail.style.cssText = "font-size:12.5px; opacity:0.95; white-space:nowrap; overflow:hidden; text-overflow:ellipsis";
-
-    left.appendChild(title);
-    left.appendChild(detail);
-
-    const right = document.createElement('div');
-    right.style.cssText = "display:flex; align-items:center; gap:10px; flex-shrink:0";
-
-    const openBtn = document.createElement('a');
-    openBtn.id = 'panicBannerOpen';
-    openBtn.textContent = 'Open';
-    openBtn.href = '#';
-    openBtn.style.cssText = "color:#fff; font-weight:700; text-decoration:underline; cursor:pointer";
-
-    const hideBtn = document.createElement('button');
-    hideBtn.id = 'panicBannerHide';
-    hideBtn.textContent = 'Hide';
-    hideBtn.type = 'button';
-    hideBtn.style.cssText = [
-      "background: rgba(255,255,255,0.12)",
-      "border: 1px solid rgba(255,255,255,0.18)",
-      "color: #fff",
-      "padding: 6px 10px",
-      "border-radius: 10px",
-      "cursor: pointer"
-    ].join(";");
-
-    right.appendChild(openBtn);
-    right.appendChild(hideBtn);
-
-    inner.appendChild(left);
-    inner.appendChild(right);
-    el.appendChild(inner);
+    el.innerHTML = `
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+          <a id="panicOpen" href="panicalarm.html" style="
+            color:#fff; text-decoration: underline; font-weight:800;
+          ">Open</a>
+</div>
+      </div>
+    `;
 
     document.body.insertBefore(el, document.body.firstChild);
-
-    hideBtn.addEventListener('click', () => {
-      el.style.display = 'none';
-      try { localStorage.setItem('panicBannerHidden', '1'); } catch (e) {}
+} catch {}
     });
 
     return el;
   }
 
-  function renderPanicBanner(payload) {
-    const banner = ensurePanicBanner();
-    const detail = document.getElementById('panicBannerDetail');
-    const openBtn = document.getElementById('panicBannerOpen');
-
-    if (!payload || !payload.data || !payload.data.active) {
-      banner.style.display = 'none';
-      return;
-    }
-
-    const d = payload.data;
-    const actor = d.actorName || [d.firstName, d.surname].filter(Boolean).join(' ').trim() || 'Unknown';
-    const loc = d.location || '—';
-    const msg = d.message || '—';
-    const email = d.email || d.actorEmail || '—';
-    const phone = d.phone || d.actorPhone || '—';
-    const updatedAt = payload.updatedAt || d.updatedAt || '';
-
-    // Match index formatting: "Actor at loc — MSG (email, phone) — date"
-    detail.textContent = `${actor} at ${loc} — ${msg} (${email}, ${phone}) — ${updatedAt ? new Date(updatedAt).toLocaleString() : ''}`.replace(/\s—\s$/, '');
-
-    openBtn.onclick = (ev) => {
-      ev.preventDefault();
-      const qs = new URLSearchParams({
-        orgId: payload.orgId || '',
-        email: d.actorEmail || d.email || '',
-        when: payload.updatedAt || ''
-      }).toString();
-      // If you have a dedicated panic page, change this:
-      window.location.href = `index.html?${qs}#panic`;
-    };
-
-    try {
-      const hidden = localStorage.getItem('panicBannerHidden') === '1';
-      banner.style.display = hidden ? 'none' : 'block';
-    } catch (e) {
-      banner.style.display = 'block';
-    }
-  }
-
   async function startPanicPolling() {
     const banner = ensurePanicBanner();
-    try { localStorage.removeItem('panicBannerHidden'); } catch (e) {}
+    if (!banner) return;
 
-    const emailParam = (window.USER_EMAIL || '').trim();
-    const url = withEmailParam(`${PANIC_API_ORIGIN}/api/org/panic`, emailParam);
-
-    async function tick() {
+    const tick = async () => {
       try {
-        const resp = await fetch(url, { headers: { "Accept": "application/json" }, cache: "no-store" });
-        const json = await resp.json();
-        if (json && json.data && json.data.active) {
-          renderPanicBanner(json);
+const st = await fetchPanic();
+        if (st && st.active) {
+          const when = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const loc = String(st.location || st.loc || '').trim();
+
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
+
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
+
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
+
+          const metaEl = banner.querySelector('#panicMeta');
+          if (metaEl) metaEl.textContent = metaText;
+
+          banner.style.display = 'block';
         } else {
           banner.style.display = 'none';
         }
       } catch (e) {
-        // Silent fail: never break dashboard if panic polling errors.
-        banner.style.display = 'none';
+        // If the panic endpoint fails momentarily, don't break the page.
       }
-    }
+    };
 
     await tick();
-    setInterval(tick, 5000);
+    setInterval(tick, 8000);
   }
 
-  // Start panic polling after everything is ready
-  window.addEventListener('load', () => { startPanicPolling(); }, { once: true });
+  // Expose for the boot() shim at the top of the page
+  window.syncOrgTravellers = syncOrgTravellers;
+  window.syncOrgAssets = syncOrgAssets;
+  window.startPanicPolling = startPanicPolling;
+
 </script>
 
 <script>
@@ -339,8 +256,6 @@
 })();
 </script>
 
-
-	
 <script>
 async function loadOrgContext() {
   const res = await fetch('https://api.cityintelapi.com/api/org/me', {
@@ -361,8 +276,6 @@ async function loadOrgContext() {
   window.currentOrg = json.org;
 }
 </script>
-
-	
 
 	<script>
 (function syncPresenceFromStorage(){
@@ -386,8 +299,6 @@ async function loadOrgContext() {
 })();
 </script>
 
-
-	
 <script>
 /*
  * CIExposure
@@ -484,13 +395,11 @@ async function loadOrgContext() {
 })();
 </script>
 
-	
 	<link rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="anonymous">
 
-  
   <meta charset="utf-8" />
   <title>CityIntel — Live Feed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -526,8 +435,6 @@ async function loadOrgContext() {
     background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
   .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
 
-
-
     #trial-banner{
       flex:1;
       text-align:center;
@@ -535,7 +442,6 @@ async function loadOrgContext() {
       font-weight:600;
       color:#fecaca;
     }
-
 
     .logout-link{
       color:#8e97a3;
@@ -573,7 +479,6 @@ async function loadOrgContext() {
       min-width:160px;
       gap:8px;
     }
-
 
 .page-title-bar{
   display:flex;
@@ -629,9 +534,6 @@ async function loadOrgContext() {
   color:#fff;
 }
 
-
-	  
-
     .btn-red{
       background:#D01616;
       color:#fff;
@@ -663,7 +565,6 @@ async function loadOrgContext() {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-
 
     .feed-card{
       background:linear-gradient(180deg,#1a1c20,#131417);
@@ -713,7 +614,6 @@ async function loadOrgContext() {
       letter-spacing:.03em;
     }
 
-	  
     .feed-risk{
       display:inline-block;
       font-size:11px;
@@ -753,8 +653,6 @@ async function loadOrgContext() {
   backface-visibility: hidden;
 }
 
-
-	  
 	.feed-kw{
      margin-top:4px;
      font-size:12px;
@@ -785,7 +683,6 @@ async function loadOrgContext() {
 .live-map-feed-counts .dot-high{ background:#ff5a5f; }
 .live-map-feed-counts .dot-med { background:#f0b429; }
 .live-map-feed-counts .dot-low { background:#33c48d; }
-
 
 /* --- Alerts panel layout + scrolling --- */
 #mapAlertsPanel{
@@ -826,7 +723,6 @@ async function loadOrgContext() {
   opacity:.8;
 }
 
-
 /* ---------------------------------------------------------
    RECENCY AGE VISUALS
 --------------------------------------------------------- */
@@ -850,9 +746,7 @@ async function loadOrgContext() {
   opacity: 0.45;
   border-color: #1e1e1e !important;
 }
-	  
- 
-	  
+
 /* LIVE badge in feed header */
     .live-pill {
       display:inline-flex;
@@ -900,8 +794,6 @@ async function loadOrgContext() {
       line-height:1.4;
     }
 
-	  
-	  
     .btn-ghost{
       background:#1f2024;
       color:#e9edf2;
@@ -1087,7 +979,6 @@ async function loadOrgContext() {
   margin-bottom: 4px;
 }
 
-
 .event-group {
   background: #1a1a1a;
   padding: 14px;
@@ -1142,7 +1033,6 @@ async function loadOrgContext() {
   opacity: 0.85;
 }
 
-	  
 .eg-body {
   margin-top: 12px;
   padding-left: 8px;
@@ -1176,7 +1066,6 @@ async function loadOrgContext() {
   font-size: 11px;
   padding: 4px 8px;
 }  
-
 
 /* --- Global "Now" strip above feeds --- */
 .live-now-strip{
@@ -1247,10 +1136,6 @@ async function loadOrgContext() {
   color:#9ca3af;
 }
 
-
-
-	  
-	  
     .btn-full-incident{
       background:#D01616;
       color:#fff;
@@ -1370,15 +1255,11 @@ async function loadOrgContext() {
       border-color:#ff2a2a;
     }
 
-
 	  /* Card that holds the live map */
 .live-map-card{
   position: relative;
   padding: 16px 18px 20px;
 }
-	  
-
-
 
 /* Map + sidebar layout */
 .live-map-shell{
@@ -1521,8 +1402,7 @@ async function loadOrgContext() {
   background:#111827;
   border-color:#4b5563;
 }
-	  
-	  
+
 .live-map-feed-btn,
 .gm-feed-pill{
   cursor: pointer;
@@ -1556,8 +1436,6 @@ async function loadOrgContext() {
   box-shadow:0 0 0 2px rgba(248,113,113,.8);
   transition:box-shadow .3s ease;
 }
-
-
 
 .live-radius-block{
   margin-top:12px;
@@ -1595,7 +1473,6 @@ async function loadOrgContext() {
   background:#7f1d1d;
   color:#fee2e2;
 }
-
 
 	/* --- Map sidebar: selected feed alerts list --- */
 .map-alerts-list{
@@ -1676,8 +1553,6 @@ async function loadOrgContext() {
   opacity:.75;
   padding:8px 2px;
 }
-  
-	  
 
 /* brief highlight when we jump to a feed card */
 .feed-card-pulse{
@@ -1686,7 +1561,6 @@ async function loadOrgContext() {
     0 0 10px rgba(249,115,22,0.7);
   transition: box-shadow .3s ease;
 }
-
 
 	  /* --- Global Risk & Exposure layout --- */
 .global-map-wrap{
@@ -1709,7 +1583,6 @@ async function loadOrgContext() {
 :root{
   --workspace-h: clamp(440px, 62vh, 720px);
 
-	  
 /* This is critical – gives the Leaflet container height */
 #liveRiskMap{
   width:100%;
@@ -1720,7 +1593,6 @@ async function loadOrgContext() {
 
 #liveMapFeedsList { max-height: 260px; overflow:auto; }
 
-	  
 /* Right-hand side panel */
 .global-map-side{
   background:#050708;
@@ -1784,9 +1656,6 @@ async function loadOrgContext() {
   border-radius: 999px;
 }
 
-
-
-	  
 /* Legend styling */
 .global-map-legend-block{
   border-bottom:1px solid #2e3238;
@@ -1872,12 +1741,10 @@ async function loadOrgContext() {
   transition:box-shadow .25s ease;
 }
 
-	  
 #liveFeedSection{
   display:none !important;
 }
 
-	  
 /* asset / traveller markers */
 .ci-asset-marker,
 .ci-trav-marker{
@@ -1894,9 +1761,6 @@ async function loadOrgContext() {
 .ci-asset-marker{ background:#3b82f6; }    /* blue */
 .ci-trav-marker{ background:#f97316; }    /* orange */
 
-
-	  
-
     @media (max-width:900px){
       .app{
         grid-template-columns:1fr;
@@ -1912,7 +1776,6 @@ async function loadOrgContext() {
         max-width:400px;
       }
     }
-
 
 @media (max-width: 1100px){
   .global-map-wrap{
@@ -1931,9 +1794,6 @@ async function loadOrgContext() {
   }
 }
 
-
-	
-  
 /* Traveller group marker (multiple travellers in same place) */
 .trav-group-icon { background: transparent; border: none; }
 .trav-bubble{
@@ -1956,78 +1816,8 @@ async function loadOrgContext() {
 .trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
 
 </style>
-<style id="ci-panic-banner-css">
-  /* Panic banner (matches test.html layout) */
-  #ciPanicBanner{
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 9999;
-    background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    padding: 10px 14px;
-    color: #fff;
-    display: none;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  #ciPanicBanner .ci-wrap{
-    display:flex;
-    gap:12px;
-    align-items:flex-start;
-    justify-content:space-between;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  #ciPanicBanner .ci-titleRow{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
-  #ciPanicBanner .ci-title{
-    font-weight:800;
-    letter-spacing:.4px;
-  }
-  #ciPanicBanner .ci-meta{
-    opacity:.9;
-    font-size:12px;
-  }
-  #ciPanicBanner .ci-details{
-    margin-top:4px;
-    font-size:13px;
-    line-height:1.35;
-    opacity:.95;
-  }
-  #ciPanicBanner .ci-actions{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    flex-shrink:0;
-  }
-  #ciPanicBanner .ci-actions a{
-    color:#fff;
-    text-decoration:underline;
-    font-weight:700;
-    padding:6px 8px;
-    border-radius:10px;
-    background: rgba(255,255,255,.08);
-  }
-  #ciPanicBanner .ci-actions button{
-    background: rgba(255,255,255,.10);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.15);
-    padding:6px 10px;
-    border-radius:999px;
-    cursor:pointer;
-    font-weight:700;
-  }
-  body.ci-has-panic-banner{ padding-top: 56px; }
-</style>
 </head>
 
-
-  
 <script>
 
 	// must be after the header DOM exists
@@ -2044,8 +1834,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
-  
 <body>
     
 <div class="brandbar">
@@ -2061,9 +1849,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- keep topActions INSIDE the brandbar -->
   <div id="topActions" style="position:relative;margin-left:auto"></div>
 </div>
-		
 
-	
   <div class="app">
     <aside class="sidebar">
        <div class="section-label"></div>
@@ -2083,7 +1869,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </nav>
       <div class="footnote">For information use only — not for redistribution</div>
     </aside>
-
 
   <!-- MAIN -->
   <main class="main">
@@ -2107,16 +1892,11 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 	</div>
 
-
-
-	  
 <div id="liveNowStrip" class="live-now-strip">
       <div class="live-now-label">NOW</div>
       <div class="live-now-stats live-now-empty">No alerts in the current window.</div>
     </div>
 
-
-	  
 <section id="liveMapCard" style="
     margin: 4px 0 14px;
     padding: 12px 14px 10px;
@@ -2131,12 +1911,9 @@ document.addEventListener('DOMContentLoaded', () => {
       Last 6 months risk • company assets &amp; travellers overlay
     </div>
   </div>
-	
 
-	
 <!-- Global Risk & Exposure Map card body -->
 <div class="global-map-wrap">
-
 
 <!-- RIGHT-HAND SIDE PANEL -->
   <aside class="global-map-side">
@@ -2179,19 +1956,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	  
   </aside>
 
-
-	
 	<!-- MAP AREA -->
   <div class="global-map-main">
     <div id="liveRiskMap"></div>
   </div>
 
-
 </div>
    
 </section>
 
-	  
 	<section id="liveFeedSection">  
     <div class="page-head">
       <div class="page-head-left">
@@ -2220,7 +1993,6 @@ document.addEventListener('DOMContentLoaded', () => {
     of alerts
   </div>
 </div>
-
 
     <div id="feedsGrid" class="feeds-grid">
       <!-- Cards injected here -->
@@ -2282,10 +2054,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Impact to nearby assets here.
       </div>
 
-		
 	<div id="detailExposureList" class="small" style="margin-top:8px;"></div>
 
-		
 <canvas id="detailMiniMap" width="320" height="180"
     style="margin-top:10px;border-radius:10px;border:1px solid var(--g600);background:#0f1013;"></canvas>
   <div id="detailCoords" class="small" style="margin-top:6px;opacity:.8;"></div>		
@@ -2329,7 +2099,6 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-	  
     <div class="modal-row">
       <label for="feedRiskSelect">Risk Levels to Include</label>
       <select id="feedRiskSelect" multiple size="3">
@@ -2342,8 +2111,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
 
-
-	  
   <!-- NEW CHECKBOX ROW -->
   <div class="modal-row-inline">
     <input type="checkbox" id="feedLiveCheck" />
@@ -2353,7 +2120,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-	  
     <div class="modal-actions">
       <button class="btn-cancel" id="modalCancel">Cancel</button>
       <button class="btn-save" id="modalSave">Save Feed</button>
@@ -2440,8 +2206,6 @@ const STORAGE_KEY = 'ci_live_feeds_v1';
 const FEED_EVENTS_KEY = 'ci_live_feed_events_v1';
 const HISTORY_WINDOWS = [12, 24, 48, 72];                    // For "Load earlier" – how far back we go on each click (in hours)
 
-
-
 // === FEED ↔ MAP SIDEBAR BRIDGE ==========================
 window.ciFeedSummaries = window.ciFeedSummaries || {};
 
@@ -2482,9 +2246,6 @@ function publishFeedSummary(feed, events){
   }
 }
 
-
-
-	
 // per-feed UI cache (so cards can show stuff before network finishes)
 const FEED_UI_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
@@ -2509,9 +2270,7 @@ function loadUiCache(feedId) {
     return null;
   }
 }
-	
 
-	
 function storeFeedEvents(feedId, events) {
   const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
   all[feedId] = { at: Date.now(), events };
@@ -2527,7 +2286,6 @@ function loadFeedEvents(feedId) {
   return entry;
 }
 
-	
 // read feeds from localStorage
 function loadFeeds(){
   try{
@@ -2636,8 +2394,6 @@ function loadArchive(feedId){
   return Array.isArray(map[feedId]) ? map[feedId] : [];
 }
 
-	
-
 	function renderKeywordsLine(keywords = []) {
   if (!keywords.length) return '';
   const max = 3;
@@ -2649,8 +2405,6 @@ function loadArchive(feedId){
   return `<div class="feed-kw" title="${full}">Topics: ${chips} ${more}</div>`;
 }
 
-
-	
 // ---- unified way to get events for a feed (archive > UI cache > short cache) ----
 function getEventsForFeed(feed){
   if (!feed || !feed.id) return [];
@@ -2670,8 +2424,6 @@ function getEventsForFeed(feed){
   return [];
 }
 
-
-	
 // ---- Per-feed mini summary in the header ----
 function updateFeedHeaderStats(feed, events){
   if (!feed || !feed.id) return;
@@ -2733,9 +2485,7 @@ function updateFeedHeaderStats(feed, events){
     ${topTypes ? `<span style="opacity:.9;">Types: ${topTypes}</span>` : ''}
   `;
 }
-	
 
-	
 	// ---- lightweight client-side incident filter (new) ----
 const INCIDENT_POSITIVE = [
   'protest','demonstration','clashes','riot','unrest','blockade','strike',
@@ -2761,8 +2511,6 @@ function isLikelyIncidentClient(ev){
   return r === 'high' || r === 'med';
 }
 
-
-	
 // ---- Global time window control (hours) ----
 const WINDOW_STORAGE_KEY = 'ci_feed_window_hours';
 
@@ -2794,7 +2542,6 @@ function initWindowSelector() {
 
 // call once after DOM is ready
 document.addEventListener('DOMContentLoaded', initWindowSelector);
-	
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
 async function fetchMockEventsForFeed(feed) {
@@ -2808,7 +2555,6 @@ async function fetchMockEventsForFeed(feed) {
   const windowHours = getCurrentWindowHours();
 params.set('window', String(windowHours));
 
-	
   // primary + backup candidates
   const urls = feed.useLive
     ? [
@@ -2846,8 +2592,6 @@ return events;
   // if both failed
   return [];
 }
-
-
 
 function riskClass(r){
   if(r==='high') return 'high';
@@ -2954,8 +2698,6 @@ function recomputeGlobalStrip(){
   `;
 }
 
-
-	
 // Click: jump to card + open detail panel
 document.addEventListener('click', (e) => {
   const pill = e.target.closest('.gm-feed-pill');
@@ -2986,15 +2728,12 @@ document.addEventListener('click', (e) => {
   card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   card.classList.add('feed-card-highlight');
   setTimeout(() => card.classList.remove('feed-card-highlight'), 1400);
-  
 
   // open detail panel with full list as related
   if (ev) {
     openDetailPanel(ev, events);
   }
 });
-
-	
 
 // -------------------- DETAIL PANEL HANDLING --------------------
 
@@ -3033,7 +2772,6 @@ function buildIntelSummary(ev, earlierList) {
   return lines.join('\n\n');
 }	
 
-
 // NEW: simple incident type classifier for the tag line
 function classifyIncident(ev) {
   const text = `${ev.title || ''} ${ev.description || ''}`.toLowerCase();
@@ -3057,7 +2795,6 @@ function classifyIncident(ev) {
   return { emoji: '📍', label: 'General Incident' };
 }
 
-	
 const detailPanel   = document.getElementById('detailPanel');
 const detailTitleEl = document.getElementById('detailTitle');
 const detailMetaEl  = document.getElementById('detailMeta');
@@ -3068,7 +2805,6 @@ const detailEarlierEl  = document.getElementById('detailEarlier');
 const detailCloseBtn = document.getElementById('detailClose');
 const viewFullBtn   = document.getElementById('viewFullBtn');
 const detailTagEl   = document.getElementById('detailTag'); 
-	
 
 function lonLatToXY(lon, lat, w, h) {
   // quick equirectangular projection
@@ -3124,7 +2860,6 @@ function drawMiniMapPin(lat, lon) {
   }
 }
 
-	
 function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
@@ -3141,7 +2876,6 @@ function openDetailPanel(item, relatedList){
     detailTagEl.textContent = `${emoji} ${label}`;
   }
 
-	
 	  // NEW: richer intel-style summary
   detailSummaryEl.textContent = buildIntelSummary(item, earlier);
 
@@ -3149,8 +2883,6 @@ function openDetailPanel(item, relatedList){
     detailLocationEl.textContent =
     `Approx area: ${item.city || 'unknown'}${item.country ? ', ' + item.country : ''}.`;
 
-
-	
   // real exposure based on stored assets/travellers
   let exposure = { assets: [], travellers: [] };
   if (window.CIExposure && CIExposure.exposureFor) {
@@ -3209,8 +2941,6 @@ function openDetailPanel(item, relatedList){
     }
   }
 
-
-
   // Mini-map pin (lat/lon come from the event if present)
   if (typeof item.lat === 'number' && typeof item.lon === 'number') {
     drawMiniMapPin(item.lat, item.lon);
@@ -3218,7 +2948,6 @@ function openDetailPanel(item, relatedList){
     drawMiniMapPin(null, null);
   }
 
-	
   // earlier today in same city (re-use the list we already built)
   if (earlier.length) {
     detailEarlierEl.innerHTML =
@@ -3228,7 +2957,6 @@ function openDetailPanel(item, relatedList){
   } else {
     detailEarlierEl.textContent = 'No earlier incidents recorded.';
   }
-
 
   // notify map to jump / highlight this incident
   try {
@@ -3244,8 +2972,6 @@ function openDetailPanel(item, relatedList){
     console.warn('ci:jumpToIncident dispatch failed', e);
   }
 
-
-	
   // incident deep-link -> you already pass this into incident.html
   viewFullBtn.href = 'incident.html';
 
@@ -3261,9 +2987,6 @@ function openDetailPanel(item, relatedList){
   }
 }
 
-
-
-	
 function closeDetailPanel() {
   const cvs = document.getElementById('detailMiniMap');
   if (cvs) {
@@ -3287,8 +3010,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-
-
 // Re-render a single card (fetch -> DOM -> schedule next refresh)
 async function refreshSingleFeedCard(cardEl, feed){
   try {
@@ -3298,9 +3019,6 @@ async function refreshSingleFeedCard(cardEl, feed){
     scheduleNextRefresh(cardEl, feed);
   }
 }
-
-
-	
 
 	// -------------------------------------------------------------
 // GROUPING ENGINE — collapses similar alerts into update threads
@@ -3382,8 +3100,6 @@ function groupEvents(events) {
   return groups;
 }
 
-
-
 	// -------------------------------------------------------------
 // RECENCY AGE CLASSIFIER
 // -------------------------------------------------------------
@@ -3400,8 +3116,6 @@ function getAgeClass(when) {
   return 'age-stale';                      // 60+ min
 }
 
-
-	
 function ageLabel(when) {
   const t = Date.parse(when || '');
   if (isNaN(t)) return '';
@@ -3416,8 +3130,6 @@ function ageLabel(when) {
   const days = Math.round(hrs / 24);
   return `${days}d ago`;
 }
-
-	
 
 // Put the events into an existing card (no refetch here)
 const MAX_VISIBLE_EVENTS = 20;
@@ -3497,7 +3209,6 @@ function renderEventsIntoCard(cardEl, events, feed) {
       const groupEl  = document.createElement('div');
       const ageClass = getAgeClass(first.when);
 
-		
       // NEW: exposure (assets + travellers) for this city/country
             let exposureHtml = '';
       if (window.CIExposure && CIExposure.exposureFor) {
@@ -3521,8 +3232,6 @@ function renderEventsIntoCard(cardEl, events, feed) {
         }
       }
 
-
-		
             groupEl.className = `event-group ${ageClass}`;
             groupEl.innerHTML = `
   	<div class="eg-header">
@@ -3560,8 +3269,6 @@ function renderEventsIntoCard(cardEl, events, feed) {
     </button>
   </div>
 `;
-
-
 
       // collapse / expand behaviour on header
       const headerEl = groupEl.querySelector('.eg-header');
@@ -3607,7 +3314,6 @@ if (viewBtn) {
   }
 }
 
-
 // Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
 function scheduleNextRefresh(cardEl, feed){
   // safety guard – if something calls us without a card or feed, bail out
@@ -3639,8 +3345,6 @@ function scheduleNextRefresh(cardEl, feed){
   recomputeGlobalStrip();
 
 }
-
-
 
 // -------------------- FEED MODAL LOGIC --------------------
 const overlayEl = document.getElementById('modalOverlay');
@@ -3706,7 +3410,6 @@ overlayEl.addEventListener('click',(e)=>{
 });
 addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
 
-
 // allow the map legend's "+ Add feed" button to open the same modal
 window.ciOpenAddFeed = function(){
   const btn = document.getElementById('btnAddFeed');
@@ -3717,7 +3420,6 @@ window.ciOpenAddFeed = function(){
   }
 };
 
-	
 saveBtn.addEventListener('click', ()=>{
   const rawCities = cityInput.value.trim();
   const rawKeywords = kwInput.value.trim();
@@ -3755,13 +3457,11 @@ if (places.length) {
     places = places.flatMap(p => EXPANSIONS[p.toLowerCase()] || [p]);
   }
 
-
   // keywords
   const keywords = rawKeywords
     ? rawKeywords.split(',').map(s=>s.trim()).filter(Boolean)
     : [];
-	
-	
+
   const risks = [];
   for (let i=0;i<riskSel.options.length;i++){
     if(riskSel.options[i].selected){
@@ -3773,7 +3473,6 @@ if (places.length) {
     return;
   }
 
-	
   const feeds = loadFeeds();
   const liveMode = !!liveCheck.checked;
 	
@@ -3796,9 +3495,7 @@ if (places.length) {
   closeFeedModal();
   renderFeeds();
 });
-	
 
-	
 // -------------------- CARD RENDER --------------------
 async function renderFeeds(){
   const grid = document.getElementById('feedsGrid');
@@ -3825,8 +3522,6 @@ if (feeds.length === 0){
   feeds = loadFeeds();
 }
 
-
-
   grid.innerHTML = '';
 
   for (const feed of feeds){
@@ -3835,7 +3530,6 @@ if (feeds.length === 0){
     const card = document.createElement('section');
     card.className = 'feed-card';
     card.dataset.id = feed.id;
-
 
 const keywordsLine = renderKeywordsLine(feed.keywords || []);
 const prettyName =
@@ -3885,8 +3579,6 @@ const citiesLabel = prettyName ?? (feed.places || []).join(', ');
       </div>
     `;
 
-
-
     // refresh link
     card.querySelector('.refresh').addEventListener('click', ()=>{
       const fresh = loadFeeds().find(f=>f.id===feed.id) || feed;
@@ -3901,7 +3593,6 @@ const citiesLabel = prettyName ?? (feed.places || []).join(', ');
 	  // optional: click the topics line to edit
 const kwEl = card.querySelector('.feed-kw');
 if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
-
 
         // delete feed
     card.querySelector('.btn-del-feed').addEventListener('click', ()=>{
@@ -3959,8 +3650,6 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
   setTimeout(() => card.classList.remove('feed-card-pulse'), 1400);
 };
 
-
-
 // 1) try UI cache (prettier, per-feed)
 const uiEvents = loadUiCache(feed.id);
 if (uiEvents && uiEvents.length) {
@@ -3977,8 +3666,6 @@ if (uiEvents && uiEvents.length) {
     window.ciRefreshMapSidebarFeeds();
   }
 
-
-	  
 // 3) always go fetch fresh + schedule
 refreshSingleFeedCard(card, feed);
 	    // after all cards are created / refreshed
@@ -3991,7 +3678,6 @@ refreshSingleFeedCard(card, feed);
   }
 	
 }
-
 
 // -------------------- INIT --------------------
 renderFeeds();
@@ -4029,17 +3715,13 @@ viewFullBtn.addEventListener('click', (e)=>{
   location.href = 'incident.html?id=' + encodeURIComponent(incId);
 });
 
-	
 </script>
-
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin="anonymous"></script>
 <script src="https://unpkg.com/topojson-client@3"></script>
 
-
-	
 <script>
 (function(){
   const el = document.getElementById('liveRiskMap');
@@ -4075,8 +3757,6 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
     }
   }
 
-
-	
   // ---- Map init ----
   const WORLD_BOUNDS = L.latLngBounds(
     [-60, -180],
@@ -4147,8 +3827,6 @@ setTimeout(settleMap, 0);
 setTimeout(settleMap, 150);
 setTimeout(settleMap, 600);
 
-
-	
    // keep track of current incident highlight on the map
   let incidentRadiusLayer = null;
 
@@ -4157,8 +3835,6 @@ setTimeout(settleMap, 600);
   const parseTime = v =>
   (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
 
-
-	
  function aggregate(alerts){
   const now        = new Date();
   const futureEnd  = new Date(+now + windowDays * 86400000);
@@ -4371,7 +4047,6 @@ setTimeout(settleMap, 600);
         );
     });
 
-	    
     // Group travellers by coordinates so multiple travellers at same hotel/location show as a single marker with a count.
     const travGroups = new Map();
     (window.CITravellers || []).forEach(t => {
@@ -4439,7 +4114,6 @@ setTimeout(settleMap, 600);
     }
 }
 
-	
   // ---- React when an incident is opened (jump to city) ----
     function pulseAt(lat, lon, label){
     // centre on the incident
@@ -4461,9 +4135,6 @@ setTimeout(settleMap, 600);
       incidentRadiusLayer = null;
     }
 
-
-
-		
     // 1) radius circle (e.g. 15km)
     const radiusKm = window.ciIncidentRadiusKm || 5;
     const radiusCircle = L.circle([lat, lon], {
@@ -4500,7 +4171,6 @@ setTimeout(settleMap, 600);
       }
     }, 30_0000);
   }
-
 
   window.addEventListener('ci:jumpToIncident', e => {
     const d = e.detail || {};
@@ -4542,8 +4212,6 @@ setTimeout(settleMap, 600);
       pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
     }
   });
-
-
 
   // === SIDEBAR FEED LIST RENDERER =========================
   window.ciUpdateMapSidebar = function(summaryMap){
@@ -4606,8 +4274,6 @@ window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
     }
   });
 
-
-	
 function redrawIncidentRadius(){
     if (!window.ciLastIncident) return;
     const { lat, lon, label } = window.ciLastIncident;
@@ -4615,12 +4281,8 @@ function redrawIncidentRadius(){
     pulseAt(lat, lon, label || 'Current incident');
   }
 
-	
   // optional export so the radius pills can trigger a redraw
   window.ciRedrawIncidentRadius = redrawIncidentRadius;
-	
-
-	
 
 // ===== Map sidebar: switch between Feeds panel and Alerts panel =====
 (function setupMapSidebarAlerts(){
@@ -4651,7 +4313,6 @@ function redrawIncidentRadius(){
 
     return null;
   }
-
 
 // --- Step 1: coordinate fallback + geocode cache (for live feeds that have no geometry) ---
 const CIGeocode = (() => {
@@ -4866,7 +4527,6 @@ function getFeedEvents(feedId){
   return [];
 }
 
-
   function openFeedAlerts(feedId, label){
     // ✅ toggle: clicking the same feed again closes back to feeds
     const alertsOpen = alertsPanel.style.display !== 'none';
@@ -4892,7 +4552,6 @@ function getFeedEvents(feedId){
     }
 
     const rows = [];
-
 
 const selectEvent = async (ev, rowEl) => {
   // highlight selection
@@ -4996,13 +4655,10 @@ const selectEvent = async (ev, rowEl) => {
   showFeeds();
 })();
 
-	
-	
   // initial draw
   drawRisk();
   refreshPresenceMarkers();
 
-	
   // refresh markers if assets/travellers change in another tab
   window.addEventListener('storage', e => {
     if (e.key === 'ci_assets' || e.key === 'ci_travellers') {
@@ -5023,8 +4679,6 @@ const selectEvent = async (ev, rowEl) => {
   window.liveMap   = map;
 })();
 
-
-	
 // When user clicks a feed name in the map legend, jump to that feed card below
 document.addEventListener('click', (e) => {
   const link = e.target.closest('.legend-feed-link');
@@ -5045,9 +4699,7 @@ document.addEventListener('click', (e) => {
   }, 1500);
 });
 
-	
 </script>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -5072,11 +4724,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
- 
-
-	
-	
 <!-- auth helpers / admin links -->
 
 <script src="admin-links.js"></script>
