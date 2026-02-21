@@ -4078,13 +4078,26 @@ setTimeout(settleMap, 600);
 
     const loc = String(st.location || st.loc || st.place || '').trim();
     if(loc){
+      // If location itself looks like "lat, lon" (panic alarm page can set this)
+      const coordParts = loc.split(/[,\s]+/).filter(Boolean);
+      if(coordParts.length >= 2){
+        const a = toNum(coordParts[0]);
+        const b = toNum(coordParts[1]);
+        if(a != null && b != null){
+          return {lat:a, lon:b, source:'location_coords'};
+        }
+      }
+
       const key = 'panic:' + loc.toLowerCase();
       if(key === lastPanicKey && panicMarker){
         const ll = panicMarker.getLatLng();
         return {lat: ll.lat, lon: ll.lng, source:'cache'};
       }
+
+      // Try backend geocoder first (if available), then fall back to Nominatim.
       try{
-        const g = await backendGeocodeLookup(loc);
+        let g = await backendGeocodeLookup(loc);
+        if(!g) g = await nominatimGeocodeLookup(loc);
         if(g && toNum(g.lat) != null && toNum(g.lon) != null){
           const glat = toNum(g.lat); const glon = toNum(g.lon);
           lastPanicKey = key;
@@ -4098,7 +4111,8 @@ setTimeout(settleMap, 600);
       const p = JSON.parse(localStorage.getItem('ci_profile')||'null');
       const q = [p?.defaultCity, p?.defaultCountry].filter(Boolean).join(', ');
       if(q){
-        const g = await backendGeocodeLookup(q);
+        let g = await backendGeocodeLookup(q);
+        if(!g) g = await nominatimGeocodeLookup(q);
         if(g && toNum(g.lat) != null && toNum(g.lon) != null){
           const glat = toNum(g.lat); const glon = toNum(g.lon);
           return {lat:glat, lon:glon, source:'profile'};
@@ -4465,7 +4479,8 @@ const assetIcon = L.divIcon({
           }
         } catch(e){}
         try {
-          const g = await backendGeocodeLookup(q);
+          let g = await backendGeocodeLookup(q);
+        if(!g) g = await nominatimGeocodeLookup(q);
           if (g && typeof g.lat === 'number' && typeof g.lon === 'number') {
             try { sessionStorage.setItem(cacheKey, JSON.stringify({ lat: g.lat, lon: g.lon, t: Date.now() })); } catch(e){}
             window.ciLastIncident = { lat: g.lat, lon: g.lon, label: 'Incident location (geocoded)' };
@@ -4665,6 +4680,25 @@ const CIGeocode = (() => {
       return null;
     }
   }
+
+
+  async function nominatimGeocodeLookup(query){
+    // Fallback geocoder (public Nominatim). Used only if backend /api/geocode is unavailable.
+    // Keep requests minimal + cache results.
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+    try{
+      const res = await fetch(url, { headers: { 'Accept': 'application/json', 'Accept-Language': 'en' } });
+      if(!res.ok) return null;
+      const arr = await res.json();
+      if(Array.isArray(arr) && arr[0] && arr[0].lat && arr[0].lon){
+        const lat = parseFloat(arr[0].lat);
+        const lon = parseFloat(arr[0].lon);
+        if(Number.isFinite(lat) && Number.isFinite(lon)) return {lat, lon};
+      }
+    }catch(e){}
+    return null;
+  }
+
 
   async function resolveEventLatLng(ev){
     // First: existing geometry / coordinates
