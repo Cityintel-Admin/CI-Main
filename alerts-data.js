@@ -17,6 +17,17 @@ window.alertsData =[
   },
 
   {
+    title: "Genocide is a Crime, Protest is Not Rally",
+    city: "Sydney",
+    country: "Australia",
+    continent: "Australia",
+    risk: "Moderate (Potential for police presence following recent clashes and anti-protest law debates)",
+    time: "2026-02-22T13:00:00",
+    source: "Palestine Action Group Sydney",
+    summary: "A rally organized by the Palestine Action Group at Hyde Park North. The protest demands the repeal of anti-protest laws, an end to police brutality, and a free Palestine. This event follows a period of heightened tensions and legal challenges regarding the right to protest in New South Wales."
+  },
+
+  {
     title: "Justice for Animals Protest (Dreptate Pentru Animale)",
     city: "Bucharest",
     country: "Romania",
@@ -13631,6 +13642,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
