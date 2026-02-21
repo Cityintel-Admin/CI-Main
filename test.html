@@ -209,6 +209,7 @@ function ensurePanicBanner() {
       try {
 const st = await fetchPanic();
         if (st && st.active) {
+          window.__ciPanicState = st;
           const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
           const when = formatPanicWhen(whenRaw);
           const loc = String(st.location || st.loc || '').trim();
@@ -236,12 +237,13 @@ const st = await fetchPanic();
 
           banner.style.display = 'block';
           if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
-            window.CIPanicMap.setState(st);
+            window.CIPanicMap.setState(st).catch(()=>{});
           }
         } else {
+          window.__ciPanicState = null;
           banner.style.display = 'none';
           if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
-            window.CIPanicMap.setState(null);
+            window.CIPanicMap.setState(null).catch(()=>{});
           }
         }
 } catch (e) {
@@ -4083,9 +4085,10 @@ setTimeout(settleMap, 600);
       }
       try{
         const g = await backendGeocodeLookup(loc);
-        if(g && typeof g.lat === 'number' && typeof g.lon === 'number'){
+        if(g && toNum(g.lat) != null && toNum(g.lon) != null){
+          const glat = toNum(g.lat); const glon = toNum(g.lon);
           lastPanicKey = key;
-          return {lat:g.lat, lon:g.lon, source:'geocode'};
+          return {lat:glat, lon:glon, source:'geocode'};
         }
       }catch(e){}
     }
@@ -4096,8 +4099,9 @@ setTimeout(settleMap, 600);
       const q = [p?.defaultCity, p?.defaultCountry].filter(Boolean).join(', ');
       if(q){
         const g = await backendGeocodeLookup(q);
-        if(g && typeof g.lat === 'number' && typeof g.lon === 'number'){
-          return {lat:g.lat, lon:g.lon, source:'profile'};
+        if(g && toNum(g.lat) != null && toNum(g.lon) != null){
+          const glat = toNum(g.lat); const glon = toNum(g.lon);
+          return {lat:glat, lon:glon, source:'profile'};
         }
       }
     }catch(e){}
@@ -4158,8 +4162,12 @@ setTimeout(settleMap, 600);
   }
 
   window.CIPanicMap = {
-    setState: (st) => { try { setPanicOnMap(st); } catch(e){} }
+    setState: async (st) => {
+      try { await setPanicOnMap(st); } catch(e) {}
+    }
   };
+  // Apply latest panic state (if poller ran before map was ready)
+  try { if (window.__ciPanicState) window.CIPanicMap.setState(window.__ciPanicState); } catch(e) {}
 
 
   // ---- Hotel clustering layer (travellers at same hotel, even if coords differ) ----
