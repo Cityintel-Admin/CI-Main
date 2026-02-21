@@ -235,10 +235,16 @@ const st = await fetchPanic();
           if (metaEl) metaEl.textContent = metaText;
 
           banner.style.display = 'block';
+          if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
+            window.CIPanicMap.setState(st);
+          }
         } else {
           banner.style.display = 'none';
+          if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
+            window.CIPanicMap.setState(null);
+          }
         }
-      } catch (e) {
+} catch (e) {
         // If the panic endpoint fails momentarily, don't break the page.
       }
     };
@@ -1828,6 +1834,20 @@ async function loadOrgContext() {
 .trav-name{ font-weight: 700; }
 .trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
 
+
+
+/* Panic marker (live pin) */
+.ci-panic-marker{
+  background:#ff2d2d;
+  border-radius:999px;
+  border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 10px 28px rgba(0,0,0,.55);
+  color:#0b0f16;
+  font-size:12px;
+  font-weight:900;
+  line-height:18px;
+  text-align:center;
+}
 </style>
 </head>
 
@@ -4015,7 +4035,183 @@ setTimeout(settleMap, 600);
   const assetLayer = L.layerGroup().addTo(map);
   const travLayer  = L.layerGroup().addTo(map);
 
-  const assetIcon = L.divIcon({
+  
+  // ---- Panic marker layer ----
+  const panicLayer = L.layerGroup().addTo(map);
+  let panicMarker = null;
+  let panicRing = null;
+  let lastPanicKey = null;
+
+  const panicIcon = L.divIcon({
+    className: 'ci-panic-marker',
+    html: '!',
+    iconSize: [20, 20]
+  });
+
+  async function resolvePanicLatLon(st){
+    if(!st) return null;
+    const lat = (typeof st.lat === 'number') ? st.lat
+      : (typeof st.latitude === 'number' ? st.latitude : null);
+    const lon = (typeof st.lon === 'number') ? st.lon
+      : (typeof st.lng === 'number' ? st.lng
+      : (typeof st.longitude === 'number' ? st.longitude : null));
+    if(lat != null && lon != null) return {lat, lon, source:'direct'};
+
+    const loc = String(st.location || st.loc || st.place || '').trim();
+    if(loc){
+      const key = 'panic:' + loc.toLowerCase();
+      if(key === lastPanicKey && panicMarker){
+        const ll = panicMarker.getLatLng();
+        return {lat: ll.lat, lon: ll.lng, source:'cache'};
+      }
+      try{
+        const g = await backendGeocodeLookup(loc);
+        if(g && typeof g.lat === 'number' && typeof g.lon === 'number'){
+          lastPanicKey = key;
+          return {lat:g.lat, lon:g.lon, source:'geocode'};
+        }
+      }catch(e){}
+    }
+
+    // fallback: use org default city/country if set
+    try{
+      const p = JSON.parse(localStorage.getItem('ci_profile')||'null');
+      const q = [p?.defaultCity, p?.defaultCountry].filter(Boolean).join(', ');
+      if(q){
+        const g = await backendGeocodeLookup(q);
+        if(g && typeof g.lat === 'number' && typeof g.lon === 'number'){
+          return {lat:g.lat, lon:g.lon, source:'profile'};
+        }
+      }
+    }catch(e){}
+
+    return null;
+  }
+
+  async function setPanicOnMap(st){
+    panicLayer.clearLayers();
+    panicMarker = null;
+    panicRing = null;
+
+    if(!st || !st.active) return;
+
+    const ll = await resolvePanicLatLon(st);
+    if(!ll) return;
+
+    const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+    const when = formatPanicWhen(whenRaw);
+    const loc = String(st.location || st.loc || '').trim();
+    const who = String(st.name || st.actorName || st.fullName || '').trim();
+
+    const labelBits = [];
+    if(who) labelBits.push(escapeHtml(who));
+    labelBits.push('Panic alarm');
+    if(loc) labelBits.push('at ' + escapeHtml(loc));
+    if(when) labelBits.push(escapeHtml(when));
+
+    const popup = `<div style="min-width:220px">
+      <div style="font-weight:800;margin-bottom:6px;color:#fff">🚨 ${labelBits.join(' ')}</div>
+      <div style="opacity:.9;font-size:12px;color:#d1d5db">Lat ${ll.lat.toFixed(4)}, Lon ${ll.lon.toFixed(4)}</div>
+    </div>`;
+
+    panicMarker = L.marker([ll.lat, ll.lon], { icon: panicIcon, zIndexOffset: 2000 }).addTo(panicLayer);
+    panicMarker.bindPopup(popup);
+
+    panicRing = L.circle([ll.lat, ll.lon], {
+      radius: 800,
+      color: '#ff2d2d',
+      weight: 2,
+      fillColor: '#ff2d2d',
+      fillOpacity: 0.14
+    }).addTo(panicLayer);
+
+    // gentle pulse
+    let dir = 1;
+    let r = 800;
+    const id = setInterval(()=>{
+      if(!panicRing || !map) { clearInterval(id); return; }
+      r += dir*80;
+      if(r > 1400) dir = -1;
+      if(r < 800) dir = 1;
+      try{ panicRing.setRadius(r); }catch(e){}
+    }, 700);
+
+    // keep a reference so we can stop pulse when cleared
+    panicRing._ciPulseInterval = id;
+  }
+
+  window.CIPanicMap = {
+    setState: (st) => { try { setPanicOnMap(st); } catch(e){} }
+  };
+
+
+  // ---- Hotel clustering layer (travellers at same hotel, even if coords differ) ----
+  const hotelLayer = L.layerGroup().addTo(map);
+
+  function hotelKey(t){
+    const h = String(t.hotel || t.hotelName || t.accommodation || '').trim().toLowerCase();
+    if(!h) return '';
+    const c = String(t.city || '').trim().toLowerCase();
+    const k = String(t.country || '').trim().toLowerCase();
+    return [h, c, k].filter(Boolean).join('|');
+  }
+
+  function refreshHotelClusters(travByCoord){
+    hotelLayer.clearLayers();
+
+    const travellers = (window.CITravellers || []).filter(t => typeof t.lat === 'number' && typeof t.lon === 'number');
+    if(!travellers.length) return;
+
+    const groups = new Map();
+    travellers.forEach(t=>{
+      const key = hotelKey(t);
+      if(!key) return;
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(t);
+    });
+
+    groups.forEach((arr, key)=>{
+      if(arr.length < 2) return; // only show true clusters
+
+      const avgLat = arr.reduce((s,t)=>s+t.lat,0)/arr.length;
+      const avgLon = arr.reduce((s,t)=>s+t.lon,0)/arr.length;
+
+      const hotelName = String(arr[0].hotel || arr[0].hotelName || arr[0].accommodation || 'Hotel').trim();
+      const where = [arr[0].city, arr[0].country].filter(Boolean).join(', ');
+
+      const icon = L.divIcon({
+        className: 'trav-group-icon',
+        html: `<div class="trav-bubble" title="Hotel cluster"><span>${arr.length}</span></div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17]
+      });
+
+      const listHtml = arr.map(t=>{
+        const name = escapeHtml(String(t.name || t.fullName || t.traveller || t.email || 'Traveller'));
+        const role = escapeHtml(String(t.role || ''));
+        const room = escapeHtml(String(t.room || t.roomNumber || ''));
+        const dates = [t.checkIn || t.from, t.checkOut || t.to].filter(Boolean).map(escapeHtml).join(' → ');
+        return `<div style="padding:6px 0;border-top:1px solid rgba(255,255,255,.08)">
+          <div style="font-weight:800">${name}</div>
+          <div style="opacity:.85;font-size:12px">${[role, room && ('Room ' + room)].filter(Boolean).join(' • ')}</div>
+          ${dates ? `<div style="opacity:.75;font-size:12px">${dates}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      const popup = `<div class="trav-popup">
+        <div class="trav-popup-title">🏨 ${escapeHtml(hotelName)} <span style="opacity:.8;font-weight:700">(${arr.length})</span></div>
+        <div class="small" style="margin-bottom:8px;opacity:.85">${escapeHtml(where)}</div>
+        <div class="trav-popup-list">${listHtml}</div>
+      </div>`;
+
+      L.marker([avgLat, avgLon], { icon, zIndexOffset: 1200 })
+        .addTo(hotelLayer)
+        .bindPopup(popup, { maxWidth: 380 });
+    });
+  }
+
+
+const assetIcon = L.divIcon({
     className: 'ci-asset-marker',
     html: 'A',
     iconSize: [18, 18]
@@ -4125,6 +4321,9 @@ setTimeout(settleMap, 600);
           { maxWidth: 360 }
         );
     }
+    // Hotel clustering (same hotel across travellers)
+    refreshHotelClusters();
+
 }
 
   // ---- React when an incident is opened (jump to city) ----
@@ -4185,7 +4384,7 @@ setTimeout(settleMap, 600);
     }, 30_0000);
   }
 
-  window.addEventListener('ci:jumpToIncident', e => {
+  window.addEventListener('ci:jumpToIncident', async e => {
     const d = e.detail || {};
     const lat = typeof d.lat === 'number' ? d.lat : null;
     const lon = typeof d.lon === 'number' ? d.lon : null;
@@ -4223,6 +4422,32 @@ setTimeout(settleMap, 600);
         label: 'Incident city (assets/travellers nearby)'
       };
       pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
+    } else {
+      // Smarter fallback when no GPS: geocode city/country/location via backend and cache in sessionStorage
+      const loc = (d.location || d.loc || d.place || '').toString().trim();
+      const q = loc || [d.city, d.country].filter(Boolean).join(', ');
+      if (q) {
+        const cacheKey = 'ci_geo:' + q.toLowerCase();
+        try {
+          const cached = sessionStorage.getItem(cacheKey);
+          if (cached) {
+            const obj = JSON.parse(cached);
+            if (obj && typeof obj.lat === 'number' && typeof obj.lon === 'number') {
+              window.ciLastIncident = { lat: obj.lat, lon: obj.lon, label: 'Incident location (cached)' };
+              pulseAt(obj.lat, obj.lon, 'Incident location (cached)');
+              return;
+            }
+          }
+        } catch(e){}
+        try {
+          const g = await backendGeocodeLookup(q);
+          if (g && typeof g.lat === 'number' && typeof g.lon === 'number') {
+            try { sessionStorage.setItem(cacheKey, JSON.stringify({ lat: g.lat, lon: g.lon, t: Date.now() })); } catch(e){}
+            window.ciLastIncident = { lat: g.lat, lon: g.lon, label: 'Incident location (geocoded)' };
+            pulseAt(g.lat, g.lon, 'Incident location (geocoded)');
+          }
+        } catch(e){}
+      }
     }
   });
 
