@@ -17,6 +17,17 @@ window.alertsData =[
   },
 
   {
+    title: "Marche Des Iraniens (Revolution du Lion et Soleil)",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Moderate (Large political gathering in high-traffic tourist areas; potential for localized disruption)",
+    time: "2026-02-22T15:00:00",
+    source: "Révolution du Lion et Soleil",
+    summary: "A march organized by Iranian diaspora groups in support of Reza Pahlavi. The event is scheduled to take place between 15:00 and 19:00, moving between Place du Châtelet and Place des Pyramides. Expect significant crowds and a visible security presence in Central Paris."
+  },
+
+  {
     title: "Genocide is a Crime, Protest is Not Rally",
     city: "Sydney",
     country: "Australia",
@@ -13642,6 +13653,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
