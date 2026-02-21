@@ -16,6 +16,228 @@ window.alertsData =[
     summary: ""
   },
 
+ {
+    title: "Ukraine Solidarity Rally and March",
+    city: "Bordeaux",
+    country: "France",
+    continent: "Europe",
+    risk: "Low (Peaceful commemorative event)",
+    time: "2026-02-21T14:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Rally and march at Place de l’Ukraine to mark the fourth anniversary of the conflict. Scheduled until 16:30."
+  },
+  {
+    title: "Ukraine Solidarity Demonstration",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low (Peaceful gathering in high-traffic tourist area)",
+    time: "2026-02-21T14:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Demonstration at Piccadilly Circus to demand increased support for Kyiv."
+  },
+  {
+    title: "Ukraine Solidarity Protest March",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Moderate (Large march through central transit hubs)",
+    time: "2026-02-21T14:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Protest march moving from Place de la République to Place de la Bastille. Scheduled until 17:00."
+  },
+  {
+    title: "Ukraine Solidarity Rally",
+    city: "Prague",
+    country: "Czech Republic",
+    continent: "Europe",
+    risk: "Low (Commemorative gathering)",
+    time: "2026-02-21T15:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Rally at Old Town Square marking the anniversary of the ongoing conflict."
+  },
+  {
+    title: "Ukraine Solidarity March",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low (Peaceful march in city center)",
+    time: "2026-02-22T13:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "March originating from the General Post Office on O’Connell Street."
+  },
+  {
+    title: "Ukraine Solidarity Rally",
+    city: "Amsterdam",
+    country: "Netherlands",
+    continent: "Europe",
+    risk: "Low (Peaceful commemorative event)",
+    time: "2026-02-22T12:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Commemorative rally at Dam Square."
+  },
+  {
+    title: "Ukraine Solidarity Anniversary March and Rally",
+    city: "Amsterdam",
+    country: "Netherlands",
+    continent: "Europe",
+    risk: "Moderate (Likely larger crowds for the actual anniversary date)",
+    time: "2026-02-24T16:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "March starting from Museumplein at 16:00, followed by a rally at Dam Square at 17:00."
+  },
+  {
+    title: "Ukraine Solidarity Vigil",
+    city: "Helsinki",
+    country: "Finland",
+    continent: "Europe",
+    risk: "Low (Peaceful evening vigil)",
+    time: "2026-02-24T18:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Evening vigil at Senate Square on the anniversary of the conflict."
+  },
+  {
+    title: "Ukraine Solidarity Rally",
+    city: "Lisbon",
+    country: "Portugal",
+    continent: "Europe",
+    risk: "Low (Peaceful demonstration at government site)",
+    time: "2026-02-24T18:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Rally at the Parliament Building calling for an end to hostilities."
+  },
+  {
+    title: "Ukraine Solidarity Gathering",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low (Peaceful commemorative gathering)",
+    time: "2026-02-24T19:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Evening gathering at Trafalgar Square marking the fourth anniversary of the conflict."
+  },
+  {
+    title: "Ukraine Solidarity Rally",
+    city: "Paris",
+    country: "France",
+    continent: "Europe",
+    risk: "Low (Evening rally in major square)",
+    time: "2026-02-24T18:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Rally at Place de la République to mark the anniversary."
+  },
+  {
+    title: "Ukraine Solidarity Demonstration",
+    city: "Stockholm",
+    country: "Sweden",
+    continent: "Europe",
+    risk: "Low (Peaceful demonstration)",
+    time: "2026-02-24T18:00:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Demonstration at Sergels torg; scheduled until 19:00."
+  },
+  {
+    title: "Ukraine Solidarity Procession",
+    city: "The Hague",
+    country: "Netherlands",
+    continent: "Europe",
+    risk: "Low (Peaceful procession)",
+    time: "2026-02-24T12:30:00",
+    source: "Crisis24 / Activist Notices",
+    summary: "Procession at Eline Vere Park marking the fourth anniversary of the conflict."
+  },
+
+ {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Berlin",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Potential for localized traffic and transit disruption)",
+    time: "2026-02-19T17:30:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "A commemorative demonstration beginning at Leopoldplatz, followed by a march to Hanne-Sobek-Platz. Part of nationwide actions marking the sixth anniversary of the racially motivated Hanau mass shooting."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Cologne",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Expected crowds in central square)",
+    time: "2026-02-19T18:00:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Demonstration at Hans-Bockler-Platz to honor the victims of the Hanau shooting and protest against racism."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Dortmund",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Potential for transport delays near the rally site)",
+    time: "2026-02-19T18:00:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Demonstration at Platz der Deutschen Einheit as part of the nationwide day of remembrance."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Frankfurt",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (High-traffic pedestrian area; expect police presence)",
+    time: "2026-02-19T18:00:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Protest at Hauptwache. Given the proximity to Hanau, this event may see significant attendance."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Munich",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Central tourist and transit hub)",
+    time: "2026-02-19T19:30:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Evening protest at Marienplatz to commemorate the victims of the 2020 shooting."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Stuttgart",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Localized disruption near the station)",
+    time: "2026-02-19T18:00:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Demonstration at Bahnhof Bad Cannstatt in solidarity with the 'Say Their Names' movement."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Dusseldorf",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Major transport hub; expect localized congestion)",
+    time: "2026-02-20T17:30:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Demonstration at Dusseldorf Central Station (Hauptbahnhof)."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Hamburg",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Civic square gathering)",
+    time: "2026-02-21T14:00:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Demonstration at Harburger Rathausplatz."
+  },
+  {
+    title: "Hanau Shooting 6th Anniversary Commemoration",
+    city: "Munster",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low-Moderate (Localized disruption near the station)",
+    time: "2026-02-21T13:00:00",
+    source: "Crisis24 / Local Activist Groups",
+    summary: "Demonstration at the Hauptbahnhof (Central Station)."
+  },
+
   {
     title: "Marche Des Iraniens (Revolution du Lion et Soleil)",
     city: "Paris",
@@ -13653,6 +13875,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
