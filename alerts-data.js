@@ -17,6 +17,17 @@ window.alertsData =[
   },
 
   {
+    title: "Justice for Animals Protest (Dreptate Pentru Animale)",
+    city: "Bucharest",
+    country: "Romania",
+    continent: "Europe",
+    risk: "Moderate (Organized protest at a government site; potential for localized disruption)",
+    time: "2026-02-22T16:00:00",
+    source: "Dreptate Pentru Animale / Vetmedan Case Advocacy",
+    summary: "A protest scheduled in front of the Romanian Parliament (Izvor Park entrance) to demonstrate against the state's management of stray dogs. The event specifically references the 'Vetmedan case' and calls for systemic reform in animal welfare."
+  },
+
+  {
     title: "Find Tim Challenge - Dublin",
     city: "Dublin",
     country: "Ireland",
@@ -13620,6 +13631,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
