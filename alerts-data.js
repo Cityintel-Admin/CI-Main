@@ -16,6 +16,80 @@ window.alertsData =[
     summary: ""
   },
 
+   {
+    title: "Protest Opposite Osu Cemetery",
+    city: "Accra",
+    country: "Ghana",
+    continent: "Africa",
+    risk: "Low (Unconfirmed event; area is prone to state-related traffic closures)",
+    time: "2026-02-27T08:00:00",
+    source: "Public Notice (Awaiting official confirmation from Ghana Police Service)",
+    summary: "Reported demonstration planned for Castle Road. While multiple international conferences and a health expo are officially scheduled in the vicinity (Accra International Conference Centre), there is no verified activist-led mass protest currently confirmed for this specific location and time."
+  },
+  {
+    title: "National Palestine Solidarity March",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Moderate (Large crowds expected; potential for localized disruption and counter-protests)",
+    time: "2026-03-14T13:00:00",
+    source: "Palestine Solidarity Campaign (PSC)",
+    summary: "A major national demonstration calling for a ceasefire and arms embargo. Participants typically gather at central hubs like Russell Square or Victoria Embankment before marching to Whitehall or Trafalgar Square. Expect significant police presence and transit delays in Central London."
+  },
+  {
+    title: "Protest at Arms Factories Supplying Israel",
+    city: "Bristol, London, Newcastle, Towcester, Shenstone",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High (Potential for direct action, site blockades, and arrests near industrial facilities)",
+    time: "2026-03-25T09:00:00",
+    source: "Palestine Solidarity Campaign (PSC) / Palestine Action",
+    summary: "Coordinated day of action targeting UK-based defense contractors. Protesters aim to disrupt the supply chain of military equipment. Previous actions at these specific sites (such as Elbit Systems in Bristol or UAV Engines in Shenstone) have involved attempts to block access and damage facility property."
+  },
+
+  {
+    title: "Protest at Rafael / Pearson Engineering",
+    city: "Newcastle upon Tyne",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Moderate to High (Potential for site disruption and significant police presence at an industrial facility)",
+    time: "2026-03-25T11:00:00",
+    source: "Palestine Solidarity Campaign (PSC)",
+    summary: "A protest organized by PSC targeting Pearson Engineering (Armstrong Works) on Scotswood Road. The demonstration focuses on the company's parent corporation, Rafael, and demands an immediate arms embargo regarding the supply of military equipment to Israel."
+  },
+
+  {
+    title: "Protest at Attewell (Arms Factory)",
+    city: "Hayes",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Moderate to High (Targeting industrial supply chain sites)",
+    time: "2026-03-25T11:00:00",
+    source: "Palestine Solidarity Campaign (PSC)",
+    summary: "Protest at Attewell, Unit 7 Millington Road, Hayes, UB3 4AZ. Part of a coordinated day of action against factories supplying components for Israel's F-35 fighter jets."
+  },
+  {
+    title: "Protest at CPI TMD Technologies",
+    city: "Hayes",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Moderate to High (Targeting industrial supply chain sites)",
+    time: "2026-03-25T13:00:00",
+    source: "Palestine Solidarity Campaign (PSC)",
+    summary: "Protest at CPI TMD Technologies, Swallowfield Way, Hayes, UB3 1DQ. The site is targeted for its role in the supply chain for military equipment. Expect a localized police presence."
+  },
+
+ {
+    title: "Protest at Elbit Systems Supplying Israel",
+    city: "Bristol",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Moderate to High (Potential for site disruption and significant police presence near sensitive industrial sites)",
+    time: "2026-03-25T12:00:00",
+    source: "Palestine Solidarity Campaign (PSC)",
+    summary: "A protest organized by PSC at Elbit Systems' location in Filton, Bristol. The demonstration calls for an immediate arms embargo on Israel. Participants plan to gather at 38 Bolingbroke Way between 12 PM and 2 PM."
+  },
+
   {
     title: "Stop the state clampdown",
     city: "Westminster Magistrates Court London",
@@ -13523,6 +13597,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
