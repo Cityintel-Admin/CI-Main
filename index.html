@@ -765,7 +765,14 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   // Keep local org lists fresh (travellers/assets) for map overlays & panels
   (function startOrgSync(){
     async function tick(){
-      try { await Promise.all([syncOrgTravellers(), syncOrgAssets()]); } catch(e) {}
+      try {
+        await Promise.all([syncOrgTravellers(), syncOrgAssets()]);
+        // If the dashboard map is already initialised, re-render presence markers
+        // (test.html does this via refreshPresenceMarkers()).
+        if (typeof window.ciOnPresenceChanged === 'function') {
+          try { window.ciOnPresenceChanged(); } catch(_) {}
+        }
+      } catch(e) {}
     }
     tick();
     setInterval(tick, 5000);
@@ -1805,6 +1812,12 @@ function renderAssetsAndTravellers(){
   }
 }
 
+// Allow other parts of the page (and the org-sync poller) to trigger a refresh
+// after travellers/assets are updated from API or localStorage.
+window.ciOnPresenceChanged = function(){
+  try { renderAssetsAndTravellers(); } catch(_) {}
+};
+
 
 function countPresenceForCountry(countryName){
   const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
@@ -2015,6 +2028,26 @@ function countPresenceForCountry(countryName){
   // Initial draw
   draw();
   renderAssetsAndTravellers();
+
+  // If travellers/assets update later (API sync or another tab), refresh markers.
+  window.addEventListener('storage', (e)=>{
+    if (e && (e.key === 'ci_assets' || e.key === 'ci_travellers')) {
+      try { renderAssetsAndTravellers(); } catch(_) {}
+    }
+  });
+
+  // Defensive: some browsers won't fire storage events in the same tab.
+  // So we also do a lightweight periodic refresh if counts change.
+  let _lastA = (Array.isArray(window.CIAssets) ? window.CIAssets.length : 0);
+  let _lastT = (Array.isArray(window.CITravellers) ? window.CITravellers.length : 0);
+  setInterval(()=>{
+    const aN = (Array.isArray(window.CIAssets) ? window.CIAssets.length : 0);
+    const tN = (Array.isArray(window.CITravellers) ? window.CITravellers.length : 0);
+    if (aN !== _lastA || tN !== _lastT) {
+      _lastA = aN; _lastT = tN;
+      try { renderAssetsAndTravellers(); } catch(_) {}
+    }
+  }, 2500);
 })();
 </script>
 
