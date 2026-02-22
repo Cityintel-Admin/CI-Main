@@ -1,4 +1,4 @@
-  
+ 
 <!doctype html>
 <html lang="en">
 <head>
@@ -2895,6 +2895,171 @@ function drawMiniMapPin(lat, lon) {
   }
 }
 
+/* ---- Mini-map (local snapshot) + smart coord fallback ---- */
+function parseLatLonFromAny(obj){
+  if(!obj) return null;
+  const pick = (v)=> {
+    if(v === null || v === undefined) return null;
+    if(typeof v === 'number' && isFinite(v)) return v;
+    if(typeof v === 'string'){
+      const s = v.trim();
+      if(!s) return null;
+      const n = Number(s);
+      if(isFinite(n)) return n;
+    }
+    return null;
+  };
+  // common keys
+  const lat = pick(obj.lat ?? obj.latitude);
+  const lon = pick(obj.lon ?? obj.lng ?? obj.longitude);
+  if(lat !== null && lon !== null) return {lat, lon};
+
+  // try parse from location string: "51.5, -0.1"
+  const loc = String(obj.location || obj.where || obj.coords || '').trim();
+  if(loc){
+    const mm = loc.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+    if(mm){
+      const a = Number(mm[1]), b = Number(mm[2]);
+      if(isFinite(a) && isFinite(b)) return {lat:a, lon:b};
+    }
+  }
+  return null;
+}
+
+async function nominatimGeocodeCached(q){
+  const query = String(q||'').trim();
+  if(!query) return null;
+  const key = 'ci_nomi_' + btoa(unescape(encodeURIComponent(query))).slice(0,120);
+  try{
+    const cached = sessionStorage.getItem(key);
+    if(cached){
+      const obj = JSON.parse(cached);
+      if(obj && typeof obj.lat==='number' && typeof obj.lon==='number') return obj;
+    }
+  }catch(e){}
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query);
+    const res = await fetch(url, { headers: { 'Accept':'application/json' } });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(Array.isArray(data) && data[0] && data[0].lat && data[0].lon){
+      const out = { lat: Number(data[0].lat), lon: Number(data[0].lon) };
+      if(isFinite(out.lat) && isFinite(out.lon)){
+        try{ sessionStorage.setItem(key, JSON.stringify(out)); }catch(e){}
+        return out;
+      }
+    }
+  }catch(e){}
+  return null;
+}
+
+function drawMiniMapLocal(center, points){
+  const cvs = document.getElementById('detailMiniMap');
+  const coordsEl = document.getElementById('detailCoords');
+  if (!cvs || !coordsEl) return;
+  const ctx = cvs.getContext('2d');
+  const w = cvs.width, h = cvs.height;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#14161a';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx <= w; gx += 32) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+  for (let gy = 0; gy <= h; gy += 24) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+  if(!center || !isFinite(center.lat) || !isFinite(center.lon)){
+    coordsEl.textContent = 'Coordinates unavailable';
+    return;
+  }
+
+  // local projection: assume ~25km window around center
+  const kmWindow = 25;
+  const kmPerDegLat = 110.574;
+  const kmPerDegLon = 111.320 * Math.cos(center.lat * Math.PI/180);
+  const scaleX = w / (kmWindow*2);
+  const scaleY = h / (kmWindow*2);
+
+  const toXY = (lat, lon)=>{
+    const dxKm = (lon - center.lon) * kmPerDegLon;
+    const dyKm = (center.lat - lat) * kmPerDegLat;
+    const x = w/2 + dxKm * scaleX;
+    const y = h/2 + dyKm * scaleY;
+    return [x,y];
+  };
+
+  // center crosshair
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(w/2-8, h/2); ctx.lineTo(w/2+8, h/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w/2, h/2-8); ctx.lineTo(w/2, h/2+8); ctx.stroke();
+
+  // rings
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  [5,10,20].forEach(km=>{
+    const r = km * scaleX;
+    ctx.beginPath(); ctx.arc(w/2, h/2, r, 0, Math.PI*2); ctx.stroke();
+  });
+
+  // plot points
+  (points||[]).forEach(p=>{
+    if(!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
+    const [x,y] = toXY(p.lat, p.lon);
+    if(x<0||x>w||y<0||y>h) return;
+
+    // style by kind
+    if(p.kind === 'panic'){
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else if(p.kind === 'asset'){
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    } else if(p.kind === 'traveller'){
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
+    }
+  });
+
+  coordsEl.textContent = `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}  •  ±${kmWindow}km`;
+}
+
+async function resolveItemLatLon(item, exposure){
+  // 1) direct coords / coords-in-location string
+  const direct = parseLatLonFromAny(item);
+  if(direct) return direct;
+
+  // 2) average from exposed assets/travellers that have coords
+  const pts = [];
+  (exposure?.assets||[]).forEach(a=>{
+    const c = parseLatLonFromAny(a);
+    if(c) pts.push(c);
+  });
+  (exposure?.travellers||[]).forEach(t=>{
+    const c = parseLatLonFromAny(t);
+    if(c) pts.push(c);
+  });
+  if(pts.length){
+    const lat = pts.reduce((s,p)=>s+p.lat,0)/pts.length;
+    const lon = pts.reduce((s,p)=>s+p.lon,0)/pts.length;
+    return {lat, lon};
+  }
+
+  // 3) geocode city/country/location text via Nominatim
+  const q = [item.location, item.city || item.City, item.country || item.Country].filter(Boolean).join(', ');
+  const geo = await nominatimGeocodeCached(q);
+  if(geo) return geo;
+
+  return null;
+}
+
+
+
 function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
@@ -2976,12 +3141,44 @@ function openDetailPanel(item, relatedList){
     }
   }
 
-  // Mini-map pin (lat/lon come from the event if present)
-  if (typeof item.lat === 'number' && typeof item.lon === 'number') {
-    drawMiniMapPin(item.lat, item.lon);
+  // Mini-map snapshot + smart fallback (coords / exposure / geocode)
+  const coordsEl = document.getElementById('detailCoords');
+  if (coordsEl) coordsEl.textContent = 'Resolving coordinates…';
+
+  // draw immediately if we already have coords
+  const direct = parseLatLonFromAny(item);
+  if (direct) {
+    const points = [];
+    (exposure.assets || []).forEach(a => { const c = parseLatLonFromAny(a); if (c) points.push({ ...c, kind:'asset' }); });
+    (exposure.travellers || []).forEach(t => { const c = parseLatLonFromAny(t); if (c) points.push({ ...c, kind:'traveller' }); });
+    // include active panic pin if present
+    if (window.__ciPanicResolved && window.__ciPanicResolved.lat && window.__ciPanicResolved.lon) {
+      points.push({ lat: window.__ciPanicResolved.lat, lon: window.__ciPanicResolved.lon, kind:'panic' });
+    }
+    drawMiniMapLocal(direct, points);
   } else {
-    drawMiniMapPin(null, null);
+    // clear for now
+    drawMiniMapLocal(null, null);
   }
+
+  // async resolve and redraw (exposure avg / geocode)
+  (async () => {
+    const resolved = await resolveItemLatLon(item, exposure);
+    if (!resolved) {
+      drawMiniMapLocal(null, null);
+      return;
+    }
+    // store back on item for other uses
+    item.lat = resolved.lat; item.lon = resolved.lon;
+
+    const points = [];
+    (exposure.assets || []).forEach(a => { const c = parseLatLonFromAny(a); if (c) points.push({ ...c, kind:'asset' }); });
+    (exposure.travellers || []).forEach(t => { const c = parseLatLonFromAny(t); if (c) points.push({ ...c, kind:'traveller' }); });
+    if (window.__ciPanicResolved && window.__ciPanicResolved.lat && window.__ciPanicResolved.lon) {
+      points.push({ lat: window.__ciPanicResolved.lat, lon: window.__ciPanicResolved.lon, kind:'panic' });
+    }
+    drawMiniMapLocal(resolved, points);
+  })();
 
   // earlier today in same city (re-use the list we already built)
   if (earlier.length) {
@@ -4132,6 +4329,7 @@ setTimeout(settleMap, 600);
 
     const ll = await resolvePanicLatLon(st);
     if(!ll) return;
+    window.__ciPanicResolved = { lat: ll.lat, lon: ll.lon };
 
     const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
     const when = formatPanicWhen(whenRaw);
@@ -4198,7 +4396,7 @@ setTimeout(settleMap, 600);
   function refreshHotelClusters(travByCoord){
     hotelLayer.clearLayers();
 
-    const travellers = (window.CITravellers || []).filter(t => typeof t.lat === 'number' && typeof t.lon === 'number');
+    const travellers = (window.CITravellers || []).map(t => { const c = parseLatLonFromAny(t); return c ? Object.assign({}, t, c) : null; }).filter(Boolean);
     if(!travellers.length) return;
 
     const groups = new Map();
