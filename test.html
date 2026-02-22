@@ -2958,22 +2958,48 @@ function drawMiniMapLocal(center, points){
   const coordsEl = document.getElementById('detailCoords');
   if (!cvs || !coordsEl) return;
   const ctx = cvs.getContext('2d');
-  const w = cvs.width, h = cvs.height;
 
+  // Ensure crisp rendering (canvas sized to CSS pixels * DPR)
+  const dpr = window.devicePixelRatio || 1;
+  const rect = cvs.getBoundingClientRect();
+  const cssW = Math.max(1, Math.round(rect.width));
+  const cssH = Math.max(1, Math.round(rect.height));
+  const w = Math.max(1, Math.round(cssW * dpr));
+  const h = Math.max(1, Math.round(cssH * dpr));
+  if (cvs.width !== w || cvs.height !== h){
+    cvs.width = w; cvs.height = h;
+  }
+  ctx.setTransform(1,0,0,1,0,0);
+
+  // Background (slightly lighter + subtle gradient so it isn't "pure black")
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#14161a';
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, '#141a24');
+  g.addColorStop(1, '#0b0f16');
+  ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+
+  // Subtle vignette
+  const vg = ctx.createRadialGradient(w*0.5, h*0.5, Math.min(w,h)*0.10, w*0.5, h*0.5, Math.min(w,h)*0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+
+  // Grid (more visible than before)
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
   ctx.lineWidth = 1;
-  for (let gx = 0; gx <= w; gx += 32) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
-  for (let gy = 0; gy <= h; gy += 24) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+  const stepX = Math.round(32 * dpr);
+  const stepY = Math.round(24 * dpr);
+  for (let gx = 0; gx <= w; gx += stepX) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+  for (let gy = 0; gy <= h; gy += stepY) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
 
   if(!center || !isFinite(center.lat) || !isFinite(center.lon)){
     coordsEl.textContent = 'Coordinates unavailable';
     return;
   }
 
-  // local projection: assume ~25km window around center
+  // Local projection: assume ~25km window around center
   const kmWindow = 25;
   const kmPerDegLat = 110.574;
   const kmPerDegLon = 111.320 * Math.cos(center.lat * Math.PI/180);
@@ -2988,41 +3014,42 @@ function drawMiniMapLocal(center, points){
     return [x,y];
   };
 
-  // center crosshair
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(w/2-8, h/2); ctx.lineTo(w/2+8, h/2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(w/2, h/2-8); ctx.lineTo(w/2, h/2+8); ctx.stroke();
+  // Center crosshair
+  ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+  ctx.lineWidth = Math.max(1, dpr);
+  ctx.beginPath(); ctx.moveTo(w/2-10*dpr, h/2); ctx.lineTo(w/2+10*dpr, h/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w/2, h/2-10*dpr); ctx.lineTo(w/2, h/2+10*dpr); ctx.stroke();
 
-  // rings
-  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  // Rings
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+  ctx.lineWidth = Math.max(1, dpr);
   [5,10,20].forEach(km=>{
     const r = km * scaleX;
     ctx.beginPath(); ctx.arc(w/2, h/2, r, 0, Math.PI*2); ctx.stroke();
   });
 
-  // plot points
+  // Plot points
   (points||[]).forEach(p=>{
     if(!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
     const [x,y] = toXY(p.lat, p.lon);
     if(x<0||x>w||y<0||y>h) return;
 
-    // style by kind
+    const dot = (color, r)=>{
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    };
+
     if(p.kind === 'panic'){
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      dot('#ef4444', 6*dpr);
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+      ctx.lineWidth = 2*dpr;
+      ctx.beginPath(); ctx.arc(x,y,6*dpr,0,Math.PI*2); ctx.stroke();
     } else if(p.kind === 'asset'){
-      ctx.fillStyle = '#3b82f6';
-      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+      dot('#3b82f6', 5*dpr);
     } else if(p.kind === 'traveller'){
-      ctx.fillStyle = '#f97316';
-      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+      dot('#f97316', 5*dpr);
     } else {
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
+      dot('#ffffff', 4*dpr);
     }
   });
 
