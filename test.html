@@ -3022,7 +3022,7 @@ async function nominatimGeocodeCached(q){
       const c = [lat, lon];
 
       // range rings (km)
-      [5, 15, 25].forEach((km)=>{
+      [0.5, 1, 2].forEach((km)=>{
         L.circle(c, {
           radius: km * 1000,
           color: 'rgba(255,255,255,0.24)',
@@ -3039,28 +3039,21 @@ async function nominatimGeocodeCached(q){
         L.marker([p.lat, p.lon], { icon: iconFor(p.kind || p.type) }).addTo(layers.points);
       });
 
-      // Auto-zoom: keep the mini-map tightly centered on the selected incident
-      function havKm(a,b){
-        const toRad = (x)=> x*Math.PI/180;
-        const R=6371;
-        const dLat=toRad(b[0]-a[0]), dLon=toRad(b[1]-a[1]);
-        const lat1=toRad(a[0]), lat2=toRad(b[0]);
-        const s=Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
-        return 2*R*Math.asin(Math.min(1, Math.sqrt(s)));
-      }
-
-      let maxKm = 0;
+      const centerLL = L.latLng(lat, lon);
+      let maxDistM = 0;
       (points||[]).forEach(p=>{
         if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-        const d = havKm(c, [p.lat, p.lon]);
-        if(d > maxKm) maxKm = d;
+        const d = centerLL.distanceTo([p.lat, p.lon]);
+        if (d > maxDistM) maxDistM = d;
       });
 
-      // Base radius ~5–6km, expand if mapped points are further away (cap for readability)
-      const radiusKm = Math.max(3, Math.min(12, (maxKm ? maxKm*1.6 : 6)));
+      // Tight default view (500m–1km), but auto-expands if markers are farther out
+      let radiusM = 800;
+      if (maxDistM > 0) radiusM = Math.max(500, Math.min(1000, maxDistM * 1.25));
+      if (maxDistM > 1000) radiusM = Math.min(maxDistM * 1.25, 5000);
 
-      const bounds = L.circle(c, { radius: radiusKm * 1000 }).getBounds();
-      map.fitBounds(bounds, { padding: [12,12], maxZoom: 10 });
+      const bounds = L.circle(c, { radius: radiusM }).getBounds();
+      map.fitBounds(bounds, { padding: [10,10] });
       return true;
     }
   };
