@@ -3039,8 +3039,28 @@ async function nominatimGeocodeCached(q){
         L.marker([p.lat, p.lon], { icon: iconFor(p.kind || p.type) }).addTo(layers.points);
       });
 
-      const bounds = L.circle(c, {radius: 25000}).getBounds();
-      map.fitBounds(bounds, { padding: [10,10] });
+      // Auto-zoom: keep the mini-map tightly centered on the selected incident
+      function havKm(a,b){
+        const toRad = (x)=> x*Math.PI/180;
+        const R=6371;
+        const dLat=toRad(b[0]-a[0]), dLon=toRad(b[1]-a[1]);
+        const lat1=toRad(a[0]), lat2=toRad(b[0]);
+        const s=Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+        return 2*R*Math.asin(Math.min(1, Math.sqrt(s)));
+      }
+
+      let maxKm = 0;
+      (points||[]).forEach(p=>{
+        if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
+        const d = havKm(c, [p.lat, p.lon]);
+        if(d > maxKm) maxKm = d;
+      });
+
+      // Base radius ~5–6km, expand if mapped points are further away (cap for readability)
+      const radiusKm = Math.max(3, Math.min(12, (maxKm ? maxKm*1.6 : 6)));
+
+      const bounds = L.circle(c, { radius: radiusKm * 1000 }).getBounds();
+      map.fitBounds(bounds, { padding: [12,12], maxZoom: 10 });
       return true;
     }
   };
