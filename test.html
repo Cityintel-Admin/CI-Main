@@ -4853,12 +4853,12 @@ const CIGeocode = (() => {
 
     const asset = (window.CIAssets || []).find(a => norm(a.city) === key || norm(a.location) === key);
     if(asset && Number.isFinite(+asset.lat) && Number.isFinite(+asset.lng)){
-      return { lat:+asset.lat, lng:+asset.lng, source:"asset" };
+      return { lat:+asset.lat, lon:+asset.lng, source:"asset" };
     }
 
     const trav = (window.CITravellers || []).find(t => norm(t.city) === key || norm(t.location) === key);
     if(trav && Number.isFinite(+trav.lat) && Number.isFinite(+trav.lng)){
-      return { lat:+trav.lat, lng:+trav.lng, source:"traveller" };
+      return { lat:+trav.lat, lon:+trav.lng, source:"traveller" };
     }
 
     return null;
@@ -4929,7 +4929,70 @@ const CIGeocode = (() => {
   }
 
 
-  async function resolveEventLatLng(ev){
+  
+  async function resolveCityLatLng(cityText){
+    const qRaw = String(cityText || '').trim();
+    if(!qRaw) return null;
+
+    // 1) If coords embedded like "51.5123, -0.0262"
+    const m = qRaw.match(/(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/);
+    if(m){
+      const a = parseFloat(m[1]); const b = parseFloat(m[2]);
+      // assume "lat, lon"
+      if(Number.isFinite(a) && Number.isFinite(b)){
+        if(a >= -90 && a <= 90 && b >= -180 && b <= 180) return {lat:a, lon:b, source:"inline"};
+        // maybe "lon, lat"
+        if(b >= -90 && b <= 90 && a >= -180 && a <= 180) return {lat:b, lon:a, source:"inline"};
+      }
+    }
+
+    const q = norm(qRaw);
+
+    // 2) in-memory cache
+    if(mem.has(q)) return mem.get(q);
+
+    // 3) persistent cache
+    const store = loadCache();
+    if(store[q] && Number.isFinite(store[q].lat) && Number.isFinite(store[q].lon)){
+      const hit = { lat: store[q].lat, lon: store[q].lon, source: store[q].source || "cache" };
+      mem.set(q, hit);
+      return hit;
+    }
+
+    // 4) Try known org assets/travellers as a centroid hint
+    const fromPresence = findFromAssetsOrTravellers(qRaw);
+    if(fromPresence && Number.isFinite(fromPresence.lat) && Number.isFinite(fromPresence.lon)){
+      const hit = { lat: fromPresence.lat, lon: fromPresence.lon, source: fromPresence.source || "presence" };
+      mem.set(q, hit);
+      store[q] = { lat: hit.lat, lon: hit.lon, source: hit.source, ts: Date.now() };
+      saveCache(store);
+      return hit;
+    }
+
+    // 5) Backend geocode (if available)
+    const b = await backendGeocodeLookup(qRaw);
+    if(b && Number.isFinite(b.lat) && Number.isFinite(b.lng)){
+      const hit = { lat: b.lat, lon: b.lng, source: "backend" };
+      mem.set(q, hit);
+      store[q] = { lat: hit.lat, lon: hit.lon, source: hit.source, ts: Date.now() };
+      saveCache(store);
+      return hit;
+    }
+
+    // 6) Nominatim fallback
+    const n = await nominatimGeocodeLookup(qRaw);
+    if(n && Number.isFinite(n.lat) && Number.isFinite(n.lon)){
+      const hit = { lat: n.lat, lon: n.lon, source: "nominatim" };
+      mem.set(q, hit);
+      store[q] = { lat: hit.lat, lon: hit.lon, source: hit.source, ts: Date.now() };
+      saveCache(store);
+      return hit;
+    }
+
+    return null;
+  }
+
+async function resolveEventLatLng(ev){
     // First: existing geometry / coordinates
     const direct = extractLatLon(ev);
     if(direct) return { ...direct, source: "event" };
