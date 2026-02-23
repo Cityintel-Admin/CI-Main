@@ -3039,18 +3039,29 @@ async function nominatimGeocodeCached(q){
         L.marker([p.lat, p.lon], { icon: iconFor(p.kind || p.type) }).addTo(layers.points);
       });
 
-      // Fit: keep a tight (≈1km) view around the incident, but include nearby assets/travellers if slightly wider.
-      let bounds = L.latLngBounds([c]);
-      (points||[]).forEach(p => {
-        if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-        bounds.extend([p.lat, p.lon]);
-      });
-      const minBounds = L.circle(c, { radius: 1000 }).getBounds(); // ~1km context window
-      // Ensure at least the 1km window is visible (prevents over-zoom when everything is at the same coordinate)
-      bounds.extend(minBounds.getSouthWest());
-      bounds.extend(minBounds.getNorthEast());
-      map.fitBounds(bounds, { padding: [12, 12], maxZoom: 16 });
-      return true;
+      // Fit to a tight local view (500m–1km by default), expanding only if mapped points are further out
+let radius = 1000; // meters
+try{
+  let maxDist = 0;
+  (points||[]).forEach(p=>{
+    if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
+    const d = L.latLng(lat, lon).distanceTo(L.latLng(p.lat, p.lon));
+    if (isFinite(d) && d > maxDist) maxDist = d;
+  });
+  if (maxDist > 0){
+    // keep it tight but include nearby mapped points
+    radius = Math.max(500, Math.min(1000, maxDist * 1.2));
+    // if something is far away, allow zooming out enough to include it
+    if (maxDist > 1000) radius = Math.min(25000, maxDist * 1.2);
+  }
+}catch(e){}
+
+// When the panel opens, the map may have been created while hidden; invalidate size first.
+try{ setTimeout(()=>{ try{ map.invalidateSize(true); }catch(e){} }, 0); }catch(e){}
+
+const bounds = L.circle(c, {radius}).getBounds();
+map.fitBounds(bounds, { padding: [10,10], maxZoom: 16 });
+return true;
     }
   };
 })();
@@ -3103,8 +3114,8 @@ function drawMiniMapLocal(center, points){
     return;
   }
 
-  // Local projection: assume ~1km window around center
-  const kmWindow = 1; // ~1km window around center (tight, professional view)
+  // Local projection: assume ~25km window around center
+  const kmWindow = 25;
   const kmPerDegLat = 110.574;
   const kmPerDegLon = 111.320 * Math.cos(center.lat * Math.PI/180);
   const scaleX = w / (kmWindow*2);
