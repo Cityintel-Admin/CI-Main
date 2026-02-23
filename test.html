@@ -1,4 +1,4 @@
-  
+ 
 <!doctype html>
 <html lang="en">
 <head>
@@ -3007,84 +3007,56 @@ async function nominatimGeocodeCached(q){
 
   window.__ciDetailMiniLeaflet = {
     update(center, points){
-      const map = ensure();
-      if(!map || !layers) return false;
+  const dm=this.ensure();
+  const map=dm.map;
+  const layers=dm.layers;
+  layers.rings.clearLayers();
+  layers.points.clearLayers();
 
-      layers.rings.clearLayers();
-      layers.points.clearLayers();
+  if(!center || !isFinite(center.lat) || !isFinite(center.lng)) return;
+  const c=L.latLng(center.lat, center.lng);
 
-
-      if(!center || typeof center.lat !== 'number' || typeof center.lon !== 'number'){
-        map.setView([20,0], 1);
-        return true;
-      }
-
-      const lat = center.lat, lon = center.lon;
-      const c = [lat, lon];
-
-      
-// Incident marker + radius overlay (match main map styling)
-try {
-  const incidentRadiusKm = Number(window.ciIncidentRadiusKm || 5);
-  const incidentRadiusM  = Math.max(250, incidentRadiusKm * 1000);
-
-  // Ensure our overlay sits above tiles/markers
-  if (!map.getPane('ciMiniOverlay')) {
-    const pane = map.createPane('ciMiniOverlay');
-    pane.style.zIndex = 650;
-  }
-
-  // Radius ring
-  L.circle(c, {
-    pane: 'ciMiniOverlay',
-    radius: incidentRadiusM,
-    color: '#ff3b30',
-    weight: 3,
-    opacity: 0.95,
-    fillColor: '#ff3b30',
-    fillOpacity: 0.10
-  }).addTo(layers.rings);
-
-  // Incident center point (red dot with white stroke)
-  L.circleMarker(c, {
-    pane: 'ciMiniOverlay',
-    radius: 7,
-    color: '#ffffff',
-    weight: 2,
-    fillColor: '#ff3b30',
-    fillOpacity: 1
-  }).addTo(layers.points);
-} catch(e) {}
-
-      (points||[]).forEach(p=>{
-        if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-        L.marker([p.lat, p.lon], { icon: iconFor(p.kind || p.type) }).addTo(layers.points);
-      });
-
-      // Fit to a tight local view (500m–1km by default), expanding only if mapped points are further out
-let radius = 1000; // meters
-try{
-  let maxDist = 0;
-  (points||[]).forEach(p=>{
-    if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-    const d = L.latLng(lat, lon).distanceTo(L.latLng(p.lat, p.lon));
-    if (isFinite(d) && d > maxDist) maxDist = d;
-  });
-  if (maxDist > 0){
-    // keep it tight but include nearby mapped points
-    radius = Math.max(500, Math.min(1000, maxDist * 1.2));
-    // if something is far away, allow zooming out enough to include it
-    if (maxDist > 1000) radius = Math.min(25000, maxDist * 1.2);
-  }
-}catch(e){}
-
-// When the panel opens, the map may have been created while hidden; invalidate size first.
-try{ setTimeout(()=>{ try{ map.invalidateSize(true); }catch(e){} }, 0); }catch(e){}
-
-map.setView(c, 12, {animate:false});
-return true;
+  // Use the currently-selected incident radius (from the pills). Default to 1km.
+  let radiusKm=1;
+  try{
+    const active=document.querySelector('.radius-pill.active');
+    if(active && active.dataset && active.dataset.radiusKm){
+      const v=parseFloat(active.dataset.radiusKm);
+      if(isFinite(v) && v>0) radiusKm=v;
     }
-  };
+  }catch(e){}
+  if(!isFinite(radiusKm) || radiusKm<=0){
+    const v=parseFloat(window.ciIncidentRadiusKm);
+    if(isFinite(v) && v>0) radiusKm=v;
+    else radiusKm=1;
+  }
+  window.ciIncidentRadiusKm=radiusKm;
+
+  const radiusM=Math.max(250, radiusKm*1000);
+
+  // Incident location marker
+  L.circleMarker(c,{radius:5,color:'#ffffff',weight:2,fillColor:'#ff3b3b',fillOpacity:1,pane:'ciMiniPoints'}).addTo(layers.points);
+
+  // Radius shading + dashed ring (match main map styling)
+  const fill=L.circle(c,{radius:radiusM,color:'#ff3b3b',weight:0,fillColor:'#ff3b3b',fillOpacity:0.10,pane:'ciMiniRings',interactive:false}).addTo(layers.rings);
+  const ring=L.circle(c,{radius:radiusM,color:'#ff3b3b',weight:3,opacity:0.95,fillOpacity:0,dashArray:'6 6',pane:'ciMiniRings',interactive:false}).addTo(layers.rings);
+  ring.bringToFront();
+
+  // Assets / travellers markers
+  (points||[]).forEach(p=>{
+    if(!p || !isFinite(p.lat) || !isFinite(p.lng)) return;
+    const col=p.type==='asset' ? '#3b82f6' : '#f59e0b';
+    L.circleMarker([p.lat,p.lng],{radius:4,color:'#0b0f18',weight:2,fillColor:col,fillOpacity:1,pane:'ciMiniPoints'}).addTo(layers.points);
+  });
+
+  // Keep the radius visible inside the card
+  try{
+    map.fitBounds(fill.getBounds(),{padding:[14,14],maxZoom:12,animate:false});
+  }catch(e){
+    map.setView(c,12,{animate:false});
+  }
+}
+};
 })();
 function drawMiniMapLocal(center, points){
   // Prefer Leaflet mini-map for a professional look
