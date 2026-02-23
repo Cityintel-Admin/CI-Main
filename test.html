@@ -3022,7 +3022,7 @@ async function nominatimGeocodeCached(q){
       const c = [lat, lon];
 
       // range rings (km)
-      [5, 15, 25].forEach((km)=>{
+      [0.25, 0.5, 1].forEach((km)=>{
         L.circle(c, {
           radius: km * 1000,
           color: 'rgba(255,255,255,0.24)',
@@ -3039,8 +3039,17 @@ async function nominatimGeocodeCached(q){
         L.marker([p.lat, p.lon], { icon: iconFor(p.kind || p.type) }).addTo(layers.points);
       });
 
-      const bounds = L.circle(c, {radius: 25000}).getBounds();
-      map.fitBounds(bounds, { padding: [10,10] });
+      // Fit: keep a tight (≈1km) view around the incident, but include nearby assets/travellers if slightly wider.
+      let bounds = L.latLngBounds([c]);
+      (points||[]).forEach(p => {
+        if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
+        bounds.extend([p.lat, p.lon]);
+      });
+      const minBounds = L.circle(c, { radius: 1000 }).getBounds(); // ~1km context window
+      // Ensure at least the 1km window is visible (prevents over-zoom when everything is at the same coordinate)
+      bounds.extend(minBounds.getSouthWest());
+      bounds.extend(minBounds.getNorthEast());
+      map.fitBounds(bounds, { padding: [12, 12], maxZoom: 16 });
       return true;
     }
   };
@@ -3094,8 +3103,8 @@ function drawMiniMapLocal(center, points){
     return;
   }
 
-  // Local projection: assume ~25km window around center
-  const kmWindow = 25;
+  // Local projection: assume ~1km window around center
+  const kmWindow = 1; // ~1km window around center (tight, professional view)
   const kmPerDegLat = 110.574;
   const kmPerDegLon = 111.320 * Math.cos(center.lat * Math.PI/180);
   const scaleX = w / (kmWindow*2);
