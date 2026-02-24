@@ -1,4 +1,4 @@
- 
+  
 <!doctype html>
 <html lang="en">
 <head>
@@ -3039,9 +3039,6 @@ async function nominatimGeocodeCached(q){
     const c = normalizeCenter(centerLL);
     if (!c) return false;
 
-    const km = Number(radiusKm ?? window.ciIncidentRadiusKm ?? 1);
-    const rMeters = (Number.isFinite(km) ? km : 1) * 1000;
-
     // If the map was created while hidden, Leaflet needs this.
     try{
       setTimeout(()=>{ try{ map.invalidateSize(true); }catch(e){} }, 0);
@@ -3049,24 +3046,26 @@ async function nominatimGeocodeCached(q){
 
     clearLayers();
 
-    // Incident marker + radius ring
-    L.circleMarker(c, {
-      radius: 6,
-      weight: 2,
-      color: '#fff',
-      fillColor: '#ff3b30',
-      fillOpacity: 1
-    }).addTo(layerGroup);
+    // Incident marker + radius
+    const rMeters = (Number(window.__ciIncidentRadiusKm || window.ciIncidentRadiusKm || 1) || 1) * 1000;
 
-    L.circle(c, {
-      radius: rMeters,
-      color: '#ff3b30',
-      weight: 2,
-      opacity: 0.95,
-      fillColor: '#ff3b30',
-      fillOpacity: 0.12,
-      dashArray: '6 6'
-    }).addTo(layerGroup);
+      const incidentMarker = L.circleMarker(c, {
+        radius: 6,
+        color: "#ffffff",
+        weight: 2,
+        fillColor: "#ff3b30",
+        fillOpacity: 1
+      }).addTo(layerGroup);
+
+      const circle = L.circle(c, {
+        radius: rMeters,
+        color: "#ff3b30",
+        weight: 2,
+        opacity: 0.9,
+        dashArray: "6 6",
+        fillColor: "#ff3b30",
+        fillOpacity: 0.12
+      }).addTo(layerGroup);
 
     // Optional nearby points (assets/travellers) if coordinates are provided
     if (Array.isArray(points)){
@@ -3079,8 +3078,19 @@ async function nominatimGeocodeCached(q){
       });
     }
 
-    // Lock view to zoom 12 like the main map selection jump
-    map.setView(c, 12, { animate: false });
+    // Fit the mini-map to the incident radius (more consistent than a fixed zoom)
+    try {
+        map.fitBounds(circle.getBounds(), { padding: [18, 18], maxZoom: 12, animate: false });
+    } catch (e) {
+        // Fallback if bounds are unavailable
+        map.setView(c, 12, { animate: false });
+      }
+
+
+    // Keep the incident pin above asset/traveller markers
+    try { circle.bringToFront(); } catch (e) {}
+    try { incidentMarker.bringToFront(); } catch (e) {}
+
 
     return true;
   }
