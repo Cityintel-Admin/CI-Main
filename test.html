@@ -1,4 +1,4 @@
-  
+ 
 <!doctype html>
 <html lang="en">
 <head>
@@ -2957,8 +2957,13 @@ async function nominatimGeocodeCached(q){
 
 /* ---- Detail Mini-map (Leaflet) ---- */
 (function(){
+  // Leaflet mini-map inside detail panel
+  // Goal: mirror the main map view (same center/zoom) and always show:
+  //  - incident marker at the feed location
+  //  - dashed radius ring (uses currently selected incident radius)
+
   let dm = null;
-  let layers = null;
+  let layerGroup = null;
 
   function iconFor(kind){
     if (kind === 'asset'){
@@ -2973,119 +2978,118 @@ async function nominatimGeocodeCached(q){
     return L.divIcon({ className:'ci-trav-marker', html:'•', iconSize:[14,14] });
   }
 
+  function normalizeCenter(center){
+    if (!center) return null;
+
+    // Accept [lat, lon]
+    if (Array.isArray(center) && center.length >= 2){
+      const lat = Number(center[0]);
+      const lon = Number(center[1]);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+      return null;
+    }
+
+    // Accept {lat, lon} or {lat, lng}
+    const lat = Number(center.lat);
+    const lon = Number(center.lon ?? center.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+
+    // Accept {latitude, longitude}
+    const lat2 = Number(center.latitude);
+    const lon2 = Number(center.longitude);
+    if (Number.isFinite(lat2) && Number.isFinite(lon2)) return [lat2, lon2];
+
+    return null;
+  }
+
   function ensure(){
     const el = document.getElementById('detailMiniMapLeaflet');
-    if(!el || typeof L === 'undefined') return null;
-    if(dm) return dm;
+    if (!el) return null;
 
-    dm = L.map('detailMiniMapLeaflet', {
-      zoomControl: false,
-      attributionControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      boxZoom: false,
-      keyboard: false,
-      tap: false
-    });
+    if (!dm){
+      dm = L.map(el, {
+        zoomControl: false,
+        attributionControl: false,
+        dragging: true,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false
+      });
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri',
-      noWrap: true,
-      detectRetina: true,
-      updateWhenIdle: true,
-      keepBuffer: 4
-    }).addTo(dm);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19
+      }).addTo(dm);
 
-    layers = {
-      rings: L.layerGroup().addTo(dm),
-      points: L.layerGroup().addTo(dm)
-    };
-
+      layerGroup = L.layerGroup().addTo(dm);
+    }
     return dm;
   }
 
-  window.__ciDetailMiniLeaflet = {
-    update(center, points){
-      const map = ensure();
-      if(!map || !layers) return false;
-
-      layers.rings.clearLayers();
-      layers.points.clearLayers();
-
-
-      if(!center || typeof center.lat !== 'number' || typeof center.lon !== 'number'){
-        map.setView([20,0], 1);
-        return true;
-      }
-
-      const lat = center.lat, lon = center.lon;
-      const c = [lat, lon];
-
-      
-// Incident marker + radius overlay (match main map styling)
-try {
-  const incidentRadiusKm = Number(window.ciIncidentRadiusKm || 5);
-  const incidentRadiusM  = Math.max(250, incidentRadiusKm * 1000);
-
-  // Ensure our overlay sits above tiles/markers
-  if (!map.getPane('ciMiniOverlay')) {
-    const pane = map.createPane('ciMiniOverlay');
-    pane.style.zIndex = 650;
+  function clearLayers(){
+    if (!layerGroup) return;
+    try{ layerGroup.clearLayers(); }catch(e){}
   }
 
-  // Radius ring
-  L.circle(c, {
-    pane: 'ciMiniOverlay',
-    radius: incidentRadiusM,
-    color: '#ff3b30',
-    weight: 3,
-    opacity: 0.95,
-    fillColor: '#ff3b30',
-    fillOpacity: 0.10
-  }).addTo(layers.rings);
+  function draw(centerLL, points, radiusKm){
+    const map = ensure();
+    if (!map) return false;
 
-  // Incident center point (red dot with white stroke)
-  L.circleMarker(c, {
-    pane: 'ciMiniOverlay',
-    radius: 7,
-    color: '#ffffff',
-    weight: 2,
-    fillColor: '#ff3b30',
-    fillOpacity: 1
-  }).addTo(layers.points);
-} catch(e) {}
+    const c = normalizeCenter(centerLL);
+    if (!c) return false;
 
-      (points||[]).forEach(p=>{
-        if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-        L.marker([p.lat, p.lon], { icon: iconFor(p.kind || p.type) }).addTo(layers.points);
+    const km = Number(radiusKm ?? window.ciIncidentRadiusKm ?? 1);
+    const rMeters = (Number.isFinite(km) ? km : 1) * 1000;
+
+    // If the map was created while hidden, Leaflet needs this.
+    try{
+      setTimeout(()=>{ try{ map.invalidateSize(true); }catch(e){} }, 0);
+    }catch(e){}
+
+    clearLayers();
+
+    // Incident marker + radius ring
+    L.circleMarker(c, {
+      radius: 6,
+      weight: 2,
+      color: '#fff',
+      fillColor: '#ff3b30',
+      fillOpacity: 1
+    }).addTo(layerGroup);
+
+    L.circle(c, {
+      radius: rMeters,
+      color: '#ff3b30',
+      weight: 2,
+      opacity: 0.95,
+      fillColor: '#ff3b30',
+      fillOpacity: 0.12,
+      dashArray: '6 6'
+    }).addTo(layerGroup);
+
+    // Optional nearby points (assets/travellers) if coordinates are provided
+    if (Array.isArray(points)){
+      points.forEach(p=>{
+        const lat = Number(p?.lat);
+        const lon = Number(p?.lon ?? p?.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        const kind = p.kind || p.type || 'traveller';
+        L.marker([lat, lon], { icon: iconFor(kind) }).addTo(layerGroup);
       });
-
-      // Fit to a tight local view (500m–1km by default), expanding only if mapped points are further out
-let radius = 1000; // meters
-try{
-  let maxDist = 0;
-  (points||[]).forEach(p=>{
-    if(!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-    const d = L.latLng(lat, lon).distanceTo(L.latLng(p.lat, p.lon));
-    if (isFinite(d) && d > maxDist) maxDist = d;
-  });
-  if (maxDist > 0){
-    // keep it tight but include nearby mapped points
-    radius = Math.max(500, Math.min(1000, maxDist * 1.2));
-    // if something is far away, allow zooming out enough to include it
-    if (maxDist > 1000) radius = Math.min(25000, maxDist * 1.2);
-  }
-}catch(e){}
-
-// When the panel opens, the map may have been created while hidden; invalidate size first.
-try{ setTimeout(()=>{ try{ map.invalidateSize(true); }catch(e){} }, 0); }catch(e){}
-
-map.setView(c, 12, {animate:false});
-return true;
     }
+
+    // Lock view to zoom 12 like the main map selection jump
+    map.setView(c, 12, { animate: false });
+
+    return true;
+  }
+
+  window.__ciDetailMiniLeaflet = {
+    ensure,
+    update: draw
   };
-})();
+})();;
 function drawMiniMapLocal(center, points){
   // Prefer Leaflet mini-map for a professional look
   try{ if(window.__ciDetailMiniLeaflet && window.__ciDetailMiniLeaflet.update(center, points)) return; }catch(e){}
