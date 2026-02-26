@@ -17,6 +17,38 @@ window.alertsData =[
   },
 
  {
+  title: "London Protest for Refugees in Egypt",
+  city: "London",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low to Medium",
+  time: "2026-02-28T12:00:00",
+  source: "Event Poster",
+  summary: "A scheduled demonstration in support of refugees in Egypt. Participants are to meet at the Egyptian Embassy (26 South Street, London W1K 1DW) before marching to the Ambassador's residence."
+},
+
+  {
+    title: "March through Brighton: Say No to the Jew Hunt & BDS",
+    city: "Brighton",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "mid",
+    time: "2026-02-28T11:30:00",
+    source: "https://www.facebook.com/SussexFriendsOfIsrael",
+    summary: "A march and rally organized by Sussex Friends of Israel, Jewish & Proud, Stop The Hate, and Our Fight. The event starts at Brighton Train Station at 11:30 am, followed by guest speakers and a social gathering at 2:15 pm, aimed at opposing antisemitism and the BDS movement."
+  },
+
+  {
+    title: "Free Iran Protest at 10 Downing Street",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Mid",
+    time: "2026-03-01T14:00:00",
+    source: "https://www.instagram.com/p/DTLbe0rCMVT/",
+    summary: "A large-scale protest organized by the Lion Guard of Iran to support the Lion and Sun revolution. Demands include the UK government's recognition of the revolution and the designation of the IRGC as a terrorist organization."
+  },
+{
     title: "Ukraine Solidarity Rally and March",
     city: "Bordeaux",
     country: "France",
@@ -26,6 +58,7 @@ window.alertsData =[
     source: "Crisis24 / Activist Notices",
     summary: "Rally and march at Place de l’Ukraine to mark the fourth anniversary of the conflict. Scheduled until 16:30."
   },
+
   {
     title: "Ukraine Solidarity Demonstration",
     city: "London",
@@ -13875,6 +13908,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
