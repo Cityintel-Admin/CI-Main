@@ -17,6 +17,137 @@ window.alertsData =[
   },
 
  {
+    title: "Greek Embassy protest",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-02-28T12:00:00",
+    source: "",
+    summary: "Greek Solidarity Network UK protest to mark the anniversary of the Tempi train crash incident."
+  },
+  {
+    title: "March Against The Machines",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-02-28T12:00:00",
+    source: "",
+    summary: "Pull the Plug protest against advanced AI development, marching from OpenAI office to an undisclosed location."
+  },
+  {
+    title: "Stage of Freedom march",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-28T13:00:00",
+    source: "C",
+    summary: "Large-scale march (1500-2000 expected) regarding Iran conflict, moving from 10 Downing Street toward the Iranian Embassy."
+  },
+  {
+    title: "Anti-Government March against the Epstein Files",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-02-28T13:00:00",
+    source: "",
+    summary: "Protest at Parliament Square demanding government answers following the release of the Epstein Files."
+  },
+  {
+    title: "Solidarity with the Iranian Uprising",
+    city: "London",
+    country: "United Kingdom",
+    continent": "Europe",
+    risk: "Med",
+    time: "2026-02-28T13:00:00",
+    source: "",
+    summary: "Weekly pro-Iran gathering and speeches at Richmond Terrace followed by a march to the Iranian Embassy."
+  },
+  {
+    title: "Protest Hyatt Hotels",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-28T14:00:00",
+    source: "CIS Security",
+    summary: "Dolphin Freedom UK animal rights protest at Great Scotland Yard Hotel against alleged dolphin cruelty in Mexico."
+  },
+  {
+    title: "End Colonial control over Gaza",
+    city: "Manchester",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-02-28T12:00:00",
+    source: "",
+    summary: "Manchester Palestine Movement demonstration in support of Palestinians at Piccadilly Gardens."
+  },
+  {
+    title: "No to Illegal Migrants",
+    city: "Leeds",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-28T11:30:00",
+    source: "CIS Security",
+    summary: "Stand Up Leeds protest at Leeds Art Gallery; local disruption and counter-protests are expected."
+  },
+  {
+    title: "Stand Up Fight Back",
+    city: "Newcastle",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-02-28T11:30:00",
+    source: "",
+    summary: "Newcastle Anti-fascists counter-protest outside hotels housing asylum seekers."
+  },
+  {
+    title: "Smash British Imperialism",
+    city: "Newcastle",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-02-28T12:00:00",
+    source: "CIS Security",
+    summary: "Protest march in support of Palestine, Venezuela, and Cuba moving from Haymarket to an undisclosed location."
+  },
+  {
+    title: "Day of action against Home Bargains",
+    city: "Edinburgh",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-02-28T11:00:00",
+    source: "",
+    summary: "Scottish PSC pro-Palestine protest at Meadowbank Retail Park demanding removal of Israeli products."
+  },
+  {
+    title: "Drop Allianz!",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-02-28T11:00:00",
+    source: "https://www.irishnews.com/gaa/gaelic-football/anti-allianz-protest-planned-at-croke-park-for-launch-of-national-leagues-QVFQKIUSURAXRBRFIYNRLIE6AU/",
+    summary: "Teachers for Palestine protest following the annual GAA Congress, marching from Gill's Pub to Croke Park."
+  },
+  {
+    title: "Emergency Winter payment protest",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-02-28T13:00:00",
+    source: "Disability Federation of Ireland / Irish Wheelchair Association",
+    summary: "Disability Federation of Ireland protest in support of people with disabilities at the Garden of Remembrance."
+  },
+
+ {
   title: "London Protest for Refugees in Egypt",
   city: "London",
   country: "United Kingdom",
@@ -13908,6 +14039,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
