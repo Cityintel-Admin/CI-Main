@@ -23,7 +23,7 @@ window.alertsData =[
     continent: "Europe",
     risk: "Medium",
     time: "2026-03-01T14:00:00",
-    source: "CIS Security",
+    source: "",
     summary: "Static protest at Trafalgar Square raising awareness for political prisoners in support of Iranians amid ongoing conflicts."
   },
   {
@@ -14091,6 +14091,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
