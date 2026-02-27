@@ -16,6 +16,58 @@ window.alertsData =[
     summary: ""
   },
 
+  {
+    title: "Woman Life Freedom",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-03-01T14:00:00",
+    source: "CIS Security",
+    summary: "Static protest at Trafalgar Square raising awareness for political prisoners in support of Iranians amid ongoing conflicts."
+  },
+  {
+    title: "Free Iran protest",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-01T14:00:00",
+    source: "",
+    summary: "Lion Guard of Iran protest assembling at Downing Street before marching to the Iranian Embassy in support of Iran. Expected high attendance and potential for disorder as seen in recent embassy protests."
+  },
+  {
+    title: "Peace and Aid for Gaza",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-01T13:00:00",
+    source: "UK Friends of Standing Together",
+    summary: "Standing Together UK protest at IFO (Bird Cage), King's Cross, in support of Palestinian and Jewish citizens of Israel against war and occupation, calling for a real ceasefire."
+  },
+  {
+    title: "Pro Choice demonstration",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-01T12:00:00",
+    source: "Brixton Buzz",
+    summary: "Pro-Choice campaigners demonstrating outside Lambeth Town Hall in response to anti-abortion campaigns (40 Days for Life) taking place nearby."
+  },
+  {
+    title: "Resist fascism",
+    city: "Manchester",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-01T13:00:00",
+    source: "",
+    summary: "Young Struggle Manchester protest in solidarity with people seeking asylum in the UK at Manchester South Hotel."
+  },
+ 
+
  {
     title: "Greek Embassy protest",
     city: "London",
@@ -14039,6 +14091,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
