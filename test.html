@@ -1,4 +1,4 @@
-    
+   
 <!doctype html>
 <html lang="en">
 <head>
@@ -1850,6 +1850,71 @@ async function loadOrgContext() {
   line-height:18px;
   text-align:center;
 }
+
+/* ===== Operator Disposition / Queues ===== */
+.disp-row{ display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.disp-label{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.72); }
+.disp-select{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e9edf2;
+  border-radius: 10px;
+  padding: 6px 10px;
+  outline: none;
+  font-weight: 600;
+}
+.disp-select:focus{ border-color: rgba(208,22,22,0.8); box-shadow: 0 0 0 3px rgba(208,22,22,0.18); }
+.disp-updated{ font-size:11px; opacity:.75; margin-left:6px; }
+.disp-note-row{ margin-top:8px; }
+.disp-note{
+  width:100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e9edf2;
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline:none;
+}
+.disp-note:focus{ border-color: rgba(208,22,22,0.8); box-shadow: 0 0 0 3px rgba(208,22,22,0.18); }
+
+.ci-status-pill{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:2px 8px; border-radius:999px;
+  font-size:11px; font-weight:700; letter-spacing:.02em;
+  border:1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color:#e9edf2;
+}
+.ci-status-pill[data-status="untriaged"]{ display:none; }
+.ci-status-pill[data-status="escalated"]{ border-color: rgba(255,90,95,0.6); background: rgba(255,90,95,0.16); }
+.ci-status-pill[data-status="monitoring"]{ border-color: rgba(240,180,41,0.6); background: rgba(240,180,41,0.14); }
+.ci-status-pill[data-status="cleared"]{ border-color: rgba(51,196,141,0.6); background: rgba(51,196,141,0.14); }
+
+.queue-grid{ display:flex; gap:8px; flex-wrap:wrap; }
+.queue-btn{
+  flex:1 1 auto;
+  background: rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.14);
+  color:#e9edf2;
+  border-radius:12px;
+  padding:8px 10px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  min-width: 120px;
+}
+.queue-btn:hover{ border-color: rgba(208,22,22,0.55); }
+.queue-count{
+  display:inline-block;
+  min-width: 22px;
+  text-align:center;
+  padding:2px 8px;
+  border-radius:999px;
+  background: rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.14);
+  font-size:11px;
+}
+
 </style>
 </head>
 
@@ -1971,6 +2036,25 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="live-map-sidebar-section" id="mapFeedsPanel">
   <div class="live-map-sidebar-title">Feeds on this page</div>
   <div id="liveMapFeedsList" class="live-map-feeds-list"></div>
+
+  <!-- Operator Queues (workflow views, not geographic feeds) -->
+  <div class="live-map-queues">
+    <div class="live-map-sidebar-title" style="margin-top:12px;">Operator queues</div>
+    <div class="queue-grid" id="operatorQueues">
+      <button type="button" class="queue-btn" data-queue="escalated">
+        Escalated <span class="queue-count" id="qEscalated">0</span>
+      </button>
+      <button type="button" class="queue-btn" data-queue="monitoring">
+        Monitoring <span class="queue-count" id="qMonitoring">0</span>
+      </button>
+      <button type="button" class="queue-btn" data-queue="cleared">
+        Cleared <span class="queue-count" id="qCleared">0</span>
+      </button>
+    </div>
+    <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
+  </div>
+
+
         <!-- JS will fill this with buttons like “EU”, “London”, etc -->
       </div>
        <button class="live-map-add-btn"
@@ -2066,6 +2150,21 @@ document.addEventListener('DOMContentLoaded', () => {
       <div id="detailTitle" class="detail-title">[Incident Title]</div>
       <div class="detail-meta" id="detailMeta">
         [City / Risk / Time]
+      </div>
+
+      <!-- Operator Disposition -->
+      <div class="disp-row">
+        <label class="disp-label" for="detailDisposition">Disposition</label>
+        <select id="detailDisposition" class="disp-select">
+          <option value="untriaged">Untriaged</option>
+          <option value="escalated">Escalated</option>
+          <option value="monitoring">Monitoring</option>
+          <option value="cleared">Cleared</option>
+        </select>
+        <span id="detailDispositionUpdated" class="disp-updated" style="display:none;"></span>
+      </div>
+      <div id="detailDispositionNoteRow" class="disp-note-row" style="display:none;">
+        <input id="detailDispositionNote" class="disp-note" type="text" maxlength="120" placeholder="Optional note (e.g., notify comms, traveller check-in)"/>
       </div>
     </div>
     <button class="detail-close" id="detailClose">Close ✕</button>
@@ -2279,6 +2378,9 @@ function publishFeedSummary(feed, events){
   // Let the map sidebar refresh if it's ready
   if (typeof window.ciUpdateMapSidebar === 'function') {
     window.ciUpdateMapSidebar(window.ciFeedSummaries);
+  }
+  if (typeof window.ciUpdateQueueCounts === 'function') {
+    window.ciUpdateQueueCounts();
   }
 }
 
@@ -2842,6 +2944,153 @@ const detailCloseBtn = document.getElementById('detailClose');
 const viewFullBtn   = document.getElementById('viewFullBtn');
 const detailTagEl   = document.getElementById('detailTag'); 
 
+
+// -------------------- OPERATOR DISPOSITION (per-alert, per-user) --------------------
+const CI_ALERT_STATUS_KEY = 'ci_alert_status_v1';
+
+const detailDispositionEl = document.getElementById('detailDisposition');
+const detailDispositionUpdatedEl = document.getElementById('detailDispositionUpdated');
+const detailDispositionNoteRowEl = document.getElementById('detailDispositionNoteRow');
+const detailDispositionNoteEl = document.getElementById('detailDispositionNote');
+
+function ciNowIso(){
+  try{ return new Date().toISOString(); }catch{ return String(Date.now()); }
+}
+
+function getOperatorEmail(){
+  try{
+    // preferred
+    const e = localStorage.getItem('ci_user_email');
+    if (e) return String(e).toLowerCase();
+  }catch(_){}
+  try{
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    if (p && p.email) return String(p.email).toLowerCase();
+  }catch(_){}
+  try{
+    if (window.CIAuth && CIAuth.isLoggedIn()){
+      const u = CIAuth.who();
+      if (u && u.email) return String(u.email).toLowerCase();
+    }
+  }catch(_){}
+  return 'anonymous@cityintel.local';
+}
+
+function ciHash(str){
+  const s = String(str || '');
+  let h = 0;
+  for (let i=0;i<s.length;i++){
+    h = ((h<<5)-h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h).toString(36);
+}
+
+function alertKey(ev){
+  if (!ev) return 'ev_' + ciHash('null');
+  const id = ev.id || ev._id || ev.event_id;
+  if (id) return 'id_' + String(id);
+  const base = [
+    ev.title || '',
+    ev.city || ev.City || '',
+    ev.country || ev.Country || '',
+    ev.when || ev.time || '',
+    ev.src || ev.source || '',
+    ev.url || ''
+  ].join('|').toLowerCase();
+  return 'h_' + ciHash(base);
+}
+
+function loadAlertStatusMap(){
+  try{
+    return JSON.parse(localStorage.getItem(CI_ALERT_STATUS_KEY) || '{}') || {};
+  }catch(_){ return {}; }
+}
+
+function saveAlertStatusMap(map){
+  try{ localStorage.setItem(CI_ALERT_STATUS_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+
+function getStatusRecord(ev){
+  const user = getOperatorEmail();
+  const key = alertKey(ev);
+  const map = loadAlertStatusMap();
+  const rec = map?.[user]?.[key] || null;
+  return { user, key, rec, map };
+}
+
+function getDisposition(ev){
+  const { rec } = getStatusRecord(ev);
+  return (rec && rec.status) ? String(rec.status) : 'untriaged';
+}
+function getDispositionNote(ev){
+  const { rec } = getStatusRecord(ev);
+  return (rec && rec.note) ? String(rec.note) : '';
+}
+
+function setDisposition(ev, status, note){
+  const { user, key, map } = getStatusRecord(ev);
+  const st = String(status || 'untriaged').toLowerCase();
+  const safeSt = (['untriaged','escalated','monitoring','cleared'].includes(st)) ? st : 'untriaged';
+
+  map[user] = map[user] || {};
+  map[user][key] = {
+    status: safeSt,
+    note: String(note || '').slice(0, 120),
+    updatedAt: Date.now(),
+    updatedIso: ciNowIso()
+  };
+  saveAlertStatusMap(map);
+  return map[user][key];
+}
+
+function formatUpdatedAt(rec){
+  try{
+    if (!rec || !rec.updatedAt) return '';
+    const d = new Date(rec.updatedAt);
+    return 'Updated ' + d.toLocaleString();
+  }catch(_){ return ''; }
+}
+
+function statusLabel(st){
+  const s = String(st || 'untriaged');
+  if (s === 'escalated') return 'Escalated';
+  if (s === 'monitoring') return 'Monitoring';
+  if (s === 'cleared') return 'Cleared';
+  return 'Untriaged';
+}
+
+function renderStatusPill(st){
+  const s = String(st || 'untriaged');
+  return `<span class="ci-status-pill" data-status="${s}">${statusLabel(s)}</span>`;
+}
+
+function refreshStatusBadges(){
+  // Any element can opt-in by having [data-alertkey] + child ".ci-status-pill"
+  const user = getOperatorEmail();
+  const map = loadAlertStatusMap();
+  const userMap = map[user] || {};
+
+  document.querySelectorAll('[data-alertkey]').forEach(el=>{
+    const k = el.getAttribute('data-alertkey');
+    if (!k) return;
+    const rec = userMap[k] || null;
+    const st = rec?.status || 'untriaged';
+
+    const pill = el.querySelector('.ci-status-pill');
+    if (pill){
+      pill.setAttribute('data-status', st);
+      pill.textContent = statusLabel(st);
+      pill.style.display = (st === 'untriaged') ? 'none' : '';
+    }
+  });
+
+  // update queue counts too
+  if (typeof window.ciUpdateQueueCounts === 'function') {
+    window.ciUpdateQueueCounts();
+  }
+}
+
 function lonLatToXY(lon, lat, w, h) {
   // quick equirectangular projection
   const x = (lon + 180) * (w / 360);
@@ -3250,6 +3499,38 @@ function openDetailPanel(item, relatedList){
   detailTitleEl.textContent = item.title || '[Incident Title]';
   detailMetaEl.textContent = `${item.city || 'Unknown'} • ${item.risk || 'n/a'} • ${fmtWhen(item.when)}`;
 
+  // --- disposition UI ---
+  try{
+    window.__ciCurrentDetailItem = item;
+    const k = alertKey(item);
+    detailPanel.setAttribute('data-alertkey', k);
+
+    const st = getDisposition(item);
+    const note = getDispositionNote(item);
+
+    if (detailDispositionEl){
+      detailDispositionEl.value = st;
+    }
+    if (detailDispositionNoteEl){
+      detailDispositionNoteEl.value = note || '';
+    }
+    if (detailDispositionNoteRowEl){
+      detailDispositionNoteRowEl.style.display = (st !== 'untriaged') ? '' : 'none';
+    }
+
+    if (detailDispositionUpdatedEl){
+      const { rec } = getStatusRecord(item);
+      const msg = formatUpdatedAt(rec);
+      if (msg){
+        detailDispositionUpdatedEl.style.display = '';
+        detailDispositionUpdatedEl.textContent = msg;
+      }else{
+        detailDispositionUpdatedEl.style.display = 'none';
+        detailDispositionUpdatedEl.textContent = '';
+      }
+    }
+  }catch(e){ console.warn('disposition init failed', e); }
+
   if (detailTagEl) {
     const { emoji, label } = classifyIncident(item || {});
     detailTagEl.textContent = `${emoji} ${label}`;
@@ -3422,6 +3703,49 @@ document.addEventListener('keydown', (e) => {
     closeDetailPanel();
   }
 });
+
+
+// bind disposition controls once
+(function bindDisposition(){
+  if (window.__ciDispositionBound) return;
+  window.__ciDispositionBound = true;
+
+  if (!detailDispositionEl) return;
+
+  const saveFromUI = () => {
+    const item = window.__ciCurrentDetailItem;
+    if (!item) return;
+
+    const st = (detailDispositionEl.value || 'untriaged').toLowerCase();
+    const note = detailDispositionNoteEl ? (detailDispositionNoteEl.value || '') : '';
+    const rec = setDisposition(item, st, note);
+
+    // note row visibility
+    if (detailDispositionNoteRowEl){
+      detailDispositionNoteRowEl.style.display = (st !== 'untriaged') ? '' : 'none';
+    }
+
+    // updated label
+    if (detailDispositionUpdatedEl){
+      const msg = formatUpdatedAt(rec);
+      detailDispositionUpdatedEl.style.display = msg ? '' : 'none';
+      detailDispositionUpdatedEl.textContent = msg || '';
+    }
+
+    // refresh any pills/badges already rendered
+    refreshStatusBadges();
+  };
+
+  detailDispositionEl.addEventListener('change', saveFromUI);
+
+  if (detailDispositionNoteEl){
+    detailDispositionNoteEl.addEventListener('input', () => {
+      // only persist note when disposition isn't untriaged
+      if ((detailDispositionEl.value || 'untriaged') === 'untriaged') return;
+      saveFromUI();
+    });
+  }
+})();
 
 // Re-render a single card (fetch -> DOM -> schedule next refresh)
 async function refreshSingleFeedCard(cardEl, feed){
@@ -3646,6 +3970,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
       }
 
             groupEl.className = `event-group ${ageClass}`;
+            groupEl.setAttribute('data-alertkey', alertKey(first));
             groupEl.innerHTML = `
   	<div class="eg-header">
     <div class="eg-title">
@@ -3660,6 +3985,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
 
   <div class="eg-sub">
     <div class="eg-risk" style="color:${riskColor}">${risk || 'n/a'}</div>
+    ${renderStatusPill(getDisposition(first))}
     <div class="eg-when">${whenNice} • ${ageLabel(first.when)}</div>
   </div>
 
@@ -4928,6 +5254,8 @@ const assetIcon = L.divIcon({
       row.appendChild(removeBtn);
       host.appendChild(row);
     });
+
+    if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
   };
 window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
 
@@ -4965,6 +5293,136 @@ function redrawIncidentRadius(){
   if (!feedsPanel || !alertsPanel || !alertsTitle || !alertsList || !backBtn) return;
 
   let openFeedId = null;
+
+  // --- Operator queues (Escalated / Monitoring / Cleared) ----------------
+  function collectAllCachedEvents(){
+    const feeds = (typeof loadFeeds === 'function') ? loadFeeds() : [];
+    const out = [];
+    feeds.forEach(f=>{
+      const evs = getFeedEvents(f.id) || [];
+      evs.forEach(ev=>{
+        // clone lightweight with feed context
+        const item = Object.assign({}, ev);
+        item._feedId = f.id;
+        item._feedLabel = (f.places && f.places.length) ? f.places.join(', ') :
+                          (f.keywords && f.keywords.length) ? f.keywords.join(', ') :
+                          (f.name || f.id || 'Feed');
+        out.push(item);
+      });
+    });
+    // sort newest first
+    out.sort((a,b)=>(Date.parse(b.when)||0)-(Date.parse(a.when)||0));
+    return out;
+  }
+
+  function filterByDisposition(list, st){
+    const want = String(st||'').toLowerCase();
+    if (!want) return list || [];
+    return (list||[]).filter(ev => getDisposition(ev) === want);
+  }
+
+  function renderQueueList(status){
+    const st = String(status||'').toLowerCase();
+    const label =
+      st === 'escalated' ? 'Escalated queue' :
+      st === 'monitoring' ? 'Monitoring queue' :
+      st === 'cleared' ? 'Cleared queue' :
+      'Queue';
+
+    const all = collectAllCachedEvents();
+    const items = filterByDisposition(all, st).slice(0, 30);
+
+    openFeedId = '__queue__' + st;
+    window.__ciOpenFeedId = openFeedId;
+
+    alertsTitle.textContent = label;
+    alertsList.innerHTML = '';
+
+    if (!items.length){
+      alertsList.innerHTML = `<div class="map-alert-empty">No items in ${label.toLowerCase()}.</div>`;
+      showAlerts();
+      return;
+    }
+
+    const rows = [];
+    const selectEvent = async (ev, rowEl) => {
+      rows.forEach(r => r.classList.remove('active'));
+      if (rowEl) rowEl.classList.add('active');
+
+      // Prefer opening detail with the originating feed's list if possible
+      const related = (ev._feedId) ? getFeedEvents(ev._feedId) : items;
+      if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, related);
+      else if (typeof openDetailPanel === 'function') openDetailPanel(ev, related);
+
+      // scroll to originating feed card if we know it
+      if (ev._feedId && typeof window.ciScrollToFeed === 'function') {
+        window.ciScrollToFeed(ev._feedId);
+      }
+
+      const ll = await CIGeocode.resolveEventLatLng(ev);
+      if (ll){
+        document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+          detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
+        }));
+      }
+    };
+
+    items.forEach(ev=>{
+      const title = ev.title || ev.summary || ev.description || '(no title)';
+      const city  = ev.city || 'Unknown';
+      const when  = ev.when ? fmt(ev.when) : '';
+
+      const row = document.createElement('div');
+      row.className = 'map-alert-item';
+      row.setAttribute('data-alertkey', alertKey(ev));
+      row.innerHTML = `
+        <div class="map-alert-top">
+          <div class="map-alert-title">${safe(title)}</div>
+          <div class="map-alert-when">${safe(when)}</div>
+        </div>
+        <div class="map-alert-meta">
+          ${riskPill(ev.risk)}
+          ${renderStatusPill(getDisposition(ev))}
+          <span style="opacity:.85;">${safe(city)}</span>
+        </div>
+      `;
+      row.addEventListener('click', ()=>selectEvent(ev, row));
+      alertsList.appendChild(row);
+      rows.push(row);
+    });
+
+    showAlerts();
+
+    // auto-select first
+    const pickRow = rows[0];
+    if (pickRow) requestAnimationFrame(()=>selectEvent(items[0], pickRow));
+  }
+
+  function updateQueueCounts(){
+    const all = collectAllCachedEvents();
+    const esc = filterByDisposition(all, 'escalated').length;
+    const mon = filterByDisposition(all, 'monitoring').length;
+    const clr = filterByDisposition(all, 'cleared').length;
+
+    const a = document.getElementById('qEscalated');
+    const b = document.getElementById('qMonitoring');
+    const c = document.getElementById('qCleared');
+    if (a) a.textContent = esc;
+    if (b) b.textContent = mon;
+    if (c) c.textContent = clr;
+  }
+  window.ciUpdateQueueCounts = updateQueueCounts;
+
+  // click handlers for queue buttons
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.queue-btn');
+    if (!btn) return;
+    const st = btn.getAttribute('data-queue');
+    if (!st) return;
+    renderQueueList(st);
+  });
+
+
 
   // --- helpers -----------------------------------------------------------
   function extractLatLon(ev){
@@ -5332,13 +5790,14 @@ const selectEvent = async (ev, rowEl) => {
 
       const row = document.createElement('div');
       row.className = 'map-alert-item';
+      row.setAttribute('data-alertkey', alertKey(ev));
       row.innerHTML = `
         <div class="map-alert-top">
           <div class="map-alert-title">${safe(title)}</div>
           <div class="map-alert-when">${safe(when)}</div>
         </div>
         <div class="map-alert-meta">
-          ${riskPill(ev.risk)}
+          ${riskPill(ev.risk)} ${renderStatusPill(getDisposition(ev))}
           <span style="opacity:.85;">${safe(city)}</span>
         </div>
       `;
