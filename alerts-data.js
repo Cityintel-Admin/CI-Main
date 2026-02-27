@@ -60,7 +60,7 @@ window.alertsData =[
     title: "Solidarity with the Iranian Uprising",
     city: "London",
     country: "United Kingdom",
-    continent": "Europe",
+    continent: "Europe",
     risk: "Med",
     time: "2026-02-28T13:00:00",
     source: "",
@@ -14039,6 +14039,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
