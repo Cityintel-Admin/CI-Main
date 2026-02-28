@@ -1921,7 +1921,9 @@
     margin-top: 8px;
     line-height: 1.35;
   }
-  </style>
+  
+  .ni-subnote{font-size:12px;color:rgba(255,255,255,.6);margin-top:6px;margin-bottom:6px;}
+</style>
 </head>
 
 <body>
@@ -2119,7 +2121,10 @@
           <div>
             <div class="ni-label">Attachments (optional URLs)</div>
             <input class="ni-input" id="newAttachments" placeholder="Comma-separated URLs (images/scenes)" />
-          </div>
+          
+            <div class="ni-subnote">Upload images (optional). For testing, selected images are stored inline (data URLs) and may be size-limited.</div>
+            <input class="ni-input" id="attachFiles" type="file" accept="image/*" multiple />
+</div>
         </div>
 
         <div class="ni-row one">
@@ -2178,6 +2183,7 @@
     newBody: document.getElementById('newBody'),
     newActions: document.getElementById('newActions'),
     newAttachments: document.getElementById('newAttachments'),
+    attachFiles: document.getElementById('attachFiles'),
     newConfirm: document.getElementById('newConfirm'),
     geoHelp: document.getElementById('geoHelp'),
   };
@@ -2205,6 +2211,8 @@
   let pinLatLng = null;
   let pinDropMode = false;
   let postMarkers = [];
+  let allPosts = [];
+  let visiblePosts = [];
 
   function setPin(latlng) {
     pinLatLng = latlng;
@@ -2256,44 +2264,49 @@
     postMarkers = [];
   }
 
-  function renderPosts(items) {
+  function renderPosts(allItems, visibleItems) {
+    const visibleIds = new Set((visibleItems || []).map(p => p.id));
     els.postList.innerHTML = '';
     clearPostMarkers();
-    els.pillCount.textContent = String(items.length);
 
-    if (!items.length) {
-      els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">No posts found for this radius/time window.</div>`;
-      return;
+    const count = (visibleItems || []).length;
+    els.postCount.textContent = String(count);
+
+    if (!count) {
+      els.postList.innerHTML = `<div class="hint">No posts found for this radius/time window.</div>`;
+    } else {
+      for (const p of visibleItems) {
+        const div = document.createElement('div');
+        div.className = 'post-card';
+        div.innerHTML = `
+          <div class="row1">
+            <div class="title">${escapeHtml(p.title || '(untitled)')}</div>
+            <div class="pill ${String(p.severity || '').toLowerCase()}">${escapeHtml(p.severity || '')}</div>
+          </div>
+          <div class="meta">
+            <span class="tag">${escapeHtml(p.category || '')}</span>
+            <span>${escapeHtml(formatWhen(p.observed_at || p.created_at))}</span>
+            <span>${escapeHtml(p.geo_label || 'Approx. pin')}</span>
+          </div>
+          <div class="excerpt">${escapeHtml((p.body||'').slice(0, 160))}${(p.body||'').length>160?'…':''}</div>
+        `;
+        div.addEventListener('click', () => selectPost(p));
+        els.postList.appendChild(div);
+      }
     }
 
-    for (const p of items) {
-      const div = document.createElement('div');
-      div.className = 'post';
-      div.innerHTML = `
-        <div class="t">
-          <div class="title">${escapeHtml(p.title || '(untitled)')}</div>
-          <span class="pill ${sevClass(p.severity)}">${(p.severity||'').toUpperCase()}</span>
-        </div>
-        <div class="meta">
-          <span class="pill">${escapeHtml(p.category || 'other')}</span>
-          <span>${fmtTime(p.observed_at || p.created_at)}</span>
-          <span>${escapeHtml(p.geo_label || 'Approx. pin')}</span>
-        </div>
-        <div class="excerpt">${escapeHtml((p.body||'').slice(0, 160))}${(p.body||'').length>160?'…':''}</div>
-      `;
-      div.addEventListener('click', () => selectPost(p));
-      els.postList.appendChild(div);
-
-      if (typeof p.lat === 'number' && typeof p.lng === 'number') {
-        const mk = L.circleMarker([p.lat, p.lng], {
-          radius: 7,
-          weight: 2,
-          opacity: 0.9,
-          fillOpacity: 0.35
-        }).addTo(map);
-        mk.on('click', () => selectPost(p));
-        postMarkers.push(mk);
-      }
+    // Always show markers for all fetched posts; dim ones outside current radius filter
+    for (const p of (allItems || [])) {
+      if (typeof p.lat !== 'number' || typeof p.lng !== 'number') continue;
+      const isVisible = visibleIds.has(p.id);
+      const mk = L.circleMarker([p.lat, p.lng], {
+        radius: isVisible ? 7 : 5,
+        weight: 2,
+        opacity: isVisible ? 0.9 : 0.35,
+        fillOpacity: isVisible ? 0.35 : 0.12
+      }).addTo(map);
+      mk.on('click', () => selectPost(p));
+      postMarkers.push(mk);
     }
   }
 
@@ -2338,7 +2351,11 @@
 
         <div style="margin-top:14px;">
           <div class="ni-label">Attachments</div>
-          <div>${atts.length ? atts.map(u => `<a href="${escapeAttr(u)}" target="_blank" style="color:#ff8080">Open attachment</a>`).join('<br/>') : '<span style="color:rgba(255,255,255,.6)">None</span>'}</div>
+          <div>${atts.length ? atts.map(u => {
+              const isData = typeof u === 'string' && u.startsWith('data:image');
+              if (isData) return `<img src="${escapeAttr(u)}" style="max-width:100%;border-radius:12px;margin:6px 0"/>`;
+              return `<a href="${escapeAttr(u)}" target="_blank" style="color:#ff8080">Open attachment</a>`;
+            }).join('<br/>') : '<span style="color:rgba(255,255,255,.6)">None</span>'}</div>
         </div>
 
         <div style="margin-top:14px;">
@@ -2481,42 +2498,54 @@
     return 2*R*Math.asin(Math.min(1,Math.sqrt(aa)));
   }
 
-  async function refresh() {
-    const qs = makeQuery();
-    els.pillScope.textContent = pinLatLng
-      ? `${els.radiusKm.value} km / ${els.sinceHours.value}h`
-      : `No pin / ${els.sinceHours.value}h`;
 
-    // If no pin, we still fetch recent posts (global). Pin-drop enables radius filtering.
-
-    try {
-      const res = await apiFetch(ENDPOINT + '?' + qs, { method:'GET' });
-      if (!res.ok) throw new Error('bad_status_' + res.status);
-      const data = await res.json();
-      if (data && data.ok) {
-        renderPosts(data.posts || []);
-        return;
-      }
-      throw new Error(data?.error || 'bad_payload');
-    } catch(e) {
-      // Local fallback (dev-only)
-      const all = localRead();
-      const now = Date.now();
-      const sinceMs = Number(els.sinceHours.value) * 3600 * 1000;
-      const radius = Number(els.radiusKm.value);
-      const filtered = all.filter(p => {
-        if (els.severity.value && p.severity !== els.severity.value) return false;
-        if (els.category.value && p.category !== els.category.value) return false;
-        const t = new Date(p.created_at||0).getTime();
-        if (now - t > sinceMs) return false;
-        if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return false;
-        return haversineKm({lat: pinLatLng.lat, lng: pinLatLng.lng}, {lat: p.lat, lng: p.lng}) <= radius;
-      });
-      renderPosts(filtered.sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||'')));
-    }
+  function applyRadiusFilter(postsArr) {
+    const arr = Array.isArray(postsArr) ? postsArr : [];
+    if (!isPinSet()) return arr;
+    const radiusKm = Number(els.radiusKm.value) || 1;
+    return arr.filter(p => {
+      if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return false;
+      const d = haversineKm(pinLatLng.lat, pinLatLng.lng, p.lat, p.lng);
+      return d <= radiusKm;
+    });
   }
 
-  els.btnRefresh.addEventListener('click', refresh);
+    async function refresh() {
+    setFilterBadge();
+    setPinBadge();
+
+    const sinceHours = Number(els.sinceHours.value) || 24;
+    const sev = els.severity.value || 'all';
+    const cat = els.category.value || 'all';
+    const cutoff = Date.now() - sinceHours * 3600 * 1000;
+
+    // Always try server first (may ignore radius); fall back to cached/local posts.
+    try {
+      const qs = makeQuery(); // includes hours/severity/category when set
+      const res = await fetch(`${ENDPOINT}?${qs}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      allPosts = Array.isArray(data.posts) ? data.posts : [];
+      localWrite('ni_posts_cache', allPosts);
+    } catch (e) {
+      console.warn('Using cached posts (fetch failed):', e);
+      allPosts = localRead('ni_posts_cache') || [];
+    }
+
+    // Safety net filtering (in case backend returns more than requested)
+    allPosts = (allPosts || []).filter(p => {
+      const t = Date.parse(p.observed_at || p.created_at || '');
+      if (Number.isFinite(t) && t < cutoff) return false;
+      if (sev !== 'all' && String(p.severity || '').toLowerCase() !== sev) return false;
+      if (cat !== 'all' && String(p.category || '').toLowerCase() !== cat) return false;
+      return true;
+    });
+
+    visiblePosts = applyRadiusFilter(allPosts);
+    renderPosts(allPosts, visiblePosts);
+  }
+
+els.btnRefresh.addEventListener('click', refresh);
   for (const el of [els.radiusKm, els.sinceHours, els.severity, els.category]) {
     el.addEventListener('change', refresh);
   }
@@ -2569,6 +2598,30 @@
     el.addEventListener('change', validatePost);
   }
 
+  
+  async function readFilesAsDataUrls(fileList, opts = {}) {
+    const maxCount = Number.isFinite(opts.maxCount) ? opts.maxCount : 3;
+    const maxBytes = Number.isFinite(opts.maxBytes) ? opts.maxBytes : 250000; // ~250KB each
+    const files = Array.from(fileList || []);
+    const picked = files.slice(0, maxCount);
+    const results = [];
+    for (const f of picked) {
+      if (!f.type || !f.type.startsWith('image/')) continue;
+      if (f.size > maxBytes) {
+        console.warn('Attachment too large, skipping:', f.name, f.size);
+        continue;
+      }
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ''));
+        r.onerror = () => reject(r.error || new Error('File read failed'));
+        r.readAsDataURL(f);
+      });
+      if (dataUrl) results.push(dataUrl);
+    }
+    return results;
+  }
+
   els.btnSubmitPost.addEventListener('click', async () => {
     if (els.btnSubmitPost.disabled) return;
 
@@ -2583,7 +2636,7 @@
       geo_label: els.newGeoLabel.value.trim(),
       radius_km: Number(els.radiusKm.value),
       actions_taken: els.newActions.value.trim(),
-      attachments: els.newAttachments.value.split(',').map(s=>s.trim()).filter(Boolean),
+      attachments: attachments,
     };
 
     try {
