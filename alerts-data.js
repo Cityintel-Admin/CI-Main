@@ -16,6 +16,47 @@ window.alertsData =[
     summary: ""
   },
 
+  {
+    title: "Defend the right to defend Palestine",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-03T09:30:00",
+    source: "Fight Racism Fight Imperialism",
+    summary: "Mobilisation at Westminster Magistrates' Court in support of activists facing charges related to Palestine Action. Significant police presence expected at the Marylebone location."
+  },
+  {
+    title: "Prisoner solidarity protest (Kev)",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-03T09:00:00",
+    source: "",
+    summary: "Rally at the Royal Courts of Justice following a judicial review for an individual held in solitary confinement for 11 years. Demonstrators are demanding his immediate release."
+  },
+  {
+    title: "Invest in caring not killing",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-03T12:30:00",
+    source: "International Women's Week Action",
+    summary: "Protest at Taylor House Immigration Court as part of International Women's Week. Focuses on support for people in Palestine, Sudan, Congo, and Haiti."
+  },
+  {
+    title: "CCA Cardiff Silent Vigil",
+    city: "Cardiff",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-03T11:00:00",
+    source: "Christian Climate Action",
+    summary: "Ongoing monthly silent vigil for climate justice held outside Barclays Bank on Working Street."
+  },
+
  {
     title: "Lock off the Square Mile",
     city: "London",
@@ -14132,6 +14173,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
