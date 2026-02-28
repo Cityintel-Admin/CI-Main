@@ -2121,6 +2121,10 @@
           <div>
             <div class="ni-label">Attachments (optional URLs)</div>
             <input class="ni-input" id="newAttachments" placeholder="Comma-separated URLs (images/scenes)" />
+            <div class="ni-subnote">Upload images (optional)</div>
+            <input class="ni-input" id="attachFiles" type="file" accept="image/*" multiple />
+            <div class="ni-subnote">Files are uploaded on publish and converted into secure attachment URLs.</div>
+
           
             <div class="ni-subnote">Upload images (optional). For testing, selected images are stored inline (data URLs) and may be size-limited.</div>
             <input class="ni-input" id="attachFiles" type="file" accept="image/*" multiple />
@@ -2152,6 +2156,44 @@
 
   const API_BASE = (location.hostname.includes('github.io') ? 'https://api.cityintelapi.com' : '') || '';
   const ENDPOINT = API_BASE + '/api/neighbor/posts';
+
+// --- Auth helpers (Workers expect X-User-Email) ---
+function authHeaders(extra = {}) {
+  const h = {};
+  // Try a few common keys; page already uses userEmail variable when available.
+  const email =
+    (typeof userEmail !== 'undefined' && userEmail) ||
+    localStorage.getItem('ci_user_email') ||
+    localStorage.getItem('userEmail') ||
+    localStorage.getItem('email') ||
+    '';
+  if (email) h['X-User-Email'] = email;
+  return Object.assign(h, extra);
+}
+
+function isPinSet() {
+  return !!(pinLatLng && typeof pinLatLng.lat === 'number' && typeof pinLatLng.lng === 'number');
+}
+
+// Load default area-of-interest (org HQ) and set initial map + pin.
+async function loadOrgHQ() {
+  try {
+    const res = await fetch(API_BASE + '/api/org/assets', { headers: authHeaders() });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const assets = Array.isArray(data?.assets) ? data.assets : (Array.isArray(data) ? data : []);
+    const hq = assets.find(a => a && typeof a.lat === 'number' && typeof a.lon === 'number') ||
+               assets.find(a => a && typeof a.lat === 'number' && typeof a.lng === 'number') ||
+               null;
+    if (!hq) return null;
+    const lat = typeof hq.lat === 'number' ? hq.lat : null;
+    const lng = typeof hq.lon === 'number' ? hq.lon : (typeof hq.lng === 'number' ? hq.lng : null);
+    if (lat == null || lng == null) return null;
+    return { lat, lng, name: hq.name || hq.city || 'HQ' };
+  } catch (e) {
+    return null;
+  }
+}
 
   const els = {
     radiusKm: document.getElementById('radiusKm'),
@@ -2652,31 +2694,62 @@ els.btnRefresh.addEventListener('click', refresh);
   }
 
   
-  async function readFilesAsDataUrls(fileList, opts = {}) {
-    const maxCount = Number.isFinite(opts.maxCount) ? opts.maxCount : 3;
-    const maxBytes = Number.isFinite(opts.maxBytes) ? opts.maxBytes : 250000; // ~250KB each
-    const files = Array.from(fileList || []);
-    const picked = files.slice(0, maxCount);
-    const results = [];
-    for (const f of picked) {
-      if (!f.type || !f.type.startsWith('image/')) continue;
-      if (f.size > maxBytes) {
-        console.warn('Attachment too large, skipping:', f.name, f.size);
-        continue;
-      }
-      const dataUrl = await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(String(r.result || ''));
-        r.onerror = () => reject(r.error || new Error('File read failed'));
-        r.readAsDataURL(f);
-      });
-      if (dataUrl) results.push(dataUrl);
+  
+// Upload selected images to the Worker (which forwards to Cloudflare Images).
+// Returns an array of image URLs (public variants).
+async function uploadFilesToWorker(fileList, opts = {}) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return [];
+
+  const maxCount = opts.maxCount ?? 3;
+  const maxBytes = opts.maxBytes ?? 5_000_000; // 5MB default
+  const allowed = opts.allowedTypes ?? ['image/jpeg','image/png','image/webp','image/gif'];
+
+  const pick = files.slice(0, maxCount);
+  for (const f of pick) {
+    if (allowed.length && !allowed.includes(f.type)) {
+      throw new Error('Unsupported file type: ' + (f.type || 'unknown'));
     }
-    return results;
+    if (f.size > maxBytes) {
+      throw new Error('File too large (max ' + Math.round(maxBytes/1_000_000) + 'MB): ' + f.name);
+    }
   }
 
-  els.btnSubmitPost.addEventListener('click', async () => {
+  const fd = new FormData();
+  for (const f of pick) fd.append('files', f, f.name);
+
+  const res = await fetch('/api/neighbor/upload', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: fd,
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error('Upload failed: ' + res.status + ' ' + t);
+  }
+  const data = await res.json();
+  if (!data?.ok) throw new Error(data?.error || 'Upload failed');
+  return Array.isArray(data.urls) ? data.urls : [];
+}
+
+
+btnSubmitPost.addEventListener('click', async () => {
     if (els.btnSubmitPost.disabled) return;
+
+    // Build attachments from URL field + uploaded files
+    let attachments = [];
+    const urlText = (els.newAttachments?.value || '').trim();
+    if (urlText) {
+      attachments = urlText.split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    try {
+      const uploaded = await uploadFilesToWorker(els.attachFiles?.files, { maxCount: 5, maxBytes: 5_000_000 });
+      attachments = attachments.concat(uploaded);
+    } catch (e) {
+      toast(e?.message || String(e), true);
+      return;
+    }
 
     const payload = {
       title: els.newTitle.value.trim(),
@@ -2717,10 +2790,20 @@ els.btnRefresh.addEventListener('click', refresh);
   // Initial help
   els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">Showing recent posts. Drop a pin to filter by radius.</div>`;
 
-  // Initial load: fetch recent posts even when no pin is set
-  refresh();
-})();
-</script>
+  // Initial load: default to org HQ if available so posts show immediately
+  (async () => {
+    const hq = await loadOrgHQ();
+    if (hq) {
+      map.setView([hq.lat, hq.lng], 12);
+      setPin(L.latLng(hq.lat, hq.lng));
+      setPinBadge();
+    } else {
+      // Keep existing default view but ensure zoom ~12
+      try { map.setZoom(12); } catch (_) {}
+    }
+    await refresh();
+  })();
+})();</script>
 
 
 
