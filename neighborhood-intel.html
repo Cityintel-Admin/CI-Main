@@ -1987,10 +1987,12 @@
             <div>
               <div class="ni-label">Time window</div>
               <select class="ni-select" id="sinceHours">
+                <option value="1">Last 1h</option>
+                <option value="2">Last 2h</option>
+                <option value="4">Last 4h</option>
+                <option value="8">Last 8h</option>
+                <option value="12" selected>Last 12h</option>
                 <option value="24">Last 24h</option>
-                <option value="72" selected>Last 72h</option>
-                <option value="168">Last 7d</option>
-                <option value="720">Last 30d</option>
               </select>
             </div>
           </div>
@@ -2204,8 +2206,12 @@
   let pinDropMode = false;
   let postMarkers = [];
 
+  const PIN_KEY = 'ci_neighbor_pin_v1';
+
+
   function setPin(latlng) {
     pinLatLng = latlng;
+    try { localStorage.setItem(PIN_KEY, JSON.stringify({lat: latlng.lat, lng: latlng.lng})); } catch(e) {}
     if (!pinMarker) {
       pinMarker = L.marker(latlng, { draggable: true }).addTo(map);
       pinMarker.on('dragend', () => {
@@ -2299,9 +2305,8 @@
     els.detailEmpty.style.display = 'none';
     els.detailBody.style.display = 'block';
     const atts = Array.isArray(p.attachments) ? p.attachments : [];
-    const apiComments = Array.isArray(p.comments) ? p.comments : [];
-    const localComments = getLocalComments(p.id);
-    const comments = [...apiComments, ...localComments].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
+    const serverComments = Array.isArray(p.comments) ? p.comments : [];
+    const comments = serverComments.concat(getLocalComments(p.id));
     els.detailBody.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
         <div>
@@ -2329,19 +2334,20 @@
 
       <div style="margin-top:14px;">
         <div class="ni-label">Comments</div>
-        <div id="niCommentsList">
-          ${comments.length ? comments.map(c => `<div style="margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.18)"><div style="font-size:12px;color:rgba(255,255,255,.6)">${escapeHtml(c.author || 'User')} • ${fmtTime(c.created_at)}</div><div style="margin-top:6px;color:rgba(255,255,255,.85)">${escapeHtml(c.body||'')}</div></div>`).join('') : '<span style="color:rgba(255,255,255,.6)">No comments yet.</span>'}
-        </div>
-
-        <div style="margin-top:12px;display:flex;gap:8px;align-items:flex-start;">
-          <textarea id="niCommentInput" rows="3" placeholder="Add a comment…" style="flex:1;resize:vertical;min-height:72px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:10px 12px;outline:none;"></textarea>
-          <button id="niCommentSubmit" class="btn-outline-pill" style="height:38px;align-self:flex-end;">Post</button>
-        </div>
-        <div id="niCommentStatus" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)"></div>
+        <div>${comments.length ? comments.map(c => `<div style="margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.18)"><div style="font-size:12px;color:rgba(255,255,255,.6)">${escapeHtml(c.author || 'User')} • ${fmtTime(c.created_at)}</div><div style="margin-top:6px;color:rgba(255,255,255,.85)">${escapeHtml(c.body||'')}</div></div>`).join('') : '<span style="color:rgba(255,255,255,.6)">No comments yet.</span>'}</div>
       </div>
 
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:flex-start;">
+        <textarea id="niCommentInput" rows="3" placeholder="Add a comment…" style="flex:1;resize:vertical;min-height:72px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:10px 12px;outline:none;"></textarea>
+        <button id="niCommentSubmit" class="btn-outline-pill" style="height:38px;align-self:flex-end;">Post</button>
+      </div>
+      <div id="niCommentStatus" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)"></div>
 
-    // Wire comment submit
+    `;
+
+
+
+    // Wire comment submit (local first, then try API if available)
     const commentBtn = document.getElementById('niCommentSubmit');
     const commentInput = document.getElementById('niCommentInput');
     const commentStatus = document.getElementById('niCommentStatus');
@@ -2358,13 +2364,13 @@
         const c = { author: userEmail || 'User', body, created_at: new Date().toISOString() };
         addLocalComment(p.id, c);
         commentInput.value = '';
-        // Re-render selected post with updated local comments
+        // Re-render to show the comment immediately
         try {
-          const merged = Object.assign({}, p, { comments: (Array.isArray(p.comments)?p.comments:[]).concat(getLocalComments(p.id)) });
+          const merged = Object.assign({}, p, { comments: serverComments.concat(getLocalComments(p.id)) });
           selectPost(merged);
         } catch(e) {}
 
-        // Try API (optional): if your Worker exposes a comments endpoint.
+        // Optional API: /api/neighbor/comments (if Worker supports it)
         try {
           await apiFetch(API_BASE + '/api/neighbor/comments', {
             method: 'POST',
@@ -2372,13 +2378,11 @@
           });
           if (commentStatus) commentStatus.textContent = 'Posted.';
         } catch (e) {
-          // Keep local comment even if API not available yet.
-          if (commentStatus) commentStatus.textContent = 'Saved locally (API comments endpoint not available yet).';
+          if (commentStatus) commentStatus.textContent = 'Saved locally (comments API not available yet).';
         }
         commentBtn.disabled = false;
       });
     }
-    `;
 
     if (pinLatLng && typeof p.lat === 'number' && typeof p.lng === 'number') {
       map.panTo([p.lat, p.lng]);
@@ -2423,30 +2427,19 @@
   function localWrite(items) {
     localStorage.setItem(localKey(), JSON.stringify(items));
   }
+  
 
-
-  function localCommentKey() { return 'ci_neighbor_comments_v1'; }
-  function localCommentsRead() {
-    try { return JSON.parse(localStorage.getItem(localCommentKey()) || '{}'); } catch(e) { return {}; }
-  }
-  function localCommentsWrite(map) {
-    localStorage.setItem(localCommentKey(), JSON.stringify(map || {}));
-  }
+  // Local comments (so comments work even before API endpoint exists)
+  function localCommentsKey(postId) { return 'ci_neighbor_comments_v1_' + String(postId || ''); }
   function getLocalComments(postId) {
-    if (!postId) return [];
-    const map = localCommentsRead();
-    const arr = map[postId];
-    return Array.isArray(arr) ? arr : [];
+    try { return JSON.parse(localStorage.getItem(localCommentsKey(postId)) || '[]'); } catch(e) { return []; }
   }
-  function addLocalComment(postId, comment) {
-    if (!postId || !comment) return;
-    const map = localCommentsRead();
-    const arr = Array.isArray(map[postId]) ? map[postId] : [];
-    arr.push(comment);
-    map[postId] = arr;
-    localCommentsWrite(map);
+  function addLocalComment(postId, c) {
+    const cur = getLocalComments(postId);
+    cur.push(c);
+    try { localStorage.setItem(localCommentsKey(postId), JSON.stringify(cur)); } catch(e) {}
   }
-  function haversineKm(a,b) {
+function haversineKm(a,b) {
     const R=6371;
     const dLat=(b.lat-a.lat)*Math.PI/180;
     const dLng=(b.lng-a.lng)*Math.PI/180;
@@ -2455,7 +2448,7 @@
     return 2*R*Math.asin(Math.min(1,Math.sqrt(aa)));
   }
 
-  async function refresh() {
+  async async function refresh() {
     const qs = makeQuery();
     if (!qs) {
       els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">Drop a pin to start filtering posts.</div>`;
@@ -2644,6 +2637,24 @@
     const next = encodeURIComponent(here + location.search + location.hash);
     host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
   }
+
+  // Restore last pin (so posts appear on page load)
+  try {
+    const saved = JSON.parse(localStorage.getItem(PIN_KEY) || 'null');
+    if (saved && typeof saved.lat === 'number' && typeof saved.lng === 'number') {
+      setPin(L.latLng(saved.lat, saved.lng));
+      map.setView([saved.lat, saved.lng], 15);
+    }
+  } catch(e) {}
+
+  // If no saved pin, default to current map center (London) so the feed isn't empty on first load.
+  if (!pinLatLng) {
+    setPin(map.getCenter());
+  }
+
+  // Initial load
+  refresh();
+
 })();
 </script>
 
