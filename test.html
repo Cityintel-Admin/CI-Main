@@ -1865,6 +1865,7 @@ async function loadOrgContext() {
   font-weight: 600;
 }
 .disp-select:focus{ border-color: rgba(208,22,22,0.8); box-shadow: 0 0 0 3px rgba(208,22,22,0.18); }
+.disp-select option{ color:#0b0f16; }
 .disp-updated{ font-size:11px; opacity:.75; margin-left:6px; }
 .disp-note-row{ margin-top:8px; }
 .disp-note{
@@ -1914,6 +1915,120 @@ async function loadOrgContext() {
   background: rgba(0,0,0,0.25);
   border:1px solid rgba(255,255,255,0.14);
   font-size:11px;
+}
+
+
+/* ===== Operator Transition Modal (TOPO-style) ===== */
+.ci-modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index: 9999;
+  padding: 18px;
+}
+.ci-modal{
+  width: min(820px, 96vw);
+  max-height: min(78vh, 780px);
+  background: #ffffff;
+  color: #0b0f16;
+  border-radius: 14px;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.ci-modal header{
+  padding: 18px 20px 14px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.ci-modal header #ciTransitionTitle{
+  font-weight: 900;
+  font-size: 18px;
+  margin-right: 4px;
+}
+.ci-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.10);
+}
+.ci-modal-meta{
+  width:100%;
+  font-size: 12px;
+  opacity: .8;
+  margin-top: 2px;
+}
+.ci-modal-body{
+  padding: 16px 20px 18px 20px;
+  overflow:auto;
+}
+.ci-form-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  margin-top: 14px;
+}
+@media (max-width:720px){
+  .ci-form-grid{ grid-template-columns: 1fr; }
+}
+.ci-field label{
+  display:block;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: rgba(11,15,22,0.72);
+}
+.ci-field input, .ci-field select, .ci-field textarea{
+  width:100%;
+  border: 1px solid rgba(11,15,22,0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+.ci-field textarea{ min-height: 92px; resize: vertical; }
+.ci-check-list{ display:grid; gap: 8px; }
+.ci-check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight: 600;
+  color: rgba(11,15,22,0.85);
+}
+.ci-check input{ width: 16px; height: 16px; }
+.ci-modal footer{
+  padding: 14px 20px;
+  border-top: 1px solid rgba(0,0,0,0.10);
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+}
+.ci-btn{
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 800;
+  border: 1px solid rgba(11,15,22,0.20);
+  background: #ffffff;
+  cursor:pointer;
+}
+.ci-btn.primary{
+  background: #5b3df5;
+  border-color: #5b3df5;
+  color: #ffffff;
 }
 
 </style>
@@ -3098,6 +3213,219 @@ function refreshStatusBadges(){
   }
 }
 
+
+// -------------------- Transition Forms (TOPO-style) --------------------
+const CI_ALERT_TRANSITION_KEY = 'ci_alert_transition_v1';
+
+function loadTransitionMap(){
+  try{ return JSON.parse(localStorage.getItem(CI_ALERT_TRANSITION_KEY) || '{}') || {}; }catch(_){ return {}; }
+}
+function saveTransitionMap(map){
+  try{ localStorage.setItem(CI_ALERT_TRANSITION_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+function saveTransitionPayload(ev, status, payload){
+  const user = getOperatorEmail();
+  const key = alertKey(ev);
+  const map = loadTransitionMap();
+  map[user] = map[user] || {};
+  map[user][key] = {
+    status: String(status||'').toLowerCase(),
+    payload: payload || {},
+    savedAt: Date.now()
+  };
+  saveTransitionMap(map);
+}
+function getTransitionPayload(ev){
+  const user = getOperatorEmail();
+  const key = alertKey(ev);
+  const map = loadTransitionMap();
+  return map?.[user]?.[key] || null;
+}
+
+function toLocalInputValue(iso){
+  try{
+    const d = iso ? new Date(iso) : new Date();
+    const pad = (n)=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }catch(_){ return ''; }
+}
+
+function buildTransitionBody(item, status){
+  const st = String(status||'').toLowerCase();
+  const pre = getTransitionPayload(item)?.payload || {};
+
+  const exposure = window.__ciCurrentExposure || { assets: [], travellers: [] };
+  const aList = Array.isArray(exposure.assets) ? exposure.assets : [];
+  const tList = Array.isArray(exposure.travellers) ? exposure.travellers : [];
+
+  const mkField = (label, inner) => {
+    return `<div class="ci-field"><label>${label}</label>${inner}</div>`;
+  };
+
+  let html = '';
+
+  if (st === 'escalated'){
+    html += mkField('Urgency', `
+      <div class="ci-check-list">
+        ${['Urgent'].map((t)=>`<label class="ci-check"><input type="radio" name="ciUrgency" value="urgent" ${(pre.urgency==='urgent')?'checked':''}/> ${t}</label>`).join('')}
+      </div>
+    `);
+
+    html += mkField('Reason escalated', `
+      <div class="ci-check-list">
+        ${['Threshold met','Event within proximity','Assets affected','Personnel affected'].map((t,i)=>{
+          const k = ['threshold','proximity','assets','personnel'][i];
+          const on = Array.isArray(pre.reasons) && pre.reasons.includes(k);
+          return `<label class="ci-check"><input type="checkbox" data-ci-reason="${k}" ${on?'checked':''}/> ${t}</label>`;
+        }).join('')}
+      </div>
+    `);
+
+    html += mkField('Incident type', `
+      <select id="ciIncidentType">
+        ${['','Civil unrest / protest','Crime / violence','Fire / explosion','Transport / traffic','Infrastructure / outage','Other'].map(v=>{
+          const sel = (String(pre.incidentType||'')===v) ? 'selected' : '';
+          const label = v || 'Select…';
+          return `<option value="${v}" ${sel}>${label}</option>`;
+        }).join('')}
+      </select>
+    `);
+
+    html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
+    html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${String(pre.location||'').replace(/"/g,'&quot;')}">`);
+
+    html += mkField('Assets nearby', `<textarea id="ciAssets" readonly>${aList.map(a=>a.name || a.assetName || a.label || 'Asset').join('\n') || 'None'}</textarea>`);
+    html += mkField('Travellers nearby', `<textarea id="ciTravellers" readonly>${tList.map(t=>t.name || t.travellerName || t.label || 'Traveller').join('\n') || 'None'}</textarea>`);
+
+  } else if (st === 'cleared') {
+    html += mkField('Reason cleared', `
+      <div class="ci-check-list">
+        ${['Threshold not met','Not within proximity','No affected assets','No affected personnel','Already escalated'].map((t,i)=>{
+          const k = ['threshold_not_met','not_within_proximity','no_assets','no_personnel','already_escalated'][i];
+          const on = Array.isArray(pre.reasons) && pre.reasons.includes(k);
+          return `<label class="ci-check"><input type="checkbox" data-ci-reason="${k}" ${on?'checked':''}/> ${t}</label>`;
+        }).join('')}
+      </div>
+    `);
+
+    html += mkField('Call tree', `
+      <div class="ci-check-list">
+        ${['Territory Manager Called','Incident Management Called'].map((t,i)=>{
+          const k = ['tm_called','im_called'][i];
+          const on = Array.isArray(pre.callTree) && pre.callTree.includes(k);
+          return `<label class="ci-check"><input type="checkbox" data-ci-call="${k}" ${on?'checked':''}/> ${t}</label>`;
+        }).join('')}
+      </div>
+    `);
+
+    html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
+    html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${String(pre.location||'').replace(/"/g,'&quot;')}">`);
+  } else {
+    // Monitoring doesn't need a big form right now, keep lightweight
+    html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
+    html += mkField('Operator note', `<textarea id="ciNote" placeholder="Optional note">${(pre.note||detailDispositionNoteEl?.value||'')}</textarea>`);
+    return html;
+  }
+
+  html += mkField('Operator note', `<textarea id="ciNote" placeholder="Optional note (e.g., notify comms, traveller check)">${(pre.note||detailDispositionNoteEl?.value||'')}</textarea>`);
+  return html;
+}
+
+function collectTransitionPayload(status){
+  const st = String(status||'').toLowerCase();
+  const payload = {};
+  const reasons = [...document.querySelectorAll('#ciTransitionBody [data-ci-reason]')].filter(x=>x.checked).map(x=>x.getAttribute('data-ci-reason'));
+  if (reasons.length) payload.reasons = reasons;
+
+  const calls = [...document.querySelectorAll('#ciTransitionBody [data-ci-call]')].filter(x=>x.checked).map(x=>x.getAttribute('data-ci-call'));
+  if (calls.length) payload.callTree = calls;
+
+  const urg = document.querySelector('#ciTransitionBody input[name="ciUrgency"]:checked');
+  if (urg) payload.urgency = urg.value;
+
+  const it = document.getElementById('ciIncidentType');
+  if (it) payload.incidentType = it.value || '';
+
+  const when = document.getElementById('ciWhen');
+  if (when) payload.whenLocal = when.value || '';
+
+  const loc = document.getElementById('ciLocation');
+  if (loc) payload.location = loc.value || '';
+
+  const note = document.getElementById('ciNote');
+  if (note) payload.note = note.value || '';
+
+  return payload;
+}
+
+function openTransitionModal(item, status, handlers){
+  handlers = handlers || {};
+  const overlay = document.getElementById('ciTransitionOverlay');
+  const pillEl  = document.getElementById('ciTransitionStatusPill');
+  const metaEl  = document.getElementById('ciTransitionMeta');
+  const ctxEl   = document.getElementById('ciTransitionContext');
+  const bodyEl  = document.getElementById('ciTransitionBody');
+  const btnCancel = document.getElementById('ciTransitionCancel');
+  const btnSave   = document.getElementById('ciTransitionSave');
+
+  // If modal markup missing, just continue
+  if (!overlay || !bodyEl || !btnCancel || !btnSave){
+    if (handlers.onSave) handlers.onSave({ note: (detailDispositionNoteEl?.value||'') });
+    return;
+  }
+
+  const st = String(status||'').toLowerCase();
+  pillEl.textContent = statusLabel(st);
+  ctxEl.textContent = item?.title || 'Incident';
+  metaEl.textContent = `${item?.city || 'Unknown'} • ${(item?.risk||'n/a')} • ${fmtWhen(item?.when)}`;
+
+  bodyEl.innerHTML = buildTransitionBody(item, st);
+
+  // show
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden','false');
+
+  const close = ()=>{
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden','true');
+  };
+
+  const onCancel = ()=>{
+    close();
+    btnCancel.removeEventListener('click', onCancel);
+    btnSave.removeEventListener('click', onSave);
+    if (handlers.onCancel) handlers.onCancel();
+  };
+
+  const onSave = ()=>{
+    const payload = collectTransitionPayload(st);
+    saveTransitionPayload(item, st, payload);
+
+    // If note entered in modal, push it back to the detail note input
+    if (detailDispositionNoteEl && payload.note != null){
+      detailDispositionNoteEl.value = String(payload.note || '');
+    }
+
+    close();
+    btnCancel.removeEventListener('click', onCancel);
+    btnSave.removeEventListener('click', onSave);
+    if (handlers.onSave) handlers.onSave(payload);
+  };
+
+  btnCancel.addEventListener('click', onCancel);
+  btnSave.addEventListener('click', onSave);
+
+  // click outside
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) onCancel(); }, { once:true });
+
+  // escape key
+  const esc = (e)=>{ if(e.key==='Escape'){ document.removeEventListener('keydown', esc); onCancel(); } };
+  document.addEventListener('keydown', esc);
+}
+
+
+
+
 function lonLatToXY(lon, lat, w, h) {
   // quick equirectangular projection
   const x = (lon + 180) * (w / 360);
@@ -3725,7 +4053,28 @@ document.addEventListener('keydown', (e) => {
 
     const st = (detailDispositionEl.value || 'untriaged').toLowerCase();
     const note = detailDispositionNoteEl ? (detailDispositionNoteEl.value || '') : '';
+    const prevSt = getDisposition(item);
     const rec = setDisposition(item, st, note);
+    // If transitioning into a workflow state, show TOPO-style transition form
+    if (st !== prevSt && (st === 'escalated' || st === 'cleared')){
+      const revert = () => {
+        try { detailDispositionEl.value = prevSt; } catch(e) {}
+        setDisposition(item, prevSt, note);
+        refreshStatusBadges();
+      };
+      openTransitionModal(item, st, {
+        onCancel: revert,
+        onSave: (payload)=>{
+          // persist note from modal + refresh badges immediately
+          const modalNote = (payload && payload.note != null) ? String(payload.note||'') : note;
+          setDisposition(item, st, modalNote);
+          refreshStatusBadges();
+          // If an alerts list is open, re-filter it immediately
+          try{ if (typeof window.ciRefreshMapSidebarFeeds==='function') window.ciRefreshMapSidebarFeeds(); }catch(e){}
+          try{ if (typeof window.ciUpdateQueueCounts==='function') window.ciUpdateQueueCounts(); }catch(e){}
+        }
+      });
+    }
 
     // note row visibility
     if (detailDispositionNoteRowEl){
@@ -5759,6 +6108,8 @@ function getFeedEvents(feedId){
     const events = getFeedEvents(feedId)
       .slice()
       .sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0))
+      // Default view: only show untriaged in the feed list (triaged live in Operator queues)
+      .filter(ev => (getDisposition(ev) || 'untriaged') === 'untriaged')
       .slice(0, 12);
 
     alertsTitle.textContent = label ? `Latest incidents — ${label}` : 'Latest incidents';
@@ -5947,6 +6298,26 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- auth helpers / admin links -->
 
 <script src="admin-links.js"></script>
+
+
+<!-- Operator Transition Modal -->
+<div class="ci-modal-overlay" id="ciTransitionOverlay" aria-hidden="true">
+  <div class="ci-modal" role="dialog" aria-modal="true" aria-labelledby="ciTransitionTitle">
+    <header>
+      <span id="ciTransitionTitle">Transition form</span>
+      <span class="ci-pill" id="ciTransitionStatusPill">Escalated</span>
+      <div class="ci-modal-meta" id="ciTransitionMeta"></div>
+    </header>
+    <div class="ci-modal-body">
+      <div id="ciTransitionContext" style="font-weight:900;font-size:16px;"></div>
+      <div id="ciTransitionBody" class="ci-form-grid"></div>
+    </div>
+    <footer>
+      <button type="button" class="ci-btn" id="ciTransitionCancel">Cancel</button>
+      <button type="button" class="ci-btn primary" id="ciTransitionSave">Save</button>
+    </footer>
+  </div>
+</div>
 
 </body>
 </html>
