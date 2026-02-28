@@ -2460,15 +2460,20 @@
   }
 
   function localKey() { return 'ci_neighbor_posts_v1'; }
-  function localRead() {
-    try { return JSON.parse(localStorage.getItem(localKey()) || '[]'); } catch(e) { return []; }
-  }
-  function localWrite(items) {
-    localStorage.setItem(localKey(), JSON.stringify(items));
+  function localRead(key = 'ni_posts_cache') {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
   }
 
+function localWrite(key = 'ni_posts_cache', items = []) {
+    try { localStorage.setItem(key, JSON.stringify(items || [])); } catch (e) {}
+  }
 
-  function localCommentKey() { return 'ci_neighbor_comments_v1'; }
+function localCommentKey() { return 'ci_neighbor_comments_v1'; }
   function localCommentsRead() {
     try { return JSON.parse(localStorage.getItem(localCommentKey()) || '{}'); } catch(e) { return {}; }
   }
@@ -2505,12 +2510,27 @@
     const radiusKm = Number(els.radiusKm.value) || 1;
     return arr.filter(p => {
       if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return false;
-      const d = haversineKm(pinLatLng.lat, pinLatLng.lng, p.lat, p.lng);
+      const d = haversineKm({ lat: pinLatLng.lat, lng: pinLatLng.lng }, { lat: p.lat, lng: p.lng });
       return d <= radiusKm;
     });
   }
 
-    async function refresh() {
+  // Badge pills (top-right of filter/map cards)
+  function setPinBadge() {
+    if (!els.pillPin) return;
+    if (!pinLatLng) { els.pillPin.textContent = 'No pin'; return; }
+    els.pillPin.textContent = `Pin: ${Number(pinLatLng.lat).toFixed(5)}, ${Number(pinLatLng.lng).toFixed(5)}`;
+  }
+
+  function setFilterBadge() {
+    if (!els.pillScope) return;
+    const radius = Number(els.radiusKm?.value || 1);
+    const hrs = Number(els.sinceHours?.value || 12);
+    els.pillScope.textContent = `${radius} km / ${hrs}h`;
+  }
+
+
+  async function refresh() {
     setFilterBadge();
     setPinBadge();
 
@@ -2551,6 +2571,37 @@ els.btnRefresh.addEventListener('click', refresh);
   }
 
   // Modal helpers
+  
+  function renderAttachPreview() {
+    if (!els.attachInfo || !els.attachPreview) return;
+    const files = Array.from(els.attachFiles?.files || []);
+    if (!files.length) {
+      els.attachInfo.textContent = 'No files selected.';
+      els.attachPreview.innerHTML = '';
+      return;
+    }
+    els.attachInfo.textContent = `${files.length} file${files.length===1?'':'s'} selected`;
+    // lightweight preview thumbnails
+    els.attachPreview.innerHTML = '';
+    files.slice(0, 5).forEach(f => {
+      const chip = document.createElement('div');
+      chip.style.cssText = 'padding:6px 8px;border:1px solid rgba(255,255,255,.12);border-radius:10px;font-size:12px;color:rgba(255,255,255,.75)';
+      chip.textContent = f.name;
+      els.attachPreview.appendChild(chip);
+    });
+    if (files.length > 5) {
+      const more = document.createElement('div');
+      more.style.cssText = 'padding:6px 8px;border:1px dashed rgba(255,255,255,.18);border-radius:10px;font-size:12px;color:rgba(255,255,255,.65)';
+      more.textContent = `+${files.length-5} more`;
+      els.attachPreview.appendChild(more);
+    }
+  }
+
+  if (els.attachPick && els.attachFiles) {
+    els.attachPick.addEventListener('click', () => els.attachFiles.click());
+    els.attachFiles.addEventListener('change', renderAttachPreview);
+  }
+
   function openModal() {
     els.backdrop.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -2578,6 +2629,8 @@ els.btnRefresh.addEventListener('click', refresh);
     els.newBody.value = '';
     els.newActions.value = '';
     els.newAttachments.value = '';
+    if (els.attachFiles) els.attachFiles.value = '';
+    if (typeof renderAttachPreview === 'function') renderAttachPreview();
     els.newGeoLabel.value = '';
     els.newConfirm.checked = false;
     els.btnSubmitPost.disabled = true;
@@ -2655,7 +2708,7 @@ els.btnRefresh.addEventListener('click', refresh);
       const all = localRead();
       const id = 'local_' + Math.random().toString(16).slice(2);
       all.unshift(Object.assign({ id, created_at: new Date().toISOString(), org_name: 'Local', org_id: 'local', comments: [] }, payload));
-      localWrite(all);
+      localWrite('ni_posts_cache', all);
       closeModal();
       await refresh();
     }
