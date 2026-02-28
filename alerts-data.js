@@ -16,6 +16,47 @@ window.alertsData =[
     summary: ""
   },
 
+ {
+    title: "Lock off the Square Mile",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-02T09:00:00",
+    source: "https://www.facebook.com/events/1914572682750476",
+    summary: "‘A Stand of Defiance’ protest targeting financial institutions. Activity likely to focus on Liverpool Street Station and the Bank of England. Reports of suspected hostile reconnaissance involving individuals documenting potential targets have been linked to this event."
+  },
+  {
+    title: "Mobilise for Moazzam Begg",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-02T09:30:00",
+    source: "https://www.facebook.com/CAGEInternational/photos/mobilise-for-moazzam-beggcage-internationals-senior-director-will-be-in-court-to/952454660644180/",
+    summary: "Solidarity protest at Westminster Magistrates' Court for CAGE Director Moazzam Begg’s first court appearance. He is challenging terror charges related to a 2025 Palestine Action protest. High police presence expected."
+  },
+  {
+    title: "Rally for the Elbit 2",
+    city: "Bristol",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-02T09:15:00",
+    source: "Stop the War",
+    summary: "Protest at Bristol Crown Court in support of activists facing charges for blockading an Elbit Systems site. Follows recent direct action and arrests at the Filton facility."
+  },
+  {
+    title: "4 years of failure",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-03-02T19:00:00",
+    source: "https://drive.google.com/file/d/12S1XNqlaZHuEY6FqA8PQzxgt75xrGf97/view",
+    summary: "Protest at Camden Town Hall targeting the local council for its stance on Palestine. Part of ongoing local demonstrations that have previously led to meeting disruptions."
+  },
+
   {
     title: "Woman Life Freedom",
     city: "London",
@@ -14091,6 +14132,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
