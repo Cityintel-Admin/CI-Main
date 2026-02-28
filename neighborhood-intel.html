@@ -2206,12 +2206,8 @@
   let pinDropMode = false;
   let postMarkers = [];
 
-  const PIN_KEY = 'ci_neighbor_pin_v1';
-
-
   function setPin(latlng) {
     pinLatLng = latlng;
-    try { localStorage.setItem(PIN_KEY, JSON.stringify({lat: latlng.lat, lng: latlng.lng})); } catch(e) {}
     if (!pinMarker) {
       pinMarker = L.marker(latlng, { draggable: true }).addTo(map);
       pinMarker.on('dragend', () => {
@@ -2304,90 +2300,114 @@
   function selectPost(p) {
     els.detailEmpty.style.display = 'none';
     els.detailBody.style.display = 'block';
-    const atts = Array.isArray(p.attachments) ? p.attachments : [];
-    const serverComments = Array.isArray(p.comments) ? p.comments : [];
-    const comments = serverComments.concat(getLocalComments(p.id));
-    els.detailBody.innerHTML = `
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-        <div>
-          <div style="font-size:18px;font-weight:900;color:rgba(255,255,255,.95)">${escapeHtml(p.title || '')}</div>
-          <div style="margin-top:6px;color:rgba(255,255,255,.65);font-size:12px;">
-            <span class="pill ${sevClass(p.severity)}">${(p.severity||'').toUpperCase()}</span>
-            <span class="pill">${escapeHtml(p.category||'other')}</span>
-            <span style="margin-left:8px;">Observed: ${fmtTime(p.observed_at || p.created_at)}</span>
+
+    // Load comments from API on-demand, but fall back to local storage.
+    (async () => {
+      let apiComments = [];
+      try {
+        const res = await apiFetch(API_BASE + '/api/neighbor/comments?post_id=' + encodeURIComponent(p.id), { method:'GET' });
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          if (data && data.ok && Array.isArray(data.comments)) apiComments = data.comments;
+        }
+      } catch (e) {}
+
+      const atts = Array.isArray(p.attachments) ? p.attachments : [];
+      const localComments = getLocalComments(p.id);
+      const comments = [...apiComments, ...localComments].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
+
+      els.detailBody.innerHTML = `
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div>
+            <div style="font-size:18px;font-weight:900;color:rgba(255,255,255,.95)">${escapeHtml(p.title || '')}</div>
+            <div style="margin-top:6px;color:rgba(255,255,255,.65);font-size:12px;">
+              <span class="pill ${sevClass(p.severity)}">${(p.severity||'').toUpperCase()}</span>
+              <span class="pill">${escapeHtml(p.category||'other')}</span>
+              <span style="margin-left:8px;">Observed: ${fmtTime(p.observed_at || p.created_at)}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${escapeHtml(p.body || '')}</div>
+        <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${escapeHtml(p.body || '')}</div>
 
-      <div style="margin-top:14px;color:rgba(255,255,255,.7);font-size:13px;">
-        <div><b>Location:</b> ${escapeHtml(p.geo_label || 'Approx. pin')} • ${typeof p.lat==='number'?p.lat.toFixed(5):''}, ${typeof p.lng==='number'?p.lng.toFixed(5):''}</div>
-        <div style="margin-top:6px;"><b>Actions taken:</b> ${escapeHtml(p.actions_taken || '—')}</div>
-        <div style="margin-top:6px;"><b>Posted by:</b> ${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</div>
-      </div>
+        <div style="margin-top:14px;color:rgba(255,255,255,.7);font-size:13px;">
+          <div><b>Location:</b> ${escapeHtml(p.geo_label || 'Approx. pin')} • ${typeof p.lat==='number'?p.lat.toFixed(5):''}, ${typeof p.lng==='number'?p.lng.toFixed(5):''}</div>
+          <div style="margin-top:6px;"><b>Actions taken:</b> ${escapeHtml(p.actions_taken || '—')}</div>
+          <div style="margin-top:6px;"><b>Posted by:</b> ${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</div>
+        </div>
 
-      <div style="margin-top:14px;">
-        <div class="ni-label">Attachments</div>
-        <div>${atts.length ? atts.map(u => `<a href="${escapeAttr(u)}" target="_blank" style="color:#ff8080">Open attachment</a>`).join('<br/>') : '<span style="color:rgba(255,255,255,.6)">None</span>'}</div>
-      </div>
+        <div style="margin-top:14px;">
+          <div class="ni-label">Attachments</div>
+          <div>${atts.length ? atts.map(u => `<a href="${escapeAttr(u)}" target="_blank" style="color:#ff8080">Open attachment</a>`).join('<br/>') : '<span style="color:rgba(255,255,255,.6)">None</span>'}</div>
+        </div>
 
-      <div style="margin-top:14px;">
-        <div class="ni-label">Comments</div>
-        <div>${comments.length ? comments.map(c => `<div style="margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.18)"><div style="font-size:12px;color:rgba(255,255,255,.6)">${escapeHtml(c.author || 'User')} • ${fmtTime(c.created_at)}</div><div style="margin-top:6px;color:rgba(255,255,255,.85)">${escapeHtml(c.body||'')}</div></div>`).join('') : '<span style="color:rgba(255,255,255,.6)">No comments yet.</span>'}</div>
-      </div>
+        <div style="margin-top:14px;">
+          <div class="ni-label">Comments</div>
+          <div id="niCommentsList">
+            ${comments.length ? comments.map(c => `
+              <div style="margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.18)">
+                <div style="font-size:12px;color:rgba(255,255,255,.6)">${escapeHtml(c.author || c.author_email || 'User')} • ${fmtTime(c.created_at)}</div>
+                <div style="margin-top:6px;color:rgba(255,255,255,.85)">${escapeHtml(c.body||'')}</div>
+              </div>
+            `).join('') : '<span style="color:rgba(255,255,255,.6)">No comments yet.</span>'}
+          </div>
 
-      <div style="margin-top:12px;display:flex;gap:8px;align-items:flex-start;">
-        <textarea id="niCommentInput" rows="3" placeholder="Add a comment…" style="flex:1;resize:vertical;min-height:72px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:10px 12px;outline:none;"></textarea>
-        <button id="niCommentSubmit" class="btn-outline-pill" style="height:38px;align-self:flex-end;">Post</button>
-      </div>
-      <div id="niCommentStatus" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:flex-start;">
+            <textarea id="niCommentInput" rows="3" placeholder="Add a comment…" style="flex:1;resize:vertical;min-height:72px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:10px 12px;outline:none;"></textarea>
+            <button id="niCommentSubmit" class="btn-outline-pill" style="height:38px;align-self:flex-end;">Post</button>
+          </div>
+          <div id="niCommentStatus" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)"></div>
+        </div>
+      `;
 
-    `;
-
-
-
-    // Wire comment submit (local first, then try API if available)
-    const commentBtn = document.getElementById('niCommentSubmit');
-    const commentInput = document.getElementById('niCommentInput');
-    const commentStatus = document.getElementById('niCommentStatus');
-    if (commentBtn && commentInput) {
-      commentBtn.addEventListener('click', async () => {
-        const body = (commentInput.value || '').trim();
-        if (!body) {
-          if (commentStatus) commentStatus.textContent = 'Type a comment first.';
-          return;
-        }
-        commentBtn.disabled = true;
-        if (commentStatus) commentStatus.textContent = 'Posting…';
-
-        const c = { author: userEmail || 'User', body, created_at: new Date().toISOString() };
-        addLocalComment(p.id, c);
-        commentInput.value = '';
-        // Re-render to show the comment immediately
-        try {
-          const merged = Object.assign({}, p, { comments: serverComments.concat(getLocalComments(p.id)) });
-          selectPost(merged);
-        } catch(e) {}
-
-        // Optional API: /api/neighbor/comments (if Worker supports it)
-        try {
-          await apiFetch(API_BASE + '/api/neighbor/comments', {
-            method: 'POST',
-            body: JSON.stringify({ post_id: p.id, body })
-          });
-          if (commentStatus) commentStatus.textContent = 'Posted.';
-        } catch (e) {
-          if (commentStatus) commentStatus.textContent = 'Saved locally (comments API not available yet).';
-        }
-        commentBtn.disabled = false;
-      });
-    }
+      wireCommentUI(p);
+    })();
 
     if (pinLatLng && typeof p.lat === 'number' && typeof p.lng === 'number') {
       map.panTo([p.lat, p.lng]);
     }
   }
+
+  function wireCommentUI(p) {
+    const commentBtn = document.getElementById('niCommentSubmit');
+    const commentInput = document.getElementById('niCommentInput');
+    const commentStatus = document.getElementById('niCommentStatus');
+    if (!commentBtn || !commentInput) return;
+
+    commentBtn.addEventListener('click', async () => {
+      const body = (commentInput.value || '').trim();
+      if (!body) {
+        if (commentStatus) commentStatus.textContent = 'Type a comment first.';
+        return;
+      }
+      commentBtn.disabled = true;
+      if (commentStatus) commentStatus.textContent = 'Posting…';
+
+      const c = { author: userEmail || 'User', body, created_at: new Date().toISOString() };
+      addLocalComment(p.id, c);
+      commentInput.value = '';
+
+      try { selectPost(p); } catch(e) {}
+
+      try {
+        const res = await apiFetch(API_BASE + '/api/neighbor/comments', {
+          method: 'POST',
+          body: JSON.stringify({ post_id: p.id, body })
+        });
+        if (res.ok) {
+          if (commentStatus) commentStatus.textContent = 'Posted.';
+          // refresh the detail panel to show API comments (author_email, ids)
+          try { selectPost(p); } catch(e) {}
+        } else {
+          if (commentStatus) commentStatus.textContent = 'Saved locally (API error).';
+        }
+      } catch (e) {
+        if (commentStatus) commentStatus.textContent = 'Saved locally (API unavailable).';
+      }
+      commentBtn.disabled = false;
+    });
+  }
+
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, (c) => {
@@ -2400,11 +2420,13 @@
 
   // API calls (with local fallback if Worker missing)
   function makeQuery() {
-    if (!pinLatLng) return null;
     const q = new URLSearchParams();
-    q.set('lat', String(pinLatLng.lat));
-    q.set('lng', String(pinLatLng.lng));
-    q.set('radiusKm', els.radiusKm.value);
+    // If a pin is set, apply radius filtering. If not, fetch "recent posts" globally.
+    if (pinLatLng) {
+      q.set('lat', String(pinLatLng.lat));
+      q.set('lng', String(pinLatLng.lng));
+      q.set('radiusKm', els.radiusKm.value);
+    }
     q.set('sinceHours', els.sinceHours.value);
     if (els.severity.value) q.set('severity', els.severity.value);
     if (els.category.value) q.set('category', els.category.value);
@@ -2427,19 +2449,30 @@
   function localWrite(items) {
     localStorage.setItem(localKey(), JSON.stringify(items));
   }
-  
 
-  // Local comments (so comments work even before API endpoint exists)
-  function localCommentsKey(postId) { return 'ci_neighbor_comments_v1_' + String(postId || ''); }
+
+  function localCommentKey() { return 'ci_neighbor_comments_v1'; }
+  function localCommentsRead() {
+    try { return JSON.parse(localStorage.getItem(localCommentKey()) || '{}'); } catch(e) { return {}; }
+  }
+  function localCommentsWrite(map) {
+    localStorage.setItem(localCommentKey(), JSON.stringify(map || {}));
+  }
   function getLocalComments(postId) {
-    try { return JSON.parse(localStorage.getItem(localCommentsKey(postId)) || '[]'); } catch(e) { return []; }
+    if (!postId) return [];
+    const map = localCommentsRead();
+    const arr = map[postId];
+    return Array.isArray(arr) ? arr : [];
   }
-  function addLocalComment(postId, c) {
-    const cur = getLocalComments(postId);
-    cur.push(c);
-    try { localStorage.setItem(localCommentsKey(postId), JSON.stringify(cur)); } catch(e) {}
+  function addLocalComment(postId, comment) {
+    if (!postId || !comment) return;
+    const map = localCommentsRead();
+    const arr = Array.isArray(map[postId]) ? map[postId] : [];
+    arr.push(comment);
+    map[postId] = arr;
+    localCommentsWrite(map);
   }
-function haversineKm(a,b) {
+  function haversineKm(a,b) {
     const R=6371;
     const dLat=(b.lat-a.lat)*Math.PI/180;
     const dLng=(b.lng-a.lng)*Math.PI/180;
@@ -2448,14 +2481,13 @@ function haversineKm(a,b) {
     return 2*R*Math.asin(Math.min(1,Math.sqrt(aa)));
   }
 
-  async async function refresh() {
+  async function refresh() {
     const qs = makeQuery();
-    if (!qs) {
-      els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">Drop a pin to start filtering posts.</div>`;
-      els.pillCount.textContent = '0';
-      return;
-    }
-    els.pillScope.textContent = `${els.radiusKm.value} km / ${els.sinceHours.value}h`;
+    els.pillScope.textContent = pinLatLng
+      ? `${els.radiusKm.value} km / ${els.sinceHours.value}h`
+      : `No pin / ${els.sinceHours.value}h`;
+
+    // If no pin, we still fetch recent posts (global). Pin-drop enables radius filtering.
 
     try {
       const res = await apiFetch(ENDPOINT + '?' + qs, { method:'GET' });
@@ -2577,7 +2609,7 @@ function haversineKm(a,b) {
   });
 
   // Initial help
-  els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">Drop a pin to start filtering posts.</div>`;
+  els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">Showing recent posts. Drop a pin to filter by radius.</div>`;
 })();
 </script>
 
@@ -2637,24 +2669,6 @@ function haversineKm(a,b) {
     const next = encodeURIComponent(here + location.search + location.hash);
     host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
   }
-
-  // Restore last pin (so posts appear on page load)
-  try {
-    const saved = JSON.parse(localStorage.getItem(PIN_KEY) || 'null');
-    if (saved && typeof saved.lat === 'number' && typeof saved.lng === 'number') {
-      setPin(L.latLng(saved.lat, saved.lng));
-      map.setView([saved.lat, saved.lng], 15);
-    }
-  } catch(e) {}
-
-  // If no saved pin, default to current map center (London) so the feed isn't empty on first load.
-  if (!pinLatLng) {
-    setPin(map.getCenter());
-  }
-
-  // Initial load
-  refresh();
-
 })();
 </script>
 
