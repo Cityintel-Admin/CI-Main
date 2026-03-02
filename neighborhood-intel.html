@@ -1901,15 +1901,15 @@
     padding: 18px;
   }
   .ni-modal {
-    width: min(1120px, 96vw);
-    max-height: 96vh;
+    width: min(1320px, 98vw);
+    max-height: 98vh;
     overflow: hidden;
     border-radius: 18px;
     background: rgba(18,20,24,.96);
     border: 1px solid rgba(255,255,255,.10);
     box-shadow: 0 30px 90px rgba(0,0,0,.65);
   }
-  .ni-modal .bd{padding:16px;max-height:calc(96vh - 96px);overflow:auto;overflow-x:hidden}
+  .ni-modal .bd{padding:14px;max-height:calc(98vh - 76px);overflow:auto;overflow-x:hidden}
   .ni-modal .hd {
     position: sticky;
     top: 0;
@@ -1929,6 +1929,20 @@
   .ni-toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none}
   .ni-toast{pointer-events:none;min-width:260px;max-width:420px;padding:12px 14px;border-radius:12px;background:rgba(20,22,26,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.45);color:#fff;font-size:13px;line-height:1.35}
   .ni-toast small{display:block;opacity:.75;margin-top:4px}
+
+  /* Subjects (IC1/IC2/IC3) */
+  .subjects-toolbar{display:flex;align-items:center;gap:12px;margin:8px 0 10px 0}
+  .subjects-count{opacity:.75;font-size:12px}
+  .subjects-wrap{display:flex;flex-direction:column;gap:10px}
+  .subject-card{border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:12px;background:rgba(0,0,0,.18)}
+  .subject-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .subject-grid .ni-field{width:100%}
+  .subject-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+  .subject-title{font-weight:700;letter-spacing:.04em}
+  .ni-btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.12)}
+  @media (max-width: 980px){
+    .subject-grid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 
@@ -2120,6 +2134,18 @@
         </div>
 
         <div class="ni-row">
+          <div class="ni-col-full">
+            <div class="ni-label">SUBJECTS (OPTIONAL)</div>
+            <div class="ni-subnote">Use labels like IC1 / IC2 / IC3. Avoid personal identifying info (names, phone numbers, plates, home addresses).</div>
+            <div class="subjects-toolbar">
+              <button type="button" class="ni-btn" id="addSubjectBtn">+ Add subject</button>
+              <div class="subjects-count" id="subjectsCount"></div>
+            </div>
+            <div id="subjectsWrap" class="subjects-wrap"></div>
+          </div>
+        </div>
+
+        <div class="ni-row">
           <div>
             <div class="ni-label">Actions taken</div>
             <input class="ni-input" id="newActions" placeholder="e.g., notified building management; increased patrols" />
@@ -2127,9 +2153,7 @@
           <div>
             <div class="ni-label">Attachments (optional URLs)</div>
             <input class="ni-input" id="newAttachments" placeholder="Comma-separated URLs (images/scenes)" />
-            <div class="ni-subnote">Upload images (optional)</div>
-            <input class="ni-input" id="attachFiles" type="file" accept="image/*" multiple />
-            <div class="ni-subnote">Files upload on Publish and are stored as secure attachment URLs.</div>
+            
           </div>
         </div>
 
@@ -2227,10 +2251,149 @@ async function loadOrgHQ() {
     newBody: document.getElementById('newBody'),
     newActions: document.getElementById('newActions'),
     newAttachments: document.getElementById('newAttachments'),
-    attachFiles: document.getElementById('attachFiles'),
+    attachFiles: null, // uploads disabled
     newConfirm: document.getElementById('newConfirm'),
     geoHelp: document.getElementById('geoHelp'),
   };
+
+  // --- Subjects (IC1 / IC2 / IC3) ---
+  let subjects = [];
+
+  function escapeHtml(s){
+    return (s || "").replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+  }
+
+  function renderSubjects(){
+    const wrap = document.getElementById("subjectsWrap");
+    const count = document.getElementById("subjectsCount");
+    if(!wrap) return;
+
+    count.textContent = subjects.length ? `${subjects.length} subject${subjects.length===1?"":"s"}` : "No subjects added";
+
+    wrap.innerHTML = subjects.map((s, i)=>`
+      <div class="subject-card" data-id="${s.id}">
+        <div class="subject-title">${escapeHtml(s.label || `IC${i+1}`)}</div>
+
+        <div class="subject-grid" style="margin-top:10px">
+          <div>
+            <div class="ni-subnote">Label</div>
+            <input class="ni-input ni-field" data-k="label" data-id="${s.id}" value="${escapeHtml(s.label)}" placeholder="IC1">
+          </div>
+
+          <div>
+            <div class="ni-subnote">Height</div>
+            <select class="ni-select ni-field" data-k="height" data-id="${s.id}">
+              ${["Unknown","Short","Medium","Tall"].map(v=>`<option ${s.height===v?"selected":""}>${v}</option>`).join("")}
+            </select>
+          </div>
+
+          <div>
+            <div class="ni-subnote">Build</div>
+            <select class="ni-select ni-field" data-k="build" data-id="${s.id}">
+              ${["Unknown","Slim","Average","Stocky","Athletic"].map(v=>`<option ${s.build===v?"selected":""}>${v}</option>`).join("")}
+            </select>
+          </div>
+
+          <div>
+            <div class="ni-subnote">Status</div>
+            <select class="ni-select ni-field" data-k="status" data-id="${s.id}">
+              ${["Unknown","Alone","With group"].map(v=>`<option ${s.status===v?"selected":""}>${v}</option>`).join("")}
+            </select>
+          </div>
+
+          <div>
+            <div class="ni-subnote">Group size (if known)</div>
+            <input class="ni-input ni-field" data-k="groupSize" data-id="${s.id}" value="${escapeHtml(s.groupSize)}" placeholder="e.g. 3">
+          </div>
+
+          <div>
+            <div class="ni-subnote">Distinctive features</div>
+            <input class="ni-input ni-field" data-k="distinctive" data-id="${s.id}" value="${escapeHtml(s.distinctive)}" placeholder="e.g. sleeve tattoo (left arm), red hoodie">
+          </div>
+        </div>
+
+        <div class="subject-actions">
+          <button type="button" class="ni-btn ghost" data-action="dup" data-id="${s.id}">Duplicate</button>
+          <button type="button" class="ni-btn ghost" data-action="del" data-id="${s.id}">Remove</button>
+        </div>
+      </div>
+    `).join("");
+
+    wrap.querySelectorAll("[data-k]").forEach(el=>{
+      const handler = ()=>{
+        const id = el.getAttribute("data-id");
+        const k = el.getAttribute("data-k");
+        const sub = subjects.find(x=>x.id===id);
+        if(!sub) return;
+        sub[k] = el.value;
+        if(k==="label") renderSubjects();
+      };
+      el.addEventListener("input", handler);
+      el.addEventListener("change", handler);
+    });
+
+    wrap.querySelectorAll("[data-action]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-id");
+        const act = btn.getAttribute("data-action");
+        if(act==="del"){
+          subjects = subjects.filter(x=>x.id!==id);
+          renderSubjects();
+        } else if(act==="dup"){
+          const src = subjects.find(x=>x.id===id);
+          if(!src) return;
+          const copy = {...src, id: `sub_${Date.now()}_${Math.random().toString(16).slice(2)}`};
+          copy.label = (src.label || "").trim() ? `${src.label} (copy)` : `IC${subjects.length+1}`;
+          subjects.push(copy);
+          renderSubjects();
+        }
+      });
+    });
+  }
+
+  function addSubject(){
+    const nextIdx = subjects.length + 1;
+    subjects.push({
+      id: `sub_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      label: `IC${nextIdx}`,
+      height: "Unknown",
+      build: "Unknown",
+      status: "Unknown",
+      groupSize: "",
+      distinctive: ""
+    });
+    renderSubjects();
+  }
+
+  function initSubjects(){
+    subjects = [];
+    renderSubjects();
+  }
+
+  function getSubjectsForPayload(){
+    return subjects.map((s)=>({
+      label: (s.label||"").trim(),
+      height: s.height,
+      build: s.build,
+      status: s.status,
+      groupSize: (s.groupSize||"").trim(),
+      distinctive: (s.distinctive||"").trim()
+    })).filter(s=>Object.values(s).some(v=>String(v||"").trim()!==""));
+  }
+
+  function formatSubjectsForDetails(list){
+    if(!list || !list.length) return "";
+    const lines = list.map((s, i)=>{
+      const label = s.label || `IC${i+1}`;
+      const bits = [];
+      if(s.height && s.height!=="Unknown") bits.push(`height: ${s.height}`);
+      if(s.build && s.build!=="Unknown") bits.push(`build: ${s.build}`);
+      if(s.status && s.status!=="Unknown") bits.push(`status: ${s.status}${s.groupSize?` (size ${s.groupSize})`:""}`);
+      if(s.distinctive) bits.push(`features: ${s.distinctive}`);
+      return `- ${label}${bits.length?` — ${bits.join("; ")}`:""}`;
+    });
+    return "\n\nSubjects:\n" + lines.join("\n");
+  }
 
   // Identify user (used for per-user draft + server metadata)
   function getUserEmail() {
@@ -2692,6 +2855,10 @@ els.btnRefresh.addEventListener('click', refresh);
     els.newConfirm.checked = false;
     els.btnSubmitPost.disabled = true;
     openModal();
+    initSubjects();
+    const addBtn = document.getElementById('addSubjectBtn');
+    if(addBtn){ addBtn.onclick = addSubject; }
+
   });
   els.btnCloseModal.addEventListener('click', closeModal);
   els.btnCancelPost.addEventListener('click', closeModal);
@@ -2712,40 +2879,10 @@ els.btnRefresh.addEventListener('click', refresh);
   
 // Upload selected images to the Worker (which forwards to Cloudflare Images).
 // Returns an array of image URLs (public variants).
-async function uploadFilesToWorker(fileList, opts = {}) {
-  const files = Array.from(fileList || []);
-  if (!files.length) return [];
-
-  const maxCount = opts.maxCount ?? 3;
-  const maxBytes = opts.maxBytes ?? 5_000_000; // 5MB default
-  const allowed = opts.allowedTypes ?? ['image/jpeg','image/png','image/webp','image/gif'];
-
-  const pick = files.slice(0, maxCount);
-  for (const f of pick) {
-    if (allowed.length && !allowed.includes(f.type)) {
-      throw new Error('Unsupported file type: ' + (f.type || 'unknown'));
-    }
-    if (f.size > maxBytes) {
-      throw new Error('File too large (max ' + Math.round(maxBytes/1_000_000) + 'MB): ' + f.name);
-    }
+async function uploadFilesToWorker(){
+    // Cloudflare Images requires a paid plan for uploads. Disabled in this build.
+    return [];
   }
-
-  const fd = new FormData();
-  for (const f of pick) fd.append('files', f, f.name);
-
-  const res = await fetch(`${API_BASE}/api/neighbor/upload`, {
-    method: 'POST',
-    headers: authHeaders(),
-    body: fd,
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => '');
-    throw new Error('Upload failed: ' + res.status + ' ' + t);
-  }
-  const data = await res.json();
-  if (!data?.ok) throw new Error(data?.error || 'Upload failed');
-  return Array.isArray(data.urls) ? data.urls : [];
-}
 
 
 btnSubmitPost.addEventListener('click', async () => {
