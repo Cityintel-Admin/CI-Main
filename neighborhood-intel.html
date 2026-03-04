@@ -1,5 +1,5 @@
 
- 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -2150,7 +2150,7 @@
             <div class="ni-label">Actions taken</div>
             <input class="ni-input" id="newActions" placeholder="e.g., notified building management; increased patrols" />
           </div>
-          <div>
+          <div style="display:none">
             <div class="ni-label">Attachments (optional URLs)</div>
             <input class="ni-input" id="newAttachments" placeholder="Comma-separated URLs (images/scenes)" />
             
@@ -2456,6 +2456,7 @@ async function loadOrgHQ() {
 
   function setPin(latlng) {
     pinLatLng = latlng;
+    try { localStorage.setItem('ci_neighbor_pin', JSON.stringify({lat: Number(latlng.lat), lng: Number(latlng.lng)})); } catch(e) {}
     if (!pinMarker) {
       pinMarker = L.marker(latlng, { draggable: true }).addTo(map);
       pinMarker.on('dragend', () => {
@@ -2528,6 +2529,43 @@ function parseLocUpdate(body) {
   const labelm = /label\s*=\s*([^\r\n]+)/i.exec(line);
   const label = labelm ? String(labelm[1]).trim() : '';
   return { lat, lng, label };
+}
+
+
+function commentDisplayBody(body){
+  const raw = String(body || '');
+  const idx = raw.indexOf('[LOC_UPDATE]');
+  if (idx === -1) return raw.trim();
+  // Remove the header line containing [LOC_UPDATE], keep operator narrative below it
+  const lines = raw.split(/\r?\n/);
+  const kept = lines.filter((ln)=>!ln.includes('[LOC_UPDATE]'));
+  return kept.join('\n').trim();
+}
+
+function guessOrgFromEmail(email){
+  const e = String(email || '').trim().toLowerCase();
+  if (!e || !e.includes('@')) return '';
+  const dom = e.split('@')[1] || '';
+  const base = dom.split('.')[0] || dom;
+  if (!base) return dom;
+  // Title-case the base (best-effort)
+  return base.replace(/(^|\W)([a-z])/g, (m,p1,p2)=>p1 + p2.toUpperCase());
+}
+
+function formatCommentAuthor(c, post){
+  // Prefer explicit org_name if backend adds it later
+  const org = (c && (c.org_name || c.org)) ? String(c.org_name || c.org) : '';
+  if (org) return org;
+
+  const email = String((c && (c.author_email || c.author)) || '').trim();
+  // If the comment author matches the post author, reuse the post org name label
+  if (post && email && String(post.author_email||'').toLowerCase() === email.toLowerCase()) {
+    return post.org_name || post.org_id || email;
+  }
+
+  // Fallback: show company-ish label from email domain (more useful than full email)
+  const guessed = guessOrgFromEmail(email);
+  return guessed || email || 'User';
 }
 
 function drawPostTrail(post, comments) {
@@ -2661,23 +2699,14 @@ function drawPostTrail(post, comments) {
         </div>
 
         <div style="margin-top:14px;">
-          <div class="ni-label">Attachments</div>
-          <div>${atts.length ? atts.map(u => {
-              const isData = typeof u === 'string' && u.startsWith('data:image');
-              if (isData) return `<img src="${escapeAttr(u)}" style="max-width:100%;border-radius:12px;margin:6px 0"/>`;
-              return `<a href="${escapeAttr(u)}" target="_blank" style="color:#ff8080">Open attachment</a>`;
-            }).join('<br/>') : '<span style="color:rgba(255,255,255,.6)">None</span>'}</div>
-        </div>
-
-        <div style="margin-top:14px;">
           <div class="ni-label">Comments</div>
           <div id="niCommentsList">
             ${comments.length ? comments.map(c => `
               <div style="margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.18)">
-                <div style="font-size:12px;color:rgba(255,255,255,.6)">${escapeHtml(c.author || c.author_email || 'User')} • ${fmtTime(c.created_at)}</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.6)">${escapeHtml(formatCommentAuthor(c,p))} • ${fmtTime(c.created_at)}</div>
                 <div style="margin-top:6px;color:rgba(255,255,255,.85)">
                   ${parseLocUpdate(c.body)?'<span class="pill" style="margin-right:6px;background:rgba(208,22,22,.18);border-color:rgba(208,22,22,.5)">Location update</span>':''}
-                  ${escapeHtml(c.body||'')}
+                  ${escapeHtml(commentDisplayBody(c.body))}
                 </div>
               </div>
             `).join('') : '<span style="color:rgba(255,255,255,.6)">No comments yet.</span>'}
@@ -3046,7 +3075,7 @@ btnSubmitPost.addEventListener('click', async () => {
 
     const payload = {
       title: els.newTitle.value.trim(),
-      body: els.newBody.value.trim(),
+      body: (els.newBody.value.trim() + formatSubjectsForDetails(getSubjectsForPayload())).trim(),
       category: els.newCategory.value,
       severity: els.newSeverity.value,
       observed_at: new Date(els.newObservedAt.value).toISOString(),
@@ -3056,6 +3085,7 @@ btnSubmitPost.addEventListener('click', async () => {
       radius_km: Number(els.radiusKm.value),
       actions_taken: els.newActions.value.trim(),
       attachments: attachments,
+      subjects: getSubjectsForPayload(),
     };
 
     try {
@@ -3085,8 +3115,18 @@ btnSubmitPost.addEventListener('click', async () => {
 
   // Initial load: default to org HQ if available so posts show immediately
   (async () => {
+    // Restore last-used pin (so operators can immediately see nearby markers)
+    try {
+      const saved = JSON.parse(localStorage.getItem('ci_neighbor_pin')||'null');
+      if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.lng)) {
+        map.setView([saved.lat, saved.lng], 12);
+        setPin(L.latLng(saved.lat, saved.lng));
+        setPinBadge();
+      }
+    } catch(e) {}
+
     const hq = await loadOrgHQ();
-    if (hq) {
+    if (hq && !pinLatLng) {
       map.setView([hq.lat, hq.lng], 12);
       setPin(L.latLng(hq.lat, hq.lng));
       setPinBadge();
