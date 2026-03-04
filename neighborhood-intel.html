@@ -2467,7 +2467,7 @@ async function loadOrgHQ() {
     } else {
       pinMarker.setLatLng(latlng);
     }
-    els.pillPin.textContent = `Pin: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+    els.pillPin.textContent = `Pin set`;
     els.pillScope.textContent = `${els.radiusKm.value} km / ${els.sinceHours.value}h`;
     els.geoHelp.textContent = `Location set: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)} (drag pin to adjust).`;
   }
@@ -2690,13 +2690,14 @@ function drawPostTrail(post, comments) {
           </div>
         </div>
 
-        <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${escapeHtml(p.body || '')}</div>
+        <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${escapeHtml(splitSubjectsFromBody(p.body).body || '')}</div>
 
         <div style="margin-top:14px;color:rgba(255,255,255,.7);font-size:13px;">
-          <div><b>Location:</b> ${escapeHtml(p.geo_label || 'Approx. pin')} • ${typeof p.lat==='number'?p.lat.toFixed(5):''}, ${typeof p.lng==='number'?p.lng.toFixed(5):''}</div>
-          <div style="margin-top:6px;"><b>Actions taken:</b> ${escapeHtml(p.actions_taken || '—')}</div>
-          <div style="margin-top:6px;"><b>Posted by:</b> ${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</div>
-        </div>
+  ${(() => { const s = splitSubjectsFromBody(p.body); return s.subjects && s.subjects.length ? `<div><b>Subjects:</b> ${escapeHtml(subjectsToDisplay(s.subjects))}</div>` : ''; })()}
+  <div ${'style="margin-top:6px;"'}><b>Location:</b> ${escapeHtml(p.geo_label || 'Approx. pin')}</div>
+  <div style="margin-top:6px;"><b>Actions taken:</b> ${escapeHtml(p.actions_taken || '—')}</div>
+  <div style="margin-top:6px;"><b>Posted by:</b> ${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</div>
+</div>
 
         <div style="margin-top:14px;">
           <div class="ni-label">Comments</div>
@@ -2750,7 +2751,7 @@ function drawPostTrail(post, comments) {
 
     // Show current pin status for location updates
     if (locPinHint) {
-      locPinHint.textContent = pinLatLng ? `Pin: ${Number(pinLatLng.lat).toFixed(5)}, ${Number(pinLatLng.lng).toFixed(5)}` : 'No pin set';
+      locPinHint.textContent = pinLatLng ? 'Pin set' : 'No pin set';
     }
 
     commentBtn.addEventListener('click', async () => {
@@ -2810,6 +2811,39 @@ function drawPostTrail(post, comments) {
   function escapeAttr(s) {
     return String(s || '').replace(/"/g,'&quot;');
   }
+
+
+// Extract a "Subjects:" block from the body and return { body, subjects[] }
+// We treat everything from a line starting with "Subjects:" up to the next blank line as the subjects block.
+function splitSubjectsFromBody(body){
+  const text = String(body || '');
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^\s*Subjects\s*:/i.test(l));
+  if (startIdx === -1) return { body: text, subjects: [] };
+
+  const subjects = [];
+  // Capture following lines until blank line
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const ln = lines[i];
+    if (!ln || !String(ln).trim()) break;
+    subjects.push(String(ln).replace(/^\s*[-•]\s*/, '').trim());
+  }
+
+  // Remove the "Subjects:" line + captured lines (and one optional blank line after)
+  const endIdx = startIdx + 1 + subjects.length;
+  let rest = lines.slice(0, startIdx).concat(lines.slice(endIdx));
+  // Trim leading blank line if we removed block in the middle
+  while (rest.length && !String(rest[0]).trim()) rest.shift();
+  const cleaned = rest.join('\n').trim();
+
+  return { body: cleaned, subjects };
+}
+
+function subjectsToDisplay(subjects){
+  if (!subjects || !subjects.length) return '';
+  // Join nicely for a single-line display
+  return subjects.join(' • ');
+}
 
   // Minimal toast so we don't depend on any external UI lib
   function toast(message, detail=''){
@@ -2907,7 +2941,7 @@ function localCommentKey() { return 'ci_neighbor_comments_v1'; }
   function setPinBadge() {
     if (!els.pillPin) return;
     if (!pinLatLng) { els.pillPin.textContent = 'No pin'; return; }
-    els.pillPin.textContent = `Pin: ${Number(pinLatLng.lat).toFixed(5)}, ${Number(pinLatLng.lng).toFixed(5)}`;
+    els.pillPin.textContent = `Pin set`;
   }
 
   function setFilterBadge() {
