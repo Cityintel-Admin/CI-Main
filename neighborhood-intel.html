@@ -1816,6 +1816,22 @@
     cursor: not-allowed;
   }
 
+
+  .ni-col-full{grid-column:1 / -1;}
+
+  /* Post detail subjects block */
+  .subject-block{margin-top:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:rgba(0,0,0,.16)}
+  .subject-block-title{font-weight:900;letter-spacing:.04em;color:rgba(255,255,255,.92);margin-bottom:8px}
+  .subject-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px}
+  .subject-kv .kv{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .subject-kv .kv:last-child{border-bottom:none}
+  .subject-kv .k{font-weight:800;color:rgba(255,255,255,.80)}
+  .subject-kv .v{color:rgba(255,255,255,.80);text-align:right}
+  .subject-notes{margin-top:8px;color:rgba(255,255,255,.72);font-size:12.5px;line-height:1.4}
+  @media (max-width: 820px){
+    .subject-kv{grid-template-columns:1fr;}
+    .subject-kv .v{text-align:left}
+  }
   .ni-map {
     height: clamp(520px, 74vh, 980px);
     border-radius: 16px;
@@ -2921,12 +2937,7 @@ function drawPostTrail(post, comments) {
 
         <div class="detail-rows">
           ${(() => { const m = extractMetaFromBody(p.body); return m.caseTag ? `<div class="detail-row"><span class="k">Case tag:</span><span class="v">${escapeHtml(m.caseTag)}</span></div>` : ''; })()}
-          ${(() => { const m = extractMetaFromBody(p.body); const lines = subjectsToLines(m.subjects); if (!lines.length) return ''; return `
-            <div class="detail-row"><span class="k">Subjects:</span></div>
-            <div class="detail-subjects">
-              ${lines.map(l => `<div class="detail-subject">${escapeHtml(l)}</div>`).join('')}
-            </div>
-          `; })()}
+          ${(() => { const m = extractMetaFromBody(p.body); return renderSubjectsStructured(m.subjects); })()}
           <div class="detail-row"><span class="k">Location:</span><span class="v">${escapeHtml(p.geo_label || 'Approx. pin')}</span></div>
           <div class="detail-row"><span class="k">Actions taken:</span><span class="v">${escapeHtml(p.actions_taken || '—')}</span></div>
           <div class="detail-row"><span class="k">Posted by:</span><span class="v">${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</span></div>
@@ -3093,6 +3104,98 @@ function extractMetaFromBody(body){
 function subjectsToLines(subjects){
   if (!subjects || !subjects.length) return [];
   return subjects.map(s => String(s).trim()).filter(Boolean);
+}
+
+// Parse a single subject summary line (stored in the post body) into {label, kv[], notes[]}
+function parseSubjectLine(line){
+  const raw = String(line || '').trim();
+  if (!raw) return null;
+
+  // Common format: "IC1 — sex: Male; age: 36-50; height: Short; build: Average; status: Alone; ..."
+  let label = '';
+  let rest = raw;
+
+  // Prefer label if it looks like IC1/IC2/etc
+  const icMatch = raw.match(/\bIC\d+\b/i);
+  if (icMatch){
+    label = icMatch[0].toUpperCase();
+    const after = raw.split(icMatch[0])[1] || '';
+    rest = after.replace(/^\s*(—|-)\s*/,'').trim() || raw.replace(icMatch[0],'').trim();
+  } else {
+    label = 'Subject';
+  }
+
+  const segs = rest.split(';').map(s => s.trim()).filter(Boolean);
+  const kv = [];
+  const notes = [];
+
+  const niceKey = (k) => {
+    const t = String(k||'').trim().toLowerCase();
+    const map = {
+      'sex':'Sex',
+      'gender':'Sex',
+      'age':'Age',
+      'age band':'Age',
+      'height':'Height',
+      'build':'Build',
+      'status':'Status',
+      'outerwear':'Outerwear',
+      'outerwear colour':'Outerwear colour',
+      'bottoms':'Bottoms',
+      'bottoms colour':'Bottoms colour',
+      'footwear':'Footwear',
+      'footwear colour':'Footwear colour',
+      'headwear':'Headwear',
+      'headwear colour':'Headwear colour',
+      'bag':'Bag',
+      'bag colour':'Bag colour',
+      'face covering':'Face covering',
+      'direction':'Direction',
+      'mode':'Mode',
+      'behaviour':'Behaviour',
+      'confidence':'Confidence',
+      'group size':'Group size',
+      'group size (if known)':'Group size',
+      'distinctive features':'Distinctive features'
+    };
+    return map[t] || (t ? (t.charAt(0).toUpperCase()+t.slice(1)) : '');
+  };
+
+  for (const s of segs){
+    const m = s.match(/^([^:]{2,40})\s*:\s*(.+)$/);
+    if (m){
+      const key = niceKey(m[1]);
+      const val = String(m[2]||'').trim();
+      if (key && val) kv.push([key, val]);
+    } else {
+      // free-form segment (e.g. "Green and Black Jacket")
+      notes.push(s);
+    }
+  }
+
+  return { label, kv, notes };
+}
+
+function renderSubjectsStructured(subjectLines){
+  const lines = subjectsToLines(subjectLines);
+  if (!lines.length) return '';
+  const parsed = lines.map(parseSubjectLine).filter(Boolean);
+  if (!parsed.length) return '';
+
+  return `
+    <div class="detail-row"><span class="k">Subjects:</span></div>
+    ${parsed.map(s => `
+      <div class="subject-block">
+        <div class="subject-block-title">${escapeHtml(s.label)}</div>
+        ${s.kv && s.kv.length ? `
+          <div class="subject-kv">
+            ${s.kv.map(([k,v]) => `<div class="kv"><span class="k">${escapeHtml(k)}:</span><span class="v">${escapeHtml(v)}</span></div>`).join('')}
+          </div>
+        ` : ''}
+        ${s.notes && s.notes.length ? `<div class="subject-notes">${escapeHtml(s.notes.join(' • '))}</div>` : ''}
+      </div>
+    `).join('')}
+  `;
 }
 
   // Minimal toast
