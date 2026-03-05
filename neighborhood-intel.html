@@ -1935,10 +1935,24 @@
   .subjects-count{opacity:.75;font-size:12px}
   .subjects-wrap{display:flex;flex-direction:column;gap:10px}
   .subject-card{border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:12px;background:rgba(0,0,0,.18)}
-  .subject-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .subject-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
   .subject-grid .ni-field{width:100%}
+  @media (max-width: 1100px){
+    .subject-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+  @media (max-width: 640px){
+    .subject-grid{grid-template-columns:1fr;}
+  }
   .subject-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
   .subject-title{font-weight:700;letter-spacing:.04em}
+
+  /* Post detail rows */
+  .detail-rows{margin-top:14px;color:rgba(255,255,255,.75);font-size:13px}
+  .detail-row{margin-top:6px;display:flex;gap:8px;flex-wrap:wrap}
+  .detail-row .k{font-weight:800;color:rgba(255,255,255,.85)}
+  .detail-row .v{color:rgba(255,255,255,.80)}
+  .detail-subjects{margin-top:4px;display:flex;flex-direction:column;gap:4px}
+  .detail-subject{padding-left:10px;border-left:2px solid rgba(208,22,22,.35);color:rgba(255,255,255,.78)}
   .ni-btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.12)}
   @media (max-width: 980px){
     .subject-grid{grid-template-columns:1fr}
@@ -2126,7 +2140,18 @@
           </div>
         </div>
 
+        
         <div class="ni-row one">
+          <div>
+            <div class="ni-label">Case tag (optional)</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input class="ni-input" id="newCaseTag" placeholder="e.g., 20260305-MONUMENT-001" style="flex:1;" />
+              <button type="button" class="ni-btn" id="btnAutoCaseTag">Auto</button>
+            </div>
+            <div class="ni-note">Use this to group related sightings (serial offender / ongoing operation). Auto creates a date+area tag with a local sequence number.</div>
+          </div>
+        </div>
+<div class="ni-row one">
           <div>
             <div class="ni-label">Details</div>
             <textarea class="ni-textarea" id="newBody" placeholder="Describe observed behaviour and why it matters. Avoid personal identifying information."></textarea>
@@ -2248,6 +2273,8 @@ async function loadOrgHQ() {
     newCategory: document.getElementById('newCategory'),
     newSeverity: document.getElementById('newSeverity'),
     newGeoLabel: document.getElementById('newGeoLabel'),
+    newCaseTag: document.getElementById('newCaseTag'),
+    btnAutoCaseTag: document.getElementById('btnAutoCaseTag'),
     newBody: document.getElementById('newBody'),
     newActions: document.getElementById('newActions'),
     newAttachments: document.getElementById('newAttachments'),
@@ -2255,6 +2282,51 @@ async function loadOrgHQ() {
     newConfirm: document.getElementById('newConfirm'),
     geoHelp: document.getElementById('geoHelp'),
   };
+
+  function normalizeAreaForCaseTag(){
+    const raw = (els.newGeoLabel?.value || '').trim() || (els.newTitle?.value || '').trim() || 'AREA';
+    const cleaned = raw.toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    return (cleaned.split('-')[0] || 'AREA').slice(0, 12) || 'AREA';
+  }
+
+  function yyyymmddFromObserved(){
+    const v = (els.newObservedAt?.value || '').trim();
+    const d = v ? new Date(v) : new Date();
+    const y = String(d.getFullYear());
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const da = String(d.getDate()).padStart(2,'0');
+    return y + m + da;
+  }
+
+  function suggestCaseTag(){
+    const date = yyyymmddFromObserved();
+    const area = normalizeAreaForCaseTag();
+    const key = `ci_case_seq_${date}_${area}`;
+    const last = Number(localStorage.getItem(key) || '0') || 0;
+    const next = last + 1;
+    return `${date}-${area}-${String(next).padStart(3,'0')}`;
+  }
+
+  function bumpCaseSeqIfNeeded(tag){
+    const m = String(tag||'').trim().match(/^(\d{8})-([A-Z0-9]+)-(\d{3})$/);
+    if (!m) return;
+    const date = m[1], area = m[2], seq = Number(m[3] || '0') || 0;
+    const key = `ci_case_seq_${date}_${area}`;
+    const last = Number(localStorage.getItem(key) || '0') || 0;
+    if (seq > last) localStorage.setItem(key, String(seq));
+  }
+
+  if (els.btnAutoCaseTag && els.newCaseTag) {
+    els.btnAutoCaseTag.addEventListener('click', () => {
+      if (!els.newCaseTag.value.trim()) els.newCaseTag.value = suggestCaseTag();
+      els.newCaseTag.focus();
+    });
+    // If user edits title/geo label, we can re-suggest only when empty.
+    ['input','change'].forEach(ev => {
+      els.newGeoLabel?.addEventListener(ev, () => { if (!els.newCaseTag.value.trim()) { /* keep empty */ } });
+      els.newTitle?.addEventListener(ev, () => { if (!els.newCaseTag.value.trim()) { /* keep empty */ } });
+    });
+  }
 
   // --- Subjects (IC1 / IC2 / IC3) ---
   let subjects = [];
@@ -2845,10 +2917,20 @@ function drawPostTrail(post, comments) {
           </div>
         </div>
 
-        <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${escapeHtml(splitSubjectsFromBody(p.body).body || '')}</div>
+        <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${(() => { const m = extractMetaFromBody(p.body); return escapeHtml(m.body || ''); })()}</div>
 
-        <div style="margin-top:14px;color:rgba(255,255,255,.7);font-size:13px;">
-  ${(() => { const s = splitSubjectsFromBody(p.body); return s.subjects && s.subjects.length ? `<div><b>Subjects:</b> ${escapeHtml(subjectsToDisplay(s.subjects))}</div>` : ''; })()}
+        <div class="detail-rows">
+          ${(() => { const m = extractMetaFromBody(p.body); return m.caseTag ? `<div class="detail-row"><span class="k">Case tag:</span><span class="v">${escapeHtml(m.caseTag)}</span></div>` : ''; })()}
+          ${(() => { const m = extractMetaFromBody(p.body); const lines = subjectsToLines(m.subjects); if (!lines.length) return ''; return `
+            <div class="detail-row"><span class="k">Subjects:</span></div>
+            <div class="detail-subjects">
+              ${lines.map(l => `<div class="detail-subject">${escapeHtml(l)}</div>`).join('')}
+            </div>
+          `; })()}
+          <div class="detail-row"><span class="k">Location:</span><span class="v">${escapeHtml(p.geo_label || 'Approx. pin')}</span></div>
+          <div class="detail-row"><span class="k">Actions taken:</span><span class="v">${escapeHtml(p.actions_taken || '—')}</span></div>
+          <div class="detail-row"><span class="k">Posted by:</span><span class="v">${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</span></div>
+        </div>` : ''; })()}
   <div ${'style="margin-top:6px;"'}><b>Location:</b> ${escapeHtml(p.geo_label || 'Approx. pin')}</div>
   <div style="margin-top:6px;"><b>Actions taken:</b> ${escapeHtml(p.actions_taken || '—')}</div>
   <div style="margin-top:6px;"><b>Posted by:</b> ${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</div>
@@ -2994,11 +3076,30 @@ function splitSubjectsFromBody(body){
   return { body: cleaned, subjects };
 }
 
-function subjectsToDisplay(subjects){
-  if (!subjects || !subjects.length) return '';
-  // Join nicely for a single-line display
-  return subjects.join(' • ');
+function splitCaseTagFromBody(body){
+  const text = String(body || '');
+  const lines = text.split(/\r?\n/);
+  const idx = lines.findIndex(l => /^\s*Case\s*tag\s*:/i.test(l));
+  if (idx === -1) return { body: text, caseTag: '' };
+  const raw = String(lines[idx] || '');
+  const caseTag = raw.replace(/^\s*Case\s*tag\s*:\s*/i,'').trim();
+  const cleanedLines = [...lines.slice(0, idx), ...lines.slice(idx+1)];
+  while (cleanedLines.length && !String(cleanedLines[0]).trim()) cleanedLines.shift();
+  return { body: cleanedLines.join('\n'), caseTag };
 }
+
+function extractMetaFromBody(body){
+  const s = splitSubjectsFromBody(body);
+  const c = splitCaseTagFromBody(s.body);
+  return { body: c.body, subjects: s.subjects || [], caseTag: c.caseTag || '' };
+}
+
+function subjectsToLines(subjects){
+  if (!subjects || !subjects.length) return [];
+  return subjects.map(s => String(s).trim()).filter(Boolean);
+}
+
+  // Minimal toast
 
   // Minimal toast so we don't depend on any external UI lib
   function toast(message, detail=''){
@@ -3211,6 +3312,7 @@ els.btnRefresh.addEventListener('click', refresh);
     if (els.attachFiles) els.attachFiles.value = '';
     if (typeof renderAttachPreview === 'function') renderAttachPreview();
     els.newGeoLabel.value = '';
+    if (els.newCaseTag) els.newCaseTag.value = '';
     els.newConfirm.checked = false;
     els.btnSubmitPost.disabled = true;
     openModal();
@@ -3264,7 +3366,13 @@ btnSubmitPost.addEventListener('click', async () => {
 
     const payload = {
       title: els.newTitle.value.trim(),
-      body: (els.newBody.value.trim() + formatSubjectsForDetails(getSubjectsForPayload())).trim(),
+      body: (() => {
+        const base = (els.newBody.value || '').trim();
+        const subs = formatSubjectsForDetails(getSubjectsForPayload());
+        const ct = (els.newCaseTag?.value || '').trim();
+        const ctLine = ct ? (`Case tag: ${ct}\n`) : '';
+        return (ctLine + base + subs).trim();
+      })(),
       category: els.newCategory.value,
       severity: els.newSeverity.value,
       observed_at: new Date(els.newObservedAt.value).toISOString(),
@@ -3285,6 +3393,7 @@ btnSubmitPost.addEventListener('click', async () => {
       if (!res.ok) throw new Error('bad_status_' + res.status);
       const data = await res.json();
       if (!data?.ok) throw new Error(data?.error || 'bad_payload');
+      bumpCaseSeqIfNeeded((els.newCaseTag?.value || '').trim());
       closeModal();
       await refresh();
       return;
@@ -3292,6 +3401,7 @@ btnSubmitPost.addEventListener('click', async () => {
       // local fallback
       const all = localRead();
       const id = 'local_' + Math.random().toString(16).slice(2);
+      bumpCaseSeqIfNeeded((els.newCaseTag?.value || '').trim());
       all.unshift(Object.assign({ id, created_at: new Date().toISOString(), org_name: 'Local', org_id: 'local', comments: [] }, payload));
       localWrite('ni_posts_cache', all);
       closeModal();
