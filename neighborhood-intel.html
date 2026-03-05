@@ -3108,29 +3108,31 @@ function subjectsToLines(subjects){
 
 // Parse a single subject summary line (stored in the post body) into {label, kv[], notes[]}
 function parseSubjectLine(line){
-  const raw = String(line || '').trim();
-  if (!raw) return null;
+  // Parses subject line segments like:
+  // "IC1 — sex: Male; age: 36-50; height: Short; ...; Green and Black Jacket; Black Joggers; Black Trainers; Uber Eats Backpack"
+  // into a structured object suitable for a SOC-style brief.
+  const s0 = String(line||'').trim();
+  if (!s0) return null;
 
-  // Common format: "IC1 — sex: Male; age: 36-50; height: Short; build: Average; status: Alone; ..."
-  let label = '';
-  let rest = raw;
-
-  // Prefer label if it looks like IC1/IC2/etc
-  const icMatch = raw.match(/\bIC\d+\b/i);
-  if (icMatch){
-    label = icMatch[0].toUpperCase();
-    const after = raw.split(icMatch[0])[1] || '';
-    rest = after.replace(/^\s*(—|-)\s*/,'').trim() || raw.replace(icMatch[0],'').trim();
+  // Split label (IC1/IC2 etc.) from the rest
+  let label = 'Subject';
+  let rest = s0;
+  const dash = s0.split('—');
+  if (dash.length > 1){
+    label = dash[0].trim() || label;
+    rest = dash.slice(1).join('—').trim();
   } else {
-    label = 'Subject';
+    // Also support "IC1 - ..." or "IC1 — ..."
+    const m0 = s0.match(/^([A-Za-z0-9]{2,10})\s*[-–—]\s*(.+)$/);
+    if (m0){ label = m0[1].trim(); rest = m0[2].trim(); }
   }
 
-  const segs = rest.split(';').map(s => s.trim()).filter(Boolean);
-  const kv = [];
-  const notes = [];
+  // Split segments by semicolon (preferred), then commas
+  const segs = rest.split(';').map(x=>x.trim()).filter(Boolean);
 
-  const niceKey = (k) => {
-    const t = String(k||'').trim().toLowerCase();
+  // Key normalization map
+  const niceKey = (t) => {
+    t = String(t||'').trim().toLowerCase();
     const map = {
       'sex':'Sex',
       'gender':'Sex',
@@ -3161,6 +3163,17 @@ function parseSubjectLine(line){
     return map[t] || (t ? (t.charAt(0).toUpperCase()+t.slice(1)) : '');
   };
 
+  // Desired display order (SOC-style: identity first, then clothing, then movement/behaviour)
+  const ORDER = [
+    'Sex','Age','Height','Build','Status',
+    'Outerwear','Outerwear colour','Bottoms','Bottoms colour','Footwear','Footwear colour','Headwear','Headwear colour','Bag','Bag colour',
+    'Face covering','Direction','Mode','Behaviour','Confidence','Group size','Distinctive features'
+  ];
+  const orderIndex = new Map(ORDER.map((k,i)=>[k,i]));
+
+  const kv = [];
+  const notes = [];
+
   for (const s of segs){
     const m = s.match(/^([^:]{2,40})\s*:\s*(.+)$/);
     if (m){
@@ -3173,7 +3186,47 @@ function parseSubjectLine(line){
     }
   }
 
-  return { label, kv, notes };
+  // Heuristic: pull common clothing items from free-form notes into the table
+  const remainingNotes = [];
+  const addIfMissing = (key, val) => {
+    if (!val) return;
+    const exists = kv.some(([k])=>k===key);
+    if (!exists) kv.push([key, val]);
+    else remainingNotes.push(val);
+  };
+
+  for (const n of notes){
+    const t = String(n||'').trim();
+    const tl = t.toLowerCase();
+
+    if (/(jacket|coat|hoodie|tracksuit|outerwear)/.test(tl)){
+      addIfMissing('Outerwear', t);
+      continue;
+    }
+    if (/(jogger|joggers|jean|jeans|trouser|trousers|shorts|bottoms)/.test(tl)){
+      addIfMissing('Bottoms', t);
+      continue;
+    }
+    if (/(trainer|trainers|shoe|shoes|boot|boots|footwear)/.test(tl)){
+      addIfMissing('Footwear', t);
+      continue;
+    }
+    if (/(backpack|bag|rucksack)/.test(tl)){
+      addIfMissing('Bag', t);
+      continue;
+    }
+    remainingNotes.push(t);
+  }
+
+  // Sort kv pairs by ORDER, keep unknown keys at the end in original relative order
+  kv.sort((a,b)=>{
+    const ia = orderIndex.has(a[0]) ? orderIndex.get(a[0]) : 999;
+    const ib = orderIndex.has(b[0]) ? orderIndex.get(b[0]) : 999;
+    if (ia !== ib) return ia - ib;
+    return 0;
+  });
+
+  return { label, kv, notes: remainingNotes };
 }
 
 function renderSubjectsStructured(subjectLines){
