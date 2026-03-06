@@ -1973,6 +1973,37 @@
   @media (max-width: 980px){
     .subject-grid{grid-template-columns:1fr}
   }
+
+    .summary-box{
+      margin-top:8px;
+      padding:12px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      background:rgba(0,0,0,.18);
+      color:rgba(255,255,255,.88);
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .point-badge{ }
+    .point-badge-inner{
+      width:22px;height:22px;
+      border-radius:999px;
+      background:rgba(208,22,22,.95);
+      border:2px solid rgba(255,255,255,.85);
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-weight:900;font-size:12px;
+      box-shadow:0 6px 16px rgba(0,0,0,.35);
+    }
+    .point-badge-tooltip{
+      background:rgba(208,22,22,.95) !important;
+      border:2px solid rgba(255,255,255,.85) !important;
+      color:#fff !important;
+      font-weight:900 !important;
+      border-radius:999px !important;
+      padding:2px 6px !important;
+      box-shadow:0 6px 16px rgba(0,0,0,.35) !important;
+    }
+
 </style>
 </head>
 
@@ -2685,6 +2716,7 @@ async function loadOrgHQ() {
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19
   }).addTo(map);
+  try { selectedPostMarker.bindTooltip('1', {permanent:true, direction:'center', className:'point-badge-tooltip'}).openTooltip(); } catch(e) {}
 
   let pinMarker = null;
   let pinLatLng = null;
@@ -2833,13 +2865,19 @@ function drawPostTrail(post, comments) {
 
   if (pts.length <= 1) return;
 
-  // Trail markers
+  // Trail markers (numbered)
   for (let i = 1; i < pts.length; i++) {
     const t = pts[i];
-    const mk = L.circleMarker([t.lat, t.lng], {
-      radius: 7, weight: 2, opacity: 0.9, fillOpacity: 0.25
+    const num = String(i + 1); // 1 is the original post
+    const mk = L.marker([t.lat, t.lng], {
+      icon: L.divIcon({
+        className: 'point-badge',
+        html: `<div class="point-badge-inner">${num}</div>`,
+        iconSize: [22,22],
+        iconAnchor: [11,11]
+      })
     }).addTo(map);
-    mk.bindTooltip(escapeHtml(t.label || `Update ${i}`), { direction: 'top' });
+    mk.bindTooltip(escapeHtml(t.label || `Point ${num}`), { direction: 'top' });
     trailMarkers.push(mk);
   }
 
@@ -2919,7 +2957,23 @@ function drawPostTrail(post, comments) {
 
       const atts = Array.isArray(p.attachments) ? p.attachments : [];
       const localComments = getLocalComments(p.id);
-      const comments = [...apiComments, ...localComments].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
+      let comments = [...apiComments, ...localComments].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
+
+// De-dupe local + API echoes (same author/body posted within the same minute)
+comments = (function dedupe(list){
+  const out = [];
+  const seen = new Set();
+  for (const c of (list||[])) {
+    const author = String(c.org_name || c.author_email || c.author || '').toLowerCase().trim();
+    const body = String(c.body || '').trim();
+    const t = String(c.created_at || '').slice(0,16); // minute bucket
+    const key = author + '|' + body + '|' + t;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(c);
+  }
+  return out;
+})(comments);
 
       els.detailBody.innerHTML = `
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
@@ -2933,7 +2987,10 @@ function drawPostTrail(post, comments) {
           </div>
         </div>
 
-        <div style="margin-top:14px;color:rgba(255,255,255,.85);line-height:1.45;white-space:pre-wrap;">${(() => { const m = extractMetaFromBody(p.body); return escapeHtml(m.body || ''); })()}</div>
+        <div style="margin-top:14px;">
+          <div class="ni-label">Summary</div>
+          <div class="summary-box">${(() => { const m = extractMetaFromBody(p.body); return escapeHtml(m.body || ''); })()}</div>
+        </div>
 
         <div class="detail-rows">
           ${(() => { const m = extractMetaFromBody(p.body); return m.caseTag ? `<div class="detail-row"><span class="k">Case tag:</span><span class="v">${escapeHtml(m.caseTag)}</span></div>` : ''; })()}
