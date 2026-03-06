@@ -1994,6 +1994,9 @@
       color:#fff;font-weight:900;font-size:12px;
       box-shadow:0 6px 16px rgba(0,0,0,.35);
     }
+    .point-badge-inner.origin{
+      background:rgba(60,150,255,.95);
+    }
     .point-badge-tooltip{
       background:rgba(208,22,22,.95) !important;
       border:2px solid rgba(255,255,255,.85) !important;
@@ -2852,23 +2855,42 @@ function drawPostTrail(post, comments) {
     radius: 9, weight: 3, opacity: 0.95, fillOpacity: 0.15
   }).addTo(map);
 
-  const pts = [{ lat: post.lat, lng: post.lng, label: post.geo_label || 'Original' }];
+  const pts = [{ lat: post.lat, lng: post.lng, label: post.geo_label || 'Original', created_at: post.created_at || '' }];
 
   const sorted = (Array.isArray(comments) ? comments : [])
     .slice()
     .sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
 
+  // Build unique location-update points (dedupe by rounded coords + minute bucket)
+  const seenLoc = new Set();
   for (const c of sorted) {
     const u = parseLocUpdate(c.body);
-    if (u) pts.push({ lat: u.lat, lng: u.lng, label: u.label || 'Update' });
+    if (!u) continue;
+    const t = String(c.created_at || c.createdAt || '').slice(0,16);
+    const key = `${u.lat.toFixed(5)}|${u.lng.toFixed(5)}|${t}`;
+    if (seenLoc.has(key)) continue;
+    seenLoc.add(key);
+    pts.push({ lat: u.lat, lng: u.lng, label: u.label || 'Update', created_at: c.created_at || '' });
   }
+
+  // Always show numbering for the original point (1)
+  const mk1 = L.marker([pts[0].lat, pts[0].lng], {
+    icon: L.divIcon({
+      className: 'point-badge',
+      html: `<div class="point-badge-inner origin">1</div>`,
+      iconSize: [22,22],
+      iconAnchor: [11,11]
+    })
+  }).addTo(map);
+  mk1.bindTooltip(escapeHtml(pts[0].label || 'Point 1'), { direction: 'top' });
+  trailMarkers.push(mk1);
 
   if (pts.length <= 1) return;
 
-  // Trail markers (numbered)
+  // Trail markers (2..N)
   for (let i = 1; i < pts.length; i++) {
     const t = pts[i];
-    const num = String(i + 1); // 1 is the original post
+    const num = String(i + 1);
     const mk = L.marker([t.lat, t.lng], {
       icon: L.divIcon({
         className: 'point-badge',
@@ -2892,6 +2914,7 @@ function drawPostTrail(post, comments) {
     map.fitBounds(b.pad(0.25));
   } catch(e) {}
 }
+
 
   function renderPosts(allItems, visibleItems) {
     const visibleIds = new Set((visibleItems || []).map(p => p.id));
@@ -2959,15 +2982,18 @@ function drawPostTrail(post, comments) {
       const localComments = getLocalComments(p.id);
       let comments = [...apiComments, ...localComments].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
 
-// De-dupe local + API echoes (same author/body posted within the same minute)
+// De-dupe local + API echoes (same commenter/body within ~2 minutes)
+// (API returns author_email; local optimistic uses `author` = userEmail. We key on email/author, NOT org_name.)
 comments = (function dedupe(list){
   const out = [];
   const seen = new Set();
   for (const c of (list||[])) {
-    const author = String(c.org_name || c.author_email || c.author || '').toLowerCase().trim();
+    const authorKey = String(c.author_email || c.author || '').toLowerCase().trim();
     const body = String(c.body || '').trim();
-    const t = String(c.created_at || '').slice(0,16); // minute bucket
-    const key = author + '|' + body + '|' + t;
+    // minute bucket (works for ISO strings; for anything else, keep first 16 chars as a stable-ish bucket)
+    const rawT = String(c.created_at || c.createdAt || '').trim();
+    const t = rawT ? rawT.slice(0,16) : '';
+    const key = authorKey + '|' + body + '|' + t;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(c);
