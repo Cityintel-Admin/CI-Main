@@ -16,6 +16,97 @@ window.alertsData =[
     summary: ""
   },
 
+  {
+    title: "Amhara Community protest",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-08T13:30:00",
+    source: "",
+    summary: "Estimated 200 people from the Amhara Community protesting to raise awareness of ongoing conflict in the Amhara region of Ethiopia. Location: Marble Arch to Richmond Terrace."
+  },
+  {
+    title: "Imam Ali Procession",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-08T14:00:00",
+    source: "",
+    summary: "Annual religious procession at Marble Arch to commemorate the martyrdom of Imam Ali. Approximately 250 people expected."
+  },
+  {
+    title: "International Feminist Strike 2026",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-08T15:00:00",
+    source: "",
+    summary: "Gathering by Sisters Uncut and associated groups at Russell Square against imperialism and broader political, social, and human-rights issues."
+  },
+  {
+    title: "International Women's Day March",
+    city: "Manchester",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-08T12:00:00",
+    source: "",
+    summary: "Annual women-led march at Piccadilly Gardens to mark International Women's Day. Hundreds expected to participate."
+  },
+  {
+    title: "Resist Imperialist Domination",
+    city: "Newcastle",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-08T13:00:00",
+    source: "",
+    summary: "Emergency demonstration at Grey's Monument in support of Iran, Kurdistan, and Palestinians, led by Fight Racism, Fight Imperialism."
+  },
+  {
+    title: "International Women's Day March",
+    city: "Edinburgh",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-08T11:30:00",
+    source: "",
+    summary: "Annual women-led march from Southside Community Centre to the Scottish Parliament."
+  },
+  {
+    title: "Aldergrove Peace Vigil",
+    city: "Belfast",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-08T14:00:00",
+    source: "",
+    summary: "Pro-Palestine protest against U.S. military flights using Belfast International Airport during Middle East operations."
+  },
+  {
+    title: "International Women's Day",
+    city: "Dublin",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-08T13:00:00",
+    source: "",
+    summary: "Annual women-led march to mark International Women's Day at City Hall, Dame Street."
+  },
+  {
+    title: "International Women's Day",
+    city: "Cork",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-08T14:30:00",
+    source: "",
+    summary: "Annual women-led march to mark International Women's Day at Grand Parade."
+  },
+
  
  {
     title: "Defiance not Compliance",
@@ -14325,6 +14416,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
