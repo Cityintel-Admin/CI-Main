@@ -16,6 +16,158 @@ window.alertsData =[
     summary: ""
   },
 
+ 
+ {
+    title: "Defiance not Compliance",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T12:00:00",
+    source: "https://t.co/PU2IbIFB0J",
+    summary: "Protest at the Tate Modern against the government's perceived censorship of free speech regarding Palestine."
+  },
+  {
+    title: "Hands off Iran",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-07T12:00:00",
+    source: "https://www.telegraph.co.uk/news/2026/02/28/pro-palestinian-march-london-hands-off-iran-protest/",
+    summary: "Large-scale protest march (est. 10,000 people) from Old Palace Yard to the US Embassy following the reported death of Ali Khamenei. Risk of counter-protests and traffic disruption."
+  },
+  {
+    title: "Million Women Rise March",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-07T12:00:00",
+    source: "https://www.millionwomenrise.com/",
+    summary: "Annual international march against male violence, moving from Duke Street to Trafalgar Square. Est. 1,500 participants."
+  },
+  {
+    title: "Stage of Freedom March",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T13:00:00",
+    source: "",
+    summary: "March from 10 Downing Street to the Islamic Republic Embassy regarding Iran-US-Israel conflict. Est. 2,000 attendees with potential for clashes."
+  },
+  {
+    title: "Defend Refugees",
+    city: "Bristol",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T10:00:00",
+    source: "",
+    summary: "Anti-racism counter-protest at The Cenotaph against the Bristol Patriots march."
+  },
+  {
+    title: "International Women's Day Celebration",
+    city: "Bristol",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-07T10:00:00",
+    source: "",
+    summary: "Annual women-led march to mark International Women's Day starting at Bristol City Hall."
+  },
+  {
+    title: "Bristol Patriots March",
+    city: "Bristol",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-03-07T11:00:00",
+    source: "",
+    summary: "'United Against Extremism' march in City Centre. Concerns cited regarding far-right elements and Islamophobic sentiment."
+  },
+  {
+    title: "Hands off Iran",
+    city: "Birmingham",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T14:00:00",
+    source: "",
+    summary: "Anti-war protest in City Centre regarding the ongoing conflict between Iran, the US, and Israel."
+  },
+  {
+    title: "Stop Bombing Gaza and Iran",
+    city: "Manchester",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T12:00:00",
+    source: "",
+    summary: "Anti-war protest at St Anne’s Square led by local pro-Palestinian groups."
+  },
+  {
+    title: "International Women's Day",
+    city: "Leeds",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-07T12:00:00",
+    source: "",
+    summary: "Annual women-led march at Leeds Art Gallery."
+  },
+  {
+    title: "No War on Iran",
+    city: "Bradford",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T13:00:00",
+    source: "",
+    summary: "Anti-war protest at Centenary Square led by Bradford Friends of Palestine."
+  },
+  {
+    title: "Stop US and Israeli Aggression",
+    city: "Glasgow",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T11:30:00",
+    source: "",
+    summary: "Anti-war protest at Barclays Bank, Argyle Street regarding Middle East conflict."
+  },
+  {
+    title: "Stop Bombing Iran",
+    city: "Edinburgh",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T13:00:00",
+    source: "",
+    summary: "Anti-war protest moving from the Foot of the Mound to the US Consulate."
+  },
+  {
+    title: "Barclays: Stop Banking on Genocide",
+    city: "Belfast",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-07T10:00:00",
+    source: "",
+    summary: "Ongoing pro-Palestine protest against Barclays Bank at Castle Place."
+  },
+  {
+    title: "Reclaim the Agenda",
+    city: "Belfast",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-07T11:30:00",
+    source: "",
+    summary: "Annual International Women's Day march through central Belfast streets."
+  },
+
   {
     title: "Defend the right to defend Palestine",
     city: "London",
@@ -14173,6 +14325,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
