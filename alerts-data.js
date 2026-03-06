@@ -16,6 +16,47 @@ window.alertsData =[
     summary: ""
   },
 
+ {
+    title: "Vigil for Orelha",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-06T18:00:00",
+    source: "",
+    summary: "A vigil at the Brazilian Embassy, Cockspur Street, following the killing of a community dog in Brazil which sparked controversy and protests."
+  },
+  {
+    title: "International Women's Day Pro-Palestine Rally",
+    city: "London",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-06T18:00:00",
+    source: "",
+    summary: "Pro-Palestine rally at Downing Street in support of Palestinian women to mark International Women's Day."
+  },
+  {
+    title: "Divest from genocide now",
+    city: "Manchester",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-06T09:00:00",
+    source: "",
+    summary: "Pro-Palestine protest led by local groups at the Greater Manchester Pension Fund Office, Manchester Road."
+  },
+  {
+    title: "Opposing Zionist starvation policies is not a crime",
+    city: "Belfast",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-06T10:00:00",
+    source: "",
+    summary: "Pro-Palestine protest at Laganside Court related to ongoing proceedings involving BDS movement activists."
+  },
+
   {
     title: "Amhara Community protest",
     city: "London",
@@ -14416,6 +14457,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
