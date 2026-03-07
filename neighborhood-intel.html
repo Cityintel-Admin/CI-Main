@@ -58,6 +58,7 @@
 
   <script src="auth.js"></script>
   <script src="admin-links.js"></script>
+  <script src="alerts-data.js"></script>
 
  <style>
     :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
@@ -2013,6 +2014,23 @@
       box-shadow:0 6px 16px rgba(0,0,0,.35) !important;
     }
 
+
+  /* Events overlay controls */
+  .map-head-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .event-toggle{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#e9edf2;font-size:12px;font-weight:700;cursor:pointer}
+  .event-toggle.active{border-color:rgba(208,22,22,.45);background:rgba(208,22,22,.18)}
+  .event-window{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:6px 10px;font-size:12px;outline:none}
+  .event-map-badge{font-size:11px;color:rgba(255,255,255,.62)}
+  .related-list{display:flex;flex-direction:column;gap:8px}
+  .related-item{padding:10px 12px;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:rgba(0,0,0,.18);cursor:pointer}
+  .related-item:hover{border-color:rgba(255,255,255,.18)}
+  .related-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .related-title{font-weight:800;color:rgba(255,255,255,.92)}
+  .related-meta{margin-top:6px;font-size:12px;color:rgba(255,255,255,.62);display:flex;gap:10px;flex-wrap:wrap}
+  .related-empty{font-size:12px;color:rgba(255,255,255,.6)}
+  .event-popup{font:12px/1.4 system-ui;color:#111}
+  .event-popup strong{display:block;margin-bottom:4px}
+
 </style>
 </head>
 
@@ -2138,7 +2156,7 @@
 
       <!-- Middle: map -->
       <div class="ni-card">
-        <div class="hd"><h2>Map</h2><span class="pill" id="pillPin">Pin not set</span></div>
+        <div class="hd"><h2>Map</h2><div class="map-head-tools"><span class="pill" id="pillPin">Pin not set</span><button class="event-toggle active" id="btnToggleEvents" type="button">Events on</button><select class="event-window" id="eventWindow"><option value="3">Next 3d</option><option value="7" selected>Next 7d</option><option value="14">Next 14d</option></select><span class="event-map-badge" id="eventCountBadge">0 events</span></div></div>
         <div class="bd" style="padding: 12px;">
           <div id="map" class="ni-map"></div>
         </div>
@@ -2324,6 +2342,9 @@ async function loadOrgHQ() {
     pillCount: document.getElementById('pillCount'),
     pillScope: document.getElementById('pillScope'),
     pillPin: document.getElementById('pillPin'),
+    btnToggleEvents: document.getElementById('btnToggleEvents'),
+    eventWindow: document.getElementById('eventWindow'),
+    eventCountBadge: document.getElementById('eventCountBadge'),
     pillOrg: document.getElementById('pillOrg'),
     detailEmpty: document.getElementById('detailEmpty'),
     detailBody: document.getElementById('detailBody'),
@@ -2746,9 +2767,82 @@ async function loadOrgHQ() {
   let selectedPostMarker = null;
   let trailMarkers = [];
   let trailLine = null;
+  let eventsVisible = true;
+  let eventMarkers = [];
 
   let allPosts = [];
   let visiblePosts = [];
+
+
+  function clearEventMarkers(){
+    for (const m of eventMarkers) { try { map.removeLayer(m); } catch(e) {} }
+    eventMarkers = [];
+  }
+
+  function normalizeAlertEvents(){
+    const src = Array.isArray(window.alertsData) ? window.alertsData : [];
+    return src.map((a, idx) => {
+      const lat = Number(a.lat);
+      const lng = Number(a.lng);
+      const when = new Date(a.time || a.when || a.date || a.datetime || Date.now());
+      return {
+        id: a.id || ('evt_' + idx),
+        title: a.title || 'Untitled event',
+        city: a.city || '',
+        country: a.country || '',
+        address: a.address || '',
+        postcode: a.postcode || '',
+        source: a.source || '',
+        summary: a.summary || '',
+        risk: String(a.risk || 'Medium'),
+        when, lat, lng
+      };
+    }).filter(e => Number.isFinite(e.lat) && Number.isFinite(e.lng) && !isNaN(e.when.getTime()));
+  }
+
+  function eventRiskClass(risk){
+    const s = String(risk || '').toLowerCase();
+    if (s.includes('high')) return {color:'#ff5a5f', fill:'#ff5a5f'};
+    if (s.includes('low')) return {color:'#33c48d', fill:'#33c48d'};
+    return {color:'#f0b429', fill:'#f0b429'};
+  }
+
+  function eventDistanceOk(e){
+    if (!pinLatLng) return true;
+    const km = haversineKm(pinLatLng.lat, pinLatLng.lng, e.lat, e.lng);
+    return km <= (Number(els.radiusKm?.value || 1) + 0.05);
+  }
+
+  function getVisibleEvents(){
+    const days = Number(els.eventWindow?.value || 7);
+    const now = Date.now();
+    const end = now + days * 86400 * 1000;
+    return normalizeAlertEvents().filter(e => {
+      const t = e.when.getTime();
+      return t >= now && t <= end && eventDistanceOk(e);
+    });
+  }
+
+  function renderEventOverlay(){
+    clearEventMarkers();
+    const events = eventsVisible ? getVisibleEvents() : [];
+    if (els.eventCountBadge) els.eventCountBadge.textContent = `${events.length} event${events.length===1?'':'s'}`;
+    if (!eventsVisible) return;
+    for (const e of events){
+      const style = eventRiskClass(e.risk);
+      const mk = L.circleMarker([e.lat, e.lng], {
+        radius: 7,
+        weight: 2,
+        color: style.color,
+        fillColor: style.fill,
+        fillOpacity: 0.28,
+        opacity: 0.95
+      }).addTo(map);
+      const whenTxt = e.when.toLocaleString();
+      mk.bindPopup(`<div class="event-popup"><strong>${escapeHtml(e.title)}</strong><div>${escapeHtml((e.city||'') + (e.country ? ', ' + e.country : ''))}</div>${e.address ? `<div>${escapeHtml(e.address)}${e.postcode ? ' ' + escapeHtml(e.postcode) : ''}</div>` : ''}<div style="margin-top:4px">${escapeHtml(whenTxt)} • ${escapeHtml(e.risk)}</div><div style="margin-top:6px">${escapeHtml(e.summary || '')}</div></div>`);
+      eventMarkers.push(mk);
+    }
+  }
 
   function setPin(latlng) {
     pinLatLng = latlng;
@@ -2766,6 +2860,7 @@ async function loadOrgHQ() {
     els.pillPin.textContent = `Pin set`;
     els.pillScope.textContent = `${els.radiusKm.value} km / ${els.sinceHours.value}h`;
     els.geoHelp.textContent = `Location set: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)} (drag pin to adjust).`;
+    try { renderEventOverlay(); } catch(e) {}
   }
 
   map.on('click', (e) => {
@@ -2934,6 +3029,14 @@ function drawPostTrail(post, comments) {
 }
 
 
+  function relatedPostsFor(post){
+    const meta = extractMetaFromBody(post?.body || '');
+    const caseTag = String(meta.caseTag || '').trim().toLowerCase();
+    if (!caseTag) return [];
+    return (allPosts || []).filter(x => x && x.id !== post.id && String(extractMetaFromBody(x.body || '').caseTag || '').trim().toLowerCase() === caseTag)
+      .sort((a,b) => String(b.observed_at || b.created_at || '').localeCompare(String(a.observed_at || a.created_at || '')));
+  }
+
   function renderPosts(allItems, visibleItems) {
     const visibleIds = new Set((visibleItems || []).map(p => p.id));
     els.postList.innerHTML = '';
@@ -3047,6 +3150,21 @@ comments = (function dedupe(list){
         </div>
 
         <div style="margin-top:14px;">
+          <div class="ni-label">Related sightings</div>
+          <div class="related-list">${relatedPostsFor(p).length ? relatedPostsFor(p).map(r => `
+            <div class="related-item" data-related-post="${escapeAttr(r.id)}">
+              <div class="related-top">
+                <div class="related-title">${escapeHtml(r.title || 'Untitled')}</div>
+                <span class="pill ${sevClass(r.severity)}">${escapeHtml(String(r.severity || '').toUpperCase())}</span>
+              </div>
+              <div class="related-meta">
+                <span>${escapeHtml(fmtTime(r.observed_at || r.created_at))}</span>
+                <span>${escapeHtml(r.geo_label || 'Approx. pin')}</span>
+              </div>
+            </div>`).join('') : `<div class="related-empty">No linked sightings for this case tag yet.</div>`}</div>
+        </div>
+
+        <div style="margin-top:14px;">
           <div class="ni-label">Comments</div>
           <div id="niCommentsList">
             ${comments.length ? comments.map(c => `
@@ -3080,6 +3198,13 @@ comments = (function dedupe(list){
 
       wireCommentUI(p);
       drawPostTrail(p, comments);
+      document.querySelectorAll('[data-related-post]').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = el.getAttribute('data-related-post');
+          const target = (allPosts || []).find(x => String(x.id) === String(id));
+          if (target) selectPost(target);
+        });
+      });
     })();
 
     if (pinLatLng && typeof p.lat === 'number' && typeof p.lng === 'number') {
@@ -3506,12 +3631,22 @@ function localCommentKey() { return 'ci_neighbor_comments_v1'; }
 
     visiblePosts = applyRadiusFilter(allPosts);
     renderPosts(allPosts, visiblePosts);
+    renderEventOverlay();
   }
 
 els.btnRefresh.addEventListener('click', refresh);
   for (const el of [els.radiusKm, els.sinceHours, els.severity, els.category]) {
     el.addEventListener('change', refresh);
   }
+  if (els.btnToggleEvents) {
+    els.btnToggleEvents.addEventListener('click', () => {
+      eventsVisible = !eventsVisible;
+      els.btnToggleEvents.classList.toggle('active', eventsVisible);
+      els.btnToggleEvents.textContent = eventsVisible ? 'Events on' : 'Events off';
+      renderEventOverlay();
+    });
+  }
+  if (els.eventWindow) els.eventWindow.addEventListener('change', renderEventOverlay);
   if (els.btnToggleFilter) {
     els.btnToggleFilter.addEventListener('click', () => {
       setFilterCollapsed(!els.filterBody || !els.filterBody.hidden ? true : false);
@@ -3680,6 +3815,7 @@ btnSubmitPost.addEventListener('click', async () => {
 
   // Initial help
   els.postList.innerHTML = `<div style="padding:14px;color:rgba(255,255,255,.65)">Showing recent posts. Drop a pin to filter by radius.</div>`;
+  try { renderEventOverlay(); } catch(e) {}
 
   // Initial load: default to org HQ if available so posts show immediately
   (async () => {
