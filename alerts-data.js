@@ -6,6 +6,22 @@
 window.alertsData =[
 
 {
+  title: "TEST EVENT",
+  city: "London",
+  lat: "51.5074",
+  lng: "-0.1278",
+  address: "Whitehall",
+  postcode: "SW1A 2AX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-08T12:00:00",
+  source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
+  summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
+},
+
+
+{
   title: "Together Against the Far Right National March",
   city: "London",
   lat: "51.5074",
@@ -19,13 +35,6 @@ window.alertsData =[
   source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
-
-
-
-
-
-
-
 
     
 {
@@ -14655,6 +14664,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
