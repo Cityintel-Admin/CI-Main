@@ -6,15 +6,72 @@
 window.alertsData =[
 
 {
-    title:"Together Against the Far Right March",
-    city:"London",
-    country:"United Kingdom",
-    continent:"Europe",
-    risk:"high",
-    time:"2026-03-28T12:00:00",
-    source:"https://www.stopwar.org.uk/events/",
-    summary:"A major London mobilisation backed by anti-racist, trade union, and civil society groups is set to assemble against the far right. Further detail: the event has been promoted nationally in the run-up to local election campaigning and is likely to draw large contingents from outside London. Recent anti-fascist mobilisations in Britain have seen dense stewarding, heavy police deployments, and attempts by hostile or opportunistic counter-groups to approach march routes. High risk: the most likely issues are crowd pressure, rapid policing changes, transport disruption, and the possibility of confrontation if far-right activists or splinter groups appear near assembly or dispersal points."
-  },
+  title: "Together Against the Far Right National March",
+  city: "London",
+  lat: "51.5074",
+  lng: "-0.1278",
+  address: "Whitehall",
+  postcode: "SW1A 2AX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-28T12:00:00",
+  source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
+  summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
+},
+
+
+
+
+
+
+
+
+    
+{
+  title: "North Glasgow Against Racism March",
+  city: "Glasgow",
+  lat: "55.8642",
+  lng: "-4.2518",
+  address: "George Square",
+  postcode: "G2 1DU",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-12T12:00:00",
+  source: "https://www.findaprotest.info/event/glasgow/E1xIonVkk5PRGuuFnDPqC2",
+  summary: "Trade unions, faith groups, and community organisations are mobilising in Glasgow against racism and refugee scapegoating. Mid risk: likely strong stewarding but potential counter-activity and city-centre congestion."
+},
+
+{
+  title: "Palestine Marathon Solidarity Run",
+  city: "Belfast",
+  lat: "54.5973",
+  lng: "-5.9301",
+  address: "Ormeau Park",
+  postcode: "BT7 3GG",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-18T10:00:00",
+  source: "https://www.findaprotest.info/event/belfast/evt-bf5cf12290211cb0",
+  summary: "Solidarity fundraising run aligned with the Palestine Marathon. Low risk: community sporting event with symbolic solidarity messaging rather than high-friction protest activity."
+},
+
+{
+  title: "Unity March Against Fascism",
+  city: "Livingston",
+  lat: "55.9020",
+  lng: "-3.5221",
+  address: "Livingston Centre",
+  postcode: "EH54 6HR",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-25T12:00:00",
+  source: "https://www.findaprotest.info/event/livingston/evt-1d2b2d8aaf79ee65",
+  summary: "Public unity march in Livingston promoting anti-fascism and human rights themes. Mid risk: moderate crowd movement through town centre with possible police monitoring."
+},   
 
 
 
@@ -14598,6 +14655,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
