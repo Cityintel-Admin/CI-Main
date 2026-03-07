@@ -129,6 +129,15 @@
     .template-item{border:1px solid var(--gray-600);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.02)}
     .template-item strong{display:block;margin-bottom:3px}
 
+    .region-panel{display:grid;gap:10px;margin-top:10px}
+    .region-row{border:1px solid var(--gray-600);border-radius:12px;padding:12px;background:rgba(255,255,255,.02)}
+    .region-row .head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
+    .region-row .name{font-weight:700}
+    .region-row .meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+    .region-row .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .inline-link{color:#cdd6e4;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.25)}
+    .inline-link:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
+
     .login-btn{display:inline-block;padding:8px 12px;border-radius:999px;background:#D01616;border:1px solid #9c0f0f;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap}
     .login-btn:hover{filter:brightness(1.05)}
     .user{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#1c1e22;border:1px solid #24272c;cursor:pointer}
@@ -248,14 +257,15 @@
           <div class="draft-body" id="draftBody"></div>
           <div class="draft-body">
             <div class="section">
-              <h3>Template notes</h3>
-              <div class="draft-note" id="draftNotes">Use this as a first-pass structure, then manually refine executive summary, contradictions, and recommendations before publishing.</div>
-              <div class="template-list" id="templateList"></div>
+              <h3>Regional intelligence</h3>
+              <div class="draft-note" id="regionPanelIntro">Open a country/region-specific draft or jump to Risk Detail for a separate dashboard view.</div>
+              <div class="region-panel" id="regionPanel"></div>
             </div>
             <div class="section">
               <h3>Next actions</h3>
               <ul>
                 <li>Review the highlighted events and adjust wording.</li>
+                <li>Open a country / region draft where concentration looks highest.</li>
                 <li>Upload final PDF or DOCX once edited.</li>
                 <li>Keep the library entry metadata aligned with the publication month.</li>
               </ul>
@@ -427,8 +437,8 @@
       draftSubtitle: document.getElementById('draftSubtitle'),
       draftBadges: document.getElementById('draftBadges'),
       draftBody: document.getElementById('draftBody'),
-      draftNotes: document.getElementById('draftNotes'),
-      templateList: document.getElementById('templateList'),
+      regionPanelIntro: document.getElementById('regionPanelIntro'),
+      regionPanel: document.getElementById('regionPanel'),
       uploadPdfBtn: document.getElementById('uploadPdfBtn'),
       uploadPdfBtn2: document.getElementById('uploadPdfBtn2'),
       uploadDocxBtn: document.getElementById('uploadDocxBtn'),
@@ -587,25 +597,94 @@
       </div>`;
     }
 
-    function renderTemplateList(type){
-      const templates = {
-        preview: [
-          ['Monthly Preview — Standard', 'Executive Summary, Month Outlook, High Focus Events, Regional Breakdown, Recommendations.'],
-          ['Monthly Preview — Client Lite', 'Shorter version for quick subscriber distribution.']
-        ],
-        review: [
-          ['Monthly Review — Standard', 'Executive Summary, Significant Events, Themes, Contradictions, Takeaways.'],
-          ['Monthly Review — Executive', 'Reduced format for board-level summary.']
-        ],
-        weekly: [
-          ['Weekly Update — Ops', 'Top 5 events, risk escalations, upcoming watchlist.'],
-          ['Weekly Update — Client Brief', 'Cleaner one-pager for external circulation.']
-        ]
-      };
-      el.templateList.innerHTML = (templates[type] || []).map(([name, desc]) => `<div class="template-item"><strong>${esc(name)}</strong><span class="subtle">${esc(desc)}</span></div>`).join('');
+    
+    function dateKey(d){
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function summarizeRegionalRisk(events){
+      const counts = {High:0, Medium:0, Low:0};
+      events.forEach(e => counts[e.risk] = (counts[e.risk] || 0) + 1);
+      return `${counts.High || 0} high · ${counts.Medium || 0} medium · ${counts.Low || 0} low`;
+    }
+    function buildRiskLink(region){
+      return `risk-detail.html?region=${encodeURIComponent(region)}`;
+    }
+    function renderRegionPanel(regional, type, focusMonthKey){
+      el.regionPanel.innerHTML = regional.length
+        ? regional.map(([region, items]) => `
+            <div class="region-row">
+              <div class="head">
+                <div>
+                  <div class="name">${esc(region)}</div>
+                  <div class="meta">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div>
+                </div>
+                <span class="pill ${riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus'}</span>
+              </div>
+              <div class="actions">
+                <button class="btn" data-open-region="${esc(region)}">View regional draft</button>
+                <a class="btn ghost" href="${buildRiskLink(region)}">Open Risk Detail</a>
+              </div>
+            </div>`).join('')
+        : '<div class="subtle">No region intelligence available for this selection.</div>';
+
+      el.regionPanel.querySelectorAll('[data-open-region]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          buildDraft(type, focusMonthKey, btn.dataset.openRegion);
+        });
+      });
+    }
+    function strongestCluster(events){
+      const grouped = [...groupBy(events, e => dateKey(e.when)).entries()].sort((a,b) => b[1].length - a[1].length);
+      return grouped[0] || null;
+    }
+    function topLocation(events){
+      const grouped = [...groupBy(events.filter(e => e.city), e => `${e.city}|${e.country || ''}`).entries()].sort((a,b) => b[1].length - a[1].length);
+      if (!grouped.length) return null;
+      const [key, vals] = grouped[0];
+      const [city, country] = key.split('|');
+      return { city, country, count: vals.length };
+    }
+    function summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter=''){
+      if (!events.length){
+        return `No events currently fall inside <strong>${esc(regionFilter || focusLabel)}</strong>. This can still be used as a shell for an analyst-led report, but the underlying alert dataset is sparse for this window.`;
+      }
+      const riskCounts = {High:0, Medium:0, Low:0};
+      events.forEach(e => riskCounts[e.risk] = (riskCounts[e.risk] || 0) + 1);
+      const highPct = ((riskCounts.High || 0) / events.length * 100).toFixed(1);
+      const mainRegion = regional[0] ? `${regional[0][0]} (${regional[0][1].length})` : 'no dominant region';
+      const mainTheme = themes[0] ? `${themes[0].label} (${themes[0].count})` : 'no dominant theme';
+      const mainLoc = topLocation(events);
+      const cluster = strongestCluster(events);
+      const weeklyLabel = type === 'weekly' ? 'the current weekly window' : focusLabel;
+      let p1 = `This draft captures <strong>${events.length}</strong> protest-related or disruption-relevant events in <strong>${esc(weeklyLabel)}</strong>${regionFilter ? `, filtered to <strong>${esc(regionFilter)}</strong>` : ''}. <strong>${riskCounts.High || 0}</strong> items are currently assessed as high risk (${highPct}% of the selected dataset), with the strongest concentration in <strong>${esc(mainRegion)}</strong>.`;
+      let p2 = `The dominant narrative cluster is <strong>${esc(mainTheme)}</strong>, suggesting that mobilisation energy is being driven by a recurring issue set rather than isolated single-event activism.`;
+      let p3 = mainLoc
+        ? `The busiest city-level concentration sits in <strong>${esc(mainLoc.city)}${mainLoc.country ? ', ' + esc(mainLoc.country) : ''}</strong>, where <strong>${mainLoc.count}</strong> in-scope items appear in the current window.`
+        : `City-level concentration is limited in the current selection, indicating a more geographically dispersed pattern.`;
+      if (cluster && cluster[1].length > 1){
+        const when = new Date(cluster[0]).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+        p3 += ` The densest single-day cluster falls on <strong>${esc(when)}</strong> with <strong>${cluster[1].length}</strong> items, which may indicate front-loaded disruption pressure.`;
+      }
+      return `${p1}<br><br>${p2}<br><br>${p3}`;
+    }
+    function buildRegionRows(regional, type, focusMonthKey){
+      return regional.length
+        ? `<div class="list-tight">${regional.map(([k,v]) => `
+            <div class="event-card">
+              <div class="row" style="justify-content:space-between;align-items:flex-start">
+                <div class="title">${esc(k)}</div>
+                <span class="pill ${riskClass(v.some(i => i.risk === 'High') ? 'High' : v.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${v.length} event${v.length===1?'':'s'}</span>
+              </div>
+              <div class="meta">${esc(summarizeRegionalRisk(v))}</div>
+              <div class="row" style="margin-top:10px">
+                <button class="btn" data-open-region-main="${esc(k)}">View regional draft</button>
+                <a class="btn ghost" href="${buildRiskLink(k)}">Open Risk Detail</a>
+              </div>
+            </div>`).join('')}</div>`
+        : '<div class="subtle">No regions to summarise.</div>';
     }
 
-    function buildDraft(type, forcedMonthKey=''){
+    function buildDraft(type, forcedMonthKey='', regionFilter=''){
       const alerts = normalizeAlerts();
       const now = new Date();
       let focusMonthKey = forcedMonthKey;
@@ -622,20 +701,18 @@
       let events = [];
       let title = '';
       let subtitle = '';
-      let notes = '';
       let badges = [];
+      let focusLabel = monthNameFromKey(focusMonthKey);
 
       if (type === 'preview'){
         events = alerts.filter(a => a.monthKey === focusMonthKey && a.when >= new Date());
         title = `Draft Builder — Protest Preview: ${monthNameFromKey(focusMonthKey)}`;
         subtitle = 'Upcoming events auto-grouped from alerts-data.js. Use this draft to shape the monthly outlook before producing the final PDF.';
-        notes = 'Recommended manual edits: sharpen the executive summary, reduce duplicated event narratives, and elevate only the most commercially relevant disruptions.';
         badges = [{text:'Monthly Preview'},{text:monthNameFromKey(focusMonthKey)},{text:`${events.length} events`}];
       } else if (type === 'review'){
         events = alerts.filter(a => a.monthKey === focusMonthKey);
         title = `Draft Builder — Protest Review: ${monthNameFromKey(focusMonthKey)}`;
         subtitle = 'Month-end review framework. This is best used as a structured starting point before analyst commentary and contradictions are added.';
-        notes = 'Recommended manual edits: insert “expected vs actual”, challenge the initial risk assumptions, and rewrite the recommendations based on what actually unfolded.';
         badges = [{text:'Monthly Review'},{text:monthNameFromKey(focusMonthKey)},{text:`${events.length} events`}];
       } else {
         const start = new Date(now); start.setDate(start.getDate() - start.getDay() + 1);
@@ -643,8 +720,15 @@
         events = alerts.filter(a => a.when >= start && a.when < end);
         title = `Draft Builder — Weekly Update`;
         subtitle = `Operational weekly snapshot for ${start.toLocaleDateString('en-GB')} to ${new Date(end.getTime()-1).toLocaleDateString('en-GB')}.`;
-        notes = 'Recommended manual edits: shorten the event list, keep only operationally meaningful disruptions, and tighten the watchlist to the next 7 days.';
         badges = [{text:'Weekly Update'},{text:`${events.length} events`}];
+        focusLabel = 'Weekly window';
+      }
+
+      if (regionFilter){
+        events = events.filter(a => (a.country || a.continent || 'Unknown') === regionFilter);
+        title += ` — ${regionFilter}`;
+        subtitle = `Regional draft mode for ${regionFilter}. This view narrows the selected ${type === 'weekly' ? 'weekly window' : 'report window'} to a single country / region.`;
+        badges.push({text:regionFilter});
       }
 
       const themes = summarizeThemes(events);
@@ -657,27 +741,27 @@
         : type === 'review'
         ? 'Capture where actual turnout, route changes, policing posture, or spillover diverged from expectations, then refine future preview assumptions from those learnings.'
         : 'Keep distribution short, practical, and focused on what clients need to know this week rather than broad context.';
+      const countryCount = new Set(events.map(e => e.country || e.continent).filter(Boolean)).size;
 
       el.draftShell.classList.add('active');
       el.draftTitle.textContent = title;
       el.draftSubtitle.textContent = subtitle;
-      el.draftNotes.textContent = notes;
+      el.regionPanelIntro.textContent = regionFilter
+        ? `You are viewing a focused draft for ${regionFilter}. Use Open Risk Detail for a separate dashboard view or return to the broader report by rebuilding from the card buttons below.`
+        : 'Open a country / region-specific draft or jump to Risk Detail for a separate dashboard view.';
       el.draftBadges.innerHTML = badges.map(b => `<span class="pill">${esc(b.text)}</span>`).join('');
-      renderTemplateList(type);
+      renderRegionPanel(regional, type, focusMonthKey);
 
       el.draftBody.innerHTML = `
         <div class="mini-grid">
           <div class="mini-card"><div class="k">Events in scope</div><div class="v">${events.length}</div></div>
           <div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div>
-          <div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${new Set(events.map(e => e.country || e.continent)).size}</div></div>
+          <div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${countryCount}</div></div>
         </div>
 
         <div class="section">
           <h3>Executive Summary (draft)</h3>
-          <div>${events.length
-            ? `This draft identifies <strong>${events.length}</strong> protest-related or disruption-relevant events in <strong>${esc(type === 'weekly' ? 'the current weekly window' : monthNameFromKey(focusMonthKey))}</strong>. Primary attention should sit with <strong>${riskCounts.High || 0}</strong> high-risk items, especially where large crowds, politically sensitive targets, or transport disruption overlap.`
-            : `No events currently fall inside the selected window. This can still be used as a shell for an analyst-led report, but the underlying alert dataset is sparse for this period.`}
-          </div>
+          <div>${summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter)}</div>
         </div>
 
         <div class="section">
@@ -687,7 +771,7 @@
 
         <div class="section">
           <h3>Regional Breakdown</h3>
-          ${regional.length ? `<ul>${regional.map(([k,v]) => `<li><strong>${esc(k)}</strong> — ${v.length} event${v.length===1?'':'s'}</li>`).join('')}</ul>` : '<div class="subtle">No regions to summarise.</div>'}
+          ${buildRegionRows(regional, type, focusMonthKey)}
         </div>
 
         <div class="section">
@@ -699,14 +783,17 @@
           <h3>Operational Recommendations (draft)</h3>
           <ul>
             <li>${recommendationText}</li>
-            <li>Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.</li>
+            <li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li>
             <li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li>
           </ul>
         </div>`;
 
+      el.draftBody.querySelectorAll('[data-open-region-main]').forEach(btn => {
+        btn.addEventListener('click', () => buildDraft(type, focusMonthKey, btn.dataset.openRegionMain));
+      });
+
       el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
     }
-
     hydrateMonths();
     renderStats();
     renderTable();
