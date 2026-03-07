@@ -609,7 +609,32 @@
     function buildRiskLink(region){
       return `risk-detail.html?region=${encodeURIComponent(region)}`;
     }
-    function renderRegionPanel(regional, type, focusMonthKey){
+    function renderRegionPanel(regional, type, focusMonthKey, regionFilter=''){
+      if (regionFilter){
+        const items = (regional.find(([name]) => name === regionFilter) || [regionFilter, []])[1];
+        const cities = topCitiesList(items, 3);
+        const focusClass = riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low');
+        const focusText = items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus';
+        el.regionPanel.innerHTML = `
+          <div class="region-row">
+            <div class="head">
+              <div>
+                <div class="name">${esc(regionFilter)}</div>
+                <div class="meta">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div>
+              </div>
+              <span class="pill ${focusClass}">${focusText}</span>
+            </div>
+            ${cities.length ? `<div class="subtle" style="margin:10px 0 8px">Top cities: ${cities.map(c => `${esc(c.city)}${c.country ? ', ' + esc(c.country) : ''} (${c.count})`).join(' · ')}</div>` : '<div class="subtle" style="margin:10px 0 8px">No city concentration available for this region.</div>'}
+            <div class="actions">
+              <button class="btn" data-back-full="1">Back to full draft</button>
+              <a class="btn ghost" href="${buildRiskLink(regionFilter)}">Open Risk Detail</a>
+            </div>
+          </div>`;
+        const back = el.regionPanel.querySelector('[data-back-full]');
+        if (back) back.addEventListener('click', () => buildDraft(type, focusMonthKey, ''));
+        return;
+      }
+
       el.regionPanel.innerHTML = regional.length
         ? regional.map(([region, items]) => `
             <div class="region-row">
@@ -644,6 +669,15 @@
       const [city, country] = key.split('|');
       return { city, country, count: vals.length };
     }
+    function topCitiesList(events, limit=3){
+      return [...groupBy(events.filter(e => e.city), e => `${e.city}|${e.country || ''}`).entries()]
+        .sort((a,b) => b[1].length - a[1].length)
+        .slice(0, limit)
+        .map(([key, vals]) => {
+          const [city, country] = key.split('|');
+          return { city, country, count: vals.length };
+        });
+    }
     function summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter=''){
       if (!events.length){
         return `No events currently fall inside <strong>${esc(regionFilter || focusLabel)}</strong>. This can still be used as a shell for an analyst-led report, but the underlying alert dataset is sparse for this window.`;
@@ -667,7 +701,22 @@
       }
       return `${p1}<br><br>${p2}<br><br>${p3}`;
     }
-    function buildRegionRows(regional, type, focusMonthKey){
+    function buildRegionRows(regional, type, focusMonthKey, regionFilter=''){
+      if (regionFilter){
+        const items = (regional.find(([name]) => name === regionFilter) || [regionFilter, []])[1];
+        const cities = topCitiesList(items, 5);
+        const themes = summarizeThemes(items).slice(0,3);
+        return `
+          <div class="event-card">
+            <div class="row" style="justify-content:space-between;align-items:flex-start">
+              <div class="title">${esc(regionFilter)}</div>
+              <span class="pill ${riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${items.length} event${items.length===1?'':'s'}</span>
+            </div>
+            <div class="meta">${esc(summarizeRegionalRisk(items))}</div>
+            ${cities.length ? `<div style="margin-top:10px"><strong>Top cities</strong><ul>${cities.map(c => `<li>${esc(c.city)}${c.country ? ', ' + esc(c.country) : ''} — ${c.count}</li>`).join('')}</ul></div>` : '<div class="subtle" style="margin-top:10px">No city concentration available for this region.</div>'}
+            ${themes.length ? `<div style="margin-top:10px"><strong>Top themes</strong><ul>${themes.map(t => `<li>${esc(t.label)} — ${t.count}</li>`).join('')}</ul></div>` : ''}
+          </div>`;
+      }
       return regional.length
         ? `<div class="list-tight">${regional.map(([k,v]) => `
             <div class="event-card">
@@ -750,7 +799,7 @@
         ? `You are viewing a focused draft for ${regionFilter}. Use Open Risk Detail for a separate dashboard view or return to the broader report by rebuilding from the card buttons below.`
         : 'Open a country / region-specific draft or jump to Risk Detail for a separate dashboard view.';
       el.draftBadges.innerHTML = badges.map(b => `<span class="pill">${esc(b.text)}</span>`).join('');
-      renderRegionPanel(regional, type, focusMonthKey);
+      renderRegionPanel(regional, type, focusMonthKey, regionFilter);
 
       el.draftBody.innerHTML = `
         <div class="mini-grid">
@@ -770,8 +819,8 @@
         </div>
 
         <div class="section">
-          <h3>Regional Breakdown</h3>
-          ${buildRegionRows(regional, type, focusMonthKey)}
+          <h3>${regionFilter ? 'Focused Region Snapshot' : 'Regional Breakdown'}</h3>
+          ${buildRegionRows(regional, type, focusMonthKey, regionFilter)}
         </div>
 
         <div class="section">
