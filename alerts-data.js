@@ -5,16 +5,157 @@
 
 window.alertsData =[
 
- {
-    title: "",
-    city: "",
-    country: "",
-    continent: "Europe",
-    risk: "",
-    time: "2026-03-14T13:00:00",
-    source: "",
-    summary: ""
+{
+    title:"Together Against the Far Right March",
+    city:"London",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"high",
+    time:"2026-03-28T12:00:00",
+    source:"https://www.stopwar.org.uk/events/",
+    summary:"A major London mobilisation backed by anti-racist, trade union, and civil society groups is set to assemble against the far right. Further detail: the event has been promoted nationally in the run-up to local election campaigning and is likely to draw large contingents from outside London. Recent anti-fascist mobilisations in Britain have seen dense stewarding, heavy police deployments, and attempts by hostile or opportunistic counter-groups to approach march routes. High risk: the most likely issues are crowd pressure, rapid policing changes, transport disruption, and the possibility of confrontation if far-right activists or splinter groups appear near assembly or dispersal points."
   },
+
+
+
+
+
+
+ 
+  {
+    title:"Defend the Climate Law Emergency Rally",
+    city:"Albany",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2026-03-25T11:30:00",
+    source:"https://actionnetwork.org/events/deadline-hochul-41826",
+    summary:"Climate groups are calling supporters to Albany to oppose proposed changes to New York’s climate law ahead of the state budget deadline. Further detail: organisers say the action is intended to pressure legislators during negotiations and are arranging buses from around the state. Medium risk: the rally is issue-focused and likely to remain peaceful, but it could draw a sizeable crowd around government buildings and create access delays near the legislative complex."
+  },
+
+  {
+    title:"No Kings 3",
+    city:"San Francisco",
+    country:"United States",
+    continent:"North America",
+    risk:"high",
+    time:"2026-03-28T11:30:00",
+    source:"https://www.findaprotest.info/event/san-francisco/oWJ26zRtKAbzcx0fdBj9Ol",
+    summary:"A large anti-authoritarian march and rally is planned in San Francisco under the 'No Kings' banner. Further detail: organisers say the event will gather at Embarcadero before marching to Civic Center, with messaging spanning democracy, immigrant rights, LGBTQ rights, workers’ rights, and anti-fascism. High risk: the route passes through major civic and commercial areas, turnout could be substantial, and any counter-presence or disorder at key intersections could quickly escalate congestion, police intervention, and transit disruption."
+  },
+
+  {
+    title:"No Kings 3",
+    city:"Harrisburg",
+    country:"United States",
+    continent:"North America",
+    risk:"medium",
+    time:"2026-03-28T12:30:00",
+    source:"https://www.findaprotest.info/event/harrisburg/33c6e2bb-f0a6-49a1-abd1-b2d588cf78a3",
+    summary:"Grassroots organisers are planning a Capitol protest and city march in Harrisburg as part of the wider 'No Kings' mobilisation. Further detail: the event page stresses nonviolent action and a march beginning and ending at the Capitol steps. Medium risk: central-government location and crowd size may cause road closures and visible police management, but the organisers’ emphasis is on a structured, peaceful demonstration."
+  },
+
+  {
+    title:"Jan Akrosh Rally",
+    city:"Delhi",
+    country:"India",
+    continent:"Asia",
+    risk:"high",
+    time:"2026-03-24T12:00:00",
+    source:"https://cpim.org/polit-bureau-communique-23/",
+    summary:"The Communist Party of India (Marxist) has announced a mass rally in Delhi against labour codes, electricity bill changes, seed legislation, and the Indo-US trade deal. Further detail: the rally is the culmination of 'Jan Akrosh Jathas' travelling through multiple northern states, which suggests organised out-of-city mobilisation into the capital. High risk: labour and farmer-linked protests in Delhi can scale quickly, trigger layered barricading and route controls, and create prolonged disruption around central administrative corridors if turnout exceeds expectations."
+  },
+
+  {
+    title:"Canadian Complicity and Duplicity on Palestine Teach-In",
+    city:"Vancouver",
+    country:"Canada",
+    continent:"North America",
+    risk:"low",
+    time:"2026-03-26T17:30:00",
+    source:"https://www.findaprotest.info/event/vancouver/yV6Ggj8woZEtKwiFKcPluc",
+    summary:"A community teach-in is being held in Vancouver to mark Palestinian Land Day and discuss boycott campaigning and Canada’s role in the conflict. Further detail: the event is framed as an educational gathering with speakers and community organisers rather than a street march. Low risk: likely limited to speeches, discussion, and light foot traffic around the venue."
+  },
+
+  {
+    title:"Weekly March for Gaza",
+    city:"Amsterdam",
+    country:"Netherlands",
+    continent:"Europe",
+    risk:"medium",
+    time:"2026-04-06T15:00:00",
+    source:"https://www.findaprotest.info/event/amsterdam/0c1ca889-bf5e-47ad-85e1-65b92fe9c459",
+    summary:"A recurring Gaza solidarity march is listed for Amsterdam Central Station with calls for a ceasefire, humanitarian access, and accountability. Further detail: the event description references ongoing anger over attacks on civilians, aid restrictions, and targeting of journalists and medical workers. Medium risk: although recurring marches are often disciplined, the transport-hub setting and emotionally charged issue mean crowding, route changes, and police monitoring remain likely."
+  },
+
+  {
+    title:"Palestinian Land Day",
+    city:"Schaerbeek",
+    country:"Belgium",
+    continent:"Europe",
+    risk:"low",
+    time:"2026-04-03T18:00:00",
+    source:"https://www.findaprotest.info/event/schaerbeek/evt-cec83ea560106fbd",
+    summary:"A Palestine Land Day event in Schaerbeek will feature a conversation with prominent Palestine advocates and direct financial support for agricultural workers in Palestine. Further detail: the programme is presented as a speaker event rather than an outdoor march. Low risk: this is more likely to be a controlled indoor gathering than a disruptive street action."
+  },
+
+  {
+    title:"Rap Against Racism",
+    city:"Thornbury",
+    country:"Australia",
+    continent:"Oceania",
+    risk:"low",
+    time:"2026-04-04T17:00:00",
+    source:"https://www.findaprotest.info/event/thornbury/evt-4c0483542fdae323",
+    summary:"An anti-racism fundraiser and community protest event is planned in Thornbury, with support directed toward Aboriginal and asylum seeker organisations. Further detail: the listing frames the event as a solidarity-focused gathering built around music, fundraising, and anti-racist community defence. Low risk: the format suggests a contained community event with limited likelihood of confrontation."
+  },
+
+  {
+    title:"North Glasgow Against Racism",
+    city:"Glasgow",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2026-04-12T12:00:00",
+    source:"https://www.findaprotest.info/event/glasgow/E1xIonVkk5PRGuuFnDPqC2",
+    summary:"Trade unions, faith groups, LGBTQ groups, and anti-racist campaigners are promoting a march in north Glasgow against racism and refugee scapegoating. Further detail: organisers are presenting the event as a broad-based show of unity and confidence following earlier anti-racist mobilisations elsewhere in Scotland. Medium risk: expected turnout and the explicitly anti-far-right framing raise the chance of police presence, road disruption, or isolated hostile counter-activity."
+  },
+
+  {
+    title:"Unity March",
+    city:"Livingston",
+    country:"United Kingdom",
+    continent:"Europe",
+    risk:"medium",
+    time:"2026-04-25T12:00:00",
+    source:"https://www.findaprotest.info/event/livingston/evt-1d2b2d8aaf79ee65",
+    summary:"A unity march is planned in Livingston around anti-fascism and human rights themes. Further detail: the event is being promoted as a visible public show of solidarity rather than a static vigil, which increases its street footprint. Medium risk: crowd movement through town centre space can produce short-notice traffic impacts, and anti-fascist branding can attract close monitoring or a limited hostile response."
+  },
+
+  {
+    title:"Fridays for Future Climate Strike",
+    city:"Berlin",
+    country:"Germany",
+    continent:"Europe",
+    risk:"low",
+    time:"2026-04-24T12:00:00",
+    source:"https://map.fridaysforfuture.org/",
+    summary:"Fridays for Future lists an upcoming climate strike in Berlin at the Bundestag on April 24. Further detail: the event appears in the movement’s public strike calendar and follows the group’s established pattern of symbolic protests at high-visibility political sites. Low risk: climate strikes of this kind are usually stewarded and peaceful, though they can still create short-duration access and transport disruption around parliament."
+  },
+
+  {
+    title:"Fridays for Future Climate Strike",
+    city:"Winnipeg",
+    country:"Canada",
+    continent:"North America",
+    risk:"low",
+    time:"2026-04-24T12:00:00",
+    source:"https://map.fridaysforfuture.org/",
+    summary:"Fridays for Future Manitoba lists recurring climate strike activity at the Manitoba Legislature, including the period covering late April. Further detail: the movement’s public calendar shows regular Friday actions in Winnipeg, indicating sustained low-intensity mobilisation rather than a one-off escalation. Low risk: most likely outcome is a peaceful symbolic demonstration with limited disruption outside the legislature precinct."
+  },
+
+
+ 
 
  {
     title: "Vigil for Orelha",
@@ -14457,6 +14598,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
