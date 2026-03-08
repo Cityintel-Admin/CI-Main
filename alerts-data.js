@@ -21,30 +21,30 @@ window.alertsData =[
 },
 
     {
-    "title": "Al Quds Day – Annual March and Rally",
-    "lat": 51.495868,
-    "lng": -0.129786,
-    "address": "Home Office, 2 Marsham St",
-    "postcode": "SW1P 4DF",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Moderate (Potential for counter-protests and high police presence)",
-    "time": "2026-03-15T13:00:00",
-    "source": "https://www.ihrc.org.uk",
-    "summary": "Annual pro-Palestinian march and rally organized by the Islamic Human Rights Commission (IHRC). Participants assemble at the Home Office before marching through central London."
+    title: "Al Quds Day – Annual March and Rally",
+    lat: 51.495868,
+    lng: -0.129786,
+    address: "Home Office, 2 Marsham St",
+    postcode: "SW1P 4DF",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Med",
+    time: "2026-03-15T13:00:00",
+    source: "https://www.ihrc.org.uk",
+    summary: "Annual pro-Palestinian march and rally organized by the Islamic Human Rights Commission (IHRC). Participants assemble at the Home Office before marching through central London."
   },
   {
-    "title": "Piers’ Red Tulips at BBC Case (Court Appearance)",
-    "lat": 51.5222,
-    "lng": -0.1623,
-    "address": "Westminster Magistrates' Court, 181 Marylebone Rd",
-    "postcode": "NW1 5BR",
-    "country": "United Kingdom",
-    "continent": "Europe",
-    "risk": "Low (Localized gathering)",
-    "time": "2026-03-17T10:00:00",
-    "source": "Local Activist Schedule",
-    "summary": "Court appearance related to the 'Piers’ Red Tulips' case, following the Nineham+Jamal case regarding the legality of January 18 protest arrests. Located near Marylebone Tube."
+    title: "Piers’ Red Tulips at BBC Case (Court Appearance)",
+    lat: 51.5222,
+    lng: -0.1623,
+    address: "Westminster Magistrates' Court, 181 Marylebone Rd",
+    postcode: "NW1 5BR",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low (Localized gathering)",
+    time: "2026-03-17T10:00:00",
+    source: "Local Activist Schedule",
+    summary: "Court appearance related to the 'Piers’ Red Tulips' case, following the Nineham+Jamal case regarding the legality of January 18 protest arrests. Located near Marylebone Tube."
   },
 
   {
@@ -56,7 +56,7 @@ window.alertsData =[
     postcode: "44000",
     country: "France",
     continent: "Europe",
-    risk: "Low to Moderate (Localized Disruption)",
+    risk: "Med",
     time: "2026-03-08T11:00:00",
     source: "Ouest-France",
     summary: "The Furi collective is organising a 'feminist occupation zone' with stands and speeches, followed by a march starting from Place Bretagne."
@@ -70,7 +70,7 @@ window.alertsData =[
     postcode: "35000",
     country: "France",
     continent: "Europe",
-    risk: "Low (Localized Crowds)",
+    risk: "Low",
     time: "2026-03-08T11:00:00",
     source: "Ouest-France / Local Reports",
     summary: "Participants gather at Mail François Mitterrand for a morning rally to advocate for gender equality and denounce violence."
@@ -84,7 +84,7 @@ window.alertsData =[
     postcode: "31000",
     country: "France",
     continent: "Europe",
-    risk: "Low to Moderate (Transit Impact)",
+    risk: "Med",
     time: "2026-03-08T11:00:00",
     source: "Local News / Tisséo",
     summary: "Protesters gather at the Jeanne d'Arc Metro station for a morning demonstration focused on women's rights and social justice."
@@ -98,7 +98,7 @@ window.alertsData =[
     postcode: "59800",
     country: "France",
     continent: "Europe",
-    risk: "Low (Crowded Area)",
+    risk: "Med",
     time: "2026-03-08T14:00:00",
     source: "Feminist Strike Coalition",
     summary: "An afternoon march starting at the Opera House to mark International Women's Rights Day and demand systemic change."
@@ -112,7 +112,7 @@ window.alertsData =[
     postcode: "69007",
     country: "France",
     continent: "Europe",
-    risk: "Low to Moderate (Localized Traffic)",
+    risk: "Med",
     time: "2026-03-08T14:30:00",
     source: "Local Union Reports",
     summary: "Demonstrators meet at Place Jean Macé for an afternoon rally and march as part of a nationwide feminist strike."
@@ -126,7 +126,7 @@ window.alertsData =[
     postcode: "06000",
     country: "France",
     continent: "Europe",
-    risk: "Low (Localized Transit Impact)",
+    risk: "Low",
     time: "2026-03-08T14:30:00",
     source: "Local Reports",
     summary: "A protest is scheduled outside the main train station (Gare Thiers) to denounce discrimination and violence against women."
@@ -140,7 +140,7 @@ window.alertsData =[
     postcode: "75019",
     country: "France",
     continent: "Europe",
-    risk: "Moderate (Large Crowds)",
+    risk: "Med",
     time: "2026-03-08T14:00:00",
     source: "Sortiraparis",
     summary: "The main Paris procession departs at 2:00 PM from Stalingrad toward Place de la République, following the 11:00 AM 'feminist village' setup."
@@ -14953,6 +14953,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
