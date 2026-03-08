@@ -20,6 +20,33 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+    {
+    "title": "Al Quds Day – Annual March and Rally",
+    "lat": 51.495868,
+    "lng": -0.129786,
+    "address": "Home Office, 2 Marsham St",
+    "postcode": "SW1P 4DF",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Moderate (Potential for counter-protests and high police presence)",
+    "time": "2026-03-15T13:00:00",
+    "source": "https://www.ihrc.org.uk",
+    "summary": "Annual pro-Palestinian march and rally organized by the Islamic Human Rights Commission (IHRC). Participants assemble at the Home Office before marching through central London."
+  },
+  {
+    "title": "Piers’ Red Tulips at BBC Case (Court Appearance)",
+    "lat": 51.5222,
+    "lng": -0.1623,
+    "address": "Westminster Magistrates' Court, 181 Marylebone Rd",
+    "postcode": "NW1 5BR",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "risk": "Low (Localized gathering)",
+    "time": "2026-03-17T10:00:00",
+    "source": "Local Activist Schedule",
+    "summary": "Court appearance related to the 'Piers’ Red Tulips' case, following the Nineham+Jamal case regarding the legality of January 18 protest arrests. Located near Marylebone Tube."
+  },
+
   {
     title: "Feminist Occupation Zone & Protest",
     city: "Nantes",
@@ -14926,6 +14953,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
