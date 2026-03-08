@@ -1,52 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script src="auth.js">
-    // Archive & Delete Handlers (v7)
-    document.addEventListener('click', function(e){
-      if(e.target.dataset.archiveReport){
-        const id = e.target.dataset.archiveReport;
-        const reports = loadReports().filter(r => !r.archived);
-        const r = reports.find(x => x.id === id);
-        if(!r) return;
-        r.archived = true;
-        localStorage.setItem('cityintel_reports', JSON.stringify(reports));
-        location.reload();
-      }
-
-      if(e.target.dataset.deleteReport){
-        const id = e.target.dataset.deleteReport;
-        let reports = loadReports();
-        reports = reports.filter(x => x.id !== id);
-        localStorage.setItem('cityintel_reports', JSON.stringify(reports));
-        location.reload();
-      }
-    });
-
-</script>
-  <script src="auth-guard.js">
-    // Archive & Delete Handlers (v7)
-    document.addEventListener('click', function(e){
-      if(e.target.dataset.archiveReport){
-        const id = e.target.dataset.archiveReport;
-        const reports = loadReports().filter(r => !r.archived);
-        const r = reports.find(x => x.id === id);
-        if(!r) return;
-        r.archived = true;
-        localStorage.setItem('cityintel_reports', JSON.stringify(reports));
-        location.reload();
-      }
-
-      if(e.target.dataset.deleteReport){
-        const id = e.target.dataset.deleteReport;
-        let reports = loadReports();
-        reports = reports.filter(x => x.id !== id);
-        localStorage.setItem('cityintel_reports', JSON.stringify(reports));
-        location.reload();
-      }
-    });
-
-</script>
+  <script src="auth.js"></script>
+  <script src="auth-guard.js"></script>
   <script>
   (function pageGuard(){
     const NEED_LOGIN = true;
@@ -377,6 +333,7 @@
               <button class="tab-btn" data-scope="org">My Organisation</button>
             </div>
             <div class="scope-note" id="libraryScopeNote">Shared baseline reports curated by CityIntel. Use these as the starting point for org-specific tailoring.</div>
+            <label class="scope-note" style="display:inline-flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer"><input type="checkbox" id="showArchivedToggle"> Show archived</label>
           </div>
         </div>
         <table>
@@ -672,12 +629,13 @@
       uploadPdfBtn: document.getElementById('uploadPdfBtn'), uploadPdfBtn2: document.getElementById('uploadPdfBtn2'),
       uploadDocxBtn: document.getElementById('uploadDocxBtn'), templatesBtn: document.getElementById('templatesBtn'),
       newReportBtn: document.getElementById('newReportBtn'), libraryTabs: document.getElementById('libraryTabs'),
-      libraryScopeNote: document.getElementById('libraryScopeNote'), saveOrgDraftBtn: document.getElementById('saveOrgDraftBtn'),
+      libraryScopeNote: document.getElementById('libraryScopeNote'), showArchivedToggle: document.getElementById('showArchivedToggle'), saveOrgDraftBtn: document.getElementById('saveOrgDraftBtn'),
       publishOrgBtn: document.getElementById('publishOrgBtn'), downloadBrandedBtn: document.getElementById('downloadBrandedBtn'),
       openPrintViewBtn: document.getElementById('openPrintViewBtn'), saveMasterBtn: document.getElementById('saveMasterBtn')
     };
     let activeScope = 'master';
     let currentDraftState = null;
+    let showArchived = false;
 
     function who(){ try { return (window.CIAuth && CIAuth.who && CIAuth.who()) || JSON.parse(localStorage.getItem('ci_profile') || '{}') || {}; } catch(_) { return {}; } }
     function isAdmin(){ const u = who(); return String(u.role || '').toLowerCase() === 'admin' || !!u.is_admin; }
@@ -691,6 +649,18 @@
     function getOrgReports(){ return readStore(orgStoreKey(), []); }
     function setOrgReports(rows){ writeStore(orgStoreKey(), rows); }
     function setMasterReports(rows){ writeStore(masterStoreKey(), rows); }
+
+    function getScopedReports(scope){ return scope === 'master' ? getMasterReports() : getOrgReports(); }
+    function saveScopedReports(scope, rows){ return scope === 'master' ? setMasterReports(rows) : setOrgReports(rows); }
+    function mutateScopedReport(id, updater){
+      const rows = getScopedReports(activeScope).map(r => ({...r}));
+      const idx = rows.findIndex(r => r.id === id);
+      if (idx < 0) return false;
+      updater(rows, idx);
+      saveScopedReports(activeScope, rows);
+      hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
+      return true;
+    }
 
     function monthNameFromKey(key){ const [y,m] = String(key || '').split('-').map(Number); if (!y || !m) return key || '—'; return new Date(y, m-1, 1).toLocaleString('en-GB', { month:'long', year:'numeric' }); }
     function shortPeriodFromKey(key){ const [y,m] = String(key || '').split('-').map(Number); if (!y || !m) return key || '—'; return new Date(y, m-1, 1).toLocaleString('en-GB', { month:'short', year:'numeric' }); }
@@ -733,6 +703,8 @@
     function getFilteredReports(){
       const type = el.typeFilter.value, month = el.monthFilter.value, q = (el.keywordFilter.value || '').trim().toLowerCase();
       return getActiveReports().filter(r => {
+        if (!showArchived && r.archived) return false;
+        if (showArchived && !r.archived) return false;
         if (type !== 'all' && r.type !== type) return false;
         if (month !== 'all' && monthNameFromKey(r.monthKey) !== month) return false;
         if (!q) return true;
@@ -746,17 +718,27 @@
     }
     function renderTable(){
       const rows = getFilteredReports();
-      if (!rows.length){ el.tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No reports match the current filters.</div></td></tr>`; return; }
+      if (!rows.length){
+        el.tbody.innerHTML = `<tr><td colspan="6"><div class="empty">${showArchived ? 'No archived reports match the current filters.' : 'No reports match the current filters.'}</div></td></tr>`;
+        return;
+      }
       el.tbody.innerHTML = rows.map(r => {
         const title = titleFor(r);
         let fileActions = '';
         if (r.file){
           fileActions = `<a class="btn" href="${encodeURI(r.file)}" target="_blank" rel="noopener">View</a> <a class="btn" href="${encodeURI(r.file)}" download>Download</a>`;
         } else {
-          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button> <button class="btn ghost" data-archive-report="${r.id}">Archive</button> ${r.scope === 'org' ? `<button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``}` : `<button class="btn ghost" disabled>Download</button> <button class="btn ghost" data-archive-report="${r.id}">Archive</button> ${r.scope === 'org' ? `<button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``}`}`;
+          const archiveBtn = r.archived
+            ? `<button class="btn ghost" data-unarchive-report="${r.id}">Restore</button>`
+            : `<button class="btn ghost" data-archive-report="${r.id}">Archive</button>`;
+          const deleteBtn = (r.scope === 'org' && r.archived)
+            ? `<button class="btn ghost" data-delete-report="${r.id}">Delete</button>`
+            : ``;
+          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button>` : `<button class="btn ghost" disabled>Download</button>`} ${archiveBtn} ${deleteBtn}`;
         }
         return `<tr><td><div class="report-title">${esc(title)}</div><div class="report-meta">${esc(r.notes || 'No notes yet.')}</div></td><td>${esc(periodFor(r))}</td><td>${esc(r.type)}</td><td><span class="tag">${esc(r.status)}</span></td><td><span class="tag ${riskClass(r.risk)}">${esc(r.risk)}</span></td><td style="text-align:right"><div class="row" style="justify-content:flex-end">${fileActions}</div></td></tr>`;
       }).join('');
+
       el.tbody.querySelectorAll('[data-open-draft]').forEach(btn => btn.addEventListener('click', () => {
         const report = getActiveReports().find(r => r.id === btn.dataset.openDraft) || getMasterReports().find(r => r.id === btn.dataset.openDraft) || getOrgReports().find(r => r.id === btn.dataset.openDraft);
         if (!report) return;
@@ -764,6 +746,7 @@
         buildDraft(buildType, report.monthKey, report.regionFilter || '');
         el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
       }));
+
       el.tbody.querySelectorAll('[data-download-draft]').forEach(btn => btn.addEventListener('click', () => {
         const report = getActiveReports().find(r => r.id === btn.dataset.downloadDraft);
         if (!report || !(report.brandedHtml || report.savedHtml)) return;
@@ -778,7 +761,7 @@
             riskClass: riskClass(report.risk || 'Medium'),
             metrics:{events:'—'},
             summaryHtml: `<div>${esc(report.notes || 'Saved draft export.')}</div>`,
-            eventsHtml: '<div class="muted">Legacy saved draft. Re-open and re-save this draft to capture the full branded section set.</div>',
+            eventsHtml: report.savedHtml ? `<div class="muted">Legacy saved draft. Re-open and re-save this draft to capture the full branded section set.</div>` : '<div class="muted">No event snapshot stored.</div>',
             themesHtml: '<div class="muted">Legacy saved draft.</div>',
             regionalHtml: '<div class="muted">Legacy saved draft.</div>',
             recommendationsHtml: '<div class="muted">Legacy saved draft.</div>'
@@ -786,130 +769,23 @@
           report.brandedHtml = buildBrandedReportHtml(upgraded);
           report.exportFilename = report.exportFilename || `CityIntel_${slugify(titleFor(report))}.html`;
         }
-        const filename = report.exportFilename || `CityIntel_${slugify(titleFor(report))}.html`;
+        const filename = (report.exportFilename || `${titleFor(report).replace(/[^\w.-]+/g,'_')}.html`);
         downloadText(filename, report.brandedHtml || report.savedHtml, 'text/html');
       }));
-    }
 
+      el.tbody.querySelectorAll('[data-archive-report]').forEach(btn => btn.addEventListener('click', () => {
+        mutateScopedReport(btn.dataset.archiveReport, (rows, idx) => { rows[idx].archived = true; });
+      }));
 
-    function slugify(s){ return String(s || '').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,''); }
-    function formatIssueDate(){ return new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
-    function buildBrandedReportHtml(state){
-      const metrics = state.metrics || {};
-      const summary = state.summaryHtml || '';
-      const eventsHtml = state.eventsHtml || '<div class="empty">No events available.</div>';
-      const themesHtml = state.themesHtml || '<div class="empty">No themes available.</div>';
-      const regionalHtml = state.regionalHtml || '<div class="empty">No regional intelligence available.</div>';
-      const recsHtml = state.recommendationsHtml || '<div class="empty">No recommendations available.</div>';
-      const riskClass = state.riskClass || 'med';
-      const riskLabel = state.risk || 'Medium';
-      return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>${esc(state.exportTitle || state.title)}</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  :root{--bg:#0c0c0c;--bg2:#101216;--card:#171b22;--line:#272c35;--text:#ecf0f5;--muted:#9aa4b2;--red:#d01616;--amber:#f0b429;--green:#33c48d}
-  *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#050505,#0a0a0a 28%,#111317 100%);color:#111;font:14px/1.55 system-ui,Segoe UI,Arial,sans-serif}
-  .topbar{height:92px;background:linear-gradient(90deg,#260808 0%, #4e0e0e 24%, #0c0c0c 78%);border-bottom:1px solid #1b1b1b}
-  .page{max-width:1120px;margin:-44px auto 0;padding:0 24px 46px}
-  .cover{background:linear-gradient(180deg,#0f131a,#151b24);color:var(--text);border-radius:20px;padding:28px 30px;border:1px solid #202630;position:relative;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.18)}
-  .cover:after{content:'CITYINTEL';position:absolute;right:18px;bottom:6px;font-size:64px;font-weight:900;letter-spacing:.08em;color:rgba(255,255,255,.04)}
-  .brand{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
-  .brand-left{display:flex;gap:18px;align-items:flex-start}
-  .logo-box{width:88px;min-width:88px;height:88px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#0b0b0b;display:flex;align-items:center;justify-content:center}
-  .logo-box img{width:100%;height:100%;object-fit:cover}
-  .eyebrow{display:block;color:#c6d0db;letter-spacing:.1em;text-transform:uppercase;font-weight:800;font-size:12px}
-  .title{font-size:34px;line-height:1.08;margin:10px 0 8px;font-weight:900}
-  .sub{max-width:780px;color:#d1d8e0}
-  .meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
-  .meta{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px}
-  .meta .k{font-size:12px;color:#9fb0c3;text-transform:uppercase;letter-spacing:.06em}
-  .meta .v{font-size:22px;font-weight:900;margin-top:4px}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:12px}
-  .pill.high{color:#ff9c9f;border-color:rgba(208,22,22,.5);background:rgba(208,22,22,.12)}
-  .pill.med{color:#ffd973;border-color:rgba(240,180,41,.5);background:rgba(240,180,41,.12)}
-  .pill.low{color:#82e5b6;border-color:rgba(51,196,141,.5);background:rgba(51,196,141,.12)}
-  .grid{display:grid;grid-template-columns:1.45fr .95fr;gap:18px;margin-top:18px}
-  .section{background:#fff;border:1px solid #dfe5ec;border-radius:16px;padding:18px 20px;margin-top:18px;box-shadow:0 12px 28px rgba(0,0,0,.18)}
-  .section h2{margin:0 0 12px;font-size:20px}
-  .section h3{margin:0 0 10px;font-size:16px}
-  .section .muted{color:#667281}
-  .summary{font-size:15px;color:#1a2330}
-  .cards{display:grid;gap:12px}
-  .event{border:1px solid #dfe5ec;border-radius:14px;padding:14px 15px;background:#fbfcfd}
-  .event-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-  .event-title{font-weight:800;font-size:17px}
-  .event-meta{color:#617084;font-size:13px;margin-top:6px}
-  .event-sum{margin-top:10px;color:#1f2937}
-  .theme-list, .rec-list{margin:0;padding-left:18px}
-  .theme-list li, .rec-list li{margin:8px 0}
-  .region-card{border:1px solid #dfe5ec;border-radius:14px;padding:14px 15px;background:#fbfcfd;margin-top:10px}
-  .region-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-  .footer{display:flex;justify-content:space-between;gap:10px;margin-top:22px;color:#5e6977;font-size:12px}
-  @media print{body{background:#fff}.topbar{display:none}.page{max-width:none;margin:0;padding:0}.cover,.section{break-inside:avoid}.footer{position:fixed;left:0;right:0;bottom:0;padding:0 24px 12px}}
-  @media (max-width:860px){.grid,.meta-grid{grid-template-columns:1fr}.brand-left{flex-direction:column}.logo-box{width:72px;height:72px;min-width:72px}}
-</style>
-</head>
-<body>
-<div class="topbar"></div>
-<div class="page">
-  <section class="cover">
-    <div class="brand">
-      <div class="brand-left">
-        <div class="logo-box"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
-        <div>
-          <span class="eyebrow">CityIntel Intelligence Report</span>
-          <div class="title">${esc(state.exportTitle || state.title)}</div>
-          <div class="sub">${esc(state.subtitle || '')}</div>
-        </div>
-      </div>
-      <div class="pill ${riskClass}">${esc(riskLabel)} focus</div>
-    </div>
-    <div class="meta-grid">
-      <div class="meta"><div class="k">Report type</div><div class="v">${esc(state.typeLabel || '')}</div></div>
-      <div class="meta"><div class="k">Period</div><div class="v">${esc(state.periodLabel || '')}</div></div>
-      <div class="meta"><div class="k">Issue date</div><div class="v" style="font-size:18px">${esc(formatIssueDate())}</div></div>
-      <div class="meta"><div class="k">Events in scope</div><div class="v">${metrics.events || 0}</div></div>
-    </div>
-  </section>
+      el.tbody.querySelectorAll('[data-unarchive-report]').forEach(btn => btn.addEventListener('click', () => {
+        mutateScopedReport(btn.dataset.unarchiveReport, (rows, idx) => { rows[idx].archived = false; });
+      }));
 
-  <div class="grid">
-    <div>
-      <section class="section">
-        <h2>Executive Summary</h2>
-        <div class="summary">${summary}</div>
-      </section>
-      <section class="section">
-        <h2>High Focus Events</h2>
-        <div class="cards">${eventsHtml}</div>
-      </section>
-      
-      <section class="section">
-        <h2>Operational Considerations</h2>
-        ${recsHtml}
-      </section>
-    </div>
-    <div>
-      <section class="section">
-        <h2>Regional Intelligence</h2>
-        ${regionalHtml}
-      </section>
-      <section class="section">
-        <h2>Distribution Note</h2>
-        <div class="muted">This document is generated from the CityIntel draft builder. It is intended as a working intelligence product and should be reviewed before subscriber circulation.</div>
-      </section>
-    </div>
-  </div>
-
-  <div class="footer">
-    <div>CityIntel · Unfiltered. Unbiased. Unmatched.</div>
-    <div>${esc(state.exportTitle || state.title)}</div>
-  </div>
-</div>
-</body>
-</html>`;
+      el.tbody.querySelectorAll('[data-delete-report]').forEach(btn => btn.addEventListener('click', () => {
+        const ok = window.confirm('Delete this archived organisation draft permanently?');
+        if (!ok) return;
+        mutateScopedReport(btn.dataset.deleteReport, (rows, idx) => { rows.splice(idx, 1); });
+      }));
     }
     function normalizeAlerts(){
       const src = Array.isArray(window.alertsData) ? window.alertsData : [];
@@ -995,6 +871,7 @@
     hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
     el.applyBtn.addEventListener('click', renderTable);
     el.clearBtn.addEventListener('click', () => { el.typeFilter.value = 'all'; el.monthFilter.value = 'all'; el.keywordFilter.value = ''; renderTable(); });
+    if (el.showArchivedToggle) el.showArchivedToggle.addEventListener('change', e => { showArchived = !!e.target.checked; renderTable(); });
     el.keywordFilter.addEventListener('keydown', e => { if (e.key === 'Enter') renderTable(); });
     document.querySelectorAll('[data-build]').forEach(btn => btn.addEventListener('click', () => buildDraft(btn.dataset.build)));
     document.querySelectorAll('[data-template]').forEach(btn => btn.addEventListener('click', () => {
