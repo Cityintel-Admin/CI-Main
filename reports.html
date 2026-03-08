@@ -677,6 +677,7 @@
       openPrintViewBtn: document.getElementById('openPrintViewBtn'), saveMasterBtn: document.getElementById('saveMasterBtn')
     };
     let activeScope = 'master';
+    let showArchived = false;
     let currentDraftState = null;
 
     function who(){ try { return (window.CIAuth && CIAuth.who && CIAuth.who()) || JSON.parse(localStorage.getItem('ci_profile') || '{}') || {}; } catch(_) { return {}; } }
@@ -718,6 +719,29 @@
         <div class="stat-pill"><strong>${drafts}</strong> drafts</div>
         <div class="stat-pill"><strong>${withFiles}</strong> files wired</div>`;
     }
+    function ensureArchiveToggle(){
+      if (!el.libraryScopeNote) return;
+      let host = document.getElementById('reportsArchiveToggle');
+      if (!host){
+        host = document.createElement('label');
+        host.id = 'reportsArchiveToggle';
+        host.style.display = 'inline-flex';
+        host.style.alignItems = 'center';
+        host.style.gap = '8px';
+        host.style.marginTop = '8px';
+        host.style.fontSize = '12px';
+        host.style.color = 'var(--muted)';
+        host.innerHTML = '<input type="checkbox" id="showArchivedReports"> <span>Show archived</span>';
+        el.libraryScopeNote.insertAdjacentElement('afterend', host);
+        const input = host.querySelector('input');
+        input.addEventListener('change', () => {
+          showArchived = !!input.checked;
+          renderTable();
+        });
+      }
+      const input = host.querySelector('input');
+      if (input) input.checked = !!showArchived;
+    }
     function renderScopeTabs(){
       if (!el.libraryTabs) return;
       el.libraryTabs.querySelectorAll('[data-scope]').forEach(btn => {
@@ -729,10 +753,12 @@
           ? 'Shared baseline reports curated by CityIntel. Use these as the starting point for org-specific tailoring.'
           : `${orgName()} private drafts and published variants. These do not overwrite the CityIntel baseline.`;
       }
+      ensureArchiveToggle();
     }
     function getFilteredReports(){
       const type = el.typeFilter.value, month = el.monthFilter.value, q = (el.keywordFilter.value || '').trim().toLowerCase();
       return getActiveReports().filter(r => {
+        if (!!r.archived !== !!showArchived) return false;
         if (type !== 'all' && r.type !== type) return false;
         if (month !== 'all' && monthNameFromKey(r.monthKey) !== month) return false;
         if (!q) return true;
@@ -740,20 +766,58 @@
         return hay.includes(q);
       });
     }
-    function downloadText(filename, text, mime='text/plain'){
-      const blob = new Blob([text], {type: mime + ';charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    function updateScopedReport(id, mutator){
+      const rows = activeScope === 'master' ? getMasterReports() : getOrgReports();
+      const idx = rows.findIndex(r => r.id === id);
+      if (idx === -1) return false;
+      const next = rows.map((r, i) => i === idx ? mutator({ ...r }) : r);
+      if (activeScope === 'master') setMasterReports(next); else setOrgReports(next);
+      return true;
+    }
+    function removeScopedReport(id){
+      if (activeScope !== 'org') return false;
+      const rows = getOrgReports();
+      const next = rows.filter(r => r.id !== id);
+      if (next.length === rows.length) return false;
+      setOrgReports(next);
+      return true;
+    }
+    function archiveReport(id){
+      return updateScopedReport(id, r => ({ ...r, archived: true }));
+    }
+    function restoreReport(id){
+      return updateScopedReport(id, r => ({ ...r, archived: false }));
+    }
+    function deleteReport(id){
+      const report = getOrgReports().find(r => r.id === id);
+      if (!report || !report.archived) return false;
+      return removeScopedReport(id);
     }
     function renderTable(){
       const rows = getFilteredReports();
-      if (!rows.length){ el.tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No reports match the current filters.</div></td></tr>`; return; }
+      if (!rows.length){
+        el.tbody.innerHTML = `<tr><td colspan="6"><div class="empty">${showArchived ? 'No archived reports match the current filters.' : 'No reports match the current filters.'}</div></td></tr>`;
+        return;
+      }
       el.tbody.innerHTML = rows.map(r => {
         const title = titleFor(r);
         let fileActions = '';
+        const canDeleteArchivedOrgDraft = activeScope === 'org' && !!r.archived;
         if (r.file){
           fileActions = `<a class="btn" href="${encodeURI(r.file)}" target="_blank" rel="noopener">View</a> <a class="btn" href="${encodeURI(r.file)}" download>Download</a>`;
+          if (showArchived) {
+            fileActions += ` <button class="btn ghost" data-restore-report="${r.id}">Restore</button>`;
+            if (canDeleteArchivedOrgDraft) fileActions += ` <button class="btn ghost" data-delete-report="${r.id}">Delete</button>`;
+          } else {
+            fileActions += ` <button class="btn ghost" data-archive-report="${r.id}">Archive</button>`;
+          }
         } else {
-          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button> <button class="btn ghost" data-archive-report="${r.id}">Archive</button> ${r.scope === 'org' ? `<button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``}` : `<button class="btn ghost" disabled>Download</button> <button class="btn ghost" data-archive-report="${r.id}">Archive</button> ${r.scope === 'org' ? `<button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``}`}`;
+          const dl = r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button>` : `<button class="btn ghost" disabled>Download</button>`;
+          const archiveOrRestore = showArchived
+            ? `<button class="btn ghost" data-restore-report="${r.id}">Restore</button>`
+            : `<button class="btn ghost" data-archive-report="${r.id}">Archive</button>`;
+          const deleteBtn = canDeleteArchivedOrgDraft ? ` <button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``;
+          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${dl} ${archiveOrRestore}${deleteBtn}`;
         }
         return `<tr><td><div class="report-title">${esc(title)}</div><div class="report-meta">${esc(r.notes || 'No notes yet.')}</div></td><td>${esc(periodFor(r))}</td><td>${esc(r.type)}</td><td><span class="tag">${esc(r.status)}</span></td><td><span class="tag ${riskClass(r.risk)}">${esc(r.risk)}</span></td><td style="text-align:right"><div class="row" style="justify-content:flex-end">${fileActions}</div></td></tr>`;
       }).join('');
@@ -788,6 +852,28 @@
         }
         const filename = report.exportFilename || `CityIntel_${slugify(titleFor(report))}.html`;
         downloadText(filename, report.brandedHtml || report.savedHtml, 'text/html');
+      }));
+      el.tbody.querySelectorAll('[data-archive-report]').forEach(btn => btn.addEventListener('click', () => {
+        if (!archiveReport(btn.dataset.archiveReport)) return;
+        renderStats();
+        hydrateMonths();
+        renderTable();
+      }));
+      el.tbody.querySelectorAll('[data-restore-report]').forEach(btn => btn.addEventListener('click', () => {
+        if (!restoreReport(btn.dataset.restoreReport)) return;
+        renderStats();
+        hydrateMonths();
+        renderTable();
+      }));
+      el.tbody.querySelectorAll('[data-delete-report]').forEach(btn => btn.addEventListener('click', () => {
+        const id = btn.dataset.deleteReport;
+        const report = getOrgReports().find(r => r.id === id);
+        if (!report || !report.archived) return;
+        if (!confirm(`Delete ${titleFor(report)} permanently? This cannot be undone.`)) return;
+        if (!deleteReport(id)) return;
+        renderStats();
+        hydrateMonths();
+        renderTable();
       }));
     }
 
