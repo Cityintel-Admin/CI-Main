@@ -8,8 +8,8 @@ window.alertsData =[
 {
   title: "TEST EVENT",
   city: "London",
-  lat: "51.5074",
-  lng: "-0.1278",
+  lat: 51.5074,
+  lng: -0.1278,
   address: "Whitehall",
   postcode: "SW1A 2AX",
   country: "United Kingdom",
@@ -14664,6 +14664,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
