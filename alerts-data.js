@@ -20,6 +20,169 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+   {
+    "title": "International Women's Day Protests: Nantes",
+    "city": "Nantes",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T11:00:00",
+    "source": "Women's Rights Organizations",
+    "summary": "Demonstration at Place Bretagne to denounce violence and discrimination against women."
+  },
+  {
+    "title": "International Women's Day Protests: Rennes",
+    "city": "Rennes",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T11:00:00",
+    "source": "Women's Rights Organizations",
+    "summary": "Protest gathering at Mail François Mitterrand marking International Women's Day."
+  },
+  {
+    "title": "International Women's Day Protests: Toulouse",
+    "city": "Toulouse",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T11:00:00",
+    "source": "Women's Rights Organizations",
+    "summary": "Participants gathering at Jean d'Arc Metro Station for rights advocacy."
+  },
+  {
+    "title": "International Women's Day Protests: Lille",
+    "city": "Lille",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T14:00:00",
+    "source": "Women's Rights Organizations",
+    "summary": "Afternoon protest planned at Opéra de Lille regarding gender discrimination."
+  },
+  {
+    "title": "International Women's Day Protests: Lyon",
+    "city": "Lyon",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Medium",
+    "time": "2026-03-08T14:30:00",
+    "source": "Women's Rights Organizations",
+    "summary": "Demonstration at Place Jean Macé; potential for transport disruptions in the city center."
+  },
+  {
+    "title": "International Women's Day Protests: Nice",
+    "city": "Nice",
+    "country": "France",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T14:30:00",
+    "source": "Women's Rights Organizations",
+    "summary": "Protest gathering scheduled at Gare Thiers (Nice-Ville station)."
+  },
+
+
+  {
+    "title": "International Women's Day Protests: Alicante",
+    "city": "Alicante",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T11:30:00",
+    "source": "Local News/Organizers",
+    "summary": "Nationwide protest marking International Women's Day at Plaza de los Luceros."
+  },
+  {
+    "title": "International Women's Day Protests: Barcelona",
+    "city": "Barcelona",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Medium",
+    "time": "2026-03-08T11:30:00",
+    "source": "Local News/Organizers",
+    "summary": "Multiple marches starting from Jardinets de Gracia and Plaza Catalunya; expect transport disruptions."
+  },
+  {
+    "title": "International Women's Day Protests: Las Palmas",
+    "city": "Las Palmas de Gran Canaria",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T12:00:00",
+    "source": "Local News/Organizers",
+    "summary": "March from San Telmo Park to Santa Ana Plaza denouncing violence and discrimination."
+  },
+  {
+    "title": "International Women's Day Protests: Madrid",
+    "city": "Madrid",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Medium",
+    "time": "2026-03-08T12:00:00",
+    "source": "Local News/Organizers",
+    "summary": "Large scale rallies at Atocha, Plaza Cibeles, and a evening gathering at Sol at 19:00."
+  },
+  {
+    "title": "International Women's Day Protests: Malaga",
+    "city": "Malaga",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T12:00:00",
+    "source": "Local News/Organizers",
+    "summary": "March from Plaza de la Merced to Plaza de Camas."
+  },
+  {
+    "title": "International Women's Day Protests: Murcia",
+    "city": "Murcia",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T12:00:00",
+    "source": "Local News/Organizers",
+    "summary": "Daytime march from Paseo Alfonso X and evening rally at Plaza de la Fuensanta at 20:00."
+  },
+  {
+    "title": "International Women's Day Protests: Palma de Mallorca",
+    "city": "Palma de Mallorca",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T12:00:00",
+    "source": "Local News/Organizers",
+    "summary": "Rallies departing from Plaza de Espana at 12:00 and 18:00."
+  },
+  {
+    "title": "International Women's Day Protests: Seville",
+    "city": "Seville",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Medium",
+    "time": "2026-03-08T12:00:00",
+    "source": "Local News/Organizers",
+    "summary": "Concurrent rallies at Plaza Nueva and Torre Pelli; significant road disruptions expected."
+  },
+  {
+    "title": "International Women's Day Protests: Valencia",
+    "city": "Valencia",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Medium",
+    "time": "2026-03-08T16:00:00",
+    "source": "Local News/Organizers",
+    "summary": "Marches from the Immigration Detention Center and Porta de la Mar."
+  },
+  {
+    "title": "International Women's Day Protests: Zaragoza",
+    "city": "Zaragoza",
+    "country": "Spain",
+    "continent": "Europe",
+    "risk": "Low",
+    "time": "2026-03-08T11:30:00",
+    "source": "Local News/Organizers",
+    "summary": "Demonstration planned at Plaza Aragon."
+  },
+
 
 {
   title: "Together Against the Far Right National March",
@@ -14664,6 +14827,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
