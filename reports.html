@@ -719,29 +719,6 @@
         <div class="stat-pill"><strong>${drafts}</strong> drafts</div>
         <div class="stat-pill"><strong>${withFiles}</strong> files wired</div>`;
     }
-    function ensureArchiveToggle(){
-      if (!el.libraryScopeNote) return;
-      let host = document.getElementById('reportsArchiveToggle');
-      if (!host){
-        host = document.createElement('label');
-        host.id = 'reportsArchiveToggle';
-        host.style.display = 'inline-flex';
-        host.style.alignItems = 'center';
-        host.style.gap = '8px';
-        host.style.marginTop = '8px';
-        host.style.fontSize = '12px';
-        host.style.color = 'var(--muted)';
-        host.innerHTML = '<input type="checkbox" id="showArchivedReports"> <span>Show archived</span>';
-        el.libraryScopeNote.insertAdjacentElement('afterend', host);
-        const input = host.querySelector('input');
-        input.addEventListener('change', () => {
-          showArchived = !!input.checked;
-          renderTable();
-        });
-      }
-      const input = host.querySelector('input');
-      if (input) input.checked = !!showArchived;
-    }
     function renderScopeTabs(){
       if (!el.libraryTabs) return;
       el.libraryTabs.querySelectorAll('[data-scope]').forEach(btn => {
@@ -753,7 +730,33 @@
           ? 'Shared baseline reports curated by CityIntel. Use these as the starting point for org-specific tailoring.'
           : `${orgName()} private drafts and published variants. These do not overwrite the CityIntel baseline.`;
       }
-      ensureArchiveToggle();
+      ensureArchivedToggle();
+      syncArchivedToggle();
+    }
+    function ensureArchivedToggle(){
+      if (!el.libraryScopeNote || document.getElementById('showArchivedReports')) return;
+      const host = document.createElement('label');
+      host.id = 'showArchivedHost';
+      host.style.display = 'flex';
+      host.style.alignItems = 'center';
+      host.style.gap = '8px';
+      host.style.marginTop = '10px';
+      host.style.color = '#b8c0cc';
+      host.style.fontSize = '14px';
+      host.innerHTML = '<input type="checkbox" id="showArchivedReports"> <span>Show archived</span>';
+      el.libraryScopeNote.insertAdjacentElement('afterend', host);
+      const input = host.querySelector('#showArchivedReports');
+      if (input) {
+        input.checked = !!showArchived;
+        input.addEventListener('change', () => {
+          showArchived = !!input.checked;
+          renderTable();
+        });
+      }
+    }
+    function syncArchivedToggle(){
+      const input = document.getElementById('showArchivedReports');
+      if (input) input.checked = !!showArchived;
     }
     function getFilteredReports(){
       const type = el.typeFilter.value, month = el.monthFilter.value, q = (el.keywordFilter.value || '').trim().toLowerCase();
@@ -766,32 +769,45 @@
         return hay.includes(q);
       });
     }
-    function updateScopedReport(id, mutator){
-      const rows = activeScope === 'master' ? getMasterReports() : getOrgReports();
+    function updateReportInStore(scope, id, updater){
+      const getter = scope === 'master' ? getMasterReports : getOrgReports;
+      const setter = scope === 'master' ? setMasterReports : setOrgReports;
+      const rows = getter();
       const idx = rows.findIndex(r => r.id === id);
-      if (idx === -1) return false;
-      const next = rows.map((r, i) => i === idx ? mutator({ ...r }) : r);
-      if (activeScope === 'master') setMasterReports(next); else setOrgReports(next);
+      if (idx < 0) return false;
+      const next = typeof updater === 'function' ? updater({ ...rows[idx] }) : updater;
+      if (!next) return false;
+      rows[idx] = next;
+      setter(rows);
       return true;
     }
-    function removeScopedReport(id){
-      if (activeScope !== 'org') return false;
-      const rows = getOrgReports();
+    function removeReportFromStore(scope, id){
+      const getter = scope === 'master' ? getMasterReports : getOrgReports;
+      const setter = scope === 'master' ? setMasterReports : setOrgReports;
+      const rows = getter();
       const next = rows.filter(r => r.id !== id);
       if (next.length === rows.length) return false;
-      setOrgReports(next);
+      setter(next);
       return true;
     }
     function archiveReport(id){
-      return updateScopedReport(id, r => ({ ...r, archived: true }));
+      const report = getActiveReports().find(r => r.id === id);
+      if (!report) return false;
+      return updateReportInStore(report.scope || activeScope, id, row => ({ ...row, archived: true }));
     }
     function restoreReport(id){
-      return updateScopedReport(id, r => ({ ...r, archived: false }));
+      const report = getActiveReports().find(r => r.id === id);
+      if (!report) return false;
+      return updateReportInStore(report.scope || activeScope, id, row => ({ ...row, archived: false }));
     }
     function deleteReport(id){
-      const report = getOrgReports().find(r => r.id === id);
+      const report = getActiveReports().find(r => r.id === id);
       if (!report || !report.archived) return false;
-      return removeScopedReport(id);
+      return removeReportFromStore(report.scope || activeScope, id);
+    }
+    function downloadText(filename, text, mime='text/plain'){
+      const blob = new Blob([text], {type: mime + ';charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }
     function renderTable(){
       const rows = getFilteredReports();
@@ -802,22 +818,20 @@
       el.tbody.innerHTML = rows.map(r => {
         const title = titleFor(r);
         let fileActions = '';
-        const canDeleteArchivedOrgDraft = activeScope === 'org' && !!r.archived;
+        const canDeleteArchived = !!showArchived && !!r.archived;
         if (r.file){
           fileActions = `<a class="btn" href="${encodeURI(r.file)}" target="_blank" rel="noopener">View</a> <a class="btn" href="${encodeURI(r.file)}" download>Download</a>`;
           if (showArchived) {
             fileActions += ` <button class="btn ghost" data-restore-report="${r.id}">Restore</button>`;
-            if (canDeleteArchivedOrgDraft) fileActions += ` <button class="btn ghost" data-delete-report="${r.id}">Delete</button>`;
-          } else {
-            fileActions += ` <button class="btn ghost" data-archive-report="${r.id}">Archive</button>`;
+            if (canDeleteArchived) fileActions += ` <button class="btn ghost" data-delete-report="${r.id}">Delete</button>`;
           }
         } else {
-          const dl = r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button>` : `<button class="btn ghost" disabled>Download</button>`;
+          const downloadBtn = r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button>` : `<button class="btn ghost" disabled>Download</button>`;
           const archiveOrRestore = showArchived
             ? `<button class="btn ghost" data-restore-report="${r.id}">Restore</button>`
             : `<button class="btn ghost" data-archive-report="${r.id}">Archive</button>`;
-          const deleteBtn = canDeleteArchivedOrgDraft ? ` <button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``;
-          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${dl} ${archiveOrRestore}${deleteBtn}`;
+          const deleteBtn = canDeleteArchived ? ` <button class="btn ghost" data-delete-report="${r.id}">Delete</button>` : ``;
+          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${downloadBtn} ${archiveOrRestore}${deleteBtn}`;
         }
         return `<tr><td><div class="report-title">${esc(title)}</div><div class="report-meta">${esc(r.notes || 'No notes yet.')}</div></td><td>${esc(periodFor(r))}</td><td>${esc(r.type)}</td><td><span class="tag">${esc(r.status)}</span></td><td><span class="tag ${riskClass(r.risk)}">${esc(r.risk)}</span></td><td style="text-align:right"><div class="row" style="justify-content:flex-end">${fileActions}</div></td></tr>`;
       }).join('');
@@ -856,23 +870,20 @@
       el.tbody.querySelectorAll('[data-archive-report]').forEach(btn => btn.addEventListener('click', () => {
         if (!archiveReport(btn.dataset.archiveReport)) return;
         renderStats();
-        hydrateMonths();
         renderTable();
       }));
       el.tbody.querySelectorAll('[data-restore-report]').forEach(btn => btn.addEventListener('click', () => {
         if (!restoreReport(btn.dataset.restoreReport)) return;
         renderStats();
-        hydrateMonths();
         renderTable();
       }));
       el.tbody.querySelectorAll('[data-delete-report]').forEach(btn => btn.addEventListener('click', () => {
-        const id = btn.dataset.deleteReport;
-        const report = getOrgReports().find(r => r.id === id);
+        const report = getActiveReports().find(r => r.id === btn.dataset.deleteReport);
         if (!report || !report.archived) return;
-        if (!confirm(`Delete ${titleFor(report)} permanently? This cannot be undone.`)) return;
-        if (!deleteReport(id)) return;
+        const titleLabel = titleFor(report);
+        if (!confirm(`Permanently delete "${titleLabel}" from the ${report.scope === 'master' ? 'CityIntel Master' : orgName() + ' library'}?`)) return;
+        if (!deleteReport(btn.dataset.deleteReport)) return;
         renderStats();
-        hydrateMonths();
         renderTable();
       }));
     }
