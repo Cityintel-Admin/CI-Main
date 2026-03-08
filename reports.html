@@ -688,7 +688,18 @@
     function masterStoreKey(){ return 'ci_master_reports_local'; }
     function readStore(key, fallback=[]){ try { const arr = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(arr) ? arr : fallback; } catch(_) { return fallback; } }
     function writeStore(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
-    function getMasterReports(){ const localMaster = readStore(masterStoreKey(), []); const merged = [...MASTER_REPORTS_SEED]; localMaster.forEach(r => { const idx = merged.findIndex(x => x.id === r.id); if (idx >= 0) merged[idx] = r; else merged.push(r); }); return merged; }
+    function getMasterReports(){
+      const localMaster = readStore(masterStoreKey(), []);
+      const deletedIds = new Set(localMaster.filter(r => r && r.deleted).map(r => r.id));
+      const merged = MASTER_REPORTS_SEED.filter(r => !deletedIds.has(r.id)).map(r => ({ ...r }));
+      localMaster.forEach(r => {
+        if (!r || r.deleted) return;
+        const idx = merged.findIndex(x => x.id === r.id);
+        if (idx >= 0) merged[idx] = r;
+        else merged.push(r);
+      });
+      return merged;
+    }
     function getOrgReports(){ return readStore(orgStoreKey(), []); }
     function setOrgReports(rows){ writeStore(orgStoreKey(), rows); }
     function setMasterReports(rows){ writeStore(masterStoreKey(), rows); }
@@ -782,12 +793,23 @@
       return true;
     }
     function removeReportFromStore(scope, id){
-      const getter = scope === 'master' ? getMasterReports : getOrgReports;
-      const setter = scope === 'master' ? setMasterReports : setOrgReports;
-      const rows = getter();
+      if (scope === 'master') {
+        const localRows = readStore(masterStoreKey(), []);
+        const seedRow = MASTER_REPORTS_SEED.find(r => r.id === id);
+        if (seedRow) {
+          const withoutExisting = localRows.filter(r => r.id !== id);
+          setMasterReports([...withoutExisting, { id, deleted: true }]);
+          return true;
+        }
+        const next = localRows.filter(r => r.id !== id);
+        if (next.length === localRows.length) return false;
+        setMasterReports(next);
+        return true;
+      }
+      const rows = getOrgReports();
       const next = rows.filter(r => r.id !== id);
       if (next.length === rows.length) return false;
-      setter(next);
+      setOrgReports(next);
       return true;
     }
     function archiveReport(id){
