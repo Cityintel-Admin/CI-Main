@@ -143,6 +143,10 @@
     .draft-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
     .draft-actions .hint{color:var(--muted);font-size:12px}
 
+    .draft-actions .btn.primary-soft{background:rgba(208,22,22,.14);border-color:#7d1111}
+    .export-note{color:var(--muted);font-size:12px;margin-top:8px}
+
+
     .inline-link{color:#cdd6e4;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.25)}
     .inline-link:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
 
@@ -269,8 +273,10 @@
         <div class="draft-actions" id="draftActions">
           <button class="btn" id="saveOrgDraftBtn">Save as Org Draft</button>
           <button class="btn" id="publishOrgBtn">Publish to My Org Library</button>
+          <button class="btn primary-soft" id="downloadBrandedBtn">Download Branded HTML</button>
+          <button class="btn ghost" id="openPrintViewBtn">Open Print View</button>
           <button class="btn ghost" id="saveMasterBtn" style="display:none">Save as CityIntel Master</button>
-          <span class="hint" id="draftActionHint">Builder outputs are saved browser-local in v5. Shared cross-org persistence will need backend support in v6.</span>
+          <span class="hint" id="draftActionHint">v6 adds a CityIntel-branded export layer. Shared cross-org persistence will still need backend support in the next phase.</span>
         </div>
         <div class="draft-grid">
           <div class="draft-body" id="draftBody"></div>
@@ -446,7 +452,8 @@
       uploadDocxBtn: document.getElementById('uploadDocxBtn'), templatesBtn: document.getElementById('templatesBtn'),
       newReportBtn: document.getElementById('newReportBtn'), libraryTabs: document.getElementById('libraryTabs'),
       libraryScopeNote: document.getElementById('libraryScopeNote'), saveOrgDraftBtn: document.getElementById('saveOrgDraftBtn'),
-      publishOrgBtn: document.getElementById('publishOrgBtn'), saveMasterBtn: document.getElementById('saveMasterBtn')
+      publishOrgBtn: document.getElementById('publishOrgBtn'), downloadBrandedBtn: document.getElementById('downloadBrandedBtn'),
+      openPrintViewBtn: document.getElementById('openPrintViewBtn'), saveMasterBtn: document.getElementById('saveMasterBtn')
     };
     let activeScope = 'master';
     let currentDraftState = null;
@@ -542,6 +549,122 @@
       }));
     }
 
+
+    function slugify(s){ return String(s || '').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,''); }
+    function formatIssueDate(){ return new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
+    function buildBrandedReportHtml(state){
+      const metrics = state.metrics || {};
+      const summary = state.summaryHtml || '';
+      const eventsHtml = state.eventsHtml || '<div class="empty">No events available.</div>';
+      const themesHtml = state.themesHtml || '<div class="empty">No themes available.</div>';
+      const regionalHtml = state.regionalHtml || '<div class="empty">No regional intelligence available.</div>';
+      const recsHtml = state.recommendationsHtml || '<div class="empty">No recommendations available.</div>';
+      const riskClass = state.riskClass || 'med';
+      const riskLabel = state.risk || 'Medium';
+      return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>${esc(state.exportTitle || state.title)}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{--bg:#0f1115;--card:#171b22;--line:#272c35;--text:#ecf0f5;--muted:#9aa4b2;--red:#d01616;--amber:#f0b429;--green:#33c48d}
+  *{box-sizing:border-box} body{margin:0;background:#f4f6f9;color:#111;font:14px/1.55 system-ui,Segoe UI,Arial,sans-serif}
+  .page{max-width:1040px;margin:0 auto;padding:28px 28px 46px}
+  .cover{background:linear-gradient(180deg,#12151b,#181d25);color:var(--text);border-radius:18px;padding:28px 30px;border:1px solid #202630;position:relative;overflow:hidden}
+  .cover:after{content:'CITYINTEL';position:absolute;right:18px;bottom:10px;font-size:56px;font-weight:900;letter-spacing:.08em;color:rgba(255,255,255,.035)}
+  .brand{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+  .brand small{display:block;color:#c6d0db;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .title{font-size:34px;line-height:1.1;margin:10px 0 8px;font-weight:900}
+  .sub{max-width:780px;color:#d1d8e0}
+  .meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+  .meta{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px}
+  .meta .k{font-size:12px;color:#9fb0c3;text-transform:uppercase;letter-spacing:.06em}
+  .meta .v{font-size:22px;font-weight:900;margin-top:4px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:12px}
+  .pill.high{color:#ff9c9f;border-color:rgba(208,22,22,.5);background:rgba(208,22,22,.12)}
+  .pill.med{color:#ffd973;border-color:rgba(240,180,41,.5);background:rgba(240,180,41,.12)}
+  .pill.low{color:#82e5b6;border-color:rgba(51,196,141,.5);background:rgba(51,196,141,.12)}
+  .grid{display:grid;grid-template-columns:1.45fr .95fr;gap:18px;margin-top:18px}
+  .section{background:#fff;border:1px solid #dfe5ec;border-radius:16px;padding:18px 20px;margin-top:18px}
+  .section h2{margin:0 0 12px;font-size:20px}
+  .section h3{margin:0 0 10px;font-size:16px}
+  .section .muted{color:#667281}
+  .summary{font-size:15px;color:#1a2330}
+  .cards{display:grid;gap:12px}
+  .event{border:1px solid #dfe5ec;border-radius:14px;padding:14px 15px;background:#fbfcfd}
+  .event-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .event-title{font-weight:800;font-size:17px}
+  .event-meta{color:#617084;font-size:13px;margin-top:6px}
+  .event-sum{margin-top:10px;color:#1f2937}
+  .theme-list, .rec-list{margin:0;padding-left:18px}
+  .theme-list li, .rec-list li{margin:8px 0}
+  .region-card{border:1px solid #dfe5ec;border-radius:14px;padding:14px 15px;background:#fbfcfd;margin-top:10px}
+  .region-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .footer{display:flex;justify-content:space-between;gap:10px;margin-top:22px;color:#5e6977;font-size:12px}
+  @media print{body{background:#fff}.page{max-width:none;padding:0}.cover,.section{break-inside:avoid}.footer{position:fixed;left:0;right:0;bottom:0;padding:0 24px 12px}}
+  @media (max-width:860px){.grid,.meta-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="cover">
+    <div class="brand">
+      <div>
+        <small>CityIntel Intelligence Report</small>
+        <div class="title">${esc(state.exportTitle || state.title)}</div>
+        <div class="sub">${esc(state.subtitle || '')}</div>
+      </div>
+      <div class="pill ${riskClass}">${esc(riskLabel)} focus</div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta"><div class="k">Report type</div><div class="v">${esc(state.typeLabel || '')}</div></div>
+      <div class="meta"><div class="k">Period</div><div class="v">${esc(state.periodLabel || '')}</div></div>
+      <div class="meta"><div class="k">Issue date</div><div class="v" style="font-size:18px">${esc(formatIssueDate())}</div></div>
+      <div class="meta"><div class="k">Events in scope</div><div class="v">${metrics.events || 0}</div></div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div>
+      <section class="section">
+        <h2>Executive Summary</h2>
+        <div class="summary">${summary}</div>
+      </section>
+      <section class="section">
+        <h2>High Focus Events</h2>
+        <div class="cards">${eventsHtml}</div>
+      </section>
+      <section class="section">
+        <h2>Risk Themes</h2>
+        ${themesHtml}
+      </section>
+      <section class="section">
+        <h2>Operational Recommendations</h2>
+        ${recsHtml}
+      </section>
+    </div>
+    <div>
+      <section class="section">
+        <h2>Regional Intelligence</h2>
+        ${regionalHtml}
+      </section>
+      <section class="section">
+        <h2>Distribution Note</h2>
+        <div class="muted">This document is generated from the CityIntel draft builder. It is intended as a working intelligence product and should be reviewed before subscriber circulation.</div>
+      </section>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>CityIntel · Unfiltered. Unbiased. Unmatched.</div>
+    <div>${esc(state.exportTitle || state.title)}</div>
+  </div>
+</div>
+</body>
+</html>`;
+    }
+
     function normalizeAlerts(){
       const src = Array.isArray(window.alertsData) ? window.alertsData : [];
       return src.map((a, idx) => {
@@ -604,7 +727,12 @@
       el.draftBadges.innerHTML = badges.map(b => `<span class="pill">${esc(b.text)}</span>`).join('');
       renderRegionPanel(regional, type, focusMonthKey, regionFilter);
       el.draftBody.innerHTML = `<div class="mini-grid"><div class="mini-card"><div class="k">Events in scope</div><div class="v">${events.length}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div><div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${countryCount}</div></div></div><div class="section"><h3>Executive Summary (draft)</h3><div>${summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter)}</div></div><div class="section"><h3>High Focus Events</h3><div class="list-tight">${highlight.length ? highlight.map(eventCard).join('') : '<div class="subtle">No events available for this time window.</div>'}</div></div><div class="section"><h3>Risk Themes</h3>${themes.length ? `<ul>${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="subtle">No recurring themes detected from the current event set.</div>'}</div><div class="section"><h3>Operational Recommendations (draft)</h3><ul><li>${recommendationText}</li><li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li><li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li></ul></div>`;
-      currentDraftState = { buildType: type, monthKey: focusMonthKey, regionFilter: regionFilter || '', title, typeLabel: type === 'preview' ? 'Monthly Preview' : type === 'review' ? 'Monthly Review' : 'Weekly Update', periodLabel: type === 'weekly' ? focusLabel : shortPeriodFromKey(focusMonthKey), subtitle, risk: dominantRisk, notes: regionFilter ? `Regional working copy for ${regionFilter}. Saved from the CityIntel baseline draft.` : `Saved from builder for ${type === 'preview' ? 'upcoming outlook' : type === 'review' ? 'monthly review' : 'weekly operational update'}.`, keywords: [type, focusMonthKey, regionFilter].filter(Boolean), savedHtml: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font:14px/1.6 system-ui,Segoe UI,Arial,sans-serif;margin:32px;color:#111}h1,h2,h3{margin:0 0 10px}.muted{color:#555}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:0 0 14px}.pill{display:inline-block;padding:4px 8px;border:1px solid #bbb;border-radius:999px;font-size:12px;margin-right:6px}.high{color:#b00020}.med{color:#9a6a00}.low{color:#006b4f}</style></head><body><h1>${esc(title)}</h1><p class="muted">${esc(subtitle)}</p>${el.draftBody.innerHTML}</body></html>` };
+      const exportTitle = title.replace(/^Draft Builder —\s*/,'');
+      const themesHtml = themes.length ? `<ul class="theme-list">${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="muted">No recurring themes detected from the current event set.</div>';
+      const recommendationsHtml = `<ul class="rec-list"><li>${recommendationText}</li><li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li><li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li></ul>`;
+      const regionalHtml = regional.length ? regional.map(([region, items]) => `<div class="region-card"><div class="region-head"><div><strong>${esc(region)}</strong><div class="muted" style="margin-top:4px">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div></div><span class="pill ${riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus'}</span></div></div>`).join('') : '<div class="muted">No regional intelligence available for this selection.</div>';
+      currentDraftState = { buildType: type, monthKey: focusMonthKey, regionFilter: regionFilter || '', title, exportTitle, typeLabel: type === 'preview' ? 'Monthly Preview' : type === 'review' ? 'Monthly Review' : 'Weekly Update', periodLabel: type === 'weekly' ? focusLabel : shortPeriodFromKey(focusMonthKey), subtitle, risk: dominantRisk, riskClass: riskClass(dominantRisk), notes: regionFilter ? `Regional working copy for ${regionFilter}. Saved from the CityIntel baseline draft.` : `Saved from builder for ${type === 'preview' ? 'upcoming outlook' : type === 'review' ? 'monthly review' : 'weekly operational update'}.`, keywords: [type, focusMonthKey, regionFilter].filter(Boolean), metrics:{events:events.length, high:riskCounts.High || 0, countries:countryCount}, summaryHtml: summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter), eventsHtml: highlight.length ? highlight.map(eventCard).join('') : '<div class="muted">No events available for this time window.</div>', themesHtml, regionalHtml, recommendationsHtml, exportFilename: `CityIntel_${slugify(exportTitle)}.html`, savedHtml: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font:14px/1.6 system-ui,Segoe UI,Arial,sans-serif;margin:32px;color:#111}h1,h2,h3{margin:0 0 10px}.muted{color:#555}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:0 0 14px}.pill{display:inline-block;padding:4px 8px;border:1px solid #bbb;border-radius:999px;font-size:12px;margin-right:6px}.high{color:#b00020}.med{color:#9a6a00}.low{color:#006b4f}</style></head><body><h1>${esc(title)}</h1><p class="muted">${esc(subtitle)}</p>${el.draftBody.innerHTML}</body></html>` };
+      currentDraftState.brandedHtml = buildBrandedReportHtml(currentDraftState);
       el.saveOrgDraftBtn.disabled = false; el.publishOrgBtn.disabled = false; el.saveMasterBtn.style.display = isAdmin() ? '' : 'none';
       el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
     }
@@ -612,7 +740,7 @@
     function upsertReport(scope, status){
       if (!currentDraftState){ alert('Open a draft first, then save it to the library.'); return; }
       if (scope === 'master' && !isAdmin()){ alert('Only CityIntel admin should save to the master library.'); return; }
-      const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage is browser-local in v5 pending backend persistence.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, savedHtml: currentDraftState.savedHtml, savedAt: new Date().toISOString(), scope };
+      const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage is browser-local in v5 pending backend persistence.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, savedHtml: currentDraftState.savedHtml, brandedHtml: currentDraftState.brandedHtml, exportFilename: currentDraftState.exportFilename, savedAt: new Date().toISOString(), scope };
       if (scope === 'master'){ const rows = getMasterReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setMasterReports(rows); activeScope = 'master'; }
       else { const rows = getOrgReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setOrgReports(rows); activeScope = 'org'; }
       hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
@@ -636,6 +764,16 @@
     el.newReportBtn.addEventListener('click', () => buildDraft('preview'));
     el.saveOrgDraftBtn.addEventListener('click', () => upsertReport('org', 'Draft'));
     el.publishOrgBtn.addEventListener('click', () => upsertReport('org', 'Published'));
+    el.downloadBrandedBtn.addEventListener('click', () => {
+      if (!currentDraftState || !currentDraftState.brandedHtml){ alert('Open a draft first, then export the branded version.'); return; }
+      downloadText(currentDraftState.exportFilename || 'CityIntel_Report.html', currentDraftState.brandedHtml, 'text/html');
+    });
+    el.openPrintViewBtn.addEventListener('click', () => {
+      if (!currentDraftState || !currentDraftState.brandedHtml){ alert('Open a draft first, then open the print view.'); return; }
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.open(); w.document.write(currentDraftState.brandedHtml); w.document.close();
+    });
     el.saveMasterBtn.addEventListener('click', () => upsertReport('master', 'Draft'));
     if (!isAdmin()) el.saveMasterBtn.style.display = 'none';
   })();
