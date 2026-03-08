@@ -135,6 +135,14 @@
     .region-row .name{font-weight:700}
     .region-row .meta{font-size:12px;color:var(--muted);margin-bottom:10px}
     .region-row .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+    .library-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .tab-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--gray-600);background:var(--gray-700);color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer}
+    .tab-btn.active{background:rgba(208,22,22,.16);border-color:var(--brand-red)}
+    .scope-note{margin-top:8px;color:var(--muted);font-size:12px}
+    .draft-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+    .draft-actions .hint{color:var(--muted);font-size:12px}
+
     .inline-link{color:#cdd6e4;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.25)}
     .inline-link:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
 
@@ -228,6 +236,11 @@
           <div>
             <h2 style="margin-bottom:4px">Report Library</h2>
             <div class="subtle">Finished and draft outputs. Monthly titles are generated from report metadata, so next month only requires a new file entry, not a hard-coded title rewrite.</div>
+            <div class="library-tabs" id="libraryTabs">
+              <button class="tab-btn active" data-scope="master">CityIntel Master</button>
+              <button class="tab-btn" data-scope="org">My Organisation</button>
+            </div>
+            <div class="scope-note" id="libraryScopeNote">Shared baseline reports curated by CityIntel. Use these as the starting point for org-specific tailoring.</div>
           </div>
         </div>
         <table>
@@ -252,6 +265,12 @@
             <div class="subtle" id="draftSubtitle">Auto-generated from alerts-data.js. Edit logic and export can be layered on later.</div>
           </div>
           <div class="draft-badges" id="draftBadges"></div>
+        </div>
+        <div class="draft-actions" id="draftActions">
+          <button class="btn" id="saveOrgDraftBtn">Save as Org Draft</button>
+          <button class="btn" id="publishOrgBtn">Publish to My Org Library</button>
+          <button class="btn ghost" id="saveMasterBtn" style="display:none">Save as CityIntel Master</button>
+          <span class="hint" id="draftActionHint">Builder outputs are saved browser-local in v5. Shared cross-org persistence will need backend support in v6.</span>
         </div>
         <div class="draft-grid">
           <div class="draft-body" id="draftBody"></div>
@@ -410,131 +429,117 @@
   <script>
   (function reportsApp(){
     const PDF_LABOUR = 'CityIntel Labour Party Conferance 2025 V1.pdf';
-    const REPORTS = [
-      {
-        id:'review-2025-09', type:'Monthly Review', monthKey:'2025-09', status:'Published', risk:'High',
-        titlePrefix:'Protest Review', file:PDF_LABOUR, notes:'Current live PDF example. Manual upload retained.', keywords:['labour','conference','liverpool','protest']
-      },
-      {
-        id:'preview-2025-10', type:'Monthly Preview', monthKey:'2025-10', status:'Draft', risk:'Medium',
-        titlePrefix:'Protest Preview', file:'', notes:'Builder-ready draft shell for next publication cycle.', keywords:['preview','october']
-      },
-      {
-        id:'weekly-2025-w39', type:'Weekly Update', monthKey:'2025-09', periodLabel:'23–29 Sep 2025', title:'Weekly Update — Week 39', status:'Published', risk:'Low', file:'', notes:'Placeholder weekly slot; wire final file when available.', keywords:['weekly','week 39']
-      }
+    const MASTER_REPORTS_SEED = [
+      {id:'review-2025-09', type:'Monthly Review', monthKey:'2025-09', status:'Published', risk:'High', titlePrefix:'Protest Review', file:PDF_LABOUR, notes:'Current live PDF example. Manual upload retained.', keywords:['labour','conference','liverpool','protest']},
+      {id:'preview-2025-10', type:'Monthly Preview', monthKey:'2025-10', status:'Draft', risk:'Medium', titlePrefix:'Protest Preview', file:'', notes:'Builder-ready draft shell for next publication cycle.', keywords:['preview','october'], buildType:'preview'},
+      {id:'weekly-2025-w39', type:'Weekly Update', monthKey:'2025-09', periodLabel:'23–29 Sep 2025', title:'Weekly Update — Week 39', status:'Published', risk:'Low', file:'', notes:'Placeholder weekly slot; wire final file when available.', keywords:['weekly','week 39'], buildType:'weekly'}
     ];
-
     const el = {
-      quickStats: document.getElementById('quickStats'),
-      tbody: document.getElementById('reportTableBody'),
-      typeFilter: document.getElementById('typeFilter'),
-      monthFilter: document.getElementById('monthFilter'),
-      keywordFilter: document.getElementById('keywordFilter'),
-      applyBtn: document.getElementById('applyFiltersBtn'),
-      clearBtn: document.getElementById('clearFiltersBtn'),
-      draftShell: document.getElementById('draftShell'),
-      draftTitle: document.getElementById('draftTitle'),
-      draftSubtitle: document.getElementById('draftSubtitle'),
-      draftBadges: document.getElementById('draftBadges'),
-      draftBody: document.getElementById('draftBody'),
-      regionPanelIntro: document.getElementById('regionPanelIntro'),
-      regionPanel: document.getElementById('regionPanel'),
-      uploadPdfBtn: document.getElementById('uploadPdfBtn'),
-      uploadPdfBtn2: document.getElementById('uploadPdfBtn2'),
-      uploadDocxBtn: document.getElementById('uploadDocxBtn'),
-      templatesBtn: document.getElementById('templatesBtn'),
-      newReportBtn: document.getElementById('newReportBtn')
+      quickStats: document.getElementById('quickStats'), tbody: document.getElementById('reportTableBody'),
+      typeFilter: document.getElementById('typeFilter'), monthFilter: document.getElementById('monthFilter'),
+      keywordFilter: document.getElementById('keywordFilter'), applyBtn: document.getElementById('applyFiltersBtn'),
+      clearBtn: document.getElementById('clearFiltersBtn'), draftShell: document.getElementById('draftShell'),
+      draftTitle: document.getElementById('draftTitle'), draftSubtitle: document.getElementById('draftSubtitle'),
+      draftBadges: document.getElementById('draftBadges'), draftBody: document.getElementById('draftBody'),
+      regionPanelIntro: document.getElementById('regionPanelIntro'), regionPanel: document.getElementById('regionPanel'),
+      uploadPdfBtn: document.getElementById('uploadPdfBtn'), uploadPdfBtn2: document.getElementById('uploadPdfBtn2'),
+      uploadDocxBtn: document.getElementById('uploadDocxBtn'), templatesBtn: document.getElementById('templatesBtn'),
+      newReportBtn: document.getElementById('newReportBtn'), libraryTabs: document.getElementById('libraryTabs'),
+      libraryScopeNote: document.getElementById('libraryScopeNote'), saveOrgDraftBtn: document.getElementById('saveOrgDraftBtn'),
+      publishOrgBtn: document.getElementById('publishOrgBtn'), saveMasterBtn: document.getElementById('saveMasterBtn')
     };
+    let activeScope = 'master';
+    let currentDraftState = null;
 
-    function monthNameFromKey(key){
-      const [y,m] = String(key || '').split('-').map(Number);
-      if (!y || !m) return key || '—';
-      return new Date(y, m-1, 1).toLocaleString('en-GB', { month:'long', year:'numeric' });
-    }
-    function shortPeriodFromKey(key){
-      const [y,m] = String(key || '').split('-').map(Number);
-      if (!y || !m) return key || '—';
-      return new Date(y, m-1, 1).toLocaleString('en-GB', { month:'short', year:'numeric' });
-    }
-    function titleFor(r){
-      if (r.title) return r.title;
-      return `${r.titlePrefix}: ${monthNameFromKey(r.monthKey)}`;
-    }
-    function periodFor(r){
-      return r.periodLabel || shortPeriodFromKey(r.monthKey);
-    }
+    function who(){ try { return (window.CIAuth && CIAuth.who && CIAuth.who()) || JSON.parse(localStorage.getItem('ci_profile') || '{}') || {}; } catch(_) { return {}; } }
+    function isAdmin(){ const u = who(); return String(u.role || '').toLowerCase() === 'admin' || !!u.is_admin; }
+    function orgKey(){ const u = who(); const email = String(u.email || '').toLowerCase().trim(); if (email && email.includes('@')) return email.split('@')[1].replace(/[^a-z0-9.-]/g,'_'); return 'default_org'; }
+    function orgName(){ const u = who(); const email = String(u.email || '').toLowerCase().trim(); if (email && email.includes('@')) { const base = email.split('@')[1].split('.')[0].replace(/[-_]/g,' '); return base.replace(/\b\w/g, c => c.toUpperCase()); } return 'My Organisation'; }
+    function orgStoreKey(){ return `ci_org_reports_${orgKey()}`; }
+    function masterStoreKey(){ return 'ci_master_reports_local'; }
+    function readStore(key, fallback=[]){ try { const arr = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(arr) ? arr : fallback; } catch(_) { return fallback; } }
+    function writeStore(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+    function getMasterReports(){ const localMaster = readStore(masterStoreKey(), []); const merged = [...MASTER_REPORTS_SEED]; localMaster.forEach(r => { const idx = merged.findIndex(x => x.id === r.id); if (idx >= 0) merged[idx] = r; else merged.push(r); }); return merged; }
+    function getOrgReports(){ return readStore(orgStoreKey(), []); }
+    function setOrgReports(rows){ writeStore(orgStoreKey(), rows); }
+    function setMasterReports(rows){ writeStore(masterStoreKey(), rows); }
+
+    function monthNameFromKey(key){ const [y,m] = String(key || '').split('-').map(Number); if (!y || !m) return key || '—'; return new Date(y, m-1, 1).toLocaleString('en-GB', { month:'long', year:'numeric' }); }
+    function shortPeriodFromKey(key){ const [y,m] = String(key || '').split('-').map(Number); if (!y || !m) return key || '—'; return new Date(y, m-1, 1).toLocaleString('en-GB', { month:'short', year:'numeric' }); }
+    function titleFor(r){ if (r.title) return r.title; return `${r.titlePrefix}: ${monthNameFromKey(r.monthKey)}`; }
+    function periodFor(r){ return r.periodLabel || shortPeriodFromKey(r.monthKey); }
     function riskClass(r){ const s = String(r||'').toLowerCase(); return s.startsWith('h') ? 'high' : s.startsWith('m') ? 'med' : 'low'; }
-    function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function esc(s){ return String(s ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])); }
+    function getActiveReports(){ return activeScope === 'master' ? getMasterReports() : getOrgReports(); }
 
     function hydrateMonths(){
-      const months = Array.from(new Set(REPORTS.map(r => monthNameFromKey(r.monthKey)).filter(Boolean)));
+      const all = [...getMasterReports(), ...getOrgReports()];
+      const months = Array.from(new Set(all.map(r => monthNameFromKey(r.monthKey)).filter(Boolean)));
       months.sort((a,b) => new Date(a) - new Date(b));
-      months.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m; opt.textContent = m; el.monthFilter.appendChild(opt);
-      });
+      el.monthFilter.innerHTML = '<option value="all">All Months</option>';
+      months.forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; el.monthFilter.appendChild(opt); });
     }
-
     function renderStats(){
-      const published = REPORTS.filter(r => /published/i.test(r.status)).length;
-      const drafts = REPORTS.filter(r => /draft/i.test(r.status)).length;
-      const withFiles = REPORTS.filter(r => r.file).length;
-      el.quickStats.innerHTML = `
-        <div class="stat-pill"><strong>${REPORTS.length}</strong> reports tracked</div>
+      const master = getMasterReports(), org = getOrgReports(), all = [...master, ...org];
+      const published = all.filter(r => /published/i.test(r.status)).length;
+      const drafts = all.filter(r => /draft/i.test(r.status)).length;
+      const withFiles = all.filter(r => r.file).length;
+      el.quickStats.innerHTML = `<div class="stat-pill"><strong>${master.length}</strong> master reports</div>
+        <div class="stat-pill"><strong>${org.length}</strong> org reports</div>
         <div class="stat-pill"><strong>${published}</strong> published</div>
         <div class="stat-pill"><strong>${drafts}</strong> drafts</div>
         <div class="stat-pill"><strong>${withFiles}</strong> files wired</div>`;
     }
-
+    function renderScopeTabs(){
+      if (!el.libraryTabs) return;
+      el.libraryTabs.querySelectorAll('[data-scope]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.scope === activeScope);
+        btn.onclick = () => { activeScope = btn.dataset.scope; renderScopeTabs(); renderTable(); };
+      });
+      if (el.libraryScopeNote){
+        el.libraryScopeNote.textContent = activeScope === 'master'
+          ? 'Shared baseline reports curated by CityIntel. Use these as the starting point for org-specific tailoring.'
+          : `${orgName()} private drafts and published variants. These do not overwrite the CityIntel baseline.`;
+      }
+    }
     function getFilteredReports(){
-      const type = el.typeFilter.value;
-      const month = el.monthFilter.value;
-      const q = (el.keywordFilter.value || '').trim().toLowerCase();
-      return REPORTS.filter(r => {
+      const type = el.typeFilter.value, month = el.monthFilter.value, q = (el.keywordFilter.value || '').trim().toLowerCase();
+      return getActiveReports().filter(r => {
         if (type !== 'all' && r.type !== type) return false;
         if (month !== 'all' && monthNameFromKey(r.monthKey) !== month) return false;
         if (!q) return true;
-        const hay = [titleFor(r), periodFor(r), r.type, r.status, r.risk, r.notes, ...(r.keywords || [])].join(' ').toLowerCase();
+        const hay = [titleFor(r), periodFor(r), r.type, r.status, r.risk, r.notes, r.regionFilter || '', ...(r.keywords || [])].join(' ').toLowerCase();
         return hay.includes(q);
       });
     }
-
+    function downloadText(filename, text, mime='text/plain'){
+      const blob = new Blob([text], {type: mime + ';charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
     function renderTable(){
       const rows = getFilteredReports();
-      if (!rows.length){
-        el.tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No reports match the current filters.</div></td></tr>`;
-        return;
-      }
+      if (!rows.length){ el.tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No reports match the current filters.</div></td></tr>`; return; }
       el.tbody.innerHTML = rows.map(r => {
         const title = titleFor(r);
-        const fileActions = r.file
-          ? `<a class="btn" href="${encodeURI(r.file)}" target="_blank" rel="noopener">View</a>
-             <a class="btn" href="${encodeURI(r.file)}" download>Download</a>`
-          : `<button class="btn" data-open-draft="${r.id}">View</button>
-             <button class="btn" data-open-draft="${r.id}">Download</button>`;
-        return `
-          <tr>
-            <td>
-              <div class="report-title">${esc(title)}</div>
-              <div class="report-meta">${esc(r.notes || 'No notes yet.')}</div>
-            </td>
-            <td>${esc(periodFor(r))}</td>
-            <td>${esc(r.type)}</td>
-            <td><span class="tag">${esc(r.status)}</span></td>
-            <td><span class="tag ${riskClass(r.risk)}">${esc(r.risk)}</span></td>
-            <td style="text-align:right"><div class="row" style="justify-content:flex-end">${fileActions}</div></td>
-          </tr>`;
+        let fileActions = '';
+        if (r.file){
+          fileActions = `<a class="btn" href="${encodeURI(r.file)}" target="_blank" rel="noopener">View</a> <a class="btn" href="${encodeURI(r.file)}" download>Download</a>`;
+        } else {
+          fileActions = `<button class="btn" data-open-draft="${r.id}">View</button> ${r.savedHtml ? `<button class="btn" data-download-draft="${r.id}">Download</button>` : `<button class="btn ghost" disabled>Download</button>`}`;
+        }
+        return `<tr><td><div class="report-title">${esc(title)}</div><div class="report-meta">${esc(r.notes || 'No notes yet.')}</div></td><td>${esc(periodFor(r))}</td><td>${esc(r.type)}</td><td><span class="tag">${esc(r.status)}</span></td><td><span class="tag ${riskClass(r.risk)}">${esc(r.risk)}</span></td><td style="text-align:right"><div class="row" style="justify-content:flex-end">${fileActions}</div></td></tr>`;
       }).join('');
-
-      el.tbody.querySelectorAll('[data-open-draft]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const report = REPORTS.find(r => r.id === btn.dataset.openDraft);
-          if (!report) return;
-          const buildType = report.type === 'Monthly Preview' ? 'preview' : report.type === 'Monthly Review' ? 'review' : 'weekly';
-          buildDraft(buildType, report.monthKey);
-          el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
-        });
-      });
+      el.tbody.querySelectorAll('[data-open-draft]').forEach(btn => btn.addEventListener('click', () => {
+        const report = getActiveReports().find(r => r.id === btn.dataset.openDraft) || getMasterReports().find(r => r.id === btn.dataset.openDraft) || getOrgReports().find(r => r.id === btn.dataset.openDraft);
+        if (!report) return;
+        const buildType = report.buildType || (report.type === 'Monthly Preview' ? 'preview' : report.type === 'Monthly Review' ? 'review' : 'weekly');
+        buildDraft(buildType, report.monthKey, report.regionFilter || '');
+        el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
+      }));
+      el.tbody.querySelectorAll('[data-download-draft]').forEach(btn => btn.addEventListener('click', () => {
+        const report = getActiveReports().find(r => r.id === btn.dataset.downloadDraft); if (!report || !report.savedHtml) return;
+        const filename = `${titleFor(report).replace(/[^\w.-]+/g,'_')}.html`; downloadText(filename, report.savedHtml, 'text/html');
+      }));
     }
 
     function normalizeAlerts(){
@@ -543,293 +548,96 @@
         const when = new Date(a.time || a.when || Date.now());
         const riskRaw = String(a.risk || '').toLowerCase();
         const risk = riskRaw.includes('high') ? 'High' : riskRaw.includes('med') ? 'Medium' : riskRaw.includes('low') ? 'Low' : 'Medium';
-        return {
-          id: idx + 1,
-          title: a.title || 'Untitled',
-          city: a.city || '', country: a.country || '', continent: a.continent || '',
-          source: a.source || '', summary: a.summary || '',
-          when, monthKey: `${when.getFullYear()}-${String(when.getMonth()+1).padStart(2,'0')}`,
-          risk, riskClass: riskClass(risk)
-        };
+        return { id: idx + 1, title: a.title || 'Untitled', city: a.city || '', country: a.country || '', continent: a.continent || '', source: a.source || '', summary: a.summary || '', when, monthKey: `${when.getFullYear()}-${String(when.getMonth()+1).padStart(2,'0')}`, risk, riskClass: riskClass(risk) };
       }).filter(a => !isNaN(a.when.getTime()));
     }
-
     function summarizeThemes(events){
-      const buckets = [
-        ['Palestine / Gaza', /(palestin|gaza|ceasefire|israel)/i],
-        ['Labour / Employment', /(strike|union|labour|workers|wage|employment)/i],
-        ['Far-right / Counter-mobilisation', /(far-right|fascism|racism|nationalist|anti-racism)/i],
-        ['Political opposition / democracy', /(election|democracy|president|opposition|political)/i],
-        ['Environmental / local campaigning', /(climate|fishing|animal|housing|nuclear)/i]
-      ];
-      return buckets.map(([label, rx]) => ({ label, count: events.filter(e => rx.test(`${e.title} ${e.summary}`)).length }))
-        .filter(x => x.count > 0)
-        .sort((a,b) => b.count - a.count)
-        .slice(0,5);
+      const buckets = [['Palestine / Gaza', /(palestin|gaza|ceasefire|israel)/i], ['Labour / Employment', /(strike|union|labour|workers|wage|employment)/i], ['Far-right / Counter-mobilisation', /(far-right|fascism|racism|nationalist|anti-racism)/i], ['Political opposition / democracy', /(election|democracy|president|opposition|political)/i], ['Environmental / local campaigning', /(climate|fishing|animal|housing|nuclear)/i]];
+      return buckets.map(([label, rx]) => ({ label, count: events.filter(e => rx.test(`${e.title} ${e.summary}`)).length })).filter(x => x.count > 0).sort((a,b) => b.count - a.count).slice(0,5);
     }
-
-    function groupBy(items, keyFn){
-      const m = new Map();
-      items.forEach(item => {
-        const k = keyFn(item);
-        m.set(k, [...(m.get(k) || []), item]);
-      });
-      return m;
-    }
-
-    function topEvents(events, limit=6){
-      return [...events].sort((a,b) => {
-        const score = { High:3, Medium:2, Low:1 };
-        const diff = (score[b.risk] || 0) - (score[a.risk] || 0);
-        if (diff) return diff;
-        return a.when - b.when;
-      }).slice(0, limit);
-    }
-
-    function eventCard(e){
-      return `<div class="event-card">
-        <div class="row" style="justify-content:space-between;align-items:flex-start">
-          <div class="title">${esc(e.title)}</div>
-          <span class="pill ${e.riskClass}">${esc(e.risk)}</span>
-        </div>
-        <div class="meta">${esc(e.city || '—')}${e.country ? ', ' + esc(e.country) : ''} · ${esc(e.when.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }))}</div>
-        <div class="sum">${esc(e.summary || 'No summary provided.')}</div>
-      </div>`;
-    }
-
-    
-    function dateKey(d){
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-    function summarizeRegionalRisk(events){
-      const counts = {High:0, Medium:0, Low:0};
-      events.forEach(e => counts[e.risk] = (counts[e.risk] || 0) + 1);
-      return `${counts.High || 0} high · ${counts.Medium || 0} medium · ${counts.Low || 0} low`;
-    }
-    function buildRiskLink(region){
-      return `risk-detail.html?region=${encodeURIComponent(region)}`;
-    }
+    function groupBy(items, keyFn){ const m = new Map(); items.forEach(item => { const k = keyFn(item); m.set(k, [...(m.get(k) || []), item]); }); return m; }
+    function topEvents(events, limit=6){ return [...events].sort((a,b) => { const score = { High:3, Medium:2, Low:1 }; const diff = (score[b.risk] || 0) - (score[a.risk] || 0); if (diff) return diff; return a.when - b.when; }).slice(0, limit); }
+    function eventCard(e){ return `<div class="event-card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div class="title">${esc(e.title)}</div><span class="pill ${e.riskClass}">${esc(e.risk)}</span></div><div class="meta">${esc(e.city || '—')}${e.country ? ', ' + esc(e.country) : ''} · ${esc(e.when.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }))}</div><div class="sum">${esc(e.summary || 'No summary provided.')}</div></div>`; }
+    function dateKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function summarizeRegionalRisk(events){ const counts = {High:0, Medium:0, Low:0}; events.forEach(e => counts[e.risk] = (counts[e.risk] || 0) + 1); return `${counts.High || 0} high · ${counts.Medium || 0} medium · ${counts.Low || 0} low`; }
+    function buildRiskLink(region){ return `risk-detail.html?region=${encodeURIComponent(region)}`; }
     function renderRegionPanel(regional, type, focusMonthKey, regionFilter=''){
       if (regionFilter){
         const items = (regional.find(([name]) => name === regionFilter) || [regionFilter, []])[1];
         const cities = topCitiesList(items, 3);
         const focusClass = riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low');
         const focusText = items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus';
-        el.regionPanel.innerHTML = `
-          <div class="region-row">
-            <div class="head">
-              <div>
-                <div class="name">${esc(regionFilter)}</div>
-                <div class="meta">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div>
-              </div>
-              <span class="pill ${focusClass}">${focusText}</span>
-            </div>
-            ${cities.length ? `<div class="subtle" style="margin:10px 0 8px">Top cities: ${cities.map(c => `${esc(c.city)}${c.country ? ', ' + esc(c.country) : ''} (${c.count})`).join(' · ')}</div>` : '<div class="subtle" style="margin:10px 0 8px">No city concentration available for this region.</div>'}
-            <div class="actions">
-              <button class="btn" data-back-full="1">Back to full draft</button>
-              <a class="btn ghost" href="${buildRiskLink(regionFilter)}">Open Risk Detail</a>
-            </div>
-          </div>`;
-        const back = el.regionPanel.querySelector('[data-back-full]');
-        if (back) back.addEventListener('click', () => buildDraft(type, focusMonthKey, ''));
-        return;
+        el.regionPanel.innerHTML = `<div class="region-row"><div class="head"><div><div class="name">${esc(regionFilter)}</div><div class="meta">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div></div><span class="pill ${focusClass}">${focusText}</span></div>${cities.length ? `<div class="subtle" style="margin:10px 0 8px">Top cities: ${cities.map(c => `${esc(c.city)}${c.country ? ', ' + esc(c.country) : ''} (${c.count})`).join(' · ')}</div>` : '<div class="subtle" style="margin:10px 0 8px">No city concentration available for this region.</div>'}<div class="actions"><button class="btn" data-back-full="1">Back to full draft</button><a class="btn ghost" href="${buildRiskLink(regionFilter)}">Open Risk Detail</a></div></div>`;
+        const back = el.regionPanel.querySelector('[data-back-full]'); if (back) back.addEventListener('click', () => buildDraft(type, focusMonthKey, '')); return;
       }
-
-      el.regionPanel.innerHTML = regional.length
-        ? regional.map(([region, items]) => `
-            <div class="region-row">
-              <div class="head">
-                <div>
-                  <div class="name">${esc(region)}</div>
-                  <div class="meta">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div>
-                </div>
-                <span class="pill ${riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus'}</span>
-              </div>
-              <div class="actions">
-                <button class="btn" data-open-region="${esc(region)}">View regional draft</button>
-                <a class="btn ghost" href="${buildRiskLink(region)}">Open Risk Detail</a>
-              </div>
-            </div>`).join('')
-        : '<div class="subtle">No region intelligence available for this selection.</div>';
-
-      el.regionPanel.querySelectorAll('[data-open-region]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          buildDraft(type, focusMonthKey, btn.dataset.openRegion);
-        });
-      });
+      el.regionPanel.innerHTML = regional.length ? regional.map(([region, items]) => `<div class="region-row"><div class="head"><div><div class="name">${esc(region)}</div><div class="meta">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div></div><span class="pill ${riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus'}</span></div><div class="actions"><button class="btn" data-open-region="${esc(region)}">View regional draft</button><a class="btn ghost" href="${buildRiskLink(region)}">Open Risk Detail</a></div></div>`).join('') : '<div class="subtle">No region intelligence available for this selection.</div>';
+      el.regionPanel.querySelectorAll('[data-open-region]').forEach(btn => btn.addEventListener('click', () => buildDraft(type, focusMonthKey, btn.dataset.openRegion)));
     }
-    function strongestCluster(events){
-      const grouped = [...groupBy(events, e => dateKey(e.when)).entries()].sort((a,b) => b[1].length - a[1].length);
-      return grouped[0] || null;
-    }
-    function topLocation(events){
-      const grouped = [...groupBy(events.filter(e => e.city), e => `${e.city}|${e.country || ''}`).entries()].sort((a,b) => b[1].length - a[1].length);
-      if (!grouped.length) return null;
-      const [key, vals] = grouped[0];
-      const [city, country] = key.split('|');
-      return { city, country, count: vals.length };
-    }
-    function topCitiesList(events, limit=3){
-      return [...groupBy(events.filter(e => e.city), e => `${e.city}|${e.country || ''}`).entries()]
-        .sort((a,b) => b[1].length - a[1].length)
-        .slice(0, limit)
-        .map(([key, vals]) => {
-          const [city, country] = key.split('|');
-          return { city, country, count: vals.length };
-        });
-    }
+    function strongestCluster(events){ const grouped = [...groupBy(events, e => dateKey(e.when)).entries()].sort((a,b) => b[1].length - a[1].length); return grouped[0] || null; }
+    function topLocation(events){ const grouped = [...groupBy(events.filter(e => e.city), e => `${e.city}|${e.country || ''}`).entries()].sort((a,b) => b[1].length - a[1].length); if (!grouped.length) return null; const [key, vals] = grouped[0]; const [city, country] = key.split('|'); return { city, country, count: vals.length }; }
+    function topCitiesList(events, limit=3){ return [...groupBy(events.filter(e => e.city), e => `${e.city}|${e.country || ''}`).entries()].sort((a,b) => b[1].length - a[1].length).slice(0, limit).map(([key, vals]) => { const [city, country] = key.split('|'); return { city, country, count: vals.length }; }); }
     function summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter=''){
-      if (!events.length){
-        return `No events currently fall inside <strong>${esc(regionFilter || focusLabel)}</strong>. This can still be used as a shell for an analyst-led report, but the underlying alert dataset is sparse for this window.`;
-      }
-      const riskCounts = {High:0, Medium:0, Low:0};
-      events.forEach(e => riskCounts[e.risk] = (riskCounts[e.risk] || 0) + 1);
-      const highPct = ((riskCounts.High || 0) / events.length * 100).toFixed(1);
-      const mainRegion = regional[0] ? `${regional[0][0]} (${regional[0][1].length})` : 'no dominant region';
-      const mainTheme = themes[0] ? `${themes[0].label} (${themes[0].count})` : 'no dominant theme';
-      const mainLoc = topLocation(events);
-      const cluster = strongestCluster(events);
-      const weeklyLabel = type === 'weekly' ? 'the current weekly window' : focusLabel;
+      if (!events.length){ return `No events currently fall inside <strong>${esc(regionFilter || focusLabel)}</strong>. This can still be used as a shell for an analyst-led report, but the underlying alert dataset is sparse for this window.`; }
+      const riskCounts = {High:0, Medium:0, Low:0}; events.forEach(e => riskCounts[e.risk] = (riskCounts[e.risk] || 0) + 1);
+      const highPct = ((riskCounts.High || 0) / events.length * 100).toFixed(1), mainRegion = regional[0] ? `${regional[0][0]} (${regional[0][1].length})` : 'no dominant region', mainTheme = themes[0] ? `${themes[0].label} (${themes[0].count})` : 'no dominant theme', mainLoc = topLocation(events), cluster = strongestCluster(events), weeklyLabel = type === 'weekly' ? 'the current weekly window' : focusLabel;
       let p1 = `This draft captures <strong>${events.length}</strong> protest-related or disruption-relevant events in <strong>${esc(weeklyLabel)}</strong>${regionFilter ? `, filtered to <strong>${esc(regionFilter)}</strong>` : ''}. <strong>${riskCounts.High || 0}</strong> items are currently assessed as high risk (${highPct}% of the selected dataset), with the strongest concentration in <strong>${esc(mainRegion)}</strong>.`;
       let p2 = `The dominant narrative cluster is <strong>${esc(mainTheme)}</strong>, suggesting that mobilisation energy is being driven by a recurring issue set rather than isolated single-event activism.`;
-      let p3 = mainLoc
-        ? `The busiest city-level concentration sits in <strong>${esc(mainLoc.city)}${mainLoc.country ? ', ' + esc(mainLoc.country) : ''}</strong>, where <strong>${mainLoc.count}</strong> in-scope items appear in the current window.`
-        : `City-level concentration is limited in the current selection, indicating a more geographically dispersed pattern.`;
-      if (cluster && cluster[1].length > 1){
-        const when = new Date(cluster[0]).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-        p3 += ` The densest single-day cluster falls on <strong>${esc(when)}</strong> with <strong>${cluster[1].length}</strong> items, which may indicate front-loaded disruption pressure.`;
-      }
+      let p3 = mainLoc ? `The busiest city-level concentration sits in <strong>${esc(mainLoc.city)}${mainLoc.country ? ', ' + esc(mainLoc.country) : ''}</strong>, where <strong>${mainLoc.count}</strong> in-scope items appear in the current window.` : `City-level concentration is limited in the current selection, indicating a more geographically dispersed pattern.`;
+      if (cluster && cluster[1].length > 1){ const when = new Date(cluster[0]).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); p3 += ` The densest single-day cluster falls on <strong>${esc(when)}</strong> with <strong>${cluster[1].length}</strong> items, which may indicate front-loaded disruption pressure.`; }
       return `${p1}<br><br>${p2}<br><br>${p3}`;
     }
-
     function buildDraft(type, forcedMonthKey='', regionFilter=''){
-      const alerts = normalizeAlerts();
-      const now = new Date();
-      let focusMonthKey = forcedMonthKey;
-
-      if (!focusMonthKey){
-        if (type === 'preview') {
-          const d = new Date(now.getFullYear(), now.getMonth()+1, 1);
-          focusMonthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-        } else {
-          focusMonthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-        }
-      }
-
-      let events = [];
-      let title = '';
-      let subtitle = '';
-      let badges = [];
-      let focusLabel = monthNameFromKey(focusMonthKey);
-
-      if (type === 'preview'){
-        events = alerts.filter(a => a.monthKey === focusMonthKey && a.when >= new Date());
-        title = `Draft Builder — Protest Preview: ${monthNameFromKey(focusMonthKey)}`;
-        subtitle = 'Upcoming events auto-grouped from alerts-data.js. Use this draft to shape the monthly outlook before producing the final PDF.';
-        badges = [{text:'Monthly Preview'},{text:monthNameFromKey(focusMonthKey)},{text:`${events.length} events`}];
-      } else if (type === 'review'){
-        events = alerts.filter(a => a.monthKey === focusMonthKey);
-        title = `Draft Builder — Protest Review: ${monthNameFromKey(focusMonthKey)}`;
-        subtitle = 'Month-end review framework. This is best used as a structured starting point before analyst commentary and contradictions are added.';
-        badges = [{text:'Monthly Review'},{text:monthNameFromKey(focusMonthKey)},{text:`${events.length} events`}];
-      } else {
-        const start = new Date(now); start.setDate(start.getDate() - start.getDay() + 1);
-        const end = new Date(start); end.setDate(start.getDate() + 7);
-        events = alerts.filter(a => a.when >= start && a.when < end);
-        title = `Draft Builder — Weekly Update`;
-        subtitle = `Operational weekly snapshot for ${start.toLocaleDateString('en-GB')} to ${new Date(end.getTime()-1).toLocaleDateString('en-GB')}.`;
-        badges = [{text:'Weekly Update'},{text:`${events.length} events`}];
-        focusLabel = 'Weekly window';
-      }
-
-      if (regionFilter){
-        events = events.filter(a => (a.country || a.continent || 'Unknown') === regionFilter);
-        title += ` — ${regionFilter}`;
-        subtitle = `Regional draft mode for ${regionFilter}. This view narrows the selected ${type === 'weekly' ? 'weekly window' : 'report window'} to a single country / region.`;
-        badges.push({text:regionFilter});
-      }
-
-      const themes = summarizeThemes(events);
-      const regional = [...groupBy(events, e => e.country || e.continent || 'Unknown').entries()].sort((a,b) => b[1].length - a[1].length).slice(0,6);
-      const riskCounts = {High:0, Medium:0, Low:0};
+      const alerts = normalizeAlerts(), now = new Date(); let focusMonthKey = forcedMonthKey;
+      if (!focusMonthKey){ if (type === 'preview'){ const d = new Date(now.getFullYear(), now.getMonth()+1, 1); focusMonthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } else { focusMonthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; } }
+      let events = [], title = '', subtitle = '', badges = [], focusLabel = monthNameFromKey(focusMonthKey);
+      if (type === 'preview'){ events = alerts.filter(a => a.monthKey === focusMonthKey && a.when >= new Date()); title = `Draft Builder — Protest Preview: ${monthNameFromKey(focusMonthKey)}`; subtitle = 'Upcoming events auto-grouped from alerts-data.js. Use this draft to shape the monthly outlook before producing the final PDF.'; badges = [{text:'Monthly Preview'},{text:monthNameFromKey(focusMonthKey)},{text:`${events.length} events`}]; }
+      else if (type === 'review'){ events = alerts.filter(a => a.monthKey === focusMonthKey); title = `Draft Builder — Protest Review: ${monthNameFromKey(focusMonthKey)}`; subtitle = 'Month-end review framework. This is best used as a structured starting point before analyst commentary and contradictions are added.'; badges = [{text:'Monthly Review'},{text:monthNameFromKey(focusMonthKey)},{text:`${events.length} events`}]; }
+      else { const start = new Date(now); start.setDate(start.getDate() - start.getDay() + 1); const end = new Date(start); end.setDate(start.getDate() + 7); events = alerts.filter(a => a.when >= start && a.when < end); title = `Draft Builder — Weekly Update`; subtitle = `Operational weekly snapshot for ${start.toLocaleDateString('en-GB')} to ${new Date(end.getTime()-1).toLocaleDateString('en-GB')}.`; badges = [{text:'Weekly Update'},{text:`${events.length} events`}]; focusLabel = 'Weekly window'; }
+      if (regionFilter){ events = events.filter(a => (a.country || a.continent || 'Unknown') === regionFilter); title += ` — ${regionFilter}`; subtitle = `Regional draft mode for ${regionFilter}. This view narrows the selected ${type === 'weekly' ? 'weekly window' : 'report window'} to a single country / region.`; badges.push({text:regionFilter}); }
+      const themes = summarizeThemes(events), regional = [...groupBy(events, e => e.country || e.continent || 'Unknown').entries()].sort((a,b) => b[1].length - a[1].length).slice(0,6), riskCounts = {High:0, Medium:0, Low:0};
       events.forEach(e => riskCounts[e.risk] = (riskCounts[e.risk] || 0) + 1);
       const highlight = topEvents(events, type === 'weekly' ? 5 : 6);
-      const recommendationText = type === 'preview'
-        ? 'Prioritise travel disruption hotspots, client location proximity, and high-attendance protest days. Maintain a shortlist of events likely to create secondary congestion or policing posture changes.'
-        : type === 'review'
-        ? 'Capture where actual turnout, route changes, policing posture, or spillover diverged from expectations, then refine future preview assumptions from those learnings.'
-        : 'Keep distribution short, practical, and focused on what clients need to know this week rather than broad context.';
-      const countryCount = new Set(events.map(e => e.country || e.continent).filter(Boolean)).size;
-
-      el.draftShell.classList.add('active');
-      el.draftTitle.textContent = title;
-      el.draftSubtitle.textContent = subtitle;
-      el.regionPanelIntro.textContent = regionFilter
-        ? `You are viewing a focused draft for ${regionFilter}. Use Open Risk Detail for a separate dashboard view or return to the broader report by rebuilding from the card buttons below.`
-        : 'Use this panel to open a country / region-specific draft or jump to Risk Detail for a separate dashboard view.';
+      const recommendationText = type === 'preview' ? 'Prioritise travel disruption hotspots, client location proximity, and high-attendance protest days. Maintain a shortlist of events likely to create secondary congestion or policing posture changes.' : type === 'review' ? 'Capture where actual turnout, route changes, policing posture, or spillover diverged from expectations, then refine future preview assumptions from those learnings.' : 'Keep distribution short, practical, and focused on what clients need to know this week rather than broad context.';
+      const countryCount = new Set(events.map(e => e.country || e.continent).filter(Boolean)).size, dominantRisk = riskCounts.High ? 'High' : riskCounts.Medium ? 'Medium' : 'Low';
+      el.draftShell.classList.add('active'); el.draftTitle.textContent = title; el.draftSubtitle.textContent = subtitle;
+      el.regionPanelIntro.textContent = regionFilter ? `You are viewing a focused draft for ${regionFilter}. Use Open Risk Detail for a separate dashboard view or return to the broader report by rebuilding from the card buttons below.` : 'Use this panel to open a country / region-specific draft or jump to Risk Detail for a separate dashboard view.';
       el.draftBadges.innerHTML = badges.map(b => `<span class="pill">${esc(b.text)}</span>`).join('');
       renderRegionPanel(regional, type, focusMonthKey, regionFilter);
-
-      el.draftBody.innerHTML = `
-        <div class="mini-grid">
-          <div class="mini-card"><div class="k">Events in scope</div><div class="v">${events.length}</div></div>
-          <div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div>
-          <div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${countryCount}</div></div>
-        </div>
-
-        <div class="section">
-          <h3>Executive Summary (draft)</h3>
-          <div>${summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter)}</div>
-        </div>
-
-        <div class="section">
-          <h3>High Focus Events</h3>
-          <div class="list-tight">${highlight.length ? highlight.map(eventCard).join('') : '<div class="subtle">No events available for this time window.</div>'}</div>
-        </div>
-        <div class="section">
-          <h3>Risk Themes</h3>
-          ${themes.length ? `<ul>${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="subtle">No recurring themes detected from the current event set.</div>'}
-        </div>
-
-        <div class="section">
-          <h3>Operational Recommendations (draft)</h3>
-          <ul>
-            <li>${recommendationText}</li>
-            <li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li>
-            <li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li>
-          </ul>
-        </div>`;
+      el.draftBody.innerHTML = `<div class="mini-grid"><div class="mini-card"><div class="k">Events in scope</div><div class="v">${events.length}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div><div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${countryCount}</div></div></div><div class="section"><h3>Executive Summary (draft)</h3><div>${summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter)}</div></div><div class="section"><h3>High Focus Events</h3><div class="list-tight">${highlight.length ? highlight.map(eventCard).join('') : '<div class="subtle">No events available for this time window.</div>'}</div></div><div class="section"><h3>Risk Themes</h3>${themes.length ? `<ul>${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="subtle">No recurring themes detected from the current event set.</div>'}</div><div class="section"><h3>Operational Recommendations (draft)</h3><ul><li>${recommendationText}</li><li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li><li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li></ul></div>`;
+      currentDraftState = { buildType: type, monthKey: focusMonthKey, regionFilter: regionFilter || '', title, typeLabel: type === 'preview' ? 'Monthly Preview' : type === 'review' ? 'Monthly Review' : 'Weekly Update', periodLabel: type === 'weekly' ? focusLabel : shortPeriodFromKey(focusMonthKey), subtitle, risk: dominantRisk, notes: regionFilter ? `Regional working copy for ${regionFilter}. Saved from the CityIntel baseline draft.` : `Saved from builder for ${type === 'preview' ? 'upcoming outlook' : type === 'review' ? 'monthly review' : 'weekly operational update'}.`, keywords: [type, focusMonthKey, regionFilter].filter(Boolean), savedHtml: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font:14px/1.6 system-ui,Segoe UI,Arial,sans-serif;margin:32px;color:#111}h1,h2,h3{margin:0 0 10px}.muted{color:#555}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:0 0 14px}.pill{display:inline-block;padding:4px 8px;border:1px solid #bbb;border-radius:999px;font-size:12px;margin-right:6px}.high{color:#b00020}.med{color:#9a6a00}.low{color:#006b4f}</style></head><body><h1>${esc(title)}</h1><p class="muted">${esc(subtitle)}</p>${el.draftBody.innerHTML}</body></html>` };
+      el.saveOrgDraftBtn.disabled = false; el.publishOrgBtn.disabled = false; el.saveMasterBtn.style.display = isAdmin() ? '' : 'none';
       el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
     }
-    hydrateMonths();
-    renderStats();
-    renderTable();
-
+    function draftIdFor(scope, d){ const scopeKey = scope === 'master' ? 'master' : `org-${orgKey()}`; return [scopeKey, d.buildType, d.monthKey, d.regionFilter || 'all'].join('__').replace(/[^\w.-]+/g,'_'); }
+    function upsertReport(scope, status){
+      if (!currentDraftState){ alert('Open a draft first, then save it to the library.'); return; }
+      if (scope === 'master' && !isAdmin()){ alert('Only CityIntel admin should save to the master library.'); return; }
+      const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage is browser-local in v5 pending backend persistence.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, savedHtml: currentDraftState.savedHtml, savedAt: new Date().toISOString(), scope };
+      if (scope === 'master'){ const rows = getMasterReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setMasterReports(rows); activeScope = 'master'; }
+      else { const rows = getOrgReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setOrgReports(rows); activeScope = 'org'; }
+      hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
+      alert(scope === 'master' ? `Saved to CityIntel Master (${status}). Note: v5 keeps master persistence browser-local until backend support is added.` : `Saved to ${orgName()} library (${status}). This does not overwrite the CityIntel baseline.`);
+    }
+    hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
     el.applyBtn.addEventListener('click', renderTable);
-    el.clearBtn.addEventListener('click', () => {
-      el.typeFilter.value = 'all'; el.monthFilter.value = 'all'; el.keywordFilter.value = ''; renderTable();
-    });
+    el.clearBtn.addEventListener('click', () => { el.typeFilter.value = 'all'; el.monthFilter.value = 'all'; el.keywordFilter.value = ''; renderTable(); });
     el.keywordFilter.addEventListener('keydown', e => { if (e.key === 'Enter') renderTable(); });
-
     document.querySelectorAll('[data-build]').forEach(btn => btn.addEventListener('click', () => buildDraft(btn.dataset.build)));
     document.querySelectorAll('[data-template]').forEach(btn => btn.addEventListener('click', () => {
       const type = btn.dataset.template;
-      const labels = {
-        preview:'Preview templates: Standard / Client Lite',
-        review:'Review templates: Standard / Executive',
-        weekly:'Weekly templates: Ops / Client Brief'
-      };
+      const labels = { preview:'Preview templates: Standard / Client Lite', review:'Review templates: Standard / Executive', weekly:'Weekly templates: Ops / Client Brief' };
       alert(labels[type] || 'Templates coming soon.');
     }));
-
-    function placeholderUpload(kind){
-      alert(`${kind} workflow not wired yet. For now, keep uploading finished files manually into the repo/CDN, then add or update the matching report metadata row here.`);
-    }
+    function placeholderUpload(kind){ alert(`${kind} workflow not wired yet. For now, keep uploading finished files manually into the repo/CDN, then add or update the matching report metadata row here.`); }
     el.uploadPdfBtn.addEventListener('click', () => placeholderUpload('PDF upload'));
     el.uploadPdfBtn2.addEventListener('click', () => placeholderUpload('PDF upload'));
     el.uploadDocxBtn.addEventListener('click', () => placeholderUpload('DOCX upload'));
     el.templatesBtn.addEventListener('click', () => alert('Template manager can be added next. Suggested set: Monthly Preview, Monthly Review, Weekly Update, Incident Brief.'));
     el.newReportBtn.addEventListener('click', () => buildDraft('preview'));
+    el.saveOrgDraftBtn.addEventListener('click', () => upsertReport('org', 'Draft'));
+    el.publishOrgBtn.addEventListener('click', () => upsertReport('org', 'Published'));
+    el.saveMasterBtn.addEventListener('click', () => upsertReport('master', 'Draft'));
+    if (!isAdmin()) el.saveMasterBtn.style.display = 'none';
   })();
   </script>
 </body>
