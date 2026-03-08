@@ -20,6 +20,105 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  {
+    title: "Feminist Occupation Zone & Protest",
+    city: "Nantes",
+    lat: 47.2173,
+    lng: -1.5606,
+    address: "Place Bretagne",
+    postcode: "44000",
+    country: "France",
+    continent: "Europe",
+    risk: "Low to Moderate (Localized Disruption)",
+    time: "2026-03-08T11:00:00",
+    source: "Ouest-France",
+    summary: "The Furi collective is organising a 'feminist occupation zone' with stands and speeches, followed by a march starting from Place Bretagne."
+  },
+  {
+    title: "Women's Rights Demonstration",
+    city: "Rennes",
+    lat: 48.1092,
+    lng: -1.6841,
+    address: "Mail François Mitterrand",
+    postcode: "35000",
+    country: "France",
+    continent: "Europe",
+    risk: "Low (Localized Crowds)",
+    time: "2026-03-08T11:00:00",
+    source: "Ouest-France / Local Reports",
+    summary: "Participants gather at Mail François Mitterrand for a morning rally to advocate for gender equality and denounce violence."
+  },
+  {
+    title: "Feminist Mobilisation Rally",
+    city: "Toulouse",
+    lat: 43.6085,
+    lng: 1.4485,
+    address: "42 Bd de Strasbourg (Metro Jeanne d’Arc)",
+    postcode: "31000",
+    country: "France",
+    continent: "Europe",
+    risk: "Low to Moderate (Transit Impact)",
+    time: "2026-03-08T11:00:00",
+    source: "Local News / Tisséo",
+    summary: "Protesters gather at the Jeanne d'Arc Metro station for a morning demonstration focused on women's rights and social justice."
+  },
+  {
+    title: "International Women's Day March",
+    city: "Lille",
+    lat: 50.6378,
+    lng: 3.0645,
+    address: "Opéra de Lille, Place du Théâtre",
+    postcode: "59800",
+    country: "France",
+    continent: "Europe",
+    risk: "Low (Crowded Area)",
+    time: "2026-03-08T14:00:00",
+    source: "Feminist Strike Coalition",
+    summary: "An afternoon march starting at the Opera House to mark International Women's Rights Day and demand systemic change."
+  },
+  {
+    title: "Feminist Strike & Demonstration",
+    city: "Lyon",
+    lat: 45.7461,
+    lng: 4.8436,
+    address: "Place Jean Macé",
+    postcode: "69007",
+    country: "France",
+    continent: "Europe",
+    risk: "Low to Moderate (Localized Traffic)",
+    time: "2026-03-08T14:30:00",
+    source: "Local Union Reports",
+    summary: "Demonstrators meet at Place Jean Macé for an afternoon rally and march as part of a nationwide feminist strike."
+  },
+  {
+    title: "Women's Rights Protest",
+    city: "Nice",
+    lat: 43.7046,
+    lng: 7.2618,
+    address: "Gare Thiers (Nice-Ville Station)",
+    postcode: "06000",
+    country: "France",
+    continent: "Europe",
+    risk: "Low (Localized Transit Impact)",
+    time: "2026-03-08T14:30:00",
+    source: "Local Reports",
+    summary: "A protest is scheduled outside the main train station (Gare Thiers) to denounce discrimination and violence against women."
+  },
+  {
+    title: "Main Feminist March Paris",
+    city: "Paris",
+    lat: 48.8837,
+    lng: 2.3662,
+    address: "Place de la Bataille de Stalingrad",
+    postcode: "75019",
+    country: "France",
+    continent: "Europe",
+    risk: "Moderate (Large Crowds)",
+    time: "2026-03-08T14:00:00",
+    source: "Sortiraparis",
+    summary: "The main Paris procession departs at 2:00 PM from Stalingrad toward Place de la République, following the 11:00 AM 'feminist village' setup."
+  },
+
    {
     title: "International Women's Day Protests: Nantes",
     city: "Nantes",
@@ -14827,6 +14926,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
