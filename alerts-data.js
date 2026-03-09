@@ -20,6 +20,21 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  {
+    title: "Tibetan National Uprising Day - 67th Anniversary",
+    city: "London",
+    lat: 51.5033,
+    lng: -0.1276,
+    address: "Whitehall (opposite 10 Downing Street) to Chinese Embassy",
+    postcode: "SW1A 2AS",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-03-10T10:00:00",
+    source: "https://freetibet.org",
+    summary: "Commemoration of the 67th Tibetan National Uprising Day. Includes a rally at Whitehall (10:30), a peace march (11:15), and a second gathering at the Chinese Embassy (12:15). Expected attendance includes activists, faith leaders, and parliamentarians. Moderate risk of localised transport disruption along the march route."
+  },
+
     {
     title: "Al Quds Day – Annual March and Rally",
     lat: 51.495868,
@@ -14953,6 +14968,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
