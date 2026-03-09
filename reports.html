@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
   <script src="auth.js">
@@ -123,6 +123,21 @@
     .section h3{margin:0 0 8px;font-size:15px}
     .section ul{margin:8px 0 0 18px;padding:0}
     .section li{margin-bottom:6px}
+    .delta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+    .delta-card{border:1px solid var(--gray-600);border-radius:12px;padding:12px;background:rgba(255,255,255,.02)}
+    .delta-card .k{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .delta-card .v{font-size:24px;font-weight:800;line-height:1.1}
+    .delta-card .s{font-size:12px;color:var(--muted);margin-top:4px}
+    .delta-card .s.up{color:var(--danger)}
+    .delta-card .s.down{color:var(--ok)}
+    .delta-card .s.flat{color:var(--muted)}
+    .delta-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--gray-600);font-size:12px;margin-bottom:10px}
+    .delta-chip.up{color:var(--danger);border-color:rgba(255,90,95,.45);background:rgba(255,90,95,.08)}
+    .delta-chip.down{color:var(--ok);border-color:rgba(51,196,141,.45);background:rgba(51,196,141,.08)}
+    .delta-chip.flat{color:var(--muted);background:rgba(255,255,255,.02)}
+    .delta-list{margin:8px 0 0 18px;padding:0}
+    .delta-list li{margin-bottom:6px}
+    .delta-subtle{font-size:12px;color:var(--muted)}
     .list-tight{display:grid;gap:8px}
     .event-card{border:1px solid var(--gray-600);border-radius:12px;padding:12px;background:rgba(0,0,0,.15)}
     .event-card .title{font-weight:700}
@@ -165,7 +180,7 @@
     @media (max-width: 1100px){
       .filters{grid-template-columns:1fr 1fr;}
       .draft-grid{grid-template-columns:1fr}
-      .mini-grid{grid-template-columns:1fr 1fr}
+      .mini-grid,.delta-grid{grid-template-columns:1fr 1fr}
     }
     @media (max-width: 900px){
       .builder .card{grid-column:span 12}
@@ -174,7 +189,7 @@
     }
     @media (max-width: 640px){
       .filters{grid-template-columns:1fr}
-      .mini-grid{grid-template-columns:1fr}
+      .mini-grid,.delta-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -970,6 +985,7 @@
       const themesHtml = state.themesHtml || '<div class="empty">No themes available.</div>';
       const regionalHtml = state.regionalHtml || '<div class="empty">No regional intelligence available.</div>';
       const recsHtml = state.recommendationsHtml || '<div class="empty">No recommendations available.</div>';
+      const deltaHtml = state.deltaHtml || '';
       const riskClass = state.riskClass || 'med';
       const riskLabel = state.risk || 'Medium';
       return `<!doctype html>
@@ -1050,6 +1066,7 @@
         <h2>Executive Summary</h2>
         <div class="summary">${summary}</div>
       </section>
+      ${deltaHtml ? `<section class="section"><h2>Change Detection</h2>${deltaHtml}</section>` : ``}
       <section class="section">
         <h2>High Focus Events</h2>
         <div class="cards">${eventsHtml}</div>
@@ -1124,6 +1141,64 @@
       if (cluster && cluster[1].length > 1){ const when = new Date(cluster[0]).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); p3 += ` The densest single-day cluster falls on <strong>${esc(when)}</strong> with <strong>${cluster[1].length}</strong> items, which may indicate front-loaded disruption pressure.`; }
       return `${p1}<br><br>${p2}<br><br>${p3}`;
     }
+    function eventSignature(e){ return [String(e.title || '').trim().toLowerCase(), String(e.city || '').trim().toLowerCase(), String(e.country || '').trim().toLowerCase(), dateKey(e.when)].join('|'); }
+    function buildCompareMeta(events, themes, regional, riskCounts, dominantRisk, focusLabel, type, monthKey, regionFilter=''){
+      return { buildType:type, monthKey:monthKey || '', focusLabel:focusLabel || '', regionFilter:regionFilter || '', eventsCount:events.length, highRiskCount:riskCounts.High || 0, countriesCount:new Set(events.map(e => e.country || e.continent || 'Unknown')).size, dominantRisk, themeLabels:themes.map(t => t.label), topRegions:regional.slice(0,3).map(([region, items]) => ({ region, count:items.length })), eventSignatures:events.slice(0,120).map(eventSignature) };
+    }
+    function scopeReports(scope){ return scope === 'org' ? getOrgReports() : getMasterReports(); }
+    function compareStamp(report){
+      const meta = report.compareMeta || {};
+      if ((report.buildType || report.type || '').toLowerCase().includes('weekly')) return Date.parse(report.savedAt || 0) || 0;
+      const key = meta.monthKey || report.monthKey || '';
+      const parts = String(key).split('-').map(Number);
+      if (parts[0] && parts[1]) return new Date(parts[0], parts[1]-1, 1).getTime();
+      return Date.parse(report.savedAt || 0) || 0;
+    }
+    function previousComparableReport(state, scope){
+      const reports = scopeReports(scope).filter(r => !r.archived && (String(r.buildType || '').toLowerCase() === String(state.buildType || '').toLowerCase()) && String(r.regionFilter || '') === String(state.regionFilter || ''));
+      if (!reports.length) return null;
+      const currentStamp = state.buildType === 'weekly' ? (Date.now() + 1) : compareStamp({ buildType: state.buildType, monthKey: state.monthKey, compareMeta: state.compareMeta });
+      const prior = reports.filter(r => compareStamp(r) < currentStamp).sort((a,b) => compareStamp(b) - compareStamp(a));
+      if (prior.length) return prior[0];
+      return reports.sort((a,b) => compareStamp(b) - compareStamp(a))[0] || null;
+    }
+    function deltaDirection(v){ return v > 0 ? 'up' : (v < 0 ? 'down' : 'flat'); }
+    function deltaLabel(v, noun){ return !Number.isFinite(v) || v === 0 ? `No change vs prior ${noun}` : `${v > 0 ? '+' : ''}${v} vs prior ${noun}`; }
+    function buildDeltaHtml(state, scope){
+      const prev = previousComparableReport(state, scope);
+      if (!prev) return { html:`<div class="delta-subtle">No prior comparable ${scope === 'org' ? orgName() : 'CityIntel Master'} report found yet. Save this draft and compare it against the next cycle to surface change detection automatically.</div>`, previousId:'', previousTitle:'', compareScope:scope };
+      const cur = state.compareMeta || {};
+      const pm = prev.compareMeta || {};
+      const prevEvents = Number(pm.eventsCount ?? (prev.metrics && prev.metrics.events) ?? 0);
+      const prevHigh = Number(pm.highRiskCount ?? (prev.metrics && prev.metrics.high) ?? 0);
+      const prevCountries = Number(pm.countriesCount ?? (prev.metrics && prev.metrics.countries) ?? 0);
+      const eventDelta = (cur.eventsCount || 0) - prevEvents;
+      const highDelta = (cur.highRiskCount || 0) - prevHigh;
+      const countryDelta = (cur.countriesCount || 0) - prevCountries;
+      const curThemeKeys = new Set((cur.themeLabels || []).map(s => String(s).toLowerCase()));
+      const prevThemeKeys = new Set((pm.themeLabels || []).map(s => String(s).toLowerCase()));
+      const newThemes = (cur.themeLabels || []).filter(s => !prevThemeKeys.has(String(s).toLowerCase()));
+      const droppedThemes = (pm.themeLabels || []).filter(s => !curThemeKeys.has(String(s).toLowerCase()));
+      const prevRegions = new Set((pm.topRegions || []).map(x => x.region));
+      const newRegions = (cur.topRegions || []).map(x => x.region).filter(r => !prevRegions.has(r));
+      const prevSigs = new Set(pm.eventSignatures || []);
+      const curSigs = new Set(cur.eventSignatures || []);
+      const newEventCount = [...curSigs].filter(s => !prevSigs.has(s)).length;
+      const droppedEventCount = [...prevSigs].filter(s => !curSigs.has(s)).length;
+      const riskOrder = { Low:1, Medium:2, High:3 };
+      const riskShift = (riskOrder[cur.dominantRisk] || 0) - (riskOrder[pm.dominantRisk || prev.risk] || 0);
+      const trajectory = riskShift > 0 ? { cls:'up', text:'Risk trajectory up' } : riskShift < 0 ? { cls:'down', text:'Risk trajectory down' } : { cls:'flat', text:'Risk trajectory stable' };
+      const bullets = [];
+      bullets.push(`${newEventCount > 0 ? `${newEventCount} newly surfaced event${newEventCount===1?'':'s'}` : 'No newly surfaced events'} compared with ${esc(titleFor(prev))}.`);
+      bullets.push(`${highDelta > 0 ? `High-risk exposure has increased by ${highDelta}.` : highDelta < 0 ? `High-risk exposure has reduced by ${Math.abs(highDelta)}.` : 'High-risk exposure is unchanged.'}`);
+      if (newThemes.length) bullets.push(`Emerging themes: ${newThemes.slice(0,3).map(esc).join(', ')}.`);
+      else if (droppedThemes.length) bullets.push(`Themes cooling or dropping out: ${droppedThemes.slice(0,3).map(esc).join(', ')}.`);
+      else bullets.push('Theme mix is broadly consistent with the last comparable cycle.');
+      if (newRegions.length) bullets.push(`Geographic spread has widened into ${newRegions.slice(0,3).map(esc).join(', ')}.`);
+      else if (countryDelta < 0) bullets.push('Geographic footprint has narrowed versus the last comparable cycle.');
+      const html = `<div class="delta-chip ${trajectory.cls}">${trajectory.text}</div><div class="delta-subtle" style="margin-bottom:10px">Compared with <strong>${esc(titleFor(prev))}</strong> · ${esc(periodFor(prev))} · ${scope === 'org' ? orgName() : 'CityIntel Master'}</div><div class="delta-grid"><div class="delta-card"><div class="k">Events in scope</div><div class="v">${cur.eventsCount || 0}</div><div class="s ${deltaDirection(eventDelta)}">${deltaLabel(eventDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">High risk</div><div class="v">${cur.highRiskCount || 0}</div><div class="s ${deltaDirection(highDelta)}">${deltaLabel(highDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">Countries / regions</div><div class="v">${cur.countriesCount || 0}</div><div class="s ${deltaDirection(countryDelta)}">${deltaLabel(countryDelta, 'cycle')}</div></div></div><ul class="delta-list">${bullets.map(b => `<li>${b}</li>`).join('')}<li>${droppedEventCount > 0 ? `${droppedEventCount} prior event${droppedEventCount===1?' has':'s have'} dropped out of the current draft window.` : 'No prior events have dropped out of the current draft window.'}</li></ul>`;
+      return { html, previousId: prev.id || '', previousTitle: titleFor(prev), compareScope: scope };
+    }
     function buildDraft(type, forcedMonthKey='', regionFilter=''){
       const alerts = normalizeAlerts(), now = new Date(); let focusMonthKey = forcedMonthKey;
       if (!focusMonthKey){ if (type === 'preview'){ const d = new Date(now.getFullYear(), now.getMonth()+1, 1); focusMonthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } else { focusMonthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; } }
@@ -1137,16 +1212,19 @@
       const highlight = topEvents(events, type === 'weekly' ? 5 : 6);
       const recommendationText = type === 'preview' ? 'Prioritise travel disruption hotspots, client location proximity, and high-attendance protest days. Maintain a shortlist of events likely to create secondary congestion or policing posture changes.' : type === 'review' ? 'Capture where actual turnout, route changes, policing posture, or spillover diverged from expectations, then refine future preview assumptions from those learnings.' : 'Keep distribution short, practical, and focused on what clients need to know this week rather than broad context.';
       const countryCount = new Set(events.map(e => e.country || e.continent).filter(Boolean)).size, dominantRisk = riskCounts.High ? 'High' : riskCounts.Medium ? 'Medium' : 'Low';
+      const summaryHtml = summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter);
+      const compareMeta = buildCompareMeta(events, themes, regional, riskCounts, dominantRisk, focusLabel, type, focusMonthKey, regionFilter);
+      const delta = buildDeltaHtml({ buildType:type, monthKey:focusMonthKey, regionFilter:regionFilter || '', compareMeta }, activeScope);
       el.draftShell.classList.add('active'); el.draftTitle.textContent = title; el.draftSubtitle.textContent = subtitle;
       el.regionPanelIntro.textContent = regionFilter ? `You are viewing a focused draft for ${regionFilter}. Use Open Risk Detail for a separate dashboard view or return to the broader report by rebuilding from the card buttons below.` : 'Use this panel to open a country / region-specific draft or jump to Risk Detail for a separate dashboard view.';
       el.draftBadges.innerHTML = badges.map(b => `<span class="pill">${esc(b.text)}</span>`).join('');
       renderRegionPanel(regional, type, focusMonthKey, regionFilter);
-      el.draftBody.innerHTML = `<div class="mini-grid"><div class="mini-card"><div class="k">Events in scope</div><div class="v">${events.length}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div><div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${countryCount}</div></div></div><div class="section"><h3>Executive Summary (draft)</h3><div>${summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter)}</div></div><div class="section"><h3>High Focus Events</h3><div class="list-tight">${highlight.length ? highlight.map(eventCard).join('') : '<div class="subtle">No events available for this time window.</div>'}</div></div><div class="section"><h3>Risk Themes</h3>${themes.length ? `<ul>${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="subtle">No recurring themes detected from the current event set.</div>'}</div><div class="section"><h3>Operational Recommendations (draft)</h3><ul><li>${recommendationText}</li><li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li><li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li></ul></div>`;
+      el.draftBody.innerHTML = `<div class="mini-grid"><div class="mini-card"><div class="k">Events in scope</div><div class="v">${events.length}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div><div class="mini-card"><div class="k">Countries / regions touched</div><div class="v">${countryCount}</div></div></div><div class="section"><h3>Executive Summary (draft)</h3><div>${summaryHtml}</div></div><div class="section"><h3>Change Detection</h3>${delta.html}</div><div class="section"><h3>High Focus Events</h3><div class="list-tight">${highlight.length ? highlight.map(eventCard).join('') : '<div class="subtle">No events available for this time window.</div>'}</div></div><div class="section"><h3>Risk Themes</h3>${themes.length ? `<ul>${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="subtle">No recurring themes detected from the current event set.</div>'}</div><div class="section"><h3>Operational Recommendations (draft)</h3><ul><li>${recommendationText}</li><li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li><li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li></ul></div>`;
       const exportTitle = title.replace(/^Draft Builder —\s*/,'');
       const themesHtml = themes.length ? `<ul class="theme-list">${themes.map(t => `<li><strong>${esc(t.label)}</strong> — ${t.count} reference${t.count===1?'':'s'} in the current dataset.</li>`).join('')}</ul>` : '<div class="muted">No recurring themes detected from the current event set.</div>';
       const recommendationsHtml = `<ul class="rec-list"><li>${recommendationText}</li><li>${regionFilter ? `Pressure-test likely disruption around ${esc(regionFilter)} transport nodes, civic centres, and client footprints rather than relying on broad national assumptions.` : 'Cross-check top events against client office locations, major transport interchanges, and event-day accommodation pressure points.'}</li><li>Before publication, rewrite this section with event-specific mitigations instead of generic language.</li></ul>`;
       const regionalHtml = regional.length ? regional.map(([region, items]) => `<div class="region-card"><div class="region-head"><div><strong>${esc(region)}</strong><div class="muted" style="margin-top:4px">${items.length} event${items.length===1?'':'s'} · ${esc(summarizeRegionalRisk(items))}</div></div><span class="pill ${riskClass(items.some(i => i.risk === 'High') ? 'High' : items.some(i => i.risk === 'Medium') ? 'Medium' : 'Low')}">${items.some(i => i.risk === 'High') ? 'High focus' : items.some(i => i.risk === 'Medium') ? 'Medium focus' : 'Low focus'}</span></div></div>`).join('') : '<div class="muted">No regional intelligence available for this selection.</div>';
-      currentDraftState = { buildType: type, monthKey: focusMonthKey, regionFilter: regionFilter || '', title, exportTitle, typeLabel: type === 'preview' ? 'Monthly Preview' : type === 'review' ? 'Monthly Review' : 'Weekly Update', periodLabel: type === 'weekly' ? focusLabel : shortPeriodFromKey(focusMonthKey), subtitle, risk: dominantRisk, riskClass: riskClass(dominantRisk), notes: regionFilter ? `Regional working copy for ${regionFilter}. Saved from the CityIntel baseline draft.` : `Saved from builder for ${type === 'preview' ? 'upcoming outlook' : type === 'review' ? 'monthly review' : 'weekly operational update'}.`, keywords: [type, focusMonthKey, regionFilter].filter(Boolean), metrics:{events:events.length, high:riskCounts.High || 0, countries:countryCount}, summaryHtml: summaryParagraphs(events, type, focusLabel, regional, themes, regionFilter), eventsHtml: highlight.length ? highlight.map(eventCard).join('') : '<div class="muted">No events available for this time window.</div>', themesHtml, regionalHtml, recommendationsHtml, exportFilename: `CityIntel_${slugify(exportTitle)}.html`, savedHtml: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font:14px/1.6 system-ui,Segoe UI,Arial,sans-serif;margin:32px;color:#111}h1,h2,h3{margin:0 0 10px}.muted{color:#555}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:0 0 14px}.pill{display:inline-block;padding:4px 8px;border:1px solid #bbb;border-radius:999px;font-size:12px;margin-right:6px}.high{color:#b00020}.med{color:#9a6a00}.low{color:#006b4f}</style></head><body><h1>${esc(title)}</h1><p class="muted">${esc(subtitle)}</p>${el.draftBody.innerHTML}</body></html>` };
+      currentDraftState = { buildType: type, monthKey: focusMonthKey, regionFilter: regionFilter || '', title, exportTitle, typeLabel: type === 'preview' ? 'Monthly Preview' : type === 'review' ? 'Monthly Review' : 'Weekly Update', periodLabel: type === 'weekly' ? focusLabel : shortPeriodFromKey(focusMonthKey), subtitle, risk: dominantRisk, riskClass: riskClass(dominantRisk), notes: regionFilter ? `Regional working copy for ${regionFilter}. Saved from the CityIntel baseline draft.` : `Saved from builder for ${type === 'preview' ? 'upcoming outlook' : type === 'review' ? 'monthly review' : 'weekly operational update'}.`, keywords: [type, focusMonthKey, regionFilter].filter(Boolean), metrics:{events:events.length, high:riskCounts.High || 0, countries:countryCount}, compareMeta, compareScope: delta.compareScope, comparePreviousId: delta.previousId, comparePreviousTitle: delta.previousTitle, summaryHtml, deltaHtml: delta.html, eventsHtml: highlight.length ? highlight.map(eventCard).join('') : '<div class="muted">No events available for this time window.</div>', themesHtml, regionalHtml, recommendationsHtml, exportFilename: `CityIntel_${slugify(exportTitle)}.html`, savedHtml: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font:14px/1.6 system-ui,Segoe UI,Arial,sans-serif;margin:32px;color:#111}h1,h2,h3{margin:0 0 10px}.muted{color:#555}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:0 0 14px}.pill{display:inline-block;padding:4px 8px;border:1px solid #bbb;border-radius:999px;font-size:12px;margin-right:6px}.high{color:#b00020}.med{color:#9a6a00}.low{color:#006b4f}</style></head><body><h1>${esc(title)}</h1><p class="muted">${esc(subtitle)}</p>${el.draftBody.innerHTML}</body></html>` };
       currentDraftState.brandedHtml = buildBrandedReportHtml(currentDraftState);
       el.saveOrgDraftBtn.disabled = false; el.publishOrgBtn.disabled = false; el.saveMasterBtn.style.display = isAdmin() ? '' : 'none';
       el.draftShell.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -1155,7 +1233,7 @@
     function upsertReport(scope, status){
       if (!currentDraftState){ alert('Open a draft first, then save it to the library.'); return; }
       if (scope === 'master' && !isAdmin()){ alert('Only CityIntel admin should save to the master library.'); return; }
-      const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage syncs through Worker/D1 in v6.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, savedHtml: currentDraftState.savedHtml, brandedHtml: currentDraftState.brandedHtml || buildBrandedReportHtml(currentDraftState), exportFilename: currentDraftState.exportFilename || `CityIntel_${slugify(currentDraftState.exportTitle || currentDraftState.title)}.html`, savedAt: new Date().toISOString(), scope };
+      const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage syncs through Worker/D1 in v6.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, compareMeta: currentDraftState.compareMeta, compareScope: currentDraftState.compareScope, comparePreviousId: currentDraftState.comparePreviousId, comparePreviousTitle: currentDraftState.comparePreviousTitle, savedHtml: currentDraftState.savedHtml, brandedHtml: currentDraftState.brandedHtml || buildBrandedReportHtml(currentDraftState), exportFilename: currentDraftState.exportFilename || `CityIntel_${slugify(currentDraftState.exportTitle || currentDraftState.title)}.html`, savedAt: new Date().toISOString(), scope };
       if (scope === 'master'){ const rows = getMasterReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setMasterReports(rows); activeScope = 'master'; }
       else { const rows = getOrgReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setOrgReports(rows); activeScope = 'org'; }
       hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
@@ -1196,4 +1274,3 @@
 </script>
 </body>
 </html>
-
