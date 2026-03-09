@@ -505,18 +505,31 @@
     function writeStore(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
     let masterReportsCache = readStore(masterStoreKey(), []).map(r => ({ ...r, scope:'master' }));
     let orgReportsCache = readStore(orgStoreKey(), []).map(r => ({ ...r, scope:'org' }));
+    function stableUserId(){
+      const u = who();
+      const email = String(u.email || '').trim().toLowerCase();
+      return u.id || (email ? `email:${email}` : '');
+    }
     function authHeaders(extra={}){
       const u = who();
       const h = { 'Accept':'application/json', ...extra };
       if (u.email) h['X-User-Email'] = u.email;
       if (u.name) h['X-User-Name'] = u.name;
-      if (u.id) h['X-User-Id'] = u.id;
+      const userId = stableUserId();
+      if (userId) h['X-User-Id'] = userId;
       return h;
+    }
+    async function parseReportsResponse(res){
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        const msg = data?.error || data?.message || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      return data;
     }
     async function fetchReportsState(scope){
       const res = await fetch(`${API_BASE}/api/reports/${scope}`, { headers: authHeaders() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await parseReportsResponse(res);
       if (data?.updatedAt) stampLastSync(data.updatedAt);
       return data;
     }
@@ -526,8 +539,7 @@
         headers: authHeaders({ 'Content-Type':'application/json' }),
         body: JSON.stringify({ data: rows })
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await parseReportsResponse(res);
       if (data?.updatedAt) stampLastSync(data.updatedAt);
       return data;
     }
@@ -1105,11 +1117,23 @@
     function upsertReport(scope, status){
       if (!currentDraftState){ alert('Open a draft first, then save it to the library.'); return; }
       if (scope === 'master' && !isAdmin()){ alert('Only CityIntel admin should save to the master library.'); return; }
+      if (scope === 'org' && !stableUserId()) {
+        alert('Org sync unavailable — missing signed-in user identity. Please log out and back in, then try again.');
+        return;
+      }
       const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage syncs through Worker/D1 in v6.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, savedHtml: currentDraftState.savedHtml, brandedHtml: currentDraftState.brandedHtml || buildBrandedReportHtml(currentDraftState), exportFilename: currentDraftState.exportFilename || `CityIntel_${slugify(currentDraftState.exportTitle || currentDraftState.title)}.html`, savedAt: new Date().toISOString(), scope };
       if (scope === 'master'){ const rows = getMasterReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setMasterReports(rows); activeScope = 'master'; }
       else { const rows = getOrgReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setOrgReports(rows); activeScope = 'org'; }
       hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
-      alert(scope === 'master' ? `Saved to CityIntel Master (${status}). Note: v6 syncs master persistence through Worker/D1.` : `Saved to ${orgName()} library (${status}). This does not overwrite the CityIntel baseline.`);
+      if (scope === 'master') {
+        alert(`Saved to CityIntel Master (${status}). Note: v6 syncs master persistence through Worker/D1.`);
+        return;
+      }
+      if (reportsBackendMode === 'worker') {
+        alert(`Saved to ${orgName()} library (${status}). This does not overwrite the CityIntel baseline.`);
+      } else {
+        alert(`Saved locally in this browser as ${status}, but org sync is currently unavailable. Check Settings → Organisation or sign in again, then retry once the status turns green.`);
+      }
     }
     hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
     bootReportsBackend();
