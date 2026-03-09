@@ -344,17 +344,12 @@
   </div>
 
   <script>
-document.addEventListener('DOMContentLoaded', function(){
-
-  if (window.CIAuth && typeof CIAuth.injectUserChip === 'function') {
-    CIAuth.injectUserChip(document.getElementById('topActions'));
-  }
-
-  if (window.CIAuth && typeof CIAuth.updateSidebarForRole === 'function') {
-    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
-  }
-
-});
+  document.addEventListener('DOMContentLoaded', function(){
+    if (window.CIAuth){
+      CIAuth.injectUserChip(document.getElementById('topActions'));
+      CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+    }
+  });
 </script>
 
   <script>
@@ -506,35 +501,69 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     function orgStoreKey(){ return `ci_org_reports_${orgKey()}`; }
     function masterStoreKey(){ return 'ci_master_reports_local'; }
+    let reportsLocalCacheHealthy = true;
+    function slimReportForStore(row){
+      if (!row || typeof row !== 'object') return row;
+      const keep = {
+        id: row.id,
+        seedKey: row.seedKey,
+        title: row.title,
+        titlePrefix: row.titlePrefix,
+        monthKey: row.monthKey,
+        periodLabel: row.periodLabel,
+        type: row.type,
+        status: row.status,
+        risk: row.risk,
+        file: row.file,
+        notes: row.notes,
+        keywords: Array.isArray(row.keywords) ? row.keywords : [],
+        buildType: row.buildType,
+        regionFilter: row.regionFilter,
+        savedAt: row.savedAt,
+        exportFilename: row.exportFilename,
+        archived: !!row.archived,
+        deleted: !!row.deleted,
+        scope: row.scope
+      };
+      if (row.file) {
+        keep.savedHtml = row.savedHtml || '';
+        keep.brandedHtml = row.brandedHtml || '';
+      }
+      return keep;
+    }
+    function rowsForStore(rows){
+      return (Array.isArray(rows) ? rows : []).map(r => {
+        const x = slimReportForStore({ ...r });
+        if (x && x.scope) delete x.scope;
+        return x;
+      });
+    }
     function readStore(key, fallback=[]){ try { const arr = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(arr) ? arr : fallback; } catch(_) { return fallback; } }
-    function writeStore(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+    function writeStore(key, value){
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        reportsLocalCacheHealthy = true;
+        return true;
+      } catch(err) {
+        reportsLocalCacheHealthy = false;
+        console.warn(`reports local cache write skipped for ${key}`, err);
+        return false;
+      }
+    }
     let masterReportsCache = readStore(masterStoreKey(), []).map(r => ({ ...r, scope:'master' }));
     let orgReportsCache = readStore(orgStoreKey(), []).map(r => ({ ...r, scope:'org' }));
-    function stableUserId(){
-      const u = who();
-      const email = String(u.email || '').trim().toLowerCase();
-      return u.id || (email ? `email:${email}` : '');
-    }
     function authHeaders(extra={}){
       const u = who();
       const h = { 'Accept':'application/json', ...extra };
       if (u.email) h['X-User-Email'] = u.email;
       if (u.name) h['X-User-Name'] = u.name;
-      const userId = stableUserId();
-      if (userId) h['X-User-Id'] = userId;
+      if (u.id) h['X-User-Id'] = u.id;
       return h;
-    }
-    async function parseReportsResponse(res){
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.ok === false) {
-        const msg = data?.error || data?.message || `HTTP ${res.status}`;
-        throw new Error(msg);
-      }
-      return data;
     }
     async function fetchReportsState(scope){
       const res = await fetch(`${API_BASE}/api/reports/${scope}`, { headers: authHeaders() });
-      const data = await parseReportsResponse(res);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
       if (data?.updatedAt) stampLastSync(data.updatedAt);
       return data;
     }
@@ -544,7 +573,8 @@ document.addEventListener('DOMContentLoaded', function(){
         headers: authHeaders({ 'Content-Type':'application/json' }),
         body: JSON.stringify({ data: rows })
       });
-      const data = await parseReportsResponse(res);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
       if (data?.updatedAt) stampLastSync(data.updatedAt);
       return data;
     }
@@ -552,10 +582,12 @@ document.addEventListener('DOMContentLoaded', function(){
       const snapshot = JSON.parse(JSON.stringify(Array.isArray(rows) ? rows : []));
       putReportsState(scope, snapshot).then(() => {
         reportsBackendMode = 'worker';
+        stampLastSync();
         updateLibraryStatus(getFilteredReports().length, getActiveReports().filter(r => !!r.archived === !!showArchived).length);
       }).catch(err => {
         reportsBackendMode = 'local';
         console.warn(`reports ${scope} persist failed`, err);
+        toast(`Worker sync failed for ${scope} reports. Using local fallback.`, 'err');
         updateLibraryStatus(getFilteredReports().length, getActiveReports().filter(r => !!r.archived === !!showArchived).length);
       });
     }
@@ -569,8 +601,8 @@ document.addEventListener('DOMContentLoaded', function(){
           ]);
           masterReportsCache = Array.isArray(masterState?.data) ? masterState.data.map(r => ({ ...r, scope:'master' })) : [];
           orgReportsCache = Array.isArray(orgState?.data) ? orgState.data.map(r => ({ ...r, scope:'org' })) : [];
-          writeStore(masterStoreKey(), masterReportsCache.map(r => { const x = { ...r }; delete x.scope; return x; }));
-          writeStore(orgStoreKey(), orgReportsCache.map(r => { const x = { ...r }; delete x.scope; return x; }));
+          writeStore(masterStoreKey(), rowsForStore(masterReportsCache));
+          writeStore(orgStoreKey(), rowsForStore(orgReportsCache));
           reportsBackendMode = 'worker';
           const syncCandidates = [masterState?.updatedAt, orgState?.updatedAt].filter(Boolean).map(v => new Date(v)).filter(d => !Number.isNaN(d.getTime())).sort((a,b) => b - a);
           if (syncCandidates.length) stampLastSync(syncCandidates[0].toISOString());
@@ -606,12 +638,12 @@ document.addEventListener('DOMContentLoaded', function(){
     function getOrgReports(){ return Array.isArray(orgReportsCache) ? orgReportsCache.map(r => ({ ...r, scope:'org' })) : []; }
     function setOrgReports(rows){
       orgReportsCache = Array.isArray(rows) ? rows.map(r => ({ ...r, scope:'org' })) : [];
-      writeStore(orgStoreKey(), orgReportsCache.map(r => { const x = { ...r }; delete x.scope; return x; }));
+      writeStore(orgStoreKey(), rowsForStore(orgReportsCache));
       if (reportsBooted) queuePersist('org', orgReportsCache.map(r => { const x = { ...r }; delete x.scope; return x; }));
     }
     function setMasterReports(rows){
       masterReportsCache = Array.isArray(rows) ? rows.map(r => ({ ...r, scope:'master' })) : [];
-      writeStore(masterStoreKey(), masterReportsCache.map(r => { const x = { ...r }; delete x.scope; return x; }));
+      writeStore(masterStoreKey(), rowsForStore(masterReportsCache));
       if (reportsBooted) queuePersist('master', masterReportsCache.map(r => { const x = { ...r }; delete x.scope; return x; }));
     }
 
@@ -705,7 +737,8 @@ document.addEventListener('DOMContentLoaded', function(){
       const modeLabel = reportsBackendMode === 'worker' ? 'Synced to Worker/D1' : 'Local fallback mode';
       const dotClass = reportsBackendMode === 'worker' ? 'worker' : 'local';
       const syncMeta = formatLastSyncLabel();
-      host.innerHTML = `<span>Showing ${viewLabel} ${scopeLabel} reports — ${filteredCount} ${noun}${matchText}.</span><span class="ci-sync-badge"><span class="ci-sync-dot ${dotClass}"></span><span>${modeLabel}</span></span><span>${syncMeta}</span>`;
+      const cacheMeta = reportsLocalCacheHealthy ? '' : '<span style="color:#f0b429">Local cache trimmed</span>';
+      host.innerHTML = `<span>Showing ${viewLabel} ${scopeLabel} reports — ${filteredCount} ${noun}${matchText}.</span><span class="ci-sync-badge"><span class="ci-sync-dot ${dotClass}"></span><span>${modeLabel}</span></span><span>${syncMeta}</span>${cacheMeta}`;
     }
     function renderScopeTabs(){
       if (!el.libraryTabs) return;
@@ -1122,23 +1155,11 @@ document.addEventListener('DOMContentLoaded', function(){
     function upsertReport(scope, status){
       if (!currentDraftState){ alert('Open a draft first, then save it to the library.'); return; }
       if (scope === 'master' && !isAdmin()){ alert('Only CityIntel admin should save to the master library.'); return; }
-      if (scope === 'org' && !stableUserId()) {
-        alert('Org sync unavailable — missing signed-in user identity. Please log out and back in, then try again.');
-        return;
-      }
       const row = { id: draftIdFor(scope, currentDraftState), type: currentDraftState.typeLabel, monthKey: currentDraftState.monthKey, periodLabel: currentDraftState.periodLabel, title: currentDraftState.title.replace(/^Draft Builder —\s*/,''), status, risk: currentDraftState.risk, file:'', notes: currentDraftState.notes + (scope === 'master' ? ' Master storage syncs through Worker/D1 in v6.' : ''), keywords: currentDraftState.keywords, buildType: currentDraftState.buildType, regionFilter: currentDraftState.regionFilter, savedHtml: currentDraftState.savedHtml, brandedHtml: currentDraftState.brandedHtml || buildBrandedReportHtml(currentDraftState), exportFilename: currentDraftState.exportFilename || `CityIntel_${slugify(currentDraftState.exportTitle || currentDraftState.title)}.html`, savedAt: new Date().toISOString(), scope };
       if (scope === 'master'){ const rows = getMasterReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setMasterReports(rows); activeScope = 'master'; }
       else { const rows = getOrgReports(); const idx = rows.findIndex(r => r.id === row.id); if (idx >= 0) rows[idx] = row; else rows.push(row); setOrgReports(rows); activeScope = 'org'; }
       hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
-      if (scope === 'master') {
-        alert(`Saved to CityIntel Master (${status}). Note: v6 syncs master persistence through Worker/D1.`);
-        return;
-      }
-      if (reportsBackendMode === 'worker') {
-        alert(`Saved to ${orgName()} library (${status}). This does not overwrite the CityIntel baseline.`);
-      } else {
-        alert(`Saved locally in this browser as ${status}, but org sync is currently unavailable. Check Settings → Organisation or sign in again, then retry once the status turns green.`);
-      }
+      alert(scope === 'master' ? `Saved to CityIntel Master (${status}). Note: Worker/D1 sync is active when the status badge is green.` : `Saved to ${orgName()} library (${status}). This does not overwrite the CityIntel baseline.`);
     }
     hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
     bootReportsBackend();
@@ -1175,4 +1196,3 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 </body>
 </html>
-
