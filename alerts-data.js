@@ -20,6 +20,77 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+   {
+    title: "Tibetan National Uprising Day - 67th Anniversary",
+    city: "London",
+    lat: 51.5033,
+    lng: -0.1276,
+    address: "Whitehall (opposite 10 Downing Street) to Chinese Embassy",
+    postcode: "SW1A 2AS",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-03-10T10:00:00",
+    source: "https://freetibet.org",
+    summary: "Commemoration of the 67th Tibetan National Uprising Day. Includes a rally at Whitehall (10:30), a peace march (11:15), and a second gathering at the Chinese Embassy (12:15). Expected attendance includes activists, faith leaders, and parliamentarians. Moderate risk of localized transport disruption along the march route."
+  },
+  {
+    title: "Women's Strike (Streik der Frauen) - Berlin",
+    city: "Berlin",
+    lat: 52.5164,
+    lng: 13.3938,
+    address: "Bebelplatz",
+    postcode: "10117",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-09T15:00:00",
+    source: "https://toechterkollektiv.de",
+    summary: "Demonstration by the Töchter Kollektiv at Bebelplatz to mark International Women's Day and the 'Streik der Frauen'. Expected music program and speakers. Localized pedestrian and transport disruption expected."
+  },
+  {
+    title: "Women's Strike (Streik der Frauen) - Nuremberg",
+    city: "Nuremberg",
+    lat: 49.4507,
+    lng: 11.0779,
+    address: "Lorenzkirche (St. Lawrence Church)",
+    postcode: "90402",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-09T15:00:00",
+    source: "https://toechterkollektiv.de",
+    summary: "Gathering outside the Lorenz Church as part of a nationwide feminist strike to advocate for gender equality and an end to gender-based violence."
+  },
+  {
+    title: "Women's Strike (Streik der Frauen) - Hamburg",
+    city: "Hamburg",
+    lat: 53.5502,
+    lng: 9.9922,
+    address: "Rathausmarkt Square",
+    postcode: "20095",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-09T16:00:00",
+    source: "https://toechterkollektiv.de",
+    summary: "Nationwide strike action at Rathausmarkt. Participants will demonstrate for fair wages, recognition of care work, and feminist causes."
+  },
+  {
+    title: "Women's Strike (Streik der Frauen) - Frankfurt",
+    city: "Frankfurt",
+    lat: 50.1105,
+    lng: 8.6821,
+    address: "Römerberg Square",
+    postcode: "60311",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-03-09T12:00:00",
+    source: "https://toechterkollektiv.dekarte/",
+    summary: "Feminist gathering at the historic Römerberg Square to promote social justice and women's rights as part of the 2026 Women's Strike."
+  },
+
   {
     title: "Tibetan National Uprising Day - 67th Anniversary",
     city: "London",
@@ -14968,6 +15039,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
+
 
 
 
