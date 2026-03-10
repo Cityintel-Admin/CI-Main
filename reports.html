@@ -1227,7 +1227,30 @@
     }
     function eventSignature(e){ return [String(e.title || '').trim().toLowerCase(), String(e.city || '').trim().toLowerCase(), String(e.country || '').trim().toLowerCase(), dateKey(e.when)].join('|'); }
     function buildCompareMeta(events, themes, regional, riskCounts, dominantRisk, focusLabel, type, monthKey, regionFilter='', scopeMode='global', selectedRegions=[]){
-      return { buildType:type, monthKey:monthKey || '', focusLabel:focusLabel || '', regionFilter:regionFilter || '', scopeMode:scopeMode || 'global', selectedRegions: normalizeRegionList(selectedRegions), selectionKey: scopeSelectionKey(scopeMode, selectedRegions), eventsCount:events.length, highRiskCount:riskCounts.High || 0, countriesCount:new Set(events.map(e => e.country || e.continent || 'Unknown')).size, dominantRisk, themeLabels:themes.map(t => t.label), topRegions:regional.slice(0,3).map(([region, items]) => ({ region, count:items.length })), eventSignatures:events.slice(0,120).map(eventSignature) };
+      return { buildType:type, monthKey:monthKey || '', focusLabel:focusLabel || '', regionFilter:regionFilter || '', scopeMode:scopeMode || 'global', selectedRegions: normalizeRegionList(selectedRegions), selectionKey: scopeSelectionKey(scopeMode, selectedRegions), eventsCount:events.length, highRiskCount:riskCounts.High || 0, countriesCount:new Set(events.map(e => e.country || e.continent || 'Unknown')).size, dominantRisk, themeLabels:themes.map(t => t.label), topRegions:regional.slice(0,3).map(([region, items]) => ({ region, count:items.length })), topCities:topCitiesList(events, 3), eventSignatures:events.slice(0,120).map(eventSignature) };
+    }
+    function classifyRiskTrajectory(highDelta, eventDelta){
+      if (highDelta >= 5) return { cls:'up', text:'Escalating risk environment' };
+      if (highDelta >= 2) return { cls:'up', text:'Rising pressure' };
+      if (highDelta <= -5) return { cls:'down', text:'De-escalating environment' };
+      if (highDelta <= -2) return { cls:'down', text:'Cooling risk trajectory' };
+      if (eventDelta >= 15) return { cls:'up', text:'Elevated mobilisation pressure' };
+      if (eventDelta <= -15) return { cls:'down', text:'Reduced mobilisation pressure' };
+      return { cls:'flat', text:'Stable risk posture' };
+    }
+    function classifyTempo(eventDelta, prevEvents){
+      const base = Math.max(Number(prevEvents) || 0, 1);
+      const pct = eventDelta / base;
+      if (eventDelta >= 20 || pct >= 0.35) return 'Acceleration in mobilisation activity';
+      if (eventDelta >= 8 || pct >= 0.15) return 'Elevated operational tempo';
+      if (eventDelta <= -20 || pct <= -0.35) return 'Reduced mobilisation tempo';
+      if (eventDelta <= -8 || pct <= -0.15) return 'Easing operational tempo';
+      return 'Activity levels consistent with the prior cycle';
+    }
+    function classifyGeographicSignal(countryDelta){
+      if (countryDelta >= 2) return 'Widening geographic footprint';
+      if (countryDelta <= -2) return 'Geographic contraction';
+      return 'Geographic footprint stable';
     }
     function scopeReports(scope){ return scope === 'org' ? getOrgReports() : getMasterReports(); }
     function compareStamp(report){
@@ -1357,18 +1380,26 @@
       const curSigs = new Set(cur.eventSignatures || []);
       const newEventCount = [...curSigs].filter(s => !prevSigs.has(s)).length;
       const droppedEventCount = [...prevSigs].filter(s => !curSigs.has(s)).length;
-      const riskOrder = { Low:1, Medium:2, High:3 };
-      const riskShift = (riskOrder[cur.dominantRisk] || 0) - (riskOrder[pm.dominantRisk || prev.risk] || 0);
-      const trajectory = riskShift > 0 ? { cls:'up', text:'Risk trajectory up' } : riskShift < 0 ? { cls:'down', text:'Risk trajectory down' } : { cls:'flat', text:'Risk trajectory stable' };
+      const trajectory = classifyRiskTrajectory(highDelta, eventDelta);
+      const tempoSignal = classifyTempo(eventDelta, prevEvents);
+      const geographySignal = classifyGeographicSignal(countryDelta);
+      const curPrimaryTheme = (cur.themeLabels || [])[0] || '';
+      const prevPrimaryTheme = (pm.themeLabels || [])[0] || '';
+      const curTopCity = ((cur.topCities || [])[0] || null);
+      const prevTopCity = ((pm.topCities || [])[0] || null);
+      const hotspotEmerging = curTopCity && (!prevTopCity || `${curTopCity.city}|${curTopCity.country||''}` !== `${prevTopCity.city}|${prevTopCity.country||''}`);
       const bullets = [];
-      bullets.push(`${newEventCount > 0 ? `${newEventCount} newly surfaced event${newEventCount===1?'':'s'}` : 'No newly surfaced events'} compared with ${esc(titleFor(prev))}.`);
-      bullets.push(`${highDelta > 0 ? `High-risk exposure has increased by ${highDelta}.` : highDelta < 0 ? `High-risk exposure has reduced by ${Math.abs(highDelta)}.` : 'High-risk exposure is unchanged.'}`);
-      if (newThemes.length) bullets.push(`Emerging themes: ${newThemes.slice(0,3).map(esc).join(', ')}.`);
+      bullets.push(newEventCount > 0 ? `${newEventCount} newly surfaced event${newEventCount===1?'':'s'} compared with ${esc(titleFor(prev))}.` : `No newly surfaced events compared with ${esc(titleFor(prev))}.`);
+      bullets.push(highDelta > 0 ? `High-risk exposure has increased by ${highDelta}, indicating a more volatile operating picture.` : highDelta < 0 ? `High-risk exposure has reduced by ${Math.abs(highDelta)}, suggesting some cooling in the threat mix.` : 'High-risk exposure is unchanged.');
+      bullets.push(`${tempoSignal}.`);
+      bullets.push(`${geographySignal}${newRegions.length ? `, with new prominence in ${newRegions.slice(0,3).map(esc).join(', ')}` : ''}.`);
+      if (curPrimaryTheme && prevPrimaryTheme && curPrimaryTheme !== prevPrimaryTheme) bullets.push(`Narrative emphasis has shifted from ${esc(prevPrimaryTheme)} to ${esc(curPrimaryTheme)}.`);
+      else if (newThemes.length) bullets.push(`Emerging themes: ${newThemes.slice(0,3).map(esc).join(', ')}.`);
       else if (droppedThemes.length) bullets.push(`Themes cooling or dropping out: ${droppedThemes.slice(0,3).map(esc).join(', ')}.`);
       else bullets.push('Theme mix is broadly consistent with the last comparable cycle.');
-      if (newRegions.length) bullets.push(`Geographic spread has widened into ${newRegions.slice(0,3).map(esc).join(', ')}.`);
-      else if (countryDelta < 0) bullets.push('Geographic footprint has narrowed versus the last comparable cycle.');
-      const html = `<div class="delta-chip ${trajectory.cls}">${trajectory.text}</div><div class="delta-subtle" style="margin-bottom:10px">Compared with <strong>${esc(titleFor(prev))}</strong> · ${esc(periodFor(prev))} · ${sourceLabel}</div><div class="delta-grid"><div class="delta-card"><div class="k">Events in scope</div><div class="v">${cur.eventsCount || 0}</div><div class="s ${deltaDirection(eventDelta)}">${deltaLabel(eventDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">High risk</div><div class="v">${cur.highRiskCount || 0}</div><div class="s ${deltaDirection(highDelta)}">${deltaLabel(highDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">Countries / regions</div><div class="v">${cur.countriesCount || 0}</div><div class="s ${deltaDirection(countryDelta)}">${deltaLabel(countryDelta, 'cycle')}</div></div></div><ul class="delta-list">${bullets.map(b => `<li>${b}</li>`).join('')}<li>${droppedEventCount > 0 ? `${droppedEventCount} prior event${droppedEventCount===1?' has':'s have'} dropped out of the current draft window.` : 'No prior events have dropped out of the current draft window.'}</li></ul>`;
+      if (hotspotEmerging && curTopCity) bullets.push(`New focal city emerging: ${esc(curTopCity.city)}${curTopCity.country ? `, ${esc(curTopCity.country)}` : ''}.`);
+      bullets.push(droppedEventCount > 0 ? `${droppedEventCount} prior event${droppedEventCount===1?' has':'s have'} dropped out of the current draft window.` : 'No prior events have dropped out of the current draft window.');
+      const html = `<div class="delta-chip ${trajectory.cls}">${trajectory.text}</div><div class="delta-subtle" style="margin-bottom:10px">Compared with <strong>${esc(titleFor(prev))}</strong> · ${esc(periodFor(prev))} · ${sourceLabel}</div><div class="delta-grid"><div class="delta-card"><div class="k">Events in scope</div><div class="v">${cur.eventsCount || 0}</div><div class="s ${deltaDirection(eventDelta)}">${deltaLabel(eventDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">High risk</div><div class="v">${cur.highRiskCount || 0}</div><div class="s ${deltaDirection(highDelta)}">${deltaLabel(highDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">Countries / regions</div><div class="v">${cur.countriesCount || 0}</div><div class="s ${deltaDirection(countryDelta)}">${deltaLabel(countryDelta, 'cycle')}</div></div></div><ul class="delta-list">${bullets.map(b => `<li>${b}</li>`).join('')}</ul>`;
       return { html, previousId: prev.id || '', previousTitle: titleFor(prev), compareScope: scope };
     }
     function buildDraft(type, forcedMonthKey='', regionFilter='', scopeConfig=null){
