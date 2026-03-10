@@ -1212,11 +1212,70 @@
       if (prior.length) return prior[0];
       return reports.sort((a,b) => compareStamp(b) - compareStamp(a))[0] || null;
     }
+
+    function previousDatasetWindowMeta(state){
+      const alerts = normalizeAlerts();
+      const buildType = String(state.buildType || '').toLowerCase();
+      const regionFilter = String(state.regionFilter || '');
+      const scopeMode = (state.scopeMode || (state.compareMeta && state.compareMeta.scopeMode) || 'global');
+      const selectedRegions = normalizeRegionList(state.selectedRegions || ((state.compareMeta && state.compareMeta.selectedRegions) || []));
+      let events = [];
+      let label = '';
+      let title = '';
+      let monthKey = '';
+      if (buildType === 'weekly'){
+        const start = new Date();
+        start.setHours(0,0,0,0);
+        start.setDate(start.getDate() - start.getDay() + 1);
+        const prevStart = new Date(start);
+        prevStart.setDate(prevStart.getDate() - 7);
+        const prevEnd = new Date(start);
+        events = alerts.filter(a => a.when >= prevStart && a.when < prevEnd);
+        label = `${prevStart.toLocaleDateString('en-GB')} to ${new Date(prevEnd.getTime()-1).toLocaleDateString('en-GB')}`;
+        title = `Previous weekly window`;
+      } else {
+        const key = String(state.monthKey || '').split('-').map(Number);
+        if (!(key[0] && key[1])) return null;
+        const prevDate = new Date(key[0], key[1]-2, 1);
+        monthKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
+        events = alerts.filter(a => a.monthKey === monthKey);
+        label = monthNameFromKey(monthKey);
+        title = `${buildType === 'preview' ? 'Protest Preview' : 'Protest Review'}: ${label}`;
+      }
+      if (regionFilter){
+        events = events.filter(a => regionNameForEvent(a) === regionFilter);
+        title += ` — ${regionFilter}`;
+      } else if (scopeMode !== 'global' && selectedRegions.length){
+        events = applyCustomScope(events, scopeMode, selectedRegions);
+      }
+      const regional = regionalBreakdown(events);
+      const themes = themeSummary(events);
+      const riskCounts = {High:0, Medium:0, Low:0};
+      events.forEach(e => riskCounts[e.risk] = (riskCounts[e.risk] || 0) + 1);
+      const dominantRisk = riskCounts.High ? 'High' : riskCounts.Medium ? 'Medium' : 'Low';
+      const focusLabel = buildType === 'weekly' ? 'Previous weekly window' : label;
+      const compareMeta = buildCompareMeta(events, themes, regional, riskCounts, dominantRisk, focusLabel, buildType, monthKey || state.monthKey || '', regionFilter, scopeMode, selectedRegions);
+      return {
+        id: '',
+        title,
+        type: buildType === 'preview' ? 'Monthly Preview' : buildType === 'review' ? 'Monthly Review' : 'Weekly Update',
+        periodLabel: label,
+        compareMeta,
+        risk: dominantRisk,
+        metrics:{ events:events.length, high:riskCounts.High || 0, countries:new Set(events.map(e => e.country || e.continent || 'Unknown')).size },
+        dataSource:'dataset'
+      };
+    }
     function deltaDirection(v){ return v > 0 ? 'up' : (v < 0 ? 'down' : 'flat'); }
     function deltaLabel(v, noun){ return !Number.isFinite(v) || v === 0 ? `No change vs prior ${noun}` : `${v > 0 ? '+' : ''}${v} vs prior ${noun}`; }
     function buildDeltaHtml(state, scope){
-      const prev = previousComparableReport(state, scope);
-      if (!prev) return { html:`<div class="delta-subtle">No prior comparable ${scope === 'org' ? orgName() : 'CityIntel Master'} report found yet. Save this draft and compare it against the next cycle to surface change detection automatically.</div>`, previousId:'', previousTitle:'', compareScope:scope };
+      let prev = previousComparableReport(state, scope);
+      let sourceLabel = scope === 'org' ? orgName() : 'CityIntel Master';
+      if (!prev){
+        prev = previousDatasetWindowMeta(state);
+        sourceLabel = prev ? 'Dataset fallback' : sourceLabel;
+      }
+      if (!prev) return { html:`<div class="delta-subtle">No prior comparable ${sourceLabel} report found yet, and no usable prior dataset window was found in alerts-data.js for this scope.</div>`, previousId:'', previousTitle:'', compareScope:scope };
       const cur = state.compareMeta || {};
       const pm = prev.compareMeta || {};
       const prevEvents = Number(pm.eventsCount ?? (prev.metrics && prev.metrics.events) ?? 0);
@@ -1246,7 +1305,7 @@
       else bullets.push('Theme mix is broadly consistent with the last comparable cycle.');
       if (newRegions.length) bullets.push(`Geographic spread has widened into ${newRegions.slice(0,3).map(esc).join(', ')}.`);
       else if (countryDelta < 0) bullets.push('Geographic footprint has narrowed versus the last comparable cycle.');
-      const html = `<div class="delta-chip ${trajectory.cls}">${trajectory.text}</div><div class="delta-subtle" style="margin-bottom:10px">Compared with <strong>${esc(titleFor(prev))}</strong> · ${esc(periodFor(prev))} · ${scope === 'org' ? orgName() : 'CityIntel Master'}</div><div class="delta-grid"><div class="delta-card"><div class="k">Events in scope</div><div class="v">${cur.eventsCount || 0}</div><div class="s ${deltaDirection(eventDelta)}">${deltaLabel(eventDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">High risk</div><div class="v">${cur.highRiskCount || 0}</div><div class="s ${deltaDirection(highDelta)}">${deltaLabel(highDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">Countries / regions</div><div class="v">${cur.countriesCount || 0}</div><div class="s ${deltaDirection(countryDelta)}">${deltaLabel(countryDelta, 'cycle')}</div></div></div><ul class="delta-list">${bullets.map(b => `<li>${b}</li>`).join('')}<li>${droppedEventCount > 0 ? `${droppedEventCount} prior event${droppedEventCount===1?' has':'s have'} dropped out of the current draft window.` : 'No prior events have dropped out of the current draft window.'}</li></ul>`;
+      const html = `<div class="delta-chip ${trajectory.cls}">${trajectory.text}</div><div class="delta-subtle" style="margin-bottom:10px">Compared with <strong>${esc(titleFor(prev))}</strong> · ${esc(periodFor(prev))} · ${sourceLabel}</div><div class="delta-grid"><div class="delta-card"><div class="k">Events in scope</div><div class="v">${cur.eventsCount || 0}</div><div class="s ${deltaDirection(eventDelta)}">${deltaLabel(eventDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">High risk</div><div class="v">${cur.highRiskCount || 0}</div><div class="s ${deltaDirection(highDelta)}">${deltaLabel(highDelta, 'cycle')}</div></div><div class="delta-card"><div class="k">Countries / regions</div><div class="v">${cur.countriesCount || 0}</div><div class="s ${deltaDirection(countryDelta)}">${deltaLabel(countryDelta, 'cycle')}</div></div></div><ul class="delta-list">${bullets.map(b => `<li>${b}</li>`).join('')}<li>${droppedEventCount > 0 ? `${droppedEventCount} prior event${droppedEventCount===1?' has':'s have'} dropped out of the current draft window.` : 'No prior events have dropped out of the current draft window.'}</li></ul>`;
       return { html, previousId: prev.id || '', previousTitle: titleFor(prev), compareScope: scope };
     }
     function buildDraft(type, forcedMonthKey='', regionFilter='', scopeConfig=null){
