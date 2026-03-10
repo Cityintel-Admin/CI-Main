@@ -371,8 +371,43 @@
 
   <script>
   document.addEventListener('DOMContentLoaded', function(){
-    if (window.CIAuth){
+    if (window.CIAuth && typeof CIAuth.injectUserChip === 'function') {
       CIAuth.injectUserChip(document.getElementById('topActions'));
+    } else {
+      const host = document.getElementById('topActions');
+      if (host) {
+        const initialsOf = (nameOrEmail='CI') => {
+          const s = String(nameOrEmail).trim();
+          if (!s) return 'CI';
+          if (s.includes('@')) return s[0].toUpperCase();
+          const parts = s.split(/\s+/);
+          return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
+        };
+        if (window.CIAuth && typeof CIAuth.isLoggedIn === 'function' && CIAuth.isLoggedIn()) {
+          const u = (typeof CIAuth.who === 'function' ? CIAuth.who() : {}) || {};
+          const initials = initialsOf(u.name || u.email);
+          const role = u.role || 'Member';
+          const isAdmin = String(role).toLowerCase() === 'admin';
+          host.innerHTML = `
+            <div class="user" id="userChip" style="cursor:pointer"><div class="avatar">${initials}</div>${role}</div>
+            <div class="dropdown" id="userMenu">
+              ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
+              <a href="settings.html">Manage Billing</a>
+              <a href="#" id="logoutLink">Log out</a>
+            </div>`;
+          const chip = document.getElementById('userChip');
+          const menu = document.getElementById('userMenu');
+          chip?.addEventListener('click', () => { menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; });
+          document.addEventListener('click', (e) => { if (!host.contains(e.target)) menu.style.display = 'none'; });
+          document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            try { CIAuth.logout(); } catch(_) {}
+            location.href = 'index.html';
+          });
+        }
+      }
+    }
+    if (window.CIAuth && typeof CIAuth.updateSidebarForRole === 'function') {
       CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
     }
   });
@@ -1213,6 +1248,11 @@
       return reports.sort((a,b) => compareStamp(b) - compareStamp(a))[0] || null;
     }
 
+    function regionalBreakdown(events){
+      return [...groupBy(events, e => e.country || e.continent || 'Unknown').entries()]
+        .sort((a,b) => b[1].length - a[1].length)
+        .slice(0,6);
+    }
     function previousDatasetWindowMeta(state){
       const alerts = normalizeAlerts();
       const buildType = String(state.buildType || '').toLowerCase();
