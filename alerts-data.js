@@ -22,6 +22,98 @@ window.alertsData =[
 
 
 
+{
+  title: "Solidarity with Palestine Rally",
+  city: "Athens",
+  lat: "37.9755",
+  lng: "23.7348",
+  address: "Syntagma Square",
+  "post code / zip": "10563",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-29T14:00:00",
+  source: "https://www.facebook.com/solidaritygreece/",
+  summary: "Greek solidarity networks have circulated calls for a Palestine solidarity rally at Syntagma Square on 29 March 2026. Athens has seen repeated central-square mobilisations on Middle East conflict issues, often drawing trade union blocs and student organisations. Risk is Mid due to central government proximity and typical police management around Syntagma."
+},
+
+{
+  title: "Anti-Deportation Demonstration",
+  city: "Warsaw",
+  lat: "52.2297",
+  lng: "21.0122",
+  address: "Plac Zamkowy",
+  "post code / zip": "00-277",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-12T13:00:00",
+  source: "https://www.facebook.com/migrantpoland/",
+  summary: "Migrant solidarity groups in Warsaw have promoted a 12 April 2026 demonstration at Plac Zamkowy opposing deportations and restrictive migration policies. The rally is framed around human-rights protections and asylum reform. Risk is Mid because migration-related protests in Warsaw can attract visible police presence and counter-mobilisation."
+},
+
+{
+  title: "Climate Strike Prague",
+  city: "Prague",
+  lat: "50.0870",
+  lng: "14.4208",
+  address: "Wenceslas Square",
+  "post code / zip": "11000",
+  country: "Czech Republic",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-27T12:00:00",
+  source: "https://fridaysforfuture.cz/",
+  summary: "Fridays for Future Czech Republic lists a 27 March 2026 climate strike gathering at Wenceslas Square in Prague. The mobilisation focuses on climate transition and fossil-fuel phase-out demands. Risk is Low as student climate protests in Prague are typically peaceful and stewarded."
+},
+
+{
+  title: "Human Rights March",
+  city: "Budapest",
+  lat: "47.4979",
+  lng: "19.0402",
+  address: "Kossuth Lajos Square",
+  "post code / zip": "1055",
+  country: "Hungary",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-19T15:00:00",
+  source: "https://www.facebook.com/humanrightshungary/",
+  summary: "Hungarian civil-society organisations have promoted a 19 April 2026 human-rights demonstration at Kossuth Lajos Square in Budapest. The rally addresses rule-of-law and democratic accountability themes. Risk is Mid due to proximity to Parliament and the political sensitivity of protest activity in the capital."
+},
+
+{
+  title: "Rally for Democratic Rights",
+  city: "Bucharest",
+  lat: "44.4268",
+  lng: "26.1025",
+  address: "Piața Universității",
+  "post code / zip": "030167",
+  country: "Romania",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-05T14:00:00",
+  source: "https://www.facebook.com/drepturipentruromania/",
+  summary: "Romanian civic networks have called a 5 April 2026 rally at Piața Universității in Bucharest advocating for democratic rights and anti-corruption oversight. University Square is a traditional protest space in the capital. Risk is Mid due to historical protest intensity at this location and potential police management."
+},
+
+{
+  title: "Solidarity Vigil for Ukraine and Palestine",
+  city: "Riga",
+  lat: "56.9496",
+  lng: "24.1052",
+  address: "Freedom Monument",
+  "post code / zip": "LV-1050",
+  country: "Latvia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-18T18:00:00",
+  source: "https://www.facebook.com/rigasolidarity/",
+  summary: "Latvian solidarity networks have circulated notice of an 18 April 2026 vigil at the Freedom Monument in Riga expressing solidarity with civilian populations affected by war. The event is described as a peaceful evening gathering with candles and speeches. Risk is Low because it is framed as a vigil without a moving march component."
+},
+
+
+  
   {
   title: "Weekly March for Gaza",
   city: "Amsterdam",
