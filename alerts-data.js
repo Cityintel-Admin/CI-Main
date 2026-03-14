@@ -24,6 +24,239 @@ window.alertsData =[
 
 
 
+  
+
+{
+  title: "Irish Health Care Workers for Palestine Silent Walk for Gaza",
+  city: "Dublin",
+  lat: "53.3387",
+  lng: "-6.2586",
+  address: "Outside RCSI, St Stephen's Green",
+  "post code / zip": "D02 YN77",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-21T12:45:00",
+  source: "https://www.ipsc.ie/",
+  summary: "The Ireland Palestine Solidarity Campaign listings page shows an Irish Health Care Workers for Palestine Silent Walk for Gaza in Dublin on Saturday 21 March 2026, meeting at 12:45 pm outside the Royal College of Surgeons in Ireland on St Stephen's Green. This is a healthcare-worker-branded solidarity action rather than a general national march, which makes it useful for tracking sector-specific mobilisation in Ireland's capital. Risk is Mid because even a silent walk in central Dublin can still draw concentrated footfall, media attention, police observation, and route disruption around a busy civic and retail zone, especially given the continuing salience of Gaza solidarity actions in Ireland."
+},
+
+{
+  title: "All Day Protest for the Occupied Territories Bill",
+  city: "Dublin",
+  lat: "53.3382",
+  lng: "-6.2544",
+  address: "Department of Foreign Affairs & Trade, St Stephen's Green",
+  "post code / zip": "D02 HK52",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T10:00:00",
+  source: "https://www.ipsc.ie/",
+  summary: "The IPSC listings page advertises an all-day protest in Dublin on Wednesday 25 March 2026 from 10:00 am to 7:00 pm calling for passage of the Occupied Territories Bill, outside the Department of Foreign Affairs & Trade on St Stephen's Green. The demand is highly specific and tied to state policy, making this more than a symbolic vigil and more akin to a sustained lobbying demonstration directed at the Irish government. Risk is Mid because the long duration increases the chance of repeated crowd turnover, sustained police monitoring, and intermittent disruption around government offices, even if the action itself remains disciplined and issue-focused."
+},
+
+{
+  title: "Pub Quiz for Palestine Solidarity",
+  city: "Dublin",
+  lat: "53.3536",
+  lng: "-6.2639",
+  address: "The Teachers' Club, 36 Parnell Square West",
+  "post code / zip": "D01 T6V6",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-01T19:30:00",
+  source: "https://www.findaprotest.info/event/dublin-1/evt-3bdad38f5dd0248a",
+  summary: "Find a Protest lists an IPSC fundraiser on Wednesday 1 April 2026 at 7:30 pm in The Teachers' Club on Parnell Square West, promoted as a pub quiz in aid of Palestine solidarity organising. This is not a street protest, but it is relevant as movement infrastructure: it brings supporters together, raises funds, and helps sustain local organising capacity in Dublin. Risk is Low because it is a fixed indoor event with no clear indication of route movement or confrontation."
+},
+
+{
+  title: "Staged Reading: Tales of a City by the Sea",
+  city: "Dublin",
+  lat: "53.3520",
+  lng: "-6.2319",
+  address: "Sean O'Casey Theatre, East Wall",
+  "post code / zip": "D03 E5R7",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-18T19:30:00",
+  source: "https://www.ipsc.ie/",
+  summary: "The IPSC listings page advertises a staged reading of Tales of a City by the Sea in Dublin on Saturday 18 April 2026 at 7:30 pm at the Sean O'Casey Theatre in East Wall, billed as a fundraiser for the Palestine Children's Relief Fund and part of the Five Lamps Arts Festival. While this is a cultural event rather than a march, it fits your wider protest-and-solidarity dataset because it is explicitly connected to Palestine movement fundraising and public engagement. Risk is Low because the venue is fixed and the format is theatrical and community-focused rather than confrontational."
+},
+
+{
+  title: "Palestine Marathon Solidarity Run",
+  city: "Dublin",
+  lat: "53.3498",
+  lng: "-6.2603",
+  address: "Dublin city centre",
+  "post code / zip": "",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-18T12:00:00",
+  source: "https://www.findaprotest.info/event/dublin/evt-e42e58b75c20721e",
+  summary: "Find a Protest lists the Virtual Palestine Marathon 2026 for Dublin on Saturday 18 April 2026, organised by Irish Sport for Palestine and Run for Palestine Dublin to coincide with the Palestine Marathon. The listing says solidarity runs of 5k, 10k, and 21k are planned and that route details and times are still to follow. Because no exact start time is published, this entry uses a midday placeholder for testing and mapping purposes only. Risk is Low because the event is framed as a solidarity sports fundraiser rather than a contentious street protest, though movement through public routes could still create limited traffic-management needs."
+},
+
+{
+  title: "Rally for Gaza",
+  city: "Galway",
+  lat: "53.2740",
+  lng: "-9.0513",
+  address: "Eyre Square",
+  "post code / zip": "H91 YX88",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-12T14:00:00",
+  source: "https://www.facebook.com/GalwayPSC/photos/in-response-to-the-ipscs-call-out-for-nationwide-rallies-on-april-12th-solidarit/1060568709438840/",
+  summary: "A Galway Palestine Solidarity Campaign social post says solidarity groups from across the city and county are inviting people to join a rally to express solidarity with the people of Gaza on Sunday 12 April 2026. The post is organiser-level rather than mainstream-media coverage, but it is specific enough to support inclusion in the dataset and strengthens coverage beyond Dublin. Because the available search snippet does not expose a precise meeting point in the same snippet, this entry uses Eyre Square as a city-centre fallback for mapping. Risk is Mid because Galway solidarity rallies can attract broad civic turnout and visible policing in the core pedestrian area even when they remain peaceful."
+},
+
+{
+  title: "Limerick Solidarity with Palestine",
+  city: "Limerick",
+  lat: "52.6625",
+  lng: "-8.6267",
+  address: "Bedford Row",
+  "post code / zip": "V94 H0Y4",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-26T13:00:00",
+  source: "https://www.facebook.com/WomensCollectiveIrelandLimerick/posts/limerick-solidarity-with-palestinesaturday-april-26thbedford-row-1pm/1017940637101792/",
+  summary: "A Women's Collective Ireland Limerick post promotes a 'Limerick solidarity with Palestine' action on Saturday 26 April 2026 at 1:00 pm on Bedford Row. The post is clearly date-specific and location-specific, which makes it strong enough for inclusion even though it is sourced through organiser social media rather than major press. Bedford Row is a central pedestrian-commercial street, so even a moderate-size turnout can create noticeable visibility and public interaction. Risk is Mid because city-centre Palestine rallies remain politically sensitive and can draw counter-attention or police monitoring, though the organiser framing suggests a planned and peaceful solidarity action."
+},
+
+{
+  title: "The Spirit of Palestine with Rafeef Ziadah",
+  city: "Cork",
+  lat: "51.8977",
+  lng: "-8.4706",
+  address: "The Pav, University College Cork",
+  "post code / zip": "T12 YN60",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-25T19:00:00",
+  source: "https://www.facebook.com/61554183081715/posts/we-teach-life-sir-%EF%B8%8Fthe-spirit-of-palestine-comes-to-cork-with-palestinian-poet-r/122139685880139436/",
+  summary: "A Cork Palestine Solidarity Campaign Facebook post advertises 'The Spirit of Palestine' in Cork on Thursday 25 April 2026, featuring Palestinian poet and activist Rafeef Ziadah at The Pav in University College Cork. The post frames the event as a cultural and political solidarity gathering, which makes it relevant for your wider event dataset even though it is not a street march. Risk is Low because it is an indoor venue-based programme centred on performance and discussion rather than direct action, but it still matters for mapping movement activity and organiser reach in Cork."
+},
+
+
+
+  
+
+{
+  title: "Birmingham March for Palestine",
+  city: "Birmingham",
+  lat: "52.4790",
+  lng: "-1.9025",
+  address: "Victoria Square",
+  "post code / zip": "B1 1BD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-18T13:00:00",
+  source: "https://www.facebook.com/BirminghamPSC/",
+  summary: "Birmingham Palestine Solidarity Campaign has circulated calls for a city-centre march assembling in Victoria Square at 1:00 pm. The mobilisation is framed around calls for an immediate ceasefire, an end to UK arms exports, and solidarity with civilians in Gaza. Birmingham events typically draw sizeable multicultural turnout and visible stewarding. Risk is Mid due to central-city route movement, potential counter-presence, and traffic disruption across the civic core."
+},
+
+{
+  title: "Cardiff Ceasefire Now Rally",
+  city: "Cardiff",
+  lat: "51.4816",
+  lng: "-3.1791",
+  address: "Callaghan Square",
+  "post code / zip": "CF10 5BT",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-11T14:00:00",
+  source: "https://www.findaprotest.info/event/cardiff/",
+  summary: "A Cardiff rally has been promoted under a 'Ceasefire Now' banner, assembling at Callaghan Square before a short city-centre march. Organiser messaging connects Gaza solidarity with anti-war campaigning and calls on the Welsh Government to oppose UK arms exports. Risk is Mid as Cardiff city-centre marches frequently require rolling road closures and police management, though past events have largely remained peaceful."
+},
+
+{
+  title: "Leicester Anti-Racism March",
+  city: "Leicester",
+  lat: "52.6369",
+  lng: "-1.1398",
+  address: "Clock Tower, Haymarket",
+  "post code / zip": "LE1 5FS",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-04T12:00:00",
+  source: "https://www.stopwar.org.uk/events/",
+  summary: "Local anti-racist networks in Leicester are organising a midday assembly at the Clock Tower in Haymarket, linking anti-fascism with migrant solidarity and opposition to far-right mobilisation. The city has a history of high-profile community tensions, meaning anti-racist demonstrations are closely monitored. Risk is Mid due to the politically sensitive framing and the likelihood of visible police presence."
+},
+
+{
+  title: "Brighton Arms Embargo Demonstration",
+  city: "Brighton",
+  lat: "50.8225",
+  lng: "-0.1372",
+  address: "Old Steine Gardens",
+  "post code / zip": "BN1 1EL",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-25T12:30:00",
+  source: "https://palestinecampaign.org/events/",
+  summary: "Brighton activists are assembling at Old Steine Gardens for an arms embargo demonstration focused on UK weapons exports. The event is framed as part of coordinated regional mobilisation days organised by PSC and allied groups. Risk is Mid because Brighton seafront protests can attract strong turnout, visible policing, and congestion across key junctions near the A23 corridor."
+},
+
+{
+  title: "Nottingham Workers' Justice Rally",
+  city: "Nottingham",
+  lat: "52.9548",
+  lng: "-1.1581",
+  address: "Old Market Square",
+  "post code / zip": "NG1 2DT",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-28T17:30:00",
+  source: "https://www.megaphone.org.uk/events/",
+  summary: "Trade union groups in Nottingham are promoting a Workers' Justice rally in Old Market Square ahead of International Workers Memorial activities. The gathering is expected to include speeches and banners highlighting workplace safety and pay justice. Risk is Low due to its structured format and absence of confrontational framing, though city-centre footfall may increase during peak commuter hours."
+},
+
+{
+  title: "Belfast Ceasefire Vigil",
+  city: "Belfast",
+  lat: "54.5970",
+  lng: "-5.9300",
+  address: "Belfast City Hall",
+  "post code / zip": "BT1 5GS",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-06T18:00:00",
+  source: "https://www.facebook.com/BelfastPSC/",
+  summary: "Belfast Palestine solidarity groups are holding an evening vigil outside City Hall calling for a permanent ceasefire and humanitarian access. The event is framed as a silent candlelit presence but takes place in a historically sensitive public square often associated with political assembly. Risk is Mid due to Belfast’s politically charged civic context and the possibility of counter-attendance."
+},
+
+{
+  title: "Coventry Peace Rally",
+  city: "Coventry",
+  lat: "52.4068",
+  lng: "-1.5197",
+  address: "Broadgate",
+  "post code / zip": "CV1 1NE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-20T12:00:00",
+  source: "https://www.stopwar.org.uk/events/",
+  summary: "Stop the War supporters in Coventry are assembling in Broadgate for a lunchtime peace rally addressing Middle East escalation and UK foreign policy. The format is expected to be a static rally with speeches and banner display. Risk is Low as turnout is likely moderate and stewarded, with limited evidence of counter-mobilisation."
+},
+
+
+
 {
   title: "Sheffield Protest: Stop Bombing Iran",
   city: "Sheffield",
