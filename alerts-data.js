@@ -22,6 +22,112 @@ window.alertsData =[
 
 
 
+{
+  title: "Land Day 2026: Rally & March",
+  city: "New York",
+  lat: "40.7532",
+  lng: "-73.9822",
+  address: "Bryant Park NYPL Steps",
+  "post code / zip": "10018",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-29T15:00:00",
+  source: "https://actions.nyc/event/land-day-2026-rally-and-march",
+  summary: "Actions NYC lists a Land Day 2026 rally and march in New York City for Sunday 29 March 2026 at 3:00 pm at the Bryant Park New York Public Library steps. The listing frames it as a 50th-anniversary Land Day mobilisation calling for continued action against displacement, occupation, and war in Palestine. Because it is tied to one of the strongest recurring Palestine solidarity ecosystems in the United States and uses a highly visible Midtown assembly point, the event is likely to draw a large and politically engaged turnout. Risk is High because Manhattan Palestine marches can generate dense policing, route management, heavy media attention, and a realistic possibility of counter-presence or access disruption around transit-heavy blocks."
+},
+
+{
+  title: "National March on Washington",
+  city: "Washington",
+  lat: "38.8895",
+  lng: "-77.0353",
+  address: "Washington DC city centre",
+  "post code / zip": "",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-04-05T13:00:00",
+  source: "https://www.findaprotest.info/event/washington/evt-a3addc0ac6bfc544",
+  summary: "Find a Protest lists a National March on Washington for Sunday 5 April 2026 at 1:00 pm in Washington, D.C., described as a national mobilisation to demand an end to the U.S.-Israeli genocide in Gaza. The event text says people from across the country, including students, workers, teachers, healthcare workers, artists, and activists, are expected to gather in the capital. Risk is High because national Palestine marches in Washington can attract large interstate turnout, significant security and policing measures, extensive road closures, and elevated sensitivity around federal buildings and symbolic public space."
+},
+
+{
+  title: "NO KINGS Los Angeles",
+  city: "Los Angeles",
+  lat: "34.0539",
+  lng: "-118.2425",
+  address: "200 N Spring St",
+  "post code / zip": "90012",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-28T14:00:00",
+  source: "https://www.findaprotest.info/event/los-angeles/0744789b-e8cf-4abb-a71b-e1a45d179e6f",
+  summary: "Find a Protest lists NO KINGS Los Angeles for Saturday 28 March 2026 at 2:00 pm at 200 N Spring Street, organised by the Los Angeles No Kings Coalition. The event description presents it as part of the wider national No Kings day of action and emphasises nonviolent resistance to authoritarianism, anti-democratic government action, and community attacks. Risk is High because downtown Los Angeles civic-space protests can scale quickly, produce major traffic disruption around government buildings, and require significant police crowd management even when organisers stress nonviolent conduct."
+},
+
+{
+  title: "No Kings - We Fight For Workers!",
+  city: "Chicago",
+  lat: "41.8841",
+  lng: "-87.6237",
+  address: "130 E Randolph St",
+  "post code / zip": "60601",
+  country: "United States",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-03-28T11:00:00",
+  source: "https://www.findaprotest.info/event/chicago/a9dcf298-5986-4a7c-8e52-e61f3044d019",
+  summary: "Find a Protest lists a Chicago protest on Saturday 28 March 2026 at 11:00 am at 130 E Randolph Street under the banner 'No Kings - We Fight For Workers!'. The listing tags the event with workers' rights and places it within the broader No Kings mobilisation wave. This gives the dataset a useful labour-rights and democracy crossover entry in central Chicago. Risk is Mid because the Loop location is highly visible and likely to need active traffic and pedestrian management, though the published framing is peaceful and movement-based rather than openly confrontational."
+},
+
+{
+  title: "No Kings 3 San Francisco",
+  city: "San Francisco",
+  lat: "37.7955",
+  lng: "-122.3937",
+  address: "Embarcadero Plaza",
+  "post code / zip": "94105",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-28T11:30:00",
+  source: "https://www.findaprotest.info/event/san-francisco/oWJ26zRtKAbzcx0fdBj9Ol",
+  summary: "Find a Protest lists No Kings 3 San Francisco for Saturday 28 March 2026, with gathering from 11:30 am at Embarcadero Plaza and Sue Bierman Park, a noon march to Civic Center, and a 2:00 pm rally and information fair. The organiser text says the event is backed by 50501SF and Indivisible SF and links it to a larger national anti-authoritarian mobilisation. Risk is High because the route runs through major civic and commercial space, turnout could be substantial, and congestion, transit effects, and visible policing are all likely in a city-centre march of this scale."
+},
+
+{
+  title: "Palestinian Cultural Resistance Festival",
+  city: "Seattle",
+  lat: "47.6062",
+  lng: "-122.3185",
+  address: "Cherry Street Village",
+  "post code / zip": "98122",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-04-25T18:00:00",
+  source: "https://www.findaprotest.info/event/seattle/RpS9dYtRk7nuaXi74QyZjt",
+  summary: "Find a Protest lists the Palestinian Cultural Resistance Festival in Seattle for Saturday 25 April 2026 from 6:00 pm to 9:00 pm at Cherry Street Village. The listing says it is being hosted by Nidal Seattle, SUPER at the University of Washington, and Students for Justice in Palestine at Seattle University, with vendors, performers, and solidarity programming. Risk is Low because the format is community-cultural rather than a moving street demonstration, but it is still important for mapping organised Palestine solidarity infrastructure in Seattle."
+},
+
+{
+  title: "Hands Off Africa March and Rally",
+  city: "Atlanta",
+  lat: "33.7550",
+  lng: "-84.3900",
+  address: "220 Auburn Ave NE",
+  "post code / zip": "30303",
+  country: "United States",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-03-22T14:00:00",
+  source: "https://www.findaprotest.info/event/atlanta/3071371e-54ea-4b8c-9199-f736e71852fc",
+  summary: "Find a Protest lists a Hands Off Africa March and Rally in Atlanta for Sunday 22 March 2026 at 2:00 pm, with organiser instructions noting arrival from 2:30 pm and a 3:00 pm march start from Big Bethel AME toward Centennial Park. The event is framed as a Black-led solidarity mobilisation and public stand against outside interference and anti-Black injustice. Risk is Mid because it is a moving city-centre march with political messaging that can draw visible policing and road disruption, although the organiser framing emphasises peaceful assembly."
+},
+
+  
 
   {
   title: "Emergency Demo to Protest the Barring of Gaza",
