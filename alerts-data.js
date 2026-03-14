@@ -21,6 +21,90 @@ window.alertsData =[
 },
 
 
+
+
+
+  
+
+{
+  title: "National March to End the Genocide",
+  city: "Ottawa",
+  lat: "45.4236",
+  lng: "-75.7009",
+  address: "Parliament Hill",
+  "post code / zip": "K1A 0A9",
+  country: "Canada",
+  continent: "North America",
+  risk: "High",
+  time: "2026-04-12T14:00:00",
+  source: "https://samidoun.net/2025/03/calendar-of-resistance-for-palestine-events-actions-and-demonstrations-for-liberation-against-genocide/",
+  summary: "Samidoun's calendar of resistance lists Ottawa on Saturday 12 April 2026 at 2:00 pm on Parliament Hill for a national march to end the genocide. The listing frames the event as a national convergence around Palestine solidarity in Canada's capital. Risk is High because Parliament Hill is a nationally sensitive protest site and a capital-centre mobilisation there can produce heavy security, road closures, and significant crowd concentration."
+},
+
+{
+  title: "Voices for Justice",
+  city: "Toronto",
+  lat: "43.6525",
+  lng: "-79.3839",
+  address: "Nathan Phillips Square, 100 Queen St W",
+  "post code / zip": "M5H 2N1",
+  country: "Canada",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-04-18T11:00:00",
+  source: "https://samidoun.net/2025/03/calendar-of-resistance-for-palestine-events-actions-and-demonstrations-for-liberation-against-genocide/",
+  summary: "Samidoun's calendar lists Toronto on Friday 18 April 2026 at 11:00 am at Nathan Phillips Square for 'Voices for Justice'. The same calendar also lists a second Toronto gathering at the same location later that day. Risk is Mid because Nathan Phillips Square is a major civic gathering site where politically charged events can draw police monitoring and concentrated city-centre footfall."
+},
+
+{
+  title: "Jumu'ah Prayer and Speakers for Gaza",
+  city: "Toronto",
+  lat: "43.6525",
+  lng: "-79.3839",
+  address: "Nathan Phillips Square, 100 Queen St W",
+  "post code / zip": "M5H 2N1",
+  country: "Canada",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-04-18T13:00:00",
+  source: "https://samidoun.net/2025/03/calendar-of-resistance-for-palestine-events-actions-and-demonstrations-for-liberation-against-genocide/",
+  summary: "Samidoun's calendar lists Toronto on Friday 18 April 2026 at 1:00 pm at Nathan Phillips Square for Jumu'ah Prayer and speakers for Gaza. This provides a second date-specific Toronto entry in the same location, useful for testing same-city multiple-event handling in your map and analytics. Risk is Mid because the square is high-visibility and city-centre gatherings there can affect access and require crowd management even when peaceful."
+},
+
+{
+  title: "All Out for Palestine",
+  city: "Montreal",
+  lat: "45.5045",
+  lng: "-73.5561",
+  address: "Notre-Dame Basilica, 110 Notre-Dame St W",
+  "post code / zip": "H2Y 1T2",
+  country: "Canada",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-04-13T14:00:00",
+  source: "https://samidoun.net/page/16/?taxonomy=categoryCachedMar18",
+  summary: "Samidoun's cached events page lists Montreal on Sunday 13 April 2026 at 2:00 pm at Notre-Dame Basilica for 'All out for Palestine'. The listing gives both a clear time and a clear named meeting point in Old Montreal. Risk is Mid because a march or rally beginning in this dense, high-footfall area can affect pedestrian flow, traffic, and policing even if it remains orderly."
+},
+
+{
+  title: "Vancouver Stands United For Palestine - Weekly Rally",
+  city: "Vancouver",
+  lat: "49.2827",
+  lng: "-123.1207",
+  address: "Vancouver Art Gallery, Georgia St at Howe St",
+  "post code / zip": "V6Z 2H7",
+  country: "Canada",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-04-25T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Find a Protest lists a weekly Saturday rally for Palestine at 2:00 pm at the Vancouver Art Gallery on Georgia Street at Howe Street. This entry logs the 25 April 2026 instance, which falls inside your requested window. Risk is Mid because the Vancouver Art Gallery is a high-visibility civic gathering point where recurring political rallies can still generate police observation, route adjustments, and concentrated pedestrian traffic."
+},
+
+
+
+  
+
   {
   title: "Emergency Demo to Protest the Barring of Gaza",
   city: "Helsinki",
