@@ -22,7 +22,85 @@ window.alertsData =[
 
 
 
+  
 
+
+{
+  title: "No Tyrants Protest",
+  city: "Leipzig",
+  lat: "51.3406",
+  lng: "12.3747",
+  address: "Markt - southern S-Bahn entrance",
+  "post code / zip": "04109",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-28T14:00:00",
+  source: "https://www.democratsabroad.org/oliviabrown/no_tyrants_protest_in_leipzig",
+  summary: "Democrats Abroad Saxony has published a Leipzig protest for Saturday 28 March 2026 under the banner 'No Tyrants', explicitly linking it to the wider global No Kings protest wave. The organiser page says the rally will meet at 2:00 pm at the southern S-Bahn entrance on Markt and march at 2:45 pm to the nearby US Consulate. While the event is framed around US democracy and rule-of-law concerns rather than German domestic politics, it still represents a public protest in central Leipzig with a defined route and destination. Risk is Mid because the march moves through the city centre toward a diplomatic site, which raises the likelihood of police presence, crowd management, and short-term traffic disruption even if the organisers stress peaceful participation."
+},
+
+{
+  title: "Stand Against Germany's Racist Deportation Policies",
+  city: "Berlin",
+  lat: "52.5219",
+  lng: "13.4132",
+  address: "Alexanderplatz",
+  "post code / zip": "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-12T16:00:00",
+  source: "https://www.instagram.com/p/DIMHVkuNj2A/",
+  summary: "Organiser social posts call for a global protest day on Saturday 12 April 2026 against what they describe as Germany's escalating repression of Palestine solidarity and racist deportation policy. Related organiser posts specify a 4:00 pm demonstration from Alexanderplatz in Berlin focused on opposing the planned deportation of activists connected to Palestine protests. This action sits within a highly charged political environment in Berlin, where pro-Palestine and anti-deportation demonstrations have repeatedly drawn intensive policing, legal restrictions, and close media attention. Risk is High because the issue combines migration enforcement, civil-liberties questions, and Palestine solidarity, all of which have proven capable of producing rapid police intervention, route controls, and tense crowd dynamics in the capital."
+},
+
+{
+  title: "Cables of Resistance - Movement Conference Against Big Tech",
+  city: "Berlin",
+  lat: "52.5200",
+  lng: "13.4050",
+  address: "Berlin city centre",
+  "post code / zip": "",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-10T10:00:00",
+  source: "https://tumulte.org/2026/01/articles/cables-of-resistance-bewegungskonferenz-gegen-big-tech-berlin-10.-12.-april-2026/",
+  summary: "Tumulte and the Cables of Resistance organisers advertise a movement conference against Big Tech in Berlin from 10 to 12 April 2026. The call frames the gathering as a space to connect struggles against Amazon, Google, Microsoft, Meta, Tesla, OpenAI, Nvidia and related extractive and authoritarian infrastructures, while bringing together activists from labour, climate, and anti-capitalist movements. This is not a standard street march, but it is clearly a political movement event designed to coordinate resistance, strategy, and future action. Risk is Low because the published material points to a conference-style format rather than a confrontation-prone street mobilisation, though it remains important for tracking activist-network infrastructure in Berlin."
+},
+
+{
+  title: "MASK OFF MAERSK Weekly Protest",
+  city: "Hamburg",
+  lat: "53.5509",
+  lng: "10.0051",
+  address: "Johanniswall 7",
+  "post code / zip": "20095",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-09T11:00:00",
+  source: "https://www.instagram.com/p/DN0q9Vh2MXf/",
+  summary: "Campaign organisers for MASK OFF MAERSK say they gather every Thursday from 11:00 am to 1:00 pm in front of Maersk's headquarters at Johanniswall 7 in Hamburg. This entry logs the 9 April 2026 edition of that recurring protest campaign, which links the shipping company to logistics networks involved in the war in Gaza and calls for pressure on corporate complicity. The recurring nature of the action makes it useful for your analytics because it reflects sustained protest pressure at a named corporate site rather than a one-off symbolic rally. Risk is Mid because it targets a high-profile company headquarters in a central area, making police observation, private security presence, and concentrated pedestrian disruption more likely."
+},
+
+{
+  title: "Dyke* March Heidelberg",
+  city: "Heidelberg",
+  lat: "49.4094",
+  lng: "8.6947",
+  address: "Heidelberg city centre",
+  "post code / zip": "",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-25T12:00:00",
+  source: "https://www.instagram.com/p/DU_QTVojAVt/",
+  summary: "Organiser posts state that the Dyke* March Heidelberg will take place on Saturday 25 April 2026 and describe it as a loud, colourful, and explicitly solidaristic protest for lesbian, queer, and FLINTA* visibility. The available public snippet confirms the date and protest framing but does not expose a precise assembly point in the search result, so this entry uses a Heidelberg city-centre fallback for mapping. Risk is Mid because pride- and visibility-style marches are usually celebratory and stewarded, but they still involve public movement through urban space and can attract police presence or isolated hostile reaction depending on turnout and local context."
+},
+
+  
 
 {
   title: "Fridays for Future Climate Strike",
