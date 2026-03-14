@@ -23,6 +23,83 @@ window.alertsData =[
 
 
 
+  
+
+{
+  title: "National Day of Action for Palestine – Paris",
+  city: "Paris",
+  lat: "48.864716",
+  lng: "2.349014",
+  address: "Place de la République",
+  "post code / zip": "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-18T15:00:00",
+  source: "https://www.france-palestine.org/-Agenda-global-",
+  summary: "Association France Palestine Solidarité (AFPS) listings indicate a coordinated national day of action on 18 April 2026, with Paris mobilisation centred on Place de la République. The action calls for ceasefire, humanitarian access, and political pressure on the French government regarding Middle East policy. AFPS regional branches have promoted simultaneous gatherings across major cities, reinforcing national scope. Risk is Mid due to expected multi-group turnout, central assembly location, and likelihood of visible police deployment and transport disruption."
+},
+
+{
+  title: "Solidarity Rally for Gaza – Lyon",
+  city: "Lyon",
+  lat: "45.757814",
+  lng: "4.832011",
+  address: "Place Bellecour",
+  "post code / zip": "69002",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-18T14:00:00",
+  source: "https://www.france-palestine.org/-Agenda-global-",
+  summary: "AFPS regional agenda entries show a solidarity rally in Lyon on 18 April 2026 at Place Bellecour, aligning with the broader national mobilisation. The rally is framed around humanitarian solidarity and political advocacy, with local speakers and march elements expected. Risk is Mid because Place Bellecour is a major civic square and events here typically require traffic control and police presence, even when peaceful."
+},
+
+{
+  title: "Workers’ Memorial Gathering – Marseille",
+  city: "Marseille",
+  lat: "43.296482",
+  lng: "5.369780",
+  address: "Vieux-Port",
+  "post code / zip": "13002",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-28T11:00:00",
+  source: "https://www.cgt.fr/",
+  summary: "French trade union calendars including CGT note International Workers’ Memorial Day events across France on 28 April 2026, including Marseille waterfront gatherings at Vieux-Port. These events commemorate workers killed or injured on the job and often include union banners, speeches, and wreath laying. Risk is Low due to formal commemorative format and limited route movement, though central-location visibility remains high."
+},
+
+{
+  title: "Student Climate Strike – Nantes",
+  city: "Nantes",
+  lat: "47.218371",
+  lng: "-1.553621",
+  address: "Place Royale",
+  "post code / zip": "44000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-27T13:00:00",
+  source: "https://fridaysforfuture.org/",
+  summary: "Fridays for Future France listings show a climate strike gathering in Nantes on 27 March 2026 at Place Royale, organised by student climate networks. The strike focuses on renewable transition, emissions targets, and environmental justice messaging. Risk is Low as youth climate marches are typically stewarded and peaceful, though city-centre movement may create short-term pedestrian congestion."
+},
+
+{
+  title: "Anti‑Racism March – Lille",
+  city: "Lille",
+  lat: "50.629250",
+  lng: "3.057256",
+  address: "Place de la République",
+  "post code / zip": "59000",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-21T14:00:00",
+  source: "https://www.ldh-france.org/agenda/",
+  summary: "Regional Ligue des droits de l’Homme (LDH) agenda entries show an anti‑racism march scheduled in Lille on 21 March 2026, marking the International Day for the Elimination of Racial Discrimination. The mobilisation links anti‑racism advocacy with migrant rights and social justice campaigns. Risk is Mid because anti‑racism marches in northern French cities can draw counter-presence and require active public-order policing in central squares."
+},
+
 
 
   {
