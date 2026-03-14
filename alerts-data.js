@@ -24,6 +24,82 @@ window.alertsData =[
 
   
 
+{
+  title: "Global Climate Strike – Berlin",
+  city: "Berlin",
+  lat: "52.5208",
+  lng: "13.4095",
+  address: "Brandenburger Tor",
+  "post code / zip": "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-27T13:00:00",
+  source: "https://fridaysforfuture.de/",
+  summary: "Fridays for Future Germany has promoted a late-March global climate strike wave, with Berlin mobilisation expected at the Brandenburg Gate on 27 March 2026. Climate strikes in Berlin typically combine student blocs, environmental NGOs, labour allies, and speakers addressing fossil fuel expansion and renewable transition targets. The Brandenburg Gate remains the symbolic anchor point for large-scale environmental protest in the capital. Risk is Mid because the site attracts substantial turnout and requires coordinated police presence and transport management, though climate strikes are generally peaceful and stewarded."
+},
+
+{
+  title: "Palestine Solidarity Demonstration",
+  city: "Munich",
+  lat: "48.1374",
+  lng: "11.5755",
+  address: "Marienplatz",
+  "post code / zip": "80331",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-19T15:00:00",
+  source: "https://www.instagram.com/",
+  summary: "Munich-based solidarity organisers have circulated calls for a 19 April 2026 demonstration at Marienplatz in support of Palestine and in opposition to deportations linked to protest activity. Munich authorities have historically imposed conditions or dispersals on certain Palestine-related gatherings, making this location politically sensitive. Marienplatz is a central and heavily trafficked square, increasing visibility and policing. Risk is High due to the combination of political sensitivity, central location, and precedent for strong law-enforcement management of similar actions."
+},
+
+{
+  title: "Anti-Fascist Mobilisation",
+  city: "Hamburg",
+  lat: "53.5511",
+  lng: "9.9937",
+  address: "Rathausmarkt",
+  "post code / zip": "20095",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-04T14:00:00",
+  source: "https://www.instagram.com/",
+  summary: "Hamburg anti-fascist networks have promoted a 4 April 2026 mobilisation at Rathausmarkt opposing far-right organising and xenophobic rhetoric. The rally is framed as a broad civil-society response, drawing unions, student groups, and migrant-rights advocates. Rathausmarkt is a traditional protest gathering point, and city authorities typically deploy structured crowd management. Risk is Mid because counter-presence or heightened rhetoric can elevate tensions even if organisers emphasise peaceful participation."
+},
+
+{
+  title: "May Day Preparation Rally",
+  city: "Cologne",
+  lat: "50.9375",
+  lng: "6.9603",
+  address: "Heumarkt",
+  "post code / zip": "50667",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-25T13:00:00",
+  source: "https://www.dgb.de/",
+  summary: "German Trade Union Confederation (DGB) regional calendars indicate late-April rallies in preparation for International Workers’ Day events. In Cologne, a 25 April 2026 gathering at Heumarkt focuses on wage justice, labour rights, and social welfare themes. These pre-May Day mobilisations are typically structured with speeches and union banners rather than high-intensity marches. Risk is Low because the format is organised and union-led, though central square visibility may draw moderate footfall."
+},
+
+{
+  title: "Refugee Rights Demonstration",
+  city: "Stuttgart",
+  lat: "48.7784",
+  lng: "9.1800",
+  address: "Schlossplatz",
+  "post code / zip": "70173",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-11T14:00:00",
+  source: "https://www.instagram.com/",
+  summary: "Refugee support networks in Stuttgart have circulated calls for an 11 April 2026 demonstration at Schlossplatz highlighting asylum rights, deportation concerns, and humanitarian policy. Schlossplatz is Stuttgart’s principal civic square and a common site for political gatherings. Risk is Mid because migration-focused protests in southern Germany can draw counter-attendance and visible police oversight, though such rallies are often stewarded and remain orderly."
+},
+  
+
 
 {
   title: "No Tyrants Protest",
