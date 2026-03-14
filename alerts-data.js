@@ -21,9 +21,6 @@ window.alertsData =[
 },
 
 
-
-
-
   {
   title: "Emergency Demo to Protest the Barring of Gaza",
   city: "Helsinki",
