@@ -23,6 +23,327 @@ window.alertsData =[
 
 
 
+
+{
+  title: "Sheffield Protest: Stop Bombing Iran",
+  city: "Sheffield",
+  lat: "53.3811",
+  lng: "-1.4701",
+  address: "Sheffield city centre",
+  "post code / zip": "",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.stopwar.org.uk/events/sheffield-protest-stop-bombing-iran/",
+  summary: "Stop the War lists a Sheffield protest for 21 March 2026 at 12:00 pm under the banner 'Stop Bombing Iran'. The event sits within a wider UK day of anti-war mobilisation around Iran, Lebanon, and Palestine, and is framed as part of a broader attempt to widen turnout beyond London into major regional cities. Because the published page names Sheffield but does not give a more specific meeting point, this entry uses a city-centre fallback for mapping. Risk is High because anti-war protests tied to fast-moving Middle East escalation can attract emotionally charged turnout, visible policing, and short-notice changes to public-order management if crowds grow or if counter-presence develops."
+},
+
+{
+  title: "Southport Friends of Palestine Vigil",
+  city: "Southport",
+  lat: "53.6483",
+  lng: "-3.0054",
+  address: "Atkinson Theatre, Lord Street",
+  "post code / zip": "PR8 1DB",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-21T12:00:00",
+  source: "https://lfop.co.uk/",
+  summary: "Liverpool Friends of Palestine lists an hour-long Southport Friends of Palestine vigil for 21 March 2026 in front of the Atkinson Theatre on Lord Street, with supporters encouraged to bring banners and flags. The event is presented as a local solidarity vigil rather than a marching protest, making it useful for regional coverage outside the major metropolitan centres. Risk is Low because the published format suggests a short, static public presence with limited likelihood of confrontation, though there may still be minor pedestrian and traffic effects in the town centre."
+},
+
+{
+  title: "Trauma and Collective Sumud in a Time of Genocide",
+  city: "Liverpool",
+  lat: "53.3922",
+  lng: "-2.9717",
+  address: "The Crawford Centre, Upper Warwick Street",
+  "post code / zip": "L8 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-25T18:30:00",
+  source: "https://lfop.co.uk/",
+  summary: "Liverpool Friends of Palestine lists a public meeting for 25 March 2026 focused on trauma, collective 'sumud' (steadfastness), and the psychological impacts of genocide, hosted at the Crawford Centre. The meeting is described as featuring Gwyn Daniel from the UK-Palestine Mental Health Network and is framed as an educational and solidarity event rather than a street mobilisation. Risk is Low because it is a fixed-venue indoor meeting, but it remains relevant for tracking movement infrastructure, speaker networks, and Palestine solidarity activity in Merseyside."
+},
+
+{
+  title: "March for the Palestinians",
+  city: "Liverpool",
+  lat: "53.3981",
+  lng: "-2.9719",
+  address: "Catholic Cathedral, Mount Pleasant",
+  "post code / zip": "L3 5TQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-05T14:00:00",
+  source: "https://lfop.co.uk/",
+  summary: "Liverpool Friends of Palestine says its next march for the Palestinians will take place on Easter Sunday, 5 April 2026, assembling at 2:00 pm at the Catholic Cathedral before proceeding to speakers at Derby Square. This is one of the clearer city-level entries outside London because the start point and onward movement are explicitly published. Risk is Mid because city-centre Palestine marches can generate sizeable turnout, visible stewarding, road disruption, and police monitoring even when the protest remains disciplined and peaceful."
+},
+
+{
+  title: "International Peace Camp",
+  city: "Lakenheath",
+  lat: "52.4178",
+  lng: "0.5610",
+  address: "Outside RAF Lakenheath",
+  "post code / zip": "IP27 9PN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-01T12:00:00",
+  source: "https://www.stopwar.org.uk/events/international-peace-camp/",
+  summary: "Stop the War lists an International Peace Camp at RAF Lakenheath beginning on 1 April 2026, noting that the Lakenheath Alliance for Peace will maintain a 24-hour presence outside the US nuclear airbase from 1 to 6 April. The event is explicitly tied to anti-nuclear and anti-war campaigning around the base. Risk is Mid because peace-camp style actions are often organised and sustained rather than explosive, but the military-site setting means there is likely to be close security monitoring, controlled access, and possible friction around gate areas or roadside presence."
+},
+
+{
+  title: "Liverpool International Workers Memorial Day",
+  city: "Liverpool",
+  lat: "53.4078",
+  lng: "-2.9953",
+  address: "Port of Liverpool Building, 1 Canada Boulevard",
+  "post code / zip": "L3 1BY",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-28T11:00:00",
+  source: "https://www.megaphone.org.uk/events/liverpool-international-workers-memorial-day-18",
+  summary: "Megaphone lists Liverpool's International Workers Memorial Day event for 28 April 2026, beginning at 11:00 am at the Port of Liverpool Building. The programme includes speeches, wreath laying at St George's Dock Building, a minute's silence, and a piper's lament before retiring to the Racquet Club Hotel for refreshments and commemorative speeches. Risk is Low because the event is a formal remembrance gathering rather than a contentious street protest, though banners, crowd clustering, and short-duration public-space impacts are still likely at the waterfront."
+},
+
+{
+  title: "St Helens International Workers Memorial Day",
+  city: "St Helens",
+  lat: "53.4546",
+  lng: "-2.7345",
+  address: "The Workers Memorial, Vera Page Park, 1 Salisbury Street",
+  "post code / zip": "WA10 1AU",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-26T11:00:00",
+  source: "https://www.megaphone.org.uk/events/st-helens-international-workers-memorial-day-3",
+  summary: "Megaphone lists a St Helens International Workers Memorial Day service for 26 April 2026 at 11:00 am at the Workers Memorial in Vera Page Park. The listing says the 2026 focus is preventing violence at work and invites unions, employers, families, and members of the public to attend with banners and floral tributes. Risk is Low because the event is primarily commemorative and structured around a remembrance ceremony rather than a direct-action protest, but it remains relevant for local labour-movement mapping."
+},
+
+{
+  title: "Leeds March for Palestine",
+  city: "Leeds",
+  lat: "53.8008",
+  lng: "-1.5491",
+  address: "Leeds Art Gallery",
+  "post code / zip": "LS1 3AA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-19T12:30:00",
+  source: "https://m.facebook.com/LeedsPSC.org.uk/photos/leeds-march-for-palestine-israel-stop-killing-our-healthworkers%EF%B8%8Fwe-will-be-march/1112703150898034/",
+  summary: "A Leeds Palestine Solidarity Campaign post says supporters will march on Saturday 19 April 2026 at 12:30 pm from Leeds Art Gallery to remember Palestinian health workers killed in Gaza. The social post gives both the date and start location, which makes it usable for mapping even though it is not carried by a mainstream news outlet. Risk is Mid because Leeds city-centre Palestine marches are generally peaceful but can still produce concentrated footfall, route disruption, police monitoring, and the possibility of hostile counter-presence."
+},
+
+
+
+  
+{
+  title: "Stop bombing Iran – Hands off Lebanon – Free Palestine",
+  city: "London",
+  lat: "51.49763",
+  lng: "-0.174059",
+  address: "Exhibition Road (Hyde Park end), South Kensington",
+  "post code / zip": "SW7 2BX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-21T12:00:00",
+  source: "https://palestinecampaign.org/events/together-for-palestine-march/",
+  summary: "Palestine Solidarity Campaign says demonstrators will assemble at 12pm on Exhibition Road at the Hyde Park end before marching in central London, linking Gaza solidarity with the wider anti-racist mobilisation taking place later that day. The event sits inside a period of heightened sensitivity around Palestine-related demonstrations in London, with organisers framing it as pressure on the UK government over arms exports and political support for Israel. Risk is rated High because central London Palestine marches can draw very large crowds, major traffic and public-transport disruption, dense police deployments, and a realistic possibility of hostile counter-presence or last-minute route control by police."
+},
+
+{
+  title: "Protest at Elbit Systems Supplying Israel",
+  city: "Bristol",
+  lat: "51.520453",
+  lng: "-2.564858",
+  address: "Elbit Systems, 38 Bolingbroke Way, Filton",
+  "post code / zip": "BS34 6FE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T12:00:00",
+  source: "https://palestinecampaign.org/events/arms-factory-protests-day-of-action/",
+  summary: "Palestine Solidarity Campaign lists a regional arms-factory protest at Elbit Systems in Filton, Bristol, assembling at noon. PSC describes Elbit as Israel’s largest weapons manufacturer and says the action is part of a coordinated national day of protests against companies involved in the arms supply chain to Israel. Risk is Mid because the event is targeted and politically charged but focused on a specific industrial site rather than a city-centre march. The main impacts are likely to be localised congestion, security presence, and possible interaction with workers, private security, or police."
+},
+
+{
+  title: "Protest at Attewell Arms Component Site",
+  city: "London",
+  lat: "51.501615",
+  lng: "-0.427631",
+  address: "Attewell, Unit 7 Millington Road, Hayes",
+  "post code / zip": "UB3 4AZ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T11:00:00",
+  source: "https://palestinecampaign.org/events/arms-factory-protests-day-of-action/",
+  summary: "PSC lists an 11am protest in Hayes outside Attewell, which it says produces components used in Israel’s F-35 fighter jets. The action forms part of the same national arms-factory protest day and is designed to focus attention on the UK-based supply chain rather than only on finished weapons systems. Risk is Mid because turnout is likely to be smaller than a central-London march but the site-specific focus can create tight police management, local business disruption, and high emotional intensity among attendees."
+},
+
+{
+  title: "Protest at CPI TMD Technologies",
+  city: "London",
+  lat: "51.50718",
+  lng: "-0.434946",
+  address: "CPI TMD Technologies Ltd, Swallowfield Way, Hayes",
+  "post code / zip": "UB3 1DQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T13:00:00",
+  source: "https://palestinecampaign.org/events/arms-factory-protests-day-of-action/",
+  summary: "PSC lists a second Hayes protest for 1pm outside CPI TMD Technologies, describing the company as having held licences to export arms to Israel since 2021. Because it follows the earlier Attewell assembly, it may attract activists moving between sites, producing a more mobile protest footprint than a single static picket. Risk is Mid due to the potential for rolling police escort or containment, short-notice roadside disruption, and heightened tensions around an arms-export issue."
+},
+
+{
+  title: "Protest at Pearson Engineering",
+  city: "Newcastle upon Tyne",
+  lat: "54.967046",
+  lng: "-1.684953",
+  address: "Pearson Engineering (Rafael), Armstrong Works, Scotswood Road",
+  "post code / zip": "NE15 6UX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T11:00:00",
+  source: "https://palestinecampaign.org/events/arms-factory-protests-day-of-action/",
+  summary: "PSC says protesters will gather at 11am at Pearson Engineering in Newcastle, which it identifies as being owned by Rafael, Israel’s state-owned weapons manufacturer. The protest is one of five regional actions designed to broaden turnout beyond London and demonstrate supply-chain pressure across Britain. Risk is Mid because the event is likely to be controlled and localised, but protest at an industrial site tied to weapons manufacturing can still generate visible policing, access disruption, and confrontation risk around gates or vehicle movements."
+},
+
+{
+  title: "Protest at UAV Engines",
+  city: "Shenstone",
+  lat: "52.639703",
+  lng: "-1.847888",
+  address: "UAV Engines Ltd, Lynn Lane",
+  "post code / zip": "WS14 0EA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T11:00:00",
+  source: "https://palestinecampaign.org/events/arms-factory-protests-day-of-action/",
+  summary: "PSC lists an 11am demonstration at UAV Engines in Shenstone, describing the company as an Elbit Systems subsidiary involved in producing drones, missiles, and bombs used by the Israeli military. This gives the dataset useful non-metropolitan coverage in Staffordshire and broadens regional mapping for industrial-site protests. Risk is Mid because turnout may be smaller than in major cities, but access roads, rail proximity, and the sensitivity of the target site may still create concentrated disruption and a guarded police response."
+},
+
+{
+  title: "Protest at BAE Systems Supply Chain Site",
+  city: "Towcester",
+  lat: "52.130471",
+  lng: "-0.987724",
+  address: "Richmond Road Car Park",
+  "post code / zip": "NN12 6DT",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T11:00:00",
+  source: "https://palestinecampaign.org/events/arms-factory-protests-day-of-action/",
+  summary: "PSC lists an 11am assembly at Richmond Road Car Park in Towcester for a protest focused on BAE Systems and the role PSC says the company plays in supplying components used by the Israeli military. This entry is useful for testing how your map handles smaller-market-town protest data rather than only large-city actions. Risk is Mid because the event remains a politically sensitive target-site protest with likely traffic effects and police presence, even if crowd size is more limited."
+},
+
+{
+  title: "Court Support for Nakba Day Arrestees",
+  city: "Glasgow",
+  lat: "55.852984",
+  lng: "-4.253594",
+  address: "Glasgow Sheriff Court, 1 Carlton Place",
+  "post code / zip": "G5 9DA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-26T09:30:00",
+  source: "https://www.findaprotest.info/event/glasgow/oa3U97lghj2ZawDpVYYUhB",
+  summary: "Find a Protest lists court support beginning at 9:30am at Glasgow Sheriff Court for people charged after a 2024 Nakba Day picket outside Thales. The organiser text says supporters are being asked to attend across multiple trial days, meaning this is part of a sustained solidarity effort rather than a one-off symbolic appearance. Risk is Mid because court-support actions are usually structured and smaller than mass marches, but the legal context, repeated attendance, and strong pro-Palestine messaging can still draw police monitoring and emotionally charged exchanges."
+},
+
+{
+  title: "In Every Key",
+  city: "Manchester",
+  lat: "53.467152",
+  lng: "-2.251083",
+  address: "Ascension Church, 282 Stretford Road, Hulme",
+  "post code / zip": "M15 5TQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-11T17:00:00",
+  source: "https://www.findaprotest.info/event/manchester/evt-b78f4db59fb57cf4",
+  summary: "Find a Protest lists 'In Every Key' in Manchester as a fundraiser and community event organised by Intersectional Uprising Manchester, with proceeds going to 4Refugee Women and Not A Phase. The event is framed as a grassroots variety show supporting human-rights and mutual-aid causes rather than a street march. Risk is Low because it is an indoor, ticketed, community-led gathering with limited indications of confrontation or transport disruption."
+},
+
+{
+  title: "Break With Trump",
+  city: "Glasgow",
+  lat: "55.8642",
+  lng: "-4.2518",
+  address: "Glasgow city centre",
+  "post code / zip": "",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-11T12:00:00",
+  source: "https://www.findaprotest.info/event/glasgow/evt-c21cd8d8564e5517",
+  summary: "Find a Protest lists a Scottish national demonstration in Glasgow under the banner 'Break With Trump', promoted by Stop the War Scotland in response to the US-Israel attack on Iran and what organisers describe as Scotland’s growing alignment with US militarism. The page says the demonstration calls on all who oppose a 'new era of war' to join the mobilisation on 11 April. Risk is High because national anti-war demonstrations can bring in sizeable turnout from outside the city, increase the probability of heavy police management and traffic disruption, and generate a more confrontational atmosphere if counter-groups appear or if march routes pass sensitive civic spaces."
+},
+
+{
+  title: "North Glasgow Against Racism",
+  city: "Glasgow",
+  lat: "55.9024",
+  lng: "-4.304837",
+  address: "Maryhill Park (entrance on Maryhill Road)",
+  "post code / zip": "G20 0TR",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-12T12:00:00",
+  source: "https://www.findaprotest.info/event/glasgow/E1xIonVkk5PRGuuFnDPqC2",
+  summary: "Find a Protest says trade unions, LGBT+ groups, faith organisations, environmental groups, and anti-racist campaigners are calling a noon march from Maryhill Park to Maryhill Burgh Halls under the banner 'North Glasgow Against Racism'. The organiser text explicitly frames the event as a response to refugee scapegoating and far-right division, and references an earlier anti-racist turnout in Falkirk as a model. Risk is Mid because the march appears broad-based and stewarded, but the anti-racist framing still raises the chance of police presence, traffic impact, or isolated hostile response."
+},
+
+{
+  title: "Scottish Workers Day School for Palestine",
+  city: "Edinburgh",
+  lat: "55.947515",
+  lng: "-3.191218",
+  address: "Augustine Church, 41 George IV Bridge",
+  "post code / zip": "EH1 1EL",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-11T10:00:00",
+  source: "https://www.findaprotest.info/event/edinburgh/evt-eb94adddd0a9e074",
+  summary: "Find a Protest lists an all-day Scottish Workers Day School for Palestine in Edinburgh, hosted by the Scottish Palestine Solidarity Campaign with Workers4Pal and partners. The organiser description says the event is aimed at helping workers and activists move from policy statements to practical workplace action for Palestine. Risk is Low because this is a workshop-style organising event in a fixed indoor venue rather than a roaming demonstration, though it remains politically relevant for movement-building and network analysis."
+},
+
+{
+  title: "'New world disorder: the modern far right and how we beat them'",
+  city: "London",
+  lat: "51.534599736248",
+  lng: "-0.13729273011129",
+  address: "The Camden, Crowndale Road",
+  "post code / zip": "NW1 1TN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-01T18:30:00",
+  source: "https://www.findaprotest.info/event/london/evt-01e8c923df41bd81",
+  summary: "Find a Protest lists a London-wide public meeting hosted by the Socialist Workers Party on 1 April, described as a discussion on the modern far right and how to build the anti-racist movement after the late-March demonstration in London. The page gives a doors-open time of 6:30pm at The Camden on Crowndale Road. Risk is Low because it is an indoor meeting rather than a street action, but it is still analytically useful as a post-mobilisation organising event linked to anti-fascist campaigning."
+},
+
+
+  
   
 {
   title: "Static Assembly Following Ban of al-Quds Day March",
