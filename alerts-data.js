@@ -23,6 +23,53 @@ window.alertsData =[
 
 
 
+  {
+  title: "Emergency Demo to Protest the Barring of Gaza",
+  city: "Helsinki",
+  lat: "60.1699",
+  lng: "24.9524",
+  address: "Senate Square",
+  "post code / zip": "00170",
+  country: "Finland",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-18T13:00:00",
+  source: "https://www.instagram.com/p/DTHuVptjbxc/",
+  summary: "Public Instagram snippets from organisers including Health for Palestine Finland and allied groups advertise an emergency demo in Helsinki to protest the barring of Gaza, with a stated time of 13:00 at Senate Square. The language and source pattern indicate a rapid-response solidarity mobilisation rather than a long-planned march, which is useful for your dataset because it captures reactive protest behaviour in a Nordic capital. Risk is Mid because Senate Square is one of Helsinki's most visible civic spaces, and even relatively compact political gatherings there can draw police observation, media attention, and concentrated pedestrian disruption."
+},
+
+{
+  title: "Solidarity Rally for Palestine",
+  city: "Sofia",
+  lat: "42.6977",
+  lng: "23.3219",
+  address: "Bulgarian Foreign Ministry",
+  "post code / zip": "1113",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-20T17:30:00",
+  source: "https://www.instagram.com/p/DKeCu0Stv-y/",
+  summary: "An Instagram post states that the Association of Palestinians in Bulgaria organised a solidarity rally in the centre of Sofia in front of the Bulgarian Foreign Ministry. The available public snippet confirms the protest framing and the location, but not the full visible poster details in the search result, so this entry uses a late-afternoon placeholder for mapping and testing purposes only. Risk is Mid because demonstrations linked to Palestine in central Sofia remain politically sensitive and can generate visible police presence and crowd clustering around ministry buildings even when they remain peaceful."
+},
+
+{
+  title: "Vilnius Forum of Democratic Resistance",
+  city: "Vilnius",
+  lat: "54.6872",
+  lng: "25.2797",
+  address: "Vilnius city centre",
+  "post code / zip": "",
+  country: "Lithuania",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-20T11:00:00",
+  source: "https://www.instagram.com/p/DRzCYG-jcXq/",
+  summary: "Public Instagram posts for the Vilnius Forum of Democratic Resistance state that the forum is open from 13 March to 18 April 2026. While this is not a street march, it is a political event anchored in democratic-resistance themes and relevant to your broader protest-and-event dataset because it maps organiser infrastructure and public political programming in the Lithuanian capital. This entry logs an in-window date for the continuing forum rather than claiming a one-day protest. Risk is Low because the published material indicates a forum or exhibition-style format rather than a contentious street mobilisation."
+},
+
+
+
 {
   title: "Palestinian Land Day March",
   city: "Madrid",
