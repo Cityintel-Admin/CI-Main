@@ -22,6 +22,97 @@ window.alertsData =[
 
 
 
+  {
+  title: "Weekly March for Gaza",
+  city: "Amsterdam",
+  lat: "52.3791",
+  lng: "4.9003",
+  address: "Amsterdam Centraal Train Station",
+  "post code / zip": "1012 AB",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-06T15:00:00",
+  source: "https://www.findaprotest.info/event/amsterdam/0c1ca889-bf5e-47ad-85e1-65b92fe9c459",
+  summary: "Find a Protest lists a recurring 'Weekly March for Gaza' in Amsterdam on Sunday 6 April 2026 at 3:00 pm at Amsterdam Centraal Train Station. The listing describes it as a recurring Sunday mobilisation calling for ceasefire, humanitarian access, and accountability over attacks on civilians in Gaza. This is useful for your Europe capital layer because it is date-specific, geocodable, and clearly linked to an ongoing protest cycle in the Dutch capital. Risk is Mid because central-station assembly points create heavy pedestrian density and visible police monitoring, even when marches remain disciplined and peaceful."
+},
+
+{
+  title: "Palestinian Land Day",
+  city: "Brussels",
+  lat: "50.8649",
+  lng: "4.3794",
+  address: "Les Halles de Schaerbeek, Rue Royale Sainte-Marie 22A",
+  "post code / zip": "1030",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-04-03T18:00:00",
+  source: "https://www.findaprotest.info/event/schaerbeek/evt-cec83ea560106fbd",
+  summary: "Find a Protest lists a Palestine Land Day event in Brussels on Friday 3 April 2026 at 6:00 pm at Les Halles de Schaerbeek. The programme is presented as a speaker-panel and fundraising event featuring Palestine advocates, with proceeds supporting agricultural workers in Palestine. This is not a street march, but it is a useful capital-city solidarity event for your dataset because it is date-specific, location-specific, and tied to a wider mobilisation calendar around Land Day. Risk is Low because it is a fixed indoor event rather than a roaming demonstration."
+},
+
+{
+  title: "Action Training Against Elbit Systems",
+  city: "Brussels",
+  lat: "50.8467",
+  lng: "4.3525",
+  address: "Brussels city centre",
+  "post code / zip": "",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-28T12:00:00",
+  source: "https://www.findaprotest.info/event/brussels/7nhtrZb5dOz0FiwxRFqfqN",
+  summary: "Find a Protest lists an action training in Brussels on Saturday 28 March 2026 as part of the Stop Arming Israel Belgium campaign against OIP-Elbit. The event text says action trainings are being organised in Brussels and other Belgian cities to support decentralised direct action against Elbit Systems and related military-supply infrastructure. The public listing does not expose a precise time in the snippet, so this entry uses a midday placeholder for mapping and testing. Risk is Mid because the campaign is explicitly framed around intensifying direct action against arms-linked infrastructure, which increases the chance of police attention and stronger security sensitivity than a standard indoor meeting."
+},
+
+{
+  title: "March for Palestine",
+  city: "Lisbon",
+  lat: "38.7486",
+  lng: "-9.1544",
+  address: "Cidade Universitária",
+  "post code / zip": "1099-039",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-27T15:00:00",
+  source: "https://www.instagram.com/comite.palestina/",
+  summary: "Organiser social posts from Comité de Solidariedade com a Palestina and related Lisbon-based solidarity accounts advertise a national march for Palestine in Lisbon on Friday 27 March 2026, following an earlier mobilisation in December 2025. The public search snippets identify the date and the city, while linked campaign material points to Cidade Universitária as the starting area for Lisbon Palestine mobilisations in this period. Risk is Mid because Lisbon capital-city Palestine marches can attract broad coalition turnout, visible police management, and major route disruption around university and central-city corridors even when they remain peaceful."
+},
+
+{
+  title: "Demonstration for Palestine",
+  city: "Vienna",
+  lat: "48.2125",
+  lng: "16.3688",
+  address: "Haus der EU, Wipplingerstraße 35",
+  "post code / zip": "1010",
+  country: "Austria",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-11T14:00:00",
+  source: "https://www.instagram.com/p/DOnyUFAjZhH/",
+  summary: "Multiple organiser Instagram posts publicise a Vienna demonstration for Palestine on Saturday 11 April 2026 at 2:00 pm, starting at the Haus der EU on Wipplingerstraße and moving toward the Ministry of Economic Affairs and Ballhausplatz. The public snippets consistently repeat the same route logic and time, giving this entry stronger organiser-level confirmation than a single isolated post. Risk is High because the route passes through politically sensitive central-government space in Vienna and because Palestine-related protests in European capitals can draw dense policing, heavy media attention, and the possibility of hostile counter-presence or rapid public-order intervention."
+},
+
+{
+  title: "Palestine Demonstration",
+  city: "Stockholm",
+  lat: "59.3420",
+  lng: "18.0485",
+  address: "Odenplan",
+  "post code / zip": "113 22",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-18T13:00:00",
+  source: "https://www.instagram.com/palestinademostockholm/",
+  summary: "The organiser profile 'Palestina Demonstration Stockholm' states that demonstrations for Palestine in Stockholm take place every Saturday at 1:00 pm at Odenplan. Using that recurring organiser notice, this entry logs the 18 April 2026 edition of the weekly capital-city protest. Recurring Saturday rallies are analytically valuable because they show sustained mobilisation rather than one-off peaks. Risk is Mid because Odenplan is a major public node in Stockholm, so recurring political gatherings there can still generate crowd concentration, visible policing, and possible hostile attention even if organisers intend a peaceful demonstration."
+},
+
+
   
 
 {
