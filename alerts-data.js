@@ -23,6 +23,97 @@ window.alertsData =[
 
 
 
+
+{
+  title: "Fridays for Future Climate Strike",
+  city: "Dortmund",
+  lat: "51.5136",
+  lng: "7.4653",
+  address: "Platz der Deutschen Einheit",
+  "post code / zip": "44137",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-20T17:00:00",
+  source: "https://fridaysforfuture.de/streiktermine/",
+  summary: "Fridays for Future Germany lists a climate strike in Dortmund on 20 March 2026 at 5:00 pm at Platz der Deutschen Einheit. This is one of the explicitly published strike dates on the national strike calendar and gives a clear city-level entry outside Berlin. Risk is Low because the action is part of the established Fridays for Future protest model, which is usually stewarded and peaceful, though it can still create concentrated footfall and short-lived traffic impacts around the assembly point."
+},
+
+{
+  title: "Fridays for Future Climate Action",
+  city: "Frankfurt am Main",
+  lat: "50.1169",
+  lng: "8.6719",
+  address: "Alte Oper",
+  "post code / zip": "60313",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-20T12:00:00",
+  source: "https://fridaysforfuture.de/streiktermine/",
+  summary: "Fridays for Future Germany lists a climate action in Frankfurt am Main for 20 March 2026 at 12:00 pm at Alte Oper, described on the strike calendar as a 'Kreidebild' action. Although this looks smaller and more symbolic than a full city march, it is still relevant for your dataset because it is a date-specific public climate mobilisation in a major German city. Risk is Low because the format suggests a controlled visual action rather than a high-friction march, but the central location can still attract attention and crowding."
+},
+
+{
+  title: "Fridays for Future Feeder Bike Demonstration",
+  city: "Rastede",
+  lat: "53.2463",
+  lng: "8.2017",
+  address: "Marktplatz",
+  "post code / zip": "26180",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-20T12:15:00",
+  source: "https://fridaysforfuture.de/streiktermine/",
+  summary: "The Fridays for Future Germany strike calendar lists a feeder bicycle demonstration in Rastede on 20 March 2026 at 12:15 pm from Marktplatz, heading toward Oldenburg. This is useful for your mapping because it shows climate protest infrastructure extending into smaller municipalities, not just major urban centres. Risk is Low because it is a coordinated feeder ride rather than a contentious mass rally, but moving cyclists on public roads can still require traffic management and route supervision."
+},
+
+{
+  title: "March Against Germany's Deportation Policy",
+  city: "Cologne",
+  lat: "50.9488",
+  lng: "6.9595",
+  address: "Ebertplatz",
+  "post code / zip": "50668",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-21T14:30:00",
+  source: "https://www.instagram.com/p/DHbs8O3tjS-/",
+  summary: "An organiser Instagram post says participants will gather on Friday 21 March 2026 at 2:30 pm at Ebertplatz in Cologne and move from 3:00 pm toward Rudolfplatz/Hahnentor. The mobilisation is framed around opposition to Germany's deportation policy and wider anti-racist solidarity themes. This is organiser-level sourcing rather than mainstream media, but it includes a clear date, start time, and route logic, which makes it suitable for inclusion under the sourcing standard you approved. Risk is Mid because a moving city-centre march on migration issues can draw police monitoring, route management, and possible hostile attention."
+},
+
+{
+  title: "Wir bleiben alle – Politically Motivated Deportations Must Stop",
+  city: "Berlin",
+  lat: "52.5219",
+  lng: "13.4132",
+  address: "Alexanderplatz",
+  "post code / zip": "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-18T16:00:00",
+  source: "https://www.grundrechtekomitee.de/details/wir-bleiben-alle-politisch-motivierte-abschiebungen-stoppen",
+  summary: "The Committee for Basic Rights and Democracy published a call for a demonstration on 18 April 2026 at 4:00 pm from Alexanderplatz in Berlin against the planned expulsion of four activists linked to Palestine solidarity protests. The statement describes the case as a major escalation in the repression of political expression, arguing that Berlin is using migration law to target protest participation. The protest sits at the intersection of migration policy, civil liberties, and Germany's handling of Palestine solidarity, giving it broader political significance than a single-issue rally. Risk is High because Berlin demonstrations linked to Palestine solidarity and state repression are subject to intense policing, legal scrutiny, and a realistic possibility of confrontation, route restrictions, or rapid public-order escalation."
+},
+
+{
+  title: "MASK OFF MAERSK Weekly Protest",
+  city: "Hamburg",
+  lat: "53.5509",
+  lng: "10.0051",
+  address: "Johanniswall 7",
+  "post code / zip": "20095",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-26T11:00:00",
+  source: "https://www.instagram.com/p/DN0q9Vh2MXf/",
+  summary: "Organiser posts for the MASK OFF MAERSK campaign say there is a protest rally in front of Maersk's headquarters in Hamburg every Thursday from 11:00 am to 1:00 pm at Johanniswall 7. Using that recurring organiser notice, this entry logs the 26 March 2026 edition of the weekly protest. The campaign is framed around opposition to shipping and logistics links to the war in Gaza, and recurring actions of this kind can build visibility over time even without mainstream media coverage. Risk is Mid because the protest targets a named corporate headquarters in a busy central area, which can lead to police monitoring, private security presence, and concentrated pedestrian disruption."
+},
+
   
 
 {
