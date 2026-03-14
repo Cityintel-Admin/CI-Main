@@ -22,6 +22,54 @@ window.alertsData =[
 
 
 
+
+{
+  title: "Palestinian Land Day March",
+  city: "Madrid",
+  lat: "40.4078",
+  lng: "-3.6903",
+  address: "Atocha to Cibeles to Sol",
+  "post code / zip": "28012",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-28T18:00:00",
+  source: "https://www.instagram.com/p/DVgVYZdiB7X/",
+  summary: "Organiser posts from Madrid Palestine solidarity networks advertise a Palestinian Land Day march in Madrid on 28 March 2026 at 18:00, moving from Atocha through Cibeles to Sol. The mobilisation is framed as part of a nationwide solidarity response around Palestinian Land Day, with emphasis on continued protest against occupation, forced displacement, and war. Risk is Mid because the route cuts through some of Madrid's busiest civic corridors and is likely to require police traffic management, close stewarding, and strong crowd control even if the event remains peaceful."
+},
+
+{
+  title: "National March for Palestine",
+  city: "Rome",
+  lat: "41.8748",
+  lng: "12.4813",
+  address: "Porta San Paolo (Piazzale Ostiense) to Piazza di Porta San Giovanni",
+  "post code / zip": "00154",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-29T14:30:00",
+  source: "https://www.instagram.com/p/DHqMnvCqBm0/",
+  summary: "Multiple organiser posts publicise a national march for Palestine in Rome on Saturday 29 March 2026, starting at 14:30 from Porta San Paolo / Piazzale Ostiense and proceeding to Piazza di Porta San Giovanni. The route and timing are repeated across activist posts, and the march is presented as a large national mobilisation against war, genocide, and Italy's relationship with Israel. Risk is High because Rome national Palestine marches can draw heavy turnout from outside the capital, significant road closures, dense police deployments, and a heightened chance of confrontation or sudden route restrictions in politically sensitive central areas."
+},
+
+{
+  title: "Assembly Against the War Economy",
+  city: "Rome",
+  lat: "41.8998",
+  lng: "12.4767",
+  address: "Piazza Capranica",
+  "post code / zip": "00186",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-25T18:00:00",
+  source: "https://www.instagram.com/p/DVjE02pDWts/",
+  summary: "A Rome organiser post calls supporters to gather on Wednesday 25 March 2026 in Piazza Capranica for an assembly framed against the war economy, militarism, and the Italian government's broader political direction. The messaging links anti-war, anti-militarist, and social-justice themes rather than focusing on a single sector or institution. Risk is Mid because the event is a public political assembly in central Rome near parliamentary space, making police monitoring and crowd-management measures likely even if the format remains a fixed rally rather than a long march."
+},
+
+
+  
 {
   title: "Solidarity with Palestine Rally",
   city: "Athens",
