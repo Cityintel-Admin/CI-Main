@@ -20,6 +20,88 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+
+
+
+  
+{
+  title: "Static Assembly Following Ban of al-Quds Day March",
+  city: "London",
+  lat: "51.5074",
+  lng: "-0.1278",
+  address: "South Bank of River Thames, central London",
+  postcode: "SE1 2DB",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-15T12:00:00",
+  source: "https://www.reuters.com/world/uk-police-ban-pro-iranian-london-march-due-extreme-tensions-2026-03-11/",
+  summary: "Following the decision by British authorities to ban the annual Al-Quds Day march in central London due to a severe risk of public disorder, organisers from the Islamic Human Rights Commission (IHRC) announced plans for a static assembly on the south bank of the River Thames. This pivot away from a procession was intended to comply with the protest ban while preserving freedom of expression. British police, with the backing of Home Secretary Shabana Mahmood, publicly justified the ban on grounds of anticipated clashes between pro-Iranian demonstrators and counter-protesters, pointing to previous years' tension and the ongoing Middle East conflict context. Police later announced a segregated protest strategy using the River Thames as a physical divide between pro-Palestinian and opposing groups, with Lambeth Bridge and riverside routes to be closely policed. Up to 12,000 participants were expected, and approximately 1,000 officers were deployed. Heavy scrutiny and stringent hate-speech provisions were emphasised by law enforcement to mitigate escalation, with zero tolerance for incitement or violence. Multiple major media outlets covered the ban of the march as an unprecedented move reflecting heightened tensions around Middle East geopolitical events and domestic mobilisations. High risk: the static gathering still carries significant potential for confrontations due to opposing blocs, large attendance estimates, and upstream enforcement actions by police authorities."  
+},
+
+{
+  title: "Together Against the Far Right March",
+  city: "London",
+  lat: "51.5074",
+  lng: "-0.1278",
+  address: "Whitehall/Parliament Square area",
+  postcode: "SW1A 2BG",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-28T12:00:00",
+  source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
+  summary: "A broad coalition of anti-racist, trade union, civil society, and peace movement groups are organising a major national demonstration in central London under the banner 'Together Against the Far Right.' This mobilisation is positioned as a show of unity against xenophobic, racist, and far-right ideologies, linking economic justice, anti-war, and migrant rights demands in the current political climate. Organisers have publicised the event widely through social channels and aligned platforms, calling on supporters from across the UK to assemble near Whitehall and Parliament Square before marching through key civic arteries. Prior local build-ups and contingent actions in smaller towns indicated significant grassroots engagement, while police and local authorities have prepared comprehensive traffic management and public-order contingencies. With spirited rhetoric from organiser coalitions and a history of back-and-forth tensions with far-right groups in recent years, this event carries a higher likelihood of counter-presence, policing challenges, and potential flashpoint interactions despite core message unity. High risk: demonstrators and stewards are likely to confront disruptive elements, transport access disruption is expected, and police are anticipated to maintain tight containment and surveillance."  
+},
+
+{
+  title: "Weekly Metro Vancouver United for Palestine Rally (London offshoot link)",
+  city: "London",
+  lat: "51.5074",
+  lng: "-0.1278",
+  address: "Trafalgar Square",
+  postcode: "WC2N 5DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-04T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Inspired by weekly Palestine solidarity rallies abroad, London community groups, student organisations, and anti-war networks are staging regular Saturday afternoon demonstrations at Trafalgar Square calling for an end to the siege in Gaza, humanitarian corridors, and arms embargoes. While not centrally organised by a single UK national body, the London actions draw on the broader global Palestine protest wave with symbolic actions, placards, and speeches from local advocates. Mid risk: mostly peaceful with steadying stewards, but route congestion and occasional counter-presence responses warrant visible police monitoring."  
+},
+
+{
+  title: "National Student Conference for Palestine Follow-Up Actions",
+  city: "London",
+  lat: "51.5250",
+  lng: "-0.1320",
+  address: "WC1N area (student campus vicinity)",
+  postcode: "WC1N 3XX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-03-25T10:00:00",
+  source: "https://palestinecampaign.org/events/",
+  summary: "Following the National Student Conference for Palestine earlier in March, student networks in London are organising a series of follow-up demonstrations, teach-ins, and city-centre marches focused on UK arms exports, humanitarian aid, and solidarity with civilians in conflict zones. The Palestine Solidarity Campaign coordinates messaging and logistics with allied campus groups, emphasizing peaceful, organised protest with targeted public policy calls. Mid risk: demonstrations tend toward disciplined mass attendance and symbolic visibility, with low probability of violent confrontations but notable traffic impact and heightened public attention."  
+},
+
+{
+  title: "March Against AI Data Centre Expansion Protest",
+  city: "London",
+  lat: "51.5128",
+  lng: "-0.0984",
+  address: "Finsbury Square (Tech hub area)",
+  postcode: "EC2A 1BA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-03-06T12:00:00",
+  source: "https://www.reuters.com/sustainability/boards-policy-regulation/uk-activists-plan-protests-over-climate-social-impacts-ai-data-centres-2026-02-27/",
+  summary: "Environmental activists in London are preparing demonstrations on 6 and 7 March 2026 against the expansion of AI data centres across the UK, citing climate, social, and community impacts of hyper-scale computing facilities. The planned protest 'March Against the Machines' has been coordinated through environmental networks and charity platforms, focusing on Finsbury Square and other tech hub locations with speeches, placard presence, and routes targeted at technology firms. Mid risk: typically peaceful but could create urban disruption, heavy stewarding, and localised transport slowdowns."  
+},
+
+
+
+  
    {
     title: "Tibetan National Uprising Day - 67th Anniversary",
     city: "London",
