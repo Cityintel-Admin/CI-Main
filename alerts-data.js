@@ -22,6 +22,82 @@ window.alertsData =[
 
 
 
+  {
+  title: "NO KINGS Boston",
+  city: "Boston",
+  lat: "42.3550",
+  lng: "-71.0656",
+  address: "Boston Common, 139 Tremont St",
+  "post code / zip": "02111",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-28T12:00:00",
+  source: "https://masspeaceaction.org/event/no-kings-boston/",
+  summary: "Massachusetts Peace Action lists NO KINGS Boston for Saturday 28 March 2026 from 12:00 pm to 3:00 pm EDT at Boston Common, 139 Tremont Street. The event sits within the wider national No Kings mobilisation against authoritarianism and is being promoted by Boston-area movement networks as a large civic turnout in the city centre. Boston Common is a major symbolic protest site with direct transit access and a history of large political gatherings. Risk is High because a high-visibility protest in this location can generate dense crowding, substantial police traffic management, and possible counter-presence even if organisers emphasise peaceful participation."
+},
+
+{
+  title: "NO KINGS Philadelphia",
+  city: "Philadelphia",
+  lat: "39.9526",
+  lng: "-75.1652",
+  address: "1500 John F Kennedy Blvd",
+  "post code / zip": "19102",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-28T12:00:00",
+  source: "https://www.findaprotest.info/event/philadelphia/45fc9653-b839-4b5c-9f15-0b1b29d1be22",
+  summary: "Find a Protest lists NO KINGS Philadelphia for Saturday 28 March 2026 at 12:00 pm at 1500 John F Kennedy Boulevard in Center City. The event is framed as part of the broader national No Kings day of action and sits in a dense downtown corridor close to government, transit, and major employment sites. Risk is High because Philadelphia city-centre protest activity in this area can quickly affect traffic and pedestrian flow, and the national anti-authoritarian framing increases the chance of heavy attendance and visible police management."
+},
+
+{
+  title: "NO KINGS Austin",
+  city: "Austin",
+  lat: "30.2638",
+  lng: "-97.7475",
+  address: "900 W Riverside Dr",
+  "post code / zip": "78704",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-28T13:00:00",
+  source: "https://www.handsoffcentraltx.org/events",
+  summary: "Hands Off Central TX lists NO KINGS 3 ATX for Saturday 28 March 2026 from 1:00 pm to 4:00 pm in Austin, with the event page identifying 900 W Riverside Drive as the rally point. Organiser language presents the event as the continuation of a large local anti-authoritarian mobilisation cycle in Central Texas. Austin has a strong recent history of high-turnout state and federal policy protests, especially where marches or rallies intersect with downtown and Capitol-area routes. Risk is High because a large weekend mobilisation in central Austin can produce strong police presence, road closures, and a heightened chance of crowd-control measures."
+},
+
+{
+  title: "Denver Dems at No Kings",
+  city: "Denver",
+  lat: "39.7392",
+  lng: "-104.9847",
+  address: "Colorado State Capitol",
+  "post code / zip": "80203",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-28T12:00:00",
+  source: "https://www.eventbrite.com/e/denver-dems-at-no-kings-tickets-1984091513126",
+  summary: "Search results for the Democratic Party of Denver and related event listings show Denver Dems at No Kings taking place on Saturday 28 March 2026 at 12:00 pm at the Colorado State Capitol. As a Capitol-centred anti-authoritarian mobilisation tied to the wider No Kings action day, the rally is likely to bring together partisan, civic, and grassroots protest networks in a highly symbolic government setting. Risk is High because the Colorado State Capitol is a sensitive protest site where attendance, media presence, and crowd-control measures can scale rapidly."
+},
+
+{
+  title: "NO KINGS Miami Beach FL",
+  city: "Miami Beach",
+  lat: "25.7926",
+  lng: "-80.1341",
+  address: "1809 Meridian Ave",
+  "post code / zip": "33139",
+  country: "United States",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-03-28T11:00:00",
+  source: "https://www.findaprotest.info/event/miami-beach/5e4652b0-6164-4ef6-b52f-f04873770b4e",
+  summary: "Find a Protest lists NO KINGS Miami Beach FL for Saturday 28 March 2026 at 11:00 am at 1809 Meridian Avenue. The listing says the event is part of the national No Kings mobilisation and stresses nonviolent action and de-escalation. Miami Beach is a high-visibility public setting with heavy weekend foot traffic, but this entry appears more rally-oriented than route-intensive. Risk is Mid because turnout and visibility can still create policing and access impacts, although the available listing emphasizes peaceful participation rather than a large march."
+},
+
+
 
   {
   title: "Emergency Demo to Protest the Barring of Gaza",
