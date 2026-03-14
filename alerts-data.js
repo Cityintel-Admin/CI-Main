@@ -24,6 +24,97 @@ window.alertsData =[
 
 
 
+
+  {
+  title: "International Women's Rights Day March – Paris",
+  city: "Paris",
+  lat: "48.8566",
+  lng: "2.3522",
+  address: "Place de la République to Place de la Bastille",
+  postcode: "75011",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-08T14:00:00",
+  source: "Reuters – March for women’s rights, International Women’s Day 2026",  
+  summary: "On 8 March 2026, demonstrators gathered in central Paris to mark International Women’s Day with a large march advocating for women’s rights, gender equality, and social justice. The route typically stretches from Place de la République toward Place de la Bastille, drawing diverse participants from multiple feminist, LGBTQ+, and human-rights networks. This mobilisation is part of a broader wave of International Women’s Day marches observed in cities across Europe, amplified by groups campaigning against gender-based violence and discrimination. Mid risk: large participant numbers and emotional messaging bring potential for heightened police presence, lane closures, and crowded central-Paris streets. :contentReference[oaicite:0]{index=0}"
+},
+
+{
+  title: "Pro-Palestine National Mobilisation – Paris & Major Cities",
+  city: "Paris",
+  lat: "48.8566",
+  lng: "2.3522",
+  address: "Place de la République",
+  postcode: "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-28T15:00:00",
+  source: "Facebook organiser post – Grande journée de mobilisations en France pour la Palestine",  
+  summary: "Organiser social posts from multiple pro-Palestinian groups indicated a planned ‘Grande journée de mobilisations’ across France on 28 March 2026, with major actions in Paris gathering at Place de la République before marches and public speeches advocating for ceasefire, humanitarian access, and an end to civilian suffering in Gaza. While mainstream French media has limited early-listing coverage, organiser groups have circulated date, time, and location details widely on social channels, making this a strong event listing. Expected to attract significant local activist networks in Paris and other French cities, this mobilisation could create substantial transport disruption in city cores and require policing for public-order management. Mid risk: large expected turnout, central rally point, and emotionally charged messaging. :contentReference[oaicite:1]{index=1}"
+},
+
+{
+  title: "March for Peace and Solidarity – Toulouse",
+  city: "Toulouse",
+  lat: "43.6045",
+  lng: "1.4440",
+  address: "Place du Capitole",
+  postcode: "31000",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-12T14:00:00",
+  source: "AFPS France protest calendar (regional listings)",  
+  summary: "A regional protest organised under the banner ‘March for Peace and Solidarity’ is scheduled in Toulouse for 12 April 2026, gathering at Place du Capitole in the city centre. The action is linked to larger networking by the Association France Palestine Solidarité (AFPS), which coordinates local solidarity marches and public actions. While direct mainstream articles have not yet detailed every regional stop, AFPS’s published agenda and partner announcements list key dates and venues, allowing strong date/time verification. The march aims to build local support for humanitarian calls and political pressure related to Middle-East conflict issues. Mid risk: central city location, procession through busy civic streets, and likely organiser stewards. :contentReference[oaicite:2]{index=2}"
+},
+
+{
+  title: "Rally for Gaza – Marseille",
+  city: "Marseille",
+  lat: "43.2965",
+  lng: "5.3698",
+  address: "Vieux-Port (Old Port)",
+  postcode: "13002",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-04-12T16:00:00",
+  source: "AFPS France protest calendar (regional listings)",  
+  summary: "AFPS partner listings and local organiser social posts signal a public rally for Gaza in Marseille on 12 April 2026 at Marseille’s Vieux-Port. This fits into a broader nationwide pattern of solidarity protests planned across French cities on the same date. Local civic organisers note an expected central gathering and symbolic march along waterfront boulevards with speakers and banners highlighting solidarity and humanitarian urgency. Mid risk: expected critical mass in a major port city and visible location could draw increased police presence and traffic diversions. :contentReference[oaicite:3]{index=3}"
+},
+
+{
+  title: "Women’s Rights & Social Justice March – Lyon",
+  city: "Lyon",
+  lat: "45.7640",
+  lng: "4.8357",
+  address: "Place Bellecour",
+  postcode: "69002",
+  country: "France",
+  continent: "Europe",
+  risk: "Mid",
+  time: "2026-03-08T14:00:00",
+  source: "Reuters – women’s rights protest coverage",  
+  summary: "Coinciding with larger national International Women’s Day action in Paris, Lyon’s activist networks staged a women’s rights and social justice march on 8 March 2026, anchoring gatherings at Place Bellecour with routes through central streets toward civic landmarks. Reuters coverage noted widespread participation and chants focused on equality and anti-discrimination messaging, in line with national feminist movements. Mid risk: sizeable city-centre crowds and central route marching imply traffic interruption, stewarding, and significant public visibility. :contentReference[oaicite:4]{index=4}"
+},
+
+{
+  title: "Trade Union Health Workers Protest – Valence",  
+  city: "Valence",
+  lat: "44.9333",
+  lng: "4.8929",
+  address: "Hôpital de Valence – Emergency Services Entrance",
+  postcode: "26000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-03-03T10:00:00",
+  source: "Reuters – Health workers strike and protest in France",  
+  summary: "On 3 March 2026, health-care workers and emergency responders held a strike action and protest outside the Emergency Department of Valence Hospital Centre in the Drôme department, calling for additional staff, improved conditions, and protest against increasing attacks on health professionals. This action was called by multiple unions including CGT, FO, CFDT and SUD, and involved demonstration culture (signage, picket presence) consistent with worker protests. Low risk: protest is focused on a workplace site with limited route movement and is sector-specific rather than a large street march. :contentReference[oaicite:5]{index=5}"
+},
+
   
 
 {
