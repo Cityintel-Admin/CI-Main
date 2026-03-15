@@ -302,10 +302,10 @@
         <div class="draft-actions" id="draftActions">
           <button class="btn" id="saveOrgDraftBtn">Save as Org Draft</button>
           <button class="btn" id="publishOrgBtn">Publish to My Org Library</button>
-          <button class="btn primary-soft" id="downloadBrandedBtn">Download Branded HTML</button>
-          <button class="btn ghost" id="openPrintViewBtn">Open Print View</button>
+          <button class="btn primary-soft" id="downloadBrandedBtn">Download PDF</button>
+          <button class="btn ghost" id="openPrintViewBtn">Open Print Preview</button>
           <button class="btn ghost" id="saveMasterBtn" style="display:none">Save as CityIntel Master</button>
-          <span class="hint" id="draftActionHint">v6 adds a CityIntel-branded export layer. Shared cross-org persistence will still need backend support in the next phase.</span>
+          <span class="hint" id="draftActionHint">The branded report now opens in a print-ready PDF flow. Use “Download PDF” to launch the browser print dialog and save the report as PDF.</span>
         </div>
         <div class="draft-scope-tools" id="draftScopeTools"></div>
         <div class="draft-grid">
@@ -1024,6 +1024,46 @@
     }
 
     function slugify(s){ return String(s || '').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,''); }
+    function pdfFilenameFromState(state){
+      const base = state?.exportTitle || state?.title || 'CityIntel_Report';
+      return `CityIntel_${slugify(base)}.pdf`;
+    }
+    function printHtmlDoc(html, { autoPrint = false, pdfFilename = 'CityIntel_Report.pdf' } = {}){
+      const w = window.open('', '_blank');
+      if (!w) {
+        alert('Pop-up blocked. Please allow pop-ups for print/PDF export.');
+        return;
+      }
+
+      const patchedHtml = String(html || '')
+        .replace(/<title>(.*?)<\/title>/i, `<title>${pdfFilename.replace(/\.pdf$/i, '')}</title>`)
+        .replace(
+          /<\/head>/i,
+          `
+        <script>
+          window.__ciPdfFilename = ${JSON.stringify(pdfFilename)};
+
+          window.addEventListener('afterprint', function(){
+            try { window.close(); } catch(e){}
+          });
+
+          window.addEventListener('load', function(){
+            document.title = window.__ciPdfFilename.replace(/\.pdf$/i, '');
+            if (${autoPrint ? 'true' : 'false'}) {
+              setTimeout(function(){
+                try { window.focus(); } catch(e){}
+                try { window.print(); } catch(e){}
+              }, 350);
+            }
+          });
+        <\/script>
+        </head>`
+        );
+
+      w.document.open();
+      w.document.write(patchedHtml);
+      w.document.close();
+    }
     function formatIssueDate(){ return new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
     function buildBrandedReportHtml(state){
       const metrics = state.metrics || {};
@@ -1556,14 +1596,26 @@
     el.saveOrgDraftBtn.addEventListener('click', () => upsertReport('org', 'Draft'));
     el.publishOrgBtn.addEventListener('click', () => upsertReport('org', 'Published'));
     el.downloadBrandedBtn.addEventListener('click', () => {
-      if (!currentDraftState || !currentDraftState.brandedHtml){ alert('Open a draft first, then export the branded version.'); return; }
-      downloadText(currentDraftState.exportFilename || 'CityIntel_Report.html', currentDraftState.brandedHtml, 'text/html');
+      if (!currentDraftState || !currentDraftState.brandedHtml){
+        alert('Open a draft first, then export the PDF version.');
+        return;
+      }
+
+      printHtmlDoc(currentDraftState.brandedHtml, {
+        autoPrint: true,
+        pdfFilename: pdfFilenameFromState(currentDraftState)
+      });
     });
     el.openPrintViewBtn.addEventListener('click', () => {
-      if (!currentDraftState || !currentDraftState.brandedHtml){ alert('Open a draft first, then open the print view.'); return; }
-      const w = window.open('', '_blank');
-      if (!w) return;
-      w.document.open(); w.document.write(currentDraftState.brandedHtml); w.document.close();
+      if (!currentDraftState || !currentDraftState.brandedHtml){
+        alert('Open a draft first, then open the print preview.');
+        return;
+      }
+
+      printHtmlDoc(currentDraftState.brandedHtml, {
+        autoPrint: false,
+        pdfFilename: pdfFilenameFromState(currentDraftState)
+      });
     });
     el.saveMasterBtn.addEventListener('click', () => upsertReport('master', 'Draft'));
     if (!isAdmin()) el.saveMasterBtn.style.display = 'none';
@@ -1571,4 +1623,5 @@
 </script>
 </body>
 </html>
+
 
