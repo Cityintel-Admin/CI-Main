@@ -23,6 +23,68 @@ window.alertsData =[
 
 
 
+  
+
+  {
+  title: "Rally and March for Gaza",
+  city: "Calgary",
+  lat: "51.04551",
+  lng: "-114.056326",
+  address: "Calgary City Hall, 800 Macleod Trail SE",
+  "post code / zip": "T2G 5E6",
+  country: "Canada",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-03-29T14:00:00",
+  source: "https://samidoun.net/2025/03/calendar-of-resistance-for-palestine-events-actions-and-demonstrations-for-liberation-against-genocide/",
+  summary: "Samidoun's calendar of resistance lists Calgary on Saturday 29 March 2026 at 2:00 pm at Calgary City Hall for a rally and march for Gaza. The listing gives a clear date, time, city, and named meeting point, making it suitable for your stricter standard. Risk is Mid because Calgary City Hall is a central civic protest site where politically charged rallies can still generate visible police monitoring, crowd concentration, and short-term downtown traffic impacts even when they remain orderly."
+},
+
+{
+  title: "March for Palestine",
+  city: "Edmonton",
+  lat: "53.5213014",
+  lng: "-113.4971072",
+  address: "Light Horse Park, 10324 85 Ave",
+  "post code / zip": "",
+  country: "Canada",
+  continent: "North America",
+  risk: "Mid",
+  time: "2026-03-29T12:00:00",
+  source: "https://samidoun.net/2025/03/calendar-of-resistance-for-palestine-events-actions-and-demonstrations-for-liberation-against-genocide/",
+  summary: "Samidoun's calendar lists Edmonton on Saturday 29 March 2026 at 12:00 pm at Light Horse Park, 10324 85 Ave, for a March for Palestine. The named park and street address give this entry a usable, geocodable meeting point without relying on social-media-only sourcing. Risk is Mid because the protest is clearly political and public-facing, but the assembly point is a defined park location rather than a dense central-government zone."
+},
+
+{
+  title: "March for Justice and a Free Palestine",
+  city: "Victoria",
+  lat: "48.419444",
+  lng: "-123.370278",
+  address: "Legislative Assembly of British Columbia, 501 Belleville St",
+  "post code / zip": "V8V 1X4",
+  country: "Canada",
+  continent: "North America",
+  risk: "High",
+  time: "2026-03-29T13:00:00",
+  source: "https://samidoun.net/page/16/?taxonomy=categoryCachedMar18",
+  summary: "Samidoun's cached events page lists Victoria on Saturday 29 March 2026 at 1:00 pm at the Legislative Assembly of British Columbia for a march for justice and a free Palestine. The listing gives a precise date, time, city, and named political meeting point. Risk is High because the provincial legislature is a highly symbolic and security-sensitive protest site, and rallies there can produce visible police management, access restrictions, and concentrated media attention."
+},
+
+{
+  title: "Protest for Palestine",
+  city: "Saint John",
+  lat: "45.272864",
+  lng: "-66.0632758",
+  address: "Intifada Trail, 1 Market Square",
+  "post code / zip": "E2L 4Z6",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-03-29T12:00:00",
+  source: "https://samidoun.net/page/16/?taxonomy=categoryCachedMar18",
+  summary: "Samidoun's cached events page lists Saint John on Saturday 29 March 2026 at 12:00 pm at Intifada Trail, Market Square–City Hall, for a Protest for Palestine. Market Square provides a clear waterfront civic meeting area and a usable geocoded location for your map. Risk is Low because the event appears more like a local solidarity gathering than a major city-centre march, though it still contributes useful Atlantic Canada coverage."
+},
+
 
   
 
