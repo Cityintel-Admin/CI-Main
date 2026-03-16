@@ -1094,7 +1094,89 @@
       if (summarySentences[1]) keyJudgements.push(summarySentences[1]);
       const uniqueJudgements = [...new Set(keyJudgements.map(x => x.trim()).filter(Boolean))].slice(0,5);
       const reportTag = `${esc(state.typeLabel || '')} · ${esc(state.periodLabel || '')}`;
-      const coverPrintImage = buildPrintCoverDataUri({ title: state.exportTitle || state.title, scopeText, compareSource, preparedFor: 'CityIntel subscriber circulation', reportTag, riskLabel, issueDate: formatIssueDate(), judgements: uniqueJudgements.slice(0,3) });
+      const svgEsc = (s='') => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const wrapSvgLines = (txt='', max=28, maxLines=4) => {
+        const words = String(txt || '').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+        if (!words.length) return [''];
+        const lines = [];
+        let line = '';
+        words.forEach(word => {
+          const next = line ? `${line} ${word}` : word;
+          if (next.length <= max || !line) line = next;
+          else { lines.push(line); line = word; }
+        });
+        if (line) lines.push(line);
+        if (lines.length <= maxLines) return lines;
+        const clipped = lines.slice(0, maxLines);
+        clipped[maxLines-1] = clipped[maxLines-1].replace(/[\s–—-]*$/, '') + '…';
+        return clipped;
+      };
+      const pillTone = riskClass === 'high' ? {fill:'rgba(208,22,22,.18)', stroke:'rgba(208,22,22,.58)', text:'#ffd2d4'}
+        : riskClass === 'low' ? {fill:'rgba(51,196,141,.16)', stroke:'rgba(51,196,141,.58)', text:'#b7f7d9'}
+        : {fill:'rgba(240,180,41,.16)', stroke:'rgba(240,180,41,.58)', text:'#ffe6a6'};
+      const titleLines = wrapSvgLines(state.exportTitle || state.title, 22, 4);
+      const scopeLines = wrapSvgLines(scopeText, 24, 3);
+      const compareLines = wrapSvgLines(compareSource, 26, 4);
+      const preparedLines = wrapSvgLines('CityIntel subscriber circulation', 24, 2);
+      const tagDate = `Issue date: ${formatIssueDate()}`;
+      const judgementLines = uniqueJudgements.slice(0,3).map(item => wrapSvgLines(item, 46, 3));
+      const riskPillWidth = Math.max(110, String(riskLabel || '').length * 10 + 56);
+      const footerDateX = 236 + riskPillWidth + 16;
+      const footerDateWidth = 262;
+      const titleSvg = titleLines.map((line,i)=>`<text x="300" y="${215 + i*56}" fill="#f0f4f8" font-size="56" font-weight="900" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
+      const scopeSvg = scopeLines.map((line,i)=>`<text x="838" y="${215 + i*30}" fill="#ffffff" font-size="20" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
+      const compareSvg = compareLines.map((line,i)=>`<text x="838" y="${353 + i*30}" fill="#ffffff" font-size="18" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
+      const preparedSvg = preparedLines.map((line,i)=>`<text x="838" y="${549 + i*30}" fill="#ffffff" font-size="18" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
+      const judgementSvg = judgementLines.map((lines, idx) => {
+        const cy = 830 + idx * 96;
+        const linesSvg = lines.map((line, j) => `<text x="278" y="${826 + idx*96 + j*26}" fill="#eef3f8" font-size="16" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
+        return `<circle cx="258" cy="${cy}" r="8" fill="#d01616"/>${linesSvg}`;
+      }).join('');
+      const coverSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1584" viewBox="0 0 1120 1584">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1118"/>
+      <stop offset="54%" stop-color="#15202c"/>
+      <stop offset="100%" stop-color="#6f1116"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="88%" cy="88%" r="50%">
+      <stop offset="0%" stop-color="rgba(208,22,22,0.34)"/>
+      <stop offset="100%" stop-color="rgba(208,22,22,0)"/>
+    </radialGradient>
+  </defs>
+  <rect x="18" y="18" width="1084" height="1548" rx="32" fill="url(#bg)"/>
+  <rect x="18" y="18" width="1084" height="1548" rx="32" fill="url(#glow)"/>
+  <rect x="60" y="62" width="148" height="148" rx="22" fill="#0b0b0b" stroke="rgba(255,255,255,0.12)"/>
+  <image href="${CITYINTEL_LOGO}" x="60" y="62" width="148" height="148" preserveAspectRatio="xMidYMid slice"/>
+  <text x="300" y="110" fill="#d9e3ee" font-size="18" font-weight="800" letter-spacing="2.8" font-family="Arial, Helvetica, sans-serif">CITYINTEL EXECUTIVE</text>
+  <text x="300" y="138" fill="#d9e3ee" font-size="18" font-weight="800" letter-spacing="2.8" font-family="Arial, Helvetica, sans-serif">INTELLIGENCE REPORT</text>
+  ${titleSvg}
+  <rect x="808" y="64" width="250" height="420" rx="24" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <text x="838" y="112" fill="#e7eef6" font-size="20" font-weight="800" letter-spacing="1.8" font-family="Arial, Helvetica, sans-serif">REPORT OVERVIEW</text>
+  <text x="838" y="180" fill="#97a9bd" font-size="15" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">SCOPE MODEL</text>
+  ${scopeSvg}
+  <line x1="838" y1="258" x2="1030" y2="258" stroke="rgba(255,255,255,0.12)"/>
+  <text x="838" y="318" fill="#97a9bd" font-size="15" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">COMPARISON BASIS</text>
+  ${compareSvg}
+  <line x1="838" y1="454" x2="1030" y2="454" stroke="rgba(255,255,255,0.12)"/>
+  <text x="838" y="514" fill="#97a9bd" font-size="15" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">PREPARED FOR</text>
+  ${preparedSvg}
+  <rect x="212" y="732" width="600" height="356" rx="24" fill="rgba(8,12,18,0.34)" stroke="rgba(255,255,255,0.12)"/>
+  <text x="240" y="780" fill="#e7eef6" font-size="20" font-weight="800" letter-spacing="1.5" font-family="Arial, Helvetica, sans-serif">KEY JUDGEMENTS</text>
+  ${judgementSvg}
+  <g transform="translate(60,1460)">
+    <rect x="0" y="0" rx="18" ry="18" width="220" height="44" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.18)"/>
+    <text x="18" y="28" fill="#eef3f8" font-size="16" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(reportTag)}</text>
+    <rect x="236" y="0" rx="18" ry="18" width="${riskPillWidth}" height="44" fill="${pillTone.fill}" stroke="${pillTone.stroke}"/>
+    <text x="254" y="28" fill="${pillTone.text}" font-size="16" font-family="Arial, Helvetica, sans-serif">${svgEsc(riskLabel)} focus</text>
+    <rect x="${footerDateX}" y="0" rx="18" ry="18" width="${footerDateWidth}" height="44" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.18)"/>
+    <text x="${footerDateX + 18}" y="28" fill="#eef3f8" font-size="16" font-family="Arial, Helvetica, sans-serif">${svgEsc(tagDate)}</text>
+  </g>
+  <text x="824" y="1518" fill="rgba(255,255,255,0.06)" font-size="72" font-weight="900" font-family="Arial, Helvetica, sans-serif">CITYINTEL</text>
+</svg>`;
+      const coverImageDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(coverSvg);
+      const reportTag = `${esc(state.typeLabel || '')} · ${esc(state.periodLabel || '')}`;
       return `<!doctype html>
 <html lang="en">
 <head>
@@ -1126,7 +1208,8 @@
   .cover-callout li:before{content:"";width:8px;min-width:8px;height:8px;border-radius:999px;background:#d01616;margin-top:6px;box-shadow:0 0 0 4px rgba(208,22,22,.16)}
   .cover-screen{display:block}
   .cover-print{display:none}
-  .cover-print-image{display:block;width:100%;height:auto;border-radius:24px;overflow:hidden}
+  .cover-image-print{display:none}
+  .cover-image-print img{display:block;width:100%;height:auto;border-radius:24px;box-shadow:none}
   .cover-print-top{display:grid;grid-template-columns:minmax(0,1.2fr) 280px;gap:22px;align-items:start}
   .cover-print-brand{display:grid;grid-template-columns:120px minmax(0,1fr);gap:18px;align-items:start}
   .cover-print-copy{padding-top:4px}
@@ -1222,11 +1305,13 @@
     .report-page.cover-page{min-height:263mm;max-height:263mm;overflow:hidden}
     .report-page.standard-page{min-height:auto;max-height:none;overflow:visible;display:block;background:#fff;border:none;box-shadow:none;padding:0}
     .report-page.standard-page > .section{margin-top:0;min-height:auto;max-height:none;display:block}
-    .hero{margin-top:0;min-height:263mm;max-height:263mm;box-shadow:none;padding:28px 26px 22px}
-    .hero:after{font-size:56px;right:12px;bottom:-2px}
+    .hero{margin-top:0;min-height:263mm;max-height:263mm;box-shadow:none;padding:0;overflow:hidden}
+    .hero:after{display:none !important}
     .cover-screen{display:none !important}
-    .cover-print{display:block !important;min-height:auto}
-    .cover-print-image{width:100% !important;height:auto !important;display:block !important}
+    .cover-print{display:none !important}
+    .cover-image-print{display:block !important}
+    .cover-image-print img{width:100% !important;height:263mm !important;object-fit:cover !important;border-radius:24px !important}
+    .report-page.cover-page .hero{background:none !important;border:none !important}
     .logo-box{width:120px !important;height:120px !important;min-width:120px !important;margin:0 !important;border-radius:20px}
     .cover-print-top{display:grid !important;grid-template-columns:minmax(0,1.15fr) 270px !important;gap:18px !important;align-items:start !important}
     .cover-print-brand{display:grid !important;grid-template-columns:120px minmax(0,1fr) !important;gap:16px !important;align-items:start !important}
@@ -1322,8 +1407,37 @@
         </div>
       </div>
       <div class="cover-print">
-        <img class="cover-print-image" src="${coverPrintImage}" alt="CityIntel report cover">
+        <div>
+          <div class="cover-print-top">
+            <div>
+              <div class="cover-print-brand">
+                <div class="logo-box"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
+                <div class="cover-print-copy">
+                  <span class="eyebrow">CityIntel Executive Intelligence Report</span>
+                  <div class="title">${esc(state.exportTitle || state.title)}</div>
+                </div>
+              </div>
+            </div>
+            <aside class="hero-right">
+              <h3>Report overview</h3>
+              <div class="info-list">
+                <div class="info-item"><div class="k">Scope model</div><div class="v">${esc(scopeText)}</div></div>
+                <div class="info-item"><div class="k">Comparison basis</div><div class="v">${esc(compareSource)}</div></div>
+                <div class="info-item"><div class="k">Prepared for</div><div class="v">CityIntel subscriber circulation</div></div>
+              </div>
+            </aside>
+          </div>
+          ${uniqueJudgements.length ? `<div class="cover-print-callout"><h3>Key judgements</h3><ul>${uniqueJudgements.slice(0,3).map(item => `<li>${esc(item)}</li>`).join('')}</ul></div>` : ''}
+        </div>
+        <div class="cover-footer">
+          <div class="tag-row">
+            <span class="tag"><strong>${reportTag}</strong></span>
+            <span class="pill ${riskClass}">${esc(riskLabel)} focus</span>
+            <span class="tag">Issue date: ${esc(formatIssueDate())}</span>
+          </div>
+        </div>
       </div>
+      <div class="cover-image-print"><img src="${coverImageDataUri}" alt="CityIntel report cover"></div>
     </section>
   </div>
 
