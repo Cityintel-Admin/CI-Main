@@ -302,10 +302,10 @@
         <div class="draft-actions" id="draftActions">
           <button class="btn" id="saveOrgDraftBtn">Save as Org Draft</button>
           <button class="btn" id="publishOrgBtn">Publish to My Org Library</button>
-          <button class="btn primary-soft" id="downloadBrandedBtn">Download PDF</button>
-          <button class="btn ghost" id="openPrintViewBtn">Open Print Preview</button>
+          <button class="btn primary-soft" id="downloadBrandedBtn">Download Branded HTML</button>
+          <button class="btn ghost" id="openPrintViewBtn">Open Print View</button>
           <button class="btn ghost" id="saveMasterBtn" style="display:none">Save as CityIntel Master</button>
-          <span class="hint" id="draftActionHint">The branded report now opens in a print-ready PDF flow. Use “Download PDF” to launch the browser print dialog and save the report as PDF.</span>
+          <span class="hint" id="draftActionHint">v6 adds a CityIntel-branded export layer. Shared cross-org persistence will still need backend support in the next phase.</span>
         </div>
         <div class="draft-scope-tools" id="draftScopeTools"></div>
         <div class="draft-grid">
@@ -1024,46 +1024,6 @@
     }
 
     function slugify(s){ return String(s || '').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,''); }
-    function pdfFilenameFromState(state){
-      const base = state?.exportTitle || state?.title || 'CityIntel_Report';
-      return `CityIntel_${slugify(base)}.pdf`;
-    }
-    function printHtmlDoc(html, { autoPrint = false, pdfFilename = 'CityIntel_Report.pdf' } = {}){
-      const w = window.open('', '_blank');
-      if (!w) {
-        alert('Pop-up blocked. Please allow pop-ups for print/PDF export.');
-        return;
-      }
-
-      const patchedHtml = String(html || '')
-        .replace(/<title>(.*?)<\/title>/i, `<title>${pdfFilename.replace(/\.pdf$/i, '')}</title>`)
-        .replace(
-          /<\/head>/i,
-          `
-        <script>
-          window.__ciPdfFilename = ${JSON.stringify(pdfFilename)};
-
-          window.addEventListener('afterprint', function(){
-            try { window.close(); } catch(e){}
-          });
-
-          window.addEventListener('load', function(){
-            document.title = window.__ciPdfFilename.replace(/\.pdf$/i, '');
-            if (${autoPrint ? 'true' : 'false'}) {
-              setTimeout(function(){
-                try { window.focus(); } catch(e){}
-                try { window.print(); } catch(e){}
-              }, 350);
-            }
-          });
-        <\/script>
-        </head>`
-        );
-
-      w.document.open();
-      w.document.write(patchedHtml);
-      w.document.close();
-    }
     function formatIssueDate(){ return new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
     function buildBrandedReportHtml(state){
       const metrics = state.metrics || {};
@@ -1094,86 +1054,90 @@
       if (summarySentences[1]) keyJudgements.push(summarySentences[1]);
       const uniqueJudgements = [...new Set(keyJudgements.map(x => x.trim()).filter(Boolean))].slice(0,5);
       const reportTag = `${esc(state.typeLabel || '')} · ${esc(state.periodLabel || '')}`;
-      const svgEsc = (s='') => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const wrapSvgLines = (txt='', max=28, maxLines=4) => {
-        const words = String(txt || '').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+      const escapeXml = (str='') => String(str || '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+      const wrapWords = (text='', maxChars=24, maxLines=3) => {
+        const words = String(text || '').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
         if (!words.length) return [''];
         const lines = [];
-        let line = '';
+        let current = '';
         words.forEach(word => {
-          const next = line ? `${line} ${word}` : word;
-          if (next.length <= max || !line) line = next;
-          else { lines.push(line); line = word; }
+          const candidate = current ? `${current} ${word}` : word;
+          if (candidate.length <= maxChars || !current) {
+            current = candidate;
+          } else if (lines.length < maxLines - 1) {
+            lines.push(current);
+            current = word;
+          } else {
+            current = `${current} ${word}`;
+          }
         });
-        if (line) lines.push(line);
-        if (lines.length <= maxLines) return lines;
-        const clipped = lines.slice(0, maxLines);
-        clipped[maxLines-1] = clipped[maxLines-1].replace(/[\s–—-]*$/, '') + '…';
-        return clipped;
+        if (current) lines.push(current);
+        return lines.slice(0, maxLines);
       };
-      const pillTone = riskClass === 'high' ? {fill:'rgba(208,22,22,.18)', stroke:'rgba(208,22,22,.58)', text:'#ffd2d4'}
-        : riskClass === 'low' ? {fill:'rgba(51,196,141,.16)', stroke:'rgba(51,196,141,.58)', text:'#b7f7d9'}
-        : {fill:'rgba(240,180,41,.16)', stroke:'rgba(240,180,41,.58)', text:'#ffe6a6'};
-      const titleLines = wrapSvgLines(state.exportTitle || state.title, 22, 4);
-      const scopeLines = wrapSvgLines(scopeText, 24, 3);
-      const compareLines = wrapSvgLines(compareSource, 26, 4);
-      const preparedLines = wrapSvgLines('CityIntel subscriber circulation', 24, 2);
-      const tagDate = `Issue date: ${formatIssueDate()}`;
-      const judgementLines = uniqueJudgements.slice(0,3).map(item => wrapSvgLines(item, 46, 3));
-      const riskPillWidth = Math.max(110, String(riskLabel || '').length * 10 + 56);
-      const footerDateX = 236 + riskPillWidth + 16;
-      const footerDateWidth = 262;
-      const titleSvg = titleLines.map((line,i)=>`<text x="300" y="${215 + i*56}" fill="#f0f4f8" font-size="56" font-weight="900" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
-      const scopeSvg = scopeLines.map((line,i)=>`<text x="838" y="${215 + i*30}" fill="#ffffff" font-size="20" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
-      const compareSvg = compareLines.map((line,i)=>`<text x="838" y="${353 + i*30}" fill="#ffffff" font-size="18" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
-      const preparedSvg = preparedLines.map((line,i)=>`<text x="838" y="${549 + i*30}" fill="#ffffff" font-size="18" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
-      const judgementSvg = judgementLines.map((lines, idx) => {
-        const cy = 830 + idx * 96;
-        const linesSvg = lines.map((line, j) => `<text x="278" y="${826 + idx*96 + j*26}" fill="#eef3f8" font-size="16" font-family="Arial, Helvetica, sans-serif">${svgEsc(line)}</text>`).join('');
-        return `<circle cx="258" cy="${cy}" r="8" fill="#d01616"/>${linesSvg}`;
+      const titleLines = wrapWords(state.exportTitle || state.title, 18, 3);
+      const titleFont = titleLines.some(line => line.length > 20) ? 48 : 54;
+      const scopeLines = wrapWords(scopeText, 24, 3);
+      const compareLines = wrapWords(compareSource, 24, 3);
+      const preparedLines = wrapWords('CityIntel subscriber circulation', 24, 3);
+      const bulletBlocks = uniqueJudgements.slice(0,3).map((item, idx) => {
+        const lines = wrapWords(item, 54, 4);
+        const startY = 820 + (idx * 120);
+        const textY = startY + 14;
+        const tspan = lines.map((line, lineIdx) => `<tspan x="290" dy="${lineIdx === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`).join('');
+        return `<circle cx="258" cy="${startY}" r="8" fill="#d01616"/><circle cx="258" cy="${startY}" r="12" fill="none" stroke="rgba(208,22,22,.28)" stroke-width="6"/><text x="290" y="${textY}" fill="#e8eef5" font-size="15" font-family="Arial, Helvetica, sans-serif">${tspan}</text>`;
       }).join('');
+      const titleSvg = titleLines.map((line, idx) => `<tspan x="330" dy="${idx === 0 ? 0 : titleFont + 6}">${escapeXml(line)}</tspan>`).join('');
+      const scopeSvg = scopeLines.map((line, idx) => `<tspan x="905" dy="${idx === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`).join('');
+      const compareSvg = compareLines.map((line, idx) => `<tspan x="905" dy="${idx === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`).join('');
+      const preparedSvg = preparedLines.map((line, idx) => `<tspan x="905" dy="${idx === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`).join('');
       const coverSvg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1584" viewBox="0 0 1120 1584">
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1754" viewBox="0 0 1240 1754">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0b1118"/>
-      <stop offset="54%" stop-color="#15202c"/>
-      <stop offset="100%" stop-color="#6f1116"/>
+    <linearGradient id="ciBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e1219"/>
+      <stop offset="48%" stop-color="#16202b"/>
+      <stop offset="100%" stop-color="#6d1010"/>
     </linearGradient>
-    <radialGradient id="glow" cx="88%" cy="88%" r="50%">
-      <stop offset="0%" stop-color="rgba(208,22,22,0.34)"/>
-      <stop offset="100%" stop-color="rgba(208,22,22,0)"/>
-    </radialGradient>
+    <linearGradient id="ciPage" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#090b0f"/>
+      <stop offset="60%" stop-color="#10151c"/>
+      <stop offset="100%" stop-color="#141a22"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="rgba(0,0,0,.22)"/>
+    </filter>
   </defs>
-  <rect x="18" y="18" width="1084" height="1548" rx="32" fill="url(#bg)"/>
-  <rect x="18" y="18" width="1084" height="1548" rx="32" fill="url(#glow)"/>
-  <rect x="60" y="62" width="148" height="148" rx="22" fill="#0b0b0b" stroke="rgba(255,255,255,0.12)"/>
-  <image href="${CITYINTEL_LOGO}" x="60" y="62" width="148" height="148" preserveAspectRatio="xMidYMid slice"/>
-  <text x="300" y="110" fill="#d9e3ee" font-size="18" font-weight="800" letter-spacing="2.8" font-family="Arial, Helvetica, sans-serif">CITYINTEL EXECUTIVE</text>
-  <text x="300" y="138" fill="#d9e3ee" font-size="18" font-weight="800" letter-spacing="2.8" font-family="Arial, Helvetica, sans-serif">INTELLIGENCE REPORT</text>
-  ${titleSvg}
-  <rect x="808" y="64" width="250" height="420" rx="24" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
-  <text x="838" y="112" fill="#e7eef6" font-size="20" font-weight="800" letter-spacing="1.8" font-family="Arial, Helvetica, sans-serif">REPORT OVERVIEW</text>
-  <text x="838" y="180" fill="#97a9bd" font-size="15" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">SCOPE MODEL</text>
-  ${scopeSvg}
-  <line x1="838" y1="258" x2="1030" y2="258" stroke="rgba(255,255,255,0.12)"/>
-  <text x="838" y="318" fill="#97a9bd" font-size="15" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">COMPARISON BASIS</text>
-  ${compareSvg}
-  <line x1="838" y1="454" x2="1030" y2="454" stroke="rgba(255,255,255,0.12)"/>
-  <text x="838" y="514" fill="#97a9bd" font-size="15" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">PREPARED FOR</text>
-  ${preparedSvg}
-  <rect x="212" y="732" width="600" height="356" rx="24" fill="rgba(8,12,18,0.34)" stroke="rgba(255,255,255,0.12)"/>
-  <text x="240" y="780" fill="#e7eef6" font-size="20" font-weight="800" letter-spacing="1.5" font-family="Arial, Helvetica, sans-serif">KEY JUDGEMENTS</text>
-  ${judgementSvg}
-  <g transform="translate(60,1460)">
-    <rect x="0" y="0" rx="18" ry="18" width="220" height="44" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.18)"/>
-    <text x="18" y="28" fill="#eef3f8" font-size="16" font-weight="700" font-family="Arial, Helvetica, sans-serif">${svgEsc(reportTag)}</text>
-    <rect x="236" y="0" rx="18" ry="18" width="${riskPillWidth}" height="44" fill="${pillTone.fill}" stroke="${pillTone.stroke}"/>
-    <text x="254" y="28" fill="${pillTone.text}" font-size="16" font-family="Arial, Helvetica, sans-serif">${svgEsc(riskLabel)} focus</text>
-    <rect x="${footerDateX}" y="0" rx="18" ry="18" width="${footerDateWidth}" height="44" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.18)"/>
-    <text x="${footerDateX + 18}" y="28" fill="#eef3f8" font-size="16" font-family="Arial, Helvetica, sans-serif">${svgEsc(tagDate)}</text>
-  </g>
-  <text x="824" y="1518" fill="rgba(255,255,255,0.06)" font-size="72" font-weight="900" font-family="Arial, Helvetica, sans-serif">CITYINTEL</text>
+  <rect width="1240" height="1754" fill="#ffffff"/>
+  <rect x="54" y="54" width="1132" height="1646" rx="30" fill="url(#ciBg)" stroke="#1f2732" filter="url(#shadow)"/>
+  <text x="885" y="1648" fill="rgba(255,255,255,.05)" font-size="84" font-weight="900" font-family="Arial, Helvetica, sans-serif">CITYINTEL</text>
+  <image href="${CITYINTEL_LOGO}" x="96" y="96" width="148" height="148" preserveAspectRatio="xMidYMid slice"/>
+  <text x="330" y="126" fill="#cfd8e3" font-size="12" font-weight="800" letter-spacing="2.6" font-family="Arial, Helvetica, sans-serif">CITYINTEL EXECUTIVE</text>
+  <text x="330" y="146" fill="#cfd8e3" font-size="12" font-weight="800" letter-spacing="2.6" font-family="Arial, Helvetica, sans-serif">INTELLIGENCE REPORT</text>
+  <text x="330" y="258" fill="#eef2f7" font-size="${titleFont}" font-weight="900" font-family="Arial, Helvetica, sans-serif">${titleSvg}</text>
+  <rect x="870" y="98" width="274" height="420" rx="24" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.10)"/>
+  <text x="905" y="148" fill="#e7eef6" font-size="20" font-weight="800" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">REPORT OVERVIEW</text>
+  <text x="905" y="236" fill="#99a9bc" font-size="12" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">SCOPE MODEL</text>
+  <text x="905" y="272" fill="#ffffff" font-size="16" font-weight="700" font-family="Arial, Helvetica, sans-serif">${scopeSvg}</text>
+  <line x1="905" y1="320" x2="1110" y2="320" stroke="rgba(255,255,255,.08)"/>
+  <text x="905" y="370" fill="#99a9bc" font-size="12" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">COMPARISON BASIS</text>
+  <text x="905" y="406" fill="#ffffff" font-size="16" font-weight="700" font-family="Arial, Helvetica, sans-serif">${compareSvg}</text>
+  <line x1="905" y1="476" x2="1110" y2="476" stroke="rgba(255,255,255,.08)"/>
+  <text x="905" y="526" fill="#99a9bc" font-size="12" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">PREPARED FOR</text>
+  <text x="905" y="562" fill="#ffffff" font-size="16" font-weight="700" font-family="Arial, Helvetica, sans-serif">${preparedSvg}</text>
+  <rect x="220" y="740" width="650" height="390" rx="24" fill="rgba(8,12,18,.34)" stroke="rgba(255,255,255,.10)"/>
+  <text x="258" y="790" fill="#dbe5ef" font-size="18" font-weight="800" letter-spacing="1.2" font-family="Arial, Helvetica, sans-serif">KEY JUDGEMENTS</text>
+  ${bulletBlocks}
+  <rect x="96" y="1600" rx="18" ry="18" width="178" height="40" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.14)"/>
+  <text x="118" y="1625" fill="#eef3f8" font-size="14" font-weight="800" font-family="Arial, Helvetica, sans-serif">${escapeXml(reportTag)}</text>
+  <rect x="288" y="1600" rx="18" ry="18" width="112" height="40" fill="rgba(240,180,41,.13)" stroke="rgba(240,180,41,.5)"/>
+  <text x="312" y="1625" fill="${riskClass === 'high' ? '#ffb4b7' : riskClass === 'low' ? '#9af0c6' : '#ffe08d'}" font-size="14" font-family="Arial, Helvetica, sans-serif">${escapeXml(riskLabel)} focus</text>
+  <rect x="414" y="1600" rx="18" ry="18" width="230" height="40" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.14)"/>
+  <text x="438" y="1625" fill="#eef3f8" font-size="14" font-family="Arial, Helvetica, sans-serif">${escapeXml(`Issue date: ${formatIssueDate()}`)}</text>
 </svg>`;
       const coverImageDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(coverSvg);
       return `<!doctype html>
@@ -1205,25 +1169,12 @@
   .cover-callout ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
   .cover-callout li{display:flex;gap:10px;align-items:flex-start;color:#e8eef5;font-size:14px;line-height:1.45}
   .cover-callout li:before{content:"";width:8px;min-width:8px;height:8px;border-radius:999px;background:#d01616;margin-top:6px;box-shadow:0 0 0 4px rgba(208,22,22,.16)}
-  .cover-screen{display:block}
-  .cover-print{display:none}
-  .cover-image-print{display:none}
-  .cover-image-print img{display:block;width:100%;height:auto;border-radius:24px;box-shadow:none}
-  .cover-print-top{display:grid;grid-template-columns:minmax(0,1.2fr) 280px;gap:22px;align-items:start}
-  .cover-print-brand{display:grid;grid-template-columns:120px minmax(0,1fr);gap:18px;align-items:start}
-  .cover-print-copy{padding-top:4px}
-  .cover-print-copy .eyebrow{margin-bottom:12px;line-height:1.45;max-width:360px}
-  .cover-print-copy .title{font-size:31px;line-height:1.08;max-width:430px;margin:0}
-  .cover-print .hero-right{min-height:auto;padding:18px 16px 14px}
-  .cover-print .hero-right h3{margin-bottom:14px}
-  .cover-print-callout{margin-top:18px;background:rgba(8,12,18,.34);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:14px 16px;backdrop-filter:blur(4px);box-shadow:0 18px 40px rgba(0,0,0,.16);max-width:600px}
-  .cover-print-callout h3{margin:0 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#dbe5ef}
-  .cover-print-callout ul{margin:0;padding:0;list-style:none;display:grid;gap:7px}
-  .cover-print-callout li{display:flex;gap:10px;align-items:flex-start;color:#e8eef5;font-size:13px;line-height:1.38}
-  .cover-print-callout li:before{content:"";width:8px;min-width:8px;height:8px;border-radius:999px;background:#d01616;margin-top:5px;box-shadow:0 0 0 4px rgba(208,22,22,.16)}
   .tag-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
   .cover-footer .tag-row{position:static !important;left:auto !important;right:auto !important;bottom:auto !important}
   .cover-summary-line{display:none}
+  .cover-screen{display:block}
+  .cover-image-print{display:none}
+  .cover-image-print img{display:block;width:100%;height:auto;border-radius:24px;box-shadow:none}
   .tag{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);font-size:12px;color:#eef3f8}
   .tag strong{font-weight:800}
   .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:12px}
@@ -1287,86 +1238,18 @@
   .region-card{border:1px solid #dfe5ec;border-radius:14px;padding:14px 15px;background:#fbfcfd;margin-top:10px}
   .region-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
   .footer{display:flex;justify-content:space-between;gap:10px;margin-top:22px;color:#c6d0dc;font-size:12px}
-  .report-page{position:relative}
-  .report-page.standard-page{background:linear-gradient(180deg,#090b0f 0%,#10151c 58%,#141a22 100%);border-radius:24px;padding:18px;border:1px solid #1b2330;box-shadow:0 18px 48px rgba(0,0,0,.18)}
-  .report-page.standard-page > .section{margin-top:0}
-  .report-page + .report-page{margin-top:18px}
   .page-break{break-before:page;page-break-before:always}
   @page{size:A4;margin:16mm 14mm 18mm}
   @media print{
-    html,body{background:#fff !important}
-    body{background:#fff !important}
-    body:before{display:none !important;background:none !important}
-    .shell{max-width:none;padding:0;background:#fff}
-    .deck{display:block;background:#fff;margin-top:0}
-    .report-page{margin:0;break-after:page;page-break-after:always}
-    .report-page:last-child{break-after:auto;page-break-after:auto}
-    .report-page.cover-page{min-height:263mm;max-height:263mm;overflow:hidden}
-    .report-page.standard-page{min-height:auto;max-height:none;overflow:visible;display:block;background:#fff;border:none;box-shadow:none;padding:0}
-    .report-page.standard-page > .section{margin-top:0;min-height:auto;max-height:none;display:block}
-    .hero{margin-top:0;min-height:263mm;max-height:263mm;box-shadow:none;padding:0;overflow:hidden}
-    .hero:after{display:none !important}
+    body{background:linear-gradient(180deg,#090b0f 0%,#10151c 58%,#141a22 100%)}
+    .shell{max-width:none;padding:0}
+    .hero{margin-top:0;box-shadow:none;background:none;border:none;min-height:auto;padding:0}
     .cover-screen{display:none !important}
-    .cover-print{display:none !important}
     .cover-image-print{display:block !important}
-    .cover-image-print img{width:100% !important;height:263mm !important;object-fit:cover !important;border-radius:24px !important}
-    .report-page.cover-page .hero{background:none !important;border:none !important}
-    .logo-box{width:120px !important;height:120px !important;min-width:120px !important;margin:0 !important;border-radius:20px}
-    .cover-print-top{display:grid !important;grid-template-columns:minmax(0,1.15fr) 270px !important;gap:18px !important;align-items:start !important}
-    .cover-print-brand{display:grid !important;grid-template-columns:120px minmax(0,1fr) !important;gap:16px !important;align-items:start !important}
-    .cover-print-copy{padding-top:2px}
-    .cover-print-copy .eyebrow{font-size:11px;letter-spacing:.18em;line-height:1.45;margin-bottom:12px;max-width:320px;text-align:left}
-    .cover-print-copy .title{font-size:29px;line-height:1.08;max-width:380px;margin:0;text-align:left;text-wrap:balance}
-    .cover-print .hero-right{margin:0;min-height:auto;width:auto;max-width:none;padding:16px 14px 12px}
-    .cover-print .hero-right h3{margin-bottom:14px;text-align:left}
-    .cover-print .info-list{gap:12px;padding-top:0}
-    .cover-print .info-item{gap:4px;padding-bottom:9px}
-    .cover-print .info-item .v{font-size:14px;text-align:left}
-    .cover-print-callout{margin-top:16px;max-width:none;width:100%;padding:14px 16px}
-    .cover-print-callout h3{text-align:left;margin-bottom:8px}
-    .cover-print-callout ul{gap:6px}
-    .cover-print-callout li{font-size:12px;line-height:1.34}
-    .cover-footer{position:static;left:auto;right:auto;bottom:auto;display:flex;justify-content:flex-start;gap:10px;margin-top:18px}
-    .tag-row{justify-content:flex-start}
-    .summary-band{grid-template-columns:repeat(5,minmax(0,1fr)) !important;gap:10px !important}
-    .delta-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:10px !important}
-    .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:10px !important}
-    .section,.metric,.judgement,.delta-card,.event,.region-card,.callout,.exec-box,.named-regions{box-shadow:none}
-    .metric,.delta-card,.event,.region-card,.callout,.named-regions,.judgement{break-inside:avoid;page-break-inside:avoid}
-
-    .report-page.exec-page .section{padding:14px 16px}
-    .report-page.exec-page .section h2{margin-bottom:8px;font-size:18px}
-    .report-page.exec-page .summary-band{gap:8px !important;margin-top:12px}
-    .report-page.exec-page .metric{padding:8px 10px;border-radius:12px}
-    .report-page.exec-page .metric .k{font-size:10px}
-    .report-page.exec-page .metric .v{font-size:18px;margin-top:4px}
-    .report-page.exec-page .metric .s{font-size:10px;margin-top:4px}
-    .report-page.exec-page .named-regions{margin-top:6px;padding:8px 10px;font-size:11px;line-height:1.34}
-    .report-page.exec-page .summary{font-size:12px;line-height:1.34}
-    .report-page.exec-page .summary p{margin:4px 0}
-    .report-page.exec-page .judgement-list{gap:6px;margin-top:8px}
-    .report-page.exec-page .judgement{padding:7px 9px;border-radius:12px}
-    .report-page.exec-page .judgement-bullet{width:20px;min-width:20px;height:20px;font-size:10px}
-    .report-page.exec-page .judgement-text{font-size:11px;line-height:1.22}
-    .section{padding:16px 18px}
-    .exec-box{padding:12px 12px 10px}
-    .named-regions{margin-top:8px;padding:9px 11px;line-height:1.42;font-size:12px}
-    .summary{font-size:13px;line-height:1.42}
-    .summary h3{margin-top:12px}
-    .summary p{margin:5px 0}
-    .judgement-list{gap:7px;margin-top:10px}
-    .judgement{padding:9px 11px}
-    .judgement-bullet{width:22px;min-width:22px;height:22px;font-size:11px}
-    .judgement-text{font-size:12px;line-height:1.32}
-    .metric{padding:10px 12px}
-    .metric .v,.delta-card .v{font-size:20px}
-    .metric .s,.delta-card .s,.delta-subtle,.event-meta{font-size:11px}
-    .delta-list{gap:8px;margin-top:12px}
-    .delta-list > div{font-size:13px;line-height:1.45}
-    .event{padding:12px 13px}
-    .event-title{font-size:15px;line-height:1.2}
-    .event-sum{margin-top:8px;font-size:13px;line-height:1.45}
-    .theme-list li,.rec-list li{margin:6px 0}
+    .cover-image-print img{width:100% !important;height:auto !important;border-radius:24px !important}
+    .section,.metric{box-shadow:none}
+    .page-break{break-before:page;page-break-before:always}
+    .hero,.section,.metric,.judgement,.delta-card,.event,.region-card,.callout{break-inside:avoid;page-break-inside:avoid}
     .footer{position:fixed;left:14mm;right:14mm;bottom:6mm;padding:0}
   }
   @media (max-width:900px){.hero-grid,.deck,.summary-band,.delta-grid{grid-template-columns:1fr}.brand-row{grid-template-columns:1fr}.hero-copy{padding-top:0}.cover-summary{white-space:normal}.hero-right{min-height:auto}.logo-box{width:124px;height:124px;min-width:124px;margin:0 auto 6px}.cover-footer{position:static;left:auto;right:auto;bottom:auto;margin-top:20px}.cover-callout{position:static;left:auto;transform:none;bottom:auto;width:auto;max-width:none;margin:18px 0 0}}
@@ -1374,99 +1257,63 @@
 </head>
 <body>
 <div class="shell">
-  <div class="report-page cover-page">
-    <section class="hero">
-      <div class="cover-screen">
-        <div class="hero-grid">
-          <div class="hero-left">
-            <div class="brand-row">
-              <div class="logo-box"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
-              <div class="hero-copy">
-                <span class="eyebrow">CityIntel Executive Intelligence Report</span>
-                <div class="title">${esc(state.exportTitle || state.title)}</div>
-              </div>
-            </div>
-          </div>
-          <aside class="hero-right">
-            <h3>Report overview</h3>
-            <div class="info-list">
-              <div class="info-item"><div class="k">Scope model</div><div class="v">${esc(scopeText)}</div></div>
-              <div class="info-item"><div class="k">Comparison basis</div><div class="v">${esc(compareSource)}</div></div>
-              <div class="info-item"><div class="k">Prepared for</div><div class="v">CityIntel subscriber circulation</div></div>
-            </div>
-          </aside>
-        </div>
-        ${uniqueJudgements.length ? `<div class="cover-callout"><h3>Key judgements</h3><ul>${uniqueJudgements.slice(0,3).map(item => `<li>${esc(item)}</li>`).join('')}</ul></div>` : ''}
-        <div class="cover-footer">
-          <div class="tag-row">
-            <span class="tag"><strong>${reportTag}</strong></span>
-            <span class="pill ${riskClass}">${esc(riskLabel)} focus</span>
-            <span class="tag">Issue date: ${esc(formatIssueDate())}</span>
+  <section class="hero">
+    <div class="cover-screen">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="brand-row">
+          <div class="logo-box"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
+          <div class="hero-copy">
+            <span class="eyebrow">CityIntel Executive Intelligence Report</span>
+            <div class="title">${esc(state.exportTitle || state.title)}</div>
           </div>
         </div>
       </div>
-      <div class="cover-print">
-        <div>
-          <div class="cover-print-top">
-            <div>
-              <div class="cover-print-brand">
-                <div class="logo-box"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
-                <div class="cover-print-copy">
-                  <span class="eyebrow">CityIntel Executive Intelligence Report</span>
-                  <div class="title">${esc(state.exportTitle || state.title)}</div>
-                </div>
-              </div>
-            </div>
-            <aside class="hero-right">
-              <h3>Report overview</h3>
-              <div class="info-list">
-                <div class="info-item"><div class="k">Scope model</div><div class="v">${esc(scopeText)}</div></div>
-                <div class="info-item"><div class="k">Comparison basis</div><div class="v">${esc(compareSource)}</div></div>
-                <div class="info-item"><div class="k">Prepared for</div><div class="v">CityIntel subscriber circulation</div></div>
-              </div>
-            </aside>
-          </div>
-          ${uniqueJudgements.length ? `<div class="cover-print-callout"><h3>Key judgements</h3><ul>${uniqueJudgements.slice(0,3).map(item => `<li>${esc(item)}</li>`).join('')}</ul></div>` : ''}
+      <aside class="hero-right">
+        <h3>Report overview</h3>
+        <div class="info-list">
+          <div class="info-item"><div class="k">Scope model</div><div class="v">${esc(scopeText)}</div></div>
+          <div class="info-item"><div class="k">Comparison basis</div><div class="v">${esc(compareSource)}</div></div>
+          <div class="info-item"><div class="k">Prepared for</div><div class="v">CityIntel subscriber circulation</div></div>
         </div>
-        <div class="cover-footer">
-          <div class="tag-row">
-            <span class="tag"><strong>${reportTag}</strong></span>
-            <span class="pill ${riskClass}">${esc(riskLabel)} focus</span>
-            <span class="tag">Issue date: ${esc(formatIssueDate())}</span>
-          </div>
-        </div>
+      </aside>
+    </div>
+    ${uniqueJudgements.length ? `<div class="cover-callout"><h3>Key judgements</h3><ul>${uniqueJudgements.slice(0,3).map(item => `<li>${esc(item)}</li>`).join('')}</ul></div>` : ''}
+    <div class="cover-footer">
+      <div class="tag-row">
+        <span class="tag"><strong>${reportTag}</strong></span>
+        <span class="pill ${riskClass}">${esc(riskLabel)} focus</span>
+        <span class="tag">Issue date: ${esc(formatIssueDate())}</span>
       </div>
-      <div class="cover-image-print"><img src="${coverImageDataUri}" alt="CityIntel report cover"></div>
-    </section>
-  </div>
+    </div>
+    <div class="cover-image-print"><img src="${coverImageDataUri}" alt="CityIntel report cover"></div>
+  </section>
 
-  <div class="report-page standard-page exec-page">
-    <section class="section"><div class="brand-corner"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
-      <h2>Executive highlights</h2>
-      <div class="summary-band">
-        <div class="metric"><div class="k">Primary scope</div><div class="v" style="font-size:20px">${esc(scopeText)}</div><div class="s">Current build filter</div></div>
-        <div class="metric"><div class="k">Report posture</div><div class="v" style="font-size:20px">${esc(riskLabel)} focus</div><div class="s">Dominant operating picture</div></div>
-        <div class="metric"><div class="k">Events in scope</div><div class="v">${metrics.events || 0}</div><div class="s">Current reporting window</div></div>
-        <div class="metric"><div class="k">High-risk events</div><div class="v">${metrics.high || 0}</div><div class="s">Priority monitoring load</div></div>
-        <div class="metric"><div class="k">Countries / regions</div><div class="v">${metrics.countries || 0}</div><div class="s">Named below for client context</div></div>
-      </div>
-      <div class="exec-box" style="margin-top:16px">
-        ${namedRegionsLine ? `<div class="named-regions"><strong>Countries / regions in scope</strong>${esc(namedRegionsLine)}</div>` : ''}
-        ${thematicWatch ? `<div class="named-regions"><strong>Theme watchlist</strong>${esc(thematicWatch)}</div>` : ''}
-        <h3 style="margin-top:14px">Executive summary</h3>
-        <div class="summary">${summary}</div>
-        ${uniqueJudgements.length ? `<div class="judgement-list">${uniqueJudgements.map((item, idx) => `<div class="judgement"><div class="judgement-bullet">${idx+1}</div><div class="judgement-text">${esc(item)}</div></div>`).join('')}</div>` : ''}
-      </div>
-    </section>
-  </div>
+  <section class="section" style="margin-top:18px"><div class="brand-corner"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
+    <h2>Executive highlights</h2>
+    <div class="summary-band">
+      <div class="metric"><div class="k">Primary scope</div><div class="v" style="font-size:20px">${esc(scopeText)}</div><div class="s">Current build filter</div></div>
+      <div class="metric"><div class="k">Report posture</div><div class="v" style="font-size:20px">${esc(riskLabel)} focus</div><div class="s">Dominant operating picture</div></div>
+      <div class="metric"><div class="k">Events in scope</div><div class="v">${metrics.events || 0}</div><div class="s">Current reporting window</div></div>
+      <div class="metric"><div class="k">High-risk events</div><div class="v">${metrics.high || 0}</div><div class="s">Priority monitoring load</div></div>
+      <div class="metric"><div class="k">Countries / regions</div><div class="v">${metrics.countries || 0}</div><div class="s">Named below for client context</div></div>
+    </div>
+    <div class="exec-box" style="margin-top:16px">
+      ${namedRegionsLine ? `<div class="named-regions"><strong>Countries / regions in scope</strong>${esc(namedRegionsLine)}</div>` : ''}
+      ${thematicWatch ? `<div class="named-regions"><strong>Theme watchlist</strong>${esc(thematicWatch)}</div>` : ''}
+      <h3 style="margin-top:14px">Executive summary</h3>
+      <div class="summary">${summary}</div>
+      ${uniqueJudgements.length ? `<div class="judgement-list">${uniqueJudgements.map((item, idx) => `<div class="judgement"><div class="judgement-bullet">${idx+1}</div><div class="judgement-text">${esc(item)}</div></div>`).join('')}</div>` : ''}
+    </div>
+  </section>
 
   <div class="deck">
-      ${deltaHtml ? `<div class="report-page standard-page"><section class="section delta-panel"><div class="brand-corner"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div><h2>Change detection</h2>${deltaHtml}</section></div>` : ``}
-      <div class="report-page"><section class="section page-break"><div class="brand-corner"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
+      ${deltaHtml ? `<section class="section delta-panel"><div class="brand-corner"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div><h2>Change detection</h2>${deltaHtml}</section>` : ``}
+      <section class="section page-break"><div class="brand-corner"><img src="${CITYINTEL_LOGO}" alt="CityIntel logo"></div>
         <h2>Priority events</h2>
         <div class="muted" style="margin-bottom:12px">Headline events most likely to influence client travel, site access, operational posture, or media visibility.</div>
         <div class="cards">${eventsHtml}</div>
-      </section></div>
+      </section>
 </div>
 </body>
 </html>`;
@@ -1803,26 +1650,14 @@
     el.saveOrgDraftBtn.addEventListener('click', () => upsertReport('org', 'Draft'));
     el.publishOrgBtn.addEventListener('click', () => upsertReport('org', 'Published'));
     el.downloadBrandedBtn.addEventListener('click', () => {
-      if (!currentDraftState || !currentDraftState.brandedHtml){
-        alert('Open a draft first, then export the PDF version.');
-        return;
-      }
-
-      printHtmlDoc(currentDraftState.brandedHtml, {
-        autoPrint: true,
-        pdfFilename: pdfFilenameFromState(currentDraftState)
-      });
+      if (!currentDraftState || !currentDraftState.brandedHtml){ alert('Open a draft first, then export the branded version.'); return; }
+      downloadText(currentDraftState.exportFilename || 'CityIntel_Report.html', currentDraftState.brandedHtml, 'text/html');
     });
     el.openPrintViewBtn.addEventListener('click', () => {
-      if (!currentDraftState || !currentDraftState.brandedHtml){
-        alert('Open a draft first, then open the print preview.');
-        return;
-      }
-
-      printHtmlDoc(currentDraftState.brandedHtml, {
-        autoPrint: false,
-        pdfFilename: pdfFilenameFromState(currentDraftState)
-      });
+      if (!currentDraftState || !currentDraftState.brandedHtml){ alert('Open a draft first, then open the print view.'); return; }
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.open(); w.document.write(currentDraftState.brandedHtml); w.document.close();
     });
     el.saveMasterBtn.addEventListener('click', () => upsertReport('master', 'Draft'));
     if (!isAdmin()) el.saveMasterBtn.style.display = 'none';
