@@ -22,7 +22,7 @@
   // ------------- Local admin users -------------
   // Carlton — Admin:  cjladmin@cityintel.com  /  Kieron12!
   // Morris  — Admin:  mm@cityintel.com        /  Morrisintel@01
-
+ // Nat  — Admin:  nat@cityintel.com        /  Natcity@01
   const USERS = {
     'cjladmin@cityintel.com': {
       name: 'Carlton - Admin',
@@ -33,8 +33,13 @@
       name: 'Morris - Admin',
       role: 'Admin',
       passHash: 'ef2c36181af9977b4359eedab2d21a6715d266e0d5a35200f333d743adb2cc5e'
-}
-    
+},
+
+'nat@cityintel.com': {
+  name: 'Nat - Admin',
+  role: 'Admin',
+  passHash: 'be9f7196b951dbd1187cd865aebc8c34386e067e241a78e57fd77c736c51c993'
+},    
   };
 
   // ------------- Utilities -------------
