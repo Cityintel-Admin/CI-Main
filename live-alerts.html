@@ -1,0 +1,6375 @@
+
+   
+<!doctype html>
+<html lang="en">
+<head>
+
+  <script src="auth.js"></script>
+<script>
+(function(){
+  const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
+  async function boot(){
+    for (let i=0;i<60;i++){
+      const hasTrav = (typeof window.syncOrgTravellers === 'function');
+      const hasAssets = (typeof window.syncOrgAssets === 'function');
+      const hasPanic = (typeof window.startPanicPolling === 'function');
+      if (hasTrav && hasAssets) {
+        try { await Promise.all([window.syncOrgTravellers(), window.syncOrgAssets()]); } catch(e){}
+      }
+      if (hasPanic) {
+        try { window.startPanicPolling(); } catch(e){}
+      }
+      if ((hasTrav && hasAssets) || hasPanic) return;
+      await sleep(100);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+<script src="alerts-data.js"></script>
+
+<script>
+(function pageGuard(){
+  const NEED_LOGIN = true;          // this page requires a login
+  const NEED_SUB = false;           // set to true on pages that require an active sub
+
+  // Must be logged in?
+  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    location.href = 'login.html?next=' + next;
+    return;
+  }
+
+  // Must be subscribed?
+  if (NEED_SUB) {
+    const isSub = localStorage.getItem('ci_subscribed') === 'true';
+    if (!isSub) {
+      location.href = 'subscribe.html';
+      return;
+    }
+  }
+})();
+
+  const API_ORIGIN = 'https://api.cityintelapi.com';
+
+  function getClientEmail() {
+    // Primary: cached explicit email
+    const explicit = (localStorage.getItem('ci_user_email') || '').trim();
+    if (explicit) return explicit;
+
+    // Common: profile blob stored by auth.js
+    try {
+      const raw = localStorage.getItem('ci_profile');
+      if (raw) {
+        const p = JSON.parse(raw);
+        const e = (p?.email || p?.user?.email || '').trim();
+        if (e) return e;
+      }
+    } catch {}
+
+    // Fallback: CIAuth helper (if present)
+    try {
+      if (window.CIAuth && typeof window.CIAuth.getProfile === 'function') {
+        const p = window.CIAuth.getProfile();
+        const e = (p?.email || '').trim();
+        if (e) return e;
+      }
+      if (window.CIAuth && typeof window.CIAuth.who === 'function') {
+        const p = window.CIAuth.who();
+        const e = (p?.email || '').trim();
+        if (e) return e;
+      }
+    } catch {}
+
+    return '';
+  }
+
+  function withEmailParam(url){
+    const email = getClientEmail();
+    if(!email) return url;
+    try{
+      const u = new URL(url, window.location.origin);
+      u.searchParams.set('email', email);
+      return u.toString();
+    }catch(_){
+      // fallback for already-absolute urls
+      const u = new URL(url);
+      u.searchParams.set('email', email);
+      return u.toString();
+    }
+  }
+
+  async function authHeaders(extra){
+    const email = getClientEmail();
+    let name = '', id = '', token = '';
+    try{ name = localStorage.getItem('ci_user_name') || ''; }catch(_){}
+    try{ id = localStorage.getItem('ci_user_id') || ''; }catch(_){}
+    try{ token = localStorage.getItem('ci_admin_token') || ''; }catch(_){}
+    const h = Object.assign({ 'Content-Type': 'application/json' }, (extra||{}));
+    if(email) h['X-User-Email'] = email;
+    if(name) h['X-User-Name'] = name;
+    if(id) h['X-User-Id'] = id;
+    if(token) h['X-Admin-Token'] = token;
+    return h;
+  }
+
+  async function syncOrgTravellers(){
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/travellers'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && json.ok && Array.isArray(json.data)){
+      try{
+        localStorage.setItem('ci_travellers', JSON.stringify(json.data));
+      }catch(_){}
+      window.CITravellers = json.data;
+      return json.data;
+    }
+    return [];
+  }
+
+  async function syncOrgAssets(){
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/assets'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && json.ok && Array.isArray(json.data)){
+      try{
+        localStorage.setItem('ci_assets', JSON.stringify(json.data));
+      }catch(_){}
+      window.CIAssets = json.data;
+      return json.data;
+    }
+    return [];
+  }
+
+  async function fetchPanic(){
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && json.ok){
+      return json.data || null;
+    }
+    return null;
+  }
+
+  
+  function formatPanicWhen(input) {
+    if (!input) return '';
+    const d = new Date(input);
+    if (Number.isNaN(d.getTime())) return String(input);
+    const pad = (n) => String(n).padStart(2, '0');
+    const day = pad(d.getDate());
+    const mon = pad(d.getMonth() + 1);
+    const year = d.getFullYear();
+    const hh = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    const ss = pad(d.getSeconds());
+    return `${day}-${mon}-${year} Time: ${hh}:${mm}:${ss}`;
+  }
+
+function ensurePanicBanner() {
+    let el = document.getElementById('panicBanner');
+    if (el) return el;
+
+    el = document.createElement('div');
+    el.id = 'panicBanner';
+    el.style.cssText = `
+      position: sticky; top: 0; z-index: 9999;
+      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 14px;
+      color: #fff;
+      display: none;
+    `;
+
+    el.innerHTML = `
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
+        <div style="text-align:center; min-width:0;">
+          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
+          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+          <a id="panicOpen" href="panicalarm.html" style="
+            color:#fff; text-decoration: underline; font-weight:800;
+          ">Open</a>
+</div>
+      </div>
+    `;
+
+    document.body.insertBefore(el, document.body.firstChild);
+
+    return el;
+  }
+
+  async function startPanicPolling() {
+    const banner = ensurePanicBanner();
+    if (!banner) return;
+
+    const tick = async () => {
+      try {
+const st = await fetchPanic();
+        if (st && st.active) {
+          window.__ciPanicState = st;
+          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+          const when = formatPanicWhen(whenRaw);
+          const loc = String(st.location || st.loc || '').trim();
+
+          const name = (
+            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
+             st.name || st.actorName || st.fullName || st.displayName || '')
+          ).trim();
+          const email = String(st.email || st.actorEmail || '').trim();
+          const phone = String(st.phone || st.actorPhone || '').trim();
+          const msg = String(st.message || st.msg || '').trim();
+
+          const contacts = [];
+          if (email) contacts.push(email);
+          if (phone) contacts.push(phone);
+
+          let metaText = name || 'Panic alarm';
+          if (loc) metaText += ` at ${loc}`;
+          if (msg) metaText += ` — ${msg}`;
+          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
+          if (when) metaText += ` — ${when}`;
+
+          const metaEl = banner.querySelector('#panicMeta');
+          if (metaEl) metaEl.textContent = metaText;
+
+          banner.style.display = 'block';
+          if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
+            window.CIPanicMap.setState(st).catch(()=>{});
+          }
+        } else {
+          window.__ciPanicState = null;
+          banner.style.display = 'none';
+          if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
+            window.CIPanicMap.setState(null).catch(()=>{});
+          }
+        }
+} catch (e) {
+        // If the panic endpoint fails momentarily, don't break the page.
+      }
+    };
+
+    await tick();
+    setInterval(tick, 8000);
+  }
+
+  // Expose for the boot() shim at the top of the page
+  window.syncOrgTravellers = syncOrgTravellers;
+  window.syncOrgAssets = syncOrgAssets;
+  window.startPanicPolling = startPanicPolling;
+
+</script>
+
+<script>
+(function compatProfileShim(){
+  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+  const u = CIAuth.who();
+  if (!u) return;
+  localStorage.setItem('ci_profile', JSON.stringify({
+    name: u.name || 'CityIntel User',
+    email: u.email,
+    role: u.role || 'Admin',
+    is_admin: (u.role||'').toLowerCase()==='admin'
+  }));
+  // Do NOT auto-set ci_subscribed here anymore
+})();
+</script>
+
+<script>
+async function loadOrgContext() {
+  const res = await fetch('https://api.cityintelapi.com/api/org/me', {
+    headers: {
+      'X-User-Email': user.email,
+      'X-User-Name': user.name,
+      'X-User-Id': user.id
+    }
+  });
+  const json = await res.json();
+
+  if (!json.org) {
+    // show "Create or Join Organisation" modal
+    showOrgOnboarding();
+    return;
+  }
+
+  window.currentOrg = json.org;
+}
+</script>
+
+	<script>
+(function syncPresenceFromStorage(){
+  function loadList(key, fallback){
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (e) {
+      console.warn('CityIntel: failed to load', key, 'from localStorage', e);
+      return fallback;
+    }
+  }
+
+  const seedAssets     = Array.isArray(window.CIAssets)     ? window.CIAssets     : [];
+  const seedTravellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+
+  window.CIAssets     = loadList('ci_assets', seedAssets);
+  window.CITravellers = loadList('ci_travellers', seedTravellers);
+})();
+</script>
+
+<script>
+/*
+ * CIExposure
+ * - Provides nearby assets/travellers for an incident location.
+ * - Data comes from localStorage (ci_assets / ci_travellers) so users never need lat/lng manually.
+ */
+(function () {
+  const norm = (s) => (s || "").toString().trim().toLowerCase();
+
+  function safeJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function toNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Haversine distance (km)
+  function distanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function itemWithinRadius(item, centerLat, centerLng, radiusKm) {
+    const ilat = toNum(item.lat ?? item.latitude);
+    const ilng = toNum(item.lng ?? item.lon ?? item.longitude);
+    if (ilat === null || ilng === null) return false;
+    return distanceKm(centerLat, centerLng, ilat, ilng) <= radiusKm;
+  }
+
+  function itemMatchesCityCountry(item, city, country) {
+    const icity = norm(item.city || item.town || item.locality);
+    const icountry = norm(item.country);
+    const c = norm(city);
+    const k = norm(country);
+    // If we only have city, match city. If we have both, match both.
+    if (c && k) return icity === c && icountry === k;
+    if (c) return icity === c;
+    return false;
+  }
+
+  // IMPORTANT: keep this synchronous. The UI calls it without `await`.
+  // Also support both call styles:
+  //   exposureFor({ city, country, lat, lng, radiusKm })
+  //   exposureFor(city, country, lat, lng, radiusKm)
+  function exposureFor(cityOrOpts, country, lat, lng, radiusKm) {
+    const opts = (cityOrOpts && typeof cityOrOpts === 'object')
+      ? cityOrOpts
+      : { city: cityOrOpts, country, lat, lng, radiusKm };
+
+    const city = opts?.city || "";
+    const ctry = opts?.country || "";
+    const la = toNum(opts?.lat);
+    const ln = toNum(opts?.lng);
+    const radKm = Number(opts?.radiusKm) || 1;
+
+    const assets = safeJson("ci_assets", []);
+    const travellers = safeJson("ci_travellers", []);
+
+    let assetsNearby = [];
+    let travellersNearby = [];
+
+    if (la !== null && ln !== null) {
+      assetsNearby = assets.filter(a => itemWithinRadius(a, la, ln, radKm));
+      travellersNearby = travellers.filter(t => itemWithinRadius(t, la, ln, radKm));
+    } else {
+      // Fallback: city/country match (no lat/lng on incident)
+      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, ctry));
+      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, ctry));
+    }
+
+    // Return both new + legacy names (older UI expects `assets`/`travellers`).
+    return { assetsNearby, travellersNearby, assets: assetsNearby, travellers: travellersNearby };
+  }
+
+  window.CIExposure = window.CIExposure || {};
+  window.CIExposure.exposureFor = exposureFor;
+})();
+</script>
+
+	<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="anonymous">
+
+  <meta charset="utf-8" />
+  <title>CityIntel — Live Feed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <style>
+      :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
+      body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
+
+     .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
+    .sidebar{grid-area:sidebar;background:#0c0c0c;border-right:1px solid var(--gray-600);display:flex;flex-direction:column;padding:18px 14px;gap:18px}
+      nav a{display:flex;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--text);border:1px solid transparent}
+      nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+      nav a.active{background:rgba(208,22,22,0.15);border-color:var(--brand-red)}
+
+    .topbar{ grid-area: topbar;background: rgba(255,255,255,0.02);border-bottom:1px solid var(--brand-gray-600);display:flex; align-items:center; gap:12px;
+     padding:10px 16px;position:sticky; top:0; z-index:10;backdrop-filter: blur(8px);}
+
+#topActions{margin-left:auto;display:flex; align-items:center; gap:10px;min-width: fit-content;position: relative;}
+    
+    .user{ display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;
+  background:#1c1e22;border:1px solid #24272c;cursor:pointer;
+}
+    .avatar{ width:28px;height:28px;background:#fff;color:#000;border-radius:50%;
+  display:grid;place-items:center;font-weight:700;
+}
+    .dropdown{ position:absolute;right:0;top:calc(100% + 6px);background:#1a1c20;border:1px solid #24272c;
+  border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:140px;z-index:50;
+}
+    .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
+    .dropdown a:hover{background:rgba(255,255,255,0.05)}
+
+  .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
+  .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
+
+    #trial-banner{
+      flex:1;
+      text-align:center;
+      font-size:12px;
+      font-weight:600;
+      color:#fecaca;
+    }
+
+    .logout-link{
+      color:#8e97a3;
+      font-size:12px;
+    }
+
+    .main{
+      grid-area:main;
+      padding:18px;
+    }
+
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .page-head-left h2{
+      margin:0;
+      font-size:16px;
+      font-weight:600;
+      color:var(--text);
+    }
+    .page-head-left .sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .page-head-right{
+      margin-left:auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-width:160px;
+      gap:8px;
+    }
+
+.page-title-bar{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.page-title-main{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.page-title-bar h2{
+  margin:0;
+  font-size:18px;
+  font-weight:600;
+  color:var(--text);
+}
+
+.page-title-sub{
+  font-size:12px;
+  color:#8e97a3; /* muted */
+}
+
+.page-title-actions{
+  margin-left:auto;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.btn-outline-pill{
+  border-radius:999px;
+  border:1px solid var(--gray-600);
+  background:#1f2024;
+  color:#e9edf2;
+  font-size:12px;
+  font-weight:500;
+  padding:6px 12px;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+}
+
+.btn-outline-pill:hover{
+  background:#2a2d32;
+  border-color:#D01616;
+  color:#fff;
+}
+
+    .btn-red{
+      background:#D01616;
+      color:#fff;
+      font-size:13px;
+      font-weight:600;
+      border:1px solid #D01616;
+      border-radius:10px;
+      padding:8px 12px;
+      cursor:pointer;
+      line-height:1.2;
+      text-align:center;
+      min-width:140px;
+    }
+    .btn-red:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
+    }
+
+    .feeds-grid{
+  display: grid;
+  gap: 16px;
+  /* default: responsive 1–2 columns */
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+
+/* On wider screens, force 3 equal columns */
+@media (min-width: 1280px){
+  .feeds-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+    .feed-card{
+      background:linear-gradient(180deg,#1a1c20,#131417);
+      border:1px solid var(--g600);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      min-height:260px;
+      max-height:400px;
+    }
+
+    .feed-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      border-bottom:1px solid var(--g600);
+      padding:12px 16px;
+    }
+    .feed-head-left{
+      font-size:13px;
+      color:var(--text);
+      line-height:1.4;
+    }
+    .feed-city{
+      font-weight:600;
+      font-size:14px;
+      color:#fff;
+    }
+
+    .feed-head-meta{
+      margin-top:4px;
+      font-size:11px;
+      color:#9ca3af;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+    }
+
+    .feed-head-meta span.badge{
+      padding:2px 6px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.8);
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+
+    .feed-risk{
+      display:inline-block;
+      font-size:11px;
+      line-height:1.2;
+      font-weight:600;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .feed-risk.high{
+      background:rgba(255,90,95,.12);
+      border-color:rgba(255,90,95,.35);
+      color:#ff5a5f;
+    }
+    .feed-risk.med{
+      background:rgba(240,180,41,.12);
+      border-color:rgba(240,180,41,.35);
+      color:#f0b429;
+    }
+    .feed-risk.low{
+      background:rgba(51,196,141,.12);
+      border-color:rgba(51,196,141,.35);
+      color:#33c48d;
+    }
+    .feed-head-right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
+    }
+
+/* Helps remove thin gaps/bands between raster tiles */
+.leaflet-container { background: #b9d7ea; } /* any light ocean-ish colour */
+.leaflet-tile {
+  outline: 1px solid transparent;           /* forces consistent compositing */
+  transform: translate3d(0,0,0);
+  backface-visibility: hidden;
+}
+
+	.feed-kw{
+     margin-top:4px;
+     font-size:12px;
+     color:var(--muted);
+     white-space:nowrap;
+     overflow:hidden;
+     text-overflow:ellipsis;
+     max-width: 100%;
+    }
+
+	  .live-map-feed-label{
+  font-size:12px;
+  font-weight:600;
+  color:#e5e7eb;
+  margin-bottom:4px;
+}
+
+.live-map-feed-counts{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-size:11px;
+  color:#cbd5e1;
+}
+.live-map-feed-counts .dot{
+  width:6px;height:6px;border-radius:999px;display:inline-block;margin-right:4px;
+}
+.live-map-feed-counts .dot-high{ background:#ff5a5f; }
+.live-map-feed-counts .dot-med { background:#f0b429; }
+.live-map-feed-counts .dot-low { background:#33c48d; }
+
+/* --- Alerts panel layout + scrolling --- */
+#mapAlertsPanel{
+  display:none;                 /* JS toggles this */
+  flex-direction:column;
+  gap:8px;
+  height:100%;
+  min-height:0;                 /* critical so inner scroller works */
+}
+
+#mapAlertsList{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  padding-right:10px;           /* avoids scrollbar overlap */
+}
+
+/* keep Back button visible and not covering the scrollbar */
+#mapAlertsBackBtn{
+  position:sticky;
+  bottom:0;
+  z-index:2;
+  margin-top:6px;
+}
+	  
+.kw-chip{
+  display:inline-block;
+  padding:2px 6px;
+  border:1px solid var(--g600);
+  border-radius:999px;
+  font-size:11px;
+  color:#cfd6df;
+  background:#1f2024;
+  margin-right:6px;
+}
+.kw-more{
+  font-size:11px;
+  opacity:.8;
+}
+
+/* ---------------------------------------------------------
+   RECENCY AGE VISUALS
+--------------------------------------------------------- */
+
+.age-fresh {
+  opacity: 1;
+  border-color: #3f3f3f !important;
+}
+
+.age-recent {
+  opacity: 0.85;
+  border-color: #333 !important;
+}
+
+.age-older {
+  opacity: 0.65;
+  border-color: #262626 !important;
+}
+
+.age-stale {
+  opacity: 0.45;
+  border-color: #1e1e1e !important;
+}
+
+/* LIVE badge in feed header */
+    .live-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(208,22,22,0.15);
+      border:1px solid #D01616;
+      color:#ff4d4d;
+      font-size:11px;
+      font-weight:600;
+      line-height:1.2;
+      padding:3px 8px;
+      border-radius:999px;
+    }
+    .live-dot {
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#ff4d4d;
+      box-shadow:0 0 6px #ff4d4d,0 0 10px #ff4d4d;
+    }
+
+    /* checkbox row in modal */
+    .modal-row-inline {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+      margin-bottom:12px;
+    }
+    .modal-row-inline input[type="checkbox"] {
+      margin-top:2px;
+      accent-color:#D01616; /* modern browsers */
+    }
+    .modal-row-inline .live-row-text {
+      color:#fff;
+      font-size:13px;
+      line-height:1.4;
+    }
+    .modal-row-inline .live-row-hint {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .btn-ghost{
+      background:#1f2024;
+      color:#e9edf2;
+      border:1px solid var(--g600);
+      border-radius:8px;
+      padding:4px 8px;
+      font-size:12px;
+      line-height:1.2;
+      cursor:pointer;
+    }
+    .btn-ghost:hover{
+      background:#2a2d32;
+    }
+
+    .feed-body{
+      flex:1;
+      overflow-y:auto;
+      padding:12px 16px 16px;
+      font-size:13px;
+    }
+    .feed-item{
+      border-left:4px solid #D01616;
+      background:linear-gradient(90deg,rgba(208,22,22,.1),rgba(208,22,22,0));
+      border-radius:8px;
+      border:1px solid var(--g600);
+      padding:10px 12px;
+      margin-bottom:10px;
+      cursor:pointer;
+    }
+    .feed-item:last-child{
+      margin-bottom:0;
+    }
+    .feed-title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:8px;
+      font-size:13px;
+      font-weight:600;
+      color:#fff;
+    }
+    .feed-meta{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+
+    .feed-footer{
+      border-top:1px solid var(--g600);
+      padding:10px 16px;
+      font-size:11px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .feed-footer .src{
+      color:var(--muted);
+    }
+    .feed-footer .refresh{
+      cursor:pointer;
+      color:#8e97a3;
+    }
+    .feed-footer .refresh:hover{
+      color:#fff;
+    }
+
+    /* slide-in detail panel */
+    .detail-panel{
+      position:fixed;
+      top:0;
+      right:0;
+      height:100vh;
+      width:360px;
+      max-width:80%;
+      background:#1a1c20;
+      border-left:1px solid var(--g600);
+      box-shadow:-20px 0 40px rgba(0,0,0,.8);
+      color:#e9edf2;
+      font-size:13px;
+      line-height:1.5;
+      display:flex;
+      flex-direction:column;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:10000;
+    }
+    .detail-panel.open{
+      transform:translateX(0%);
+    }
+
+    /* Desktop: reserve space so the incident detail panel doesn't cover the map */
+    @media (min-width: 1100px){
+      body.detail-open .main{
+        margin-right:360px;
+        transition:margin-right 220ms ease;
+      }
+    }
+
+    .detail-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding:16px;
+      border-bottom:1px solid var(--g600);
+      background:#131417;
+    }
+    .detail-head-left{
+      max-width:260px;
+    }
+    .detail-title{
+      font-size:14px;
+      font-weight:600;
+      color:#fff;
+      margin-bottom:4px;
+    }
+    .detail-meta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .detail-close{
+      background:none;
+      border:0;
+      color:#8e97a3;
+      font-size:12px;
+      cursor:pointer;
+      padding:4px 6px;
+      border-radius:6px;
+    }
+    .detail-close:hover{
+      color:#fff;
+      background:#2a2d32;
+    }
+
+    .detail-body{
+      flex:1;
+      overflow-y:auto;
+      padding:16px;
+    }
+    .detail-section{
+      margin-bottom:16px;
+      background:linear-gradient(180deg,#1a1c20,#131417);
+      border:1px solid var(--g600);
+      border-radius:12px;
+      padding:12px;
+    }
+    .detail-section h4{
+      margin:0 0 6px;
+      font-size:12px;
+      font-weight:600;
+      color:#fff;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+    .detail-section .small{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .detail-footer{
+      border-top:1px solid var(--g600);
+      background:#131417;
+      padding:12px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .earlier-list {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+  line-height: 1.4;
+  gap: 4px;
+}
+    .earlier-list li {
+  margin-bottom: 4px;
+}
+
+.event-group {
+  background: #1a1a1a;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #2a2a2a;
+}
+
+.eg-header {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  align-items: center;
+}
+
+.eg-title {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.eg-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #333;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.eg-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.eg-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  opacity: 0.85;
+  display: flex;
+  gap: 12px;
+}
+
+.eg-when {
+  opacity: 0.85;
+}
+
+.eg-body {
+  margin-top: 12px;
+  padding-left: 8px;
+  border-left: 2px solid #333;
+  max-height: 140px;      /* adjust if you want more/less */
+  overflow-y: auto;
+}
+
+.eg-item {
+  margin-bottom: 9px;
+}
+
+.eg-item-when {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.eg-item-text {
+  font-size: 13px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;     /* show up to 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+	.eg-footer {
+  margin-top: 8px;
+  text-align: right;
+}
+.eg-footer .eg-view-btn {
+  font-size: 11px;
+  padding: 4px 8px;
+}  
+
+/* --- Global "Now" strip above feeds --- */
+.live-now-strip{
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--g600);
+  background: linear-gradient(90deg, rgba(208,22,22,.14), rgba(12,10,20,.9));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.live-now-label{
+  font-weight: 600;
+  color: #fecaca;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: 11px;
+}
+
+.live-now-stats{
+  color: #e5e7eb;
+  opacity: .9;
+}
+
+.live-now-stats span{
+  margin-right: 6px;
+}
+
+.live-now-stats .dot-high{ color:#f97373; }
+.live-now-stats .dot-med { color:#fbbf24; }
+.live-now-stats .dot-low { color:#4ade80; }
+
+.live-now-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-left:auto;
+}
+
+.live-now-pill{
+  border-radius:999px;
+  border:1px solid rgba(248,113,113,.7);
+  background:rgba(127,29,29,.9);
+  color:#fee2e2;
+  font-size:11px;
+  padding:4px 8px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+}
+
+.live-now-pill span:first-child{
+  font-size:13px;
+}
+
+.live-now-pill:hover{
+  filter:brightness(1.1);
+}
+
+.live-now-empty{
+  font-size:12px;
+  color:#9ca3af;
+}
+
+    .btn-full-incident{
+      background:#D01616;
+      color:#fff;
+      border:1px solid #D01616;
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:600;
+      line-height:1.2;
+      text-align:center;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .btn-full-incident:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
+    }
+
+    .btn-back-dash{
+      display:inline-block;
+      text-decoration:none;
+      color:#ff5a5f;
+      font-size:12px;
+      font-weight:600;
+      text-align:center;
+    }
+
+    /* Add Feed modal */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:10001;
+    }
+    .modal-box{
+      background:#1a1c20;
+      border:1px solid var(--g600);
+      border-radius:16px;
+      width:420px;
+      max-width:90%;
+      box-shadow:0 30px 60px rgba(0,0,0,.9);
+      padding:16px;
+      color:var(--text);
+      font-size:13px;
+    }
+    .modal-box h3{
+      margin:0 0 12px;
+      font-size:14px;
+      font-weight:600;
+      color:#fff;
+    }
+    .modal-row{
+      margin-bottom:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .modal-row label{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .modal-row input, .modal-row select{
+      background:#1f2024;
+      border:1px solid var(--g600);
+      border-radius:8px;
+      color:#fff;
+      padding:10px 12px;
+      font-size:14px;
+      line-height:1.4;
+      outline:none;
+      width:90%;
+    }
+    .modal-row input:focus,
+    .modal-row select:focus{
+      border-color:#D01616;
+    }
+    .modal-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-cancel{
+      background:#1f2024;
+      border:1px solid var(--g600);
+      border-radius:8px;
+      color:#8e97a3;
+      font-size:12px;
+      line-height:1.2;
+      padding:8px 10px;
+      cursor:pointer;
+      flex:1;
+      text-align:center;
+    }
+    .btn-cancel:hover{
+      background:#2a2d32;
+      color:#fff;
+    }
+    .btn-save{
+      background:#D01616;
+      border:1px solid #D01616;
+      border-radius:8px;
+      color:#fff;
+      font-size:12px;
+      font-weight:600;
+      line-height:1.2;
+      padding:8px 10px;
+      cursor:pointer;
+      flex:1;
+      text-align:center;
+    }
+    .btn-save:hover{
+      background:#ff2a2a;
+      border-color:#ff2a2a;
+    }
+
+	  /* Card that holds the live map */
+.live-map-card{
+  position: relative;
+  padding: 16px 18px 20px;
+}
+
+/* Map + sidebar layout */
+.live-map-shell{
+  display:flex;
+  gap:14px;
+  align-items:stretch;
+}
+
+.live-map-main{
+  flex:1;
+  height:480px;          /* tweak: taller map */
+  border-radius:14px;
+  overflow:hidden;
+}
+
+/* Right-hand column */
+.live-map-sidebar{
+  width:250px;
+  background:#05070b;
+  border-radius:14px;
+  border:1px solid #2e3238;
+  padding:10px 12px;
+  font-size:11px;
+  color:#e5e7eb;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* Legend block */
+.live-map-legend-block{
+  border-radius:10px;
+  background:#06070c;
+  padding:8px 10px;
+  border:1px solid #2e3238;
+}
+
+.live-map-legend-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:4px;
+}
+
+.live-map-legend-row:last-child{
+  margin-bottom:0;
+}
+
+.live-map-chip{
+  width:12px;
+  height:12px;
+  border-radius:3px;
+  border:1px solid #111827;
+}
+
+.live-map-chip-high{ background:#ff5a5f; }
+.live-map-chip-med { background:#f0b429; }
+.live-map-chip-low { background:#6bcf6b; }
+
+.live-map-dot{
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  display:inline-block;
+}
+
+.live-map-dot-asset{ background:#3b82f6; }
+.live-map-dot-trav { background:#f97316; }
+
+/* Feeds area */
+.live-map-sidebar-section{
+  border-radius:10px;
+  background:#05070b;
+  border:1px solid #111827;
+  padding:8px 8px 10px;
+}
+
+.live-map-sidebar-title{
+  font-size:10px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  opacity:.75;
+  margin-bottom:6px;
+}
+
+.live-map-feeds-list{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-height:160px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:8px;
+  box-sizing:border-box;
+}
+
+.live-map-feed-row{
+  width:100%;
+  text-align:left;
+  border-radius:12px;
+  border:1px solid #374151;
+  background:#0b1120;
+  color:#e5e7eb;
+  padding:8px 10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-sizing:border-box;
+}
+.feed-open-btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  padding:0;
+  cursor:pointer;
+  min-width:0;
+}
+.feed-open-btn .feed-name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:700;}
+.feed-open-btn .feed-count{margin-left:auto; opacity:.85; font-weight:600; font-size:12px;}
+.live-map-feed-remove{
+  width:34px; height:34px;
+  border-radius:10px;
+  border:1px solid rgba(244,63,94,.55);
+  background:rgba(244,63,94,.12);
+  color:#fecaca;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  line-height:1;
+}
+.live-map-feed-remove:hover{background:rgba(244,63,94,.2);}
+
+.live-map-feed-row:hover{
+  background:#111827;
+  border-color:#4b5563;
+}
+
+.live-map-feed-btn,
+.gm-feed-pill{
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.live-map-feed-btn:hover{
+  background:#1f2937;
+  border-color:#9ca3af;
+}
+
+.live-map-add-btn{
+  margin-top:8px;
+  width:100%;
+  border-radius:999px;
+  border:1px dashed #4b5563;
+  background:#05070b;
+  color:#e5e7eb;
+  font-size:11px;
+  padding:4px 6px;
+  cursor:pointer;
+}
+
+.live-map-add-btn:hover{
+  background:#111827;
+}
+
+/* highlight when sidebar scrolls you to a feed card */
+.feed-card-pulse{
+  box-shadow:0 0 0 2px rgba(248,113,113,.8);
+  transition:box-shadow .3s ease;
+}
+
+.live-radius-block{
+  margin-top:12px;
+  padding-top:8px;
+  border-top:1px solid #2e3238;
+}
+
+.live-radius-label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:#9ca3af;
+  margin-bottom:6px;
+}
+
+.live-radius-pills{
+  display:flex;
+  gap:6px;
+}
+
+.radius-pill{
+  flex:1;
+  border-radius:999px;
+  border:1px solid #4b5563;
+  background:#111827;
+  color:#e5e7eb;
+  font-size:11px;
+  padding:4px 0;
+  cursor:pointer;
+  text-align:center;
+}
+
+.radius-pill.active{
+  border-color:#f97373;
+  background:#7f1d1d;
+  color:#fee2e2;
+}
+
+	/* --- Map sidebar: selected feed alerts list --- */
+.map-alerts-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:240px;     /* adjust if you want */
+  overflow-y:auto;
+  padding-right:2px;
+}
+
+.map-alert-item{
+  border-radius:12px;
+  border:1px solid #374151;
+  background:#0b1120;
+  padding:8px 10px;
+  cursor:pointer;
+}
+
+.map-alert-item:hover{
+  background:#111827;
+  border-color:#4b5563;
+}
+
+.map-alert-item.active{
+  border-color:#ef4444;
+  box-shadow:0 0 0 2px rgba(239,68,68,0.25) inset;
+}
+
+.map-alert-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:8px;
+  margin-bottom:6px;
+}
+
+.map-alert-title{
+  font-size:12px;
+  font-weight:600;
+  color:#e5e7eb;
+  line-height:1.25;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+.map-alert-when{
+  font-size:11px;
+  opacity:.75;
+  white-space:nowrap;
+}
+
+.map-alert-meta{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  align-items:center;
+  font-size:11px;
+  opacity:.9;
+}
+
+.map-risk-pill{
+  font-size:10px;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+}
+
+.map-risk-high{ background:rgba(255,90,95,.14); border-color:rgba(255,90,95,.35); color:#ff5a5f; }
+.map-risk-med { background:rgba(240,180,41,.14); border-color:rgba(240,180,41,.35); color:#f0b429; }
+.map-risk-low { background:rgba(51,196,141,.14); border-color:rgba(51,196,141,.35); color:#33c48d; }
+
+.map-alert-empty{
+  font-size:12px;
+  opacity:.75;
+  padding:8px 2px;
+}
+
+/* brief highlight when we jump to a feed card */
+.feed-card-pulse{
+  box-shadow:
+    0 0 0 1px #f97316,
+    0 0 10px rgba(249,115,22,0.7);
+  transition: box-shadow .3s ease;
+}
+
+	  /* --- Global Risk & Exposure layout --- */
+.global-map-wrap{
+  margin-top: 10px;
+  padding: 12px 14px 16px;
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr); /* sidebar | map */
+  gap: 16px;
+  align-items: stretch;
+}
+
+.global-map-main{
+  background:#020617;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid var(--gray-700);
+  grid-column: 2;	
+}
+
+:root{
+  --workspace-h: clamp(700px, 85vh, 1100px);
+
+/* This is critical – gives the Leaflet container height */
+#liveRiskMap{
+  width:100%;
+  height: var(--workspace-h);
+  background:#cfe3f3;
+  filter: saturate(1.05) contrast(1.05);
+}
+
+#liveMapFeedsList { max-height: 260px; overflow:auto; }
+
+/* Right-hand side panel */
+.global-map-side{
+  background:#050708;
+  border-radius:16px;
+  border:1px solid var(--gray-700);
+  padding:12px 14px;
+  font-size:12px;
+  height: var(--workspace-h);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  grid-column: 1;	
+  overflow: hidden;
+}
+
+/* Make the alerts panel a proper column layout */
+.map-alerts-scroll{
+  flex:1;
+  overflow-y:auto;
+  padding-right:6px; /* space for scrollbar */
+}
+
+/* Footer stays visible */
+.map-alerts-footer{
+  border-top:1px solid #2e3238;
+  padding:8px;
+  background:#05070b;
+}
+
+/* Back button styling */
+.map-back-btn{
+  width:100%;
+  border-radius:999px;
+  border:1px solid #4b5563;
+  background:#111827;
+  color:#e5e7eb;
+  font-size:12px;
+  padding:6px 0;
+  cursor:pointer;
+}
+
+.map-back-btn:hover{
+  background:#1f2937;
+}
+
+/* The list should scroll, not the whole panel */
+#mapAlertsList{
+  flex:1;
+  padding-bottom: 44px;
+  overflow-y:auto;
+  max-height:none; /* override earlier max-height if set */
+}
+
+/* Keep the Back button always visible */
+#mapAlertsBackBtn{
+  position: sticky;
+  bottom: 0;
+  margin-top: 8px;
+  background: #05070b;           /* match panel bg */
+  border: 1px dashed #4b5563;
+  border-radius: 999px;
+}
+
+/* Legend styling */
+.global-map-legend-block{
+  border-bottom:1px solid #2e3238;
+  padding-bottom:8px;
+}
+.gm-legend-title{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  opacity:.8;
+  margin-bottom:6px;
+}
+.gm-legend-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:3px;
+}
+.gm-chip{
+  width:12px;
+  height:12px;
+  border-radius:3px;
+  border:1px solid #111827;
+}
+.gm-high{ background:#ff5a5f; }
+.gm-med{  background:#f0b429; }
+.gm-low{  background:#6bcf6b; }
+
+.gm-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  display:inline-block;
+}
+.gm-asset{ background:#3b82f6; }
+.gm-trav{  background:#f97316; }
+
+/* Feed list inside side panel */
+.global-map-feeds-block{
+  margin-top:4px;
+}
+.gm-feeds-title{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  opacity:.75;
+  margin-bottom:6px;
+}
+.gm-feed-pill{
+  width:100%;
+  text-align:left;
+  border-radius:999px;
+  border:1px solid #374151;
+  background:#0b1120;
+  color:#e5e7eb;
+  font-size:12px;
+  padding:5px 8px;
+  margin-bottom:4px;
+  cursor:pointer;
+}
+.gm-feed-pill:hover{
+  background:#111827;
+  border-color:#4b5563;
+}
+.gm-feed-add{
+  width:100%;
+  margin-top:4px;
+  border-radius:999px;
+  border:1px solid #4b5563;
+  background:#111827;
+  color:#e5e7eb;
+  font-size:11px;
+  padding:5px 8px;
+  cursor:pointer;
+}
+.gm-feed-add:hover{
+  background:#1f2937;
+}
+
+/* subtle highlight when a feed is jumped to */
+.feed-card-highlight{
+  box-shadow:0 0 0 2px rgba(248,113,113,.7);
+  transition:box-shadow .25s ease;
+}
+
+#liveFeedSection{
+  display:none !important;
+}
+
+/* asset / traveller markers */
+.ci-asset-marker,
+.ci-trav-marker{
+  background:#111827;
+  border-radius:999px;
+  border:2px solid #000;
+  box-shadow:0 0 6px rgba(0,0,0,0.6);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  line-height:18px;
+  text-align:center;
+}
+.ci-asset-marker{ background:#3b82f6; }    /* blue */
+.ci-trav-marker{ background:#f97316; }    /* orange */
+
+    @media (max-width:900px){
+      .app{
+        grid-template-columns:1fr;
+        grid-template-areas:
+          "topbar"
+          "main";
+      }
+      .sidebar{
+        display:none;
+      }
+      .detail-panel{
+        width:80%;
+        max-width:400px;
+      }
+    }
+
+@media (max-width: 1100px){
+  .global-map-wrap{
+    grid-template-columns: 1fr;
+  }
+  .global-map-side{
+    grid-column: 1;
+    height: auto;
+    max-height: none;
+  }
+  .global-map-main{
+    grid-column: 1;
+  }
+  #liveRiskMap{
+    height: clamp(380px, 55vh, 560px);
+  }
+}
+
+/* Traveller group marker (multiple travellers in same place) */
+.trav-group-icon { background: transparent; border: none; }
+.trav-bubble{
+  width:34px; height:34px;
+  border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(255, 140, 0, 0.95);
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  border: 2px solid rgba(255,255,255,.75);
+  font-weight: 800;
+  color: #0b0f16;
+}
+.trav-bubble span{ transform: translateY(-.5px); }
+.trav-popup{ font-family: inherit; }
+.trav-popup-title{ font-weight: 800; margin-bottom: 8px; }
+.trav-popup-list{ max-height: 240px; overflow:auto; padding-right: 4px; }
+.trav-popup-item{ padding: 8px 0; border-top: 1px solid rgba(255,255,255,.12); }
+.trav-popup-item:first-child{ border-top: none; padding-top: 0; }
+.trav-name{ font-weight: 700; }
+.trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
+
+
+
+/* Panic marker (live pin) */
+.ci-panic-marker{
+  background:#ff2d2d;
+  border-radius:999px;
+  border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 10px 28px rgba(0,0,0,.55);
+  color:#0b0f16;
+  font-size:12px;
+  font-weight:900;
+  line-height:18px;
+  text-align:center;
+}
+
+/* ===== Operator Disposition / Queues ===== */
+.disp-row{ display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.disp-label{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.72); }
+.disp-select{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e9edf2;
+  border-radius: 10px;
+  padding: 6px 10px;
+  outline: none;
+  font-weight: 600;
+}
+.disp-select:focus{ border-color: rgba(208,22,22,0.8); box-shadow: 0 0 0 3px rgba(208,22,22,0.18); }
+.disp-select option{ color:#0b0f16; }
+.disp-updated{ font-size:11px; opacity:.75; margin-left:6px; }
+.disp-note-row{ margin-top:8px; }
+.disp-note{
+  width:100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e9edf2;
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline:none;
+}
+.disp-note:focus{ border-color: rgba(208,22,22,0.8); box-shadow: 0 0 0 3px rgba(208,22,22,0.18); }
+
+.ci-status-pill{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:2px 8px; border-radius:999px;
+  font-size:11px; font-weight:700; letter-spacing:.02em;
+  border:1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color:#e9edf2;
+}
+.ci-status-pill[data-status="untriaged"]{ display:none; }
+.ci-status-pill[data-status="escalated"]{ border-color: rgba(255,90,95,0.6); background: rgba(255,90,95,0.16); }
+.ci-status-pill[data-status="monitoring"]{ border-color: rgba(240,180,41,0.6); background: rgba(240,180,41,0.14); }
+.ci-status-pill[data-status="cleared"]{ border-color: rgba(51,196,141,0.6); background: rgba(51,196,141,0.14); }
+
+.queue-grid{ display:flex; gap:8px; flex-wrap:wrap; }
+.queue-btn{
+  flex:1 1 auto;
+  background: rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.14);
+  color:#e9edf2;
+  border-radius:12px;
+  padding:8px 10px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  min-width: 120px;
+}
+.queue-btn:hover{ border-color: rgba(208,22,22,0.55); }
+.queue-count{
+  display:inline-block;
+  min-width: 22px;
+  text-align:center;
+  padding:2px 8px;
+  border-radius:999px;
+  background: rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.14);
+  font-size:11px;
+}
+
+
+/* ===== Operator Transition Modal (TOPO-style) ===== */
+.ci-modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index: 9999;
+  padding: 18px;
+}
+.ci-modal{
+  width: min(820px, 96vw);
+  max-height: min(78vh, 780px);
+  background: #ffffff;
+  color: #0b0f16;
+  border-radius: 14px;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.ci-modal header{
+  padding: 18px 20px 14px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.ci-modal header #ciTransitionTitle{
+  font-weight: 900;
+  font-size: 18px;
+  margin-right: 4px;
+}
+.ci-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.10);
+}
+.ci-modal-meta{
+  width:100%;
+  font-size: 12px;
+  opacity: .8;
+  margin-top: 2px;
+}
+.ci-modal-body{
+  padding: 16px 20px 18px 20px;
+  overflow:auto;
+}
+.ci-form-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  margin-top: 14px;
+}
+@media (max-width:720px){
+  .ci-form-grid{ grid-template-columns: 1fr; }
+}
+.ci-field label{
+  display:block;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: rgba(11,15,22,0.72);
+}
+.ci-field input, .ci-field select, .ci-field textarea{
+  width:100%;
+  border: 1px solid rgba(11,15,22,0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+.ci-field textarea{ min-height: 92px; resize: vertical; }
+.ci-check-list{ display:grid; gap: 8px; }
+.ci-check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight: 600;
+  color: rgba(11,15,22,0.85);
+}
+.ci-check input{ width: 16px; height: 16px; }
+.ci-modal footer{
+  padding: 14px 20px;
+  border-top: 1px solid rgba(0,0,0,0.10);
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+}
+.ci-btn{
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 800;
+  border: 1px solid rgba(11,15,22,0.20);
+  background: #ffffff;
+  cursor:pointer;
+}
+.ci-btn.primary{
+  background: #5b3df5;
+  border-color: #5b3df5;
+  color: #ffffff;
+}
+
+/* ==== v7: Taller global map workspace + better sidebar scrolling ==== */
+:root{
+  --workspace-h: clamp(560px, 78vh, 900px);
+}
+
+/* Ensure the map and sidebar share the same tall workspace */
+#liveRiskMap{ height: var(--workspace-h) !important; }
+.global-map-side{ height: var(--workspace-h) !important; }
+
+/* Let the sidebar content breathe and allow lists to scroll */
+.global-map-side{ overflow:hidden; }
+
+/* Panels inside the sidebar should be able to grow */
+.live-map-sidebar-section{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+/* Feeds list: allow much more vertical room */
+#mapFeedsPanel{ flex: 1 1 auto; min-height:0; }
+#liveMapFeedsList{
+  flex:1 1 auto;
+  min-height:0;
+  max-height:none !important;
+  overflow:auto;
+  padding-right:4px;
+}
+
+/* Alerts list when a feed is opened */
+#mapAlertsPanel{
+  flex: 1 1 auto;
+  min-height:0;
+}
+#mapAlertsList{
+  flex:1 1 auto;
+  min-height:0;
+  max-height:none !important;
+  overflow:auto;
+  padding-right:4px;
+}
+
+/* Slightly larger clickable area for the back button */
+#mapAlertsBackBtn{ margin-top:10px; }
+
+
+/* v9 scroll improvements */
+.feeds-list, .latest-incidents, .feedsBox, .latestBox {
+  overflow-y: auto !important;
+  max-height: 100%;
+}
+
+</style>
+</head>
+
+<script>
+
+	// must be after the header DOM exists
+document.addEventListener('DOMContentLoaded', () => {
+  const topActions = document.getElementById('topActions');
+  if (window.CIAuth && typeof CIAuth.injectUserChip === 'function' && topActions) {
+    CIAuth.injectUserChip(topActions);
+  }
+
+  const nav = document.querySelector('aside.sidebar nav');
+  if (window.CIAuth && typeof CIAuth.updateSidebarForRole === 'function' && nav) {
+    CIAuth.updateSidebarForRole(nav);
+  }
+});
+</script>
+
+<body>
+    
+<div class="brandbar">
+  <img src="CityintLogo.jpg" alt="CityIntel Logo">
+  <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
+
+  <div id="trial-banner" style="display:none;position:absolute;
+       left:50%; transform:translateX(-50%); background:none;
+       color:#fecaca; padding:8px 12px; text-align:center;">
+    <span id="trial-text">Your trial ends soon.</span>
+  </div>
+
+  <!-- keep topActions INSIDE the brandbar -->
+  <div id="topActions" style="position:relative;margin-left:auto"></div>
+</div>
+
+  <div class="app">
+    <aside class="sidebar">
+       <div class="section-label"></div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="assets.html">Assets</a>
+		<a href="travellers.html">Travellers</a>  
+		<a href="alerts.html">Alerts</a>
+        <a href="events.html">Events</a>
+		<a href="test.html">Test Feed</a>  
+	    <a href="brief.html">Intelligence Brief</a>
+	    <a href="trends.html">Trends & Forecasts</a>
+        <a href="reports.html">Reports</a>
+		<a href="sources.html">Sources</a>
+        <a href="settings.html">Settings</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="footnote">For information use only — not for redistribution</div>
+    </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Top title bar for page -->
+    <div class="page-title-bar">
+      <div class="page-title-main">
+        <h2>Global Risk & Live Exposure</h2>
+        <div class="page-title-sub">
+          Last 6 months risk shading, overlaid with your company assets and travellers.
+        </div>
+      </div>
+
+      <div class="page-title-actions">
+        <a href="assets.html" class="btn-outline-pill">
+          🏢 Manage assets
+        </a>
+        <a href="travellers.html" class="btn-outline-pill">
+          ✈️ Manage travellers
+        </a>
+      </div>
+	</div>
+
+<div id="liveNowStrip" class="live-now-strip">
+      <div class="live-now-label">NOW</div>
+      <div class="live-now-stats live-now-empty">No alerts in the current window.</div>
+    </div>
+
+<section id="liveMapCard" style="
+    margin: 4px 0 14px;
+    padding: 12px 14px 10px;
+    border-radius: 16px;
+    background: linear-gradient(180deg,#1a1c20,#131417);
+    border: 1px solid #24272c;
+    position: relative;
+  ">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <h3 style="margin:0;font-size:14px;font-weight:600;">Global Risk &amp; Exposure Map</h3>
+    <div style="font-size:11px;color:#9ca3af;">
+      Last 6 months risk • company assets &amp; travellers overlay
+    </div>
+  </div>
+
+<!-- Global Risk & Exposure Map card body -->
+<div class="global-map-wrap">
+
+<!-- RIGHT-HAND SIDE PANEL -->
+  <aside class="global-map-side">
+    <div class="live-radius-block">
+  <div class="live-radius-label">Incident radius</div>
+  <div class="live-radius-pills">
+    <button type="button" class="radius-pill active" data-radius-km="1">1 km</button>
+    <button type="button" class="radius-pill" data-radius-km="5">5 km</button>
+    <button type="button" class="radius-pill" data-radius-km="10">10 km</button>
+  </div>
+		&nbsp;
+		
+      <div class="gm-legend-row" style="margin-top:6px;">
+        <span class="gm-dot gm-asset"></span> Assets
+      </div>
+      <div class="gm-legend-row">
+        <span class="gm-dot gm-trav"></span> Travellers
+      </div>
+    </div>
+	  
+	&nbsp;
+
+<!-- Operator Queues (workflow views, not geographic feeds) -->
+  <div class="live-map-queues">
+    <div class="live-map-sidebar-title" style="margin-top:12px;">Operator queues</div>
+    <div class="queue-grid" id="operatorQueues">
+      <button type="button" class="queue-btn" data-queue="escalated">
+        Escalated <span class="queue-count" id="qEscalated">0</span>
+      </button>
+      <button type="button" class="queue-btn" data-queue="monitoring">
+        Monitoring <span class="queue-count" id="qMonitoring">0</span>
+      </button>
+      <button type="button" class="queue-btn" data-queue="cleared">
+        Cleared <span class="queue-count" id="qCleared">0</span>
+      </button>
+    </div>
+    <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
+  </div>
+
+	  &nbsp;
+	  
+     <!-- Feeds summary -->
+    <div class="live-map-sidebar-section" id="mapFeedsPanel">
+  <div class="live-map-sidebar-title">Feeds on this page</div>
+  <div id="liveMapFeedsList" class="live-map-feeds-list"></div>
+
+
+        <!-- JS will fill this with buttons like “EU”, “London”, etc -->
+      </div>
+       <button class="live-map-add-btn"
+          onclick="window.ciOpenAddFeed && window.ciOpenAddFeed()">
+    + Add feed
+  </button>
+
+ <!-- ✅ PASTE PART 1 HERE (directly under feeds summary) -->
+  <div class="live-map-sidebar-section" id="mapAlertsPanel" style="display:none;">
+    <div class="live-map-sidebar-title" id="mapAlertsTitle">Latest incidents</div>
+
+    <div id="mapAlertsList" class="map-alerts-list"></div>
+
+    <button type="button" class="live-map-add-btn" id="mapAlertsBackBtn">
+      ← Back to feeds
+    </button>
+  </div>
+	  
+  </aside>
+
+	<!-- MAP AREA -->
+  <div class="global-map-main">
+    <div id="liveRiskMap"></div>
+  </div>
+
+</div>
+   
+</section>
+
+	<section id="liveFeedSection">  
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Live Feed</h2>
+        <div class="sub">Streaming incident chatter for your selected regions.</div>
+      </div>
+
+      <div class="page-head-right">
+  <!-- Add Feed button -->
+  <button id="btnAddFeed" class="btn-red" type="button">+ Add Feed</button>
+
+  <!-- Global time window selector -->
+  <div style="margin-top:8px; font-size:11px; color:var(--muted); text-align:center;">
+    Showing last
+    <select id="windowSelect"
+            style="background:#1f2024;border:1px solid var(--g600);color:#e9edf2;
+                   border-radius:6px;padding:4px 6px;font-size:11px;margin:0 4px;">
+      <option value="1">1h</option>
+      <option value="3">3h</option>
+      <option value="6">6h</option>
+      <option value="12">12h</option>
+      <option value="24">24h</option>
+      <option value="48">48h</option>
+      <option value="72">72h</option>
+    </select>
+    of alerts
+  </div>
+</div>
+
+    <div id="feedsGrid" class="feeds-grid">
+      <!-- Cards injected here -->
+    </div>
+  </main>
+</div>
+</section>
+	  
+<!-- DETAIL PANEL -->
+
+<aside id="mapFeedPanel" class="detail-panel">
+  <div class="detail-head">
+    <div class="detail-head-left">
+      <div id="mapFeedTitle" class="detail-title">Latest incidents</div>
+      <div id="mapFeedMeta" class="detail-meta">—</div>
+    </div>
+    <button class="detail-close" id="mapFeedClose">Close ✕</button>
+  </div>
+
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Exposure</h4>
+      <div id="mapFeedExposure" class="small">—</div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Latest incidents</h4>
+      <div id="mapFeedAlerts" class="map-alerts-list"></div>
+    </div>
+  </div>
+</aside>
+	
+<aside id="detailPanel" class="detail-panel">
+  <div class="detail-head">
+    <div class="detail-head-left">
+      <div id="detailTitle" class="detail-title">[Incident Title]</div>
+      <div class="detail-meta" id="detailMeta">
+        [City / Risk / Time]
+      </div>
+
+      <!-- Operator Disposition -->
+      <div class="disp-row">
+        <label class="disp-label" for="detailDisposition">Disposition</label>
+        <select id="detailDisposition" class="disp-select">
+          <option value="untriaged">Untriaged</option>
+          <option value="escalated">Escalated</option>
+          <option value="monitoring">Monitoring</option>
+          <option value="cleared">Cleared</option>
+        </select>
+        <span id="detailDispositionUpdated" class="disp-updated" style="display:none;"></span>
+      </div>
+      <div id="detailDispositionNoteRow" class="disp-note-row" style="display:none;">
+        <input id="detailDispositionNote" class="disp-note" type="text" maxlength="120" placeholder="Optional note (e.g., notify comms, traveller check-in)"/>
+      </div>
+    </div>
+    <button class="detail-close" id="detailClose">Close ✕</button>
+  </div>
+
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Summary</h4>
+      <div id="detailTag" class="small" style="margin-bottom:6px;font-weight:600;opacity:.9;"></div>
+      <div id="detailSummary" class="small">
+        -
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Location / Impact</h4>
+      <div id="detailLocation" class="small">
+        Approx. location details here.
+      </div>
+      <div id="detailImpact" class="small" style="margin-top:8px;">
+        Impact to nearby assets here.
+      </div>
+
+	<div id="detailExposureList" class="small" style="margin-top:8px;"></div>
+
+<div id="detailMiniMapLeaflet" style="margin-top:10px;border-radius:10px;border:1px solid var(--g600);background:#0f1013;width:100%;height:220px;display:block;overflow:hidden;"></div>
+<canvas id="detailMiniMap" width="320" height="180"
+    style="margin-top:10px;border-radius:10px;border:1px solid var(--g600);background:#0f1013;width:100%;height:220px;display:none;"></canvas>
+  <div id="detailCoords" class="small" style="margin-top:6px;opacity:.8;"></div>		
+    </div>
+
+    <div class="detail-section">
+      <h4>Earlier Today in This Area</h4>
+      <div id="detailEarlier" class="small">
+        No earlier incidents recorded.
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-footer">
+    <a id="viewFullBtn" class="btn-full-incident" href="#">View Full Incident →</a>
+    <a class="btn-back-dash" href="index.html">← Back to Dashboard</a>
+  </div>
+</aside>
+
+<!-- ADD FEED MODAL -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Add Feed</h3>
+   
+	  <div class="modal-row">
+      <label for="feedCityInput">City / Region (e.g. London)</label>
+      <input id="feedCityInput" type="text" placeholder="London" />
+
+	  <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+  Tip: you can use shortcuts like <code>uk</code>, <code>us</code>, <code>eu</code>, 
+  <code>apac</code>, <code>mea</code>, <code>latam</code>, or <code>global</code>.
+</div></div>
+
+<div class="modal-row">
+  <label for="feedKeywordsInput">Keywords (optional)</label>
+  <input id="feedKeywordsInput" type="text"
+         placeholder='e.g. UK OR Britain, flooding, evacuation' />
+  <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+    Tip: use comma-separated terms or OR logic. Examples:<br>
+    <code>UK OR Britain</code>, <code>flooding</code>, <code>evacuation</code>
+  </div>
+</div>
+
+    <div class="modal-row">
+      <label for="feedRiskSelect">Risk Levels to Include</label>
+      <select id="feedRiskSelect" multiple size="3">
+        <option value="high">High</option>
+        <option value="med">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <div style="font-size:11px;color:var(--muted);line-height:1.4;">
+        Hold Ctrl (or Cmd on Mac) to select multiple.
+      </div>
+    </div>
+
+  <!-- NEW CHECKBOX ROW -->
+  <div class="modal-row-inline">
+    <input type="checkbox" id="feedLiveCheck" />
+    <div>
+      <div class="live-row-text">Live news mode</div>
+      <div class="live-row-hint">Pull from external breaking sources (slower, rate-limited in test)</div>
+    </div>
+  </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancel">Cancel</button>
+      <button class="btn-save" id="modalSave">Save Feed</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// -------------------- top bar user chip / dropdown --------------------
+(function mountTopActions(){
+  const host = document.getElementById('topActions');
+  if (!host) return;
+
+  const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+  const initials = (function(name){
+    if(!name) return 'CI';
+    const parts = name.trim().split(/\s+/);
+    return parts.slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
+  })(p.name);
+
+  const role = p.role || 'Analyst';
+  const isSub = (localStorage.getItem('ci_subscribed') === 'true');
+
+  host.innerHTML = `
+    <div class="user" id="userChip">
+      <div class="avatar">${initials}</div>
+      ${role}
+    </div>
+    <div class="dropdown" id="userMenu">
+      <a href="settings.html">Settings</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="system-flow.html">System Flow</a>
+      <a href="operations-log.html">Operations Log</a>
+      <a href="#" id="logoutLink"><span class="logout-link">Log out</span></a>
+    </div>
+  `;
+
+  const chip  = document.getElementById('userChip');
+  const menu  = document.getElementById('userMenu');
+  const logoutLink = document.getElementById('logoutLink');
+
+  chip.addEventListener('click', ()=>{
+    menu.style.display = (menu.style.display==='block')?'none':'block';
+  });
+  document.addEventListener('click',(e)=>{
+    if(!host.contains(e.target)) menu.style.display='none';
+  });
+
+  logoutLink.addEventListener('click',(e)=>{
+    e.preventDefault();
+    if(window.CIAuth && CIAuth.logout) CIAuth.logout();
+    location.href='index.html';
+  });
+
+  // trial banner logic
+  const trialBanner = document.getElementById('trial-banner');
+  const trialText   = document.getElementById('trial-text');
+  const trialEnds   = localStorage.getItem('ci_trialEndsAt');
+  const subscribed  = (localStorage.getItem('ci_subscribed') === 'true');
+
+  if (!subscribed && trialEnds) {
+    // show "Your trial ends <time>"
+    try {
+      const d = new Date(trialEnds);
+      const leftMin = Math.max(0, Math.round((d - Date.now()) / 60000));
+      trialBanner.style.display='block';
+      if (leftMin <= 0) {
+        trialText.textContent = 'Your trial has ended.';
+      } else if (leftMin < 60) {
+        trialText.textContent = `Your trial ends in ${leftMin} min`;
+      } else {
+        const leftHr = Math.round(leftMin/60);
+        trialText.textContent = `Your trial ends in ${leftHr} hour${leftHr!==1?'s':''}`;
+      }
+    } catch(e){
+      trialBanner.style.display='block';
+      trialText.textContent = 'Trial active.';
+    }
+  }
+})();
+
+// -------------------- FEED STORAGE / STATE --------------------
+const STORAGE_KEY = 'ci_live_feeds_v1';
+const FEED_EVENTS_KEY = 'ci_live_feed_events_v1';
+const HISTORY_WINDOWS = [12, 24, 48, 72];                    // For "Load earlier" – how far back we go on each click (in hours)
+
+// === FEED ↔ MAP SIDEBAR BRIDGE ==========================
+window.ciFeedSummaries = window.ciFeedSummaries || {};
+
+/**
+ * Store a small summary per feed so the map sidebar can render it.
+ */
+function publishFeedSummary(feed, events){
+  if (!feed || !feed.id) return;
+  const list = Array.isArray(events) ? events : [];
+
+  let hi = 0, med = 0, low = 0;
+  list.forEach(ev => {
+    const r = (ev.risk || '').toLowerCase();
+    if (r === 'high') hi++;
+    else if (r === 'med' || r === 'medium') med++;
+    else low++;
+  });
+
+  const label =
+    (feed.places && feed.places.length)
+      ? feed.places.join(', ')
+      : (feed.keywords && feed.keywords.length
+           ? feed.keywords.join(', ')
+           : 'Custom feed');
+
+  window.ciFeedSummaries[feed.id] = {
+    id: feed.id,
+    label,
+    high: hi,
+    med,
+    low,
+    total: list.length
+  };
+
+  // Let the map sidebar refresh if it's ready
+  if (typeof window.ciUpdateMapSidebar === 'function') {
+    window.ciUpdateMapSidebar(window.ciFeedSummaries);
+  }
+  if (typeof window.ciUpdateQueueCounts === 'function') {
+    window.ciUpdateQueueCounts();
+  }
+}
+
+// per-feed UI cache (so cards can show stuff before network finishes)
+const FEED_UI_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+function saveUiCache(feedId, events) {
+  if (!feedId) return;
+  const key = 'ci_ui_feed_' + feedId;
+  localStorage.setItem(key, JSON.stringify({
+    at: Date.now(),
+    events: Array.isArray(events) ? events : []
+  }));
+}
+
+function loadUiCache(feedId) {
+  if (!feedId) return null;
+  const key = 'ci_ui_feed_' + feedId;
+  try {
+    const obj = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!obj || !obj.at) return null;
+    if (Date.now() - obj.at > FEED_UI_CACHE_TTL) return null;
+    return obj.events || [];
+  } catch {
+    return null;
+  }
+}
+
+function storeFeedEvents(feedId, events) {
+  const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+  all[feedId] = { at: Date.now(), events };
+  localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all));
+}
+
+function loadFeedEvents(feedId) {
+  const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+  const entry = all[feedId];
+  if (!entry) return null;
+  // 15-minute TTL
+  if (Date.now() - entry.at > 15 * 60 * 1000) return null;
+  return entry;
+}
+
+// read feeds from localStorage
+function loadFeeds(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr)?arr:[];
+  }catch(e){
+    return [];
+  }
+}
+
+// save feeds to localStorage
+function saveFeeds(feeds){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
+}
+
+function removeFeedById(feedId){
+  const feeds = loadFeeds().filter(f => f.id !== feedId);
+  saveFeeds(feeds);
+
+  // Remove cached events + archive for this feed
+  try{
+    const eventsMap = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+    delete eventsMap[feedId];
+    localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(eventsMap));
+  }catch(_e){}
+
+  try{
+    const archiveMap = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '{}');
+    delete archiveMap[feedId];
+    localStorage.setItem(ARCHIVE_KEY, JSON.stringify(archiveMap));
+  }catch(_e){}
+
+  // Drop summary so UI updates immediately
+  if (window.ciFeedSummaries && window.ciFeedSummaries[feedId]) {
+    delete window.ciFeedSummaries[feedId];
+  }
+
+  // If the removed feed is currently open, close the panel
+  if (window.__ciOpenFeedId === feedId) {
+    window.__ciOpenFeedId = null;
+  }
+
+  if (typeof window.ciUpdateMapSidebar === 'function') {
+    window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+  }
+}
+window.ciRemoveFeedById = removeFeedById;
+
+// add a feed definition {id, places[], risks[]}
+function addFeedDef(def){
+  const feeds = loadFeeds();
+    feeds.push({ ...def, useLive: !!def.useLive });
+  saveFeeds(feeds);
+}
+
+function truncate(str, n=48) {
+  return (str.length > n) ? (str.slice(0, n-1) + '…') : str;
+}
+
+function escapeHtml(s='') {
+  return s.replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ---- 7-day per-feed archive (new) ----
+const FEED_ARCHIVE_KEY = 'ci_live_feed_archive_v1';
+
+function loadArchiveMap(){
+  try { return JSON.parse(localStorage.getItem(FEED_ARCHIVE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveArchiveMap(map){
+  localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(map));
+}
+function archiveMerge(feedId, events, { maxItems = 300 } = {}){
+  if (!feedId || !Array.isArray(events) || !events.length) return;
+  const map = loadArchiveMap();
+  const current = Array.isArray(map[feedId]) ? map[feedId] : [];
+
+  // 💡 dedupe by src + trimmed time + title ONLY – ignore id
+  const makeKey = (e) =>
+    `${(e.src || '').toLowerCase()}|${(e.when || '').slice(0,16)}|${(e.title || '')
+      .toLowerCase()
+      .replace(/\s+/g,' ')
+      .slice(0,80)}`;
+
+  const seen = new Set(current.map(makeKey));
+
+  for (const ev of events){
+    const key = makeKey(ev);
+    if (!seen.has(key)) {
+      current.push(ev);
+      seen.add(key);
+    }
+  }
+
+  current.sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0));
+  map[feedId] = current.slice(0, maxItems);
+  saveArchiveMap(map);
+}
+
+function loadArchive(feedId){
+  const map = loadArchiveMap();
+  return Array.isArray(map[feedId]) ? map[feedId] : [];
+}
+
+	function renderKeywordsLine(keywords = []) {
+  if (!keywords.length) return '';
+  const max = 3;
+  const shown = keywords.slice(0, max);
+  const extra = Math.max(0, keywords.length - shown.length);
+  const chips = shown.map(k => `<span class="kw-chip">${escapeHtml(k)}</span>`).join(' ');
+  const more  = extra ? `<span class="kw-more">+${extra} more</span>` : '';
+  const full  = escapeHtml(keywords.join(', '));
+  return `<div class="feed-kw" title="${full}">Topics: ${chips} ${more}</div>`;
+}
+
+// ---- unified way to get events for a feed (archive > UI cache > short cache) ----
+function getEventsForFeed(feed){
+  if (!feed || !feed.id) return [];
+  // 1) 7-day archive
+  let events = loadArchive(feed.id);
+  if (Array.isArray(events) && events.length) return events;
+
+  // 2) per-feed UI cache
+  const ui = loadUiCache(feed.id);
+  if (Array.isArray(ui) && ui.length) return ui;
+
+  // 3) 15-min feedEvents cache
+  const cached = loadFeedEvents(feed.id);
+  if (cached && Array.isArray(cached.events) && cached.events.length) {
+    return cached.events;
+  }
+  return [];
+}
+
+// ---- Per-feed mini summary in the header ----
+function updateFeedHeaderStats(feed, events){
+  if (!feed || !feed.id) return;
+
+  const metaEl = document.getElementById(`feedMeta-${feed.id}`);
+  if (!metaEl) return;
+
+  const windowHours = getCurrentWindowHours();
+  const cutoffMs    = Date.now() - windowHours * 3600_000;
+
+  const list = Array.isArray(events) ? events : [];
+  const inWindow = list.filter(ev => {
+    const t = Date.parse(ev.when || '');
+    return !isNaN(t) && t >= cutoffMs;
+  });
+
+  if (!inWindow.length){
+    metaEl.innerHTML = `
+      <span class="live-now-empty">
+        No alerts in last ${windowHours}h.
+      </span>
+    `;
+    return;
+  }
+
+  let hi = 0, med = 0, low = 0;
+  const typeCounts = {};
+
+  inWindow.forEach(ev => {
+    const r = (ev.risk || '').toLowerCase();
+    if (r === 'high') hi++;
+    else if (r === 'med' || r === 'medium') med++;
+    else low++;
+
+    // reuse your classifier for top types
+    const { emoji, label } = classifyIncident(ev || {});
+    const key = `${emoji} ${label}`;
+    typeCounts[key] = (typeCounts[key] || 0) + 1;
+  });
+
+  const total = inWindow.length;
+
+  // pick top 3 incident type emojis
+  const topTypes = Object.entries(typeCounts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0,3)
+    .map(([k]) => k.split(' ')[0])      // just the emoji
+    .join(' ');
+
+  const bits = [];
+  if (hi)  bits.push(`${hi} high`);
+  if (med) bits.push(`${med} med`);
+  if (low) bits.push(`${low} low`);
+  const riskText = bits.join(', ');
+
+  metaEl.innerHTML = `
+    <span class="badge">Last ${windowHours}h</span>
+    <span>${total} alerts${riskText ? ` (${riskText})` : ''}</span>
+    ${topTypes ? `<span style="opacity:.9;">Types: ${topTypes}</span>` : ''}
+  `;
+}
+
+	// ---- lightweight client-side incident filter (new) ----
+const INCIDENT_POSITIVE = [
+  'protest','demonstration','clashes','riot','unrest','blockade','strike',
+  'explosion','blast','bomb','fire','evacuation','evacuated','lockdown',
+  'shooting','stabbing','gunfire','shots fired','attack','assault',
+  'road closed','road closure','traffic disruption','derailment',
+  'power outage','blackout','hazmat','chemical spill','gas leak',
+  'police','security incident','incident','emergency'
+];
+const INCIDENT_BAD_WORDS = [
+  'live scoring','live blog','live stream','how to watch','tickets',
+  'premier league','tottenham','manchester united','arsenal','chelsea','liverpool',
+  'rugby','cricket','nba','mlb','celebrity','fashion','award','red carpet','tv show',
+  'movie','music','festival','actor','actress','singer','rapper','royal family',
+  'restaurant review','shop opening','store opening','photo gallery','in pictures',
+  'style','trend','beauty tips'
+];
+function isLikelyIncidentClient(ev){
+  const text = `${ev.title||''} ${ev.description||''}`.toLowerCase();
+  if (INCIDENT_BAD_WORDS.some(b => text.includes(b))) return false;
+  if (INCIDENT_POSITIVE.some(g => text.includes(g))) return true;
+  const r = (ev.risk||'').toLowerCase();
+  return r === 'high' || r === 'med';
+}
+
+// ---- Global time window control (hours) ----
+const WINDOW_STORAGE_KEY = 'ci_feed_window_hours';
+
+function getCurrentWindowHours() {
+  const raw = localStorage.getItem(WINDOW_STORAGE_KEY);
+  const h = Number(raw);
+  if (!Number.isFinite(h) || h <= 0) return 6;
+  return Math.min(72, h);
+}
+
+function initWindowSelector() {
+  const sel = document.getElementById('windowSelect');
+  if (!sel) return;
+
+  // initialise from storage
+  const current = String(getCurrentWindowHours());
+  if ([...sel.options].some(o => o.value === current)) {
+    sel.value = current;
+  }
+
+  sel.addEventListener('change', () => {
+    const h = Number(sel.value || '6') || 6;
+    const clamped = Math.max(1, Math.min(72, h));
+    localStorage.setItem(WINDOW_STORAGE_KEY, String(clamped));
+    // re-run all feeds with the new window
+    renderFeeds();
+  });
+}
+
+// call once after DOM is ready
+document.addEventListener('DOMContentLoaded', initWindowSelector);
+
+// -------------------- RENDER / FETCH MOCK DATA --------------------
+async function fetchMockEventsForFeed(feed) {
+  const params = new URLSearchParams();
+  if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+  if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
+  if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
+
+  const base = 'https://api.cityintelapi.com';
+  const provider = 'newsdata';
+  const windowHours = getCurrentWindowHours();
+params.set('window', String(windowHours));
+
+  // primary + backup candidates
+  const urls = feed.useLive
+    ? [
+        `${base}/api/live-news?${params.toString()}&provider=${provider}`,            // primary
+        `${base}/api/live-news?${params.toString()}&provider=${provider}&alt=1`      // backup – change to your 2nd key
+      ]
+    : [
+        `${base}/api/live?${params.toString()}`,                                     // primary
+        `${base}/api/live?${params.toString()}&alt=1`                                // backup – change to your 2nd key
+      ];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      // if quota hit we often get 429
+      if (!res.ok) {
+        if (res.status === 429) continue; // try next URL
+        continue;
+      }
+		
+      const data = await res.json().catch(() => ({}));
+      let events = Array.isArray(data.events) ? data.events : [];
+
+// FRONTEND safety filter (client-side guard)
+events = events.filter(isLikelyIncidentClient);
+
+return events;
+		
+    } catch (err) {
+      // try next candidate
+      continue;
+    }
+  }
+
+  // if both failed
+  return [];
+}
+
+function riskClass(r){
+  if(r==='high') return 'high';
+  if(r==='med')  return 'med';
+  return 'low';
+}
+
+function fmtWhen(iso) {
+  try {
+    const s = new Date(iso).toLocaleString('en-GB', {
+      timeZone: 'Europe/London',
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    // drop trailing ", 12:18 am" → or just the AM/PM part
+    return s.replace(/,\s*(\d{2}:\d{2})\s*(AM|PM)$/i, ' $1')
+            .replace(/\s*(AM|PM)$/i, '');
+  } catch (e) {
+    return iso || '';
+  }
+}
+
+// ---- Global "Now" strip across all feeds ----
+function recomputeGlobalStrip(){
+  const strip = document.getElementById('liveNowStrip');
+  if (!strip) return;
+
+  const windowHours = getCurrentWindowHours();
+  const cutoffMs    = Date.now() - windowHours * 3600_000;
+
+  const feeds = loadFeeds();
+  let all = [];
+
+  feeds.forEach(feed => {
+    const evs = getEventsForFeed(feed);
+    evs.forEach(ev => {
+      const t = Date.parse(ev.when || '');
+      if (!t || t < cutoffMs) return;
+      all.push({ ...ev, __feedId: feed.id });
+    });
+  });
+
+  // empty state
+  if (!all.length){
+    strip.innerHTML = `
+      <div class="live-now-label">NOW</div>
+      <div class="live-now-stats live-now-empty">
+        No alerts in the current ${windowHours}h window.
+      </div>
+    `;
+    return;
+  }
+
+  // counts by risk
+  let hi = 0, med = 0, low = 0;
+  all.forEach(ev => {
+    const r = (ev.risk || '').toLowerCase();
+    if (r === 'high') hi++;
+    else if (r === 'med' || r === 'medium') med++;
+    else low++;
+  });
+
+  // pick top 3 incidents: high > med > low, then newest first
+  const riskScore = r => r === 'high' ? 3 : (r === 'med' || r === 'medium' ? 2 : 1);
+  all.sort((a,b) => {
+    const rs = riskScore(b.risk || '') - riskScore(a.risk || '');
+    if (rs !== 0) return rs;
+    return (Date.parse(b.when||0) || 0) - (Date.parse(a.when||0) || 0);
+  });
+
+  const top = all.slice(0,3);
+
+  // build pills
+  const pillsHtml = top.map(ev => {
+    const { emoji, label } = classifyIncident(ev || {});
+    const city = ev.city || 'Unknown';
+    const title = ev.title || ev.summary || '(no title)';
+    const shortTitle = title.length > 40 ? title.slice(0,37) + '…' : title;
+    const safeTitle = (ev.title || '').replace(/"/g, '&quot;');
+    return `
+      <button class="live-now-pill"
+              data-feedid="${ev.__feedId}"
+              data-title="${safeTitle}">
+        <span>${emoji}</span>
+        <span>${city}: ${shortTitle}</span>
+      </button>
+    `;
+  }).join('');
+
+  strip.innerHTML = `
+    <div class="live-now-label">NOW</div>
+    <div class="live-now-stats">
+      <span><span class="dot-high">●</span> ${hi} high</span>
+      <span><span class="dot-med">●</span> ${med} med</span>
+      <span><span class="dot-low">●</span> ${low} low</span>
+      <span style="opacity:.75;margin-left:4px;">in last ${windowHours}h</span>
+    </div>
+    <div class="live-now-pills">
+      ${pillsHtml || '<span class="live-now-empty">No headline incidents to highlight.</span>'}
+    </div>
+  `;
+}
+
+// Click: jump to card + open detail panel
+document.addEventListener('click', (e) => {
+  const pill = e.target.closest('.gm-feed-pill');
+  if (!pill) return;
+
+  const feedId = pill.dataset.feedid;
+  if (!feedId) return;
+  const title  = pill.getAttribute('data-title') || '';
+
+  const feeds = loadFeeds();
+  const feed  = feeds.find(f => f.id === feedId);
+  if (!feed) return;
+
+  const events = getEventsForFeed(feed);
+  if (!events.length) return;
+
+  // try to find matching event by exact title
+  let ev = events.find(ev => (ev.title || '') === title);
+  if (!ev) {
+    // fallback: first event in that feed
+    ev = events[0];
+  }
+
+  // scroll the card into view
+  const card = document.querySelector(`.feed-card[data-id="${feedId}"]`);
+  if (!card) return;
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  card.classList.add('feed-card-highlight');
+  setTimeout(() => card.classList.remove('feed-card-highlight'), 1400);
+
+  // open detail panel with full list as related
+  if (ev) {
+    openDetailPanel(ev, events);
+  }
+});
+
+// -------------------- DETAIL PANEL HANDLING --------------------
+
+function buildIntelSummary(ev, earlierList) {
+  if (!ev) return '';
+
+  const where = ev.city || 'the area';
+  const riskRaw = (ev.risk || '').toLowerCase();
+  const riskLabel =
+    riskRaw === 'high' ? 'High–priority' :
+    riskRaw === 'med'  ? 'Medium–priority' :
+    'Low–priority';
+
+  const whenLabel = ev.when ? fmtWhen(ev.when) : 'recently';
+  const lines = [];
+
+  lines.push(`${riskLabel} incident reported in ${where} at ${whenLabel}.`);
+
+  if (ev.title) {
+    lines.push(`Headline: ${ev.title}`);
+  }
+
+  const desc = (ev.description || '').trim();
+  if (desc) {
+    const trimmed = desc.length > 220 ? desc.slice(0, 217).trimEnd() + '…' : desc;
+    lines.push(trimmed);
+  }
+
+  const earlierCount = Array.isArray(earlierList) ? earlierList.length : 0;
+  if (earlierCount > 0) {
+    lines.push(
+      `Earlier today: ${earlierCount} additional alert${earlierCount > 1 ? 's' : ''} logged in ${where}.`
+    );
+  }
+
+  return lines.join('\n\n');
+}	
+
+// NEW: simple incident type classifier for the tag line
+function classifyIncident(ev) {
+  const text = `${ev.title || ''} ${ev.description || ''}`.toLowerCase();
+
+  if (/fire|blaze|explosion|blast|smoke|burning|warehouse fire/.test(text)) {
+    return { emoji: '🔥', label: 'Fire / Explosion' };
+  }
+  if (/protest|demonstration|rally|march|unrest|riot|blockade|strike|picket/.test(text)) {
+    return { emoji: '⚠️', label: 'Civil Unrest / Protest' };
+  }
+  if (/shooting|stabbing|knife attack|gunfire|shots fired|assault|robbery|armed/.test(text)) {
+    return { emoji: '🚨', label: 'Crime / Violence' };
+  }
+  if (/road closed|traffic|collision|crash|derailment|train disruption|airport closed|flight/.test(text)) {
+    return { emoji: '🚧', label: 'Transport / Traffic' };
+  }
+  if (/power outage|blackout|grid failure|water outage|gas leak|chemical spill|hazmat|outage/.test(text)) {
+    return { emoji: '⚡', label: 'Infrastructure / Outage' };
+  }
+
+  return { emoji: '📍', label: 'General Incident' };
+}
+
+const detailPanel   = document.getElementById('detailPanel');
+const detailTitleEl = document.getElementById('detailTitle');
+const detailMetaEl  = document.getElementById('detailMeta');
+const detailSummaryEl = document.getElementById('detailSummary');
+const detailLocationEl = document.getElementById('detailLocation');
+const detailImpactEl   = document.getElementById('detailImpact');
+const detailEarlierEl  = document.getElementById('detailEarlier');
+const detailCloseBtn = document.getElementById('detailClose');
+const viewFullBtn   = document.getElementById('viewFullBtn');
+const detailTagEl   = document.getElementById('detailTag'); 
+
+
+// -------------------- OPERATOR DISPOSITION (per-alert, per-user) --------------------
+const CI_ALERT_STATUS_KEY = 'ci_alert_status_v1';
+
+const detailDispositionEl = document.getElementById('detailDisposition');
+const detailDispositionUpdatedEl = document.getElementById('detailDispositionUpdated');
+const detailDispositionNoteRowEl = document.getElementById('detailDispositionNoteRow');
+const detailDispositionNoteEl = document.getElementById('detailDispositionNote');
+
+function ciNowIso(){
+  try{ return new Date().toISOString(); }catch{ return String(Date.now()); }
+}
+
+function getOperatorEmail(){
+  try{
+    // preferred
+    const e = localStorage.getItem('ci_user_email');
+    if (e) return String(e).toLowerCase();
+  }catch(_){}
+  try{
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    if (p && p.email) return String(p.email).toLowerCase();
+  }catch(_){}
+  try{
+    if (window.CIAuth && CIAuth.isLoggedIn()){
+      const u = CIAuth.who();
+      if (u && u.email) return String(u.email).toLowerCase();
+    }
+  }catch(_){}
+  return 'anonymous@cityintel.local';
+}
+
+function ciHash(str){
+  const s = String(str || '');
+  let h = 0;
+  for (let i=0;i<s.length;i++){
+    h = ((h<<5)-h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h).toString(36);
+}
+
+function alertKey(ev){
+  if (!ev) return 'ev_' + ciHash('null');
+  const id = ev.id || ev._id || ev.event_id;
+  if (id) return 'id_' + String(id);
+  const base = [
+    ev.title || '',
+    ev.city || ev.City || '',
+    ev.country || ev.Country || '',
+    ev.when || ev.time || '',
+    ev.src || ev.source || '',
+    ev.url || ''
+  ].join('|').toLowerCase();
+  return 'h_' + ciHash(base);
+}
+
+function loadAlertStatusMap(){
+  try{
+    return JSON.parse(localStorage.getItem(CI_ALERT_STATUS_KEY) || '{}') || {};
+  }catch(_){ return {}; }
+}
+
+function saveAlertStatusMap(map){
+  try{ localStorage.setItem(CI_ALERT_STATUS_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+
+function getStatusRecord(ev){
+  const user = getOperatorEmail();
+  const key = alertKey(ev);
+  const map = loadAlertStatusMap();
+  const rec = map?.[user]?.[key] || null;
+  return { user, key, rec, map };
+}
+
+function getDisposition(ev){
+  const { rec } = getStatusRecord(ev);
+  return (rec && rec.status) ? String(rec.status) : 'untriaged';
+}
+function getDispositionNote(ev){
+  const { rec } = getStatusRecord(ev);
+  return (rec && rec.note) ? String(rec.note) : '';
+}
+
+function setDisposition(ev, status, note){
+  const { user, key, map } = getStatusRecord(ev);
+  const st = String(status || 'untriaged').toLowerCase();
+  const safeSt = (['untriaged','escalated','monitoring','cleared'].includes(st)) ? st : 'untriaged';
+
+  map[user] = map[user] || {};
+  map[user][key] = {
+    status: safeSt,
+    note: String(note || '').slice(0, 120),
+    updatedAt: Date.now(),
+    updatedIso: ciNowIso()
+  };
+  saveAlertStatusMap(map);
+  return map[user][key];
+}
+
+function formatUpdatedAt(rec){
+  try{
+    if (!rec || !rec.updatedAt) return '';
+    const d = new Date(rec.updatedAt);
+    return 'Updated ' + d.toLocaleString();
+  }catch(_){ return ''; }
+}
+
+function statusLabel(st){
+  const s = String(st || 'untriaged');
+  if (s === 'escalated') return 'Escalated';
+  if (s === 'monitoring') return 'Monitoring';
+  if (s === 'cleared') return 'Cleared';
+  return 'Untriaged';
+}
+
+function renderStatusPill(st){
+  const s = String(st || 'untriaged');
+  return `<span class="ci-status-pill" data-status="${s}">${statusLabel(s)}</span>`;
+}
+
+function refreshStatusBadges(){
+  // Any element can opt-in by having [data-alertkey] + child ".ci-status-pill"
+  const user = getOperatorEmail();
+  const map = loadAlertStatusMap();
+  const userMap = map[user] || {};
+
+  document.querySelectorAll('[data-alertkey]').forEach(el=>{
+    const k = el.getAttribute('data-alertkey');
+    if (!k) return;
+    const rec = userMap[k] || null;
+    const st = rec?.status || 'untriaged';
+
+    const pill = el.querySelector('.ci-status-pill');
+    if (pill){
+      pill.setAttribute('data-status', st);
+      pill.textContent = statusLabel(st);
+      pill.style.display = (st === 'untriaged') ? 'none' : '';
+    }
+  });
+
+  // update queue counts too
+  if (typeof window.ciUpdateQueueCounts === 'function') {
+    window.ciUpdateQueueCounts();
+  }
+}
+
+
+// -------------------- Transition Forms (TOPO-style) --------------------
+const CI_ALERT_TRANSITION_KEY = 'ci_alert_transition_v1';
+
+function loadTransitionMap(){
+  try{ return JSON.parse(localStorage.getItem(CI_ALERT_TRANSITION_KEY) || '{}') || {}; }catch(_){ return {}; }
+}
+function saveTransitionMap(map){
+  try{ localStorage.setItem(CI_ALERT_TRANSITION_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+function saveTransitionPayload(ev, status, payload){
+  const user = getOperatorEmail();
+  const key = alertKey(ev);
+  const map = loadTransitionMap();
+  map[user] = map[user] || {};
+  map[user][key] = {
+    status: String(status||'').toLowerCase(),
+    payload: payload || {},
+    savedAt: Date.now()
+  };
+  saveTransitionMap(map);
+}
+function getTransitionPayload(ev){
+  const user = getOperatorEmail();
+  const key = alertKey(ev);
+  const map = loadTransitionMap();
+  return map?.[user]?.[key] || null;
+}
+
+function toLocalInputValue(iso){
+  try{
+    const d = iso ? new Date(iso) : new Date();
+    const pad = (n)=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }catch(_){ return ''; }
+}
+
+function buildTransitionBody(item, status){
+  const st = String(status||'').toLowerCase();
+  const pre = getTransitionPayload(item)?.payload || {};
+
+  const exposure = window.__ciCurrentExposure || { assets: [], travellers: [] };
+  const aList = Array.isArray(exposure.assets) ? exposure.assets : [];
+  const tList = Array.isArray(exposure.travellers) ? exposure.travellers : [];
+
+  const mkField = (label, inner) => {
+    return `<div class="ci-field"><label>${label}</label>${inner}</div>`;
+  };
+
+  let html = '';
+
+  if (st === 'escalated'){
+    html += mkField('Urgency', `
+      <div class="ci-check-list">
+        ${['Urgent'].map((t)=>`<label class="ci-check"><input type="radio" name="ciUrgency" value="urgent" ${(pre.urgency==='urgent')?'checked':''}/> ${t}</label>`).join('')}
+      </div>
+    `);
+
+    html += mkField('Reason escalated', `
+      <div class="ci-check-list">
+        ${['Threshold met','Event within proximity','Assets affected','Personnel affected'].map((t,i)=>{
+          const k = ['threshold','proximity','assets','personnel'][i];
+          const on = Array.isArray(pre.reasons) && pre.reasons.includes(k);
+          return `<label class="ci-check"><input type="checkbox" data-ci-reason="${k}" ${on?'checked':''}/> ${t}</label>`;
+        }).join('')}
+      </div>
+    `);
+
+    html += mkField('Incident type', `
+      <select id="ciIncidentType">
+        ${['','Civil unrest / protest','Crime / violence','Fire / explosion','Transport / traffic','Infrastructure / outage','Other'].map(v=>{
+          const sel = (String(pre.incidentType||'')===v) ? 'selected' : '';
+          const label = v || 'Select…';
+          return `<option value="${v}" ${sel}>${label}</option>`;
+        }).join('')}
+      </select>
+    `);
+
+    html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
+    html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${String(pre.location||'').replace(/"/g,'&quot;')}">`);
+
+    html += mkField('Assets nearby', `<textarea id="ciAssets" readonly>${aList.map(a=>a.name || a.assetName || a.label || 'Asset').join('\n') || 'None'}</textarea>`);
+    html += mkField('Travellers nearby', `<textarea id="ciTravellers" readonly>${tList.map(t=>t.name || t.travellerName || t.label || 'Traveller').join('\n') || 'None'}</textarea>`);
+
+  } else if (st === 'cleared') {
+    html += mkField('Reason cleared', `
+      <div class="ci-check-list">
+        ${['Threshold not met','Not within proximity','No affected assets','No affected personnel','Already escalated'].map((t,i)=>{
+          const k = ['threshold_not_met','not_within_proximity','no_assets','no_personnel','already_escalated'][i];
+          const on = Array.isArray(pre.reasons) && pre.reasons.includes(k);
+          return `<label class="ci-check"><input type="checkbox" data-ci-reason="${k}" ${on?'checked':''}/> ${t}</label>`;
+        }).join('')}
+      </div>
+    `);
+
+    html += mkField('Call tree', `
+      <div class="ci-check-list">
+        ${['Territory Manager Called','Incident Management Called'].map((t,i)=>{
+          const k = ['tm_called','im_called'][i];
+          const on = Array.isArray(pre.callTree) && pre.callTree.includes(k);
+          return `<label class="ci-check"><input type="checkbox" data-ci-call="${k}" ${on?'checked':''}/> ${t}</label>`;
+        }).join('')}
+      </div>
+    `);
+
+    html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
+    html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${String(pre.location||'').replace(/"/g,'&quot;')}">`);
+  } else {
+    // Monitoring doesn't need a big form right now, keep lightweight
+    html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
+    html += mkField('Operator note', `<textarea id="ciNote" placeholder="Optional note">${(pre.note||detailDispositionNoteEl?.value||'')}</textarea>`);
+    return html;
+  }
+
+  html += mkField('Operator note', `<textarea id="ciNote" placeholder="Optional note (e.g., notify comms, traveller check)">${(pre.note||detailDispositionNoteEl?.value||'')}</textarea>`);
+  return html;
+}
+
+function collectTransitionPayload(status){
+  const st = String(status||'').toLowerCase();
+  const payload = {};
+  const reasons = [...document.querySelectorAll('#ciTransitionBody [data-ci-reason]')].filter(x=>x.checked).map(x=>x.getAttribute('data-ci-reason'));
+  if (reasons.length) payload.reasons = reasons;
+
+  const calls = [...document.querySelectorAll('#ciTransitionBody [data-ci-call]')].filter(x=>x.checked).map(x=>x.getAttribute('data-ci-call'));
+  if (calls.length) payload.callTree = calls;
+
+  const urg = document.querySelector('#ciTransitionBody input[name="ciUrgency"]:checked');
+  if (urg) payload.urgency = urg.value;
+
+  const it = document.getElementById('ciIncidentType');
+  if (it) payload.incidentType = it.value || '';
+
+  const when = document.getElementById('ciWhen');
+  if (when) payload.whenLocal = when.value || '';
+
+  const loc = document.getElementById('ciLocation');
+  if (loc) payload.location = loc.value || '';
+
+  const note = document.getElementById('ciNote');
+  if (note) payload.note = note.value || '';
+
+  return payload;
+}
+
+function openTransitionModal(item, status, handlers){
+  handlers = handlers || {};
+  const overlay = document.getElementById('ciTransitionOverlay');
+  const pillEl  = document.getElementById('ciTransitionStatusPill');
+  const metaEl  = document.getElementById('ciTransitionMeta');
+  const ctxEl   = document.getElementById('ciTransitionContext');
+  const bodyEl  = document.getElementById('ciTransitionBody');
+  const btnCancel = document.getElementById('ciTransitionCancel');
+  const btnSave   = document.getElementById('ciTransitionSave');
+
+  // If modal markup missing, just continue
+  if (!overlay || !bodyEl || !btnCancel || !btnSave){
+    if (handlers.onSave) handlers.onSave({ note: (detailDispositionNoteEl?.value||'') });
+    return;
+  }
+
+  const st = String(status||'').toLowerCase();
+  pillEl.textContent = statusLabel(st);
+  ctxEl.textContent = item?.title || 'Incident';
+  metaEl.textContent = `${item?.city || 'Unknown'} • ${(item?.risk||'n/a')} • ${fmtWhen(item?.when)}`;
+
+  bodyEl.innerHTML = buildTransitionBody(item, st);
+
+  // show
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden','false');
+
+  const close = ()=>{
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden','true');
+  };
+
+  const onCancel = ()=>{
+    close();
+    btnCancel.removeEventListener('click', onCancel);
+    btnSave.removeEventListener('click', onSave);
+    if (handlers.onCancel) handlers.onCancel();
+  };
+
+  const onSave = ()=>{
+    const payload = collectTransitionPayload(st);
+    saveTransitionPayload(item, st, payload);
+
+    // If note entered in modal, push it back to the detail note input
+    if (detailDispositionNoteEl && payload.note != null){
+      detailDispositionNoteEl.value = String(payload.note || '');
+    }
+
+    close();
+    btnCancel.removeEventListener('click', onCancel);
+    btnSave.removeEventListener('click', onSave);
+    if (handlers.onSave) handlers.onSave(payload);
+  };
+
+  btnCancel.addEventListener('click', onCancel);
+  btnSave.addEventListener('click', onSave);
+
+  // click outside
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) onCancel(); }, { once:true });
+
+  // escape key
+  const esc = (e)=>{ if(e.key==='Escape'){ document.removeEventListener('keydown', esc); onCancel(); } };
+  document.addEventListener('keydown', esc);
+}
+
+
+
+
+function lonLatToXY(lon, lat, w, h) {
+  // quick equirectangular projection
+  const x = (lon + 180) * (w / 360);
+  const y = (90 - lat) * (h / 180);
+  return [x, y];
+}
+
+function drawMiniMapPin(lat, lon) {
+  const cvs = document.getElementById('detailMiniMap');
+  const coordsEl = document.getElementById('detailCoords');
+  if (!cvs || !coordsEl) return;
+
+  const ctx = cvs.getContext('2d');
+  const w = cvs.width, h = cvs.height;
+
+  // background grid
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#14161a';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx <= w; gx += 32) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+  for (let gy = 0; gy <= h; gy += 24) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+  // subtle oval to avoid flat look
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.beginPath();
+  ctx.ellipse(w/2, h/2, w*0.46, h*0.36, 0, 0, Math.PI*2);
+  ctx.stroke();
+
+  if (typeof lat === 'number' && typeof lon === 'number') {
+    const [x, y] = lonLatToXY(lon, lat, w, h);
+
+    // glow
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,77,77,0.25)';
+    ctx.fill();
+
+    // pin
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#ff4d4d';
+    ctx.shadowColor = '#ff4d4d';
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    coordsEl.textContent = `Coordinates: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+  } else {
+    coordsEl.textContent = 'No coordinates provided for this alert.';
+  }
+}
+
+/* ---- Mini-map (local snapshot) + smart coord fallback ---- */
+function parseLatLonFromAny(obj){
+  if(!obj) return null;
+  const pick = (v)=> {
+    if(v === null || v === undefined) return null;
+    if(typeof v === 'number' && isFinite(v)) return v;
+    if(typeof v === 'string'){
+      const s = v.trim();
+      if(!s) return null;
+      const n = Number(s);
+      if(isFinite(n)) return n;
+    }
+    return null;
+  };
+  // common keys
+  const lat = pick(obj.lat ?? obj.latitude);
+  const lon = pick(obj.lon ?? obj.lng ?? obj.longitude);
+  if(lat !== null && lon !== null) return {lat, lon};
+
+  // try parse from location string: "51.5, -0.1"
+  const loc = String(obj.location || obj.where || obj.coords || '').trim();
+  if(loc){
+    const mm = loc.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+    if(mm){
+      const a = Number(mm[1]), b = Number(mm[2]);
+      if(isFinite(a) && isFinite(b)) return {lat:a, lon:b};
+    }
+  }
+  return null;
+}
+
+async function nominatimGeocodeCached(q){
+  const query = String(q||'').trim();
+  if(!query) return null;
+  const key = 'ci_nomi_' + btoa(unescape(encodeURIComponent(query))).slice(0,120);
+  try{
+    const cached = sessionStorage.getItem(key);
+    if(cached){
+      const obj = JSON.parse(cached);
+      if(obj && typeof obj.lat==='number' && typeof obj.lon==='number') return obj;
+    }
+  }catch(e){}
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query);
+    const res = await fetch(url, { headers: { 'Accept':'application/json' } });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(Array.isArray(data) && data[0] && data[0].lat && data[0].lon){
+      const out = { lat: Number(data[0].lat), lon: Number(data[0].lon) };
+      if(isFinite(out.lat) && isFinite(out.lon)){
+        try{ sessionStorage.setItem(key, JSON.stringify(out)); }catch(e){}
+        return out;
+      }
+    }
+  }catch(e){}
+  return null;
+}
+
+
+/* ---- Detail Mini-map (Leaflet) ---- */
+(function(){
+  // Leaflet mini-map inside detail panel
+  // Goal: mirror the main map view (same center/zoom) and always show:
+  //  - incident marker at the feed location
+  //  - dashed radius ring (uses currently selected incident radius)
+
+  let dm = null;
+  let layerGroup = null;
+
+  function iconFor(kind){
+    if (kind === 'asset'){
+      return L.divIcon({ className:'ci-asset-marker', html:'A', iconSize:[18,18] });
+    }
+    if (kind === 'traveller'){
+      return L.divIcon({ className:'ci-trav-marker', html:'T', iconSize:[18,18] });
+    }
+    if (kind === 'panic'){
+      return L.divIcon({ className:'ci-panic-marker', html:'!', iconSize:[20,20] });
+    }
+    return L.divIcon({ className:'ci-trav-marker', html:'•', iconSize:[14,14] });
+  }
+
+  function normalizeCenter(center){
+    if (!center) return null;
+
+    // Accept [lat, lon]
+    if (Array.isArray(center) && center.length >= 2){
+      const lat = Number(center[0]);
+      const lon = Number(center[1]);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+      return null;
+    }
+
+    // Accept {lat, lon} or {lat, lng}
+    const lat = Number(center.lat);
+    const lon = Number(center.lon ?? center.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+
+    // Accept {latitude, longitude}
+    const lat2 = Number(center.latitude);
+    const lon2 = Number(center.longitude);
+    if (Number.isFinite(lat2) && Number.isFinite(lon2)) return [lat2, lon2];
+
+    return null;
+  }
+
+  function ensure(){
+    const el = document.getElementById('detailMiniMapLeaflet');
+    if (!el) return null;
+
+    if (!dm){
+      dm = L.map(el, {
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false,
+        touchZoom: false
+      });
+
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19
+      }).addTo(dm);
+
+      layerGroup = L.layerGroup().addTo(dm);
+    }
+    return dm;
+  }
+
+  function clearLayers(){
+    if (!layerGroup) return;
+    try{ layerGroup.clearLayers(); }catch(e){}
+  }
+
+  function draw(centerLL, points, radiusKm){
+    const map = ensure();
+
+    const coordsEl = document.getElementById('detailCoords');
+    if (coordsEl) {
+      coordsEl.style.display = 'block';
+      coordsEl.textContent = 'Coordinates unavailable';
+    }
+
+    if (!map) return false;
+
+    const c = normalizeCenter(centerLL);
+    if (!c) return false;
+
+    // If the map was created while hidden, Leaflet needs this.
+    try{
+      setTimeout(()=>{ try{ map.invalidateSize(true); }catch(e){} }, 0);
+    }catch(e){}
+
+    clearLayers();
+
+    // Incident marker + radius
+    const rMeters = (Number(window.__ciIncidentRadiusKm || window.ciIncidentRadiusKm || 1) || 1) * 1000;
+
+      const incidentMarker = L.circleMarker(c, {
+        radius: 6,
+        color: "#ffffff",
+        weight: 2,
+        fillColor: "#ff3b30",
+        fillOpacity: 1
+      }).addTo(layerGroup);
+
+      const bounds = L.latLng(c).toBounds(rMeters * 2);
+// Optional nearby points (assets/travellers) if coordinates are provided
+    if (Array.isArray(points)){
+      points.forEach(p=>{
+        const lat = Number(p?.lat);
+        const lon = Number(p?.lon ?? p?.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        const kind = p.kind || p.type || 'traveller';
+        L.marker([lat, lon], { icon: iconFor(kind) }).addTo(layerGroup);
+      });
+    }
+
+    // Fit the mini-map to the incident radius (more consistent than a fixed zoom)
+    try {
+        map.fitBounds(circle.getBounds(), { padding: [18, 18], maxZoom: 12, animate: false });
+    } catch (e) {
+        // Fallback if bounds are unavailable
+        map.setView(c, 12, { animate: false });
+      }
+
+
+    // Keep the incident pin above asset/traveller markers
+    try {  } catch (e) {}
+    try { incidentMarker.bringToFront(); } catch (e) {}
+
+    if (coordsEl) {
+      coordsEl.style.display = 'none';
+      coordsEl.textContent = '';
+    }
+    return true;
+  }
+
+  window.__ciDetailMiniLeaflet = {
+    ensure,
+    update: draw
+  };
+})();;
+function drawMiniMapLocal(center, points){
+  // Prefer Leaflet mini-map for a professional look
+  try{ if(window.__ciDetailMiniLeaflet && window.__ciDetailMiniLeaflet.update(center, points)) return; }catch(e){}
+
+  const cvs = document.getElementById('detailMiniMap');
+  const coordsEl = document.getElementById('detailCoords');
+  if (!cvs || !coordsEl) return;
+  const ctx = cvs.getContext('2d');
+
+  // Ensure crisp rendering (canvas sized to CSS pixels * DPR)
+  const dpr = window.devicePixelRatio || 1;
+  const rect = cvs.getBoundingClientRect();
+  const cssW = Math.max(1, Math.round(rect.width));
+  const cssH = Math.max(1, Math.round(rect.height));
+  const w = Math.max(1, Math.round(cssW * dpr));
+  const h = Math.max(1, Math.round(cssH * dpr));
+  if (cvs.width !== w || cvs.height !== h){
+    cvs.width = w; cvs.height = h;
+  }
+  ctx.setTransform(1,0,0,1,0,0);
+
+  // Background (slightly lighter + subtle gradient so it isn't "pure black")
+  ctx.clearRect(0, 0, w, h);
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, '#1f2937');
+  g.addColorStop(1, '#111827');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle vignette
+  const vg = ctx.createRadialGradient(w*0.5, h*0.5, Math.min(w,h)*0.10, w*0.5, h*0.5, Math.min(w,h)*0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.18)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+
+  // Grid (more visible than before)
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  const stepX = Math.round(32 * dpr);
+  const stepY = Math.round(24 * dpr);
+  for (let gx = 0; gx <= w; gx += stepX) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+  for (let gy = 0; gy <= h; gy += stepY) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+  if(!center || !isFinite(center.lat) || !isFinite(center.lon)){
+    coordsEl.textContent = 'Coordinates unavailable';
+    return;
+  }
+
+  // Local projection: assume ~25km window around center
+  const kmWindow = 25;
+  const kmPerDegLat = 110.574;
+  const kmPerDegLon = 111.320 * Math.cos(center.lat * Math.PI/180);
+  const scaleX = w / (kmWindow*2);
+  const scaleY = h / (kmWindow*2);
+
+  const toXY = (lat, lon)=>{
+    const dxKm = (lon - center.lon) * kmPerDegLon;
+    const dyKm = (center.lat - lat) * kmPerDegLat;
+    const x = w/2 + dxKm * scaleX;
+    const y = h/2 + dyKm * scaleY;
+    return [x,y];
+  };
+
+  // Center crosshair
+  ctx.strokeStyle = 'rgba(255,255,255,0.40)';
+  ctx.lineWidth = Math.max(1, dpr);
+  ctx.beginPath(); ctx.moveTo(w/2-10*dpr, h/2); ctx.lineTo(w/2+10*dpr, h/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w/2, h/2-10*dpr); ctx.lineTo(w/2, h/2+10*dpr); ctx.stroke();
+
+  // Rings
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = Math.max(1, dpr);
+  [5,10,20].forEach(km=>{
+    const r = km * scaleX;
+    ctx.beginPath(); ctx.arc(w/2, h/2, r, 0, Math.PI*2); ctx.stroke();
+  });
+
+  // Plot points
+  (points||[]).forEach(p=>{
+    if(!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
+    const [x,y] = toXY(p.lat, p.lon);
+    if(x<0||x>w||y<0||y>h) return;
+
+    const dot = (color, r)=>{
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    };
+
+    if(p.kind === 'panic'){
+      dot('#ef4444', 6*dpr);
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+      ctx.lineWidth = 2*dpr;
+      ctx.beginPath(); ctx.arc(x,y,6*dpr,0,Math.PI*2); ctx.stroke();
+    } else if(p.kind === 'asset'){
+      dot('#3b82f6', 5*dpr);
+    } else if(p.kind === 'traveller'){
+      dot('#f97316', 5*dpr);
+    } else {
+      dot('#ffffff', 4*dpr);
+    }
+  });
+
+  coordsEl.textContent = `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}  •  ±${kmWindow}km`;
+}
+
+async function resolveItemLatLon(item, exposure){
+  // 1) direct coords / coords-in-location string
+  const direct = parseLatLonFromAny(item);
+  if(direct) return direct;
+
+  // 2) average from exposed assets/travellers that have coords
+  const pts = [];
+  (exposure?.assets||[]).forEach(a=>{
+    const c = parseLatLonFromAny(a);
+    if(c) pts.push(c);
+  });
+  (exposure?.travellers||[]).forEach(t=>{
+    const c = parseLatLonFromAny(t);
+    if(c) pts.push(c);
+  });
+  if(pts.length){
+    const lat = pts.reduce((s,p)=>s+p.lat,0)/pts.length;
+    const lon = pts.reduce((s,p)=>s+p.lon,0)/pts.length;
+    return {lat, lon};
+  }
+
+  // 3) geocode city/country/location text via Nominatim
+  const q = [item.location, item.city || item.City, item.country || item.Country].filter(Boolean).join(', ');
+  const geo = await nominatimGeocodeCached(q);
+  if(geo) return geo;
+
+  return null;
+}
+
+
+
+function openDetailPanel(item, relatedList){
+  // item = {title, city, risk, when, ...}
+  // relatedList = array of all events in that feed (for "earlier today")
+
+  const earlier = (relatedList || [])
+    .filter(x => x.city === item.city && x.when !== item.when)
+    .slice(0, 3);
+
+  detailTitleEl.textContent = item.title || '[Incident Title]';
+  detailMetaEl.textContent = `${item.city || 'Unknown'} • ${item.risk || 'n/a'} • ${fmtWhen(item.when)}`;
+
+  // --- disposition UI ---
+  try{
+    window.__ciCurrentDetailItem = item;
+    const k = alertKey(item);
+    detailPanel.setAttribute('data-alertkey', k);
+
+    const st = getDisposition(item);
+    const note = getDispositionNote(item);
+
+    if (detailDispositionEl){
+      detailDispositionEl.value = st;
+    }
+    if (detailDispositionNoteEl){
+      detailDispositionNoteEl.value = note || '';
+    }
+    if (detailDispositionNoteRowEl){
+      detailDispositionNoteRowEl.style.display = (st !== 'untriaged') ? '' : 'none';
+    }
+
+    if (detailDispositionUpdatedEl){
+      const { rec } = getStatusRecord(item);
+      const msg = formatUpdatedAt(rec);
+      if (msg){
+        detailDispositionUpdatedEl.style.display = '';
+        detailDispositionUpdatedEl.textContent = msg;
+      }else{
+        detailDispositionUpdatedEl.style.display = 'none';
+        detailDispositionUpdatedEl.textContent = '';
+      }
+    }
+  }catch(e){ console.warn('disposition init failed', e); }
+
+  if (detailTagEl) {
+    const { emoji, label } = classifyIncident(item || {});
+    detailTagEl.textContent = `${emoji} ${label}`;
+  }
+
+	  // NEW: richer intel-style summary
+  detailSummaryEl.textContent = buildIntelSummary(item, earlier);
+
+    // location text
+    detailLocationEl.textContent =
+    `Approx area: ${item.city || 'unknown'}${item.country ? ', ' + item.country : ''}.`;
+
+  // real exposure based on stored assets/travellers
+  let exposure = { assets: [], travellers: [] };
+  if (window.CIExposure && CIExposure.exposureFor) {
+    exposure = CIExposure.exposureFor(item.city || item.City,
+                                      item.country || item.Country);
+  }
+  const nA = exposure.assets.length;
+  const nT = exposure.travellers.length;
+
+  if (nA || nT) {
+    const assetStr = nA
+      ? `${nA} mapped asset${nA > 1 ? 's' : ''}`
+      : 'no mapped assets';
+    const travStr  = nT
+      ? `${nT} mapped traveller${nT > 1 ? 's' : ''}`
+      : 'no mapped travellers';
+
+    detailImpactEl.innerHTML = `
+      <span style="font-weight:700;letter-spacing:.03em;font-size:11px;color:#fecaca;">
+        ASSETS &amp; TRAVELLERS </span><br>
+      <span style="color:#f97373;font-weight:600;">
+        ${assetStr}; ${travStr}
+      </span><br> <span style="opacity:.85;">Review posture for affected locations and contact travellers as needed.</span>
+    `;
+  } else {
+    detailImpactEl.innerHTML = `
+      <span style="font-weight:700;letter-spacing:.03em;font-size:11px;color:#9ca3af;">
+        ASSETS &amp; TRAVELLERS</span><br><span style="opacity:.9;">
+        No mapped company assets or travellers currently in this city(based on stored data). </span>
+    `;
+  }
+
+	  const detailExposureListEl = document.getElementById('detailExposureList');
+
+  if (detailExposureListEl) {
+    if (nA || nT) {
+      const assetLines = exposure.assets.map(a =>
+        `<li><b>${a.name || 'Asset'}</b>${a.type ? ` — ${a.type}` : ''}${
+          a.city || a.country ? ` (${[a.city, a.country].filter(Boolean).join(', ')})` : ''
+        }</li>`
+      ).join('');
+
+      const travLines = exposure.travellers.map(t =>
+        `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${
+          t.hotel ? ` — ${t.hotel}` : ''
+        }</li>`
+      ).join('');
+
+      detailExposureListEl.innerHTML = `
+        ${assetLines ? `<div style="margin-bottom:6px;"><b>Assets</b><ul>${assetLines}</ul></div>` : ''}
+        ${travLines ? `<div><b>Travellers</b><ul>${travLines}</ul></div>` : ''}
+      `;
+    } else {
+      detailExposureListEl.innerHTML =
+        `<span style="opacity:.85;">No mapped assets or travellers in this city.</span>`;
+    }
+  }
+
+  // Mini-map snapshot + smart fallback (coords / exposure / geocode)
+  const coordsEl = document.getElementById('detailCoords');
+  if (coordsEl) coordsEl.textContent = 'Resolving coordinates…';
+
+  // draw immediately if we already have coords
+  const direct = parseLatLonFromAny(item);
+  if (direct) {
+    const points = [];
+    (exposure.assets || []).forEach(a => { const c = parseLatLonFromAny(a); if (c) points.push({ ...c, kind:'asset' }); });
+    (exposure.travellers || []).forEach(t => { const c = parseLatLonFromAny(t); if (c) points.push({ ...c, kind:'traveller' }); });
+    // include active panic pin if present
+    if (window.__ciPanicResolved && window.__ciPanicResolved.lat && window.__ciPanicResolved.lon) {
+      points.push({ lat: window.__ciPanicResolved.lat, lon: window.__ciPanicResolved.lon, kind:'panic' });
+    }
+    drawMiniMapLocal(direct, points);
+  } else {
+    // clear for now
+    drawMiniMapLocal(null, null);
+  }
+
+  // async resolve and redraw (exposure avg / geocode)
+  (async () => {
+    const resolved = await resolveItemLatLon(item, exposure);
+    if (!resolved) {
+      drawMiniMapLocal(null, null);
+      return;
+    }
+    // store back on item for other uses
+    item.lat = resolved.lat; item.lon = resolved.lon;
+
+    const points = [];
+    (exposure.assets || []).forEach(a => { const c = parseLatLonFromAny(a); if (c) points.push({ ...c, kind:'asset' }); });
+    (exposure.travellers || []).forEach(t => { const c = parseLatLonFromAny(t); if (c) points.push({ ...c, kind:'traveller' }); });
+    if (window.__ciPanicResolved && window.__ciPanicResolved.lat && window.__ciPanicResolved.lon) {
+      points.push({ lat: window.__ciPanicResolved.lat, lon: window.__ciPanicResolved.lon, kind:'panic' });
+    }
+    drawMiniMapLocal(resolved, points);
+  })();
+
+  // earlier today in same city (re-use the list we already built)
+  if (earlier.length) {
+    detailEarlierEl.innerHTML =
+      '<ul class="earlier-list">' +
+      earlier.map(x => `<li>${fmtWhen(x.when)} — ${x.title}</li>`).join('') +
+      '</ul>';
+  } else {
+    detailEarlierEl.textContent = 'No earlier incidents recorded.';
+  }
+
+  // notify map to jump / highlight this incident
+  try {
+    window.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+      detail: {
+        city:    item.city    || item.City    || null,
+        country: item.country || item.Country || null,
+        lat: (typeof item.lat === 'number') ? item.lat : null,
+        lon: (typeof item.lon === 'number') ? item.lon : null
+      }
+    }));
+  } catch (e) {
+    console.warn('ci:jumpToIncident dispatch failed', e);
+  }
+
+  // incident deep-link -> you already pass this into incident.html
+  viewFullBtn.href = 'incident.html';
+
+  // keep last item handy for the incident drilldown handover
+  window.__lastDetailItem = item;
+
+  detailPanel.classList.add('open');
+  document.body.classList.add('detail-open');
+
+  // Desktop layout reserves space for the drawer; Leaflet needs a resize
+  const _map = window.ciLiveMap;
+  if (_map && _map.invalidateSize) {
+    setTimeout(() => _map.invalidateSize(), 250);
+  }
+}
+
+function closeDetailPanel() {
+  const cvs = document.getElementById('detailMiniMap');
+  if (cvs) {
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+  }
+  detailPanel.classList.remove('open');
+  document.body.classList.remove('detail-open');
+
+  // Re-expand the map area smoothly
+  const _map = window.ciLiveMap;
+  if (_map && _map.invalidateSize) {
+    setTimeout(() => _map.invalidateSize(), 250);
+  }
+}
+
+// attach listeners ONCE
+detailCloseBtn.addEventListener('click', closeDetailPanel);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDetailPanel();
+  }
+});
+
+
+// bind disposition controls once
+(function bindDisposition(){
+  if (window.__ciDispositionBound) return;
+  window.__ciDispositionBound = true;
+
+  if (!detailDispositionEl) return;
+
+  const saveFromUI = () => {
+    const item = window.__ciCurrentDetailItem;
+    if (!item) return;
+
+    const st = (detailDispositionEl.value || 'untriaged').toLowerCase();
+    const note = detailDispositionNoteEl ? (detailDispositionNoteEl.value || '') : '';
+    const prevSt = getDisposition(item);
+    const rec = setDisposition(item, st, note);
+    // If transitioning into a workflow state, show TOPO-style transition form
+    if (st !== prevSt && (st === 'escalated' || st === 'cleared')){
+      const revert = () => {
+        try { detailDispositionEl.value = prevSt; } catch(e) {}
+        setDisposition(item, prevSt, note);
+        refreshStatusBadges();
+      };
+      openTransitionModal(item, st, {
+        onCancel: revert,
+        onSave: (payload)=>{
+          // persist note from modal + refresh badges immediately
+          const modalNote = (payload && payload.note != null) ? String(payload.note||'') : note;
+          setDisposition(item, st, modalNote);
+          refreshStatusBadges();
+          // If an alerts list is open, re-filter it immediately
+          try{ if (typeof window.ciRefreshMapSidebarFeeds==='function') window.ciRefreshMapSidebarFeeds(); }catch(e){}
+          try{ if (typeof window.ciUpdateQueueCounts==='function') window.ciUpdateQueueCounts(); }catch(e){}
+        }
+      });
+    }
+
+    // note row visibility
+    if (detailDispositionNoteRowEl){
+      detailDispositionNoteRowEl.style.display = (st !== 'untriaged') ? '' : 'none';
+    }
+
+    // updated label
+    if (detailDispositionUpdatedEl){
+      const msg = formatUpdatedAt(rec);
+      detailDispositionUpdatedEl.style.display = msg ? '' : 'none';
+      detailDispositionUpdatedEl.textContent = msg || '';
+    }
+
+    // refresh any pills/badges already rendered
+    refreshStatusBadges();
+  };
+
+  detailDispositionEl.addEventListener('change', saveFromUI);
+
+  if (detailDispositionNoteEl){
+    detailDispositionNoteEl.addEventListener('input', () => {
+      // only persist note when disposition isn't untriaged
+      if ((detailDispositionEl.value || 'untriaged') === 'untriaged') return;
+      saveFromUI();
+    });
+  }
+})();
+
+// Re-render a single card (fetch -> DOM -> schedule next refresh)
+async function refreshSingleFeedCard(cardEl, feed){
+  try {
+    const events = await fetchMockEventsForFeed(feed);
+    renderEventsIntoCard(cardEl, events, feed);
+  } finally {
+    scheduleNextRefresh(cardEl, feed);
+  }
+}
+
+	// -------------------------------------------------------------
+// GROUPING ENGINE — collapses similar alerts into update threads
+// -------------------------------------------------------------
+function groupEvents(events) {
+
+  // helper: normalise titles for fuzzy-matching
+  const norm = (s='') =>
+    s.toLowerCase()
+     .replace(/[^a-z0-9 ]+/g, '')
+     .replace(/\s+/g, ' ')
+     .trim();
+
+  // helper: check if two timestamps are within 60 minutes
+  const within60 = (a, b) => {
+    try {
+      const aa = new Date(a).getTime();
+      const bb = new Date(b).getTime();
+      return Math.abs(aa - bb) <= 3600_000; // 1 hour
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const groups = [];
+
+  events.forEach(ev => {
+    const nTitle = norm(ev.title || ev.summary || ev.description || '');
+
+    let matched = null;
+
+    // try to match with existing groups
+    for (const g of groups) {
+      if (
+        g.city === ev.city &&                  // same city
+        g.category === ev.category &&          // same category  
+        within60(g.latestWhen, ev.when) &&     // close in time
+        (norm(g.baseTitle).includes(nTitle) || // fuzzy title match
+         nTitle.includes(norm(g.baseTitle)))
+      ) {
+        matched = g;
+        break;
+      }
+    }
+
+    if (!matched) {
+      // make a new group
+      matched = {
+        city: ev.city,
+        category: ev.category,
+        events: [],
+        baseTitle: ev.title || ev.summary || '',
+        latestWhen: ev.when
+      };
+      groups.push(matched);
+    }
+
+    matched.events.push(ev);
+
+    // update latest timestamp
+    if (new Date(ev.when) > new Date(matched.latestWhen)) {
+      matched.latestWhen = ev.when;
+      matched.baseTitle = ev.title || ev.summary || matched.baseTitle;
+    }
+  });
+
+  // sort groups newest → oldest
+  groups.sort((a, b) =>
+    new Date(b.latestWhen) - new Date(a.latestWhen)
+  );
+
+  // inside each group, sort events newest → oldest
+  groups.forEach(g =>
+    g.events.sort((a, b) =>
+      new Date(b.when) - new Date(a.when)
+    )
+  );
+
+  return groups;
+}
+
+	// -------------------------------------------------------------
+// RECENCY AGE CLASSIFIER
+// -------------------------------------------------------------
+function getAgeClass(when) {
+  let t = 0;
+  try { t = new Date(when).getTime(); } catch(e) {}
+  if (!t) return 'age-stale';
+
+  const ageMin = (Date.now() - t) / 60000; // minutes
+
+  if (ageMin <= 10)  return 'age-fresh';   // 0–10 min
+  if (ageMin <= 30)  return 'age-recent';  // 10–30 min
+  if (ageMin <= 60)  return 'age-older';   // 30–60 min
+  return 'age-stale';                      // 60+ min
+}
+
+function ageLabel(when) {
+  const t = Date.parse(when || '');
+  if (isNaN(t)) return '';
+
+  const mins = Math.round((Date.now() - t) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+
+  const days = Math.round(hrs / 24);
+  return `${days}d ago`;
+}
+
+// Put the events into an existing card (no refetch here)
+const MAX_VISIBLE_EVENTS = 20;
+
+function renderEventsIntoCard(cardEl, events, feed) {
+  const bodyEl = cardEl.querySelector('.feed-body');
+  const list   = bodyEl;
+
+  // Fallback to cached events if nothing new came in
+  let listEvents = Array.isArray(events) ? events : [];
+  if (!listEvents.length) {
+    const cached = loadUiCache(feed.id) || (loadFeedEvents(feed.id)?.events || []);
+    if (cached && cached.length) {
+      listEvents = cached;
+    }
+  }
+
+  // Update caches if we actually have something
+  if (Array.isArray(listEvents) && listEvents.length) {
+    storeFeedEvents(feed.id, listEvents);
+    saveUiCache(feed.id, listEvents);
+    archiveMerge(feed.id, listEvents);
+  }
+
+  // Prefer 7-day archive if present
+  const archived   = loadArchive(feed.id);
+  const renderList = (archived && archived.length) ? archived : listEvents;
+
+  // Keep it “fresh” by default: prefer last 3h if available
+  const now       = Date.now();
+  const MAX_AGE_MS = 3 * 60 * 60 * 1000;
+  const fresh = renderList.filter(ev => {
+    const t = Date.parse(ev.when || '');
+    return !isNaN(t) && (now - t <= MAX_AGE_MS);
+  });
+
+  const displayEvents = fresh.length ? fresh : renderList;
+
+  // update per-feed header stats
+  updateFeedHeaderStats(feed, displayEvents);
+  publishFeedSummary(feed, displayEvents);
+	
+  // Track some stats for the refresh scheduler
+  cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
+  cardEl.__state.lastLen = displayEvents.length;
+  if (displayEvents.some(e => (e.risk || '').toLowerCase() === 'high')) {
+    cardEl.__state.lastHighAt = Date.now();
+  }
+
+  bodyEl.innerHTML = '';
+
+  if (!displayEvents.length) {
+    bodyEl.innerHTML = `
+      <div style="font-size:12px;color:var(--muted);opacity:.8;">
+        No alerts in the selected window.
+      </div>
+    `;
+  } else {
+    // ---------- GROUPED VIEW ----------
+    const groups = groupEvents(displayEvents);
+
+    // take only the newest 8 grouped threads
+    groups.slice(0, 8).forEach(g => {
+      const first   = g.events[0];       // newest in the group
+      const updates = g.events.length - 1;
+
+      const risk = (first.risk || '').toLowerCase();
+      const riskColor =
+        risk === 'high'   ? '#b21f1f' :
+        risk === 'medium' ? '#d97706' :
+        risk === 'low'    ? '#15803d' :
+                            '#666';
+
+      const cat      = first.category || first.type || 'i';
+      const whenNice = fmtWhen(first.when);
+
+      const groupEl  = document.createElement('div');
+      const ageClass = getAgeClass(first.when);
+
+      // NEW: exposure (assets + travellers) for this city/country
+            let exposureHtml = '';
+      if (window.CIExposure && CIExposure.exposureFor) {
+        const exp = CIExposure.exposureFor(first.city || first.City,
+                                           first.country || first.Country);
+        const nA = exp.assets.length;
+        const nT = exp.travellers.length;
+        if (nA || nT) {
+          exposureHtml = `
+            <div class="eg-exposure" style="margin-top:6px;font-size:12px;">
+              <span style=" display:inline-block; padding:3px 8px;
+                border-radius:999px; background:rgba(59,130,246,0.32);   /* brighter blue */
+                border:1px solid rgba(59,130,246,0.9); color:#e5f0ff;
+                font-weight:600; margin-right:6px;">Assets: <b>${nA}</b></span>
+              
+			  <span style=" display:inline-block; padding:3px 8px; border-radius:999px;
+                background:rgba(245,158,11,0.32);   /* brighter amber */
+                border:1px solid rgba(245,158,11,0.9);color:#fff7e6;font-weight:600;
+              ">Travellers: <b>${nT}</b></span></div>
+          `;
+        }
+      }
+
+            groupEl.className = `event-group ${ageClass}`;
+            groupEl.setAttribute('data-alertkey', alertKey(first));
+            groupEl.innerHTML = `
+  	<div class="eg-header">
+    <div class="eg-title">
+      <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
+      ${first.title || first.summary || '(no title)'}
+    </div>
+    <div class="eg-meta">
+      <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
+      <span class="eg-arrow">▼</span>
+    </div>
+  </div>
+
+  <div class="eg-sub">
+    <div class="eg-risk" style="color:${riskColor}">${risk || 'n/a'}</div>
+    ${renderStatusPill(getDisposition(first))}
+    <div class="eg-when">${whenNice} • ${ageLabel(first.when)}</div>
+  </div>
+
+  ${exposureHtml}
+
+  <div class="eg-body" style="display:none;">
+    ${g.events.map(ev => `
+      <div class="eg-item">
+        <div class="eg-item-when">${fmtWhen(ev.when)}</div>
+        <div class="eg-item-text">
+          ${ev.summary || ev.description || ev.title}
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="eg-footer">
+    <button class="btn-ghost eg-view-btn" type="button">
+      View incident details →
+    </button>
+  </div>
+`;
+
+      // collapse / expand behaviour on header
+      const headerEl = groupEl.querySelector('.eg-header');
+      headerEl.addEventListener('click', () => {
+        const body  = groupEl.querySelector('.eg-body');
+        const arrow = groupEl.querySelector('.eg-arrow');
+        const open  = body.style.display === 'block';
+        body.style.display = open ? 'none' : 'block';
+        arrow.textContent  = open ? '▼' : '▲';
+      });
+		
+const viewBtn = groupEl.querySelector('.eg-view-btn');
+if (viewBtn) {
+  viewBtn.addEventListener('click', (e) => {
+    e.stopPropagation();              // don’t toggle collapse
+    openDetailPanel(first, g.events); // show slide-out panel
+  });
+}
+      // CLICK ANY UPDATE → open side detail panel
+      const itemNodes = groupEl.querySelectorAll('.eg-item');
+      g.events.forEach((ev, idx) => {
+        const node = itemNodes[idx];
+        if (!node) return;
+        node.addEventListener('click', (e) => {
+          e.stopPropagation();               // don’t toggle the collapse
+          openDetailPanel(ev, g.events);     // show slide-out with this alert
+        });
+      });
+
+      list.appendChild(groupEl);
+    });
+  }
+
+  // --- Footer: source label + timestamp -------------------------------
+  const srcEl = cardEl.querySelector('.feed-footer .src');
+  if (srcEl) {
+    const usedFallback = feed.useLive && !listEvents.length;
+    const base = feed.useLive
+      ? (usedFallback ? 'source: live stream (fallback active)' : 'source: live stream')
+      : 'source: simulated source';
+    const time = new Date().toLocaleTimeString();
+    srcEl.textContent = `${base} • updated ${time}`;
+  }
+}
+
+// Timer per card (60s live, 120s mock) + small jitter so cards don't all refresh together
+function scheduleNextRefresh(cardEl, feed){
+  // safety guard – if something calls us without a card or feed, bail out
+  if (!cardEl || !feed) return;
+
+  // keep lightweight state per card
+  cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
+  const { lastLen, lastHighAt } = cardEl.__state;
+
+  // base cadence
+  let base = feed.useLive ? 600_000 : 1200_000;
+
+  // if last pull had zero items on a LIVE feed, try a bit sooner
+  if (feed.useLive && lastLen === 0) base = 600_000;
+
+  // if we saw a high-risk item recently, keep it hot for 5 minutes
+  if (feed.useLive && Date.now() - lastHighAt < 5*60_000) base = Math.min(base, 25_000);
+
+  const jitter = Math.floor(Math.random() * 60_000) - 30_000;
+  const ms = Math.max(60_000, base + jitter);
+
+  clearTimeout(cardEl.__nextTimer);
+  cardEl.__nextTimer = setTimeout(()=>{
+    const fresh = loadFeeds().find(f => f.id === feed.id);
+    if (fresh) refreshSingleFeedCard(cardEl, fresh);
+  }, ms);
+
+	  // keep global strip in sync with latest per-feed data
+  recomputeGlobalStrip();
+
+}
+
+// -------------------- FEED MODAL LOGIC --------------------
+const overlayEl = document.getElementById('modalOverlay');
+const cityInput = document.getElementById('feedCityInput');
+const riskSel   = document.getElementById('feedRiskSelect');
+const kwInput = document.getElementById('feedKeywordsInput');
+const liveCheck = document.getElementById('feedLiveCheck');	
+const cancelBtn = document.getElementById('modalCancel');
+const saveBtn   = document.getElementById('modalSave');
+const addFeedBtn= document.getElementById('btnAddFeed');
+
+let editingFeedId = null;
+
+function openFeedModal(feed){
+  editingFeedId = feed ? feed.id : null;
+  overlayEl.style.display='flex';
+
+  if(feed){
+    cityInput.value = (feed.places||[]).join(', ');
+    // reset all first
+    for (let i=0;i<riskSel.options.length;i++){
+      riskSel.options[i].selected = false;
+    }
+    (feed.risks||[]).forEach(r=>{
+      for (let i=0;i<riskSel.options.length;i++){
+        if(riskSel.options[i].value===r){
+          riskSel.options[i].selected = true;
+        }
+      }
+    });
+
+liveCheck.checked = !!feed.useLive;
+kwInput.value = (feed.keywords || []).join(', ');	  
+  } 
+  
+  else {
+    cityInput.value = '';
+    for (let i=0;i<riskSel.options.length;i++){
+      riskSel.options[i].selected = false;
+    }
+    // default select high+med
+  for (let i = 0; i < riskSel.options.length; i++) {
+    if (riskSel.options[i].value === 'high') {
+      riskSel.options[i].selected = true;
+      break;
+    }
+  }
+  liveCheck.checked = false;
+  kwInput.value = '';
+}
+}
+
+function closeFeedModal(){
+  overlayEl.style.display='none';
+  editingFeedId = null;
+}
+
+cancelBtn.addEventListener('click', closeFeedModal);
+overlayEl.addEventListener('click',(e)=>{
+  if(e.target===overlayEl){
+    closeFeedModal();
+  }
+});
+addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
+
+// allow the map legend's "+ Add feed" button to open the same modal
+window.ciOpenAddFeed = function(){
+  const btn = document.getElementById('btnAddFeed');
+  if (btn) btn.click();
+  const grid = document.getElementById('feedsGrid');
+  if (grid) {
+    grid.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+};
+
+saveBtn.addEventListener('click', ()=>{
+  const rawCities = cityInput.value.trim();
+  const rawKeywords = kwInput.value.trim();
+
+  // NEW: allow either cities or keywords
+  if (!rawCities && !rawKeywords) {
+    alert('Enter at least one city/region OR at least one keyword.');
+    return;
+  }
+	
+  let places = rawCities ? rawCities.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+// Expand region shortcuts
+const EXPANSIONS = {
+  uk: [
+    'London','Manchester','Birmingham','Leeds','Liverpool',
+'Bristol','Glasgow','Edinburgh','Cardiff','Belfast',
+'Nottingham','Sheffield','Newcastle','Leicester','Portsmouth',
+'Southampton','Coventry','Bradford','Derby','Stoke-on-Trent',
+'Sunderland','Wolverhampton','Hull','Plymouth','Brighton',
+'Cambridge','cambridgeshire','Oxford','Exeter','Norwich','York',
+'Preston','Canterbury','Lancaster','Chester','Milton Keynes',
+'Swansea','Aberdeen','Dundee','Inverness','Newport',
+'Luton','Reading','Watford','Blackpool','Middlesbrough',
+'Bolton','Warrington','Huddersfield','Peterborough','Northampton',
+'Chelmsford','Colchester','Ipswich','Slough','Basildon',
+'Woking','Crawley','Bournemouth','Poole','Bath',
+'Gloucester','Hereford','Carlisle','Wakefield','Telford',
+'Doncaster','Rotherham','Barnsley','Oldham','Wigan',
+'Burnley','Blackburn','Stockport','Swindon','Hastings'
+  ]
+};
+
+if (places.length) {
+    places = places.flatMap(p => EXPANSIONS[p.toLowerCase()] || [p]);
+  }
+
+  // keywords
+  const keywords = rawKeywords
+    ? rawKeywords.split(',').map(s=>s.trim()).filter(Boolean)
+    : [];
+
+  const risks = [];
+  for (let i=0;i<riskSel.options.length;i++){
+    if(riskSel.options[i].selected){
+      risks.push(riskSel.options[i].value);
+    }
+  }
+  if(!risks.length){
+    alert('Please pick at least one risk level.');
+    return;
+  }
+
+  const feeds = loadFeeds();
+  const liveMode = !!liveCheck.checked;
+	
+  if(editingFeedId){
+    // update existing
+    const idx = feeds.findIndex(f=>f.id===editingFeedId);
+    if(idx>=0){
+      feeds[idx].places = places;
+      feeds[idx].risks  = risks;
+	  feeds[idx].useLive = liveMode;
+	  feeds[idx].keywords = keywords;
+    }
+    saveFeeds(feeds);
+  } else {
+    // create new
+    const id = 'feed-' + Date.now().toString(36);
+    feeds.push({ id, places, risks, useLive: liveMode, keywords });
+  }
+  saveFeeds(feeds);
+  closeFeedModal();
+  renderFeeds();
+});
+
+// -------------------- CARD RENDER --------------------
+async function renderFeeds(){
+  const grid = document.getElementById('feedsGrid');
+
+  // use let (we mutate this below)
+  let feeds = loadFeeds();
+  if (!Array.isArray(feeds)) feeds = [];
+
+// Auto-seed several useful starters if none exist
+if (feeds.length === 0){
+  const starters = [
+    { id: 'seed-global', title: 'Global (live)', places: ['global'],  risks: ['high','med'], useLive: true  },
+    { id: 'seed-eu',     title: 'Europe (live)', places: ['eu'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-uk',     title: 'UK (live)',     places: ['uk'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-usa',    title: 'US (live)',     places: ['us'],      risks: ['high','med'], useLive: true  },
+  ];
+
+  // persist (title is only for display – we derive label from places below)
+  saveFeeds(starters.map(s => ({
+    id: s.id, places: s.places, risks: s.risks, useLive: s.useLive,
+    // keywords left empty by default
+  })));
+
+  feeds = loadFeeds();
+}
+
+  grid.innerHTML = '';
+
+  for (const feed of feeds){
+    const risksLabel  = (feed.risks||[]).join(', ');
+
+    const card = document.createElement('section');
+    card.className = 'feed-card';
+    card.dataset.id = feed.id;
+
+const keywordsLine = renderKeywordsLine(feed.keywords || []);
+const prettyName =
+  (feed.id && feed.id.startsWith('seed-')) ? (
+    feed.id==='seed-global' ? 'Global (live)' :
+    feed.id==='seed-eu'     ? 'Europe (live)' :
+    feed.id==='seed-uk'     ? 'UK (live)' :
+    feed.id==='seed-usa'    ? 'US (live)' :
+    null
+  ) : null;
+
+const citiesLabel = prettyName ?? (feed.places || []).join(', ');  
+	  
+       card.innerHTML = `
+      <div class="feed-head">
+        <div class="feed-head-left">
+          <div class="feed-city">${citiesLabel}</div>
+          <div style="margin-top:4px;font-size:12px;color:${feed.risks.includes('high')?'#ff5a5f':feed.risks.includes('med')?'#f0b429':'#33c48d'};">
+            Watching: ${risksLabel}
+          </div>
+          <div id="feedMeta-${feed.id}" class="feed-head-meta">
+            <!-- stats injected by JS -->
+          </div>
+          ${keywordsLine}
+        </div>
+        <div class="feed-head-right">
+          ${feed.useLive ? `<div class="live-pill"><span class="live-dot"></span><span>LIVE</span></div>` : ``}
+          <div style="display:flex;gap:6px;">
+            <button class="btn-ghost btn-edit-feed" data-feedid="${feed.id}">Edit</button>
+            <button class="btn-ghost btn-del-feed" data-feedid="${feed.id}" style="color:#ff5a5f;border-color:#ff5a5f;">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-body"></div>
+
+      <div class="feed-footer">
+        <div class="src">
+          ${feed.useLive ? 'source: live stream' : 'source: simulated source'}
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="refresh" data-feedid="${feed.id}">↻ refresh</div>
+          <button class="btn-ghost btn-earlier" data-feedid="${feed.id}" type="button">
+            Load earlier…
+          </button>
+        </div>
+      </div>
+    `;
+
+    // refresh link
+    card.querySelector('.refresh').addEventListener('click', ()=>{
+      const fresh = loadFeeds().find(f=>f.id===feed.id) || feed;
+      refreshSingleFeedCard(card, fresh);
+    });
+
+    // edit feed (fixed the missing dot before addEventListener)
+    card.querySelector('.btn-edit-feed').addEventListener('click', ()=>{
+      openFeedModal(feed);
+    });
+
+	  // optional: click the topics line to edit
+const kwEl = card.querySelector('.feed-kw');
+if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
+
+        // delete feed
+    card.querySelector('.btn-del-feed').addEventListener('click', ()=>{
+      if (!confirm('Remove this feed?')) return;
+      const updated = loadFeeds().filter(f => f.id !== feed.id);
+      saveFeeds(updated);
+      renderFeeds();
+    });
+
+    // "Load earlier" button – step through 12h → 24h → 48h → 72h for this feed
+    const earlierBtn = card.querySelector('.btn-earlier');
+    if (earlierBtn) {
+      earlierBtn.addEventListener('click', async () => {
+        const step = card.__historyStep || 0;
+        if (step >= HISTORY_WINDOWS.length) {
+          alert('No more earlier history available (up to last 72h).');
+          return;
+        }
+        const hours = HISTORY_WINDOWS[step];
+        card.__historyStep = step + 1;  // next click will go further back
+
+        const params = new URLSearchParams();
+        if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+        if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
+        if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
+        params.set('provider', 'newsdata');
+        params.set('window', String(Math.min(72, hours)));
+
+        const base = 'https://api.cityintelapi.com';
+        const url  = base + '/api/live-news?' + params.toString();
+
+        try {
+          const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          const data = await res.json().catch(() => ({}));
+          const events = Array.isArray(data.events) ? data.events : [];
+
+          // merge into archive and then render full archive timeline
+          archiveMerge(feed.id, events);
+          const merged = loadArchive(feed.id);
+          renderEventsIntoCard(card, merged, feed);
+        } catch (e) {
+          console.error('load earlier failed', e);
+        }
+      });
+    }
+
+    grid.appendChild(card);
+
+	  window.ciScrollToFeed = function(feedId){
+  const card = document.querySelector(`.feed-card[data-id="${feedId}"]`);
+  if (!card) return;
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  card.classList.add('feed-card-pulse');
+  setTimeout(() => card.classList.remove('feed-card-pulse'), 1400);
+};
+
+// 1) try UI cache (prettier, per-feed)
+const uiEvents = loadUiCache(feed.id);
+if (uiEvents && uiEvents.length) {
+  renderEventsIntoCard(card, uiEvents, feed);
+} else {
+  // 2) fallback to your existing 15min cache
+  const cached = loadFeedEvents(feed.id);
+  if (cached && cached.events) {
+    renderEventsIntoCard(card, cached.events, feed);
+  }
+}
+
+  if (window.ciRefreshMapSidebarFeeds) {
+    window.ciRefreshMapSidebarFeeds();
+  }
+
+// 3) always go fetch fresh + schedule
+refreshSingleFeedCard(card, feed);
+	    // after all cards are created / refreshed
+  recomputeGlobalStrip();
+}
+
+  // after all feeds rendered, nudge sidebar once more
+  if (typeof window.ciUpdateMapSidebar === 'function') {
+    window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+  }
+	
+}
+
+// -------------------- INIT --------------------
+renderFeeds();
+
+// ---- link View Full Incident to incident.html ----
+viewFullBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  // Build a minimal object to pass along
+  const incidentData = {
+    title: detailTitleEl.textContent,
+    meta: detailMetaEl.textContent,
+    summary: detailSummaryEl.textContent,
+    location: detailLocationEl.textContent,
+    impact: detailImpactEl.textContent,
+    earlier: detailEarlierEl.textContent,
+    url: window.__lastDetailItem?.url || null,
+    src: window.__lastDetailItem?.src || null,
+    description: window.__lastDetailItem?.description || null,
+    when: window.__lastDetailItem?.when || null,
+    city: window.__lastDetailItem?.city || null,
+    risk: window.__lastDetailItem?.risk || null,
+	lat: window.__lastDetailItem?.lat ?? null,
+    lon: window.__lastDetailItem?.lon ?? null  
+  };
+
+  // Generate a temp ID (could use timestamp)
+  const incId = 'inc-' + Date.now().toString(36);
+
+  // Persist in sessionStorage
+  const all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}');
+  all[incId] = incidentData;
+  sessionStorage.setItem('ci_incidents', JSON.stringify(all));
+
+  // Redirect with ?id=
+  location.href = 'incident.html?id=' + encodeURIComponent(incId);
+});
+
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+
+<script>
+(function(){
+  const el = document.getElementById('liveRiskMap');
+  if (!el || typeof L === 'undefined') return;
+
+window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
+ window.ciLastIncident = window.ciLastIncident || null;
+	
+  const LOOKBACK_DAYS = 180;
+  const palette = {
+    low:   '#6bcf6b',
+    medium:'#f0b429',
+    high:  '#ff5a5f',
+    none:  '#2e3238'
+  };
+
+  const alias = new Map([
+    ['england','united kingdom'],
+    ['scotland','united kingdom'],
+    ['wales','united kingdom'],
+    ['czech republic','czechia'],
+    ['vatican city','holy see']
+  ]);
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  function loadMiniFeeds(){
+    try {
+      const raw = localStorage.getItem('ci_live_feeds_v1');
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ---- Map init ----
+  const WORLD_BOUNDS = L.latLngBounds(
+    [-60, -180],
+    [ 75,  180]
+  );
+
+  // IMPORTANT: use the name "map" everywhere
+  const map = L.map('liveRiskMap', {
+    scrollWheelZoom: false,
+    worldCopyJump: false,
+    maxBounds: WORLD_BOUNDS,
+    maxBoundsViscosity: 1.0,
+    minZoom: 2,
+	zoomControl: false 
+  });
+
+    window.ciLiveMap = map;
+
+L.control.zoom({ position: 'topright' }).addTo(map);
+	
+	map.getContainer().addEventListener('wheel', (e) => {
+  if (e.ctrlKey) {
+    map.scrollWheelZoom.enable();
+  } else {
+    map.scrollWheelZoom.disable();
+  }
+}, { passive: true });
+  map.fitBounds(WORLD_BOUNDS);
+
+  // --- Basemap: Esri World Topographic (cleaner than default OSM tiles) ---
+const baseTiles = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles &copy; Esri',
+    noWrap: true,
+    
+	updateWhenIdle: false,     
+    keepBuffer: 8,             
+
+    detectRetina: true
+	  
+  }).addTo(map);
+
+	map.on('moveend zoomend', () => {
+  baseTiles.redraw();
+}); 
+	
+function fixTiles(){
+  try{
+    map.invalidateSize(true);
+    baseTiles.redraw(); // forces missing rows to repaint
+  }catch(e){}
+}
+
+// after user interaction
+map.on('moveend zoomend dragend', () => setTimeout(fixTiles, 30));
+
+// initial settle
+setTimeout(fixTiles, 120);
+setTimeout(fixTiles, 400);
+setTimeout(fixTiles, 900);
+
+function settleMap(){
+  try{
+    map.invalidateSize(true);
+    baseTiles.redraw();
+  }catch(e){}
+}
+setTimeout(settleMap, 0);
+setTimeout(settleMap, 150);
+setTimeout(settleMap, 600);
+
+   // keep track of current incident highlight on the map
+  let incidentRadiusLayer = null;
+
+  // keep the incident radius/dot above tiles (some browsers repaint tiles over vector layers on interaction)
+  map.on('moveend zoomend', () => {
+    try {
+      if (incidentRadiusLayer && incidentRadiusLayer.eachLayer) {
+        incidentRadiusLayer.eachLayer((lyr) => {
+          if (lyr && typeof lyr.bringToFront === 'function') lyr.bringToFront();
+        });
+      }
+    } catch (e) {}
+  });
+
+  let includePredictive = false;
+  const HISTORY_DAYS = 180;   // lookback for structural risk (~6 months)
+  const parseTime = v =>
+  (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
+
+ function aggregate(alerts){
+  const now        = new Date();
+  const futureEnd  = new Date(+now + windowDays * 86400000);
+  const histStart  = new Date(+now - HISTORY_DAYS * 86400000);
+
+  const by = {};
+
+  for (const a of alerts || []) {
+    if (!a) continue;
+
+    const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
+    if (!dt) continue;
+
+    // Normalise country (same logic as before)
+    let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
+    if (!rawCountry) continue;
+
+    const key = norm(rawCountry);
+    if (alias.has(key)) rawCountry = alias.get(key);
+    const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
+
+    // Normalise risk band
+    const rk = norm(a.risk);
+    let band = 'low';
+    if (rk.startsWith('hi')) band = 'high';
+    else if (rk.startsWith('me')) band = 'medium';
+
+    // Ensure bucket
+    if (!by[country]) {
+      by[country] = {
+        hist:   { low:0, medium:0, high:0 },
+        fut:    { low:0, medium:0, high:0 },
+        mixFuture: false,
+        band: 'low',
+        items: []
+      };
+    }
+    const row = by[country];
+
+    // History window (structural risk)
+    if (dt >= histStart && dt <= now) {
+      row.hist[band]++;
+    }
+
+    // Future window (current/forecast) – honour includePredictive
+    if (dt > now && dt <= futureEnd) {
+      if (!includePredictive && a.predictive === true) {
+        // skip predictive if checkbox is off
+      } else {
+        row.fut[band]++;
+        row.items.push(a);
+      }
+    }
+  }
+
+  // Derive mix + combined band for shading
+  for (const k in by) {
+    const row = by[k];
+
+    // Mixed future risk (for dashed outline)
+    const f = row.fut;
+    row.mixFuture =
+      (f.high > 0 && f.low > 0) ||
+      (f.medium > 0 && f.high > 0) ||
+      (f.medium > 0 && f.low > 0);
+
+    // Scores: history weight 1×, future weight 2×
+    const histHigh   = row.hist.high;
+    const histMed    = row.hist.medium;
+    const histLow    = row.hist.low;
+
+    const futHigh    = row.fut.high;
+    const futMed     = row.fut.medium;
+    const futLow     = row.fut.low;
+
+    const highScore   = 3 * (histHigh + 2 * futHigh);
+    const mediumScore = 2 * (histMed  + 2 * futMed);
+    const lowScore    = 1 * (histLow  + 2 * futLow);
+
+    const totalScore  = highScore + mediumScore + lowScore;
+
+    if (totalScore === 0) {
+      row.band = 'none';
+      continue;
+    }
+
+    const highRatio = highScore / totalScore;
+    const midRatio  = (highScore + mediumScore) / totalScore;
+
+    // Thresholds – tweak to taste
+    if (highRatio >= 0.4 || highScore >= 12) {
+      row.band = 'high';
+    } else if (midRatio >= 0.5 || mediumScore >= 8) {
+      row.band = 'medium';
+    } else {
+      row.band = 'low';
+    }
+  }
+
+  return by;
+}
+
+  // ---- Draw country risk shading ----
+  let countryLayer = null;
+
+  function drawRisk(){
+   const alerts = window.alertsData || [];
+   const agg = aggregate(alerts);   // ✅ same as dashboard
+    if (!agg) return;
+
+    fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+      .then(r => r.json())
+      .then(topology => {
+        const geo = topojson.feature(topology, topology.objects.countries);
+        geo.features.forEach(f => {
+          f.properties.ADMIN = f.properties.name || f.properties.NAME || '';
+        });
+
+        if (countryLayer) countryLayer.remove();
+
+        countryLayer = L.geoJSON(geo, {
+          style: f => {
+  const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+  const row  = agg[name];
+
+  if (!row || row.band === 'none') {
+   return { fillColor: palette.none, fillOpacity:0.15, color:'rgba(0,0,0,0.35)', weight:0.9 };
+  }
+
+  const col = palette[row.band] || palette.low;
+
+  return {
+    fillColor: col,
+    fillOpacity: 0.55,
+    color: row.mixFuture ? '#ffffff' : 'rgba(0,0,0,0.35)',
+    dashArray: row.mixFuture ? '6 3' : null,
+    weight: row.mixFuture ? 1.2 : 0.9
+  };
+},
+          onEachFeature: (f, layer) => {
+  const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+  const row  = agg[name];
+
+  if (!row) {
+    layer.bindPopup(`<b>${name}</b><br>No protest data`);
+    return;
+  }
+
+  const h = row.hist || {low:0, medium:0, high:0};
+  const histTotal = h.low + h.medium + h.high;
+
+  layer.bindPopup(`
+    <b>${name}</b><br>
+    Overall band: <b>${(row.band||'none').toUpperCase()}</b><br>
+    Last 6 months: ${histTotal}
+    <br>
+    High: ${h.high} · Med: ${h.medium} · Low: ${h.low}
+  `);
+          }
+        }).addTo(map);
+      });
+  }
+
+  // ---- Assets & travellers markers ----
+  const assetLayer = L.layerGroup().addTo(map);
+  const travLayer  = L.layerGroup().addTo(map);
+
+  
+  // ---- Panic marker layer ----
+  const panicLayer = L.layerGroup().addTo(map);
+  let panicMarker = null;
+  let panicRing = null;
+  let lastPanicKey = null;
+
+  const panicIcon = L.divIcon({
+    className: 'ci-panic-marker',
+    html: '!',
+    iconSize: [20, 20]
+  });
+
+  async function resolvePanicLatLon(st){
+    if(!st) return null;
+
+    const toNum = (v)=>{
+      if(v === null || v === undefined) return null;
+      if(typeof v === 'number') return Number.isFinite(v) ? v : null;
+      const n = parseFloat(String(v).trim());
+      return Number.isFinite(n) ? n : null;
+    };
+
+    // Accept multiple key names + numeric strings
+    const lat = toNum(st.lat ?? st.latitude ?? st.Lat ?? st.Latitude);
+    const lon = toNum(st.lon ?? st.lng ?? st.longitude ?? st.Lon ?? st.Lng ?? st.Longitude);
+    if(lat != null && lon != null) return {lat, lon, source:'direct'};
+
+    // Sometimes APIs provide "lat,lng" or "lat lon"
+    const llStr = String(st.latlon || st.latLng || st.lat_lng || st.coords || '').trim();
+    if(llStr){
+      const parts = llStr.split(/[,\s]+/).filter(Boolean);
+      if(parts.length >= 2){
+        const a = toNum(parts[0]);
+        const b = toNum(parts[1]);
+        if(a != null && b != null) return {lat:a, lon:b, source:'direct_str'};
+      }
+    }
+
+    const loc = String(st.location || st.loc || st.place || '').trim();
+    if(loc){
+      // If location itself looks like "lat, lon" (panic alarm page can set this)
+      const coordParts = loc.split(/[,\s]+/).filter(Boolean);
+      if(coordParts.length >= 2){
+        const a = toNum(coordParts[0]);
+        const b = toNum(coordParts[1]);
+        if(a != null && b != null){
+          return {lat:a, lon:b, source:'location_coords'};
+        }
+      }
+
+      const key = 'panic:' + loc.toLowerCase();
+      if(key === lastPanicKey && panicMarker){
+        const ll = panicMarker.getLatLng();
+        return {lat: ll.lat, lon: ll.lng, source:'cache'};
+      }
+
+      // Try backend geocoder first (if available), then fall back to Nominatim.
+      try{
+        let g = await backendGeocodeLookup(loc);
+        if(!g) g = await nominatimGeocodeLookup(loc);
+        if(g && toNum(g.lat) != null && toNum(g.lon) != null){
+          const glat = toNum(g.lat); const glon = toNum(g.lon);
+          lastPanicKey = key;
+          return {lat:glat, lon:glon, source:'geocode'};
+        }
+      }catch(e){}
+    }
+
+    // fallback: use org default city/country if set
+    try{
+      const p = JSON.parse(localStorage.getItem('ci_profile')||'null');
+      const q = [p?.defaultCity, p?.defaultCountry].filter(Boolean).join(', ');
+      if(q){
+        let g = await backendGeocodeLookup(q);
+        if(!g) g = await nominatimGeocodeLookup(q);
+        if(g && toNum(g.lat) != null && toNum(g.lon) != null){
+          const glat = toNum(g.lat); const glon = toNum(g.lon);
+          return {lat:glat, lon:glon, source:'profile'};
+        }
+      }
+    }catch(e){}
+
+    return null;
+  }
+
+  async function setPanicOnMap(st){
+    panicLayer.clearLayers();
+    panicMarker = null;
+    panicRing = null;
+
+    if(!st || !st.active) return;
+
+    const ll = await resolvePanicLatLon(st);
+    if(!ll) return;
+    window.__ciPanicResolved = { lat: ll.lat, lon: ll.lon };
+
+    const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
+    const when = formatPanicWhen(whenRaw);
+    const loc = String(st.location || st.loc || '').trim();
+    const who = String(st.name || st.actorName || st.fullName || '').trim();
+
+    const labelBits = [];
+    if(who) labelBits.push(escapeHtml(who));
+    labelBits.push('Panic alarm');
+    if(loc) labelBits.push('at ' + escapeHtml(loc));
+    if(when) labelBits.push(escapeHtml(when));
+
+    const popup = `<div style="min-width:220px">
+      <div style="font-weight:800;margin-bottom:6px;color:#fff">🚨 ${labelBits.join(' ')}</div>
+      <div style="opacity:.9;font-size:12px;color:#d1d5db">Lat ${ll.lat.toFixed(4)}, Lon ${ll.lon.toFixed(4)}</div>
+    </div>`;
+
+    panicMarker = L.marker([ll.lat, ll.lon], { icon: panicIcon, zIndexOffset: 2000 }).addTo(panicLayer);
+    panicMarker.bindPopup(popup);
+
+    panicRing = L.circle([ll.lat, ll.lon], {
+      radius: 800,
+      color: '#ff2d2d',
+      weight: 2,
+      fillColor: '#ff2d2d',
+      fillOpacity: 0.14
+    }).addTo(panicLayer);
+
+    // gentle pulse
+    let dir = 1;
+    let r = 800;
+    const id = setInterval(()=>{
+      if(!panicRing || !map) { clearInterval(id); return; }
+      r += dir*80;
+      if(r > 1400) dir = -1;
+      if(r < 800) dir = 1;
+      try{ panicRing.setRadius(r); }catch(e){}
+    }, 700);
+
+    // keep a reference so we can stop pulse when cleared
+    panicRing._ciPulseInterval = id;
+  }
+
+  window.CIPanicMap = {
+    setState: async (st) => {
+      try { await setPanicOnMap(st); } catch(e) {}
+    }
+  };
+  // Apply latest panic state (if poller ran before map was ready)
+  try { if (window.__ciPanicState) window.CIPanicMap.setState(window.__ciPanicState); } catch(e) {}
+
+
+  // ---- Hotel clustering layer (travellers at same hotel, even if coords differ) ----
+  const hotelLayer = L.layerGroup().addTo(map);
+
+  function hotelKey(t){
+    const h = String(t.hotel || t.hotelName || t.accommodation || '').trim().toLowerCase();
+    if(!h) return '';
+    const c = String(t.city || '').trim().toLowerCase();
+    const k = String(t.country || '').trim().toLowerCase();
+    return [h, c, k].filter(Boolean).join('|');
+  }
+
+  function refreshHotelClusters(travByCoord){
+    hotelLayer.clearLayers();
+
+    const travellers = (window.CITravellers || []).map(t => { const c = parseLatLonFromAny(t); return c ? Object.assign({}, t, c) : null; }).filter(Boolean);
+    if(!travellers.length) return;
+
+    const groups = new Map();
+    travellers.forEach(t=>{
+      const key = hotelKey(t);
+      if(!key) return;
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(t);
+    });
+
+    groups.forEach((arr, key)=>{
+      if(arr.length < 2) return; // only show true clusters
+
+      const avgLat = arr.reduce((s,t)=>s+t.lat,0)/arr.length;
+      const avgLon = arr.reduce((s,t)=>s+t.lon,0)/arr.length;
+
+      const hotelName = String(arr[0].hotel || arr[0].hotelName || arr[0].accommodation || 'Hotel').trim();
+      const where = [arr[0].city, arr[0].country].filter(Boolean).join(', ');
+
+      const icon = L.divIcon({
+        className: 'trav-group-icon',
+        html: `<div class="trav-bubble" title="Hotel cluster"><span>${arr.length}</span></div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17]
+      });
+
+      const listHtml = arr.map(t=>{
+        const name = escapeHtml(String(t.name || t.fullName || t.traveller || t.email || 'Traveller'));
+        const role = escapeHtml(String(t.role || ''));
+        const room = escapeHtml(String(t.room || t.roomNumber || ''));
+        const dates = [t.checkIn || t.from, t.checkOut || t.to].filter(Boolean).map(escapeHtml).join(' → ');
+        return `<div style="padding:6px 0;border-top:1px solid rgba(255,255,255,.08)">
+          <div style="font-weight:800">${name}</div>
+          <div style="opacity:.85;font-size:12px">${[role, room && ('Room ' + room)].filter(Boolean).join(' • ')}</div>
+          ${dates ? `<div style="opacity:.75;font-size:12px">${dates}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      const popup = `<div class="trav-popup">
+        <div class="trav-popup-title">🏨 ${escapeHtml(hotelName)} <span style="opacity:.8;font-weight:700">(${arr.length})</span></div>
+        <div class="small" style="margin-bottom:8px;opacity:.85">${escapeHtml(where)}</div>
+        <div class="trav-popup-list">${listHtml}</div>
+      </div>`;
+
+      L.marker([avgLat, avgLon], { icon, zIndexOffset: 1200 })
+        .addTo(hotelLayer)
+        .bindPopup(popup, { maxWidth: 380 });
+    });
+  }
+
+
+const assetIcon = L.divIcon({
+    className: 'ci-asset-marker',
+    html: 'A',
+    iconSize: [18, 18]
+  });
+  const travIcon  = L.divIcon({
+    className: 'ci-trav-marker',
+    html: 'T',
+    iconSize: [18, 18]
+  });
+
+  let windowDays       = 30;
+	
+  function refreshPresenceMarkers(){
+    assetLayer.clearLayers();
+    travLayer.clearLayers();
+
+	    // Flexible date parsing (supports YYYY-MM-DD, ISO, or dd/mm/yyyy)
+	    const parseDateMs = (v) => {
+	      if (!v) return null;
+	      const s = String(v).trim();
+	      if (!s) return null;
+	      // dd/mm/yyyy
+	      const m = s.match(/^([0-3]\d)\/([0-1]\d)\/(\d{4})$/);
+	      if (m) {
+	        const dd = Number(m[1]), mm = Number(m[2]) - 1, yy = Number(m[3]);
+	        const d = new Date(Date.UTC(yy, mm, dd, 0, 0, 0));
+	        const ms = d.getTime();
+	        return isNaN(ms) ? null : ms;
+	      }
+	      const ms = Date.parse(s);
+	      return isNaN(ms) ? null : ms;
+	    };
+	    const nowMs = Date.now();
+
+    (window.CIAssets || []).forEach(a => {
+      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+      L.marker([a.lat, a.lon], { icon: assetIcon })
+        .addTo(assetLayer)
+        .bindPopup(
+          `<b>${a.name || 'Asset'}</b><br>` +
+          `${[a.city, a.country].filter(Boolean).join(', ')}`
+        );
+    });
+
+    // Group travellers by coordinates so multiple travellers at same hotel/location show as a single marker with a count.
+    const travGroups = new Map();
+    (window.CITravellers || []).forEach(t => {
+      // Only show travellers who are currently travelling (auto-appear on start date, auto-hide after end date)
+      const fromMs = parseDateMs(t.from || t.start || t.startDate);
+      const toMs   = parseDateMs(t.to   || t.end   || t.endDate);
+      if (fromMs && nowMs < fromMs) return;                // not started yet
+      if (toMs   && nowMs > (toMs + 86400000 - 1)) return; // ended (inclusive to end day)
+
+      const lat = (typeof t.lat === 'number') ? t.lat : Number(t.lat);
+      const lon = (typeof t.lon === 'number') ? t.lon : Number(t.lon);
+      if (!isFinite(lat) || !isFinite(lon)) return;
+
+      // Round to reduce "almost same" coordinate drift (e.g. geocoder differences)
+      const key = `${lat.toFixed(4)},${lon.toFixed(4)}`;
+      if (!travGroups.has(key)) travGroups.set(key, { lat, lon, items: [] });
+      travGroups.get(key).items.push(t);
+    });
+
+    for (const { lat, lon, items } of travGroups.values()) {
+      const count = items.length;
+
+      if (count === 1) {
+        const t = items[0];
+        L.marker([lat, lon], { icon: travIcon })
+          .addTo(travLayer)
+          .bindPopup(
+            `<b>${t.name || 'Traveller'}</b><br>` +
+            `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`
+          );
+        continue;
+      }
+
+      const icon = L.divIcon({
+        className: 'trav-group-icon',
+        html: `<div class="trav-bubble"><span>${count}</span></div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 34],
+        popupAnchor: [0, -30],
+      });
+
+      const listHtml = items.map(t => {
+        const roleHotel = `${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`.trim();
+        const from = (t.from || t.start || t.startDate) ? String(t.from || t.start || t.startDate) : '';
+        const to   = (t.to   || t.end   || t.endDate)   ? String(t.to   || t.end   || t.endDate)   : '';
+        const dates = (from || to) ? `<div class="trav-dates">${from}${from && to ? ' → ' : ''}${to}</div>` : '';
+        return `
+          <div class="trav-popup-item">
+            <div class="trav-name">${escapeHtml(t.name || 'Traveller')}</div>
+            ${roleHotel ? `<div class="trav-meta">${escapeHtml(roleHotel)}</div>` : ''}
+            ${dates}
+          </div>
+        `;
+      }).join('');
+
+      L.marker([lat, lon], { icon })
+        .addTo(travLayer)
+        .bindPopup(
+          `<div class="trav-popup">
+             <div class="trav-popup-title">${count} travellers at this location</div>
+             <div class="trav-popup-list">${listHtml}</div>
+           </div>`,
+          { maxWidth: 360 }
+        );
+    }
+    // Hotel clustering (same hotel across travellers)
+    refreshHotelClusters();
+
+}
+
+  // ---- React when an incident is opened (jump to city) ----
+    function pulseAt(lat, lon, label){
+    // centre on the incident
+    map.setView([lat, lon], 12);
+
+    // If the detail drawer is open on desktop, shift the view left so the marker isn't hidden
+    try {
+      const panel = document.getElementById('detailPanel');
+      if (panel && panel.classList.contains('open') && window.innerWidth >= 1100) {
+        const w = panel.getBoundingClientRect().width || 360;
+        // panBy +x moves the map right, therefore the marker appears more to the left (visible).
+        map.panBy([Math.round(w*0.35), 0], {animate: false});
+      }
+    } catch(e) {}
+
+    // clear previous highlight if any
+    if (incidentRadiusLayer) {
+      map.removeLayer(incidentRadiusLayer);
+      incidentRadiusLayer = null;
+    }
+
+    // 1) radius circle (e.g. 15km)
+    const radiusKm = (window.ciIncidentRadiusKm ?? 1);
+    const radiusCircle = L.circle([lat, lon], {
+      radius: radiusKm * 1000,           // metres
+      color: '#ff4d4d',
+      weight: 1.5,
+      opacity: 0.9,
+      dashArray: '4 4',
+      fillColor: '#ff4d4d',
+      fillOpacity: 0.15
+    });
+
+    // 2) central dot (your existing pulse marker)
+    const centreDot = L.circleMarker([lat, lon], {
+      radius: 6,
+      color: '#ff4d4d',
+      weight: 2,
+      fillColor: '#ff4d4d',
+      fillOpacity: 0.9
+    });
+
+    // group them so we can remove in one go
+    incidentRadiusLayer = L.layerGroup([radiusCircle, centreDot]).addTo(map);
+
+    if (label) {
+      centreDot.bindPopup(label).openPopup();
+    }
+
+    // optional: fade out after 300s
+    setTimeout(() => {
+      if (incidentRadiusLayer) {
+        map.removeLayer(incidentRadiusLayer);
+        incidentRadiusLayer = null;
+      }
+    }, 30_0000);
+  }
+
+  window.addEventListener('ci:jumpToIncident', async e => {
+    const d = e.detail || {};
+    const lat = typeof d.lat === 'number' ? d.lat : null;
+    const lon = typeof d.lon === 'number' ? d.lon : null;
+
+    if (lat != null && lon != null) {
+       window.ciLastIncident = { lat, lon, label: 'Current incident' };
+		pulseAt(lat, lon, 'Current incident');
+      return;
+    }
+
+    const city    = (d.city || '').toString().trim().toLowerCase();
+    const country = (d.country || '').toString().trim().toLowerCase();
+    const pts = [];
+
+    (window.CIAssets || []).forEach(a => {
+      if (typeof a.lat !== 'number' || typeof a.lon !== 'number') return;
+      if (city && (a.city || '').toLowerCase() !== city) return;
+      if (country && (a.country || '').toLowerCase() !== country) return;
+      pts.push([a.lat, a.lon]);
+    });
+
+    (window.CITravellers || []).forEach(t => {
+      if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+      if (city && (t.city || '').toLowerCase() !== city) return;
+      if (country && (t.country || '').toLowerCase() !== country) return;
+      pts.push([t.lat, t.lon]);
+    });
+
+    if (pts.length) {
+      const avgLat = pts.reduce((s,p)=>s+p[0],0)/pts.length;
+      const avgLon = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+      window.ciLastIncident = {
+        lat: avgLat,
+        lon: avgLon,
+        label: 'Incident city (assets/travellers nearby)'
+      };
+      pulseAt(avgLat, avgLon, 'Incident city (assets/travellers nearby)');
+    } else {
+      // Smarter fallback when no GPS: geocode city/country/location via backend and cache in sessionStorage
+      const loc = (d.location || d.loc || d.place || '').toString().trim();
+      const q = loc || [d.city, d.country].filter(Boolean).join(', ');
+      if (q) {
+        const cacheKey = 'ci_geo:' + q.toLowerCase();
+        try {
+          const cached = sessionStorage.getItem(cacheKey);
+          if (cached) {
+            const obj = JSON.parse(cached);
+            if (obj && typeof obj.lat === 'number' && typeof obj.lon === 'number') {
+              window.ciLastIncident = { lat: obj.lat, lon: obj.lon, label: 'Incident location (cached)' };
+              pulseAt(obj.lat, obj.lon, 'Incident location (cached)');
+              return;
+            }
+          }
+        } catch(e){}
+        try {
+          let g = await backendGeocodeLookup(q);
+        if(!g) g = await nominatimGeocodeLookup(q);
+          if (g && typeof g.lat === 'number' && typeof g.lon === 'number') {
+            try { sessionStorage.setItem(cacheKey, JSON.stringify({ lat: g.lat, lon: g.lon, t: Date.now() })); } catch(e){}
+            window.ciLastIncident = { lat: g.lat, lon: g.lon, label: 'Incident location (geocoded)' };
+            pulseAt(g.lat, g.lon, 'Incident location (geocoded)');
+          }
+        } catch(e){}
+      }
+    }
+  });
+
+  // === SIDEBAR FEED LIST RENDERER =========================
+  window.ciUpdateMapSidebar = function(summaryMap){
+    const host = document.getElementById('liveMapFeedsList');
+    if (!host) return;
+
+    const summaries = Object.values(summaryMap || {});
+    host.innerHTML = '';
+
+    if (!summaries.length){
+      host.innerHTML = '<div class="live-map-feed-empty">No feeds configured yet.</div>';
+      return;
+    }
+
+    // sort: highest total first
+    summaries.sort((a,b) => (b.total||0) - (a.total||0));
+
+    summaries.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'live-map-feed-row';
+      row.dataset.feedid = s.id;
+      row.dataset.feedlabel = s.label;
+
+      const openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.className = 'feed-open-btn';
+      openBtn.innerHTML = `
+        <span class="feed-play">▶</span>
+        <span class="feed-name">${escapeHtml(s.label)}</span>
+        <span class="feed-dot red"></span><span>${s.high}</span>
+        <span class="feed-dot amber"></span><span>${s.med}</span>
+        <span class="feed-dot green"></span><span>${s.low}</span>
+        <span class="feed-count">${s.total} alerts</span>
+      `;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'live-map-feed-remove';
+      removeBtn.title = 'Remove feed';
+      removeBtn.setAttribute('aria-label', `Remove feed ${s.label}`);
+      removeBtn.textContent = '×';
+
+      row.appendChild(openBtn);
+      row.appendChild(removeBtn);
+      host.appendChild(row);
+    });
+
+    if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
+  };
+window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+
+  // "+ Add feed" button in sidebar
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#liveMapAddFeedBtn');
+    if (!btn) return;
+    if (typeof window.ciOpenAddFeed === 'function') {
+      window.ciOpenAddFeed();
+    } else {
+      // fallback to main button
+      const mainBtn = document.getElementById('btnAddFeed');
+      if (mainBtn) mainBtn.click();
+    }
+  });
+
+function redrawIncidentRadius(){
+    if (!window.ciLastIncident) return;
+    const { lat, lon, label } = window.ciLastIncident;
+    if (typeof lat !== 'number' || typeof lon !== 'number') return;
+    pulseAt(lat, lon, label || 'Current incident');
+  }
+
+  // optional export so the radius pills can trigger a redraw
+  window.ciRedrawIncidentRadius = redrawIncidentRadius;
+
+// ===== Map sidebar: switch between Feeds panel and Alerts panel =====
+(function setupMapSidebarAlerts(){
+  const feedsPanel  = document.getElementById('mapFeedsPanel');
+  const alertsPanel = document.getElementById('mapAlertsPanel');
+  const alertsTitle = document.getElementById('mapAlertsTitle');
+  const alertsList  = document.getElementById('mapAlertsList');
+  const backBtn     = document.getElementById('mapAlertsBackBtn');
+
+  if (!feedsPanel || !alertsPanel || !alertsTitle || !alertsList || !backBtn) return;
+
+  let openFeedId = null;
+
+  // --- Operator queues (Escalated / Monitoring / Cleared) ----------------
+  function collectAllCachedEvents(){
+    const feeds = (typeof loadFeeds === 'function') ? loadFeeds() : [];
+    const out = [];
+    feeds.forEach(f=>{
+      const evs = getFeedEvents(f.id) || [];
+      evs.forEach(ev=>{
+        // clone lightweight with feed context
+        const item = Object.assign({}, ev);
+        item._feedId = f.id;
+        item._feedLabel = (f.places && f.places.length) ? f.places.join(', ') :
+                          (f.keywords && f.keywords.length) ? f.keywords.join(', ') :
+                          (f.name || f.id || 'Feed');
+        out.push(item);
+      });
+    });
+    // sort newest first
+    out.sort((a,b)=>(Date.parse(b.when)||0)-(Date.parse(a.when)||0));
+    return out;
+  }
+
+  function filterByDisposition(list, st){
+    const want = String(st||'').toLowerCase();
+    if (!want) return list || [];
+    return (list||[]).filter(ev => getDisposition(ev) === want);
+  }
+
+  function renderQueueList(status){
+    const st = String(status||'').toLowerCase();
+    const label =
+      st === 'escalated' ? 'Escalated queue' :
+      st === 'monitoring' ? 'Monitoring queue' :
+      st === 'cleared' ? 'Cleared queue' :
+      'Queue';
+
+    const all = collectAllCachedEvents();
+    const items = filterByDisposition(all, st).slice(0, 30);
+
+    openFeedId = '__queue__' + st;
+    window.__ciOpenFeedId = openFeedId;
+
+    alertsTitle.textContent = label;
+    alertsList.innerHTML = '';
+
+    if (!items.length){
+      alertsList.innerHTML = `<div class="map-alert-empty">No items in ${label.toLowerCase()}.</div>`;
+      showAlerts();
+      return;
+    }
+
+    const rows = [];
+    const selectEvent = async (ev, rowEl) => {
+      rows.forEach(r => r.classList.remove('active'));
+      if (rowEl) rowEl.classList.add('active');
+
+      // Prefer opening detail with the originating feed's list if possible
+      const related = (ev._feedId) ? getFeedEvents(ev._feedId) : items;
+      if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, related);
+      else if (typeof openDetailPanel === 'function') openDetailPanel(ev, related);
+
+      // scroll to originating feed card if we know it
+      if (ev._feedId && typeof window.ciScrollToFeed === 'function') {
+        window.ciScrollToFeed(ev._feedId);
+      }
+
+      const ll = await CIGeocode.resolveEventLatLng(ev);
+      if (ll){
+        document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+          detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
+        }));
+      }
+    };
+
+    items.forEach(ev=>{
+      const title = ev.title || ev.summary || ev.description || '(no title)';
+      const city  = ev.city || 'Unknown';
+      const when  = ev.when ? fmt(ev.when) : '';
+
+      const row = document.createElement('div');
+      row.className = 'map-alert-item';
+      row.setAttribute('data-alertkey', alertKey(ev));
+      row.innerHTML = `
+        <div class="map-alert-top">
+          <div class="map-alert-title">${safe(title)}</div>
+          <div class="map-alert-when">${safe(when)}</div>
+        </div>
+        <div class="map-alert-meta">
+          ${riskPill(ev.risk)}
+          ${renderStatusPill(getDisposition(ev))}
+          <span style="opacity:.85;">${safe(city)}</span>
+        </div>
+      `;
+      row.addEventListener('click', ()=>selectEvent(ev, row));
+      alertsList.appendChild(row);
+      rows.push(row);
+    });
+
+    showAlerts();
+
+    // auto-select first
+    const pickRow = rows[0];
+    if (pickRow) requestAnimationFrame(()=>selectEvent(items[0], pickRow));
+  }
+
+  function updateQueueCounts(){
+    const all = collectAllCachedEvents();
+    const esc = filterByDisposition(all, 'escalated').length;
+    const mon = filterByDisposition(all, 'monitoring').length;
+    const clr = filterByDisposition(all, 'cleared').length;
+
+    const a = document.getElementById('qEscalated');
+    const b = document.getElementById('qMonitoring');
+    const c = document.getElementById('qCleared');
+    if (a) a.textContent = esc;
+    if (b) b.textContent = mon;
+    if (c) c.textContent = clr;
+  }
+  window.ciUpdateQueueCounts = updateQueueCounts;
+
+  // click handlers for queue buttons
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.queue-btn');
+    if (!btn) return;
+    const st = btn.getAttribute('data-queue');
+    if (!st) return;
+    renderQueueList(st);
+  });
+
+
+
+  // --- helpers -----------------------------------------------------------
+  function extractLatLon(ev){
+    // Normalised fields
+    if (typeof ev?.lat === 'number' && typeof ev?.lon === 'number') return { lat: ev.lat, lon: ev.lon };
+    if (typeof ev?.latitude === 'number' && typeof ev?.longitude === 'number') return { lat: ev.latitude, lon: ev.longitude };
+
+    // Some providers send GeoJSON as a string
+    try {
+      const g = typeof ev?.geometry === 'string' ? JSON.parse(ev.geometry) : ev?.geometry;
+      if (g?.type === 'Point' && Array.isArray(g.coordinates) && g.coordinates.length >= 2) {
+        const [lon, lat] = g.coordinates;
+        if (typeof lat === 'number' && typeof lon === 'number') return { lat, lon };
+      }
+    } catch(_e){}
+
+    return null;
+  }
+
+// --- Step 1: coordinate fallback + geocode cache (for live feeds that have no geometry) ---
+const CIGeocode = (() => {
+  const CACHE_KEY = "ci_geocode_cache_v1";
+  const mem = new Map();
+
+  function norm(s){
+    return String(s || "").trim().toLowerCase();
+  }
+
+  function loadCache(){
+    try{
+      const raw = localStorage.getItem(CACHE_KEY);
+      if(!raw) return {};
+      const obj = JSON.parse(raw);
+      return (obj && typeof obj === "object") ? obj : {};
+    }catch(_){ return {}; }
+  }
+
+  function saveCache(obj){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(obj)); }catch(_){}
+  }
+
+  function pickCityText(ev){
+    return (ev && (ev.city || ev.event_location_name || ev.location || ev.event_location || ev.caption || ev.title)) || "";
+  }
+
+  function findFromAssetsOrTravellers(city){
+    const key = norm(city);
+    if(!key) return null;
+
+    const asset = (window.CIAssets || []).find(a => norm(a.city) === key || norm(a.location) === key);
+    if(asset && Number.isFinite(+asset.lat) && Number.isFinite(+asset.lng)){
+      return { lat:+asset.lat, lon:+asset.lng, source:"asset" };
+    }
+
+    const trav = (window.CITravellers || []).find(t => norm(t.city) === key || norm(t.location) === key);
+    if(trav && Number.isFinite(+trav.lat) && Number.isFinite(+trav.lng)){
+      return { lat:+trav.lat, lon:+trav.lng, source:"traveller" };
+    }
+
+    return null;
+  }
+
+    async function backendGeocodeLookup(query){
+    // Disabled by default (prevents 404 noise if backend endpoint isn't deployed). Set window.CI_GEOCODE_BACKEND = true to enable.
+    if(!window.CI_GEOCODE_BACKEND) return null;
+    // Uses CityIntel API/Worker geocode endpoint (avoids browser CORS issues vs calling Nominatim directly)
+    // You can override the base via window.CI_API_BASE (e.g. "https://api.cityintelapi.com")
+    const base = (window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+    const url = `${base}/api/geocode?q=${encodeURIComponent(query)}`;
+
+    try {
+      const res = await fetch(url, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if(!res.ok) return null;
+
+      const data = await res.json();
+
+      // Support a few possible shapes:
+      // { lat, lng } OR { lat, lon } OR { coordinates: [lng, lat] } OR GeoJSON Feature
+      let lat = null, lng = null;
+
+      if (data && typeof data === 'object') {
+        if (typeof data.lat === 'number' && typeof data.lng === 'number') {
+          lat = data.lat; lng = data.lng;
+        } else if (typeof data.lat === 'number' && typeof data.lon === 'number') {
+          lat = data.lat; lng = data.lon;
+        } else if (Array.isArray(data.coordinates) && data.coordinates.length >= 2) {
+          lng = Number(data.coordinates[0]); lat = Number(data.coordinates[1]);
+        } else if (data.type === 'Feature' && data.geometry && Array.isArray(data.geometry.coordinates)) {
+          lng = Number(data.geometry.coordinates[0]); lat = Number(data.geometry.coordinates[1]);
+        } else if (Array.isArray(data) && data.length) {
+          const first = data[0];
+          if (first && typeof first.lat === 'number' && typeof first.lng === 'number') {
+            lat = first.lat; lng = first.lng;
+          } else if (first && typeof first.lat === 'string' && typeof first.lon === 'string') {
+            lat = Number(first.lat); lng = Number(first.lon);
+          } else if (first && first.geometry && Array.isArray(first.geometry.coordinates)) {
+            lng = Number(first.geometry.coordinates[0]); lat = Number(first.geometry.coordinates[1]);
+          }
+        }
+      }
+
+      if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+
+  async function nominatimGeocodeLookup(query){
+    // Fallback geocoder (public Nominatim). Used only if backend /api/geocode is unavailable.
+    // Keep requests minimal + cache results.
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+    try{
+      const res = await fetch(url, { headers: { 'Accept': 'application/json', 'Accept-Language': 'en' } });
+      if(!res.ok) return null;
+      const arr = await res.json();
+      if(Array.isArray(arr) && arr[0] && arr[0].lat && arr[0].lon){
+        const lat = parseFloat(arr[0].lat);
+        const lon = parseFloat(arr[0].lon);
+        if(Number.isFinite(lat) && Number.isFinite(lon)) return {lat, lon};
+      }
+    }catch(e){}
+    return null;
+  }
+
+
+  
+  async function resolveCityLatLng(cityText){
+    const qRaw = String(cityText || '').trim();
+    if(!qRaw) return null;
+
+    // 1) If coords embedded like "51.5123, -0.0262"
+    const m = qRaw.match(/(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/);
+    if(m){
+      const a = parseFloat(m[1]); const b = parseFloat(m[2]);
+      // assume "lat, lon"
+      if(Number.isFinite(a) && Number.isFinite(b)){
+        if(a >= -90 && a <= 90 && b >= -180 && b <= 180) return {lat:a, lon:b, source:"inline"};
+        // maybe "lon, lat"
+        if(b >= -90 && b <= 90 && a >= -180 && a <= 180) return {lat:b, lon:a, source:"inline"};
+      }
+    }
+
+    const q = norm(qRaw);
+
+    // 2) in-memory cache
+    if(mem.has(q)) return mem.get(q);
+
+    // 3) persistent cache
+    const store = loadCache();
+    if(store[q] && Number.isFinite(store[q].lat) && Number.isFinite(store[q].lon)){
+      const hit = { lat: store[q].lat, lon: store[q].lon, source: store[q].source || "cache" };
+      mem.set(q, hit);
+      return hit;
+    }
+
+    // 4) Try known org assets/travellers as a centroid hint
+    const fromPresence = findFromAssetsOrTravellers(qRaw);
+    if(fromPresence && Number.isFinite(fromPresence.lat) && Number.isFinite(fromPresence.lon)){
+      const hit = { lat: fromPresence.lat, lon: fromPresence.lon, source: fromPresence.source || "presence" };
+      mem.set(q, hit);
+      store[q] = { lat: hit.lat, lon: hit.lon, source: hit.source, ts: Date.now() };
+      saveCache(store);
+      return hit;
+    }
+
+    // 5) Backend geocode (if available)
+    const b = await backendGeocodeLookup(qRaw);
+    if(b && Number.isFinite(b.lat) && Number.isFinite(b.lng)){
+      const hit = { lat: b.lat, lon: b.lng, source: "backend" };
+      mem.set(q, hit);
+      store[q] = { lat: hit.lat, lon: hit.lon, source: hit.source, ts: Date.now() };
+      saveCache(store);
+      return hit;
+    }
+
+    // 6) Nominatim fallback
+    const n = await nominatimGeocodeLookup(qRaw);
+    if(n && Number.isFinite(n.lat) && Number.isFinite(n.lon)){
+      const hit = { lat: n.lat, lon: n.lon, source: "nominatim" };
+      mem.set(q, hit);
+      store[q] = { lat: hit.lat, lon: hit.lon, source: hit.source, ts: Date.now() };
+      saveCache(store);
+      return hit;
+    }
+
+    return null;
+  }
+
+async function resolveEventLatLng(ev){
+    // First: existing geometry / coordinates
+    const direct = extractLatLon(ev);
+    if(direct) return { ...direct, source: "event" };
+
+    // Try a city-ish string
+    const cityText = pickCityText(ev);
+    // heuristic: if "Toronto, Canada" etc -> keep as-is, nominatim is fine
+    const resolved = await resolveCityLatLng(cityText);
+    if(resolved) return resolved;
+
+    // as a last resort, try just the 'city' field if caption/title were noisy
+    if(ev && ev.city && ev.city !== cityText){
+      const resolved2 = await resolveCityLatLng(ev.city);
+      if(resolved2) return resolved2;
+    }
+
+    return null;
+  }
+
+  return { resolveEventLatLng };
+})();
+
+  function jumpToEvent(ev){
+    const ll = extractLatLon(ev);
+    if (!ll) return false;
+    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', { detail: { lat: ll.lat, lon: ll.lon, zoom: 12 } }));
+    return true;
+  }
+
+  function pickDefaultEvent(events){
+    if (!Array.isArray(events) || events.length === 0) return null;
+    // Prefer newest event with coordinates; otherwise just newest.
+    for (const ev of events) {
+      if (extractLatLon(ev)) return ev;
+    }
+    return events[0];
+  }
+
+  function showFeeds(){
+    alertsPanel.style.display = 'none';
+    feedsPanel.style.display  = 'block';
+    alertsList.innerHTML = '';
+    openFeedId = null;
+    window.__ciOpenFeedId = null;
+	setTimeout(() => {
+  try { map.invalidateSize(true); } catch(e){}
+}, 50);
+  
+  }
+
+  function showAlerts(){
+    feedsPanel.style.display  = 'none';
+    alertsPanel.style.display = 'flex'; // important for flex layout
+    setTimeout(() => {
+  try { map.invalidateSize(true); } catch(e){}
+}, 50);
+	  
+  }
+
+  backBtn.addEventListener('click', showFeeds);
+
+  function riskPill(risk){
+    const r = (risk || '').toLowerCase();
+    if (r === 'high') return `<span class="map-risk-pill map-risk-high">HIGH</span>`;
+    if (r === 'med' || r === 'medium') return `<span class="map-risk-pill map-risk-med">MED</span>`;
+    return `<span class="map-risk-pill map-risk-low">LOW</span>`;
+  }
+
+  function safe(s){
+    return String(s || '').replace(/[&<>"']/g, m =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function fmt(iso){
+    try{
+      return new Date(iso).toLocaleString('en-GB', {
+        timeZone:'Europe/London',
+        day:'2-digit', month:'short',
+        hour:'2-digit', minute:'2-digit',
+        hour12:false
+      }).replace(',', '');
+    } catch { return iso || ''; }
+  }
+
+function getFeedEvents(feedId){
+  try {
+    // 1) 7-day archive
+    if (typeof window.loadArchive === 'function') {
+      const a = window.loadArchive(feedId);
+      if (Array.isArray(a) && a.length) return a;
+    }
+    // (fallback if loadArchive is not attached to window for any reason)
+    if (typeof loadArchive === 'function') {
+      const a = loadArchive(feedId);
+      if (Array.isArray(a) && a.length) return a;
+    }
+
+    // 2) per-feed UI cache
+    if (typeof window.loadUiCache === 'function') {
+      const u = window.loadUiCache(feedId);
+      if (Array.isArray(u) && u.length) return u;
+    }
+    if (typeof loadUiCache === 'function') {
+      const u = loadUiCache(feedId);
+      if (Array.isArray(u) && u.length) return u;
+    }
+
+    // 3) 15-min cache
+    if (typeof window.loadFeedEvents === 'function') {
+      const c = window.loadFeedEvents(feedId);
+      if (c && Array.isArray(c.events) && c.events.length) return c.events;
+    }
+    if (typeof loadFeedEvents === 'function') {
+      const c = loadFeedEvents(feedId);
+      if (c && Array.isArray(c.events) && c.events.length) return c.events;
+    }
+  } catch (e) {
+    console.warn('getFeedEvents failed', e);
+  }
+
+  return [];
+}
+
+  function openFeedAlerts(feedId, label){
+    // ✅ toggle: clicking the same feed again closes back to feeds
+    const alertsOpen = alertsPanel.style.display !== 'none';
+    if (alertsOpen && openFeedId === feedId){
+      showFeeds();
+      return;
+    }
+    openFeedId = feedId;
+    window.__ciOpenFeedId = feedId;
+
+    const events = getFeedEvents(feedId)
+      .slice()
+      .sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0))
+      // Default view: only show untriaged in the feed list (triaged live in Operator queues)
+      .filter(ev => (getDisposition(ev) || 'untriaged') === 'untriaged')
+      .slice(0, 12);
+
+    alertsTitle.textContent = label ? `Latest incidents — ${label}` : 'Latest incidents';
+    alertsList.innerHTML = '';
+
+    if (!events.length){
+      alertsList.innerHTML = `<div class="map-alert-empty">No cached alerts yet — give it a refresh.</div>`;
+      showAlerts();
+      return;
+    }
+
+    const rows = [];
+
+const selectEvent = async (ev, rowEl) => {
+  // highlight selection
+  rows.forEach(r => r.classList.remove('active'));
+  if (rowEl) rowEl.classList.add('active');
+
+  // open right-hand detail panel
+  if (typeof window.openDetailPanel === 'function') window.openDetailPanel(ev, events);
+  else if (typeof openDetailPanel === 'function') openDetailPanel(ev, events);
+
+  // jump map (live feeds sometimes have no geometry; we best-effort geocode the city)
+  const ll = await CIGeocode.resolveEventLatLng(ev);
+  if (ll){
+    document.dispatchEvent(new CustomEvent('ci:jumpToIncident', {
+      detail: { lat: ll.lat, lon: ll.lng, title: ev.title || ev.summary || ev.description || label || '' }
+    }));
+  }
+};
+
+    events.forEach((ev, idx) => {
+      const title = ev.title || ev.summary || ev.description || '(no title)';
+      const city  = ev.city || 'Unknown';
+      const when  = ev.when ? fmt(ev.when) : '';
+
+      const row = document.createElement('div');
+      row.className = 'map-alert-item';
+      row.setAttribute('data-alertkey', alertKey(ev));
+      row.innerHTML = `
+        <div class="map-alert-top">
+          <div class="map-alert-title">${safe(title)}</div>
+          <div class="map-alert-when">${safe(when)}</div>
+        </div>
+        <div class="map-alert-meta">
+          ${riskPill(ev.risk)} ${renderStatusPill(getDisposition(ev))}
+          <span style="opacity:.85;">${safe(city)}</span>
+        </div>
+      `;
+
+      row.addEventListener('click', () => {
+        if (typeof window.ciScrollToFeed === 'function') window.ciScrollToFeed(feedId);
+
+        selectEvent(ev, row);
+      });
+
+      alertsList.appendChild(row);
+      rows.push(row);
+    });
+
+    showAlerts();
+
+    // Default behaviour for live intelligence:
+    // auto-select the most recent alert (prefer one with coordinates).
+    const firstWithCoords = events.findIndex(ev => !!extractLatLon(ev));
+    const pickIndex = firstWithCoords >= 0 ? firstWithCoords : 0;
+    const pickRow = rows[pickIndex];
+    if (pickRow) {
+      // ensure panel is visible before selecting (prevents occasional layout glitches)
+      requestAnimationFrame(() => selectEvent(events[pickIndex], pickRow));
+    }
+  }
+
+  backBtn.addEventListener('click', showFeeds);
+
+  document.addEventListener('click', (e) => {
+    // Remove feed button
+    const removeBtn = e.target.closest('.live-map-feed-remove');
+    if (removeBtn) {
+      const row = removeBtn.closest('.live-map-feed-row');
+      const feedId = row && row.dataset.feedid;
+      const label = (row && row.dataset.feedlabel) || feedId || '';
+      if (feedId && confirm(`Remove feed "${label}"?`)) {
+        if (typeof window.ciRemoveFeedById === 'function') window.ciRemoveFeedById(feedId);
+        // Close any open feed panel and return to feeds list
+        showFeeds();
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    // Open feed (from list row or old style feed button)
+    const row = e.target.closest('.live-map-feed-row');
+    const openBtn = e.target.closest('.feed-open-btn');
+    const btn = e.target.closest('.live-map-feed-btn');
+    if (!row && !btn) return;
+    if (row && !openBtn) return; // ignore clicks that aren't on the open area
+
+    const feedId = (row && row.dataset.feedid) || (btn && btn.dataset.feedid);
+    if (!feedId) return;
+
+    const label = (row && (row.dataset.feedlabel || '')) || (btn ? btn.textContent.trim() : '');
+    openFeedAlerts(feedId, label);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && alertsPanel.style.display !== 'none') showFeeds();
+  });
+
+  // allow your existing feed button code to call this directly
+  window.ciOpenMapFeedAlerts = openFeedAlerts;
+
+  showFeeds();
+})();
+
+  // initial draw
+  drawRisk();
+  refreshPresenceMarkers();
+
+  // refresh markers if assets/travellers change in another tab
+  window.addEventListener('storage', e => {
+    if (e.key === 'ci_assets' || e.key === 'ci_travellers') {
+      setTimeout(() => {
+        try{
+          const a = JSON.parse(localStorage.getItem('ci_assets') || '[]');
+          const t = JSON.parse(localStorage.getItem('ci_travellers') || '[]');
+          if (Array.isArray(a)) window.CIAssets = a;
+          if (Array.isArray(t)) window.CITravellers = t;
+        } catch {}
+        refreshPresenceMarkers();
+      }, 200);
+    }
+  });
+
+  // optional export
+  window.ciLiveMap = map;
+  window.liveMap   = map;
+})();
+
+// When user clicks a feed name in the map legend, jump to that feed card below
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('.legend-feed-link');
+  if (!link) return;
+
+  const feedId = link.getAttribute('data-feedid');
+  if (!feedId) return;
+
+  const card = document.querySelector(`.feed-card[data-id="${feedId}"]`);
+  if (!card) return;
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // brief visual pulse so it's obvious which card we jumped to
+  card.classList.add('feed-card-pulse');
+  setTimeout(() => {
+    card.classList.remove('feed-card-pulse');
+  }, 1500);
+});
+
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const pills = document.querySelectorAll('.radius-pill');
+  if (!pills.length) return;
+
+  pills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const km = Number(btn.getAttribute('data-radius-km')) || 5;
+      window.ciIncidentRadiusKm = km;
+
+      // toggle active state
+      pills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+// NEW: immediately redraw the circle for the last incident
+      if (window.ciRedrawIncidentRadius) {
+        window.ciRedrawIncidentRadius();
+		}
+    });
+  });
+});
+</script>
+
+<!-- auth helpers / admin links -->
+
+<script src="admin-links.js"></script>
+
+
+<!-- Operator Transition Modal -->
+<div class="ci-modal-overlay" id="ciTransitionOverlay" aria-hidden="true">
+  <div class="ci-modal" role="dialog" aria-modal="true" aria-labelledby="ciTransitionTitle">
+    <header>
+      <span id="ciTransitionTitle">Transition form</span>
+      <span class="ci-pill" id="ciTransitionStatusPill">Escalated</span>
+      <div class="ci-modal-meta" id="ciTransitionMeta"></div>
+    </header>
+    <div class="ci-modal-body">
+      <div id="ciTransitionContext" style="font-weight:900;font-size:16px;"></div>
+      <div id="ciTransitionBody" class="ci-form-grid"></div>
+    </div>
+    <footer>
+      <button type="button" class="ci-btn" id="ciTransitionCancel">Cancel</button>
+      <button type="button" class="ci-btn primary" id="ciTransitionSave">Save</button>
+    </footer>
+  </div>
+</div>
+
+</body>
+</html>
