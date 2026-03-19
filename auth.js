@@ -49,7 +49,24 @@
       roleKey: 'master-admin',
       roleLabel: 'Master Admin',
       passHash: 'be9f7196b951dbd1187cd865aebc8c34386e067e241a78e57fd77c736c51c993'
-    }
+    },
+
+
+   'orgadmin@cityintel.com': {
+  name: 'Demo Org Admin',
+  role: 'Org Admin',
+  roleKey: 'org-admin',
+  roleLabel: 'Org Admin',
+  passHash: 'e3a031e5d671abbc246d3d6c9b3911e668d59bfb7e9b342bf5c00aa5b17f5877'
+},
+'operator@cityintel.com': {
+  name: 'Demo Operator',
+  role: 'Operator',
+  roleKey: 'operator',
+  roleLabel: 'Operator',
+  passHash: '8a5b3838f59ae50f645e43fcb107c7b765d9c7341b98506987a382f32c906a55'
+}
+   
   };
 
   // ------------- Role / capability model -------------
