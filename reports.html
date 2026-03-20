@@ -1,10 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script src="auth.js">
+  
+  <script src="auth.js"></script>
+  <script src="auth-guard.js"></script>
+
+<script>
+  CIAuth.requireAuth();
+  if (!CIAuth.isMasterAdmin()) {
+    location.replace('index.html');
+  }
 </script>
-  <script src="auth-guard.js">
-</script>
+
+  
   <script>
   (function pageGuard(){
     const NEED_LOGIN = true;
@@ -369,49 +377,6 @@
     </main>
   </div>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', function(){
-    if (window.CIAuth && typeof CIAuth.injectUserChip === 'function') {
-      CIAuth.injectUserChip(document.getElementById('topActions'));
-    } else {
-      const host = document.getElementById('topActions');
-      if (host) {
-        const initialsOf = (nameOrEmail='CI') => {
-          const s = String(nameOrEmail).trim();
-          if (!s) return 'CI';
-          if (s.includes('@')) return s[0].toUpperCase();
-          const parts = s.split(/\s+/);
-          return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
-        };
-        if (window.CIAuth && typeof CIAuth.isLoggedIn === 'function' && CIAuth.isLoggedIn()) {
-          const u = (typeof CIAuth.who === 'function' ? CIAuth.who() : {}) || {};
-          const initials = initialsOf(u.name || u.email);
-          const role = u.role || 'Member';
-          const isAdmin = String(role).toLowerCase() === 'admin';
-          host.innerHTML = `
-            <div class="user" id="userChip" style="cursor:pointer"><div class="avatar">${initials}</div>${role}</div>
-            <div class="dropdown" id="userMenu">
-              ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
-              <a href="settings.html">Manage Billing</a>
-              <a href="#" id="logoutLink">Log out</a>
-            </div>`;
-          const chip = document.getElementById('userChip');
-          const menu = document.getElementById('userMenu');
-          chip?.addEventListener('click', () => { menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; });
-          document.addEventListener('click', (e) => { if (!host.contains(e.target)) menu.style.display = 'none'; });
-          document.getElementById('logoutLink')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            try { CIAuth.logout(); } catch(_) {}
-            location.href = 'index.html';
-          });
-        }
-      }
-    }
-    if (window.CIAuth && typeof CIAuth.updateSidebarForRole === 'function') {
-      CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
-    }
-  });
-</script>
 
   <script>
   (function(){
@@ -423,43 +388,58 @@
 </script>
 
   <script>
-  (function mountTopActions(){
-    const host = document.getElementById('topActions');
-    if (!host) return;
-    const initialsOf = (nameOrEmail='CI') => {
-      const s = String(nameOrEmail).trim();
-      if (!s) return 'CI';
-      if (s.includes('@')) return s[0].toUpperCase();
-      const parts = s.split(/\s+/);
-      return (parts[0]?.[0]||'C').toUpperCase() + (parts[1]?.[0]||'I').toUpperCase();
-    };
-    if (window.CIAuth && CIAuth.isLoggedIn()) {
-      const u = CIAuth.who();
-      const initials = initialsOf(u.name || u.email);
-      const role = u.role || 'Member';
-      const isAdmin = String(role).toLowerCase() === 'admin';
-      host.innerHTML = `
-        <div class="user" id="userChip"><div class="avatar">${initials}</div>${role}</div>
-        <div class="dropdown" id="userMenu">
-          ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
-          <a href="settings.html">Manage Billing</a>
-          <a href="#" id="logoutLink">Log out</a>
-        </div>`;
-      const chip = document.getElementById('userChip');
-      const menu = document.getElementById('userMenu');
-      chip.addEventListener('click', () => menu.style.display = menu.style.display === 'block' ? 'none' : 'block');
-      document.addEventListener('click', (e) => { if (!host.contains(e.target)) menu.style.display = 'none'; });
-      document.getElementById('logoutLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        try { CIAuth.logout(); } catch(_) {}
-        location.href = 'index.html';
-      });
-    } else {
-      const here = location.pathname.split('/').pop() || 'index.html';
-      const next = encodeURIComponent(here + location.search + location.hash);
-      host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
-    }
-  })();
+(function mountTopActions(){
+  const host = document.getElementById('topActions');
+  if (!host) return;
+
+  const initialsOf = (nameOrEmail='CI') => {
+    const s = String(nameOrEmail).trim();
+    if (!s) return 'CI';
+    if (s.includes('@')) return s[0].toUpperCase();
+    const parts = s.split(/\s+/);
+    return (parts[0]?.[0] || 'C').toUpperCase() + (parts[1]?.[0] || 'I').toUpperCase();
+  };
+
+  if (window.CIAuth && CIAuth.isLoggedIn()) {
+    const u = CIAuth.who();
+    const initials = initialsOf(u.name || u.email);
+    const role = u.roleLabel || u.role || 'Member';
+    const isMaster = CIAuth.isMasterAdmin();
+
+    host.innerHTML = `
+      <div class="user" id="userChip" style="cursor:pointer">
+        <div class="avatar">${initials}</div>
+        ${role}
+      </div>
+      <div class="dropdown" id="userMenu">
+        ${isMaster ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
+        <a href="settings.html">Manage Billing</a>
+        <a href="#" id="logoutLink">Log out</a>
+      </div>
+    `;
+
+    const chip = document.getElementById('userChip');
+    const menu = document.getElementById('userMenu');
+
+    chip.addEventListener('click', () => {
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!host.contains(e.target)) menu.style.display = 'none';
+    });
+
+    document.getElementById('logoutLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      try { CIAuth.logout(); } catch(_) {}
+      location.href = 'index.html';
+    });
+  } else {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
+  }
+})();
 </script>
 
   <script>
