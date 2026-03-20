@@ -5,6 +5,14 @@
 <head>
 
   <script src="auth.js"></script>
+
+<script>
+  CIAuth.requireAuth();
+  if (!CIAuth.isMasterAdmin()) {
+    location.replace('index.html');
+  }
+</script>
+	
 <script>
 (function(){
   const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
@@ -510,10 +518,13 @@ async function loadOrgContext() {
 }
     .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
     .dropdown a:hover{background:rgba(255,255,255,0.05)}
-
-  .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);
-    background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
+  .login-btn{display:inline-block;padding:8px 12px;border-radius:999px;background:#D01616;border:1px solid #9c0f0f;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap}
+  .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
   .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
+  .wrap{max-width:1100px;margin:28px auto;padding:20px}
+  .hero{text-align:center;margin:6px 0 18px}
+  .hero h1{margin:0 0 6px;font-size:26px;color:var(--brand-red)}
+  .hero p{margin:0;color:var(--muted)}
 
     #trial-banner{
       flex:1;
@@ -2257,7 +2268,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="settings.html">Settings</a>
         <a href="about.html">About</a>
       </nav>
-      <div class="footnote">For information use only — not for redistribution</div>
     </aside>
 
   <!-- MAIN -->
@@ -2568,52 +2578,63 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-// -------------------- top bar user chip / dropdown --------------------
 (function mountTopActions(){
   const host = document.getElementById('topActions');
   if (!host) return;
 
-  const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
-  const initials = (function(name){
-    if(!name) return 'CI';
-    const parts = name.trim().split(/\s+/);
-    return parts.slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
-  })(p.name);
+  const initialsOf = (nameOrEmail='CI') => {
+    const s = String(nameOrEmail).trim();
+    if (!s) return 'CI';
+    if (s.includes('@')) return s[0].toUpperCase();
+    const parts = s.split(/\s+/);
+    return (parts[0]?.[0] || 'C').toUpperCase() + (parts[1]?.[0] || 'I').toUpperCase();
+  };
 
-  const role = p.role || 'Analyst';
-  const isSub = (localStorage.getItem('ci_subscribed') === 'true');
+  if (window.CIAuth && CIAuth.isLoggedIn()) {
+    const u = CIAuth.who();
+    const initials = initialsOf(u.name || u.email);
+    const role = u.roleLabel || u.role || 'Member';
+    const isMaster = CIAuth.isMasterAdmin();
 
-  host.innerHTML = `
-    <div class="user" id="userChip">
-      <div class="avatar">${initials}</div>
-      ${role}
-    </div>
-    <div class="dropdown" id="userMenu">
-      <a href="settings.html">Settings</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="system-flow.html">System Flow</a>
-      <a href="operations-log.html">Operations Log</a>
-      <a href="#" id="logoutLink"><span class="logout-link">Log out</span></a>
-    </div>
-  `;
+    host.innerHTML = `
+      <div class="user" id="userChip" style="cursor:pointer">
+        <div class="avatar">${initials}</div>
+        ${role}
+      </div>
+      <div class="dropdown" id="userMenu">
+        ${isMaster ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
+        <a href="settings.html">Manage Billing</a>
+        <a href="#" id="logoutLink">Log out</a>
+      </div>
+    `;
 
-  const chip  = document.getElementById('userChip');
-  const menu  = document.getElementById('userMenu');
-  const logoutLink = document.getElementById('logoutLink');
+    const chip = document.getElementById('userChip');
+    const menu = document.getElementById('userMenu');
 
-  chip.addEventListener('click', ()=>{
-    menu.style.display = (menu.style.display==='block')?'none':'block';
-  });
-  document.addEventListener('click',(e)=>{
-    if(!host.contains(e.target)) menu.style.display='none';
-  });
+    chip.addEventListener('click', () => {
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    });
 
-  logoutLink.addEventListener('click',(e)=>{
-    e.preventDefault();
-    if(window.CIAuth && CIAuth.logout) CIAuth.logout();
-    location.href='index.html';
-  });
+    document.addEventListener('click', (e) => {
+      if (!host.contains(e.target)) menu.style.display = 'none';
+    });
 
+    document.getElementById('logoutLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      try { CIAuth.logout(); } catch(_) {}
+      location.href = 'index.html';
+    });
+  } else {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
+  }
+})();
+</script>
+
+	  
+<script>
+	
   // trial banner logic
   const trialBanner = document.getElementById('trial-banner');
   const trialText   = document.getElementById('trial-text');
