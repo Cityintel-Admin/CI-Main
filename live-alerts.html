@@ -5,15 +5,6 @@
 <head>
 
   <script src="auth.js"></script>
-  <script src="admin-links.js"></script>
-	
-<script>
-  CIAuth.requireAuth();
-  if (!(CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin() || CIAuth.isOperator())) {
-    location.replace('index.html');
-  }
-</script>
-	
 <script>
 (function(){
   const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
@@ -124,78 +115,32 @@
     return h;
   }
 
-  function ciStatusTime(){
-    const d = new Date();
-    return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
-  }
-
-  window.CILiveStatus = window.CILiveStatus || {
-    sync: 'load',
-    panic: 'load',
-    mode: 'load',
-    lastUpdated: '',
-    note: '',
-    noteState: 'warn'
-  };
-
-  function setLiveStatus(patch){
-    window.CILiveStatus = Object.assign(window.CILiveStatus || {}, patch || {});
-    const st = window.CILiveStatus;
-    const syncEl = document.getElementById('syncStatusBadge');
-    const panicEl = document.getElementById('panicStatusBadge');
-    const modeEl = document.getElementById('dataModeBadge');
-    const updatedEl = document.getElementById('lastUpdatedBadge');
-    const noteEl = document.getElementById('liveStatusNote');
-    if (syncEl){ syncEl.dataset.state = st.sync || 'load'; syncEl.innerHTML = `<strong>Sync</strong> ${st.syncText || 'Loading…'}`; }
-    if (panicEl){ panicEl.dataset.state = st.panic || 'load'; panicEl.innerHTML = `<strong>Panic</strong> ${st.panicText || 'Starting…'}`; }
-    if (modeEl){ modeEl.dataset.state = st.mode || 'load'; modeEl.innerHTML = `<strong>Data mode</strong> ${st.modeText || 'Detecting…'}`; }
-    if (updatedEl){ updatedEl.dataset.state = st.lastUpdated ? 'ok' : 'load'; updatedEl.innerHTML = `<strong>Last updated</strong> ${st.lastUpdated || '--'}`; }
-    if (noteEl){
-      if (st.note){ noteEl.style.display='block'; noteEl.dataset.state = st.noteState || 'warn'; noteEl.textContent = st.note; }
-      else { noteEl.style.display='none'; noteEl.textContent=''; }
-    }
-  }
-
-  function markLiveUpdated(){
-    setLiveStatus({ lastUpdated: ciStatusTime() });
-  }
-
   async function syncOrgTravellers(){
-    try{
-      const headers = await authHeaders();
-      const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/travellers'), { headers });
-      const json = await res.json().catch(()=>null);
-      if(json && json.ok && Array.isArray(json.data)){
-        try{
-          localStorage.setItem('ci_travellers', JSON.stringify(json.data));
-        }catch(_){}
-        window.CITravellers = json.data;
-        return json.data;
-      }
-      throw new Error('travellers response invalid');
-    }catch(e){
-      try{ window.CITravellers = JSON.parse(localStorage.getItem('ci_travellers') || '[]'); }catch(_){ window.CITravellers = []; }
-      throw e;
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/travellers'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && json.ok && Array.isArray(json.data)){
+      try{
+        localStorage.setItem('ci_travellers', JSON.stringify(json.data));
+      }catch(_){}
+      window.CITravellers = json.data;
+      return json.data;
     }
+    return [];
   }
 
   async function syncOrgAssets(){
-    try{
-      const headers = await authHeaders();
-      const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/assets'), { headers });
-      const json = await res.json().catch(()=>null);
-      if(json && json.ok && Array.isArray(json.data)){
-        try{
-          localStorage.setItem('ci_assets', JSON.stringify(json.data));
-        }catch(_){}
-        window.CIAssets = json.data;
-        return json.data;
-      }
-      throw new Error('assets response invalid');
-    }catch(e){
-      try{ window.CIAssets = JSON.parse(localStorage.getItem('ci_assets') || '[]'); }catch(_){ window.CIAssets = []; }
-      throw e;
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/assets'), { headers });
+    const json = await res.json().catch(()=>null);
+    if(json && json.ok && Array.isArray(json.data)){
+      try{
+        localStorage.setItem('ci_assets', JSON.stringify(json.data));
+      }catch(_){}
+      window.CIAssets = json.data;
+      return json.data;
     }
+    return [];
   }
 
   async function fetchPanic(){
@@ -260,12 +205,10 @@ function ensurePanicBanner() {
   async function startPanicPolling() {
     const banner = ensurePanicBanner();
     if (!banner) return;
-    let panicFailures = 0;
 
     const tick = async () => {
       try {
 const st = await fetchPanic();
-        panicFailures = 0;
         if (st && st.active) {
           window.__ciPanicState = st;
           const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
@@ -297,25 +240,15 @@ const st = await fetchPanic();
           if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
             window.CIPanicMap.setState(st).catch(()=>{});
           }
-          setLiveStatus({ panic:'ok', panicText:'Live', note:'' });
-          markLiveUpdated();
         } else {
           window.__ciPanicState = null;
           banner.style.display = 'none';
           if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
             window.CIPanicMap.setState(null).catch(()=>{});
           }
-          setLiveStatus({ panic:'ok', panicText:'Online', note:'' });
-          markLiveUpdated();
         }
 } catch (e) {
-        panicFailures += 1;
-        setLiveStatus({
-          panic: panicFailures > 2 ? 'err' : 'warn',
-          panicText: panicFailures > 2 ? 'Offline' : 'Delayed',
-          note: 'Panic polling is delayed. Live alerts remain available, but panic status may be stale.',
-          noteState: panicFailures > 2 ? 'err' : 'warn'
-        });
+        // If the panic endpoint fails momentarily, don't break the page.
       }
     };
 
@@ -328,21 +261,6 @@ const st = await fetchPanic();
   window.syncOrgAssets = syncOrgAssets;
   window.startPanicPolling = startPanicPolling;
 
-</script>
-
-<script>
-(function compatProfileShim(){
-  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-  const u = CIAuth.who();
-  if (!u) return;
-  localStorage.setItem('ci_profile', JSON.stringify({
-    name: u.name || 'CityIntel User',
-    email: u.email,
-    role: u.role || 'Admin',
-    is_admin: (u.role||'').toLowerCase()==='admin'
-  }));
-  // Do NOT auto-set ci_subscribed here anymore
-})();
 </script>
 
 <script>
@@ -519,13 +437,10 @@ async function loadOrgContext() {
 }
     .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
     .dropdown a:hover{background:rgba(255,255,255,0.05)}
-  .login-btn{display:inline-block;padding:8px 12px;border-radius:999px;background:#D01616;border:1px solid #9c0f0f;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap}
-  .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
+
+  .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
   .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
-  .wrap{max-width:1100px;margin:28px auto;padding:20px}
-  .hero{text-align:center;margin:6px 0 18px}
-  .hero h1{margin:0 0 6px;font-size:26px;color:var(--brand-red)}
-  .hero p{margin:0;color:var(--muted)}
 
     #trial-banner{
       flex:1;
@@ -624,6 +539,20 @@ async function loadOrgContext() {
   background:#2a2d32;
   border-color:#D01616;
   color:#fff;
+}
+
+.chip-btn {
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.1);
+  font-size:12px;
+  text-decoration:none;
+  color:#ddd;
+  background:rgba(255,255,255,0.03);
+}
+
+.chip-btn:hover {
+  background:rgba(255,255,255,0.08);
 }
 
     .btn-red{
@@ -1227,47 +1156,6 @@ async function loadOrgContext() {
   font-size:12px;
   color:#9ca3af;
 }
-
-.live-status-strip{
-  margin: 0 0 14px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #24272c;
-  background: linear-gradient(180deg,#17191d,#111317);
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:8px;
-}
-.live-status-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.12);
-  background:#1f2024;
-  color:#e5e7eb;
-  font-size:11px;
-  white-space:nowrap;
-}
-.live-status-badge strong{ font-weight:700; }
-.live-status-badge[data-state="ok"]{ border-color: rgba(74,222,128,.32); color:#d1fae5; background: rgba(20,83,45,.28); }
-.live-status-badge[data-state="warn"]{ border-color: rgba(251,191,36,.34); color:#fef3c7; background: rgba(120,53,15,.22); }
-.live-status-badge[data-state="err"]{ border-color: rgba(248,113,113,.34); color:#fee2e2; background: rgba(127,29,29,.28); }
-.live-status-badge[data-state="load"]{ border-color: rgba(148,163,184,.28); color:#e2e8f0; background: rgba(30,41,59,.35); }
-.live-status-spacer{ flex:1 1 auto; }
-.live-status-note{
-  flex: 1 1 100%;
-  display:none;
-  border-radius:10px;
-  border:1px solid rgba(251,191,36,.2);
-  background: rgba(120,53,15,.12);
-  color:#fef3c7;
-  padding:8px 10px;
-  font-size:12px;
-}
-.live-status-note[data-state="err"]{ border-color: rgba(248,113,113,.24); background: rgba(127,29,29,.18); color:#fee2e2; }
 
     .btn-full-incident{
       background:#D01616;
@@ -2211,29 +2099,6 @@ document.addEventListener('DOMContentLoaded', () => {
     CIAuth.updateSidebarForRole(nav);
   }
 });
-  document.addEventListener('DOMContentLoaded', () => {
-    setLiveStatus({
-      sync:'load', syncText:'Loading organisation data…',
-      panic:'load', panicText:'Starting polling…',
-      mode:'load', modeText:'Detecting…',
-      lastUpdated:'',
-      note:''
-    });
-
-    Promise.allSettled([syncOrgTravellers(), syncOrgAssets()]).then((results) => {
-      const ok = results.every(r => r.status === 'fulfilled');
-      const hadData = (Array.isArray(window.CITravellers) && window.CITravellers.length) || (Array.isArray(window.CIAssets) && window.CIAssets.length);
-      setLiveStatus({
-        sync: ok ? 'ok' : (hadData ? 'warn' : 'err'),
-        syncText: ok ? 'Org data synced' : (hadData ? 'Using cached fallback' : 'Sync failed'),
-        mode: ok ? 'ok' : 'warn',
-        modeText: ok ? 'Org data' : 'Local cache',
-        note: ok ? '' : (hadData ? 'Using cached assets/travellers because org sync is unavailable.' : 'Org sync failed and no cached assets/travellers were found.'),
-        noteState: ok ? 'warn' : (hadData ? 'warn' : 'err')
-      });
-      markLiveUpdated();
-    });
-  });
 </script>
 
 <body>
@@ -2254,14 +2119,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <div class="app">
     <aside class="sidebar">
-      <div class="section-label"></div>
+       <div class="section-label"></div>
       <nav>
         <a href="index.html">Dashboard</a>
-		<a href="neighborhood-intel.html">neighborhood-intel</a> 
-		<a href="assets.html">Assets</a>
-		<a href="travellers.html">Travellers</a>
-        <a href="alerts.html">High Risk Events</a>
-        <a href="events.html">All Events</a>
+        <a href="assets.html">Assets</a>
+		<a href="travellers.html">Travellers</a>  
+		<a href="alerts.html">Alerts</a>
+        <a href="events.html">Events</a>
 		<a href="live-alerts.html">Live Alerts</a>  
 	    <a href="brief.html">Intelligence Brief</a>
 	    <a href="trends.html">Trends & Forecasts</a>
@@ -2270,6 +2134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="settings.html">Settings</a>
         <a href="about.html">About</a>
       </nav>
+      <div class="footnote">For information use only — not for redistribution</div>
     </aside>
 
   <!-- MAIN -->
@@ -2283,30 +2148,12 @@ document.addEventListener('DOMContentLoaded', () => {
           Last 6 months risk shading, overlaid with your company assets and travellers.
         </div>
       </div>
-
-      <div class="page-title-actions">
-        <a href="assets.html" class="btn-outline-pill">
-          🏢 Manage assets
-        </a>
-        <a href="travellers.html" class="btn-outline-pill">
-          ✈️ Manage travellers
-        </a>
-      </div>
-	</div>
+		</div>
 
 <div id="liveNowStrip" class="live-now-strip">
       <div class="live-now-label">NOW</div>
       <div class="live-now-stats live-now-empty">No alerts in the current window.</div>
     </div>
-
-<div id="liveStatusStrip" class="live-status-strip" aria-live="polite">
-  <div id="syncStatusBadge" class="live-status-badge" data-state="load"><strong>Sync</strong> Loading…</div>
-  <div id="panicStatusBadge" class="live-status-badge" data-state="load"><strong>Panic</strong> Starting…</div>
-  <div id="dataModeBadge" class="live-status-badge" data-state="load"><strong>Data mode</strong> Detecting…</div>
-  <div id="lastUpdatedBadge" class="live-status-badge" data-state="load"><strong>Last updated</strong> --</div>
-  <div class="live-status-spacer"></div>
-  <div id="liveStatusNote" class="live-status-note"></div>
-</div>
 
 <section id="liveMapCard" style="
     margin: 4px 0 14px;
@@ -2342,6 +2189,11 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="gm-legend-row">
         <span class="gm-dot gm-trav"></span> Travellers
+      </div>
+
+      <div class="admin-quick-actions" id="liveAdminQuickActions" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="assets.html" class="chip-btn">Assets</a>
+        <a href="travellers.html" class="chip-btn">Travellers</a>
       </div>
     </div>
 	  
@@ -2580,63 +2432,52 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
+// -------------------- top bar user chip / dropdown --------------------
 (function mountTopActions(){
   const host = document.getElementById('topActions');
   if (!host) return;
 
-  const initialsOf = (nameOrEmail='CI') => {
-    const s = String(nameOrEmail).trim();
-    if (!s) return 'CI';
-    if (s.includes('@')) return s[0].toUpperCase();
-    const parts = s.split(/\s+/);
-    return (parts[0]?.[0] || 'C').toUpperCase() + (parts[1]?.[0] || 'I').toUpperCase();
-  };
+  const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+  const initials = (function(name){
+    if(!name) return 'CI';
+    const parts = name.trim().split(/\s+/);
+    return parts.slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('') || 'CI';
+  })(p.name);
 
-  if (window.CIAuth && CIAuth.isLoggedIn()) {
-    const u = CIAuth.who();
-    const initials = initialsOf(u.name || u.email);
-    const role = u.roleLabel || u.role || 'Member';
-    const isMaster = CIAuth.isMasterAdmin();
+  const role = p.role || 'Analyst';
+  const isSub = (localStorage.getItem('ci_subscribed') === 'true');
 
-    host.innerHTML = `
-      <div class="user" id="userChip" style="cursor:pointer">
-        <div class="avatar">${initials}</div>
-        ${role}
-      </div>
-      <div class="dropdown" id="userMenu">
-        ${isMaster ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
-        <a href="settings.html">Manage Billing</a>
-        <a href="#" id="logoutLink">Log out</a>
-      </div>
-    `;
+  host.innerHTML = `
+    <div class="user" id="userChip">
+      <div class="avatar">${initials}</div>
+      ${role}
+    </div>
+    <div class="dropdown" id="userMenu">
+      <a href="settings.html">Settings</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="system-flow.html">System Flow</a>
+      <a href="operations-log.html">Operations Log</a>
+      <a href="#" id="logoutLink"><span class="logout-link">Log out</span></a>
+    </div>
+  `;
 
-    const chip = document.getElementById('userChip');
-    const menu = document.getElementById('userMenu');
+  const chip  = document.getElementById('userChip');
+  const menu  = document.getElementById('userMenu');
+  const logoutLink = document.getElementById('logoutLink');
 
-    chip.addEventListener('click', () => {
-      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-    });
+  chip.addEventListener('click', ()=>{
+    menu.style.display = (menu.style.display==='block')?'none':'block';
+  });
+  document.addEventListener('click',(e)=>{
+    if(!host.contains(e.target)) menu.style.display='none';
+  });
 
-    document.addEventListener('click', (e) => {
-      if (!host.contains(e.target)) menu.style.display = 'none';
-    });
+  logoutLink.addEventListener('click',(e)=>{
+    e.preventDefault();
+    if(window.CIAuth && CIAuth.logout) CIAuth.logout();
+    location.href='index.html';
+  });
 
-    document.getElementById('logoutLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      try { CIAuth.logout(); } catch(_) {}
-      location.href = 'index.html';
-    });
-  } else {
-    const here = location.pathname.split('/').pop() || 'index.html';
-    const next = encodeURIComponent(here + location.search + location.hash);
-    host.innerHTML = `<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
-  }
-})();
-</script>
-
-	  
-<script>
-	
   // trial banner logic
   const trialBanner = document.getElementById('trial-banner');
   const trialText   = document.getElementById('trial-text');
@@ -2660,8 +2501,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e){
       trialBanner.style.display='block';
       trialText.textContent = 'Trial active.';
+    }
   }
-};
+})();
 
 // -------------------- FEED STORAGE / STATE --------------------
 const STORAGE_KEY = 'ci_live_feeds_v1';
@@ -4799,7 +4641,6 @@ if (places.length) {
 // -------------------- CARD RENDER --------------------
 async function renderFeeds(){
   const grid = document.getElementById('feedsGrid');
-  setLiveStatus({ syncText:'Refreshing alerts…' });
 
   // use let (we mutate this below)
   let feeds = loadFeeds();
@@ -4981,7 +4822,7 @@ refreshSingleFeedCard(card, feed);
 }
 
 // -------------------- INIT --------------------
-renderFeeds().then(()=>{ markLiveUpdated(); const modeText = (window.CILiveStatus && window.CILiveStatus.modeText) || 'Org data'; setLiveStatus({ sync:'ok', syncText:'Alerts ready', mode:'ok', modeText }); }).catch(()=>{ setLiveStatus({ sync:'warn', syncText:'Alerts loaded with issues', note:'Some live feeds may be delayed. Review the feed cards below for current results.', noteState:'warn' }); });
+renderFeeds();
 
 // ---- link View Full Incident to incident.html ----
 viewFullBtn.addEventListener('click', (e)=>{
@@ -6525,86 +6366,5 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-
-
-<script>
-(function(){
-  function hideNavLink(href){
-    const link = document.querySelector(`aside.sidebar nav a[href="${href}"]`);
-    if (link) link.style.display = 'none';
-  }
-
-  function showNavLink(href){
-    const link = document.querySelector(`aside.sidebar nav a[href="${href}"]`);
-    if (link) link.style.display = '';
-  }
-
-  function applyRoleNav(){
-    if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-
-    const isMaster = CIAuth.isMasterAdmin();
-    const isOrgAdmin = CIAuth.isOrgAdmin();
-    const isOperator = CIAuth.isOperator();
-
-    // start by showing everything, then hide by role
-    [
-      'assets.html',
-      'travellers.html',
-      'sources.html',
-      'analytics.html',
-      'operationslog.html',
-      'system-flow.html'
-    ].forEach(showNavLink);
-
-    if (isMaster) {
-      return; // master sees all
-    }
-
-    if (isOrgAdmin) {
-      hideNavLink('sources.html');
-      hideNavLink('analytics.html');
-      hideNavLink('operationslog.html');
-      hideNavLink('system-flow.html');
-      return;
-    }
-
-    if (isOperator) {
-      hideNavLink('assets.html');
-      hideNavLink('travellers.html');
-      hideNavLink('sources.html');
-      hideNavLink('analytics.html');
-      hideNavLink('operationslog.html');
-      hideNavLink('system-flow.html');
-      return;
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', applyRoleNav);
-  } else {
-    applyRoleNav();
-  }
-})();
-</script>
-
-
-<script>
-(function lockLiveAlertActions(){
-  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-
-  const canManageAssets = CIAuth.can('canManageAssets');
-  const canManageTravellers = CIAuth.can('canManageTravellers');
-
-  document.querySelectorAll('a[href="assets.html"]').forEach(el => {
-    if (!canManageAssets) el.style.display = 'none';
-  });
-
-  document.querySelectorAll('a[href="travellers.html"]').forEach(el => {
-    if (!canManageTravellers) el.style.display = 'none';
-  });
-})();
-</script>
-
-	  
 </body>
 </html>
