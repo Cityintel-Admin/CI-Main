@@ -20,10 +20,93 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  {
+  title: "No Tourism on Stolen Land",
+  city: "Manchester",
+  lat: 53.4851,
+  lng: -2.2443,
+  address: "Manchester Cathedral, Victoria Street",
+  postcode: "M3 1SX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Med",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.facebook.com",
+  summary: "Pro-Palestine protest during Israeli Apartheid Week targeting Booking.com for listings in illegal settlements. Mobilized at Manchester Cathedral."
+},
+{
+  title: "UKIP Procession and Counter-Protest",
+  city: "Liverpool",
+  lat: 53.4048,
+  lng: -2.9691,
+  address: "Metropolitan Cathedral to Lime Street Station",
+  postcode: "L3 5TQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-21T10:00:00",
+  source: "https://www.merseyside.police.uk/news/merseyside/news/2026/march-2026/six-arrests-made-following-ukip-procession-and-counter-protest-in-liverpool/",
+  summary: "Planned UKIP procession through Liverpool city centre met by a counter-protest. Six arrests made. A Section 60 order was implemented by police due to potential for disorder."
+},
 
+  {
+  title: "Unite the Clans Rally (Anti-Immigration)",
+  city: "Edinburgh",
+  lat: 55.9527,
+  lng: -3.1723,
+  address: "Scottish Parliament, Holyrood",
+  postcode: "EH8 8DX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.bbc.co.uk/news/articles/cx2rlwvxxn7o",
+  summary: "Anti-immigration protest organized by Unite the Clans Scotland. Attracted far-right groups and was met by a large counter-protest. Heavy police presence and barriers used to separate opposing groups."
+},
+{
+  title: "Stop the Far Right (Counter-Protest)",
+  city: "Edinburgh",
+  lat: 55.9495,
+  lng: -3.1908,
+  address: "St Giles Cathedral to Holyrood",
+  postcode: "EH1 1RE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-21T10:00:00",
+  source: "https://www.facebook.com/p/Stand-Up-To-Racism-Edinburgh-100064352722219/",
+  summary: "Large counter-demonstration organized by Stand Up To Racism Edinburgh in response to the 'Unite the Clans' rally. Marched from the Royal Mile to Holyrood to declare opposition to racism and far-right activity."
+},
 
-
+ {
+  title: "Stop Bombing Iran",
+  city: "London",
+  lat: 51.5217,
+  lng: -0.1298,
+  address: "Russell Square to Whitehall",
+  postcode: "WC1B 5BE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-03-21T12:00:00",
+  source: "https://cnduk.org/events/stop-bombing-iran-demonstration-in-london/",
+  summary: "National demonstration against US-Israeli strikes on Iran. Organized by a coalition including CND, Stop the War, and the Palestine Solidarity Campaign. Expect tens of thousands of participants and significant transport disruption in Central London."
+},
   
+{
+  title: "Rally for Trade Union Rights & Employment Rights No. 2 Bill",
+  city: "London",
+  lat: 51.5276,
+  lng: -0.1287,
+  address: "Hamilton House, Mabledon Place",
+  postcode: "WC1H 9BD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Med",
+  time: "2026-03-21T11:00:00",
+  source: "https://www.pcs.org.uk/news-events/events/trade-union-rights-rally-campaigning-employment-rights-2-bill",
+  summary: "Campaign rally organized by the Campaign for Trade Union Freedom and Strike Map. Demands a second bill to strengthen collective bargaining and workplace protections following the 2025 Employment Rights Act."
+},
 
   {
   title: "Rally and March for Gaza",
@@ -34,7 +117,7 @@ window.alertsData =[
   "post code / zip": "T2G 5E6",
   country: "Canada",
   continent: "North America",
-  risk: "Mid",
+  risk: "Med",
   time: "2026-03-29T14:00:00",
   source: "https://samidoun.net/2025/03/calendar-of-resistance-for-palestine-events-actions-and-demonstrations-for-liberation-against-genocide/",
   summary: "Samidoun's calendar of resistance lists Calgary on Saturday 29 March 2026 at 2:00 pm at Calgary City Hall for a rally and march for Gaza. The listing gives a clear date, time, city, and named meeting point, making it suitable for your stricter standard. Risk is Mid because Calgary City Hall is a central civic protest site where politically charged rallies can still generate visible police monitoring, crowd concentration, and short-term downtown traffic impacts even when they remain orderly."
@@ -83,10 +166,7 @@ window.alertsData =[
   time: "2026-03-29T12:00:00",
   source: "https://samidoun.net/page/16/?taxonomy=categoryCachedMar18",
   summary: "Samidoun's cached events page lists Saint John on Saturday 29 March 2026 at 12:00 pm at Intifada Trail, Market Square–City Hall, for a Protest for Palestine. Market Square provides a clear waterfront civic meeting area and a usable geocoded location for your map. Risk is Low because the event appears more like a local solidarity gathering than a major city-centre march, though it still contributes useful Atlantic Canada coverage."
-},
-
-
-  
+}, 
 
 {
   title: "National March to End the Genocide",
