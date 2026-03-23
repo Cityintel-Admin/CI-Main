@@ -1,4 +1,4 @@
-  
+ 
    
 <!doctype html>
 <html lang="en">
@@ -2250,6 +2250,14 @@ async function loadOrgContext() {
   max-height: 100%;
 }
 
+
+.translate-block{margin-top:10px;padding:10px 12px;border:1px solid var(--g600);border-radius:12px;background:rgba(255,255,255,.02)}
+.translate-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lang-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid rgba(96,165,250,.45);background:rgba(59,130,246,.16);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#dbeafe}
+.lang-badge.unknown{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.12);color:#fde68a}
+.translate-note{margin-top:6px;font-size:12px;opacity:.86;line-height:1.45;white-space:pre-wrap}
+.feed-lang-badge{display:inline-flex;align-items:center;margin-left:8px;padding:2px 6px;border-radius:999px;border:1px solid rgba(96,165,250,.35);background:rgba(59,130,246,.14);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#dbeafe;vertical-align:middle}
+
 </style>
 </head>
 
@@ -2551,6 +2559,15 @@ document.addEventListener('DOMContentLoaded', () => {
       <div id="detailTag" class="small" style="margin-bottom:6px;font-weight:600;opacity:.9;"></div>
       <div id="detailSummary" class="small">
         -
+      </div>
+      <div id="detailLanguageRow" class="translate-block" style="display:none;">
+        <div class="translate-meta">
+          <span id="detailLanguageBadge" class="lang-badge">Language</span>
+          <button id="detailTranslateBtn" class="btn-ghost" type="button">Translate to English</button>
+          <button id="detailShowOriginalBtn" class="btn-ghost" type="button" style="display:none;">Show original</button>
+        </div>
+        <div id="detailTranslationStatus" class="translate-note"></div>
+        <div id="detailTranslatedText" class="translate-note" style="display:none;"></div>
       </div>
     </div>
 
@@ -3010,8 +3027,20 @@ function updateFeedHeaderStats(feed, events){
 }
 
 	// ---- lightweight client-side incident filter (new) ----
+const MULTI_PROTEST_TERMS = [
+  'protest','demonstration','rally','march','unrest','riot','blockade','strike','picket','clashes',
+  'manifestation','protestation','greve','grève','emeute','émeute','blocage',
+  'protesta','manifestacion','manifestación','huelga','disturbios','bloqueo','marcha',
+  'streik','unruhen',
+  'manifestazione','sciopero','disordini','blocco',
+  'protesto','manifestacao','manifestação','greve','disturbios','distúrbios','bloqueio',
+  'demonstratie','staking','onrust','blokkade',
+  'protesto gösterisi','gosteri','gösteri','grev',
+  'митинг','протест','демонстрация','забастовка',
+  'احتجاج','احتجاجات','مظاهرة','مظاهرات','إضراب'
+];
 const INCIDENT_POSITIVE = [
-  'protest','demonstration','clashes','riot','unrest','blockade','strike',
+  ...MULTI_PROTEST_TERMS,
   'explosion','blast','bomb','fire','evacuation','evacuated','lockdown',
   'shooting','stabbing','gunfire','shots fired','attack','assault',
   'road closed','road closure','traffic disruption','derailment',
@@ -3295,23 +3324,118 @@ function buildIntelSummary(ev, earlierList) {
   return lines.join('\n\n');
 }	
 
+
+function normalizeIntlText(value) {
+  try {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  } catch (_) {
+    return String(value || '').toLowerCase();
+  }
+}
+
+const INCIDENT_TERM_SETS = {
+  fire: ['fire','blaze','explosion','blast','smoke','burning','warehouse fire','incendie','incendio','fuego','feu','brand','explosione','incendio forestal','пожар','حريق'],
+  protest: MULTI_PROTEST_TERMS,
+  crime: ['shooting','stabbing','knife attack','gunfire','shots fired','assault','robbery','armed','ataque','tiroteo','apuñalamiento','fusillade','messerangriff','sparatoria','стрельба','нападение','إطلاق نار','اعتداء'],
+  transport: ['road closed','road closure','traffic','collision','crash','derailment','train disruption','airport closed','flight','fermeture de route','trafico','tráfico','choque','accidente','verkehr','stau','incidente stradale','авария','дорога перекрыта','إغلاق طريق'],
+  outage: ['power outage','blackout','grid failure','water outage','gas leak','chemical spill','hazmat','outage','coupure de courant','apagón','apagon','corte de energia','stromausfall','interruzione','перебои','انقطاع كهرباء','تسرب غاز']
+};
+
+function containsIntlTerm(text, terms) {
+  const norm = normalizeIntlText(text);
+  return (terms || []).some(term => norm.includes(normalizeIntlText(term)));
+}
+
+function detectEventLanguage(ev) {
+  const raw = `${ev?.title || ''} ${ev?.description || ''}`.trim();
+  const norm = normalizeIntlText(raw);
+  if (!raw) return { code: 'unknown', label: 'Unknown', isEnglish: true, confidence: 'low' };
+
+  if (/[\u0600-\u06FF]/.test(raw)) return { code: 'ar', label: 'Arabic', isEnglish: false, confidence: 'high' };
+  if (/[\u0400-\u04FF]/.test(raw)) return { code: 'ru', label: 'Cyrillic', isEnglish: false, confidence: 'high' };
+
+  const checks = [
+    { code:'es', label:'Spanish', terms:['protesta','manifestacion','manifestación','huelga','disturbios','bloqueo','tiroteo','apagón','apagon'] },
+    { code:'fr', label:'French', terms:['manifestation','greve','grève','emeute','émeute','incendie','fusillade','coupure de courant'] },
+    { code:'de', label:'German', terms:['streik','unruhen','brand','verkehr','stromausfall'] },
+    { code:'it', label:'Italian', terms:['manifestazione','sciopero','disordini','sparatoria','interruzione'] },
+    { code:'pt', label:'Portuguese', terms:['manifestacao','manifestação','greve','disturbios','distúrbios','bloqueio'] },
+    { code:'nl', label:'Dutch', terms:['demonstratie','staking','onrust','blokkade'] },
+    { code:'tr', label:'Turkish', terms:['gosteri','gösteri','grev'] }
+  ];
+  for (const lang of checks) {
+    if (lang.terms.some(term => norm.includes(normalizeIntlText(term)))) {
+      return { code: lang.code, label: lang.label, isEnglish: false, confidence: 'medium' };
+    }
+  }
+  return { code: 'en', label: 'English', isEnglish: true, confidence: 'medium' };
+}
+
+function getLanguageBadgeHtml(ev) {
+  const info = detectEventLanguage(ev);
+  if (!info || info.isEnglish || info.code === 'unknown') return '';
+  return `<span class="feed-lang-badge" title="Source language detected: ${info.label}">${info.code.toUpperCase()}</span>`;
+}
+
+async function translateTextToEnglish(text) {
+  const input = String(text || '').trim();
+  if (!input) return '';
+
+  const endpoints = [
+    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(input)}`,
+    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=auto|en`
+  ];
+
+  for (let i = 0; i < endpoints.length; i++) {
+    try {
+      const res = await fetch(endpoints[i]);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (i === 0 && Array.isArray(data) && Array.isArray(data[0])) {
+        const translated = data[0].map(part => part && part[0] ? part[0] : '').join('').trim();
+        if (translated) return translated;
+      }
+      if (i === 1 && data && data.responseData && data.responseData.translatedText) {
+        const translated = String(data.responseData.translatedText || '').trim();
+        if (translated) return translated;
+      }
+    } catch (_) {}
+  }
+  return '';
+}
+
+async function translateEventToEnglish(ev) {
+  if (!ev) return null;
+  if (ev.__translatedEnglish) return ev.__translatedEnglish;
+
+  const title = await translateTextToEnglish(ev.title || '');
+  const desc = await translateTextToEnglish(ev.description || ev.summary || '');
+
+  if (!title && !desc) return null;
+  ev.__translatedEnglish = { title, description: desc };
+  return ev.__translatedEnglish;
+}
+
 // NEW: simple incident type classifier for the tag line
 function classifyIncident(ev) {
-  const text = `${ev.title || ''} ${ev.description || ''}`.toLowerCase();
+  const text = `${ev?.title || ''} ${ev?.description || ''}`;
 
-  if (/fire|blaze|explosion|blast|smoke|burning|warehouse fire/.test(text)) {
+  if (containsIntlTerm(text, INCIDENT_TERM_SETS.fire)) {
     return { emoji: '🔥', label: 'Fire / Explosion' };
   }
-  if (/protest|demonstration|rally|march|unrest|riot|blockade|strike|picket/.test(text)) {
+  if (containsIntlTerm(text, INCIDENT_TERM_SETS.protest)) {
     return { emoji: '⚠️', label: 'Civil Unrest / Protest' };
   }
-  if (/shooting|stabbing|knife attack|gunfire|shots fired|assault|robbery|armed/.test(text)) {
+  if (containsIntlTerm(text, INCIDENT_TERM_SETS.crime)) {
     return { emoji: '🚨', label: 'Crime / Violence' };
   }
-  if (/road closed|traffic|collision|crash|derailment|train disruption|airport closed|flight/.test(text)) {
+  if (containsIntlTerm(text, INCIDENT_TERM_SETS.transport)) {
     return { emoji: '🚧', label: 'Transport / Traffic' };
   }
-  if (/power outage|blackout|grid failure|water outage|gas leak|chemical spill|hazmat|outage/.test(text)) {
+  if (containsIntlTerm(text, INCIDENT_TERM_SETS.outage)) {
     return { emoji: '⚡', label: 'Infrastructure / Outage' };
   }
 
@@ -3328,7 +3452,87 @@ const detailEarlierEl  = document.getElementById('detailEarlier');
 const detailCloseBtn = document.getElementById('detailClose');
 const viewFullBtn   = document.getElementById('viewFullBtn');
 const detailTagEl   = document.getElementById('detailTag'); 
+const detailLanguageRowEl = document.getElementById('detailLanguageRow');
+const detailLanguageBadgeEl = document.getElementById('detailLanguageBadge');
+const detailTranslateBtnEl = document.getElementById('detailTranslateBtn');
+const detailShowOriginalBtnEl = document.getElementById('detailShowOriginalBtn');
+const detailTranslationStatusEl = document.getElementById('detailTranslationStatus');
+const detailTranslatedTextEl = document.getElementById('detailTranslatedText');
 
+
+
+function resetTranslationPanel(){
+  if (detailTranslatedTextEl){
+    detailTranslatedTextEl.style.display = 'none';
+    detailTranslatedTextEl.textContent = '';
+  }
+  if (detailTranslationStatusEl) detailTranslationStatusEl.textContent = '';
+  if (detailTranslateBtnEl) detailTranslateBtnEl.style.display = '';
+  if (detailShowOriginalBtnEl) detailShowOriginalBtnEl.style.display = 'none';
+}
+
+function renderLanguageTools(item){
+  if (!detailLanguageRowEl) return;
+  const info = detectEventLanguage(item || {});
+  resetTranslationPanel();
+
+  if (!info || info.isEnglish) {
+    detailLanguageRowEl.style.display = 'none';
+    return;
+  }
+
+  detailLanguageRowEl.style.display = '';
+  if (detailLanguageBadgeEl){
+    detailLanguageBadgeEl.textContent = `${info.label} source`;
+    detailLanguageBadgeEl.classList.toggle('unknown', info.code === 'unknown');
+  }
+  if (detailTranslationStatusEl) {
+    detailTranslationStatusEl.textContent = 'Non-English source detected. Use Translate to generate an English version for the operator view.';
+  }
+}
+
+(function bindTranslationActions(){
+  if (window.__ciTranslationBound) return;
+  window.__ciTranslationBound = true;
+  if (detailTranslateBtnEl){
+    detailTranslateBtnEl.addEventListener('click', async ()=>{
+      const item = window.__ciCurrentDetailItem;
+      if (!item) return;
+      if (detailTranslationStatusEl) detailTranslationStatusEl.textContent = 'Translating…';
+      detailTranslateBtnEl.disabled = true;
+      try {
+        const translated = await translateEventToEnglish(item);
+        if (translated && (translated.title || translated.description)) {
+          const parts = [];
+          if (translated.title) parts.push(`Headline: ${translated.title}`);
+          if (translated.description) parts.push(translated.description);
+          if (detailTranslatedTextEl){
+            detailTranslatedTextEl.textContent = parts.join('\n\n');
+            detailTranslatedTextEl.style.display = '';
+          }
+          if (detailTranslationStatusEl) detailTranslationStatusEl.textContent = 'Translated to English for operator review.';
+          detailTranslateBtnEl.style.display = 'none';
+          if (detailShowOriginalBtnEl) detailShowOriginalBtnEl.style.display = '';
+        } else {
+          const full = `${item.title || ''} ${item.description || item.summary || ''}`.trim();
+          const href = 'https://translate.google.com/?sl=auto&tl=en&text=' + encodeURIComponent(full) + '&op=translate';
+          if (detailTranslationStatusEl) {
+            detailTranslationStatusEl.innerHTML = `Live translation service was unavailable. <a href="${href}" target="_blank" rel="noopener">Open in Google Translate</a>.`;
+          }
+        }
+      } finally {
+        detailTranslateBtnEl.disabled = false;
+      }
+    });
+  }
+  if (detailShowOriginalBtnEl){
+    detailShowOriginalBtnEl.addEventListener('click', ()=>{
+      resetTranslationPanel();
+      const item = window.__ciCurrentDetailItem;
+      if (item) renderLanguageTools(item);
+    });
+  }
+})();
 
 // -------------------- OPERATOR DISPOSITION (per-alert, per-user) --------------------
 const CI_ALERT_STATUS_KEY = 'ci_alert_status_v1';
@@ -4184,6 +4388,7 @@ function openDetailPanel(item, relatedList){
 
 	  // NEW: richer intel-style summary
   detailSummaryEl.textContent = buildIntelSummary(item, earlier);
+  renderLanguageTools(item);
 
     // location text
     detailLocationEl.textContent =
@@ -4611,6 +4816,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
 
       const cat      = first.category || first.type || 'i';
       const whenNice = fmtWhen(first.when);
+      const langBadgeHtml = getLanguageBadgeHtml(first);
 
       const groupEl  = document.createElement('div');
       const ageClass = getAgeClass(first.when);
@@ -4644,7 +4850,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
   	<div class="eg-header">
     <div class="eg-title">
       <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
-      ${first.title || first.summary || '(no title)'}
+      ${first.title || first.summary || '(no title)'}${langBadgeHtml}
     </div>
     <div class="eg-meta">
       <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
