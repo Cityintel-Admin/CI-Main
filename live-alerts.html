@@ -3490,6 +3490,27 @@ function buildTransitionBody(item, status){
   const exposure = window.__ciCurrentExposure || { assets: [], travellers: [] };
   const aList = Array.isArray(exposure.assets) ? exposure.assets : [];
   const tList = Array.isArray(exposure.travellers) ? exposure.travellers : [];
+  const hasAssets = aList.length > 0;
+  const hasTravellers = tList.length > 0;
+  const esc = (v) => String(v == null ? '' : v).replace(/[&<>"]/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m]));
+  const formatAsset = (a) => {
+    const bits = [];
+    const title = a.name || a.assetName || a.label || 'Asset';
+    bits.push(title);
+    const loc = [a.city || a.town || a.locality, a.country].filter(Boolean).join(', ');
+    if (loc) bits.push(`(${loc})`);
+    if (a.type) bits.push(`• ${a.type}`);
+    return bits.join(' ');
+  };
+  const formatTraveller = (t) => {
+    const bits = [];
+    const title = t.name || t.travellerName || t.label || 'Traveller';
+    bits.push(title);
+    const loc = [t.city || t.town || t.locality, t.country].filter(Boolean).join(', ');
+    if (loc) bits.push(`(${loc})`);
+    if (t.status) bits.push(`• ${t.status}`);
+    return bits.join(' ');
+  };
 
   const mkField = (label, inner) => {
     return `<div class="ci-field"><label>${label}</label>${inner}</div>`;
@@ -3497,10 +3518,32 @@ function buildTransitionBody(item, status){
 
   let html = '';
 
+  html += `
+    <div class="ci-summary-card">
+      <div class="ci-summary-top">
+        <span class="ci-summary-kicker">Incident context</span>
+        <span class="ci-summary-chip">${esc(item?.city || 'Unknown city')}${item?.country ? ' · ' + esc(item.country) : ''}</span>
+        <span class="ci-summary-chip">${esc(statusLabel(st))}</span>
+      </div>
+      <div class="ci-summary-grid">
+        <div class="ci-summary-box"><strong>Risk</strong><span>${esc(item?.risk || 'n/a')}</span></div>
+        <div class="ci-summary-box"><strong>Assets nearby</strong><span>${aList.length}</span></div>
+        <div class="ci-summary-box"><strong>Travellers nearby</strong><span>${tList.length}</span></div>
+      </div>
+    </div>
+  `;
+
   if (st === 'escalated'){
+    html += mkField('Personnel affected', `
+      <label class="ci-check">
+        <input id="ciPersonnelAffected" type="checkbox" ${(pre.personnelAffected || hasTravellers) ? 'checked' : ''}/>
+        Personnel affected
+      </label>
+    `);
+
     html += mkField('Urgency', `
       <div class="ci-check-list">
-        ${['Urgent'].map((t)=>`<label class="ci-check"><input type="radio" name="ciUrgency" value="urgent" ${(pre.urgency==='urgent')?'checked':''}/> ${t}</label>`).join('')}
+        ${['Urgent'].map((t)=>`<label class="ci-check"><input type="radio" name="ciUrgency" value="urgent" ${(pre.urgency==='urgent' || !pre.urgency)?'checked':''}/> ${t}</label>`).join('')}
       </div>
     `);
 
@@ -3508,7 +3551,8 @@ function buildTransitionBody(item, status){
       <div class="ci-check-list">
         ${['Threshold met','Event within proximity','Assets affected','Personnel affected'].map((t,i)=>{
           const k = ['threshold','proximity','assets','personnel'][i];
-          const on = Array.isArray(pre.reasons) && pre.reasons.includes(k);
+          const auto = (k === 'assets' && hasAssets) || (k === 'personnel' && hasTravellers);
+          const on = (Array.isArray(pre.reasons) && pre.reasons.includes(k)) || (!Array.isArray(pre.reasons) && auto);
           return `<label class="ci-check"><input type="checkbox" data-ci-reason="${k}" ${on?'checked':''}/> ${t}</label>`;
         }).join('')}
       </div>
@@ -3525,17 +3569,20 @@ function buildTransitionBody(item, status){
     `);
 
     html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
-    html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${String(pre.location||'').replace(/"/g,'&quot;')}">`);
+    html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${esc(pre.location||'')}">`);
 
-    html += mkField('Assets nearby', `<textarea id="ciAssets" readonly>${aList.map(a=>a.name || a.assetName || a.label || 'Asset').join('\n') || 'None'}</textarea>`);
-    html += mkField('Travellers nearby', `<textarea id="ciTravellers" readonly>${tList.map(t=>t.name || t.travellerName || t.label || 'Traveller').join('\n') || 'None'}</textarea>`);
+    html += mkField('Assets nearby', `<textarea id="ciAssets" readonly>${aList.map(formatAsset).join('
+') || 'None mapped in proximity'}</textarea>`);
+    html += mkField('Travellers nearby', `<textarea id="ciTravellers" readonly>${tList.map(formatTraveller).join('
+') || 'None mapped in proximity'}</textarea>`);
 
   } else if (st === 'cleared') {
     html += mkField('Reason cleared', `
       <div class="ci-check-list">
         ${['Threshold not met','Not within proximity','No affected assets','No affected personnel','Already escalated'].map((t,i)=>{
           const k = ['threshold_not_met','not_within_proximity','no_assets','no_personnel','already_escalated'][i];
-          const on = Array.isArray(pre.reasons) && pre.reasons.includes(k);
+          const auto = (k === 'no_assets' && !hasAssets) || (k === 'no_personnel' && !hasTravellers);
+          const on = (Array.isArray(pre.reasons) && pre.reasons.includes(k)) || (!Array.isArray(pre.reasons) && auto);
           return `<label class="ci-check"><input type="checkbox" data-ci-reason="${k}" ${on?'checked':''}/> ${t}</label>`;
         }).join('')}
       </div>
@@ -3569,6 +3616,9 @@ function collectTransitionPayload(status){
   const payload = {};
   const reasons = [...document.querySelectorAll('#ciTransitionBody [data-ci-reason]')].filter(x=>x.checked).map(x=>x.getAttribute('data-ci-reason'));
   if (reasons.length) payload.reasons = reasons;
+
+  const personnelAffected = document.getElementById('ciPersonnelAffected');
+  if (personnelAffected) payload.personnelAffected = !!personnelAffected.checked;
 
   const calls = [...document.querySelectorAll('#ciTransitionBody [data-ci-call]')].filter(x=>x.checked).map(x=>x.getAttribute('data-ci-call'));
   if (calls.length) payload.callTree = calls;
