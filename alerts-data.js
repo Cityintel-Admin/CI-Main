@@ -19,6 +19,7 @@ window.alertsData =[
   source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
+  
 
   {
   title: "No Tourism on Stolen Land",
