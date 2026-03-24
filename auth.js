@@ -277,13 +277,13 @@
 
       const roleKey = String(sub.roleKey || '').toLowerCase() === 'org-admin' ? 'org-admin' : 'operator';
       const profile = normalizeProfile({
-        email: e,
-        name: sub.name || e.split('@')[0],
-        role: roleStringForCompatibility(roleKey),
-        roleKey,
-        roleLabel: roleLabelFromKey(roleKey),
-        is_admin: false,
-        is_master: false
+      email: e,
+      name: admin.name,
+      role: admin.role,
+      roleKey: admin.roleKey,
+      roleLabel: admin.roleLabel,
+      is_admin: admin.roleKey === 'master-admin',
+      is_master: admin.roleKey === 'master-admin'
       });
 
       persistProfile(profile);
