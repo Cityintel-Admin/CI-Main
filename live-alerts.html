@@ -1,4 +1,4 @@
-  
+ 
    
 <!doctype html>
 <html lang="en">
@@ -2349,7 +2349,12 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="page-title-actions">
-        
+        <a href="assets.html" class="btn-outline-pill">
+          🏢 Manage assets
+        </a>
+        <a href="travellers.html" class="btn-outline-pill">
+          ✈️ Manage travellers
+        </a>
       </div>
 	</div>
 
@@ -2420,6 +2425,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
       <button type="button" class="queue-btn" data-queue="cleared">
         Cleared <span class="queue-count" id="qCleared">0</span>
+      </button>
+      <button type="button" class="queue-btn" data-queue="draft">
+        Drafts <span class="queue-count" id="qDrafts">0</span>
       </button>
     </div>
     <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
@@ -2535,9 +2543,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <label class="disp-label" for="detailDisposition">Disposition</label>
         <select id="detailDisposition" class="disp-select">
           <option value="untriaged">Untriaged</option>
-          <option value="escalated">Escalate</option>
-          <option value="monitoring">Monitor</option>
-          <option value="cleared">Clear</option>
+          <option value="escalated">Escalated</option>
+          <option value="monitoring">Monitoring</option>
+          <option value="cleared">Cleared</option>
         </select>
         <span id="detailDispositionUpdated" class="disp-updated" style="display:none;"></span>
       </div>
@@ -3685,15 +3693,18 @@ function loadTransitionMap(){
 function saveTransitionMap(map){
   try{ localStorage.setItem(CI_ALERT_TRANSITION_KEY, JSON.stringify(map || {})); }catch(_){}
 }
-function saveTransitionPayload(ev, status, payload){
+function saveTransitionPayload(ev, status, payload, opts){
   const user = getOperatorEmail();
   const key = alertKey(ev);
   const map = loadTransitionMap();
+  const meta = opts || {};
   map[user] = map[user] || {};
   map[user][key] = {
     status: String(status||'').toLowerCase(),
     payload: payload || {},
-    savedAt: Date.now()
+    savedAt: Date.now(),
+    draft: !!meta.draft,
+    targetStatus: String(meta.targetStatus || status || '').toLowerCase()
   };
   saveTransitionMap(map);
 }
@@ -3702,6 +3713,23 @@ function getTransitionPayload(ev){
   const key = alertKey(ev);
   const map = loadTransitionMap();
   return map?.[user]?.[key] || null;
+}
+
+function hasTransitionDraft(ev){
+  const rec = getTransitionPayload(ev);
+  return !!(rec && rec.draft);
+}
+
+function getDraftTargetStatus(ev){
+  const rec = getTransitionPayload(ev);
+  return String(rec?.targetStatus || rec?.status || '').toLowerCase();
+}
+
+function draftActionLabel(status){
+  const st = String(status || '').toLowerCase();
+  if (st === 'cleared') return 'Clear Incident';
+  if (st === 'monitoring') return 'Move to Monitoring';
+  return 'Escalate Incident';
 }
 
 function toLocalInputValue(iso){
@@ -3876,6 +3904,7 @@ function openTransitionModal(item, status, handlers){
   const ctxEl   = document.getElementById('ciTransitionContext');
   const bodyEl  = document.getElementById('ciTransitionBody');
   const btnCancel = document.getElementById('ciTransitionCancel');
+  const btnDraft  = document.getElementById('ciTransitionDraft');
   const btnSave   = document.getElementById('ciTransitionSave');
 
   // If modal markup missing, just continue
@@ -3888,6 +3917,8 @@ function openTransitionModal(item, status, handlers){
   pillEl.textContent = statusLabel(st);
   ctxEl.textContent = item?.title || 'Incident';
   metaEl.textContent = `${item?.city || 'Unknown'} • ${(item?.risk||'n/a')} • ${fmtWhen(item?.when)}`;
+  btnSave.textContent = draftActionLabel(st);
+  if (btnDraft) btnDraft.style.display = (st === 'escalated' || st === 'cleared' || st === 'monitoring') ? '' : 'none';
 
   bodyEl.innerHTML = buildTransitionBody(item, st);
 
@@ -3900,29 +3931,44 @@ function openTransitionModal(item, status, handlers){
     overlay.setAttribute('aria-hidden','true');
   };
 
+  const cleanup = ()=>{
+    btnCancel.removeEventListener('click', onCancel);
+    if (btnDraft) btnDraft.removeEventListener('click', onDraft);
+    btnSave.removeEventListener('click', onSave);
+  };
+
   const onCancel = ()=>{
     close();
-    btnCancel.removeEventListener('click', onCancel);
-    btnSave.removeEventListener('click', onSave);
+    cleanup();
     if (handlers.onCancel) handlers.onCancel();
+  };
+
+  const syncDetailNote = (payload)=>{
+    if (detailDispositionNoteEl && payload && payload.note != null){
+      detailDispositionNoteEl.value = String(payload.note || '');
+    }
+  };
+
+  const onDraft = ()=>{
+    const payload = collectTransitionPayload(st);
+    saveTransitionPayload(item, st, payload, { draft:true, targetStatus: st });
+    syncDetailNote(payload);
+    close();
+    cleanup();
+    if (handlers.onDraft) handlers.onDraft(payload);
   };
 
   const onSave = ()=>{
     const payload = collectTransitionPayload(st);
-    saveTransitionPayload(item, st, payload);
-
-    // If note entered in modal, push it back to the detail note input
-    if (detailDispositionNoteEl && payload.note != null){
-      detailDispositionNoteEl.value = String(payload.note || '');
-    }
-
+    saveTransitionPayload(item, st, payload, { draft:false, targetStatus: st });
+    syncDetailNote(payload);
     close();
-    btnCancel.removeEventListener('click', onCancel);
-    btnSave.removeEventListener('click', onSave);
+    cleanup();
     if (handlers.onSave) handlers.onSave(payload);
   };
 
   btnCancel.addEventListener('click', onCancel);
+  if (btnDraft) btnDraft.addEventListener('click', onDraft);
   btnSave.addEventListener('click', onSave);
 
   // click outside
@@ -4577,6 +4623,14 @@ document.addEventListener('keydown', (e) => {
       };
       openTransitionModal(item, st, {
         onCancel: revert,
+        onDraft: (payload)=>{
+          const modalNote = (payload && payload.note != null) ? String(payload.note||'') : note;
+          try { detailDispositionEl.value = prevSt; } catch(e) {}
+          setDisposition(item, prevSt, modalNote);
+          refreshStatusBadges();
+          try{ if (typeof window.ciRefreshMapSidebarFeeds==='function') window.ciRefreshMapSidebarFeeds(); }catch(e){}
+          try{ if (typeof window.ciUpdateQueueCounts==='function') window.ciUpdateQueueCounts(); }catch(e){}
+        },
         onSave: (payload)=>{
           // persist note from modal + refresh badges immediately
           const modalNote = (payload && payload.note != null) ? String(payload.note||'') : note;
@@ -5375,7 +5429,7 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
 
   // IMPORTANT: use the name "map" everywhere
   const map = L.map('liveRiskMap', {
-    scrollWheelZoom: true,
+    scrollWheelZoom: false,
     worldCopyJump: false,
     maxBounds: WORLD_BOUNDS,
     maxBoundsViscosity: 1.0,
@@ -5387,7 +5441,13 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
 
 L.control.zoom({ position: 'topright' }).addTo(map);
 	
-	
+	map.getContainer().addEventListener('wheel', (e) => {
+  if (e.ctrlKey) {
+    map.scrollWheelZoom.enable();
+  } else {
+    map.scrollWheelZoom.disable();
+  }
+}, { passive: true });
   map.fitBounds(WORLD_BOUNDS);
 
   // --- Basemap: Esri World Topographic (cleaner than default OSM tiles) ---
@@ -6189,13 +6249,14 @@ function redrawIncidentRadius(){
   function renderQueueList(status){
     const st = String(status||'').toLowerCase();
     const label =
+      st === 'draft' ? 'Draft queue' :
       st === 'escalated' ? 'Escalated queue' :
       st === 'monitoring' ? 'Monitoring queue' :
       st === 'cleared' ? 'Cleared queue' :
       'Queue';
 
     const all = collectAllCachedEvents();
-    const items = filterByDisposition(all, st).slice(0, 30);
+    const items = (st === 'draft' ? all.filter(ev => hasTransitionDraft(ev)) : filterByDisposition(all, st)).slice(0, 30);
 
     openFeedId = '__queue__' + st;
     window.__ciOpenFeedId = openFeedId;
@@ -6247,7 +6308,7 @@ function redrawIncidentRadius(){
         </div>
         <div class="map-alert-meta">
           ${riskPill(ev.risk)}
-          ${renderStatusPill(getDisposition(ev))}
+          ${st === 'draft' ? `<span class="ci-status-pill" data-status="monitoring">Draft · ${safe(statusLabel(getDraftTargetStatus(ev) || 'untriaged'))}</span>` : renderStatusPill(getDisposition(ev))}
           <span style="opacity:.85;">${safe(city)}</span>
         </div>
       `;
@@ -6268,13 +6329,16 @@ function redrawIncidentRadius(){
     const esc = filterByDisposition(all, 'escalated').length;
     const mon = filterByDisposition(all, 'monitoring').length;
     const clr = filterByDisposition(all, 'cleared').length;
+    const drf = all.filter(ev => hasTransitionDraft(ev)).length;
 
     const a = document.getElementById('qEscalated');
     const b = document.getElementById('qMonitoring');
     const c = document.getElementById('qCleared');
+    const d = document.getElementById('qDrafts');
     if (a) a.textContent = esc;
     if (b) b.textContent = mon;
     if (c) c.textContent = clr;
+    if (d) d.textContent = drf;
   }
   window.ciUpdateQueueCounts = updateQueueCounts;
 
@@ -6822,8 +6886,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <div id="ciTransitionBody" class="ci-form-grid"></div>
     </div>
     <footer>
-      <button type="button" class="ci-btn" id="ciTransitionCancel">Cancel</button>
-      <button type="button" class="ci-btn primary" id="ciTransitionSave">Save</button>
+      <button type="button" class="ci-btn ghost sep" id="ciTransitionCancel">Cancel</button>
+      <button type="button" class="ci-btn ghost sep" id="ciTransitionDraft">Save as Draft</button>
+      <button type="button" class="ci-btn primary" id="ciTransitionSave">Escalate Incident</button>
     </footer>
   </div>
 </div>
