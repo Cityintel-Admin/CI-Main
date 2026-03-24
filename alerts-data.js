@@ -19,6 +19,21 @@ window.alertsData =[
   source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
+
+  {
+  title: "Stop the Hate Solidarity Rally",
+  city: "London",
+  lat: 51.5721,
+  lng: -0.1948,
+  address: "20 Russell Parade, Golders Green Road",
+  postcode: "NW11 9NN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Moderate",
+  time: "2026-03-23T18:30:00",
+  source: "https://www.jewishnews.co.uk/rally-to-be-held-in-golders-green-in-response-to-firebombing-of-hatzola-ambulances/",
+  summary: "An urgent community rally organised by 'Stop the Hate' and 'OurFight' following an arson attack on Jewish community ambulances. The event aims to stand in solidarity with the Jewish community and confront rising antisemitism."
+},
   
 
   {
@@ -49,8 +64,7 @@ window.alertsData =[
   source: "https://www.merseyside.police.uk/news/merseyside/news/2026/march-2026/six-arrests-made-following-ukip-procession-and-counter-protest-in-liverpool/",
   summary: "Planned UKIP procession through Liverpool city centre met by a counter-protest. Six arrests made. A Section 60 order was implemented by police due to potential for disorder."
 },
-
-  {
+{
   title: "Unite the Clans Rally (Anti-Immigration)",
   city: "Edinburgh",
   lat: 55.9527,
@@ -108,8 +122,7 @@ window.alertsData =[
   source: "https://www.pcs.org.uk/news-events/events/trade-union-rights-rally-campaigning-employment-rights-2-bill",
   summary: "Campaign rally organized by the Campaign for Trade Union Freedom and Strike Map. Demands a second bill to strengthen collective bargaining and workplace protections following the 2025 Employment Rights Act."
 },
-
-  {
+{
   title: "Rally and March for Gaza",
   city: "Calgary",
   lat: "51.04551",
