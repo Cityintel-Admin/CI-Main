@@ -160,27 +160,19 @@
     setLiveStatus({ lastUpdated: ciStatusTime() });
   }
 
-  function extractOrgArray(json, primaryKey){
-    if (!json || typeof json !== 'object') return null;
-    if (Array.isArray(json.data)) return json.data;
-    if (primaryKey && Array.isArray(json[primaryKey])) return json[primaryKey];
-    return null;
-  }
-
   async function syncOrgTravellers(){
     try{
       const headers = await authHeaders();
       const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/travellers'), { headers });
       const json = await res.json().catch(()=>null);
-      const travellers = extractOrgArray(json, 'travellers');
-      if(res.ok && Array.isArray(travellers)){
+      if(json && json.ok && Array.isArray(json.data)){
         try{
-          localStorage.setItem('ci_travellers', JSON.stringify(travellers));
+          localStorage.setItem('ci_travellers', JSON.stringify(json.data));
         }catch(_){}
-        window.CITravellers = travellers;
-        return travellers;
+        window.CITravellers = json.data;
+        return json.data;
       }
-      throw new Error((json && (json.error || json.message)) || ('travellers response invalid (' + res.status + ')'));
+      throw new Error('travellers response invalid');
     }catch(e){
       try{ window.CITravellers = JSON.parse(localStorage.getItem('ci_travellers') || '[]'); }catch(_){ window.CITravellers = []; }
       throw e;
@@ -192,15 +184,14 @@
       const headers = await authHeaders();
       const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/assets'), { headers });
       const json = await res.json().catch(()=>null);
-      const assets = extractOrgArray(json, 'assets');
-      if(res.ok && Array.isArray(assets)){
+      if(json && json.ok && Array.isArray(json.data)){
         try{
-          localStorage.setItem('ci_assets', JSON.stringify(assets));
+          localStorage.setItem('ci_assets', JSON.stringify(json.data));
         }catch(_){}
-        window.CIAssets = assets;
-        return assets;
+        window.CIAssets = json.data;
+        return json.data;
       }
-      throw new Error((json && (json.error || json.message)) || ('assets response invalid (' + res.status + ')'));
+      throw new Error('assets response invalid');
     }catch(e){
       try{ window.CIAssets = JSON.parse(localStorage.getItem('ci_assets') || '[]'); }catch(_){ window.CIAssets = []; }
       throw e;
@@ -356,22 +347,30 @@ const st = await fetchPanic();
 
 <script>
 async function loadOrgContext() {
-  const res = await fetch('https://api.cityintelapi.com/api/org/me', {
-    headers: {
-      'X-User-Email': user.email,
-      'X-User-Name': user.name,
-      'X-User-Id': user.id
+  try {
+    const headers = await authHeaders();
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/me'), { headers });
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok || !json) {
+      throw new Error((json && (json.error || json.message)) || ('org context failed (' + res.status + ')'));
     }
-  });
-  const json = await res.json();
 
-  if (!json.org) {
-    // show "Create or Join Organisation" modal
-    showOrgOnboarding();
-    return;
+    if (!json.org) {
+      if (typeof window.showOrgOnboarding === 'function') {
+        window.showOrgOnboarding();
+      }
+      window.currentOrg = null;
+      return null;
+    }
+
+    window.currentOrg = json.org;
+    return json.org;
+  } catch (e) {
+    console.warn('CityIntel: loadOrgContext failed', e);
+    window.currentOrg = null;
+    return null;
   }
-
-  window.currentOrg = json.org;
 }
 </script>
 
@@ -503,7 +502,7 @@ async function loadOrgContext() {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
   <style>
-      :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
+      :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2;--muted:#8e97a3;--g600:#2e3238;--line:#24272c}
       body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
 
      .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
@@ -1724,6 +1723,7 @@ async function loadOrgContext() {
 
 :root{
   --workspace-h: clamp(700px, 85vh, 1100px);
+}
 
 /* This is critical – gives the Leaflet container height */
 #liveRiskMap{
@@ -1746,7 +1746,7 @@ async function loadOrgContext() {
   display:flex;
   flex-direction:column;
   gap:12px;
-  grid-column: 1;	
+  grid-column: 1;
   overflow: hidden;
 }
 
@@ -1754,7 +1754,7 @@ async function loadOrgContext() {
 .map-alerts-scroll{
   flex:1;
   overflow-y:auto;
-  padding-right:6px; /* space for scrollbar */
+  padding-right:6px;
 }
 
 /* Footer stays visible */
@@ -1764,28 +1764,12 @@ async function loadOrgContext() {
   background:#05070b;
 }
 
-/* Back button styling */
-.map-back-btn{
-  width:100%;
-  border-radius:999px;
-  border:1px solid #4b5563;
-  background:#111827;
-  color:#e5e7eb;
-  font-size:12px;
-  padding:6px 0;
-  cursor:pointer;
-}
-
-.map-back-btn:hover{
-  background:#1f2937;
-}
-
 /* The list should scroll, not the whole panel */
 #mapAlertsList{
   flex:1;
-  padding-bottom: 44px;
+  padding-bottom:44px;
   overflow-y:auto;
-  max-height:none; /* override earlier max-height if set */
+  max-height:none;
 }
 
 /* Keep the Back button always visible */
@@ -1793,7 +1777,7 @@ async function loadOrgContext() {
   position: sticky;
   bottom: 0;
   margin-top: 8px;
-  background: #05070b;           /* match panel bg */
+  background: #05070b;
   border: 1px dashed #4b5563;
   border-radius: 999px;
 }
@@ -1830,21 +1814,16 @@ async function loadOrgContext() {
   margin-left:auto;
   white-space:nowrap;
   padding:4px 10px;
-
   font-size:11px;
   font-weight:600;
-
   color:#e5e7eb;
   background:#1f2937;
   border:1px solid #374151;
-
   border-radius:999px;
   cursor:pointer;
   text-decoration:none;
-
   transition: all 0.2s ease;
 }
-
 .admin-quick-link:hover{
   background:#2a2d32;
   border-color:#D01616;
@@ -1868,6 +1847,26 @@ async function loadOrgContext() {
 }
 .gm-asset{ background:#3b82f6; }
 .gm-trav{  background:#f97316; }
+.gm-cam{ background:#a855f7; }
+
+.layer-toggle-btn{
+  margin-left:auto;
+  white-space:nowrap;
+  padding:4px 10px;
+  font-size:11px;
+  font-weight:700;
+  color:#e5e7eb;
+  background:#111827;
+  border:1px solid #374151;
+  border-radius:999px;
+  cursor:pointer;
+}
+.layer-toggle-btn:hover{ background:#1f2937; }
+.layer-toggle-btn.active{
+  background:rgba(168,85,247,.18);
+  border-color:rgba(168,85,247,.65);
+  color:#f3e8ff;
+}
 
 /* Feed list inside side panel */
 .global-map-feeds-block{
@@ -1911,7 +1910,6 @@ async function loadOrgContext() {
   background:#1f2937;
 }
 
-/* subtle highlight when a feed is jumped to */
 .feed-card-highlight{
   box-shadow:0 0 0 2px rgba(248,113,113,.7);
   transition:box-shadow .25s ease;
@@ -1921,9 +1919,10 @@ async function loadOrgContext() {
   display:none !important;
 }
 
-/* asset / traveller markers */
+/* asset / traveller / camera markers */
 .ci-asset-marker,
-.ci-trav-marker{
+.ci-trav-marker,
+.ci-cam-marker{
   background:#111827;
   border-radius:999px;
   border:2px solid #000;
@@ -1934,8 +1933,9 @@ async function loadOrgContext() {
   line-height:18px;
   text-align:center;
 }
-.ci-asset-marker{ background:#3b82f6; }    /* blue */
-.ci-trav-marker{ background:#f97316; }    /* orange */
+.ci-asset-marker{ background:#3b82f6; }
+.ci-trav-marker{ background:#f97316; }
+.ci-cam-marker{ background:#a855f7; }
 
     @media (max-width:900px){
       .app{
@@ -2412,6 +2412,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="gm-legend-row gm-legend-row-action">
         <div class="gm-legend-label"><span class="gm-dot gm-trav"></span><span>Travellers</span></div>
         <a href="travellers.html" class="chip-btn admin-quick-link" data-role-action="travellers">Manage Travellers</a>
+      </div>
+      <div class="gm-legend-row gm-legend-row-action">
+        <div class="gm-legend-label"><span class="gm-dot gm-cam"></span><span>JamCams</span></div>
+        <button type="button" id="jamcamToggleBtn" class="layer-toggle-btn" title="Toggle official TfL JamCam cameras">Off</button>
       </div>
     </div>
 	  
@@ -5824,6 +5828,117 @@ setTimeout(settleMap, 600);
   try { if (window.__ciPanicState) window.CIPanicMap.setState(window.__ciPanicState); } catch(e) {}
 
 
+  const jamcamLayer = L.layerGroup().addTo(map);
+  const jamcamToggleBtn = document.getElementById('jamcamToggleBtn');
+  const jamcamIcon = L.divIcon({
+    className: 'ci-cam-marker',
+    html: 'C',
+    iconSize: [18, 18]
+  });
+  let jamcamEnabled = false;
+  let jamcamLoadedAt = 0;
+  const JAMCAM_CACHE_MS = 3 * 60 * 1000;
+  const JAMCAM_ENDPOINTS = [
+    API_ORIGIN + '/api/tfl-jamcams',
+    'https://api.tfl.gov.uk/Place/Type/JamCam?activeOnly=true'
+  ];
+
+  function getJamCamImage(place){
+    const props = Array.isArray(place?.additionalProperties) ? place.additionalProperties : [];
+    for (const p of props){
+      const key = String(p?.key || p?.category || '').toLowerCase();
+      const val = String(p?.value || '').trim();
+      if (!val) continue;
+      if (key.includes('image') || key.includes('photo') || key.includes('camera') || /\.(jpg|jpeg|png|webp)(\?|$)/i.test(val)) {
+        return val;
+      }
+    }
+    const direct = String(place?.imageUrl || place?.url || '').trim();
+    return direct || '';
+  }
+
+  function parseJamCamRows(payload){
+    const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.places) ? payload.places : []);
+    return rows.map((row) => {
+      const lat = Number(row?.lat ?? row?.latitude ?? row?.placeLat);
+      const lon = Number(row?.lon ?? row?.lng ?? row?.longitude ?? row?.placeLon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+      return {
+        id: row?.id || row?.naptanId || row?.commonName || `${lat},${lon}`,
+        lat,
+        lon,
+        name: row?.commonName || row?.name || 'JamCam',
+        image: getJamCamImage(row),
+        modified: row?.modified || row?.lastUpdated || row?.timestamp || '',
+        raw: row
+      };
+    }).filter(Boolean);
+  }
+
+  async function fetchJamCamPayload(){
+    let lastErr = null;
+    for (const endpoint of JAMCAM_ENDPOINTS){
+      try {
+        const res = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json().catch(() => null);
+        if (json) return json;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (lastErr) throw lastErr;
+    return null;
+  }
+
+  async function refreshJamCams(force){
+    if (!jamcamEnabled) return;
+    if (!force && (Date.now() - jamcamLoadedAt) < JAMCAM_CACHE_MS) return;
+    jamcamLayer.clearLayers();
+
+    try {
+      const payload = await fetchJamCamPayload();
+      const rows = parseJamCamRows(payload);
+      rows.forEach((cam) => {
+        const imgHtml = cam.image
+          ? `<div style="margin-top:8px"><img src="${escapeHtml(cam.image)}" alt="${escapeHtml(cam.name)}" style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)"></div>`
+          : `<div style="margin-top:8px;font-size:12px;opacity:.8">Latest image unavailable from feed.</div>`;
+        const meta = cam.modified ? `<div style="font-size:12px;opacity:.8;margin-top:4px">Updated: ${escapeHtml(String(cam.modified))}</div>` : '';
+        const popup = `<div style="min-width:220px">
+          <div style="font-weight:800;color:#fff">${escapeHtml(cam.name)}</div>
+          <div style="font-size:12px;opacity:.85;margin-top:4px">Official TfL JamCam feed</div>
+          ${meta}
+          ${imgHtml}
+        </div>`;
+        L.marker([cam.lat, cam.lon], { icon: jamcamIcon, zIndexOffset: 900 }).addTo(jamcamLayer).bindPopup(popup, { maxWidth: 280 });
+      });
+      jamcamLoadedAt = Date.now();
+      if (jamcamToggleBtn) jamcamToggleBtn.textContent = rows.length ? `On (${rows.length})` : 'On';
+    } catch (err) {
+      console.warn('CityIntel: JamCam layer unavailable', err);
+      if (jamcamToggleBtn) jamcamToggleBtn.textContent = 'Unavailable';
+    }
+  }
+
+  async function setJamCamEnabled(next){
+    jamcamEnabled = !!next;
+    if (jamcamToggleBtn) {
+      jamcamToggleBtn.classList.toggle('active', jamcamEnabled);
+      jamcamToggleBtn.textContent = jamcamEnabled ? 'Loading…' : 'Off';
+    }
+    if (!jamcamEnabled) {
+      jamcamLayer.clearLayers();
+      return;
+    }
+    await refreshJamCams(true);
+  }
+
+  if (jamcamToggleBtn) {
+    jamcamToggleBtn.addEventListener('click', () => {
+      setJamCamEnabled(!jamcamEnabled).catch((err) => console.warn('JamCam toggle failed', err));
+    });
+  }
+
   // ---- Hotel clustering layer (travellers at same hotel, even if coords differ) ----
   const hotelLayer = L.layerGroup().addTo(map);
 
@@ -6004,6 +6119,12 @@ const assetIcon = L.divIcon({
     refreshHotelClusters();
 
 }
+
+  map.on('moveend zoomend', () => {
+    if (jamcamEnabled) {
+      refreshJamCams(false).catch((err) => console.warn('JamCam refresh failed', err));
+    }
+  });
 
   // ---- React when an incident is opened (jump to city) ----
     function pulseAt(lat, lon, label){
