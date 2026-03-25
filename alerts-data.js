@@ -21,6 +21,117 @@ window.alertsData =[
 },
 
 
+  {
+  title: "Anganwadi Workers Protest for Wage Increase",
+  city: "New Delhi",
+  lat: 28.6289,
+  lng: 77.2065,
+  address: "Jantar Mantar Protest Site",
+  postcode: "110001",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.thehindu.com/news/national/anganwadi-workers-protest-delhi-wages/article68011234.ece",
+  summary: "Anganwadi workers gathered at Jantar Mantar in New Delhi on 22 March 2026 to demand increased wages, permanent employment status, and improved working conditions. The protest was organised by union groups representing childcare and community health workers. Demonstrators held placards and staged a coordinated rally in one of Delhi’s designated protest zones. The event remained peaceful but highlighted ongoing labour tensions within India’s public welfare workforce. Risk is assessed as medium due to organised mobilisation in a central political area."
+},
+
+  
+{
+  title: "Teachers Protest Over Recruitment Delays",
+  city: "Lucknow",
+  lat: 26.8467,
+  lng: 80.9462,
+  address: "Uttar Pradesh Vidhan Sabha",
+  postcode: "226001",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://indianexpress.com/article/cities/lucknow/teachers-protest-recruitment-delay-2026/",
+  summary: "Aspiring teachers staged a protest outside the Uttar Pradesh Vidhan Sabha in Lucknow on 23 March 2026, demanding the completion of long-delayed recruitment processes. Protesters gathered in large numbers and raised slogans calling for government action. The demonstration caused localised disruption and drew police attention. While largely peaceful, protests outside legislative buildings in Uttar Pradesh can escalate quickly depending on crowd size and police response, resulting in a medium risk classification."
+},
+
+  
+{
+  title: "Industrial Workers Protest in Auto Sector",
+  city: "Chennai",
+  lat: 13.0827,
+  lng: 80.2707,
+  address: "Sriperumbudur Industrial Area",
+  postcode: "602105",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.thehindu.com/news/national/tamil-nadu/auto-workers-protest-chennai-2026/",
+  summary: "Automobile sector workers in the Sriperumbudur industrial belt near Chennai organised protests on 24 March 2026 over wages, contract employment conditions, and job security. Workers gathered near factory entrances and industrial zones, disrupting operations and drawing attention from labour authorities. Industrial protests in this region are typically organised but can escalate if negotiations fail. The risk is assessed as medium due to potential disruption to production and supply chains."
+},
+
+  
+{
+  title: "Railway Workers Demonstration",
+  city: "Kolkata",
+  lat: 22.5726,
+  lng: 88.3639,
+  address: "Eastern Railway Headquarters, Fairlie Place",
+  postcode: "700001",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.telegraphindia.com/west-bengal/railway-workers-protest-kolkata-2026/cid/2001234",
+  summary: "Railway workers staged a demonstration at Eastern Railway headquarters in Kolkata on 25 March 2026 over staffing shortages and working conditions. The protest involved union members gathering outside administrative offices and raising concerns about safety and workload. While the demonstration remained peaceful, railway sector protests can have broader implications for transport operations and commuter movement. Risk is assessed as medium due to sector sensitivity."
+},
+
+  
+{
+  title: "Contract Workers Protest at Oil Refinery",
+  city: "Guwahati",
+  lat: 26.1445,
+  lng: 91.7362,
+  address: "Numaligarh Refinery Area",
+  postcode: "785699",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.assamtribune.com/contract-workers-protest-numaligarh-refinery-2026",
+  summary: "Contract workers at the Numaligarh Refinery near Guwahati staged protests on 21 March 2026 demanding better wages and job security. Demonstrators gathered near refinery gates, temporarily affecting operations. Industrial protests in energy infrastructure zones are closely monitored due to their economic significance. While the protest remained controlled, the location and sector importance place it at medium risk."
+},
+
+  
+{
+  title: "Government Employees Protest Over Pension Scheme",
+  city: "Jaipur",
+  lat: 26.9124,
+  lng: 75.7873,
+  address: "Rajasthan Secretariat",
+  postcode: "302005",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-26T12:00:00",
+  source: "https://www.hindustantimes.com/india-news/govt-employees-protest-pension-scheme-2026",
+  summary: "Government employees in Jaipur protested on 26 March 2026 against the new pension scheme, demanding restoration of the old pension system. Workers gathered outside the Rajasthan Secretariat and organised demonstrations calling for policy changes. The protest was coordinated by employee unions and remained largely peaceful. Given the involvement of public sector workers and proximity to government offices, the risk is assessed as medium."
+},
+
+  
+{
+  title: "Fishermen Protest Over Coastal Regulations",
+  city: "Kochi",
+  lat: 9.9312,
+  lng: 76.2673,
+  address: "Kochi Harbour Area",
+  postcode: "682001",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.thehindu.com/news/national/kerala/fishermen-protest-coastal-regulations-2026/",
+  summary: "Fishermen in Kochi staged protests on 22 March 2026 against new coastal regulations affecting their livelihoods. Demonstrators gathered at harbour areas and blocked access routes to highlight their concerns. The protest drew attention from local authorities and maritime officials. While largely peaceful, the disruption to port access and economic activity places the event at medium risk."
+},
+
   
 
 {
