@@ -20,6 +20,81 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+
+
+
+{
+  title: "Anti-American Demonstrations",
+  city: "Abuja",
+  lat: 9.0765,
+  lng: 7.3986,
+  address: "US Embassy Area, Diplomatic Drive",
+  postcode: "900103",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-22T10:00:00",
+  source: "https://www.criticalthreats.org/analysis/nigeria-iran-rwanda-m23-ethiopia-sudan-rsf-somalia-africa-file-march-5-2026",
+  summary: "Anti-American protests have emerged in Nigeria in response to escalating geopolitical tensions involving the United States and Iran. Demonstrations have been reported in Abuja and other major cities, with protesters expressing anger over foreign policy decisions and perceived Western interference. These protests are often politically charged and can attract large crowds, including activist groups and political organisations. Given Nigeria’s history of rapid escalation during politically sensitive demonstrations, there is a high risk of disorder, especially near diplomatic zones. Security forces are likely to be deployed in significant numbers to protect embassies and maintain control. The situation remains volatile due to wider regional instability and economic pressures, increasing the likelihood of clashes or disruption."
+},
+{
+  title: "Student Protest Over Financial Crisis",
+  city: "Dakar",
+  lat: 14.6928,
+  lng: -17.4467,
+  address: "Cheikh Anta Diop University",
+  postcode: "11000",
+  country: "Senegal",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-25T11:00:00",
+  source: "https://www.reuters.com/world/africa/student-dies-senegal-university-protests-over-finances-escalate-2026-02-10/",
+  summary: "Ongoing student protests at Cheikh Anta Diop University in Dakar are expected to continue into late March and April amid unresolved financial grievances. The demonstrations began in late 2025 over unpaid student stipends and deteriorating economic conditions. Tensions escalated significantly following the death of a student during clashes with police, which has intensified anger toward authorities. Protests typically occur on or around campus and can rapidly expand into surrounding areas. Police responses have previously included forceful dispersal tactics, raising the risk of further confrontation. The persistence of the underlying issues and recent fatality elevate the risk level to high, with potential for renewed clashes, campus shutdowns, and broader civil unrest."
+},
+{
+  title: "Anti-Government Protest Activity (Election Fallout)",
+  city: "Dar es Salaam",
+  lat: -6.7924,
+  lng: 39.2083,
+  address: "City Centre / Government District",
+  postcode: "11101",
+  country: "Tanzania",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-24T09:00:00",
+  source: "https://www.hrw.org/news/2026/03/19/tanzania-bystanders-shot-in-post-election-crackdown",
+  summary: "Following the disputed 2025 general election, Tanzania continues to experience sporadic anti-government protest activity, particularly in Dar es Salaam. Demonstrations were initially triggered by the disqualification of opposition candidates and allegations of political repression. Security forces have responded with significant force, including the use of live ammunition and mass arrests, resulting in civilian casualties. Although large-scale protests have been suppressed, tensions remain high and smaller gatherings or flash demonstrations are likely to occur. The risk remains elevated due to the government's zero-tolerance approach and the potential for rapid escalation if protests re-emerge in central areas."
+},
+{
+  title: "Anti-Government Protest Mobilisation Concerns",
+  city: "Luanda",
+  lat: -8.8390,
+  lng: 13.2894,
+  address: "City Centre / Largo da Independência",
+  postcode: "0000",
+  country: "Angola",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-28T12:00:00",
+  source: "https://martinplaut.com/2026/03/24/inside-the-alleged-russian-operation-to-trigger-anti-government-protests-in-angola/",
+  summary: "Authorities in Angola are on alert following allegations of coordinated efforts to incite anti-government protests in Luanda. Reports indicate that foreign-linked operatives were involved in attempts to organise demonstrations aimed at influencing political stability ahead of upcoming elections. While no confirmed mass protest has yet materialised, the presence of organised mobilisation efforts and heightened political tensions suggest a credible risk of demonstrations emerging. Security services are likely to maintain a visible presence in central areas, and any gatherings could be quickly contained. The risk is assessed as medium due to uncertainty around turnout but elevated potential for escalation if protests do occur."
+},
+{
+  title: "Fuel Price and Cost of Living Protests (Emerging)",
+  city: "Nairobi",
+  lat: -1.2921,
+  lng: 36.8219,
+  address: "CBD / Parliament Area",
+  postcode: "00100",
+  country: "Kenya",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-27T10:00:00",
+  source: "https://www.reuters.com/sustainability/boards-policy-regulation/africa-grapples-with-energy-crisis-iran-war-disrupts-fuel-supplies-2026-03-25/",
+  summary: "Rising fuel prices and supply constraints linked to global disruptions are increasing economic pressure across Kenya, particularly in Nairobi. While no single confirmed protest event is identified, conditions mirror previous triggers for mass demonstrations, including the 2024–2025 anti-tax protests. Reports of panic buying and supply shortages suggest growing public frustration. Historically, such economic stressors have led to rapid mobilisation through unions, transport groups, and activist networks. Any demonstrations are likely to focus on central government locations, including parliament. The risk is medium due to the absence of a confirmed event but high potential for spontaneous protests developing quickly."
+},
+
+  
   {
   title: "Stop the Hate Solidarity Rally",
   city: "London",
