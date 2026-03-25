@@ -21,6 +21,66 @@ window.alertsData =[
 },
 
 
+
+
+  
+{
+  title: "Judicial Workers Nationwide Strike",
+  city: "Abuja",
+  lat: 9.0579,
+  lng: 7.4951,
+  address: "Federal High Court Headquarters, Shehu Shagari Way",
+  postcode: "900271",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-22T12:00:00",
+  source: "https://punchng.com/judiciary-workers-begin-nationwide-strike-over-unpaid-wages/",
+  summary: "Judicial workers across Nigeria commenced a nationwide strike on 22 March 2026 over unpaid wages and unresolved financial entitlements. The action affects federal and state courts, with major activity concentrated in Abuja at key judicial institutions. Courts were shut down, disrupting legal proceedings and drawing attention from unions and civil society groups. While the strike itself is labour-focused, gatherings of workers and supporters around court complexes create the potential for tension with authorities. The nationwide scale, institutional impact, and likelihood of prolonged disruption elevate the risk level to high."
+},
+{
+  title: "Doctors Strike Over Salary Arrears",
+  city: "Lagos",
+  lat: 6.5244,
+  lng: 3.3792,
+  address: "Lagos State University Teaching Hospital (LASUTH), Ikeja",
+  postcode: "100271",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.vanguardngr.com/2026/03/lasuth-doctors-begin-indefinite-strike-over-salary-issues/",
+  summary: "Doctors at Lagos State University Teaching Hospital began an indefinite strike on 21 March 2026, citing unpaid salaries and welfare concerns. The strike led to the suspension of medical services, leaving patients stranded and increasing pressure on other healthcare facilities in Lagos. Health-sector strikes in Nigeria have historically triggered protests, media attention, and public frustration, particularly in major urban centres. The disruption of critical healthcare services and potential for escalation around hospital premises or government offices contributes to a high-risk assessment."
+},
+{
+  title: "Opposition Protest Against Cost of Living",
+  city: "Tunis",
+  lat: 36.8065,
+  lng: 10.1815,
+  address: "Avenue Habib Bourguiba",
+  postcode: "1000",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.reuters.com/world/africa/tunisia-opposition-protest-cost-of-living-crisis-2026-03-23/",
+  summary: "Opposition groups and civil society organisations gathered on Avenue Habib Bourguiba in Tunis on 23 March 2026 to protest rising living costs and economic hardship. The demonstration was part of ongoing dissatisfaction with inflation, unemployment, and government economic policies. Turnout was moderate, with participants carrying banners and chanting slogans against austerity measures. Tunis has a history of peaceful but politically charged demonstrations in central areas. The protest remained largely orderly according to reporting, though underlying tensions keep the risk at a medium level."
+},
+{
+  title: "Public Sector Strike and March",
+  city: "Casablanca",
+  lat: 33.5731,
+  lng: -7.5898,
+  address: "Place Mohammed V",
+  postcode: "20000",
+  country: "Morocco",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.moroccoworldnews.com/2026/03/public-sector-workers-strike-morocco",
+  summary: "Public sector workers staged a strike and demonstration in Casablanca on 24 March 2026, gathering at Place Mohammed V to protest wage conditions and labour policies. The action was organised by major labour unions and forms part of broader national labour unrest. Demonstrators marched through central areas, calling for improved pay and working conditions. While protests of this nature in Morocco are typically controlled and monitored by authorities, the scale of union participation and central location increase the likelihood of disruption, resulting in a medium risk classification."
+},
+  
   
 
 {
@@ -80,67 +140,8 @@ window.alertsData =[
   summary: "On 23 March 2026, nurses at Parirenyatwa Group of Hospitals downed tools and staged a protest over salaries and allowances. Reporting said wards were left severely disrupted and patients were stranded, with mostly student nurses covering some critical functions. The protest followed the earlier Sally Mugabe action and signalled escalation in Zimbabwe's public health labour unrest. Risk is assessed as high because the action disrupted the country's largest referral hospital and had immediate implications for public services and crowd tensions around the facility."
 },
 
-  
-
-{
-  title: "Anti-American Demonstrations",
-  city: "Abuja",
-  lat: 9.0765,
-  lng: 7.3986,
-  address: "US Embassy Area, Diplomatic Drive",
-  postcode: "900103",
-  country: "Nigeria",
-  continent: "Africa",
-  risk: "High",
-  time: "2026-03-22T10:00:00",
-  source: "https://www.criticalthreats.org/analysis/nigeria-iran-rwanda-m23-ethiopia-sudan-rsf-somalia-africa-file-march-5-2026",
-  summary: "Anti-American protests have emerged in Nigeria in response to escalating geopolitical tensions involving the United States and Iran. Demonstrations have been reported in Abuja and other major cities, with protesters expressing anger over foreign policy decisions and perceived Western interference. These protests are often politically charged and can attract large crowds, including activist groups and political organisations. Given Nigeria’s history of rapid escalation during politically sensitive demonstrations, there is a high risk of disorder, especially near diplomatic zones. Security forces are likely to be deployed in significant numbers to protect embassies and maintain control. The situation remains volatile due to wider regional instability and economic pressures, increasing the likelihood of clashes or disruption."
-},
-{
-  title: "Student Protest Over Financial Crisis",
-  city: "Dakar",
-  lat: 14.6928,
-  lng: -17.4467,
-  address: "Cheikh Anta Diop University",
-  postcode: "11000",
-  country: "Senegal",
-  continent: "Africa",
-  risk: "High",
-  time: "2026-03-25T11:00:00",
-  source: "https://www.reuters.com/world/africa/student-dies-senegal-university-protests-over-finances-escalate-2026-02-10/",
-  summary: "Ongoing student protests at Cheikh Anta Diop University in Dakar are expected to continue into late March and April amid unresolved financial grievances. The demonstrations began in late 2025 over unpaid student stipends and deteriorating economic conditions. Tensions escalated significantly following the death of a student during clashes with police, which has intensified anger toward authorities. Protests typically occur on or around campus and can rapidly expand into surrounding areas. Police responses have previously included forceful dispersal tactics, raising the risk of further confrontation. The persistence of the underlying issues and recent fatality elevate the risk level to high, with potential for renewed clashes, campus shutdowns, and broader civil unrest."
-},
-{
-  title: "Anti-Government Protest Activity (Election Fallout)",
-  city: "Dar es Salaam",
-  lat: -6.7924,
-  lng: 39.2083,
-  address: "City Centre / Government District",
-  postcode: "11101",
-  country: "Tanzania",
-  continent: "Africa",
-  risk: "High",
-  time: "2026-03-24T09:00:00",
-  source: "https://www.hrw.org/news/2026/03/19/tanzania-bystanders-shot-in-post-election-crackdown",
-  summary: "Following the disputed 2025 general election, Tanzania continues to experience sporadic anti-government protest activity, particularly in Dar es Salaam. Demonstrations were initially triggered by the disqualification of opposition candidates and allegations of political repression. Security forces have responded with significant force, including the use of live ammunition and mass arrests, resulting in civilian casualties. Although large-scale protests have been suppressed, tensions remain high and smaller gatherings or flash demonstrations are likely to occur. The risk remains elevated due to the government's zero-tolerance approach and the potential for rapid escalation if protests re-emerge in central areas."
-},
-{
-  title: "Anti-Government Protest Mobilisation Concerns",
-  city: "Luanda",
-  lat: -8.8390,
-  lng: 13.2894,
-  address: "City Centre / Largo da Independência",
-  postcode: "0000",
-  country: "Angola",
-  continent: "Africa",
-  risk: "Medium",
-  time: "2026-03-28T12:00:00",
-  source: "https://martinplaut.com/2026/03/24/inside-the-alleged-russian-operation-to-trigger-anti-government-protests-in-angola/",
-  summary: "Authorities in Angola are on alert following allegations of coordinated efforts to incite anti-government protests in Luanda. Reports indicate that foreign-linked operatives were involved in attempts to organise demonstrations aimed at influencing political stability ahead of upcoming elections. While no confirmed mass protest has yet materialised, the presence of organised mobilisation efforts and heightened political tensions suggest a credible risk of demonstrations emerging. Security services are likely to maintain a visible presence in central areas, and any gatherings could be quickly contained. The risk is assessed as medium due to uncertainty around turnout but elevated potential for escalation if protests do occur."
-},
 
 
-  
   {
   title: "Stop the Hate Solidarity Rally",
   city: "London",
