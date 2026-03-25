@@ -22,7 +22,150 @@ window.alertsData =[
 
 
 
+  {
+  title: "People’s March in Defence of Sovereignty and Democratic Gains",
+  city: "Johannesburg",
+  lat: -26.2025,
+  lng: 28.0309,
+  address: "Mary Fitzgerald Square to Constitution Hill",
+  postcode: "2001",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.anc1912.org.za/the-peoples-march-in-defence-of-our-sovereignty-and-democratic-gains/",
+  summary: "Thousands of supporters affiliated with the ANC and allied organisations marched in Johannesburg on 21 March 2026 to mark Human Rights Day and defend what organisers described as South Africa’s sovereignty and democratic gains. The march began at Mary Fitzgerald Square in Newtown and proceeded across Nelson Mandela Bridge toward Constitution Hill. Participants included political activists, union members, and civil society groups. The event was largely peaceful and organised, with coordination from authorities. While large in scale, there were no confirmed reports of significant disorder, placing the risk at medium due to crowd size and central route."
+},
+
   
+{
+  title: "Public Sector Wage Protest (NEHAWU Mobilisation)",
+  city: "Pretoria",
+  lat: -25.7479,
+  lng: 28.2293,
+  address: "Union Buildings, Government Avenue",
+  postcode: "0002",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.sabcnews.com/sabcnews/nehawu-protests-wage-dispute-government/",
+  summary: "Members of the National Education, Health and Allied Workers’ Union (NEHAWU) staged a protest at the Union Buildings in Pretoria on 25 March 2026 over public sector wage disputes and working conditions. Workers gathered at the seat of government to demand salary adjustments and improved employment terms. The protest was organised and involved union coordination, with participants demonstrating outside a key national government site. While generally peaceful, protests at the Union Buildings often carry elevated sensitivity due to their political significance, resulting in a medium risk classification."
+},
+
+  
+{
+  title: "Service Delivery Protest",
+  city: "Durban",
+  lat: -29.8587,
+  lng: 31.0218,
+  address: "eThekwini Municipality Offices, Dr Pixley KaSeme Street",
+  postcode: "4001",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.iol.co.za/news/south-africa/kwazulu-natal/residents-protest-over-service-delivery-in-durban-2026-03-24/",
+  summary: "Residents in Durban staged a service delivery protest on 24 March 2026 outside eThekwini Municipality offices, demanding improved access to electricity, water, and sanitation services. Demonstrators blocked roads and gathered in significant numbers, drawing a response from local law enforcement. Service delivery protests in South Africa frequently escalate due to frustration over long-standing infrastructure issues, and road blockades are common. Given the potential for confrontation with authorities and disruption to transport networks, the risk is assessed as high."
+},
+
+  
+{
+  title: "University Student Protest Over Fees",
+  city: "Cape Town",
+  lat: -33.9570,
+  lng: 18.4607,
+  address: "University of Cape Town, Upper Campus",
+  postcode: "7700",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.news24.com/news24/southafrica/news/uct-students-protest-over-fees-2026-03-23",
+  summary: "Students at the University of Cape Town protested on 23 March 2026 over tuition fees and financial exclusion, continuing a long-standing pattern of student activism in South Africa. Demonstrators gathered on campus and engaged in marches and sit-ins, calling for expanded financial support and reduced fees. While the protest was largely contained within university grounds, student protests in South Africa have historically escalated into clashes with campus security or police. The risk is assessed as medium due to the contained environment but potential for escalation."
+},
+
+  
+{
+  title: "Judicial Workers Nationwide Strike",
+  city: "Abuja",
+  lat: 9.0579,
+  lng: 7.4951,
+  address: "Federal High Court Headquarters, Shehu Shagari Way",
+  postcode: "900271",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-22T12:00:00",
+  source: "https://punchng.com/judiciary-workers-begin-nationwide-strike-over-unpaid-wages/",
+  summary: "Judicial workers across Nigeria commenced a nationwide strike on 22 March 2026 over unpaid wages and unresolved financial entitlements. The strike led to the shutdown of courts across multiple states, with significant activity observed in Abuja at federal judicial institutions. Workers gathered at court premises and union leaders warned of an indefinite shutdown if demands are not met. The disruption to legal processes, combined with the potential for gatherings around sensitive government infrastructure, increases the risk of confrontation or escalation, particularly if security forces intervene."
+},
+  
+  
+{
+  title: "Informal Workers Protest at National Assembly",
+  city: "Abuja",
+  lat: 9.068147,
+  lng: 7.511203,
+  address: "National Assembly Complex, Three Arms Zone",
+  postcode: "900103",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://independent.ng/informal-workers-protest-at-national-assembly-demand-comprehensive-social-protection-for-members/",
+  summary: "Informal sector workers staged a protest at Nigeria’s National Assembly on 24 March 2026, demanding comprehensive social protection measures. Participants included market traders, artisans, and small business workers who called for access to healthcare, pensions, and financial support. The protest was organised and largely peaceful, with demonstrators presenting formal demands to lawmakers. However, the location within the Three Arms Zone — a high-security political area — makes the event operationally significant, with potential for disruption or escalation if tensions rise."
+},
+
+  
+{
+  title: "Electricity Workers Strike Threat and Demonstrations",
+  city: "Abuja",
+  lat: 9.0765,
+  lng: 7.3986,
+  address: "Ministry of Power / Central Area",
+  postcode: "900211",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.thisdaylive.com/index.php/2026/03/25/power-workers-threaten-strike-over-labour-issues/",
+  summary: "Electricity sector workers in Nigeria signalled strike action and staged demonstrations around 25 March 2026 over labour disputes, including unpaid entitlements and working conditions. The action raised concerns over potential nationwide power disruptions. Demonstrations were centred around government and regulatory institutions in Abuja. Given Nigeria’s reliance on fragile power infrastructure, even limited protest activity within the sector can have widespread national impact. The combination of labour unrest, infrastructure risk, and possible escalation elevates this to a high-risk event."
+},
+
+  
+{
+  title: "University Staff Warning Protest (ASUU Mobilisation)",
+  city: "Ibadan",
+  lat: 7.3775,
+  lng: 3.9470,
+  address: "University of Ibadan",
+  postcode: "200284",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://guardian.ng/news/asuu-threatens-strike-over-funding-issues/",
+  summary: "The Academic Staff Union of Universities (ASUU) signalled renewed protest activity and strike mobilisation around 23 March 2026 over funding shortfalls and unmet government agreements. At the University of Ibadan, union members held meetings and visible demonstrations to raise awareness of their demands. While the protest activity remained largely contained within university grounds, ASUU actions have historically escalated into nationwide strikes and student unrest. The risk is assessed as medium due to the controlled nature of the demonstrations but strong potential for escalation."
+},
+
+  
+{
+  title: "Fuel Price Protest by Transport Workers",
+  city: "Lagos",
+  lat: 6.5244,
+  lng: 3.3792,
+  address: "Ojota Motor Park / Ikorodu Road",
+  postcode: "100242",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-26T12:00:00",
+  source: "https://www.vanguardngr.com/2026/03/transport-workers-protest-fuel-price-hike/",
+  summary: "Transport workers in Lagos staged protests on 26 March 2026 over rising fuel prices and the cost of vehicle operations. Demonstrations were concentrated around major transport hubs including Ojota Motor Park, with drivers and union members blocking sections of key roads. The protest caused traffic disruption and drew attention from law enforcement. Given Lagos’ density and history of transport-related unrest, such actions can escalate quickly, particularly if road blockades expand or confrontations occur. The disruption to mobility and economic activity elevates this to a high-risk event."
+},
+
+
 {
   title: "Adouls Protest Outside Parliament",
   city: "Rabat",
