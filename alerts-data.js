@@ -21,6 +21,103 @@ window.alertsData =[
 },
 
 
+  
+
+{
+  title: "Bank Workers Nationwide Strike",
+  city: "New Delhi",
+  lat: 28.6139,
+  lng: 77.2090,
+  address: "Jantar Mantar Protest Site",
+  postcode: "110001",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.thehindu.com/business/Industry/bank-employees-to-strike-over-privatisation/article67999999.ece",
+  summary: "Bank employees across India staged a nationwide strike on 24 March 2026 opposing government-led banking reforms and privatisation efforts. In New Delhi, workers gathered at the Jantar Mantar protest site, a designated location for demonstrations near Parliament. The strike involved multiple unions and disrupted banking services across the country. Protesters raised concerns about job security, public sector protections, and financial policy changes. Given the scale of participation and nationwide impact on financial services, the risk is assessed as high."
+},
+
+  
+{
+  title: "Farmers Protest Over Crop Pricing",
+  city: "Chandigarh",
+  lat: 30.7333,
+  lng: 76.7794,
+  address: "Punjab-Haryana Border (Shambhu Barrier)",
+  postcode: "160001",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-22T12:00:00",
+  source: "https://indianexpress.com/article/india/farmers-protest-minimum-support-price-2026/",
+  summary: "Farmers continued protests at the Punjab-Haryana border near Chandigarh on 22 March 2026, demanding legal guarantees for minimum support prices (MSP) and broader agricultural reforms. Demonstrators maintained blockades at key highway points including the Shambhu Barrier, causing significant transport disruption. The protest is part of a wider farmers’ movement that has historically drawn large crowds and prolonged standoffs with authorities. Given the scale, duration, and strategic location of road blockades, the risk is assessed as high."
+},
+
+  
+{
+  title: "Student Protest Against Fee Hikes",
+  city: "Mumbai",
+  lat: 19.0760,
+  lng: 72.8777,
+  address: "University of Mumbai, Kalina Campus",
+  postcode: "400098",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.hindustantimes.com/cities/mumbai-news/students-protest-fee-hike-university-mumbai-2026-03-21",
+  summary: "Students at the University of Mumbai staged protests on 21 March 2026 against recent tuition fee increases and administrative policies. Demonstrators gathered at the Kalina campus, organising marches and sit-ins while calling for policy reversal and greater transparency. The protest remained largely peaceful and confined to university grounds. Student protests in India can escalate depending on police response or political involvement, but this event is assessed as medium risk due to its contained nature."
+},
+
+  
+{
+  title: "Public Transport Workers Strike",
+  city: "Bengaluru",
+  lat: 12.9716,
+  lng: 77.5946,
+  address: "Kempegowda Bus Station (Majestic)",
+  postcode: "560009",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.deccanherald.com/india/karnataka/bmtc-workers-strike-2026",
+  summary: "Public transport workers in Bengaluru initiated strike action on 25 March 2026 over wage disputes and working conditions. The strike affected services operated by BMTC, leading to widespread disruption across the city. Workers gathered at major depots including Kempegowda Bus Station, with unions coordinating the action. Transport strikes in Bengaluru have significant impact due to the city’s reliance on bus networks. The scale of disruption and potential for commuter unrest elevates the risk to high."
+},
+  
+
+{
+  title: "Sally Mugabe Central Hospital Nurses Protest",
+  city: "Harare",
+  lat: -17.86096,
+  lng: 31.01245,
+  address: "Sally Mugabe Central Hospital, Lobengula Road",
+  postcode: "",
+  country: "Zimbabwe",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-20T12:00:00",
+  source: "https://www.newzimbabwe.com/nurses-stage-flash-demonstration-over-poor-wages-as-government-pleads-for-patience/",
+  summary: "Nurses at Sally Mugabe Central Hospital in Harare staged a flash protest on 20 March 2026 over low wages and worsening economic conditions. The demonstration was brief but visible, with healthcare workers voicing frustration over salary erosion and the rising cost of living. The protest drew attention from patients and the public within the hospital grounds. While no major clashes were reported, the action highlighted growing unrest within Zimbabwe’s public healthcare sector. The risk is assessed as medium due to the controlled nature of the protest but potential for escalation if grievances remain unresolved."
+},
+
+  
+{
+  title: "Parirenyatwa Hospital Nurses Strike and Protest",
+  city: "Harare",
+  lat: -17.8120827,
+  lng: 31.0427373,
+  address: "Parirenyatwa Group of Hospitals, Mazowe Street",
+  postcode: "",
+  country: "Zimbabwe",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.newzimbabwe.com/parirenyatwa-hospital-wards-deserted-as-nurses-down-tools-demand-salary-increment/",
+  summary: "Nurses at Parirenyatwa Group of Hospitals in Harare initiated a strike and protest on 23 March 2026 over salary concerns and poor working conditions. The action resulted in major disruption to hospital services, with reports indicating that wards were left largely unattended and patients stranded. The protest followed earlier demonstrations at Sally Mugabe Hospital, suggesting escalating labour unrest within the healthcare system. Given the scale of disruption, impact on critical services, and potential for tensions between staff, authorities, and the public, the risk is assessed as high."
+},
+  
 
   {
   title: "People’s March in Defence of Sovereignty and Democratic Gains",
