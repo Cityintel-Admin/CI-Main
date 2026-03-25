@@ -1572,6 +1572,30 @@ async function loadOrgContext() {
   background:#111827;
 }
 
+
+.global-map-feeds-block{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+.live-map-feeds-list{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding-bottom:8px;
+}
+
+.live-map-add-btn{
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 8px;
+  background:#05070b;
+}
+
+
+	  
 /* highlight when sidebar scrolls you to a feed card */
 .feed-card-pulse{
   box-shadow:0 0 0 2px rgba(248,113,113,.8);
@@ -2599,17 +2623,19 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="detailCoords" class="small" style="margin-top:6px;opacity:.8;"></div>		
     </div>
 
+
+	<div class="detail-section">
+      <h4>Nearby Cameras</h4>
+      <div id="detailNearbyCams" class="small">
+        Select an incident to load nearby JamCams.
+      </div>
+    </div>
+
+	  
     <div class="detail-section">
       <h4>Earlier Today in This Area</h4>
       <div id="detailEarlier" class="small">
         No earlier incidents recorded.
-      </div>
-    </div>
-
-    <div class="detail-section">
-      <h4>Nearby Cameras</h4>
-      <div id="detailNearbyCams" class="small">
-        Select an incident to load nearby JamCams.
       </div>
     </div>
   </div>
@@ -5911,6 +5937,109 @@ setTimeout(settleMap, 600);
     }).filter(Boolean);
   }
 
+	
+
+	const jamcamMarkerIndex = Object.create(null);
+window.__ciJamCamRows = window.__ciJamCamRows || [];
+
+function ciJamcamDistanceMeters(aLat, aLon, bLat, bLon){
+  const R = 6371000;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const aa =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return 2 * R * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+}
+
+function ciFormatMeters(m){
+  if (!Number.isFinite(m)) return '';
+  if (m >= 1000) return `${(m / 1000).toFixed(1)} km`;
+  return `${Math.round(m)} m`;
+}
+
+function ciFocusJamCamById(id){
+  const cam = (window.__ciJamCamRows || []).find(x => String(x.id) === String(id));
+  if (!cam) return;
+  try {
+    map.setView([cam.lat, cam.lon], Math.max(map.getZoom(), 15), { animate:true });
+  } catch(e) {}
+	
+  const marker = jamcamMarkerIndex[id];
+  if (marker && marker.openPopup) {
+    setTimeout(() => {
+      try { marker.openPopup(); } catch(e) {}
+    }, 150);
+  }
+}
+
+window.ciFocusIncidentJamCams = async function(detail){
+  const target = document.getElementById('detailNearbyCams');
+  if (!target) return;
+
+  const lat = Number(detail?.lat);
+  const lon = Number(detail?.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    target.textContent = 'Incident coordinates unavailable for JamCam lookup.';
+    return;
+  }
+
+  target.textContent = 'Locating nearby JamCams…';
+
+  try {
+    if (!jamcamEnabled && typeof refreshJamCams === 'function') {
+      jamcamEnabled = true;
+      if (jamcamToggleBtn) {
+        jamcamToggleBtn.classList.add('active');
+        jamcamToggleBtn.textContent = 'On';
+      }
+      await refreshJamCams(true);
+    } else if ((!window.__ciJamCamRows || !window.__ciJamCamRows.length) && typeof refreshJamCams === 'function') {
+      await refreshJamCams(true);
+    }
+
+    const rows = Array.isArray(window.__ciJamCamRows) ? window.__ciJamCamRows.slice() : [];
+    const nearby = rows
+      .map(cam => ({
+        ...cam,
+        _meters: ciJamcamDistanceMeters(lat, lon, Number(cam.lat), Number(cam.lon))
+      }))
+      .filter(cam => Number.isFinite(cam._meters) && cam._meters <= 2000)
+      .sort((a, b) => a._meters - b._meters)
+      .slice(0, 3);
+
+    if (!nearby.length) {
+      target.textContent = 'No nearby JamCams found within 2 km.';
+      return;
+    }
+
+    target.innerHTML = nearby.map(cam => `
+      <button
+        type="button"
+        class="btn-ghost"
+        style="display:block;width:100%;text-align:left;margin-bottom:8px;padding:10px 12px"
+        data-cam-id="${String(cam.id).replace(/"/g,'&quot;')}"
+      >
+        <div style="font-weight:600;color:#fff;">📷 ${cam.name || 'JamCam'}</div>
+        <div style="font-size:11px;opacity:.8;margin-top:2px;">${ciFormatMeters(cam._meters)} away</div>
+      </button>
+    `).join('');
+
+    target.querySelectorAll('[data-cam-id]').forEach(btn => {
+      btn.addEventListener('click', () => ciFocusJamCamById(btn.getAttribute('data-cam-id')));
+    });
+
+    ciFocusJamCamById(nearby[0].id);
+  } catch (e) {
+    target.textContent = 'Failed to load nearby JamCams.';
+    console.warn('ciFocusIncidentJamCams failed', e);
+  }
+};
+
+
+	
   async function fetchJamCamPayload(){
     let lastErr = null;
     for (const endpoint of JAMCAM_ENDPOINTS){
@@ -5927,44 +6056,60 @@ setTimeout(settleMap, 600);
     return null;
   }
 
-  async function refreshJamCams(force){
-    if (!jamcamEnabled) return;
-    if (!force && (Date.now() - jamcamLoadedAt) < JAMCAM_CACHE_MS) return;
-    jamcamLayer.clearLayers();
-    window.__ciJamCamRows = [];
-    window.__ciJamCamMarkers = new Map();
+ async function refreshJamCams(force){
+  if (!jamcamEnabled) return;
+  if (!force && (Date.now() - jamcamLoadedAt) < JAMCAM_CACHE_MS) return;
 
-    try {
-      const payload = await fetchJamCamPayload();
-      const rows = parseJamCamRows(payload);
-      window.__ciJamCamRows = rows.slice();
-      rows.forEach((cam) => {
-        const mediaHtml = cam.video
-          ? `<div style="margin-top:8px">
-               <video controls autoplay muted loop playsinline style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)">
-                 <source src="${escapeHtml(cam.video)}" type="video/mp4">
-               </video>
-             </div>`
-          : cam.image
-            ? `<div style="margin-top:8px"><img src="${escapeHtml(cam.image)}" alt="${escapeHtml(cam.name)}" style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)"></div>`
-            : `<div style="margin-top:8px;font-size:12px;opacity:.8">Latest feed unavailable from source.</div>`;
-        const meta = cam.modified ? `<div style="font-size:12px;opacity:.8;margin-top:4px">Updated: ${escapeHtml(String(cam.modified))}</div>` : '';
-        const popup = `<div style="min-width:220px">
-          <div style="font-weight:800;color:#fff">${escapeHtml(cam.name)}</div>
-          <div style="font-size:12px;opacity:.85;margin-top:4px">Official TfL JamCam feed</div>
-          ${meta}
-          ${mediaHtml}
-        </div>`;
-        const marker = L.marker([cam.lat, cam.lon], { icon: jamcamIcon, zIndexOffset: 900 }).addTo(jamcamLayer).bindPopup(popup, { maxWidth: 280 });
-        window.__ciJamCamMarkers.set(String(cam.id), marker);
-      });
-      jamcamLoadedAt = Date.now();
-      if (jamcamToggleBtn) jamcamToggleBtn.textContent = rows.length ? `On (${rows.length})` : 'On';
-    } catch (err) {
-      console.warn('CityIntel: JamCam layer unavailable', err);
-      if (jamcamToggleBtn) jamcamToggleBtn.textContent = 'Unavailable';
-    }
+  jamcamLayer.clearLayers();
+  window.__ciJamCamRows = [];
+  window.__ciJamCamMarkers = new Map();
+
+  // clear old marker index objects
+  Object.keys(jamcamMarkerIndex).forEach(k => delete jamcamMarkerIndex[k]);
+
+  try {
+    const payload = await fetchJamCamPayload();
+    const rows = parseJamCamRows(payload);
+    window.__ciJamCamRows = rows.slice();
+
+    rows.forEach((cam) => {
+      const mediaHtml = cam.video
+        ? `<div style="margin-top:8px">
+             <video controls autoplay muted loop playsinline style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)">
+               <source src="${escapeHtml(cam.video)}" type="video/mp4">
+             </video>
+           </div>`
+        : cam.image
+          ? `<div style="margin-top:8px"><img src="${escapeHtml(cam.image)}" alt="${escapeHtml(cam.name)}" style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)"></div>`
+          : `<div style="margin-top:8px;font-size:12px;opacity:.8">Latest feed unavailable from source.</div>`;
+
+      const meta = cam.modified
+        ? `<div style="font-size:12px;opacity:.8;margin-top:4px">Updated: ${escapeHtml(String(cam.modified))}</div>`
+        : '';
+
+      const popup = `<div style="min-width:220px">
+        <div style="font-weight:800;color:#fff">${escapeHtml(cam.name)}</div>
+        <div style="font-size:12px;opacity:.85;margin-top:4px">Official TfL JamCam feed</div>
+        ${meta}
+        ${mediaHtml}
+      </div>`;
+
+      const marker = L.marker([cam.lat, cam.lon], {
+        icon: jamcamIcon,
+        zIndexOffset: 900
+      }).addTo(jamcamLayer).bindPopup(popup, { maxWidth: 280 });
+
+      window.__ciJamCamMarkers.set(String(cam.id), marker);
+      jamcamMarkerIndex[cam.id] = marker;
+    });
+
+    jamcamLoadedAt = Date.now();
+    if (jamcamToggleBtn) jamcamToggleBtn.textContent = rows.length ? `On (${rows.length})` : 'On';
+  } catch (err) {
+    console.warn('CityIntel: JamCam layer unavailable', err);
+    if (jamcamToggleBtn) jamcamToggleBtn.textContent = 'Unavailable';
   }
+}
 
   async function setJamCamEnabled(next){
     jamcamEnabled = !!next;
