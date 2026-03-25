@@ -79,20 +79,7 @@ window.alertsData =[
   source: "https://martinplaut.com/2026/03/24/inside-the-alleged-russian-operation-to-trigger-anti-government-protests-in-angola/",
   summary: "Authorities in Angola are on alert following allegations of coordinated efforts to incite anti-government protests in Luanda. Reports indicate that foreign-linked operatives were involved in attempts to organise demonstrations aimed at influencing political stability ahead of upcoming elections. While no confirmed mass protest has yet materialised, the presence of organised mobilisation efforts and heightened political tensions suggest a credible risk of demonstrations emerging. Security services are likely to maintain a visible presence in central areas, and any gatherings could be quickly contained. The risk is assessed as medium due to uncertainty around turnout but elevated potential for escalation if protests do occur."
 },
-{
-  title: "Fuel Price and Cost of Living Protests (Emerging)",
-  city: "Nairobi",
-  lat: -1.2921,
-  lng: 36.8219,
-  address: "CBD / Parliament Area",
-  postcode: "00100",
-  country: "Kenya",
-  continent: "Africa",
-  risk: "Medium",
-  time: "2026-03-27T10:00:00",
-  source: "https://www.reuters.com/sustainability/boards-policy-regulation/africa-grapples-with-energy-crisis-iran-war-disrupts-fuel-supplies-2026-03-25/",
-  summary: "Rising fuel prices and supply constraints linked to global disruptions are increasing economic pressure across Kenya, particularly in Nairobi. While no single confirmed protest event is identified, conditions mirror previous triggers for mass demonstrations, including the 2024–2025 anti-tax protests. Reports of panic buying and supply shortages suggest growing public frustration. Historically, such economic stressors have led to rapid mobilisation through unions, transport groups, and activist networks. Any demonstrations are likely to focus on central government locations, including parliament. The risk is medium due to the absence of a confirmed event but high potential for spontaneous protests developing quickly."
-},
+
 
   
   {
