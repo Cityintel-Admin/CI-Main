@@ -22,6 +22,37 @@ window.alertsData =[
 
 
 
+  
+{
+  title: "Adouls Protest Outside Parliament",
+  city: "Rabat",
+  lat: 34.017167,
+  lng: -6.835331,
+  address: "House of Representatives, Mohammed V Avenue",
+  postcode: "10000",
+  country: "Morocco",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-04-02T12:00:00",
+  source: "https://en.yabiladi.com/articles/details/190073/moroccan-adouls-start-19-day-nationwide",
+  summary: "Morocco's National Adoul Authority announced a protest in front of Parliament in Rabat on 2 April 2026 as part of an escalating dispute over Bill No. 16.22, which regulates the profession. The protest sits within a broader nationwide strike by adouls running from 18 March to 5 April. The action is focused on a professional and legislative grievance rather than a broad anti-government street mobilisation, but it is still relevant because it targets a sensitive political location on Mohammed V Avenue and is tied to a nationwide work stoppage affecting legal and civil transactions."
+},
+
+  
+{
+  title: "Informal Workers Protest at National Assembly",
+  city: "Abuja",
+  lat: 9.068147,
+  lng: 7.511203,
+  address: "National Assembly Complex, Three Arms Zone",
+  postcode: "900103",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://independent.ng/informal-workers-protest-at-national-assembly-demand-comprehensive-social-protection-for-members/",
+  summary: "Informal workers protested at Nigeria's National Assembly in Abuja on 24 March 2026, demanding stronger social protection measures including subsidised health insurance, pensions for older citizens, and broader healthcare support for vulnerable groups. Reporting said the rally included market women, traders, artisans, domestic workers, mechanics and technicians, and that a formal letter of demands was submitted to National Assembly authorities. The protest appears issue-driven and organised rather than riotous, but it took place at a high-profile national political site in the Three Arms Zone, making it operationally significant."
+},
 
   
 {
@@ -38,6 +69,7 @@ window.alertsData =[
   source: "https://punchng.com/judiciary-workers-begin-nationwide-strike-over-unpaid-wages/",
   summary: "Judicial workers across Nigeria commenced a nationwide strike on 22 March 2026 over unpaid wages and unresolved financial entitlements. The action affects federal and state courts, with major activity concentrated in Abuja at key judicial institutions. Courts were shut down, disrupting legal proceedings and drawing attention from unions and civil society groups. While the strike itself is labour-focused, gatherings of workers and supporters around court complexes create the potential for tension with authorities. The nationwide scale, institutional impact, and likelihood of prolonged disruption elevate the risk level to high."
 },
+  
 {
   title: "Doctors Strike Over Salary Arrears",
   city: "Lagos",
@@ -52,6 +84,7 @@ window.alertsData =[
   source: "https://www.vanguardngr.com/2026/03/lasuth-doctors-begin-indefinite-strike-over-salary-issues/",
   summary: "Doctors at Lagos State University Teaching Hospital began an indefinite strike on 21 March 2026, citing unpaid salaries and welfare concerns. The strike led to the suspension of medical services, leaving patients stranded and increasing pressure on other healthcare facilities in Lagos. Health-sector strikes in Nigeria have historically triggered protests, media attention, and public frustration, particularly in major urban centres. The disruption of critical healthcare services and potential for escalation around hospital premises or government offices contributes to a high-risk assessment."
 },
+  
 {
   title: "Opposition Protest Against Cost of Living",
   city: "Tunis",
@@ -66,6 +99,7 @@ window.alertsData =[
   source: "https://www.reuters.com/world/africa/tunisia-opposition-protest-cost-of-living-crisis-2026-03-23/",
   summary: "Opposition groups and civil society organisations gathered on Avenue Habib Bourguiba in Tunis on 23 March 2026 to protest rising living costs and economic hardship. The demonstration was part of ongoing dissatisfaction with inflation, unemployment, and government economic policies. Turnout was moderate, with participants carrying banners and chanting slogans against austerity measures. Tunis has a history of peaceful but politically charged demonstrations in central areas. The protest remained largely orderly according to reporting, though underlying tensions keep the risk at a medium level."
 },
+  
 {
   title: "Public Sector Strike and March",
   city: "Casablanca",
