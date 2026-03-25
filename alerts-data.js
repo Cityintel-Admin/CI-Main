@@ -21,7 +21,66 @@ window.alertsData =[
 },
 
 
+  
 
+{
+  title: "People's March in Defence of South Africa's Sovereignty and Democratic Gains",
+  city: "Johannesburg",
+  lat: -26.2025173,
+  lng: 28.0308824,
+  address: "Mary Fitzgerald Square, 120 Lilian Ngoyi Street, Newtown",
+  postcode: "2113",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-21T12:00:00",
+  source: "https://www.anc1912.org.za/the-peoples-march-in-defence-of-our-sovereignty-and-democratic-gains/",
+  summary: "A large Human Rights Day march took place in Johannesburg on 21 March 2026, led by the ANC with alliance partners including COSATU, the SACP and SANCO. Organisers framed it as a peaceful mass mobilisation in defence of South African sovereignty and democratic gains. Reporting after the event said thousands marched from Mary Fitzgerald Square across Nelson Mandela Bridge to Constitution Hill. The size of the turnout and political profile make it operationally relevant, but the available reporting does not indicate major clashes or violent disorder."
+},
+{
+  title: "KCAA Aviation Workers Strike Notice",
+  city: "Nairobi",
+  lat: -1.34718,
+  lng: 36.90339,
+  address: "Aviation House, Jomo Kenyatta International Airport",
+  postcode: "00100",
+  country: "Kenya",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.capitalfm.co.ke/news/2026/03/aviation-workers-give-kcaa-seven-day-strike-ultimatum/",
+  summary: "The Kenya Aviation Workers Union issued a seven-day strike notice to the Kenya Civil Aviation Authority, warning of disruption beginning on 25 March 2026 if management failed to address grievances linked to an earlier return-to-work deal. The dispute concerns unionisation, labour rights, compliance with court orders and alleged victimisation. Because the threatened action directly affects aviation operations around JKIA and could disrupt passengers and airport-linked transport, the event is assessed as high risk from an operational disruption perspective."
+},
+{
+  title: "Sally Mugabe Central Hospital Nurses Protest",
+  city: "Harare",
+  lat: -17.86096,
+  lng: 31.01245,
+  address: "Sally Mugabe Central Hospital, Lobengula Road, Southerton",
+  postcode: "",
+  country: "Zimbabwe",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-03-20T12:00:00",
+  source: "https://www.newzimbabwe.com/nurses-stage-flash-demonstration-over-poor-wages-as-government-pleads-for-patience/",
+  summary: "Nurses at Sally Mugabe Central Hospital in Harare staged a flash demonstration on Friday 20 March 2026 over low wages and rising living costs. Reporting said the protest was brief but visible, with nurses displaying placards and drawing attention from patients and passers-by. The action was linked to salary erosion and transport pressures after fuel price increases. Risk is assessed as medium because the protest affected a major hospital and highlighted growing labour unrest, but available reporting did not indicate serious violence."
+},
+{
+  title: "Parirenyatwa Hospital Nurses Protest",
+  city: "Harare",
+  lat: -17.8120827,
+  lng: 31.0427373,
+  address: "Parirenyatwa Group of Hospitals, Mazowe Street",
+  postcode: "00000",
+  country: "Zimbabwe",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.newzimbabwe.com/parirenyatwa-hospital-wards-deserted-as-nurses-down-tools-demand-salary-increment/",
+  summary: "On 23 March 2026, nurses at Parirenyatwa Group of Hospitals downed tools and staged a protest over salaries and allowances. Reporting said wards were left severely disrupted and patients were stranded, with mostly student nurses covering some critical functions. The protest followed the earlier Sally Mugabe action and signalled escalation in Zimbabwe's public health labour unrest. Risk is assessed as high because the action disrupted the country's largest referral hospital and had immediate implications for public services and crowd tensions around the facility."
+},
+
+  
 
 {
   title: "Anti-American Demonstrations",
