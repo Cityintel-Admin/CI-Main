@@ -1,4 +1,4 @@
-  
+ 
     
 <!doctype html>
 <html lang="en">
@@ -2605,6 +2605,13 @@ document.addEventListener('DOMContentLoaded', () => {
         No earlier incidents recorded.
       </div>
     </div>
+
+    <div class="detail-section">
+      <h4>Nearby Cameras</h4>
+      <div id="detailNearbyCams" class="small">
+        Select an incident to load nearby JamCams.
+      </div>
+    </div>
   </div>
 
   <div class="detail-footer">
@@ -3460,6 +3467,7 @@ const detailSummaryEl = document.getElementById('detailSummary');
 const detailLocationEl = document.getElementById('detailLocation');
 const detailImpactEl   = document.getElementById('detailImpact');
 const detailEarlierEl  = document.getElementById('detailEarlier');
+const detailNearbyCamsEl = document.getElementById('detailNearbyCams');
 const detailCloseBtn = document.getElementById('detailClose');
 const viewFullBtn   = document.getElementById('viewFullBtn');
 const detailTagEl   = document.getElementById('detailTag'); 
@@ -4528,6 +4536,7 @@ function openDetailPanel(item, relatedList){
     const resolved = await resolveItemLatLon(item, exposure);
     if (!resolved) {
       drawMiniMapLocal(null, null);
+      if (detailNearbyCamsEl) detailNearbyCamsEl.innerHTML = 'Incident coordinates unavailable for JamCam lookup.';
       return;
     }
     // store back on item for other uses
@@ -4540,6 +4549,9 @@ function openDetailPanel(item, relatedList){
       points.push({ lat: window.__ciPanicResolved.lat, lon: window.__ciPanicResolved.lon, kind:'panic' });
     }
     drawMiniMapLocal(resolved, points);
+    if (typeof window.ciFocusIncidentJamCams === 'function') {
+      window.ciFocusIncidentJamCams({ lat: resolved.lat, lon: resolved.lon, title: item.title || item.summary || item.description || '' }).catch(()=>{});
+    }
   })();
 
   // earlier today in same city (re-use the list we already built)
@@ -5857,49 +5869,45 @@ setTimeout(settleMap, 600);
     return direct || '';
   }
 
-
-function getJamCamVideo(place){
-  const props = Array.isArray(place?.additionalProperties) ? place.additionalProperties : [];
-  for (const p of props){
-    const key = String(p?.key || p?.category || '').toLowerCase();
-    const val = String(p?.value || '').trim();
-    if (!val) continue;
-    if (
-      key.includes('video') ||
-      key.includes('mpeg') ||
-      key.includes('mp4') ||
-      /\.(mp4|m4v|webm)(\?|$)/i.test(val)
-    ) {
-      return val;
+  function getJamCamVideo(place){
+    const props = Array.isArray(place?.additionalProperties) ? place.additionalProperties : [];
+    for (const p of props){
+      const key = String(p?.key || p?.category || '').toLowerCase();
+      const val = String(p?.value || '').trim();
+      if (!val) continue;
+      if (
+        key.includes('video') ||
+        key.includes('mpeg') ||
+        key.includes('mp4') ||
+        /\.(mp4|m4v|webm)(\?|$)/i.test(val)
+      ) {
+        return val;
+      }
     }
+    const direct = String(place?.videoUrl || place?.video || '').trim();
+    return direct || '';
   }
-  const direct = String(place?.videoUrl || '').trim();
-  return direct || '';
-}
 
-
-	
   function parseJamCamRows(payload){
     const rows = Array.isArray(payload)
       ? payload
       : (Array.isArray(payload?.cameras)
           ? payload.cameras
           : (Array.isArray(payload?.places) ? payload.places : []));
-
     return rows.map((row) => {
       const lat = Number(row?.lat ?? row?.latitude ?? row?.placeLat);
       const lon = Number(row?.lon ?? row?.lng ?? row?.longitude ?? row?.placeLon);
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
       return {
- 		id: row?.id || row?.naptanId || row?.commonName || `${lat},${lon}`,
-	  	lat,
-  		lon,
-  		name: row?.commonName || row?.name || 'JamCam',
-  		image: String(row?.image || row?.imageUrl || getJamCamImage(row) || '').trim(),
-  		video: String(row?.video || row?.videoUrl || getJamCamVideo(row) || '').trim(),
-  		modified: row?.modified || row?.lastUpdated || row?.updatedAt || row?.timestamp || '',
-  		raw: row
-		};
+        id: row?.id || row?.naptanId || row?.commonName || `${lat},${lon}`,
+        lat,
+        lon,
+        name: row?.commonName || row?.name || 'JamCam',
+        image: String(row?.image || row?.imageUrl || getJamCamImage(row) || '').trim(),
+        video: String(row?.video || row?.videoUrl || getJamCamVideo(row) || '').trim(),
+        modified: row?.modified || row?.lastUpdated || row?.updatedAt || row?.timestamp || '',
+        raw: row
+      };
     }).filter(Boolean);
   }
 
@@ -5923,32 +5931,32 @@ function getJamCamVideo(place){
     if (!jamcamEnabled) return;
     if (!force && (Date.now() - jamcamLoadedAt) < JAMCAM_CACHE_MS) return;
     jamcamLayer.clearLayers();
+    window.__ciJamCamRows = [];
+    window.__ciJamCamMarkers = new Map();
 
     try {
       const payload = await fetchJamCamPayload();
       const rows = parseJamCamRows(payload);
+      window.__ciJamCamRows = rows.slice();
       rows.forEach((cam) => {
-       
-		  const mediaHtml = cam.video
-  ? `<div style="margin-top:8px">
-       <video controls autoplay muted loop playsinline
-         style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)">
-         <source src="${escapeHtml(cam.video)}" type="video/mp4">
-       </video>
-     </div>`
-  : cam.image
-    ? `<div style="margin-top:8px"><img src="${escapeHtml(cam.image)}" alt="${escapeHtml(cam.name)}" style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)"></div>`
-    : `<div style="margin-top:8px;font-size:12px;opacity:.8">Latest feed unavailable from source.</div>`;
-        
-		
-		const meta = cam.modified ? `<div style="font-size:12px;opacity:.8;margin-top:4px">Updated: ${escapeHtml(String(cam.modified))}</div>` : '';
+        const mediaHtml = cam.video
+          ? `<div style="margin-top:8px">
+               <video controls autoplay muted loop playsinline style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)">
+                 <source src="${escapeHtml(cam.video)}" type="video/mp4">
+               </video>
+             </div>`
+          : cam.image
+            ? `<div style="margin-top:8px"><img src="${escapeHtml(cam.image)}" alt="${escapeHtml(cam.name)}" style="display:block;max-width:240px;max-height:180px;border-radius:8px;border:1px solid rgba(255,255,255,.12)"></div>`
+            : `<div style="margin-top:8px;font-size:12px;opacity:.8">Latest feed unavailable from source.</div>`;
+        const meta = cam.modified ? `<div style="font-size:12px;opacity:.8;margin-top:4px">Updated: ${escapeHtml(String(cam.modified))}</div>` : '';
         const popup = `<div style="min-width:220px">
           <div style="font-weight:800;color:#fff">${escapeHtml(cam.name)}</div>
           <div style="font-size:12px;opacity:.85;margin-top:4px">Official TfL JamCam feed</div>
           ${meta}
           ${mediaHtml}
         </div>`;
-        L.marker([cam.lat, cam.lon], { icon: jamcamIcon, zIndexOffset: 900 }).addTo(jamcamLayer).bindPopup(popup, { maxWidth: 280 });
+        const marker = L.marker([cam.lat, cam.lon], { icon: jamcamIcon, zIndexOffset: 900 }).addTo(jamcamLayer).bindPopup(popup, { maxWidth: 280 });
+        window.__ciJamCamMarkers.set(String(cam.id), marker);
       });
       jamcamLoadedAt = Date.now();
       if (jamcamToggleBtn) jamcamToggleBtn.textContent = rows.length ? `On (${rows.length})` : 'On';
