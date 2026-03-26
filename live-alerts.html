@@ -4625,6 +4625,10 @@ function openDetailPanel(item, relatedList){
 }
 
 function closeDetailPanel() {
+
+	ciClearIncidentCameraLink();
+	window.__ciActiveIncidentForCams = null;
+	
   const cvs = document.getElementById('detailMiniMap');
   if (cvs) {
     const ctx = cvs.getContext('2d');
@@ -5944,8 +5948,11 @@ setTimeout(settleMap, 600);
 	
 
 	const jamcamMarkerIndex = Object.create(null);
-window.__ciJamCamRows = window.__ciJamCamRows || [];
+	window.__ciJamCamRows = window.__ciJamCamRows || [];
+	let ciIncidentCameraLine = null;
+	let ciIncidentCameraPulse = null;
 
+	
 function ciJamcamDistanceMeters(aLat, aLon, bLat, bLon){
   const R = 6371000;
   const toRad = d => d * Math.PI / 180;
@@ -5964,13 +5971,75 @@ function ciFormatMeters(m){
   return `${Math.round(m)} m`;
 }
 
+
+	
+function ciClearIncidentCameraLink(){
+  try {
+    if (ciIncidentCameraLine) {
+      map.removeLayer(ciIncidentCameraLine);
+      ciIncidentCameraLine = null;
+    }
+  } catch(e) {}
+
+  try {
+    if (ciIncidentCameraPulse) {
+      map.removeLayer(ciIncidentCameraPulse);
+      ciIncidentCameraPulse = null;
+    }
+  } catch(e) {}
+}
+
+	
+function ciDrawIncidentCameraLink(incidentLat, incidentLon, camLat, camLon){
+  ciClearIncidentCameraLink();
+
+  if (![incidentLat, incidentLon, camLat, camLon].every(Number.isFinite)) return;
+
+  try {
+    ciIncidentCameraLine = L.polyline(
+      [[incidentLat, incidentLon], [camLat, camLon]],
+      {
+        color: '#a855f7',
+        weight: 2,
+        opacity: 0.9,
+        dashArray: '8 8',
+        lineCap: 'round'
+      }
+    ).addTo(map);
+
+    ciIncidentCameraPulse = L.circleMarker([incidentLat, incidentLon], {
+      radius: 7,
+      color: '#ff4d4d',
+      weight: 2,
+      fillColor: '#ff4d4d',
+      fillOpacity: 0.35
+    }).addTo(map);
+  } catch(e) {
+    console.warn('ciDrawIncidentCameraLink failed', e);
+  }
+}
+	
+
 function ciFocusJamCamById(id){
   const cam = (window.__ciJamCamRows || []).find(x => String(x.id) === String(id));
   if (!cam) return;
+
+  const incident = window.__ciActiveIncidentForCams || null;
+  if (incident) {
+    ciDrawIncidentCameraLink(
+      Number(incident.lat),
+      Number(incident.lon),
+      Number(cam.lat),
+      Number(cam.lon)
+    );
+  } else {
+    ciClearIncidentCameraLink();
+  }
+
   try {
     map.setView([cam.lat, cam.lon], Math.max(map.getZoom(), 15), { animate:true });
   } catch(e) {}
-	
+
   const marker = jamcamMarkerIndex[id];
   if (marker && marker.openPopup) {
     setTimeout(() => {
@@ -5985,6 +6054,13 @@ window.ciFocusIncidentJamCams = async function(detail){
 
   const lat = Number(detail?.lat);
   const lon = Number(detail?.lon);
+
+  window.__ciActiveIncidentForCams = {
+  lat,
+  lon,
+  title: detail?.title || ''
+};
+	
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
     target.textContent = 'Incident coordinates unavailable for JamCam lookup.';
     return;
@@ -6015,9 +6091,10 @@ window.ciFocusIncidentJamCams = async function(detail){
       .slice(0, 3);
 
     if (!nearby.length) {
+      ciClearIncidentCameraLink();
       target.textContent = 'No nearby JamCams found within 2 km.';
       return;
-    }
+	  }
 
     target.innerHTML = nearby.map(cam => `
       <button
