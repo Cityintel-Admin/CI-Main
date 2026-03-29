@@ -213,6 +213,25 @@
 }
 
 
+/* --- Top insights strip v5 --- */
+.insights-card{padding:16px 18px;margin:0 0 16px}
+.insights-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.insights-title-wrap{display:flex;flex-direction:column;gap:4px}
+.insights-title{margin:0;font-size:16px;line-height:1.2}
+.insights-subtitle{font-size:12px;color:var(--muted)}
+.insights-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.insight-chip{border:1px solid var(--g600);border-radius:12px;background:rgba(255,255,255,.02);padding:12px;min-height:76px}
+.insight-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.insight-value{font-size:19px;font-weight:700;line-height:1.1;margin-top:6px}
+.insight-note{font-size:11px;color:var(--muted);margin-top:6px}
+.insight-value.up{color:var(--danger)}
+.insight-value.down{color:var(--ok)}
+.insight-value.flat{color:#dbe3ee}
+@media (max-width: 900px){
+  .insights-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+
   </style>
 </head>
 <body>
@@ -303,7 +322,38 @@
   <div id="trendCaption" class="muted" style="font-size:12px;margin-top:6px;"></div>
 </section>
 
+<section class="card insights-card">
+  <div class="insights-head">
+    <div class="insights-title-wrap">
+      <h3 class="insights-title">Top insights</h3>
+      <div class="insights-subtitle">Quick executive summary for the currently selected city.</div>
+    </div>
+    <span id="insightsCityLabel" class="section-city-pill">All cities</span>
+  </div>
 
+  <div class="insights-grid">
+    <div class="insight-chip">
+      <div class="insight-label">Last 30 days</div>
+      <div class="insight-value" id="insightRecentVolume">0 alerts</div>
+      <div class="insight-note" id="insightRecentNote">Recent alert volume</div>
+    </div>
+    <div class="insight-chip">
+      <div class="insight-label">7-day signal</div>
+      <div class="insight-value flat" id="insightDirection">Stable</div>
+      <div class="insight-note" id="insightDirectionNote">Compared with previous 7 days</div>
+    </div>
+    <div class="insight-chip">
+      <div class="insight-label">Upcoming protests</div>
+      <div class="insight-value" id="insightUpcoming">0</div>
+      <div class="insight-note" id="insightUpcomingNote">Next 30 days</div>
+    </div>
+    <div class="insight-chip">
+      <div class="insight-label">Dominant risk</div>
+      <div class="insight-value" id="insightRisk">No signal</div>
+      <div class="insight-note" id="insightRiskNote">Upcoming protest outlook</div>
+    </div>
+  </div>
+</section>
 
       <div class="grid">
         <!-- Weekly Volume -->
@@ -1491,6 +1541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof updateRiskMixForCity === 'function') updateRiskMixForCity();
     if (typeof window.ciRedrawWeeklyVolume === 'function') window.ciRedrawWeeklyVolume();
     if (typeof window.ciRedrawTrend === 'function') window.ciRedrawTrend();
+    if (typeof window.ciUpdateTopInsights === 'function') window.ciUpdateTopInsights();
   }
 
   handleCityChange(defaultSlug);
@@ -1599,6 +1650,111 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
+
+
+<script>
+(function topInsightsStrip(){
+  function parseDateLike(v){
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  function normRisk(v){
+    const s = String(v || '').toLowerCase();
+    if (s.startsWith('hi')) return 'high';
+    if (s.startsWith('me')) return 'med';
+    return 'low';
+  }
+  function isProtestLike(a){
+    const hay = [a.title, a.summary, a.category, a.tags, a.type].join(' ').toLowerCase();
+    return hay.includes('protest') || hay.includes('march') || hay.includes('rally') || hay.includes('demonstrat') || hay.includes('picket') || hay.includes('vigil');
+  }
+  function setText(id, value){
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+  function setDirection(value, cls){
+    const el = document.getElementById('insightDirection');
+    if (!el) return;
+    el.textContent = value;
+    el.classList.remove('up','down','flat');
+    el.classList.add(cls || 'flat');
+  }
+  function updateTopInsights(){
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const cityLabel = window.ciSelectedCityLabel || 'All cities';
+    const citySlug = (window.ciSelectedCitySlug || '').toLowerCase();
+    const now = new Date();
+    const last30Start = new Date(now.getTime() - 30*24*60*60*1000);
+    const next30End = new Date(now.getTime() + 30*24*60*60*1000);
+    const last14Start = new Date(now.getTime() - 14*24*60*60*1000);
+    const last7Start = new Date(now.getTime() - 7*24*60*60*1000);
+    const prev7Start = new Date(now.getTime() - 14*24*60*60*1000);
+
+    const scoped = data.filter(a => {
+      if (!citySlug) return true;
+      return String(a.city || a.City || '').toLowerCase() === citySlug;
+    });
+
+    const last30 = scoped.filter(a => {
+      const dt = parseDateLike(a.time || a.datetime || a.date || a.when);
+      return dt && dt >= last30Start && dt <= now;
+    });
+
+    const last7 = scoped.filter(a => {
+      const dt = parseDateLike(a.time || a.datetime || a.date || a.when);
+      return dt && dt >= last7Start && dt <= now;
+    }).length;
+
+    const prev7 = scoped.filter(a => {
+      const dt = parseDateLike(a.time || a.datetime || a.date || a.when);
+      return dt && dt >= prev7Start && dt < last7Start;
+    }).length;
+
+    let direction = 'Stable';
+    let directionCls = 'flat';
+    let directionNote = 'Compared with previous 7 days';
+    if (last7 > prev7) {
+      direction = 'Rising';
+      directionCls = 'up';
+      directionNote = `Last 7d ${last7} vs previous ${prev7}`;
+    } else if (last7 < prev7) {
+      direction = 'Falling';
+      directionCls = 'down';
+      directionNote = `Last 7d ${last7} vs previous ${prev7}`;
+    } else {
+      directionNote = `Last 7d ${last7} vs previous ${prev7}`;
+    }
+
+    const upcomingProtests = scoped.filter(a => {
+      const dt = parseDateLike(a.time || a.datetime || a.date || a.when);
+      return dt && dt >= now && dt <= next30End && isProtestLike(a);
+    });
+
+    const riskCounts = {high:0, med:0, low:0};
+    upcomingProtests.forEach(a => riskCounts[normRisk(a.risk || a.Risk)]++);
+    const dominant = Object.entries(riskCounts).sort((a,b)=>b[1]-a[1])[0] || ['low',0];
+    let dominantLabel = 'No signal';
+    let dominantNote = 'No upcoming protest outlook';
+    if (upcomingProtests.length) {
+      dominantLabel = dominant[0] === 'high' ? 'High' : dominant[0] === 'med' ? 'Medium' : 'Low';
+      dominantNote = `${riskCounts.high} high, ${riskCounts.med} medium, ${riskCounts.low} low in next 30 days`;
+    }
+
+    setText('insightsCityLabel', cityLabel);
+    setText('insightRecentVolume', `${last30.length} alerts`);
+    setText('insightRecentNote', `Recorded in ${cityLabel} over the last 30 days`);
+    setDirection(direction, directionCls);
+    setText('insightDirectionNote', directionNote);
+    setText('insightUpcoming', String(upcomingProtests.length));
+    setText('insightUpcomingNote', upcomingProtests.length ? `Protest-related alerts in ${cityLabel} over next 30 days` : `No scheduled protest-related alerts in ${cityLabel}`);
+    setText('insightRisk', dominantLabel);
+    setText('insightRiskNote', dominantNote);
+  }
+
+  window.ciUpdateTopInsights = updateTopInsights;
+  document.addEventListener('DOMContentLoaded', updateTopInsights);
+})();
+</script>
 
 <script>
 (function(){
