@@ -287,6 +287,11 @@
 .event-drawer-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid var(--g600);background:#101318;color:#e5e7eb;font-size:13px;text-decoration:none;cursor:pointer}
 .event-drawer-btn:hover{border-color:rgba(208,22,22,.55);background:rgba(208,22,22,.06)}
 .event-drawer-btn.primary{background:rgba(208,22,22,.14);border-color:rgba(208,22,22,.5)}
+.event-drawer-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.02)}
+.event-drawer-nav-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.event-drawer-nav-status{font-size:12px;color:var(--muted)}
+.event-drawer-btn[disabled]{opacity:.45;cursor:not-allowed}
+.event-drawer-btn[disabled]:hover{border-color:var(--g600);background:#101318}
 .event-list-item.active{border-color:rgba(208,22,22,.28);background:rgba(208,22,22,.06)}
 @media (max-width:760px){.event-drawer-meta{grid-template-columns:1fr}}
 
@@ -625,6 +630,13 @@
       <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">Location</div><div id="eventDrawerLocation" class="event-drawer-meta-value">—</div></div>
       <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">Risk</div><div id="eventDrawerRisk" class="event-drawer-meta-value">—</div></div>
       <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">Category</div><div id="eventDrawerCategory" class="event-drawer-meta-value">Protest-related alert</div></div>
+    </div>
+    <div class="event-drawer-nav">
+      <div id="eventDrawerNavStatus" class="event-drawer-nav-status">Event 1 of 1</div>
+      <div class="event-drawer-nav-actions">
+        <button type="button" id="eventDrawerPrev" class="event-drawer-btn">← Previous</button>
+        <button type="button" id="eventDrawerNext" class="event-drawer-btn">Next →</button>
+      </div>
     </div>
     <div>
       <div class="event-drawer-meta-label" style="margin-bottom:8px;">Summary</div>
@@ -1578,6 +1590,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+function ciSyncDrawerNav(){
+  const ctx = window.ciActiveDrawerContext || null;
+  const prevBtn = document.getElementById('eventDrawerPrev');
+  const nextBtn = document.getElementById('eventDrawerNext');
+  const statusEl = document.getElementById('eventDrawerNavStatus');
+  const total = ctx && Array.isArray(ctx.list) ? ctx.list.length : 0;
+  const index = ctx && Number.isFinite(ctx.index) ? ctx.index : 0;
+  if (statusEl) statusEl.textContent = total ? `Event ${index + 1} of ${total}` : 'Event details';
+  if (prevBtn) prevBtn.disabled = !(total > 1 && index > 0);
+  if (nextBtn) nextBtn.disabled = !(total > 1 && index < total - 1);
+}
+
+function ciFocusDrawerContextRow(){
+  const ctx = window.ciActiveDrawerContext || null;
+  if (!ctx) return null;
+  const selector = `.event-list-item[data-drawer-kind="${ctx.kind || ''}"][data-drawer-index="${ctx.index}"]`;
+  return document.querySelector(selector);
+}
+
 function ciCloseEventDrawer(){
   const drawer = document.getElementById('eventDrawer');
   const overlay = document.getElementById('eventDrawerOverlay');
@@ -1585,11 +1616,23 @@ function ciCloseEventDrawer(){
   if (overlay) { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); }
   document.querySelectorAll('.event-list-item.active').forEach(el => el.classList.remove('active'));
   window.ciActiveDrawerEvent = null;
+  window.ciActiveDrawerContext = null;
+  ciSyncDrawerNav();
 }
 
-function ciOpenEventDrawer(alert, cityName, rowEl){
+function ciOpenEventDrawer(alert, cityName, rowEl, context){
   if (!alert) return;
   window.ciActiveDrawerEvent = alert;
+  if (context && Array.isArray(context.list)) {
+    window.ciActiveDrawerContext = {
+      list: context.list,
+      index: Number.isFinite(context.index) ? context.index : 0,
+      kind: context.kind || '',
+      cityName: cityName || context.cityName || ''
+    };
+  } else if (!window.ciActiveDrawerContext) {
+    window.ciActiveDrawerContext = { list:[alert], index:0, kind:'', cityName: cityName || '' };
+  }
   const drawer = document.getElementById('eventDrawer');
   const overlay = document.getElementById('eventDrawerOverlay');
   const dt = alert._dt instanceof Date ? alert._dt : ciParseDate(alert.time || alert.datetime || alert.date || alert.when);
@@ -1618,19 +1661,42 @@ function ciOpenEventDrawer(alert, cityName, rowEl){
     link.style.opacity = titleForSearch ? '1' : '.5';
   }
   document.querySelectorAll('.event-list-item.active').forEach(el => el.classList.remove('active'));
-  if (rowEl) rowEl.classList.add('active');
+  const targetRow = rowEl || ciFocusDrawerContextRow();
+  if (targetRow) targetRow.classList.add('active');
   if (drawer) { drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); }
   if (overlay) { overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false'); }
+  ciSyncDrawerNav();
+}
+
+function ciStepDrawer(direction){
+  const ctx = window.ciActiveDrawerContext || null;
+  if (!ctx || !Array.isArray(ctx.list) || !ctx.list.length) return;
+  const nextIndex = ctx.index + direction;
+  if (nextIndex < 0 || nextIndex >= ctx.list.length) return;
+  ctx.index = nextIndex;
+  const nextAlert = ctx.list[nextIndex];
+  const nextRow = ciFocusDrawerContextRow();
+  ciOpenEventDrawer(nextAlert, ctx.cityName || nextAlert.city || '', nextRow, ctx);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('eventDrawerOverlay');
   const closeBtn = document.getElementById('eventDrawerClose');
   const clearBtn = document.getElementById('eventDrawerClear');
+  const prevBtn = document.getElementById('eventDrawerPrev');
+  const nextBtn = document.getElementById('eventDrawerNext');
   if (overlay) overlay.addEventListener('click', ciCloseEventDrawer);
   if (closeBtn) closeBtn.addEventListener('click', ciCloseEventDrawer);
   if (clearBtn) clearBtn.addEventListener('click', ciCloseEventDrawer);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') ciCloseEventDrawer(); });
+  if (prevBtn) prevBtn.addEventListener('click', () => ciStepDrawer(-1));
+  if (nextBtn) nextBtn.addEventListener('click', () => ciStepDrawer(1));
+  document.addEventListener('keydown', (e) => {
+    const drawerOpen = document.getElementById('eventDrawer')?.classList.contains('open');
+    if (e.key === 'Escape') ciCloseEventDrawer();
+    if (!drawerOpen) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); ciStepDrawer(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); ciStepDrawer(1); }
+  });
 });
 
 // ---------- LAST 30 DAYS ----------
@@ -1681,9 +1747,12 @@ function renderCityProtestsLast30(cityName) {
     : `${matches.length} protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the last 30 days.`;
 
   listBox.innerHTML = '';
-  matches.slice(0, 8).forEach(a => {
+  const visibleMatches = matches.slice(0, 8);
+  visibleMatches.forEach((a, idx) => {
     const row = document.createElement('div');
     row.className = 'event-list-item';
+    row.dataset.drawerKind = 'recent';
+    row.dataset.drawerIndex = String(idx);
 
     const when = a._dt.toLocaleString('en-GB', {
       day: '2-digit',
@@ -1714,7 +1783,7 @@ row.innerHTML = `
 
 
     row.addEventListener('click', () => {
-      ciOpenEventDrawer(a, cityName, row);
+      ciOpenEventDrawer(a, cityName, row, { list: visibleMatches, index: idx, kind: 'recent', cityName });
     });
 
     listBox.appendChild(row);
@@ -1769,9 +1838,12 @@ function renderCityUpcomingProtests30(cityName) {
     : `${matches.length} upcoming protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the next 30 days.`;
 
   listBox.innerHTML = '';
-  matches.slice(0, 8).forEach(a => {
+  const visibleMatches = matches.slice(0, 8);
+  visibleMatches.forEach((a, idx) => {
     const row = document.createElement('div');
     row.className = 'event-list-item';
+    row.dataset.drawerKind = 'upcoming';
+    row.dataset.drawerIndex = String(idx);
 
     const when = a._dt.toLocaleString('en-GB', {
       day: '2-digit',
@@ -1802,7 +1874,7 @@ row.innerHTML = `
 
 
     row.addEventListener('click', () => {
-      ciOpenEventDrawer(a, cityName, row);
+      ciOpenEventDrawer(a, cityName, row, { list: visibleMatches, index: idx, kind: 'upcoming', cityName });
     });
 
     listBox.appendChild(row);
