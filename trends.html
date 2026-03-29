@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
 
@@ -226,6 +226,8 @@
 .insight-chip.clickable:focus-visible{outline:2px solid rgba(208,22,22,.7);outline-offset:2px}
 .insight-chip-jump{font-size:11px;color:#9fb8ff;margin-top:7px}
 .section-anchor-offset{scroll-margin-top:92px}
+.section-highlight{animation:sectionPulse 1.1s ease}
+@keyframes sectionPulse{0%{box-shadow:0 0 0 0 rgba(208,22,22,0)}30%{box-shadow:0 0 0 2px rgba(208,22,22,.45)}100%{box-shadow:0 0 0 0 rgba(208,22,22,0)}}
 .insight-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .insight-value{font-size:19px;font-weight:700;line-height:1.1;margin-top:6px}
 .insight-note{font-size:11px;color:var(--muted);margin-top:6px}
@@ -236,6 +238,19 @@
   .insights-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+
+
+/* --- Time-window drilldown v9 --- */
+.time-filter-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 10px;padding:10px 12px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.02)}
+.time-filter-copy{display:flex;flex-direction:column;gap:3px}
+.time-filter-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.time-filter-value{font-size:13px;color:#e5e7eb}
+.time-filter-actions{display:flex;align-items:center;gap:8px}
+.time-filter-btn{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid var(--g600);background:#101318;color:#dbe3ee;font-size:12px;cursor:pointer}
+.time-filter-btn:hover{border-color:rgba(208,22,22,.55);background:rgba(208,22,22,.06)}
+.time-filter-btn.secondary{color:#9fb8ff}
+.chart-click-hint{font-size:11px;color:#8e97a3;margin-top:6px}
+.chart-clickable-point{cursor:pointer}
 
 /* --- Compare vs all cities v7 --- */
 .compare-toggle-wrap{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--g600);border-radius:999px;background:#101318;color:#dbe3ee}
@@ -346,6 +361,7 @@
 
   <canvas id="trendChart" height="140"></canvas>
   <div class="trend-help">Actuals are muted for context, the 7-day average is the primary signal, and the forecast begins after the divider.</div>
+  <div class="chart-click-hint">Tip: click a day on the chart to filter the protest lists to that time window.</div>
   <div id="trendCaption" class="muted" style="font-size:12px;margin-top:6px;"></div>
 </section>
 
@@ -432,6 +448,7 @@
     <svg id="volChart" viewBox="0 0 800 220" preserveAspectRatio="none"></svg>
   </div>
   <div class="weekly-help">Solid line shows weekly counts, shaded area gives volume context, and the dashed extension shows the 4-week baseline forecast.</div>
+  <div class="chart-click-hint">Tip: click a week or forecast point to filter the protest lists to that week.</div>
   <div class="muted" id="volCaption"></div>
         </section>
 
@@ -503,6 +520,17 @@
     <span id="cityProtestsLabel" class="section-city-pill">All cities</span>
   </div>
 
+  <div id="recentTimeFilterBar" class="time-filter-bar" style="display:none;">
+    <div class="time-filter-copy">
+      <div class="time-filter-label">Active time filter</div>
+      <div class="time-filter-value" id="recentTimeFilterValue">Last 30 days</div>
+    </div>
+    <div class="time-filter-actions">
+      <button type="button" class="time-filter-btn secondary" data-filter-target="section-trend">Back to chart</button>
+      <button type="button" class="time-filter-btn" id="clearRecentTimeFilterBtn">Clear filter</button>
+    </div>
+  </div>
+
   <div id="cityProtestsSummary" class="subtext" style="margin-bottom:8px;">
     Loading recent protest activity…
   </div>
@@ -528,6 +556,17 @@
       </select>
     </label>
     <span id="cityUpcomingLabel" class="section-city-pill">All cities</span>
+  </div>
+
+  <div id="upcomingTimeFilterBar" class="time-filter-bar" style="display:none;">
+    <div class="time-filter-copy">
+      <div class="time-filter-label">Active time filter</div>
+      <div class="time-filter-value" id="upcomingTimeFilterValue">Next 30 days</div>
+    </div>
+    <div class="time-filter-actions">
+      <button type="button" class="time-filter-btn secondary" data-filter-target="section-weekly-volume">Back to chart</button>
+      <button type="button" class="time-filter-btn" id="clearUpcomingTimeFilterBtn">Clear filter</button>
+    </div>
   </div>
 
   <div id="cityUpcomingSummary" class="subtext" style="margin-bottom:8px;">
@@ -783,7 +822,9 @@
       avg7: avg7.concat(Array(projLen).fill(null)),
       proj: Array(days.length).fill(null).concat(projVals),
       daysLength: days.length,
-      projectionRate: lambda
+      projectionRate: lambda,
+      dayDates: days.map(x => new Date(x.d)),
+      projDates: projLabels.map(label => new Date(label + 'T00:00:00'))
     };
   }
 
@@ -923,6 +964,23 @@
             ticks: { color: '#6b7280', precision: 0 },
             grid: { color: 'rgba(255,255,255,.05)' }
           }
+        },
+        onClick(evt, elements, chartInstance){
+          const points = chartInstance.getElementsAtEventForMode(evt, 'nearest', { intersect: false }, true);
+          if (!points.length || typeof window.ciApplyChartTimeFilter !== 'function') return;
+          const idx = points[0].index;
+          if (idx < series.daysLength) {
+            const start = series.dayDates[idx];
+            const end = new Date(start.getTime() + 24*60*60*1000);
+            const label = `Trend day · ${start.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}`;
+            window.ciApplyChartTimeFilter('recent', start, end, label, 'section-recent-protests');
+          } else {
+            const projIdx = idx - series.daysLength;
+            const start = series.projDates[projIdx];
+            const end = new Date(start.getTime() + 24*60*60*1000);
+            const label = `Forecast day · ${start.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}`;
+            window.ciApplyChartTimeFilter('upcoming', start, end, label, 'section-upcoming-protests');
+          }
         }
       },
       plugins: [dividerPlugin]
@@ -981,7 +1039,9 @@
         }).length;
         buckets.push({
           label: start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
-          n
+          n,
+          start: new Date(start),
+          end: new Date(stop)
         });
       }
       return buckets;
@@ -1000,7 +1060,7 @@
       return {a,b};
     }
 
-    function renderAreaWithForecast(svgId, data, forecastHorizon=4, compareData=null){
+    function renderAreaWithForecast(svgId, data, forecastHorizon=4, compareData=null, clickHandler=null){
       const svg = document.getElementById(svgId);
       const W = 800, Hh = 220, padL=38, padR=18, padT=16, padB=28;
       svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
@@ -1122,6 +1182,40 @@
         'stroke-dasharray': '7 5',
         'stroke-linecap': 'round'
       }));
+
+      // click targets for historical + forecast weeks
+      if (typeof clickHandler === 'function') {
+        data.forEach((d,i)=>{
+          const hit = make('circle', {
+            cx: xFor(i), cy: yFor(counts[i] || 0), r: 10,
+            fill: 'rgba(0,0,0,0)', class: 'chart-clickable-point'
+          });
+          hit.addEventListener('click', () => clickHandler({
+            kind: 'recent',
+            index: i,
+            label: d.label,
+            start: d.start,
+            end: d.end
+          }));
+          svg.appendChild(hit);
+        });
+        future.forEach((v,i)=>{
+          const absoluteIndex = counts.length + i;
+          const hit = make('circle', {
+            cx: xFor(absoluteIndex), cy: yFor(v || 0), r: 10,
+            fill: 'rgba(0,0,0,0)', class: 'chart-clickable-point'
+          });
+          const src = data[Math.max(0, data.length - 1)];
+          hit.addEventListener('click', () => clickHandler({
+            kind: 'upcoming',
+            index: absoluteIndex,
+            label: `+${i+1}w`,
+            start: new Date(src.end.getTime() + i*7*24*60*60*1000),
+            end: new Date(src.end.getTime() + (i+1)*7*24*60*60*1000)
+          }));
+          svg.appendChild(hit);
+        });
+      }
 
       // x labels
       [...data.map(d=>d.label), ...future.map((_,i)=>`+${i+1}w`)].forEach((lab,i)=>{
@@ -1368,6 +1462,67 @@ function ciRiskKey(r) {
 }
 
 	
+
+function ciIsFilterActive(kind){
+  return !!(window.ciChartTimeFilter && window.ciChartTimeFilter.kind === kind);
+}
+
+function ciFormatFilterWindow(start, end){
+  const sameDay = start.toDateString() === new Date(end.getTime() - 1).toDateString();
+  if (sameDay) return start.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  return `${start.toLocaleDateString('en-GB', { day:'2-digit', month:'short' })} → ${new Date(end.getTime()-1).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}`;
+}
+
+function ciRenderTimeFilterBars(){
+  const filter = window.ciChartTimeFilter || null;
+  const recentBar = document.getElementById('recentTimeFilterBar');
+  const upcomingBar = document.getElementById('upcomingTimeFilterBar');
+  const recentValue = document.getElementById('recentTimeFilterValue');
+  const upcomingValue = document.getElementById('upcomingTimeFilterValue');
+  if (recentBar) recentBar.style.display = filter && filter.kind === 'recent' ? 'flex' : 'none';
+  if (upcomingBar) upcomingBar.style.display = filter && filter.kind === 'upcoming' ? 'flex' : 'none';
+  if (filter && filter.kind === 'recent' && recentValue) recentValue.textContent = `${filter.label} · ${ciFormatFilterWindow(filter.start, filter.end)}`;
+  if (filter && filter.kind === 'upcoming' && upcomingValue) upcomingValue.textContent = `${filter.label} · ${ciFormatFilterWindow(filter.start, filter.end)}`;
+}
+
+function ciApplyChartTimeFilter(kind, start, end, label, targetId){
+  window.ciChartTimeFilter = { kind, start: new Date(start), end: new Date(end), label: label || 'Selected window', targetId: targetId || '' };
+  ciRenderTimeFilterBars();
+  const city = window.ciSelectedCityLabel || 'Selected city';
+  renderCityProtestsLast30(city);
+  renderCityUpcomingProtests30(city);
+  const target = document.getElementById(targetId || (kind === 'recent' ? 'section-recent-protests' : 'section-upcoming-protests'));
+  if (target) {
+    target.scrollIntoView({ behavior:'smooth', block:'start' });
+    target.classList.add('section-highlight');
+    setTimeout(() => target.classList.remove('section-highlight'), 1200);
+  }
+}
+
+function ciClearChartTimeFilter(kind){
+  if (!window.ciChartTimeFilter) return;
+  if (kind && window.ciChartTimeFilter.kind !== kind) return;
+  window.ciChartTimeFilter = null;
+  ciRenderTimeFilterBars();
+  const city = window.ciSelectedCityLabel || 'Selected city';
+  renderCityProtestsLast30(city);
+  renderCityUpcomingProtests30(city);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const clearRecent = document.getElementById('clearRecentTimeFilterBtn');
+  const clearUpcoming = document.getElementById('clearUpcomingTimeFilterBtn');
+  if (clearRecent) clearRecent.addEventListener('click', () => ciClearChartTimeFilter('recent'));
+  if (clearUpcoming) clearUpcoming.addEventListener('click', () => ciClearChartTimeFilter('upcoming'));
+  document.querySelectorAll('[data-filter-target]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.getAttribute('data-filter-target'));
+      if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  });
+  ciRenderTimeFilterBars();
+});
+
 // ---------- LAST 30 DAYS ----------
 function renderCityProtestsLast30(cityName) {
   const summaryBox = document.getElementById('cityProtestsSummary');
@@ -1383,7 +1538,10 @@ function renderCityProtestsLast30(cityName) {
   }
 
   const now  = new Date();
-  const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // last 30 days
+  const defaultFrom = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // last 30 days
+  const activeFilter = window.ciChartTimeFilter && window.ciChartTimeFilter.kind === 'recent' ? window.ciChartTimeFilter : null;
+  const from = activeFilter ? activeFilter.start : defaultFrom;
+  const to = activeFilter ? activeFilter.end : now;
   const citySlug = (cityName || '').toLowerCase();
 
   const matches = data
@@ -1391,7 +1549,7 @@ function renderCityProtestsLast30(cityName) {
       const dt = ciParseDate(a.time || a.datetime || a.date || a.when);
       return { ...a, _dt: dt };
     })
-    .filter(a => a._dt && a._dt >= from && a._dt <= now)
+    .filter(a => a._dt && a._dt >= from && a._dt <= to)
     .filter(a => {
       if (!isProtestyAlert(a)) return false;
 
@@ -1401,14 +1559,16 @@ function renderCityProtestsLast30(cityName) {
     .sort((a, b) => b._dt - a._dt); // newest first
 
   if (!matches.length) {
-    summaryBox.textContent =
-      `No protest-related alerts for ${cityName} in the last 30 days.`;
+    summaryBox.textContent = activeFilter
+      ? `No protest-related alerts for ${cityName} in ${activeFilter.label.toLowerCase()}.`
+      : `No protest-related alerts for ${cityName} in the last 30 days.`;
     listBox.textContent = '';
     return;
   }
 
-  summaryBox.textContent =
-    `${matches.length} protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the last 30 days.`;
+  summaryBox.textContent = activeFilter
+    ? `${matches.length} protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} during ${activeFilter.label.toLowerCase()}.`
+    : `${matches.length} protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the last 30 days.`;
 
   listBox.innerHTML = '';
   matches.slice(0, 8).forEach(a => {
@@ -1470,7 +1630,10 @@ function renderCityUpcomingProtests30(cityName) {
   }
 
   const now  = new Date();
-  const end  = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // next 30 days
+  const defaultEnd  = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // next 30 days
+  const activeFilter = window.ciChartTimeFilter && window.ciChartTimeFilter.kind === 'upcoming' ? window.ciChartTimeFilter : null;
+  const from = activeFilter ? activeFilter.start : now;
+  const end  = activeFilter ? activeFilter.end : defaultEnd;
   const citySlug = (cityName || '').toLowerCase();
 
   const matches = data
@@ -1478,7 +1641,7 @@ function renderCityUpcomingProtests30(cityName) {
       const dt = ciParseDate(a.time || a.datetime || a.date || a.when);
       return { ...a, _dt: dt };
     })
-    .filter(a => a._dt && a._dt >= now && a._dt <= end)
+    .filter(a => a._dt && a._dt >= from && a._dt <= end)
     .filter(a => {
       if (!isProtestyAlert(a)) return false;
 
@@ -1488,14 +1651,16 @@ function renderCityUpcomingProtests30(cityName) {
     .sort((a, b) => a._dt - b._dt); // soonest first
 
   if (!matches.length) {
-    summaryBox.textContent =
-      `No upcoming protest-related alerts for ${cityName} in the next 30 days.`;
+    summaryBox.textContent = activeFilter
+      ? `No upcoming protest-related alerts for ${cityName} in ${activeFilter.label.toLowerCase()}.`
+      : `No upcoming protest-related alerts for ${cityName} in the next 30 days.`;
     listBox.textContent = '';
     return;
   }
 
-  summaryBox.textContent =
-    `${matches.length} upcoming protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the next 30 days.`;
+  summaryBox.textContent = activeFilter
+    ? `${matches.length} upcoming protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} during ${activeFilter.label.toLowerCase()}.`
+    : `${matches.length} upcoming protest-related alert${matches.length === 1 ? '' : 's'} in ${cityName} over the next 30 days.`;
 
   listBox.innerHTML = '';
   matches.slice(0, 8).forEach(a => {
@@ -1646,6 +1811,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pastSelect) pastSelect.value = slug;
     if (upcomingSelect) upcomingSelect.value = slug;
 
+    window.ciChartTimeFilter = null;
+    ciRenderTimeFilterBars();
     renderCityProtestsLast30(city);
     renderCityUpcomingProtests30(city);
     ciUpdateCityLabels();
