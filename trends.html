@@ -237,6 +237,12 @@
 }
 
 
+/* --- Compare vs all cities v7 --- */
+.compare-toggle-wrap{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--g600);border-radius:999px;background:#101318;color:#dbe3ee}
+.compare-toggle-wrap input{accent-color:#D01616}
+.compare-toggle-wrap .compare-toggle-text{font-size:12px;line-height:1}
+.compare-note{font-size:11px;color:#8e97a3}
+
   </style>
 </head>
 <body>
@@ -289,6 +295,10 @@
         <select id="cityMasterSelect" class="trend-select"></select>
       </label>
       <span id="trendCityLabel" class="section-city-pill">All cities</span>
+      <label class="compare-toggle-wrap" title="Overlay all cities on the trend and weekly charts">
+        <input type="checkbox" id="compareAllToggle">
+        <span class="compare-toggle-text">Compare vs all cities</span>
+      </label>
     </div>
   </div>
 
@@ -378,6 +388,7 @@
         Include predictive
       </label>
       <span id="volCityLabel" class="section-city-pill">All cities</span>
+      <span id="weeklyCompareNote" class="compare-note" style="display:none;">Comparing selected city with all cities</span>
     </div>
   </div>
 
@@ -796,49 +807,73 @@
   function render(windowDays){
     const citySlug  = (window.ciSelectedCitySlug || '').toLowerCase();
     const cityLabel = window.ciSelectedCityLabel || 'all cities';
+    const compareEnabled = !!window.ciCompareAllCities && !!citySlug;
     const series = buildSeries(windowDays, citySlug);
+    const allSeries = compareEnabled ? buildSeries(windowDays, '') : null;
     updateTrendStats(series, cityLabel, windowDays);
 
     if (chart) chart.destroy();
+
+    const datasets = [
+      {
+        label:'Daily actuals',
+        data: series.actual,
+        borderWidth: 1.6,
+        tension: .22,
+        pointRadius: 0,
+        hitRadius: 8,
+        borderColor: 'rgba(59,130,246,.65)',
+        backgroundColor: 'rgba(59,130,246,.08)',
+        fill: false
+      },
+      {
+        label:'7-day avg',
+        data: series.avg7,
+        borderWidth: 3,
+        tension: .28,
+        pointRadius: 0,
+        hitRadius: 10,
+        borderColor: '#c7d2fe',
+        backgroundColor: '#c7d2fe'
+      }
+    ];
+
+    if (allSeries) {
+      datasets.push({
+        label:'All cities 7-day avg',
+        data: allSeries.avg7,
+        borderWidth: 2,
+        borderDash: [8,4],
+        tension: .25,
+        pointRadius: 0,
+        hitRadius: 8,
+        borderColor: 'rgba(148,163,184,.95)',
+        backgroundColor: 'rgba(148,163,184,.95)'
+      });
+    }
+
+    datasets.push({
+      label:'Projection (14d)',
+      data: series.proj,
+      borderWidth: 2,
+      borderDash: [2,5],
+      tension: .18,
+      pointRadius: 0,
+      hitRadius: 8,
+      borderColor: '#f59e0b',
+      backgroundColor: '#f59e0b'
+    });
+
+    if (captionEl) {
+      const base = captionEl.textContent || '';
+      captionEl.textContent = compareEnabled ? `${base} Comparison overlay shows the all-cities 7-day average.` : base.replace(/ Comparison overlay shows the all-cities 7-day average\.$/, '');
+    }
 
     chart = new Chart(canvas, {
       type: 'line',
       data: {
         labels: series.labels,
-        datasets: [
-          {
-            label:'Daily actuals',
-            data: series.actual,
-            borderWidth: 1.6,
-            tension: .22,
-            pointRadius: 0,
-            hitRadius: 8,
-            borderColor: 'rgba(59,130,246,.65)',
-            backgroundColor: 'rgba(59,130,246,.08)',
-            fill: false
-          },
-          {
-            label:'7-day avg',
-            data: series.avg7,
-            borderWidth: 3,
-            tension: .28,
-            pointRadius: 0,
-            hitRadius: 10,
-            borderColor: '#c7d2fe',
-            backgroundColor: '#c7d2fe'
-          },
-          {
-            label:'Projection (14d)',
-            data: series.proj,
-            borderWidth: 2,
-            borderDash: [2,5],
-            tension: .18,
-            pointRadius: 0,
-            hitRadius: 8,
-            borderColor: '#f59e0b',
-            backgroundColor: '#f59e0b'
-          }
-        ]
+        datasets
       },
       options: {
         responsive: true,
@@ -952,7 +987,7 @@
       return {a,b};
     }
 
-    function renderAreaWithForecast(svgId, data, forecastHorizon=4){
+    function renderAreaWithForecast(svgId, data, forecastHorizon=4, compareData=null){
       const svg = document.getElementById(svgId);
       const W = 800, Hh = 220, padL=38, padR=18, padT=16, padB=28;
       svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
@@ -1033,6 +1068,25 @@
         }));
       });
 
+      // compare line (selected city vs all cities)
+      if (Array.isArray(compareData) && compareData.length) {
+        const compareCounts = compareData.map(d => d.n);
+        let comparePath = '';
+        compareCounts.forEach((v,i)=>{
+          const cmd = i === 0 ? 'M' : 'L';
+          comparePath += `${cmd} ${xFor(i)} ${yFor(v)} `;
+        });
+        svg.appendChild(make('path', {
+          d: comparePath.trim(),
+          fill: 'none',
+          stroke: 'rgba(148,163,184,.9)',
+          'stroke-width': 2,
+          'stroke-dasharray': '6 5',
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round'
+        }));
+      }
+
       // forecast divider
       svg.appendChild(make('line', {
         x1: forecastStartX, y1: padT, x2: forecastStartX, y2: padT + plotH,
@@ -1081,9 +1135,11 @@
             function drawVol() {
         const citySlug  = (window.ciSelectedCitySlug  || '').toLowerCase();
         const cityLabel = window.ciSelectedCityLabel || 'all cities';
+        const compareEnabled = !!window.ciCompareAllCities && !!citySlug;
 
         const data = weeklyBuckets(NORM, 12, predCb.checked, citySlug);
-        const viz = renderAreaWithForecast('volChart', data, 4);
+        const allData = compareEnabled ? weeklyBuckets(NORM, 12, predCb.checked, '') : null;
+        const viz = renderAreaWithForecast('volChart', data, 4, allData);
 
         const sum = data.reduce((s, x) => s + x.n, 0);
         const avg = data.length ? (sum / data.length) : 0;
@@ -1111,7 +1167,8 @@
           } else {
             volCaptionEl.textContent =
               `${sum} events in ${cityLabel} over the last 12 weeks • average ${avg.toFixed(1)} per week • ` +
-              `${predCb.checked ? 'including' : 'excluding'} predictive alerts.`;
+              `${predCb.checked ? 'including' : 'excluding'} predictive alerts` +
+              `${compareEnabled ? ' • dashed line shows all cities' : '.'}`;
           }
         }
       }
@@ -1476,18 +1533,26 @@ row.innerHTML = `
 function ciUpdateCityLabels() {
   const label = window.ciSelectedCityLabel || 'all cities';
   const slug  = window.ciSelectedCitySlug || '';
+  const compareEnabled = !!window.ciCompareAllCities && !!slug;
+  const compareLabel = compareEnabled ? `${label} · vs All cities` : label;
 
   const trendLbl = document.getElementById('trendCityLabel');
-  if (trendLbl) trendLbl.textContent = label;
+  if (trendLbl) trendLbl.textContent = compareLabel;
 
   const volLbl = document.getElementById('volCityLabel');
-  if (volLbl) volLbl.textContent = label;
+  if (volLbl) volLbl.textContent = compareLabel;
 
   const pastLbl = document.getElementById('cityProtestsLabel');
   if (pastLbl) pastLbl.textContent = label;
 
   const upcomingLbl = document.getElementById('cityUpcomingLabel');
   if (upcomingLbl) upcomingLbl.textContent = label;
+
+  const insightsLbl = document.getElementById('insightsCityLabel');
+  if (insightsLbl) insightsLbl.textContent = compareEnabled ? `${label} · comparison on` : label;
+
+  const compareNote = document.getElementById('weeklyCompareNote');
+  if (compareNote) compareNote.style.display = compareEnabled ? 'inline-flex' : 'none';
 
   const masterSelect = document.getElementById('cityMasterSelect');
   if (masterSelect && masterSelect.value !== slug) masterSelect.value = slug;
@@ -1498,6 +1563,7 @@ function ciUpdateCityLabels() {
 // ---------- Initialise both cards + keep selectors in sync ----------
 document.addEventListener('DOMContentLoaded', () => {
   const masterSelect   = document.getElementById('cityMasterSelect');
+  const compareToggle  = document.getElementById('compareAllToggle');
   const pastSelect     = document.getElementById('cityProtestSelect');
   const upcomingSelect = document.getElementById('cityUpcomingSelect');
   const pastSummary    = document.getElementById('cityProtestsSummary');
@@ -1533,6 +1599,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pastSelect) pastSelect.value = defaultSlug;
   if (upcomingSelect) upcomingSelect.value = defaultSlug;
 
+  function syncCompareToggle(){
+    if (compareToggle) compareToggle.checked = !!window.ciCompareAllCities;
+  }
+
   function handleCityChange(slug) {
     const city = cities.find(c => c.toLowerCase() === slug) || slug || 'Selected city';
 
@@ -1553,11 +1623,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.ciUpdateTopInsights === 'function') window.ciUpdateTopInsights();
   }
 
+  function applyCompareToggle(checked){
+    window.ciCompareAllCities = !!checked;
+    syncCompareToggle();
+    ciUpdateCityLabels();
+    if (typeof window.ciRedrawWeeklyVolume === 'function') window.ciRedrawWeeklyVolume();
+    if (typeof window.ciRedrawTrend === 'function') window.ciRedrawTrend();
+    if (typeof window.ciUpdateTopInsights === 'function') window.ciUpdateTopInsights();
+  }
+
+  window.ciCompareAllCities = false;
+  syncCompareToggle();
   handleCityChange(defaultSlug);
 
   if (masterSelect) masterSelect.addEventListener('change', () => handleCityChange(masterSelect.value));
   if (pastSelect) pastSelect.addEventListener('change', () => handleCityChange(pastSelect.value));
   if (upcomingSelect) upcomingSelect.addEventListener('change', () => handleCityChange(upcomingSelect.value));
+  if (compareToggle) compareToggle.addEventListener('change', () => applyCompareToggle(compareToggle.checked));
 });
 </script>
 
@@ -1692,6 +1774,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = Array.isArray(window.alertsData) ? window.alertsData : [];
     const cityLabel = window.ciSelectedCityLabel || 'All cities';
     const citySlug = (window.ciSelectedCitySlug || '').toLowerCase();
+    const compareEnabled = !!window.ciCompareAllCities && !!citySlug;
     const now = new Date();
     const last30Start = new Date(now.getTime() - 30*24*60*60*1000);
     const next30End = new Date(now.getTime() + 30*24*60*60*1000);
@@ -1749,7 +1832,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dominantNote = `${riskCounts.high} high, ${riskCounts.med} medium, ${riskCounts.low} low in next 30 days`;
     }
 
-    setText('insightsCityLabel', cityLabel);
+    setText('insightsCityLabel', compareEnabled ? `${cityLabel} · comparison on` : cityLabel);
     setText('insightRecentVolume', `${last30.length} alerts`);
     setText('insightRecentNote', `Recorded in ${cityLabel} over the last 30 days`);
     setDirection(direction, directionCls);
