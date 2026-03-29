@@ -267,6 +267,30 @@
 .compare-chip.disabled:hover{border-color:var(--g600);background:#101318}
 
 
+/* --- Event detail drawer v10 --- */
+.event-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:80;display:none}
+.event-drawer{position:fixed;top:0;right:0;width:min(420px,92vw);height:100vh;background:linear-gradient(180deg,#191b1f,#111317);border-left:1px solid var(--g600);box-shadow:-16px 0 36px rgba(0,0,0,.38);z-index:81;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s ease}
+.event-drawer.open{transform:translateX(0)}
+.event-drawer-overlay.open{display:block}
+.event-drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.event-drawer-title{margin:0;font-size:18px;line-height:1.25}
+.event-drawer-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.event-drawer-close{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid var(--g600);background:#101318;color:#e5e7eb;cursor:pointer;font-size:18px;line-height:1}
+.event-drawer-close:hover{border-color:rgba(208,22,22,.55);background:rgba(208,22,22,.06)}
+.event-drawer-body{padding:18px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.event-drawer-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.event-drawer-meta-card{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.02);padding:10px 12px}
+.event-drawer-meta-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.event-drawer-meta-value{font-size:13px;color:#e5e7eb;margin-top:5px;word-break:break-word}
+.event-drawer-summary{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.02);padding:12px 14px;font-size:13px;line-height:1.6;color:#e9edf2;white-space:pre-wrap}
+.event-drawer-actions{display:flex;gap:10px;flex-wrap:wrap}
+.event-drawer-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid var(--g600);background:#101318;color:#e5e7eb;font-size:13px;text-decoration:none;cursor:pointer}
+.event-drawer-btn:hover{border-color:rgba(208,22,22,.55);background:rgba(208,22,22,.06)}
+.event-drawer-btn.primary{background:rgba(208,22,22,.14);border-color:rgba(208,22,22,.5)}
+.event-list-item.active{border-color:rgba(208,22,22,.28);background:rgba(208,22,22,.06)}
+@media (max-width:760px){.event-drawer-meta{grid-template-columns:1fr}}
+
+
   </style>
 </head>
 <body>
@@ -584,6 +608,35 @@
       </div>
     </main>
   </div>
+
+
+<div id="eventDrawerOverlay" class="event-drawer-overlay" aria-hidden="true"></div>
+<aside id="eventDrawer" class="event-drawer" aria-hidden="true" aria-labelledby="eventDrawerTitle">
+  <div class="event-drawer-head">
+    <div>
+      <h3 id="eventDrawerTitle" class="event-drawer-title">Event details</h3>
+      <div id="eventDrawerSub" class="event-drawer-sub">Select an event to inspect more detail without leaving the page.</div>
+    </div>
+    <button type="button" id="eventDrawerClose" class="event-drawer-close" aria-label="Close event details">×</button>
+  </div>
+  <div class="event-drawer-body">
+    <div class="event-drawer-meta">
+      <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">When</div><div id="eventDrawerWhen" class="event-drawer-meta-value">—</div></div>
+      <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">Location</div><div id="eventDrawerLocation" class="event-drawer-meta-value">—</div></div>
+      <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">Risk</div><div id="eventDrawerRisk" class="event-drawer-meta-value">—</div></div>
+      <div class="event-drawer-meta-card"><div class="event-drawer-meta-label">Category</div><div id="eventDrawerCategory" class="event-drawer-meta-value">Protest-related alert</div></div>
+    </div>
+    <div>
+      <div class="event-drawer-meta-label" style="margin-bottom:8px;">Summary</div>
+      <div id="eventDrawerSummary" class="event-drawer-summary">No summary available.</div>
+    </div>
+    <div class="event-drawer-actions">
+      <a id="eventDrawerOpenIncident" class="event-drawer-btn primary" href="#">Open incident page</a>
+      <button type="button" id="eventDrawerClear" class="event-drawer-btn">Close drawer</button>
+    </div>
+  </div>
+</aside>
+
 
   <!-- Data + helpers -->
   <script src="auth.js"></script>
@@ -1503,6 +1556,7 @@ function ciClearChartTimeFilter(kind){
   if (!window.ciChartTimeFilter) return;
   if (kind && window.ciChartTimeFilter.kind !== kind) return;
   window.ciChartTimeFilter = null;
+  ciCloseEventDrawer();
   ciRenderTimeFilterBars();
   const city = window.ciSelectedCityLabel || 'Selected city';
   renderCityProtestsLast30(city);
@@ -1521,6 +1575,62 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   ciRenderTimeFilterBars();
+});
+
+
+function ciCloseEventDrawer(){
+  const drawer = document.getElementById('eventDrawer');
+  const overlay = document.getElementById('eventDrawerOverlay');
+  if (drawer) { drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
+  if (overlay) { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); }
+  document.querySelectorAll('.event-list-item.active').forEach(el => el.classList.remove('active'));
+  window.ciActiveDrawerEvent = null;
+}
+
+function ciOpenEventDrawer(alert, cityName, rowEl){
+  if (!alert) return;
+  window.ciActiveDrawerEvent = alert;
+  const drawer = document.getElementById('eventDrawer');
+  const overlay = document.getElementById('eventDrawerOverlay');
+  const dt = alert._dt instanceof Date ? alert._dt : ciParseDate(alert.time || alert.datetime || alert.date || alert.when);
+  const when = dt ? dt.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Unknown time';
+  const riskRaw = (alert.risk || '').toString();
+  const riskText = riskRaw ? riskRaw.toUpperCase() : 'RISK';
+  const location = [alert.city || cityName || '', alert.country || alert.Country || ''].filter(Boolean).join(', ') || 'Unknown location';
+  const category = alert.category || alert.type || alert.eventType || 'Protest-related alert';
+  const title = alert.title || 'Event details';
+  const summary = (alert.summary || alert.description || 'No summary available.').trim();
+  const titleForSearch = (alert.title || '').trim();
+  const openHref = titleForSearch ? `incident.html?search=${encodeURIComponent(titleForSearch)}&from=brief` : '#';
+
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  set('eventDrawerTitle', title);
+  set('eventDrawerSub', `${cityName || alert.city || 'Selected city'} · ${category}`);
+  set('eventDrawerWhen', when);
+  set('eventDrawerLocation', location);
+  set('eventDrawerRisk', riskText);
+  set('eventDrawerCategory', category);
+  set('eventDrawerSummary', summary);
+  const link = document.getElementById('eventDrawerOpenIncident');
+  if (link) {
+    link.href = openHref;
+    link.style.pointerEvents = titleForSearch ? 'auto' : 'none';
+    link.style.opacity = titleForSearch ? '1' : '.5';
+  }
+  document.querySelectorAll('.event-list-item.active').forEach(el => el.classList.remove('active'));
+  if (rowEl) rowEl.classList.add('active');
+  if (drawer) { drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); }
+  if (overlay) { overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('eventDrawerOverlay');
+  const closeBtn = document.getElementById('eventDrawerClose');
+  const clearBtn = document.getElementById('eventDrawerClear');
+  if (overlay) overlay.addEventListener('click', ciCloseEventDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', ciCloseEventDrawer);
+  if (clearBtn) clearBtn.addEventListener('click', ciCloseEventDrawer);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') ciCloseEventDrawer(); });
 });
 
 // ---------- LAST 30 DAYS ----------
@@ -1603,13 +1713,9 @@ row.innerHTML = `
 `;
 
 
-    const titleForSearch = (a.title || '').trim();
-    if (titleForSearch) {
-      row.addEventListener('click', () => {
-        const url = `incident.html?search=${encodeURIComponent(titleForSearch)}&from=brief`;
-        location.href = url;
-      });
-    }
+    row.addEventListener('click', () => {
+      ciOpenEventDrawer(a, cityName, row);
+    });
 
     listBox.appendChild(row);
   });
@@ -1695,13 +1801,9 @@ row.innerHTML = `
 `;
 
 
-    const titleForSearch = (a.title || '').trim();
-    if (titleForSearch) {
-      row.addEventListener('click', () => {
-        const url = `incident.html?search=${encodeURIComponent(titleForSearch)}&from=brief`;
-        location.href = url;
-      });
-    }
+    row.addEventListener('click', () => {
+      ciOpenEventDrawer(a, cityName, row);
+    });
 
     listBox.appendChild(row);
   });
@@ -1812,6 +1914,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (upcomingSelect) upcomingSelect.value = slug;
 
     window.ciChartTimeFilter = null;
+    ciCloseEventDrawer();
     ciRenderTimeFilterBars();
     renderCityProtestsLast30(city);
     renderCityUpcomingProtests30(city);
