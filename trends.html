@@ -243,6 +243,15 @@
 .compare-toggle-wrap .compare-toggle-text{font-size:12px;line-height:1}
 .compare-note{font-size:11px;color:#8e97a3}
 
+.compare-chart-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+.compare-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--g600);background:#101318;color:#dbe3ee;font-size:12px;cursor:pointer;user-select:none;transition:border-color .16s ease,background .16s ease,opacity .16s ease}
+.compare-chip:hover{border-color:rgba(208,22,22,.55);background:rgba(208,22,22,.06)}
+.compare-chip::before{content:"";width:10px;height:0;border-top:2px dashed rgba(148,163,184,.95);display:inline-block}
+.compare-chip.active{border-color:rgba(208,22,22,.7);background:rgba(208,22,22,.12)}
+.compare-chip.disabled{opacity:.45;cursor:not-allowed}
+.compare-chip.disabled:hover{border-color:var(--g600);background:#101318}
+
+
   </style>
 </head>
 <body>
@@ -299,6 +308,9 @@
         <input type="checkbox" id="compareAllToggle">
         <span class="compare-toggle-text">Compare vs all cities</span>
       </label>
+      <div class="compare-chart-controls">
+        <button type="button" id="trendCompareChip" class="compare-chip active" title="Show or hide the all-cities comparison line on the trend chart">Trend compare line</button>
+      </div>
     </div>
   </div>
 
@@ -389,6 +401,7 @@
       </label>
       <span id="volCityLabel" class="section-city-pill">All cities</span>
       <span id="weeklyCompareNote" class="compare-note" style="display:none;">Comparing selected city with all cities</span>
+      <button type="button" id="weeklyCompareChip" class="compare-chip active" title="Show or hide the all-cities comparison line on the weekly chart">Weekly compare line</button>
     </div>
   </div>
 
@@ -807,7 +820,7 @@
   function render(windowDays){
     const citySlug  = (window.ciSelectedCitySlug || '').toLowerCase();
     const cityLabel = window.ciSelectedCityLabel || 'all cities';
-    const compareEnabled = !!window.ciCompareAllCities && !!citySlug;
+    const compareEnabled = !!window.ciCompareAllCities && !!window.ciCompareTrendChart && !!citySlug;
     const series = buildSeries(windowDays, citySlug);
     const allSeries = compareEnabled ? buildSeries(windowDays, '') : null;
     updateTrendStats(series, cityLabel, windowDays);
@@ -1135,7 +1148,7 @@
             function drawVol() {
         const citySlug  = (window.ciSelectedCitySlug  || '').toLowerCase();
         const cityLabel = window.ciSelectedCityLabel || 'all cities';
-        const compareEnabled = !!window.ciCompareAllCities && !!citySlug;
+        const compareEnabled = !!window.ciCompareAllCities && !!window.ciCompareWeeklyChart && !!citySlug;
 
         const data = weeklyBuckets(NORM, 12, predCb.checked, citySlug);
         const allData = compareEnabled ? weeklyBuckets(NORM, 12, predCb.checked, '') : null;
@@ -1603,6 +1616,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (compareToggle) compareToggle.checked = !!window.ciCompareAllCities;
   }
 
+  function syncCompareChartChips(){
+    const citySelected = !!window.ciSelectedCitySlug;
+    const compareAvailable = !!window.ciCompareAllCities && citySelected;
+    const trendChip = document.getElementById('trendCompareChip');
+    const weeklyChip = document.getElementById('weeklyCompareChip');
+
+    const applyState = (el, active) => {
+      if (!el) return;
+      el.classList.toggle('active', !!active && compareAvailable);
+      el.classList.toggle('disabled', !compareAvailable);
+      el.setAttribute('aria-pressed', !!active && compareAvailable ? 'true' : 'false');
+      el.title = compareAvailable
+        ? 'Show or hide the all-cities comparison line'
+        : 'Select a city and enable compare vs all cities first';
+    };
+
+    applyState(trendChip, !!window.ciCompareTrendChart);
+    applyState(weeklyChip, !!window.ciCompareWeeklyChart);
+  }
+
   function handleCityChange(slug) {
     const city = cities.find(c => c.toLowerCase() === slug) || slug || 'Selected city';
 
@@ -1621,6 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.ciRedrawWeeklyVolume === 'function') window.ciRedrawWeeklyVolume();
     if (typeof window.ciRedrawTrend === 'function') window.ciRedrawTrend();
     if (typeof window.ciUpdateTopInsights === 'function') window.ciUpdateTopInsights();
+    syncCompareChartChips();
   }
 
   function applyCompareToggle(checked){
@@ -1630,16 +1664,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.ciRedrawWeeklyVolume === 'function') window.ciRedrawWeeklyVolume();
     if (typeof window.ciRedrawTrend === 'function') window.ciRedrawTrend();
     if (typeof window.ciUpdateTopInsights === 'function') window.ciUpdateTopInsights();
+    syncCompareChartChips();
   }
 
   window.ciCompareAllCities = false;
+  window.ciCompareTrendChart = true;
+  window.ciCompareWeeklyChart = true;
   syncCompareToggle();
+  syncCompareChartChips();
   handleCityChange(defaultSlug);
 
   if (masterSelect) masterSelect.addEventListener('change', () => handleCityChange(masterSelect.value));
   if (pastSelect) pastSelect.addEventListener('change', () => handleCityChange(pastSelect.value));
   if (upcomingSelect) upcomingSelect.addEventListener('change', () => handleCityChange(upcomingSelect.value));
   if (compareToggle) compareToggle.addEventListener('change', () => applyCompareToggle(compareToggle.checked));
+
+  const trendChip = document.getElementById('trendCompareChip');
+  const weeklyChip = document.getElementById('weeklyCompareChip');
+  if (trendChip) trendChip.addEventListener('click', () => {
+    if (!(window.ciCompareAllCities && window.ciSelectedCitySlug)) return;
+    window.ciCompareTrendChart = !window.ciCompareTrendChart;
+    syncCompareChartChips();
+    if (typeof window.ciRedrawTrend === 'function') window.ciRedrawTrend();
+  });
+  if (weeklyChip) weeklyChip.addEventListener('click', () => {
+    if (!(window.ciCompareAllCities && window.ciSelectedCitySlug)) return;
+    window.ciCompareWeeklyChart = !window.ciCompareWeeklyChart;
+    syncCompareChartChips();
+    if (typeof window.ciRedrawWeeklyVolume === 'function') window.ciRedrawWeeklyVolume();
+  });
+
 });
 </script>
 
