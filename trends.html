@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
 
@@ -193,6 +193,26 @@
   .trend-controls-right{margin-left:0}
 }
 
+/* --- Weekly volume v3 --- */
+.weekly-card{padding:18px}
+.weekly-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.weekly-title-wrap{display:flex;flex-direction:column;gap:4px}
+.weekly-title{margin:0;font-size:18px;line-height:1.2}
+.weekly-subtitle{font-size:12px;color:var(--muted)}
+.weekly-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:auto}
+.weekly-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0 12px}
+.weekly-stat{border:1px solid var(--g600);border-radius:12px;background:rgba(255,255,255,.02);padding:10px 12px;min-height:66px}
+.weekly-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.weekly-stat-value{font-size:20px;font-weight:700;line-height:1.1;margin-top:4px}
+.weekly-stat-note{font-size:11px;color:var(--muted);margin-top:4px}
+.weekly-svg-wrap{border:1px solid rgba(255,255,255,.05);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.015),rgba(255,255,255,0));padding:12px 12px 8px}
+.weekly-help{font-size:12px;color:var(--muted);margin-top:8px}
+@media (max-width: 900px){
+  .weekly-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .weekly-controls{margin-left:0}
+}
+
+
   </style>
 </head>
 <body>
@@ -287,29 +307,49 @@
 
       <div class="grid">
         <!-- Weekly Volume -->
-        <section class="card" style="grid-column: span 12;">
-  <div class="row" style="justify-content:space-between;align-items:center;">
-    <div style="display:flex;flex-direction:column;gap:2px;">
-      <h3 style="margin:0">Weekly Volume (last 12 weeks)</h3>
-      <span id="volCityLabel"
-            style="font-size:12px;color:#9ca3af;">
-        All cities
-      </span>
+        <section class="card weekly-card" style="grid-column: span 12;">
+  <div class="weekly-toolbar">
+    <div class="weekly-title-wrap">
+      <h3 class="weekly-title">Weekly Volume (last 12 weeks)</h3>
+      <div class="weekly-subtitle">Weekly totals with a simple 4-week baseline forecast for the selected city.</div>
     </div>
-    <div class="row">
+    <div class="weekly-controls">
+      <label class="row muted" style="gap:6px">
+        <input type="checkbox" id="togglePred">
+        Include predictive
+      </label>
+      <span id="volCityLabel" class="section-city-pill">All cities</span>
+    </div>
+  </div>
 
-              <label class="row muted" style="gap:6px">
-                <input type="checkbox" id="togglePred">
-                Include predictive
-              </label>
-              <div class="legend">
-                <span class="dot" style="background:#3a6cf4"></span><span class="muted">Count</span>
-                <span class="dot" style="background:#9ab3ff"></span><span class="muted">Forecast (+4w)</span>
-              </div>
-            </div>
-          </div>
-          <svg id="volChart" viewBox="0 0 800 220" preserveAspectRatio="none"></svg>
-          <div class="muted" id="volCaption"></div>
+  <div class="weekly-summary-grid">
+    <div class="weekly-stat">
+      <div class="weekly-stat-label">12-week total</div>
+      <div class="weekly-stat-value" id="weeklyStatTotal">0</div>
+      <div class="weekly-stat-note">Visible weekly counts</div>
+    </div>
+    <div class="weekly-stat">
+      <div class="weekly-stat-label">Weekly average</div>
+      <div class="weekly-stat-value" id="weeklyStatAvg">0.0</div>
+      <div class="weekly-stat-note">Across selected city</div>
+    </div>
+    <div class="weekly-stat">
+      <div class="weekly-stat-label">Peak week</div>
+      <div class="weekly-stat-value" id="weeklyStatPeak">0</div>
+      <div class="weekly-stat-note" id="weeklyStatPeakNote">No peak yet</div>
+    </div>
+    <div class="weekly-stat">
+      <div class="weekly-stat-label">4-week baseline</div>
+      <div class="weekly-stat-value" id="weeklyStatForecast">0/wk</div>
+      <div class="weekly-stat-note">Projected continuation</div>
+    </div>
+  </div>
+
+  <div class="weekly-svg-wrap">
+    <svg id="volChart" viewBox="0 0 800 220" preserveAspectRatio="none"></svg>
+  </div>
+  <div class="weekly-help">Solid line shows weekly counts, shaded area gives volume context, and the dashed extension shows the 4-week baseline forecast.</div>
+  <div class="muted" id="volCaption"></div>
         </section>
 
 
@@ -851,58 +891,120 @@
 
     function renderAreaWithForecast(svgId, data, forecastHorizon=4){
       const svg = document.getElementById(svgId);
-      const W = 800, Hh = 220, pad=20;
+      const W = 800, Hh = 220, padL=38, padR=18, padT=16, padB=28;
       svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
       svg.innerHTML = '';
+
       const counts = data.map(d=>d.n);
       const {a,b} = linearFit(counts);
-      const future = Array.from({length:forecastHorizon}, (_,k)=> Math.max(0, Math.round(a + b*(counts.length + k))));
+      const future = Array.from({length:forecastHorizon}, (_,k)=> Math.max(0, +(a + b*(counts.length + k)).toFixed(1)));
       const all = counts.concat(future);
       const max = Math.max(1, ...all);
-      const step = (W - pad*2) / (all.length-1 || 1);
+      const plotW = W - padL - padR;
+      const plotH = Hh - padT - padB;
+      const step = plotW / (all.length - 1 || 1);
+      const xFor = i => padL + i*step;
+      const yFor = v => padT + plotH - (v/max)*plotH;
 
-      const yScale = v => (Hh - pad) - (v/max)*(Hh - pad*2);
+      const ns = 'http://www.w3.org/2000/svg';
+      const make = (tag, attrs={}) => {
+        const el = document.createElementNS(ns, tag);
+        Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k, v));
+        return el;
+      };
 
-      // area (historical)
-      let dPath = `M ${pad} ${Hh-pad}`;
+      // forecast zone background
+      const forecastStartX = xFor(Math.max(0, counts.length-1));
+      svg.appendChild(make('rect', {
+        x: forecastStartX,
+        y: padT,
+        width: Math.max(0, W - padR - forecastStartX),
+        height: plotH,
+        fill: 'rgba(154,179,255,0.05)'
+      }));
+
+      // grid + y labels
+      const gridSteps = 4;
+      for (let i=0; i<=gridSteps; i++){
+        const value = (max/gridSteps) * i;
+        const y = yFor(value);
+        svg.appendChild(make('line', {
+          x1: padL, y1: y, x2: W-padR, y2: y,
+          stroke: 'rgba(255,255,255,.06)', 'stroke-width': 1
+        }));
+        const label = make('text', {
+          x: padL - 8, y: y + 4, fill: '#8e97a3', 'font-size': 10, 'text-anchor': 'end'
+        });
+        label.textContent = Math.round(value);
+        svg.appendChild(label);
+      }
+
+      // area fill
+      let areaPath = `M ${xFor(0)} ${yFor(0)} `;
+      counts.forEach((v,i)=>{ areaPath += `L ${xFor(i)} ${yFor(v)} `; });
+      areaPath += `L ${xFor(counts.length-1)} ${yFor(0)} Z`;
+      svg.appendChild(make('path', {
+        d: areaPath,
+        fill: 'rgba(58,108,244,0.16)',
+        stroke: 'none'
+      }));
+
+      // historical line
+      let linePath = `M ${xFor(0)} ${yFor(counts[0] || 0)}`;
+      counts.forEach((v,i)=>{ if(i) linePath += ` L ${xFor(i)} ${yFor(v)}`; });
+      svg.appendChild(make('path', {
+        d: linePath,
+        fill: 'none',
+        stroke: '#3a6cf4',
+        'stroke-width': 3,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+      }));
+
+      // point markers on key weeks
       counts.forEach((v,i)=>{
-        const x = pad + i*step, y = yScale(v);
-        dPath += ` L ${x} ${y}`;
+        if (i !== counts.length-1 && v < max*0.75) return;
+        svg.appendChild(make('circle', {
+          cx: xFor(i), cy: yFor(v), r: 3.5,
+          fill: '#dbe7ff', stroke: '#3a6cf4', 'stroke-width': 2
+        }));
       });
-      dPath += ` L ${pad + (counts.length-1)*step} ${Hh-pad} Z`;
 
-      const area = document.createElementNS('http://www.w3.org/2000/svg','path');
-      area.setAttribute('d', dPath);
-      area.setAttribute('fill', 'rgba(58,108,244,0.25)');
-      area.setAttribute('stroke', '#3a6cf4');
-      area.setAttribute('stroke-width', '2');
-      svg.appendChild(area);
-
-      // forecast line (dashed)
-      const fStartX = pad + (counts.length-1)*step;
-      const fPath = document.createElementNS('http://www.w3.org/2000/svg','path');
-      let d2 = `M ${fStartX} ${yScale(counts[counts.length-1])}`;
-      future.forEach((v,i)=>{
-        const x = pad + (counts.length + i)*step, y = yScale(v);
-        d2 += ` L ${x} ${y}`;
+      // forecast divider
+      svg.appendChild(make('line', {
+        x1: forecastStartX, y1: padT, x2: forecastStartX, y2: padT + plotH,
+        stroke: 'rgba(255,255,255,.18)', 'stroke-width': 1, 'stroke-dasharray': '4 4'
+      }));
+      const forecastLabel = make('text', {
+        x: forecastStartX + 8, y: padT + 12, fill: 'rgba(255,255,255,.58)', 'font-size': 10
       });
-      fPath.setAttribute('d', d2);
-      fPath.setAttribute('fill','none');
-      fPath.setAttribute('stroke','#9ab3ff');
-      fPath.setAttribute('stroke-width','2');
-      fPath.setAttribute('stroke-dasharray','6 4');
-      svg.appendChild(fPath);
+      forecastLabel.textContent = 'Forecast';
+      svg.appendChild(forecastLabel);
 
-      // x labels (sparse, include +w for forecast)
+      // forecast line
+      let forecastPath = `M ${forecastStartX} ${yFor(counts[counts.length-1] || 0)}`;
+      future.forEach((v,i)=>{ forecastPath += ` L ${xFor(counts.length + i)} ${yFor(v)}`; });
+      svg.appendChild(make('path', {
+        d: forecastPath,
+        fill: 'none',
+        stroke: '#a5b4fc',
+        'stroke-width': 2.5,
+        'stroke-dasharray': '7 5',
+        'stroke-linecap': 'round'
+      }));
+
+      // x labels
       [...data.map(d=>d.label), ...future.map((_,i)=>`+${i+1}w`)].forEach((lab,i)=>{
-        if (i%2!==0) return;
-        const x = pad + i*step;
-        const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
-        tx.setAttribute('x', x); tx.setAttribute('y', Hh-4);
-        tx.setAttribute('fill', '#8e97a3'); tx.setAttribute('font-size','10'); tx.setAttribute('text-anchor','middle');
+        if (i % 2 !== 0 && i < counts.length-1) return;
+        const tx = make('text', {
+          x: xFor(i), y: Hh - 6,
+          fill: '#8e97a3', 'font-size': 10, 'text-anchor': 'middle'
+        });
         tx.textContent = lab;
         svg.appendChild(tx);
       });
+
+      return { future, max };
     }
 
 
@@ -918,9 +1020,26 @@
         const cityLabel = window.ciSelectedCityLabel || 'all cities';
 
         const data = weeklyBuckets(NORM, 12, predCb.checked, citySlug);
-        renderAreaWithForecast('volChart', data, 4);
+        const viz = renderAreaWithForecast('volChart', data, 4);
 
         const sum = data.reduce((s, x) => s + x.n, 0);
+        const avg = data.length ? (sum / data.length) : 0;
+        const peak = data.reduce((best, row) => row.n > (best?.n ?? -1) ? row : best, null);
+        const peakText = peak ? `${peak.n}` : '0';
+        const peakNote = peak ? peak.label : 'No peak yet';
+        const forecastAvg = (viz?.future?.length ? viz.future.reduce((a,b)=>a+b,0)/viz.future.length : 0);
+
+        const totalEl = document.getElementById('weeklyStatTotal');
+        const avgEl = document.getElementById('weeklyStatAvg');
+        const peakEl = document.getElementById('weeklyStatPeak');
+        const peakNoteEl = document.getElementById('weeklyStatPeakNote');
+        const forecastEl = document.getElementById('weeklyStatForecast');
+        if (totalEl) totalEl.textContent = String(sum);
+        if (avgEl) avgEl.textContent = avg.toFixed(1);
+        if (peakEl) peakEl.textContent = peakText;
+        if (peakNoteEl) peakNoteEl.textContent = peakNote;
+        if (forecastEl) forecastEl.textContent = `${forecastAvg.toFixed(1)}/wk`;
+
         if (volCaptionEl) {
           if (!sum) {
             volCaptionEl.textContent =
@@ -928,8 +1047,8 @@
               `(${predCb.checked ? 'including' : 'excluding'} predictive).`;
           } else {
             volCaptionEl.textContent =
-              `${sum} events in ${cityLabel} over last 12 weeks ` +
-              `(${predCb.checked ? 'incl.' : 'excl.'} predictive) • forecast shows dashed (+4w)`;
+              `${sum} events in ${cityLabel} over the last 12 weeks • average ${avg.toFixed(1)} per week • ` +
+              `${predCb.checked ? 'including' : 'excluding'} predictive alerts.`;
           }
         }
       }
