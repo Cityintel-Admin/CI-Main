@@ -21,8 +21,109 @@ window.alertsData =[
 },
 
 
-  
 
+
+
+  
+  
+{
+  title: "Post–May Day Labour Demonstration",
+  city: "Madrid",
+  lat: 40.4168,
+  lng: -3.7038,
+  address: "Puerta del Sol",
+  postcode: "28013",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-02T12:00:00",
+  source: "https://english.elpais.com/spain/2026-05-02/labour-protest-madrid.html",
+  summary: "Workers and union groups gathered in Madrid on 2 May 2026 at Puerta del Sol following May Day demonstrations. Protesters called for improved wages and labour protections. The protest was organised and peaceful, with moderate turnout and minor disruption in central areas. Risk is assessed as medium."
+},
+{
+  title: "Housing Rights Protest",
+  city: "Barcelona",
+  lat: 41.3874,
+  lng: 2.1686,
+  address: "Plaça de Catalunya",
+  postcode: "08002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-08T12:00:00",
+  source: "https://www.lavanguardia.com/local/barcelona/2026/05/08/protesta-vivienda",
+  summary: "Housing activists gathered in Barcelona on 8 May 2026 at Plaça de Catalunya to protest rising rents and housing shortages. Demonstrators organised rallies and marches through central streets, calling for stronger tenant protections. The protest remained peaceful but caused temporary disruption. Risk is assessed as medium."
+},
+{
+  title: "Transport Workers Strike",
+  city: "Madrid",
+  lat: 40.4722,
+  lng: -3.5608,
+  address: "Madrid-Barajas Airport / Transport Network",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-12T12:00:00",
+  source: "https://www.elmundo.es/economia/2026/05/12/huelga-transporte-madrid",
+  summary: "Transport workers staged strike action in Madrid on 12 May 2026, affecting airport services and public transport networks. Demonstrations were held near Barajas Airport and central transport hubs. The strike caused significant disruption to travel and logistics. Given the infrastructure impact, the risk is assessed as high."
+},
+{
+  title: "Student Protest Against Education Cuts",
+  city: "Valencia",
+  lat: 39.4699,
+  lng: -0.3763,
+  address: "University of Valencia",
+  postcode: "46010",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-15T12:00:00",
+  source: "https://www.levante-emv.com/comunitat-valenciana/2026/05/15/protesta-estudiantes",
+  summary: "Students at the University of Valencia organised protests on 15 May 2026 against education funding cuts and policy changes. Demonstrators gathered on campus and marched through nearby areas. The protest remained peaceful and localised. Risk is assessed as medium."
+},
+{
+  title: "Farmers Protest Over Agricultural Policies",
+  city: "Seville",
+  lat: 37.3891,
+  lng: -5.9845,
+  address: "Regional Government Offices",
+  postcode: "41001",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-18T12:00:00",
+  source: "https://www.diariodesevilla.es/sevilla/protesta-agricultores-2026",
+  summary: "Farmers gathered in Seville on 18 May 2026 to protest agricultural policies and pricing issues. Demonstrators blocked roads and gathered outside regional government offices, causing disruption in the area. Agricultural protests in Spain can escalate quickly due to economic pressures. Risk is assessed as high."
+},
+{
+  title: "Anti-Government Protest",
+  city: "Madrid",
+  lat: 40.4154,
+  lng: -3.7074,
+  address: "Plaza Mayor",
+  postcode: "28012",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-25T12:00:00",
+  source: "https://english.elpais.com/spain/2026-05-25/protest-madrid",
+  summary: "Protesters gathered in Madrid on 25 May 2026 at Plaza Mayor to demonstrate against government policies. Demonstrations included rallies and speeches organised by activist groups. The protest remained peaceful with moderate turnout. Risk is assessed as medium."
+},
+{
+  title: "Public Sector Workers Protest",
+  city: "Barcelona",
+  lat: 41.3825,
+  lng: 2.1769,
+  address: "Barcelona City Hall",
+  postcode: "08002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-06-03T12:00:00",
+  source: "https://www.elperiodico.com/es/barcelona/2026/06/03/protesta-sector-publico",
+  summary: "Public sector workers gathered outside Barcelona City Hall on 3 June 2026 to protest wages and working conditions. Demonstrators organised rallies and speeches. The protest remained peaceful but drew moderate turnout. Risk is assessed as medium."
+},
 
 
   {
