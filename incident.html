@@ -402,7 +402,19 @@
 .live-context-title{font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:10px}
 .live-context-meta{font-size:12px;color:var(--muted);margin-top:3px}
 .live-context-summary{font-size:12px;margin-top:4px;color:var(--text)}
-@media(max-width:900px){.location-grid{grid-template-columns:1fr}}
+.incident-radius-block{display:grid;gap:8px}
+.incident-radius-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.incident-radius-pills{display:flex;gap:8px;flex-wrap:wrap}
+.incident-radius-pill{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);font-size:12px;color:var(--text);cursor:pointer}
+.incident-radius-pill:hover{border-color:rgba(208,22,22,.45);background:rgba(208,22,22,.08)}
+.incident-radius-pill.active{border-color:rgba(208,22,22,.55);background:rgba(208,22,22,.14);color:#fff}
+.nearby-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.nearby-card{padding:10px 12px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.02)}
+.nearby-count{font-size:20px;font-weight:800;line-height:1.1}
+.nearby-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.nearby-list{margin-top:8px;font-size:12px;color:var(--text);line-height:1.45;display:grid;gap:4px}
+.nearby-empty{color:var(--muted)}
+@media(max-width:900px){.location-grid,.nearby-grid{grid-template-columns:1fr}}
 
 /* ===== Mobile layout tweaks ===== */
 @media (max-width: 720px) {
@@ -597,6 +609,15 @@
       <div class="location-distance" id="incidentDistance">—</div>
     </div>
 
+    <div class="incident-radius-block">
+      <div class="incident-radius-label">Incident radius</div>
+      <div class="incident-radius-pills" id="incidentRadiusPills">
+        <button type="button" class="incident-radius-pill active" data-radius-km="1">1 km</button>
+        <button type="button" class="incident-radius-pill" data-radius-km="5">5 km</button>
+        <button type="button" class="incident-radius-pill" data-radius-km="10">10 km</button>
+      </div>
+    </div>
+
     <div class="location-grid">
       <div class="location-stat">
         <span class="field-label">Exposure</span>
@@ -605,6 +626,21 @@
       <div class="location-stat">
         <span class="field-label">Travel posture</span>
         <div class="field-value" id="incidentTravel">Monitoring only.</div>
+      </div>
+    </div>
+
+    <div class="nearby-grid">
+      <div class="nearby-card">
+        <span class="field-label">Assets nearby</span>
+        <div class="nearby-count" id="incidentAssetsCount">0</div>
+        <div class="nearby-sub" id="incidentAssetsSub">Within selected incident radius</div>
+        <div class="nearby-list" id="incidentAssetsList"><div class="nearby-empty">No mapped assets nearby.</div></div>
+      </div>
+      <div class="nearby-card">
+        <span class="field-label">Travellers nearby</span>
+        <div class="nearby-count" id="incidentTravellersCount">0</div>
+        <div class="nearby-sub" id="incidentTravellersSub">Within selected incident radius</div>
+        <div class="nearby-list" id="incidentTravellersList"><div class="nearby-empty">No mapped travellers nearby.</div></div>
       </div>
     </div>
 
@@ -888,6 +924,10 @@ const CITY_COORDS = {
   Manchester: { lat: 53.4808, lon: -2.2426 },
   Belfast: { lat: 54.5973, lon: -5.9301 },
   Washington: { lat: 38.9072, lon: -77.0369 },
+  Mexico City: { lat: 19.4326, lon: -99.1332 },
+  Rabat: { lat: 34.0209, lon: -6.8416 },
+  Vienna: { lat: 48.2082, lon: 16.3738 },
+  Ottawa: { lat: 45.4215, lon: -75.6972 },
   Berlin: { lat: 52.52,   lon: 13.4050 },
   Paris:  { lat: 48.8566, lon: 2.3522 },
   Madrid: { lat: 40.4168, lon: -3.7038 },
@@ -920,8 +960,76 @@ function getOffices() {
   } catch (e) {
     console.warn('Could not read ci_offices from localStorage', e);
   }
-  return OFFICES;
+  
+return OFFICES;
 }
+
+(function () {
+  const norm = (s) => (s || '').toString().trim().toLowerCase();
+  function safeJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function toNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  function distanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+  function itemWithinRadius(item, centerLat, centerLng, radiusKm) {
+    const ilat = toNum(item.lat ?? item.latitude);
+    const ilng = toNum(item.lng ?? item.lon ?? item.longitude);
+    if (ilat === null || ilng === null) return false;
+    return distanceKm(centerLat, centerLng, ilat, ilng) <= radiusKm;
+  }
+  function itemMatchesCityCountry(item, city, country) {
+    const icity = norm(item.city || item.town || item.locality);
+    const icountry = norm(item.country);
+    const c = norm(city);
+    const k = norm(country);
+    if (c && k) return icity === c && icountry === k;
+    if (c) return icity === c;
+    return false;
+  }
+  function exposureFor(cityOrOpts, country, lat, lng, radiusKm) {
+    const opts = (cityOrOpts && typeof cityOrOpts === 'object') ? cityOrOpts : { city: cityOrOpts, country, lat, lng, radiusKm };
+    const city = opts?.city || '';
+    const ctry = opts?.country || '';
+    const la = toNum(opts?.lat);
+    const ln = toNum(opts?.lng);
+    const radKm = Number(opts?.radiusKm) || 5;
+    const assets = safeJson('ci_assets', []);
+    const travellers = safeJson('ci_travellers', []);
+    let assetsNearby = [];
+    let travellersNearby = [];
+    if (la !== null && ln !== null) {
+      assetsNearby = assets.filter(a => itemWithinRadius(a, la, ln, radKm));
+      travellersNearby = travellers.filter(t => itemWithinRadius(t, la, ln, radKm));
+    } else {
+      assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, ctry));
+      travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, ctry));
+    }
+    return { assetsNearby, travellersNearby, assets: assetsNearby, travellers: travellersNearby };
+  }
+  window.CIExposure = window.CIExposure || {};
+  window.CIExposure.exposureFor = exposureFor;
+})();
 
 
 	
@@ -941,6 +1049,82 @@ function computeDistanceKm(lat1, lon1, lat2, lon2) {
 
 
 	
+
+
+function parseExposureCoords(item){
+  const lat = Number(item?.lat ?? item?.latitude);
+  const lon = Number(item?.lng ?? item?.lon ?? item?.longitude);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon };
+  return null;
+}
+
+function getSelectedIncidentRadiusKm(){
+  return Number(window.__incidentRadiusKm || 1) || 1;
+}
+
+function formatNearbyPrimary(item, fallbackLabel){
+  return item?.name || item?.title || item?.label || item?.site || item?.hotel || item?.address || item?.city || fallbackLabel;
+}
+
+function renderNearbyExposure(exposure, radiusKm){
+  const assets = Array.isArray(exposure?.assets) ? exposure.assets : [];
+  const travellers = Array.isArray(exposure?.travellers) ? exposure.travellers : [];
+  const assetCountEl = document.getElementById('incidentAssetsCount');
+  const travCountEl = document.getElementById('incidentTravellersCount');
+  const assetListEl = document.getElementById('incidentAssetsList');
+  const travListEl = document.getElementById('incidentTravellersList');
+  const assetSubEl = document.getElementById('incidentAssetsSub');
+  const travSubEl = document.getElementById('incidentTravellersSub');
+  if (assetCountEl) assetCountEl.textContent = String(assets.length);
+  if (travCountEl) travCountEl.textContent = String(travellers.length);
+  if (assetSubEl) assetSubEl.textContent = `Within ${radiusKm} km incident radius`;
+  if (travSubEl) travSubEl.textContent = `Within ${radiusKm} km incident radius`;
+  if (assetListEl) {
+    if (!assets.length) assetListEl.innerHTML = '<div class="nearby-empty">No mapped assets nearby.</div>';
+    else assetListEl.innerHTML = assets.slice(0,3).map(a => `<div>${formatNearbyPrimary(a, 'Asset')}<span class="muted">${a.city ? ` · ${a.city}` : ''}</span></div>`).join('');
+  }
+  if (travListEl) {
+    if (!travellers.length) travListEl.innerHTML = '<div class="nearby-empty">No mapped travellers nearby.</div>';
+    else travListEl.innerHTML = travellers.slice(0,3).map(t => `<div>${formatNearbyPrimary(t, 'Traveller')}<span class="muted">${t.city ? ` · ${t.city}` : ''}</span></div>`).join('');
+  }
+}
+
+function computeExposureForIncident(inc, radiusKm){
+  const coords = getIncidentCoords(inc);
+  const lat = coords?.lat;
+  const lng = coords?.lon;
+  if (window.CIExposure && typeof window.CIExposure.exposureFor === 'function') {
+    return window.CIExposure.exposureFor({ city: inc?.city || '', country: inc?.country || inc?.Country || '', lat, lng, radiusKm });
+  }
+  return { assets: [], travellers: [] };
+}
+
+function getNearestOfficeForIncident(inc){
+  const coords = getIncidentCoords(inc);
+  if (!coords) return null;
+  const offices = getOffices();
+  let best = null;
+  for (const office of offices) {
+    if (typeof office.lat !== 'number' || typeof office.lon !== 'number') continue;
+    const km = computeDistanceKm(coords.lat, coords.lon, office.lat, office.lon);
+    if (!best || km < best.km) best = { office, km };
+  }
+  return best;
+}
+
+function bindIncidentRadiusControls(inc){
+  const wrap = document.getElementById('incidentRadiusPills');
+  if (!wrap) return;
+  wrap.querySelectorAll('.incident-radius-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const km = Number(btn.dataset.radiusKm || 1) || 1;
+      window.__incidentRadiusKm = km;
+      wrap.querySelectorAll('.incident-radius-pill').forEach(b => b.classList.toggle('active', b === btn));
+      updateDistancePanel(inc);
+      renderIncidentMap(inc);
+    });
+  });
+}
 
 function getIncidentCoords(inc) {
   const lat = Number(inc?.lat);
@@ -968,6 +1152,7 @@ function renderIncidentMap(inc){
   const map = ensureIncidentMap();
   const fallback = document.getElementById('incidentMapFallback');
   const mapEl = document.getElementById('incidentLeafletMap');
+  const noteEl = document.getElementById('incidentLocationNote');
   if (!map || !mapEl) { if (fallback) fallback.style.display = 'flex'; return; }
   const coords = getIncidentCoords(inc);
   if (!coords){
@@ -979,12 +1164,16 @@ function renderIncidentMap(inc){
   if (fallback) fallback.style.display = 'none';
   try { __incidentMapLayer.clearLayers(); } catch(e) {}
   const center = [coords.lat, coords.lon];
+  const radiusKm = getSelectedIncidentRadiusKm();
+  const exposure = computeExposureForIncident(inc, radiusKm);
+  window.__incidentCurrentExposure = exposure;
+  renderNearbyExposure(exposure, radiusKm);
+
   const incidentMarker = L.circleMarker(center, { radius: 7, color:'#fff', weight:2, fillColor:'#ff3b30', fillOpacity:1 }).addTo(__incidentMapLayer);
   incidentMarker.bindTooltip(inc?.title || 'Incident', { direction:'top' });
+  const radiusCircle = L.circle(center, { radius: radiusKm * 1000, color:'#ff5a5f', weight:1.5, dashArray:'6,6', fillColor:'#ff5a5f', fillOpacity:0.08 }).addTo(__incidentMapLayer);
+
   const offices = getOffices();
-  if (noteEl) {
-    noteEl.textContent = coords.precise ? 'Map and distance are based on incident coordinates plus your nearest configured office.' : 'Map uses city-level fallback plotting plus your nearest configured office.';
-  }
   let bounds = L.latLngBounds([center]);
   let best = null;
   (Array.isArray(offices) ? offices : []).forEach(office => {
@@ -995,12 +1184,39 @@ function renderIncidentMap(inc){
     m.bindTooltip(office.name || office.city || 'Office', { direction:'top' });
     bounds.extend([office.lat, office.lon]);
   });
-  L.circle(center, { radius: 1000, color:'#ff5a5f', weight:1.5, fillColor:'#ff5a5f', fillOpacity:0.12 }).addTo(__incidentMapLayer);
+
+  (exposure.assets || []).forEach(asset => {
+    const c = parseExposureCoords(asset);
+    if (!c) return;
+    const m = L.circleMarker([c.lat, c.lon], { radius: 5, color:'#60a5fa', weight:2, fillColor:'#2563eb', fillOpacity:0.95 }).addTo(__incidentMapLayer);
+    m.bindTooltip(formatNearbyPrimary(asset, 'Asset'), { direction:'top' });
+    bounds.extend([c.lat, c.lon]);
+  });
+  (exposure.travellers || []).forEach(traveller => {
+    const c = parseExposureCoords(traveller);
+    if (!c) return;
+    const m = L.circleMarker([c.lat, c.lon], { radius: 5, color:'#34d399', weight:2, fillColor:'#059669', fillOpacity:0.95 }).addTo(__incidentMapLayer);
+    m.bindTooltip(formatNearbyPrimary(traveller, 'Traveller'), { direction:'top' });
+    bounds.extend([c.lat, c.lon]);
+  });
+
   try{
-    if (best) __incidentMap.fitBounds(bounds.pad(0.4), { animate:false, maxZoom: 10 });
-    else __incidentMap.setView(center, coords.precise ? 11 : 9, { animate:false });
+    if ((exposure.assets || []).length || (exposure.travellers || []).length || best) {
+      bounds.extend(radiusCircle.getBounds());
+      __incidentMap.fitBounds(bounds.pad(0.2), { animate:false, maxZoom: 11 });
+    } else {
+      __incidentMap.fitBounds(radiusCircle.getBounds().pad(0.35), { animate:false, maxZoom: coords.precise ? 11 : 9 });
+    }
     setTimeout(() => { try { __incidentMap.invalidateSize(true); } catch(e){} }, 0);
   }catch(e){}
+
+  if (noteEl) {
+    const exposureBits = [];
+    if ((exposure.assets || []).length) exposureBits.push(`${exposure.assets.length} asset${exposure.assets.length !== 1 ? 's' : ''}`);
+    if ((exposure.travellers || []).length) exposureBits.push(`${exposure.travellers.length} traveller${exposure.travellers.length !== 1 ? 's' : ''}`);
+    const exposureText = exposureBits.length ? ` Nearby mapped exposure: ${exposureBits.join(' and ')}.` : ' No mapped assets or travellers in the selected radius.';
+    noteEl.textContent = `${coords.precise ? 'Map uses incident coordinates.' : 'Map uses city-level fallback coordinates.'} Radius set to ${radiusKm} km.${exposureText}`;
+  }
 }
 
 // Single source of truth for the Map / Distance text
@@ -1020,12 +1236,16 @@ function updateDistancePanel(inc) {
   if (areaLabel) areaLabel.textContent = place;
 
   const coords = getIncidentCoords(inc);
+  const radiusKm = getSelectedIncidentRadiusKm();
+  const exposure = computeExposureForIncident(inc, radiusKm);
+  const nearbyAssets = Array.isArray(exposure?.assets) ? exposure.assets.length : 0;
+  const nearbyTravellers = Array.isArray(exposure?.travellers) ? exposure.travellers.length : 0;
 
   if (exposureEl) {
     exposureEl.textContent =
-      risk.startsWith('hi') ? 'High exposure near assembly points, key junctions and likely route.' :
-      risk.startsWith('me') ? 'Moderate exposure around main approaches and transport links.' :
-      'Limited exposure expected; maintain a watching brief only.';
+      risk.startsWith('hi') ? `High exposure near assembly points, key junctions and likely route.${nearbyAssets || nearbyTravellers ? ` ${nearbyAssets} asset(s) and ${nearbyTravellers} traveller(s) mapped inside ${radiusKm} km.` : ''}` :
+      risk.startsWith('me') ? `Moderate exposure around main approaches and transport links.${nearbyAssets || nearbyTravellers ? ` ${nearbyAssets} asset(s) and ${nearbyTravellers} traveller(s) mapped inside ${radiusKm} km.` : ''}` :
+      `Limited exposure expected; maintain a watching brief only.${nearbyAssets || nearbyTravellers ? ` ${nearbyAssets} asset(s) and ${nearbyTravellers} traveller(s) mapped inside ${radiusKm} km.` : ''}`;
   }
 
   if (travelEl) {
@@ -1473,7 +1693,9 @@ function buildIncidentInsight(inc) {
 
   // ---- Common render path (works for both Live Feed + Brief) ----
   window.__incident = inc;  // for briefing pad etc.
+  if (!window.__incidentRadiusKm) window.__incidentRadiusKm = 1;
   initBriefPad(inc);
+  bindIncidentRadiusControls(inc);
   setupContextBanner(inc);
 
   const city      = inc.city || '—';
@@ -1544,7 +1766,7 @@ renderRelatedActivity(inc);
       let host = '';
       try { host = new URL(inc.url).hostname.replace(/^www\./,''); } catch {}
       srcBtn.href = inc.url;
-      srcBtn.style.display = 'inline-block';
+      srcBtn.style.display = 'inline-flex';
       srcBtn.textContent = `Open original source${host ? ` (${host})` : ''} →`;
     } else {
       srcBtn.style.display = 'none';
@@ -1553,7 +1775,7 @@ renderRelatedActivity(inc);
   if (srcTag) {
     if (srcLabel) {
       srcTag.textContent = `Source: ${srcLabel}`;
-      srcTag.style.display = 'inline-block';
+      srcTag.style.display = 'inline-flex';
     } else {
       srcTag.style.display = 'none';
     }
