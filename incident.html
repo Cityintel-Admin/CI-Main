@@ -48,6 +48,8 @@
 
 	
   <meta charset="utf-8"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <title>CityIntel — Incident Detail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
@@ -109,12 +111,12 @@
   .hero{text-align:center;margin:6px 0 18px}
   .hero h1{margin:0 0 6px;font-size:26px;color:var(--brand-red)}
   .hero p{margin:0;color:var(--muted)}
-   h1{margin:0 0 6px 0;font-size:26px;letter-spacing:.2px}
+   h1{margin:0 0 10px 0;font-size:26px;letter-spacing:.2px}
 
     /* --- main --- */
     main.main{
       grid-area:main;
-      padding:12px 18px 18px;
+      padding:4px 18px 18px;
     }
 
     .page-headline{
@@ -375,7 +377,7 @@
 .page-headline .city-pill{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .main > h1:first-of-type{margin-top:0}
 .meta-chip{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--muted)}
-#incidentActions{margin:6px 0 14px !important;flex-wrap:wrap}
+#incidentActions{margin:6px 0 12px !important;flex-wrap:wrap}
 .related-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
 .related-heading{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .related-count{font-size:12px;color:var(--muted)}
@@ -386,6 +388,9 @@
 .related-meta{line-height:1.45}
 .location-panel{display:grid;gap:12px}
 .location-hero{padding:14px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:radial-gradient(circle at 30% 30%, #262a31 0%, #17191d 70%)}
+.location-map-shell{height:190px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#111827;margin-bottom:12px}
+#incidentLeafletMap{width:100%;height:100%}
+.location-map-fallback{display:flex;align-items:center;justify-content:center;height:100%;font-size:12px;color:var(--muted);text-align:center;padding:12px}
 .location-hero-title{font-size:16px;font-weight:700;color:var(--text)}
 .location-hero-sub{font-size:12px;color:var(--muted);margin-top:4px}
 .location-distance{margin-top:10px;font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
@@ -583,6 +588,10 @@
 
   <div class="location-panel">
     <div class="location-hero" id="mapBox">
+      <div class="location-map-shell">
+        <div id="incidentLeafletMap"></div>
+        <div class="location-map-fallback" id="incidentMapFallback" style="display:none;">Map unavailable for this incident yet.</div>
+      </div>
       <div class="location-hero-title" id="incidentAreaLabel">Location context pending</div>
       <div class="location-hero-sub">Nearest office, exposure note and travel posture.</div>
       <div class="location-distance" id="incidentDistance">—</div>
@@ -873,11 +882,16 @@ function fmtWhen(iso) {
 // Approximate city centre coordinates for quick distance estimates
 const CITY_COORDS = {
   London: { lat: 51.5074, lon: -0.1278 },
+  Glasgow: { lat: 55.8642, lon: -4.2518 },
+  Edinburgh: { lat: 55.9533, lon: -3.1883 },
+  Liverpool: { lat: 53.4084, lon: -2.9916 },
+  Manchester: { lat: 53.4808, lon: -2.2426 },
+  Belfast: { lat: 54.5973, lon: -5.9301 },
+  Washington: { lat: 38.9072, lon: -77.0369 },
   Berlin: { lat: 52.52,   lon: 13.4050 },
   Paris:  { lat: 48.8566, lon: 2.3522 },
   Madrid: { lat: 40.4168, lon: -3.7038 },
   Kyiv:   { lat: 50.4501, lon: 30.5234 }
-  // Add more cities here as your feeds grow
 };
 
 // Example “offices” – you can extend this later or wire to settings
@@ -927,6 +941,68 @@ function computeDistanceKm(lat1, lon1, lat2, lon2) {
 
 
 	
+
+function getIncidentCoords(inc) {
+  const lat = Number(inc?.lat);
+  const lon = Number(inc?.lon ?? inc?.lng);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon, precise: true };
+  const city = (inc?.city || '').trim();
+  if (city && CITY_COORDS[city]) return { ...CITY_COORDS[city], precise: false };
+  return null;
+}
+
+let __incidentMap = null;
+let __incidentMapLayer = null;
+function ensureIncidentMap(){
+  const el = document.getElementById('incidentLeafletMap');
+  if (!el || typeof L === 'undefined') return null;
+  if (!__incidentMap){
+    __incidentMap = L.map(el, { zoomControl: true, attributionControl: false });
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(__incidentMap);
+    __incidentMapLayer = L.layerGroup().addTo(__incidentMap);
+  }
+  return __incidentMap;
+}
+
+function renderIncidentMap(inc){
+  const map = ensureIncidentMap();
+  const fallback = document.getElementById('incidentMapFallback');
+  const mapEl = document.getElementById('incidentLeafletMap');
+  if (!map || !mapEl) { if (fallback) fallback.style.display = 'flex'; return; }
+  const coords = getIncidentCoords(inc);
+  if (!coords){
+    mapEl.style.display = 'none';
+    if (fallback) fallback.style.display = 'flex';
+    return;
+  }
+  mapEl.style.display = 'block';
+  if (fallback) fallback.style.display = 'none';
+  try { __incidentMapLayer.clearLayers(); } catch(e) {}
+  const center = [coords.lat, coords.lon];
+  const incidentMarker = L.circleMarker(center, { radius: 7, color:'#fff', weight:2, fillColor:'#ff3b30', fillOpacity:1 }).addTo(__incidentMapLayer);
+  incidentMarker.bindTooltip(inc?.title || 'Incident', { direction:'top' });
+  const offices = getOffices();
+  if (noteEl) {
+    noteEl.textContent = coords.precise ? 'Map and distance are based on incident coordinates plus your nearest configured office.' : 'Map uses city-level fallback plotting plus your nearest configured office.';
+  }
+  let bounds = L.latLngBounds([center]);
+  let best = null;
+  (Array.isArray(offices) ? offices : []).forEach(office => {
+    if (!Number.isFinite(office?.lat) || !Number.isFinite(office?.lon)) return;
+    const km = computeDistanceKm(coords.lat, coords.lon, office.lat, office.lon);
+    if (!best || km < best.km) best = { office, km };
+    const m = L.circleMarker([office.lat, office.lon], { radius: 6, color:'#93c5fd', weight:2, fillColor:'#1d4ed8', fillOpacity:0.95 }).addTo(__incidentMapLayer);
+    m.bindTooltip(office.name || office.city || 'Office', { direction:'top' });
+    bounds.extend([office.lat, office.lon]);
+  });
+  L.circle(center, { radius: 1000, color:'#ff5a5f', weight:1.5, fillColor:'#ff5a5f', fillOpacity:0.12 }).addTo(__incidentMapLayer);
+  try{
+    if (best) __incidentMap.fitBounds(bounds.pad(0.4), { animate:false, maxZoom: 10 });
+    else __incidentMap.setView(center, coords.precise ? 11 : 9, { animate:false });
+    setTimeout(() => { try { __incidentMap.invalidateSize(true); } catch(e){} }, 0);
+  }catch(e){}
+}
+
 // Single source of truth for the Map / Distance text
 function updateDistancePanel(inc) {
   const distanceEl = document.getElementById('incidentDistance');
@@ -943,8 +1019,7 @@ function updateDistancePanel(inc) {
 
   if (areaLabel) areaLabel.textContent = place;
 
-  const hasLatLon = typeof inc.lat === 'number' && typeof inc.lon === 'number';
-  const coords = hasLatLon ? { lat: inc.lat, lon: inc.lon } : null;
+  const coords = getIncidentCoords(inc);
 
   if (exposureEl) {
     exposureEl.textContent =
@@ -963,12 +1038,15 @@ function updateDistancePanel(inc) {
   if (!coords) {
     distanceEl.textContent = `Approx area: ${place}. Nearest office will appear here when coordinates are available.`;
     if (noteEl) {
-      noteEl.textContent = 'This version uses city-level context. Live map plotting can be added later without changing the workflow.';
+      noteEl.textContent = 'This incident is currently using city-level fallback coordinates. Exact plotting can be added when source coordinates are available.';
     }
     return;
   }
 
   const offices = getOffices();
+  if (noteEl) {
+    noteEl.textContent = coords.precise ? 'Map and distance are based on incident coordinates plus your nearest configured office.' : 'Map uses city-level fallback plotting plus your nearest configured office.';
+  }
   if (!Array.isArray(offices) || !offices.length) {
     distanceEl.textContent = `Approx area: ${place}. Office locations have not been set up yet.`;
     if (noteEl) noteEl.textContent = 'Add office coordinates later to unlock nearest-office calculations.';
@@ -1455,6 +1533,7 @@ renderRelatedActivity(inc);
  
   // Map / distance panel
   updateDistancePanel(inc);
+  renderIncidentMap(inc);
   renderLiveContext(inc);
 	
 
