@@ -23,7 +23,106 @@ window.alertsData =[
 
 
 
+  
 
+{
+  title: "State Capitol Protest on Tax Policy",
+  city: "Nashville",
+  lat: 36.1627,
+  lng: -86.7816,
+  address: "Tennessee State Capitol",
+  postcode: "37243",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-05-11T12:00:00",
+  source: "https://www.tennessean.com/story/news/politics/2026/05/11/protest-capitol-tax-policy",
+  summary: "Protesters gathered at the Tennessee State Capitol in Nashville on 11 May 2026 to oppose proposed tax policies. Demonstrations included speeches and organised rallies. The protest remained peaceful with moderate turnout. Risk is assessed as medium."
+},
+{
+  title: "Healthcare Workers Strike Protest",
+  city: "Detroit",
+  lat: 42.3314,
+  lng: -83.0458,
+  address: "Detroit Medical Center",
+  postcode: "48201",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-05-13T12:00:00",
+  source: "https://www.freep.com/story/news/health/2026/05/13/healthcare-workers-strike-detroit",
+  summary: "Healthcare workers in Detroit staged strike action on 13 May 2026, gathering outside the Detroit Medical Center to protest staffing shortages and working conditions. The strike affected hospital operations and drew significant attention. Given the impact on healthcare services, the risk is assessed as high."
+},
+{
+  title: "University Student Protest",
+  city: "Ann Arbor",
+  lat: 42.2808,
+  lng: -83.7430,
+  address: "University of Michigan",
+  postcode: "48109",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-05-16T12:00:00",
+  source: "https://www.mlive.com/news/ann-arbor/2026/05/student-protest-university-michigan",
+  summary: "Students at the University of Michigan in Ann Arbor organised protests on 16 May 2026 over tuition costs and university policies. Demonstrators gathered on campus and held rallies. The protest remained peaceful and localised. Risk is assessed as medium."
+},
+{
+  title: "Dockworkers Protest",
+  city: "Savannah",
+  lat: 32.0809,
+  lng: -81.0912,
+  address: "Port of Savannah",
+  postcode: "31401",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-05-19T12:00:00",
+  source: "https://www.savannahnow.com/story/news/2026/05/19/port-protest-savannah",
+  summary: "Dockworkers gathered at the Port of Savannah on 19 May 2026 to protest labour conditions and contract negotiations. Demonstrators affected port operations and logistics activity. Given the importance of the port to regional trade, the risk is assessed as high."
+},
+{
+  title: "Climate Protest",
+  city: "Minneapolis",
+  lat: 44.9778,
+  lng: -93.2650,
+  address: "Downtown Minneapolis",
+  postcode: "55401",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-05-23T12:00:00",
+  source: "https://www.startribune.com/climate-protest-minneapolis-2026",
+  summary: "Climate activists gathered in downtown Minneapolis on 23 May 2026 to protest environmental policies and demand action on climate change. Demonstrations included marches and rallies. The protest remained peaceful but caused temporary disruption in central areas. Risk is assessed as medium."
+},
+{
+  title: "Police Accountability Protest",
+  city: "Baltimore",
+  lat: 39.2904,
+  lng: -76.6122,
+  address: "Baltimore City Hall",
+  postcode: "21202",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-05-27T12:00:00",
+  source: "https://www.baltimoresun.com/news/crime/bs-md-protest-police-2026",
+  summary: "Protesters gathered outside Baltimore City Hall on 27 May 2026 to demand police accountability following a recent incident. Demonstrations included marches and rallies, with a strong police presence. Given the sensitivity of the issue and potential for escalation, the risk is assessed as high."
+},
+{
+  title: "Transport Workers Protest",
+  city: "Miami",
+  lat: 25.7617,
+  lng: -80.1918,
+  address: "Miami Central Station",
+  postcode: "33101",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-06-04T12:00:00",
+  source: "https://www.miamiherald.com/news/local/community/transport-protest-2026",
+  summary: "Transport workers in Miami gathered at Central Station on 4 June 2026 to protest wages and working conditions. Demonstrations disrupted commuter services and caused delays. Given the impact on transport infrastructure, the risk is assessed as high."
+},
   
   
 {
