@@ -24,6 +24,115 @@ window.alertsData =[
 
 
 
+
+  
+
+{
+  title: "Public Sector Workers Protest Over Salaries",
+  city: "Baghdad",
+  lat: 33.3152,
+  lng: 44.3661,
+  address: "Tahrir Square",
+  postcode: "10001",
+  country: "Iraq",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.rudaw.net/english/middleeast/iraq/23032026",
+  summary: "Public sector employees gathered in Baghdad’s Tahrir Square on 23 March 2026 to protest delays in salary payments and broader economic concerns. Demonstrators assembled in a location historically associated with large-scale protests, raising concerns about government accountability and economic management. Security forces were deployed to monitor the situation. Protests in Tahrir Square have a history of escalation, including clashes with authorities. Given the political sensitivity, location, and potential for rapid escalation, the risk is assessed as high."
+},
+{
+  title: "Oil Workers Protest Over Employment Conditions",
+  city: "Basra",
+  lat: 30.5085,
+  lng: 47.7804,
+  address: "Basra Oil Company Headquarters",
+  postcode: "61001",
+  country: "Iraq",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.basnews.com/en/babat/820345",
+  summary: "Oil sector workers in Basra staged protests on 25 March 2026 outside the Basra Oil Company headquarters, demanding improved employment conditions, contract stability, and wage adjustments. Demonstrators gathered near key energy infrastructure sites, raising concerns over working conditions and job security. Oil sector protests in southern Iraq are highly sensitive due to their potential impact on national revenue and infrastructure. Given the strategic importance of the location and history of unrest in Basra, the risk is assessed as high."
+},
+{
+  title: "Teachers Protest Over Contract Terms",
+  city: "Erbil",
+  lat: 36.1911,
+  lng: 44.0092,
+  address: "Erbil Governorate Building",
+  postcode: "44001",
+  country: "Iraq",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.kurdistan24.net/en/story/2026/03/22/teachers-protest-erbil-contracts",
+  summary: "Teachers in Erbil staged a protest on 22 March 2026 outside the governorate building over contract terms and delayed payments. Demonstrators called for improved job security and salary guarantees. The protest remained largely peaceful and was monitored by local security forces. While smaller in scale compared to protests in Baghdad or Basra, the action reflects ongoing labour dissatisfaction in the region. Risk is assessed as medium."
+},
+
+
+  
+
+{
+  title: "Pro-Democracy Protest at Democracy Monument",
+  city: "Bangkok",
+  lat: 13.7563,
+  lng: 100.5018,
+  address: "Democracy Monument, Ratchadamnoen Avenue",
+  postcode: "10200",
+  country: "Thailand",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.bangkokpost.com/thailand/politics/2026/pro-democracy-protest-democracy-monument",
+  summary: "Pro-democracy activists gathered at Bangkok’s Democracy Monument on 23 March 2026 to call for constitutional reform and greater political freedoms. Demonstrators held banners and delivered speeches criticising government policies and restrictions on civil liberties. The protest was organised and monitored by police, with no immediate reports of violence. Political protests in Bangkok remain sensitive due to past crackdowns, but this event remained controlled. Risk is assessed as medium due to political context and central location."
+},
+  
+{
+  title: "Student Protest Against Education Reforms",
+  city: "Chiang Mai",
+  lat: 18.7883,
+  lng: 98.9853,
+  address: "Chiang Mai University",
+  postcode: "50200",
+  country: "Thailand",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.khaosodenglish.com/politics/2026/03/22/students-protest-education-reform-chiang-mai/",
+  summary: "Students at Chiang Mai University staged protests on 22 March 2026 opposing proposed education reforms and administrative policies. Demonstrators gathered on campus and organised rallies calling for greater student representation and policy transparency. The protest remained peaceful and confined to university grounds. Student activism in Thailand is historically influential, but this event did not escalate. Risk is assessed as medium."
+},
+  
+{
+  title: "Farmers Protest Over Agricultural Prices",
+  city: "Khon Kaen",
+  lat: 16.4419,
+  lng: 102.8350,
+  address: "Provincial Government Office",
+  postcode: "40000",
+  country: "Thailand",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.nationthailand.com/news/40034567",
+  summary: "Farmers gathered outside the provincial government office in Khon Kaen on 24 March 2026 to protest falling agricultural prices and demand government support measures. Demonstrators carried signs and petitioned local authorities for intervention. The protest was peaceful and localised, though it reflects broader economic pressures in Thailand’s agricultural sector. Risk is assessed as medium."
+},
+  
+{
+  title: "Labour Protest at Industrial Estate",
+  city: "Rayong",
+  lat: 12.6814,
+  lng: 101.2816,
+  address: "Map Ta Phut Industrial Estate",
+  postcode: "21150",
+  country: "Thailand",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.bangkokpost.com/business/2026/labour-protest-rayong-industrial-estate",
+  summary: "Workers at the Map Ta Phut Industrial Estate in Rayong staged a protest on 25 March 2026 over wages and working conditions. Demonstrators gathered near factory entrances and industrial zones, raising concerns with employers and local authorities. The protest caused limited disruption to operations but highlighted labour tensions in Thailand’s key industrial region. Risk is assessed as medium due to the organised nature and economic significance of the area."
+},
+
   
 
 {
