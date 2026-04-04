@@ -414,6 +414,15 @@
 .nearby-sub{font-size:11px;color:var(--muted);margin-top:4px}
 .nearby-list{margin-top:8px;font-size:12px;color:var(--text);line-height:1.45;display:grid;gap:4px}
 .nearby-empty{color:var(--muted)}
+
+.map-legend{display:flex;gap:10px;flex-wrap:wrap;margin:-2px 0 8px 0;font-size:11px;color:var(--muted)}
+.map-legend-item{display:inline-flex;align-items:center;gap:6px}
+.map-legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.map-legend-dot.incident{background:#ff3b30;border:2px solid #fff;box-sizing:border-box}
+.map-legend-dot.office{background:#1d4ed8;border:2px solid #93c5fd;box-sizing:border-box}
+.map-legend-dot.asset{background:#2563eb;border:2px solid #60a5fa;box-sizing:border-box}
+.map-legend-dot.traveller{background:#059669;border:2px solid #34d399;box-sizing:border-box}
+.map-legend-line{width:16px;height:0;border-top:2px dashed #ff5a5f;display:inline-block}
 @media(max-width:900px){.location-grid,.nearby-grid{grid-template-columns:1fr}}
 
 /* ===== Mobile layout tweaks ===== */
@@ -603,6 +612,13 @@
       <div class="location-map-shell">
         <div id="incidentLeafletMap"></div>
         <div class="location-map-fallback" id="incidentMapFallback" style="display:none;">Map unavailable for this incident yet.</div>
+      </div>
+      <div class="map-legend" id="incidentMapLegend">
+        <span class="map-legend-item"><span class="map-legend-dot incident"></span>Incident</span>
+        <span class="map-legend-item"><span class="map-legend-dot office"></span>Office</span>
+        <span class="map-legend-item"><span class="map-legend-dot asset"></span>Asset</span>
+        <span class="map-legend-item"><span class="map-legend-dot traveller"></span>Traveller</span>
+        <span class="map-legend-item"><span class="map-legend-line"></span>Radius</span>
       </div>
       <div class="location-hero-title" id="incidentAreaLabel">Location context pending</div>
       <div class="location-hero-sub">Nearest office, exposure note and travel posture.</div>
@@ -924,15 +940,38 @@ const CITY_COORDS = {
   Manchester: { lat: 53.4808, lon: -2.2426 },
   Belfast: { lat: 54.5973, lon: -5.9301 },
   Washington: { lat: 38.9072, lon: -77.0369 },
+  'Washington DC': { lat: 38.9072, lon: -77.0369 },
+  'Washington, D.C.': { lat: 38.9072, lon: -77.0369 },
   'Mexico City': { lat: 19.4326, lon: -99.1332 },
+  'Ciudad de Mexico': { lat: 19.4326, lon: -99.1332 },
   Rabat: { lat: 34.0209, lon: -6.8416 },
   Vienna: { lat: 48.2082, lon: 16.3738 },
   Ottawa: { lat: 45.4215, lon: -75.6972 },
   Berlin: { lat: 52.52,   lon: 13.4050 },
   Paris:  { lat: 48.8566, lon: 2.3522 },
   Madrid: { lat: 40.4168, lon: -3.7038 },
-  Kyiv:   { lat: 50.4501, lon: 30.5234 }
+  Kyiv:   { lat: 50.4501, lon: 30.5234 },
+  Lyon: { lat: 45.7640, lon: 4.8357 },
+  'São Paulo': { lat: -23.5505, lon: -46.6333 },
+  'Sao Paulo': { lat: -23.5505, lon: -46.6333 },
+  Seoul: { lat: 37.5665, lon: 126.9780 },
+  'Seoul Special City': { lat: 37.5665, lon: 126.9780 }
 };
+
+const CITY_COORDS_NORMALIZED = Object.fromEntries(
+  Object.entries(CITY_COORDS).map(([k, v]) => [normalizePlaceKey(k), v])
+);
+
+function normalizePlaceKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\./g, '')
+    .replace(/,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
 
 // Example “offices” – you can extend this later or wire to settings
 const OFFICES = [
@@ -1130,8 +1169,22 @@ function getIncidentCoords(inc) {
   const lat = Number(inc?.lat);
   const lon = Number(inc?.lon ?? inc?.lng);
   if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon, precise: true };
-  const city = (inc?.city || '').trim();
-  if (city && CITY_COORDS[city]) return { ...CITY_COORDS[city], precise: false };
+
+  const city = String(inc?.city || '').trim();
+  const country = String(inc?.country || inc?.Country || '').trim();
+  const candidates = [
+    city,
+    [city, country].filter(Boolean).join(', '),
+    [city, country].filter(Boolean).join(' '),
+    city.replace(/\(.*?\)/g, '').trim()
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    const exact = CITY_COORDS[candidate];
+    if (exact) return { ...exact, precise: false };
+    const normalized = CITY_COORDS_NORMALIZED[normalizePlaceKey(candidate)];
+    if (normalized) return { ...normalized, precise: false };
+  }
   return null;
 }
 
@@ -1271,7 +1324,7 @@ function updateDistancePanel(inc) {
   if (!coords) {
     distanceEl.textContent = `Approx area: ${place}. Nearest office will appear here when coordinates are available.`;
     if (noteEl) {
-      noteEl.textContent = 'This incident is currently using city-level fallback coordinates. Exact plotting can be added when source coordinates are available.';
+      noteEl.textContent = 'This incident does not yet have a matching city fallback or exact coordinates. Add source coordinates or extend the city lookup list to enable plotting.';
     }
     return;
   }
