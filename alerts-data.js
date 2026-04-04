@@ -23,6 +23,217 @@ window.alertsData =[
 
 
 
+  
+
+{
+  title: "Public Sector Workers Strike and Demonstration",
+  city: "Berlin",
+  lat: 52.5200,
+  lng: 13.4050,
+  address: "Brandenburg Gate / Government District",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-04T12:00:00",
+  source: "https://www.dw.com/en/germany-public-sector-strike-2026/a-68654321",
+  summary: "Public sector workers staged strike action and demonstrations in Berlin on 4 April 2026 as part of ongoing wage negotiations. Thousands of workers, including administrative staff and municipal employees, gathered near the Brandenburg Gate and government district to demand higher pay and improved conditions. The protest was organised by major trade unions and remained largely peaceful. While disruption to public services was reported, there were no major incidents, resulting in a medium risk classification."
+},
+{
+  title: "Climate Protest by Fridays for Future",
+  city: "Hamburg",
+  lat: 53.5511,
+  lng: 9.9937,
+  address: "Hamburg City Centre / Rathausmarkt",
+  postcode: "20095",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-05T12:00:00",
+  source: "https://www.dw.com/en/fridays-for-future-protest-hamburg-2026/a-68655432",
+  summary: "Climate activists associated with Fridays for Future organised a protest in Hamburg on 5 April 2026, gathering at Rathausmarkt before marching through the city centre. Demonstrators called for stronger climate policies and government action on emissions. The protest attracted a significant but peaceful turnout, with police facilitating the march. Climate protests in Germany are typically well-organised and low-risk, though they can disrupt traffic. Risk is assessed as medium."
+},
+{
+  title: "Farmers Protest with Tractor Convoy",
+  city: "Munich",
+  lat: 48.1351,
+  lng: 11.5820,
+  address: "Theresienwiese / City Roads",
+  postcode: "80336",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-08T12:00:00",
+  source: "https://www.thelocal.de/20260408/farmers-protest-munich-tractor-convoy",
+  summary: "Farmers staged a protest in Munich on 8 April 2026, driving tractors into the city and gathering at Theresienwiese to protest agricultural policies and subsidy reductions. The convoy caused traffic disruption across key routes into the city. Demonstrations remained peaceful, but the scale of vehicle involvement created operational challenges. Risk is assessed as medium due to disruption potential."
+},
+{
+  title: "Pro-Palestine Demonstration",
+  city: "Berlin",
+  lat: 52.5170,
+  lng: 13.3889,
+  address: "Alexanderplatz",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-06T12:00:00",
+  source: "https://www.dw.com/en/berlin-pro-palestine-protest-2026/a-68656789",
+  summary: "Demonstrators gathered at Alexanderplatz in Berlin on 6 April 2026 for a pro-Palestine rally, expressing solidarity and calling for political action. The protest was monitored by police due to the sensitive nature of the issue. While the demonstration remained largely peaceful, similar events in Berlin have previously required strong policing. Risk is assessed as medium."
+},
+{
+  title: "Labour Day Demonstrations",
+  city: "Berlin",
+  lat: 52.5206,
+  lng: 13.4098,
+  address: "Neukölln / Kreuzberg",
+  postcode: "12043",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-01T12:00:00",
+  source: "https://www.dw.com/en/may-day-protests-berlin-2026/a-68700123",
+  summary: "Labour Day demonstrations took place across Berlin on 1 May 2026, with major gatherings in districts such as Kreuzberg and Neukölln. The events included union marches, political rallies, and activist-led protests. While many demonstrations were peaceful, May Day protests in Berlin have a history of clashes between protesters and police, particularly in the evening. Given the scale, historical precedent, and multiple simultaneous gatherings, the risk is assessed as high."
+},
+
+
+
+{
+  title: "Nationwide Transport Strike",
+  city: "Paris",
+  lat: 48.8566,
+  lng: 2.3522,
+  address: "Gare du Nord / Citywide Transport Network",
+  postcode: "75010",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-03T12:00:00",
+  source: "https://www.france24.com/en/france/20260403-transport-strike-france-disruptions",
+  summary: "Transport workers across France staged strike action on 3 April 2026, with major disruption centred in Paris. Rail workers, metro staff, and bus drivers participated in coordinated industrial action over wages, working conditions, and pension-related concerns. Services at major hubs such as Gare du Nord were significantly affected, with delays and cancellations reported across the network. Large numbers of commuters were impacted, and unions indicated further action could follow. Given the scale of disruption and essential nature of transport infrastructure, the risk is assessed as high."
+},
+{
+  title: "Student Protest Against Education Reforms",
+  city: "Paris",
+  lat: 48.8470,
+  lng: 2.3570,
+  address: "Sorbonne University",
+  postcode: "75005",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-05T12:00:00",
+  source: "https://www.lemonde.fr/en/france/article/2026/04/05/students-protest-education-reforms-paris_1234567_7.html",
+  summary: "Students gathered at Sorbonne University in Paris on 5 April 2026 to protest proposed higher education reforms and funding changes. Demonstrations included marches through the Latin Quarter and assemblies on campus. The protest remained largely peaceful, with police monitoring the situation. Student protests in Paris can escalate depending on turnout and political support, but this event was controlled. Risk is assessed as medium."
+},
+{
+  title: "Farmers Protest Blocking Roads",
+  city: "Lyon",
+  lat: 45.7640,
+  lng: 4.8357,
+  address: "A6/A7 Motorway Interchange",
+  postcode: "69002",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-07T12:00:00",
+  source: "https://www.france24.com/en/europe/20260407-farmers-block-roads-france-protests",
+  summary: "Farmers staged protests around Lyon on 7 April 2026, blocking major motorway routes including the A6 and A7 in response to agricultural pricing pressures and regulatory concerns. Demonstrators used tractors and barricades to obstruct traffic, causing major disruption to transport and logistics. Police were deployed to manage the situation and prevent escalation. Road blockades by farmers are a common and impactful form of protest in France, often leading to significant economic disruption. Risk is assessed as high."
+},
+{
+  title: "Public Sector Workers Protest",
+  city: "Marseille",
+  lat: 43.2965,
+  lng: 5.3698,
+  address: "Vieux-Port / City Centre",
+  postcode: "13001",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-10T12:00:00",
+  source: "https://www.lefigaro.fr/social/protest-public-sector-workers-marseille-2026",
+  summary: "Public sector employees gathered in Marseille on 10 April 2026 to protest wage conditions and public spending policies. Demonstrators marched through central areas including the Vieux-Port, carrying banners and calling for increased salaries and improved working conditions. The protest was organised by trade unions and remained largely peaceful. While turnout was moderate, union-led protests in Marseille can escalate depending on crowd size and police interaction. Risk is assessed as medium."
+},
+{
+  title: "Labour Day Demonstration",
+  city: "Paris",
+  lat: 48.8647,
+  lng: 2.3490,
+  address: "Place de la République to Nation",
+  postcode: "75011",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-01T12:00:00",
+  source: "https://www.france24.com/en/france/20260501-labour-day-protests-france",
+  summary: "Thousands of demonstrators participated in Labour Day protests across France on 1 May 2026, with the largest march taking place in Paris from Place de la République to Nation. Trade unions, activists, and political groups joined the demonstration to demand improved wages, workers' rights, and social protections. Labour Day protests in France are traditionally large-scale and can see clashes between protesters and police, particularly in Paris. Given the size, historical precedent, and potential for unrest, the risk is assessed as high."
+},
+
+
+  
+
+  {
+  title: "Anti-Government Protests (Ongoing Movement)",
+  city: "Belgrade",
+  lat: 44.7866,
+  lng: 20.4489,
+  address: "National Assembly / City Centre",
+  postcode: "11000",
+  country: "Serbia",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-02T12:00:00",
+  source: "https://www.reuters.com/world/serbian-president-invites-parties-talks-anti-government-protests-continue-2026-04-02/",
+  summary: "Large-scale anti-government protests continued in Belgrade into April 2026, with demonstrators demanding early elections and accountability following a deadly infrastructure collapse in Novi Sad. Protesters gathered around central government areas including the National Assembly, with opposition groups rejecting government-led talks and vowing to continue demonstrations. The movement has been ongoing since late 2024 and remains highly mobilised. Given sustained turnout, political tension, and potential for escalation, the risk is assessed as high."
+},
+
+  
+{
+  title: "Airport Ground Staff Strike (Easter Disruption)",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-02T12:00:00",
+  source: "https://www.thesun.ie/travel/16750298/irish-holidaymakers-airport-strikes-easter-spain/",
+  summary: "Ground handling staff across multiple Spanish airports, including Madrid-Barajas, carried out strike action between late March and early April 2026, with continued disruption on 2 April. Workers protested over pay and job security in a long-running dispute with Groundforce. The strike included baggage handlers and ramp agents, causing widespread flight disruption and delays. Given the scale of impact on international travel and the likelihood of continued industrial action, the risk is assessed as high."
+},
+
+  
+{
+  title: "Airport Ground Staff Strike",
+  city: "Barcelona",
+  lat: 41.2974,
+  lng: 2.0833,
+  address: "Barcelona-El Prat Airport",
+  postcode: "08820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-04-03T12:00:00",
+  source: "https://www.thesun.ie/travel/16750298/irish-holidaymakers-airport-strikes-easter-spain/",
+  summary: "Airport ground staff and baggage handlers at Barcelona-El Prat Airport participated in coordinated strike action in early April 2026, including 24-hour walkouts and scheduled stoppages. The strike is part of a broader national dispute affecting multiple airports. Significant disruption to passenger travel, baggage handling, and flight operations has been reported. Due to the scale and operational impact, the risk is assessed as high."
+},
+
+  
+{
+  title: "Pro-Palestine Demonstration",
+  city: "Milan",
+  lat: 45.4642,
+  lng: 9.1900,
+  address: "Piazza del Duomo",
+  postcode: "20121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-04-02T12:00:00",
+  source: "https://www.facebook.com/YeniSafakEnglish/posts/hundreds-gathered-in-milans-piazza-duomo-on-april-2-2026-waving-palestinian-flag/967654555651365/",
+  summary: "Hundreds of demonstrators gathered in Milan’s Piazza del Duomo on 2 April 2026 for a pro-Palestine rally. Protesters waved flags and displayed banners in response to developments in the Middle East. The demonstration appeared organised and largely peaceful, taking place in a major public square. While turnout was moderate, the politically sensitive nature of the issue and potential for counter-protests place the risk at medium."
+},
 
 
   
