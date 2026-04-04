@@ -21,6 +21,256 @@ window.alertsData =[
 },
 
 
+
+
+
+  
+
+{
+  title: "Garment Workers Protest Over Unpaid Wages",
+  city: "Dhaka",
+  lat: 23.8103,
+  lng: 90.4125,
+  address: "Gazipur Industrial Area",
+  postcode: "1704",
+  country: "Bangladesh",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.thedailystar.net/business/economy/news/garment-workers-protest-over-unpaid-wages-2026",
+  summary: "Garment workers staged protests in the Gazipur industrial area near Dhaka on 23 March 2026 over unpaid wages and factory closures. Demonstrators blocked roads and gathered outside factory premises, demanding immediate payment of salaries and improved working conditions. The protest disrupted traffic and industrial operations in one of Bangladesh’s key manufacturing hubs. Garment sector protests in Bangladesh frequently escalate due to large workforce participation and economic pressure, making this a high-risk event."
+},
+  
+{
+  title: "Opposition Rally Against Government Policies",
+  city: "Dhaka",
+  lat: 23.7286,
+  lng: 90.3854,
+  address: "Naya Paltan (BNP Headquarters Area)",
+  postcode: "1000",
+  country: "Bangladesh",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.dhakatribune.com/politics/2026/03/25/opposition-rally-dhaka",
+  summary: "Opposition supporters gathered in Dhaka’s Naya Paltan area on 25 March 2026 to protest government policies and demand political reforms. The rally drew significant participation from party activists and supporters. Political demonstrations in Dhaka often involve heavy police presence and can lead to clashes, particularly when centred around opposition strongholds. Given the political sensitivity and history of unrest, the risk is assessed as high."
+},
+  
+{
+  title: "University Students Protest for Campus Reforms",
+  city: "Chittagong",
+  lat: 22.3569,
+  lng: 91.7832,
+  address: "University of Chittagong",
+  postcode: "4331",
+  country: "Bangladesh",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.thedailystar.net/news/bangladesh/education/news/students-protest-campus-issues-2026",
+  summary: "Students at the University of Chittagong staged protests on 22 March 2026 over campus facilities, accommodation shortages, and administrative issues. Demonstrators organised marches within the university grounds and called for reforms. The protest remained largely peaceful but highlighted ongoing tensions between students and administration. Student protests in Bangladesh can escalate depending on political affiliations and security response. The risk is assessed as medium."
+},
+  
+{
+  title: "Transport Workers Protest Fuel Costs",
+  city: "Dhaka",
+  lat: 23.7465,
+  lng: 90.3760,
+  address: "Sayedabad Bus Terminal",
+  postcode: "1204",
+  country: "Bangladesh",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.newagebd.net/article/transport-workers-protest-fuel-prices-2026",
+  summary: "Transport workers staged protests at Sayedabad Bus Terminal in Dhaka on 24 March 2026 over rising fuel prices and operational costs. Drivers and union members gathered in large numbers, causing disruption to bus services and commuter movement. The protest led to partial shutdowns of transport routes. Given the impact on urban mobility and the potential for escalation during transport-related unrest, the risk is assessed as high."
+},
+
+  
+
+{
+  title: "Transport Strike and Protest (Jeepney Phaseout)",
+  city: "Manila",
+  lat: 14.5995,
+  lng: 120.9842,
+  address: "Mendiola Street, near Malacañang Palace",
+  postcode: "1000",
+  country: "Philippines",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.rappler.com/business/transport-groups-strike-jeepney-phaseout-march-2026/",
+  summary: "Transport groups in the Philippines staged a nationwide strike on 24 March 2026, with major protest activity centred in Manila near Mendiola Street. The protest opposed the government’s jeepney modernisation and phaseout programme, which drivers argue threatens their livelihoods. Demonstrators blocked roads, held rallies, and drew large participation from transport unions. The action caused significant disruption to commuting and traffic in Metro Manila. Given the scale, economic impact, and history of confrontations during transport strikes, the risk is assessed as high."
+},
+{
+  title: "Labour Day Protest Mobilisation (Pre-Event Rallies)",
+  city: "Quezon City",
+  lat: 14.6760,
+  lng: 121.0437,
+  address: "Department of Labor and Employment (DOLE)",
+  postcode: "1100",
+  country: "Philippines",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-04-20T12:00:00",
+  source: "https://www.philstar.com/headlines/2026/04/20/labor-groups-protest-wage-issues",
+  summary: "Labour groups staged pre–Labour Day protest activities on 20 April 2026 in Quezon City, gathering outside the Department of Labor and Employment to demand wage increases and improved working conditions. The mobilisation is part of a broader lead-up to May Day demonstrations, which traditionally draw large crowds across the Philippines. The protest was organised and peaceful, but reflects growing labour dissatisfaction. Risk is assessed as medium due to the controlled nature of the rally, with potential for escalation closer to May Day."
+},
+{
+  title: "Student Protest Against Tuition Fee Increases",
+  city: "Manila",
+  lat: 14.5869,
+  lng: 120.9780,
+  address: "University Belt, Sampaloc",
+  postcode: "1015",
+  country: "Philippines",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.rappler.com/nation/students-protest-tuition-hikes-2026/",
+  summary: "Students from multiple universities gathered in Manila’s University Belt on 22 March 2026 to protest tuition fee increases and education policies. Demonstrators marched through Sampaloc, carrying banners and calling for government intervention. The protest was organised by student alliances and remained largely peaceful. Student protests in Manila are frequent and typically coordinated, though they can escalate depending on police presence and crowd size. The risk is assessed as medium."
+},
+{
+  title: "Farmers Protest Over Agricultural Imports",
+  city: "Davao",
+  lat: 7.1907,
+  lng: 125.4553,
+  address: "Department of Agriculture Regional Office",
+  postcode: "8000",
+  country: "Philippines",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.mindanews.com/top-stories/2026/03/farmers-protest-import-policies-davao/",
+  summary: "Farmers in Davao staged a protest on 23 March 2026 outside the Department of Agriculture regional office, opposing agricultural import policies that they say undermine local producers. Demonstrators gathered with placards and called for stronger protection of domestic farming. The protest remained peaceful and localised, but reflects ongoing tensions in the agricultural sector. The risk is assessed as medium due to the potential for broader mobilisation if grievances persist."
+},
+  
+
+  
+
+{
+  title: "Students Protest Against Education Policy Changes",
+  city: "Jakarta",
+  lat: -6.2088,
+  lng: 106.8456,
+  address: "Ministry of Education and Culture, Jalan Jenderal Sudirman",
+  postcode: "10270",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.thejakartapost.com/indonesia/2026/03/24/students-protest-education-policy.html",
+  summary: "University students gathered in Jakarta on 24 March 2026 to protest proposed education policy changes affecting tuition structures and curriculum standards. Demonstrators assembled outside the Ministry of Education and Culture, carrying banners and calling for greater transparency and consultation. The protest remained organised and largely peaceful, with police monitoring the situation. Student protests in Jakarta are common and typically controlled, but can escalate depending on crowd size and political involvement. Risk is assessed as medium."
+},
+  
+{
+  title: "Labour Union Protest Over Wage Regulations",
+  city: "Surabaya",
+  lat: -7.2575,
+  lng: 112.7521,
+  address: "East Java Governor’s Office",
+  postcode: "60231",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.antaranews.com/en/news/2026/labour-protest-surabaya-wages",
+  summary: "Labour unions in Surabaya staged protests on 25 March 2026 outside the East Java Governor’s Office, demanding revisions to wage regulations and improved labour protections. Workers gathered in coordinated groups, chanting slogans and presenting demands to local authorities. The demonstration caused minor disruption in the surrounding administrative area. Labour protests in Indonesia are typically organised and monitored, with occasional escalation if negotiations stall. The risk is assessed as medium."
+},
+  
+{
+  title: "Fishermen Protest Fuel Price Increases",
+  city: "Makassar",
+  lat: -5.1477,
+  lng: 119.4327,
+  address: "Makassar Port Area",
+  postcode: "90111",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.antaranews.com/en/news/2026/fishermen-protest-fuel-prices-makassar",
+  summary: "Fishermen in Makassar staged protests on 22 March 2026 over rising fuel prices impacting their livelihoods. Demonstrators gathered at port areas and blocked access routes to highlight economic pressures. The protest drew attention from local authorities and maritime officials. While largely peaceful, disruption to port operations and economic activity increases the operational significance of the event. Risk is assessed as medium."
+},
+  
+{
+  title: "Transport Workers Demonstration",
+  city: "Bandung",
+  lat: -6.9175,
+  lng: 107.6191,
+  address: "Bandung City Hall",
+  postcode: "40111",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.thejakartapost.com/indonesia/2026/03/23/transport-workers-protest-bandung.html",
+  summary: "Transport workers in Bandung organised a demonstration on 23 March 2026 outside City Hall over fuel costs and working conditions. Participants included drivers and transport union members who called for government intervention. The protest caused temporary disruption in central Bandung. While the demonstration remained peaceful, transport-related protests can escalate due to economic pressures and public impact. Risk is assessed as medium."
+},
+
+  
+
+{
+  title: "Opposition Protest Against Election Irregularities",
+  city: "Islamabad",
+  lat: 33.6844,
+  lng: 73.0479,
+  address: "D-Chowk, Red Zone",
+  postcode: "44000",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-03-23T12:00:00",
+  source: "https://www.dawn.com/news/1823456",
+  summary: "Opposition supporters gathered at D-Chowk in Islamabad on 23 March 2026 to protest alleged election irregularities and political interference. Demonstrators attempted to enter the Red Zone, a highly secured government district housing key institutions including Parliament and the Prime Minister’s Office. Security forces were deployed in large numbers to block access and maintain order. Political protests in Islamabad’s Red Zone are historically sensitive and often lead to confrontations between protesters and police. Given the political nature, strategic location, and history of escalation, the risk is assessed as high."
+},
+  
+{
+  title: "Lawyers Protest Over Judicial Reforms",
+  city: "Lahore",
+  lat: 31.5497,
+  lng: 74.3436,
+  address: "Lahore High Court, Mall Road",
+  postcode: "54000",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-25T12:00:00",
+  source: "https://www.thenews.com.pk/print/1187654-lawyers-protest-judicial-reforms",
+  summary: "Lawyers staged a protest outside the Lahore High Court on 25 March 2026 opposing proposed judicial reforms and changes to legal procedures. Members of various bar associations gathered on Mall Road, chanting slogans and demanding consultation with the legal community. The protest caused temporary disruption to traffic and court operations. Lawyer protests in Pakistan are typically organised and influential but can escalate if met with resistance. The risk is assessed as medium due to the structured nature of the demonstration."
+},
+  
+{
+  title: "University Students Protest for Campus Safety",
+  city: "Karachi",
+  lat: 24.8607,
+  lng: 67.0011,
+  address: "University of Karachi",
+  postcode: "75270",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-22T12:00:00",
+  source: "https://www.geo.tv/latest/karachi-students-protest-campus-safety",
+  summary: "Students at the University of Karachi staged protests on 22 March 2026 following concerns over campus safety and security incidents. Demonstrators gathered within university grounds and organised marches calling for increased protection measures. The protest remained largely contained but drew attention from university administration and local authorities. Student protests in Karachi can escalate depending on political affiliations and police response. The risk is assessed as medium due to the contained environment."
+},
+  
+{
+  title: "Power Sector Workers Protest",
+  city: "Peshawar",
+  lat: 34.0151,
+  lng: 71.5249,
+  address: "PESCO Headquarters",
+  postcode: "25000",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-03-24T12:00:00",
+  source: "https://www.dawn.com/news/1823789",
+  summary: "Power sector employees staged a protest outside the Peshawar Electric Supply Company (PESCO) headquarters on 24 March 2026 over working conditions and salary concerns. Workers gathered in organised groups, raising slogans and demanding reforms in the energy sector. The protest caused minor disruption in the surrounding area but remained largely peaceful. Utility sector protests are significant due to their potential impact on critical infrastructure. The risk is assessed as medium."
+},
+  
+
   {
   title: "Anganwadi Workers Protest for Wage Increase",
   city: "New Delhi",
