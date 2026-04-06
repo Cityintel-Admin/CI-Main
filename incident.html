@@ -423,6 +423,26 @@
 .map-legend-dot.asset{background:#2563eb;border:2px solid #60a5fa;box-sizing:border-box}
 .map-legend-dot.traveller{background:#059669;border:2px solid #34d399;box-sizing:border-box}
 .map-legend-line{width:16px;height:0;border-top:2px dashed #ff5a5f;display:inline-block}
+
+.nearby-card.is-alert{
+  border-color:rgba(255,90,95,.45);
+  background:rgba(255,90,95,.08);
+  box-shadow:0 0 0 1px rgba(255,90,95,.12) inset;
+}
+.nearby-card.is-watch{
+  border-color:rgba(240,180,41,.38);
+  background:rgba(240,180,41,.08);
+  box-shadow:0 0 0 1px rgba(240,180,41,.10) inset;
+}
+.location-stat.is-alert{
+  border-color:rgba(255,90,95,.45);
+  background:rgba(255,90,95,.08);
+}
+.location-stat.is-watch{
+  border-color:rgba(240,180,41,.38);
+  background:rgba(240,180,41,.08);
+}
+
 @media(max-width:900px){.location-grid,.nearby-grid{grid-template-columns:1fr}}
 
 /* ===== Mobile layout tweaks ===== */
@@ -646,13 +666,13 @@
     </div>
 
     <div class="nearby-grid">
-      <div class="nearby-card">
+      <div class="nearby-card" id="incidentAssetsCard">
         <span class="field-label">Assets nearby</span>
         <div class="nearby-count" id="incidentAssetsCount">0</div>
         <div class="nearby-sub" id="incidentAssetsSub">Within selected incident radius</div>
         <div class="nearby-list" id="incidentAssetsList"><div class="nearby-empty">No mapped assets nearby.</div></div>
       </div>
-      <div class="nearby-card">
+      <div class="nearby-card" id="incidentTravellersCard">
         <span class="field-label">Travellers nearby</span>
         <div class="nearby-count" id="incidentTravellersCount">0</div>
         <div class="nearby-sub" id="incidentTravellersSub">Within selected incident radius</div>
@@ -1114,17 +1134,51 @@ function renderNearbyExposure(exposure, radiusKm){
   const travListEl = document.getElementById('incidentTravellersList');
   const assetSubEl = document.getElementById('incidentAssetsSub');
   const travSubEl = document.getElementById('incidentTravellersSub');
+  const exposureEl = document.getElementById('incidentExposure');
+  const travelEl = document.getElementById('incidentTravel');
+  const noteEl = document.getElementById('incidentLocationNote');
+  const assetsCard = document.getElementById('incidentAssetsCard');
+  const travellersCard = document.getElementById('incidentTravellersCard');
+  const exposureStat = exposureEl ? exposureEl.closest('.location-stat') : null;
+  const travelStat = travelEl ? travelEl.closest('.location-stat') : null;
+
   if (assetCountEl) assetCountEl.textContent = String(assets.length);
   if (travCountEl) travCountEl.textContent = String(travellers.length);
   if (assetSubEl) assetSubEl.textContent = `Within ${radiusKm} km incident radius`;
   if (travSubEl) travSubEl.textContent = `Within ${radiusKm} km incident radius`;
+
+  [assetsCard, travellersCard, exposureStat, travelStat].forEach(el => {
+    if (!el) return;
+    el.classList.remove('is-alert', 'is-watch');
+  });
+
   if (assetListEl) {
     if (!assets.length) assetListEl.innerHTML = '<div class="nearby-empty">No mapped assets nearby.</div>';
     else assetListEl.innerHTML = assets.slice(0,3).map(a => `<div>${formatNearbyPrimary(a, 'Asset')}<span class="muted">${a.city ? ` · ${a.city}` : ''}</span></div>`).join('');
   }
   if (travListEl) {
-    if (!travellers.length) travListEl.innerHTML = '<div class="nearby-empty">No mapped travellers nearby.</div>';
+    if (!travellers.length) travListEl.innerHTML = `<div class="nearby-empty">No travellers within ${radiusKm} km.</div>`;
     else travListEl.innerHTML = travellers.slice(0,3).map(t => `<div>${formatNearbyPrimary(t, 'Traveller')}<span class="muted">${t.city ? ` · ${t.city}` : ''}</span></div>`).join('');
+  }
+
+  if (travellers.length > 0) {
+    if (travellersCard) travellersCard.classList.add('is-alert');
+    if (exposureStat) exposureStat.classList.add('is-alert');
+    if (travelStat) travelStat.classList.add('is-alert');
+    if (exposureEl) exposureEl.innerHTML = `⚠ ${travellers.length} traveller${travellers.length !== 1 ? 's' : ''} within ${radiusKm} km of the incident area.`;
+    if (travelEl) travelEl.textContent = 'Escalate monitoring, review movement plans and contact affected staff if conditions deteriorate.';
+    if (noteEl) noteEl.textContent = `Map is auto-fitted to show the incident, nearest office and any traveller or asset exposure within ${radiusKm} km.`;
+  } else if (assets.length > 0) {
+    if (assetsCard) assetsCard.classList.add('is-watch');
+    if (exposureStat) exposureStat.classList.add('is-watch');
+    if (travelStat) travelStat.classList.add('is-watch');
+    if (exposureEl) exposureEl.textContent = `${assets.length} asset${assets.length !== 1 ? 's' : ''} within ${radiusKm} km — monitor site access and local disruption.`;
+    if (travelEl) travelEl.textContent = 'Monitor access routes and supplier/service continuity around nearby sites.';
+    if (noteEl) noteEl.textContent = `Map is auto-fitted to show the incident, nearest office and nearby assets within ${radiusKm} km.`;
+  } else {
+    if (exposureEl) exposureEl.textContent = `No mapped assets or travellers within ${radiusKm} km of the incident area.`;
+    if (travelEl) travelEl.textContent = 'Monitoring only. No mapped travellers or assets are currently inside the selected radius.';
+    if (noteEl) noteEl.textContent = `Map is auto-fitted to the incident area and nearest office. Increase radius if you want a broader city-level exposure view.`;
   }
 }
 
@@ -1266,23 +1320,22 @@ function renderIncidentMap(inc){
 
   try{
     __incidentMap.setView(center, coords.precise ? 11 : 9, { animate:false });
-    if ((exposure.assets || []).length || (exposure.travellers || []).length || best) {
+    const hasExposure = (exposure.assets || []).length || (exposure.travellers || []).length;
+    const officeOnlyBounds = L.latLngBounds([center]);
+    if (best?.office?.lat && best?.office?.lon) officeOnlyBounds.extend([best.office.lat, best.office.lon]);
+
+    if (hasExposure || best) {
       bounds.extend(radiusCircle.getBounds());
-      __incidentMap.fitBounds(bounds.pad(0.2), { animate:false, maxZoom: 11 });
+      __incidentMap.fitBounds(bounds.pad(0.22), { animate:true, duration:0.35, maxZoom: 11 });
+    } else if (officeOnlyBounds.isValid() && !officeOnlyBounds.getNorthEast().equals(officeOnlyBounds.getSouthWest())) {
+      __incidentMap.fitBounds(officeOnlyBounds.pad(0.45), { animate:true, duration:0.35, maxZoom: coords.precise ? 10 : 8 });
     } else {
-      __incidentMap.fitBounds(radiusCircle.getBounds().pad(0.35), { animate:false, maxZoom: coords.precise ? 11 : 9 });
+      __incidentMap.fitBounds(radiusCircle.getBounds().pad(0.35), { animate:true, duration:0.35, maxZoom: coords.precise ? 11 : 9 });
     }
     requestAnimationFrame(() => { try { __incidentMap.invalidateSize(true); } catch(e){} });
     setTimeout(() => { try { __incidentMap.invalidateSize(true); } catch(e){} }, 200);
   }catch(e){}
-
-  if (noteEl) {
-    const exposureBits = [];
-    if ((exposure.assets || []).length) exposureBits.push(`${exposure.assets.length} asset${exposure.assets.length !== 1 ? 's' : ''}`);
-    if ((exposure.travellers || []).length) exposureBits.push(`${exposure.travellers.length} traveller${exposure.travellers.length !== 1 ? 's' : ''}`);
-    const exposureText = exposureBits.length ? ` Nearby mapped exposure: ${exposureBits.join(' and ')}.` : ' No mapped assets or travellers in the selected radius.';
-    noteEl.textContent = `${coords.precise ? 'Map uses incident coordinates.' : 'Map uses city-level fallback coordinates.'} Radius set to ${radiusKm} km.${exposureText}`;
-  }
+ 
 }
 
 // Single source of truth for the Map / Distance text
@@ -2108,6 +2161,3 @@ function initBriefPad(incident) {
 	
 </body>
 </html>
-
-
-
