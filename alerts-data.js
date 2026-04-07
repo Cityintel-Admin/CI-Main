@@ -21,6 +21,145 @@ window.alertsData =[
 },
 
 
+  
+
+
+
+{
+  title: "Peaceful Rally: Fund Yerrabi Yurwang Health",
+  city: "Canberra",
+  lat: -35.2806,
+  lng: 149.1310,
+  address: "Civic Square, 180 London Circuit",
+  postcode: "2601",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-04-09T15:00:00",
+  source: "https://www.greenleft.org.au/events",
+  summary: "A peaceful rally is scheduled to take place in Civic Square, Canberra, calling on the ACT government to fund Yerrabi Yurwang Health. The event listing identifies Civic Square, 180 London Circuit, and a 3:00 pm start. The protest appears issue-specific and organised rather than confrontational, but it is expected to draw attention in a central civic area. Risk is assessed as Medium."
+},
+{
+  title: "Stop Wars Coalition Rally and March",
+  city: "Auckland",
+  lat: -36.8518,
+  lng: 174.7637,
+  address: "Aotea Square",
+  postcode: "1010",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "High",
+  time: "2026-04-11T14:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "The PSNA events page lists a Stop Wars Coalition rally and march in central Auckland, scheduled for 2:00 pm on 11 April 2026 at Aotea Square. Because the event is framed as both a rally and a march in the CBD, it carries a higher disruption and crowd-management profile than a static vigil. Risk is assessed as High."
+},
+{
+  title: "Sanction Israel Now!",
+  city: "Palmerston North",
+  lat: -40.3523,
+  lng: 175.6082,
+  address: "The Square (Te Marae o Hine)",
+  postcode: "4410",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-04-05T14:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "A Palestine solidarity rally under the banner 'Sanction Israel Now!' was listed for Palmerston North at 2:00 pm on Sunday 5 April 2026 in The Square. The event appears to be a static public gathering rather than a march, reducing the likelihood of major transport disruption. Risk is assessed as Medium."
+},
+{
+  title: "Silent Vigil for Palestine at Parliament",
+  city: "Wellington",
+  lat: -41.2795,
+  lng: 174.7772,
+  address: "Parliament, Wellington",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-04-09T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "The PSNA events page lists a recurring silent vigil for Palestine outside Parliament in Wellington on Tuesdays and Thursdays from 10:30 am to 1:45 pm. For this dataset window, the 9 April 2026 vigil is a clear listed occurrence. As a recurring vigil outside Parliament, it is politically visible but usually lower-disruption than a march. Risk is assessed as Medium."
+},
+{
+  title: "May Day March & Family Fun Day",
+  city: "Adelaide",
+  lat: -34.9286,
+  lng: 138.6007,
+  address: "Victoria Square",
+  postcode: "5000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-05-02T10:00:00",
+  source: "https://saunions.org.au/sa-may-day/",
+  summary: "SA Unions is advertising a May Day March and Family Fun Day in Adelaide for 10:00 am on 2 May 2026 at Victoria Square. The page describes it as a workers’ solidarity mobilisation, with the march route still to be announced. Because it is a union-led city-centre march with a family event format, disruption risk is moderate rather than severe. Risk is assessed as Medium."
+},
+{
+  title: "May Day 2026: Festival, Rally & March",
+  city: "Fremantle",
+  lat: -32.0564,
+  lng: 115.7424,
+  address: "Esplanade Park, Marine Terrace",
+  postcode: "6160",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-05-03T10:30:00",
+  source: "https://awu.net.au/wa/mayday/2026/",
+  summary: "Unions WA and affiliated union pages are advertising a May Day event in Fremantle on 3 May 2026 at Esplanade Park. Published information says festivities begin at 10:30 am and a union march through Fremantle is scheduled for 12:00 pm. Because it combines a rally and street march in a central area, it has moderate transport and crowd-management relevance. Risk is assessed as Medium."
+},
+
+  
+{
+  title: "Opposition Protest",
+  city: "Kampala",
+  lat: 0.3476,
+  lng: 32.5825,
+  address: "City Centre / Parliament Area",
+  postcode: "256",
+  country: "Uganda",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-04-25T12:00:00",
+  source: "https://www.monitor.co.ug/",
+  summary: "Opposition supporters are expected to gather in Kampala to protest government policies and political conditions. Demonstrations are planned in central areas near Parliament. Political protests in Uganda can lead to police intervention. Risk is assessed as high."
+},
+
+
+{
+  title: "Labour Protest",
+  city: "Casablanca",
+  lat: 33.5731,
+  lng: -7.5898,
+  address: "City Centre / Administrative District",
+  postcode: "20000",
+  country: "Morocco",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-05-06T12:00:00",
+  source: "https://www.moroccoworldnews.com/",
+  summary: "Labour groups are expected to organise demonstrations in central Casablanca over wages and working conditions. Protest activity is planned near administrative districts, with organised rallies and speeches. The protest is expected to remain peaceful but may affect traffic in central areas. Risk is assessed as medium."
+},
+  
+
+{
+  title: "Anti-Government Protest",
+  city: "Tunis",
+  lat: 36.8065,
+  lng: 10.1815,
+  address: "Avenue Habib Bourguiba",
+  postcode: "1000",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-04-20T12:00:00",
+  source: "https://www.reuters.com/world/africa/",
+  summary: "Demonstrators are expected to gather along Avenue Habib Bourguiba in Tunis to protest government policies and economic conditions. The location is a central hub for political demonstrations. Given Tunisia’s recent history of political unrest, there is potential for escalation. Risk is assessed as high."
+},
+
+  
+
   {
   title: "Public Sector Workers Demonstration",
   city: "Accra",
