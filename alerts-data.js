@@ -21,6 +21,35 @@ window.alertsData =[
 },
 
 
+  {
+  title: "Public Sector Workers Demonstration",
+  city: "Accra",
+  lat: 5.6037,
+  lng: -0.1870,
+  address: "Independence Square",
+  postcode: "GA184",
+  country: "Ghana",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-04-22T12:00:00",
+  source: "https://www.graphic.com.gh/",
+  summary: "Public sector workers are expected to gather at Independence Square in Accra to protest wages and economic conditions. Organisers have called for improved salary structures and government intervention. Demonstrations are planned to remain peaceful but may draw significant turnout in central areas. Risk is assessed as medium."
+},
+{
+  title: "Student Protest Over Fees",
+  city: "Accra",
+  lat: 5.6500,
+  lng: -0.1833,
+  address: "University of Ghana, Legon",
+  postcode: "LG25",
+  country: "Ghana",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-05-10T12:00:00",
+  source: "https://citinewsroom.com/",
+  summary: "Students at the University of Ghana are expected to organise demonstrations over tuition fees and academic conditions. Protest activity is planned within campus grounds with possible movement into surrounding areas. The event is expected to remain largely peaceful. Risk is assessed as medium."
+},
+
 
 
 {
@@ -35,7 +64,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-18T12:00:00",
   source: "https://www.reuters.com/world/africa/",
-  summary: "Small-scale demonstrations were reported in central Cairo regarding economic conditions and rising living costs. Protests in Egypt are tightly controlled and often dispersed quickly by authorities. Given the political sensitivity and potential for rapid escalation, the risk is assessed as high."
+  summary: "Small-scale demonstrations scheduled in central Cairo regarding economic conditions and rising living costs. Protests in Egypt are tightly controlled and often dispersed quickly by authorities. Given the political sensitivity and potential for rapid escalation, the risk is assessed as high."
 },
   
 {
@@ -50,7 +79,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-12T12:00:00",
   source: "https://www.news24.com",
-  summary: "Residents in Soweto staged protests over service delivery issues, including electricity and water access. Demonstrators blocked roads and gathered near municipal offices. Service delivery protests in South Africa frequently escalate and involve infrastructure disruption. Risk is assessed as high."
+  summary: "Residents in Soweto plan protests over service delivery issues, including electricity and water access. Demonstrators plan to block roads and gather near municipal offices. Service delivery protests in South Africa frequently escalate and involve infrastructure disruption. Risk is assessed as high."
 },
 {
   title: "Transport Workers Protest",
@@ -64,7 +93,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-14T12:00:00",
   source: "https://www.iol.co.za",
-  summary: "Transport workers gathered in Cape Town’s central business district to protest wages and working conditions. Demonstrations affected commuter services and caused delays in central areas. Transport protests in South Africa often have significant operational impact. Risk is assessed as high."
+  summary: "Transport workers gathered in Cape Town’s central business district to protest wages and working conditions. Demonstrators plan to affect commuter services and cause delays in central areas. Transport protests in South Africa often have significant operational impact. Risk is assessed as high."
 },
   
 
@@ -80,7 +109,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-15T12:00:00",
   source: "https://www.nation.africa",
-  summary: "Demonstrators gathered in Nairobi’s central business district near Parliament to protest government policies and economic conditions. Police presence was significant and some confrontations were reported. Political protests in Kenya often involve large crowds and can escalate quickly. Risk is assessed as high."
+  summary: "Demonstrators plan to gather in Nairobi’s central business district near Parliament to protest government policies and economic conditions. Police presence was significant and some confrontations were reported. Political protests in Kenya often involve large crowds and can escalate quickly. Risk is assessed as high."
 },
 {
   title: "University Student Protest",
@@ -94,7 +123,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-08T12:00:00",
   source: "https://www.standardmedia.co.ke",
-  summary: "Students at the University of Nairobi organised protests over tuition fees and academic conditions. Demonstrators gathered on campus and marched into surrounding streets. The protest remained largely peaceful but caused temporary disruption. Risk is assessed as medium."
+  summary: "Students at the University of Nairobi organised protests over tuition fees and academic conditions. Demonstrators plan to gather on campus and march into surrounding streets. The protest remained largely peaceful but caused temporary disruption. Risk is assessed as medium."
 },
   
 
@@ -111,7 +140,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-10T12:00:00",
   source: "https://www.premiumtimesng.com/news/headlines",
-  summary: "Labour unions and civil society groups gathered near the National Assembly in Abuja to protest rising living costs and economic conditions. Demonstrators called for wage adjustments and policy reforms. Protests linked to economic hardship in Nigeria have previously drawn large crowds and occasionally escalated. Given the political location and economic sensitivity, the risk is assessed as high."
+  summary: "Labour unions and civil society groups plan to gather near the National Assembly in Abuja to protest rising living costs and economic conditions. Demonstrators called for wage adjustments and policy reforms. Protests linked to economic hardship in Nigeria have previously drawn large crowds and occasionally escalated. Given the political location and economic sensitivity, the risk is assessed as high."
 },
 {
   title: "Fuel Price Protest",
@@ -169,7 +198,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-16T12:00:00",
   source: "https://www.mlive.com/news/ann-arbor/2026/05/student-protest-university-michigan",
-  summary: "Students at the University of Michigan in Ann Arbor organised protests on 16 May 2026 over tuition costs and university policies. Demonstrators gathered on campus and held rallies. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the University of Michigan in Ann Arbor organised protests on 16 May 2026 over tuition costs and university policies. Demonstrators plan to gather on campus and hold rallies. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Dockworkers Protest",
@@ -283,7 +312,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-15T12:00:00",
   source: "https://www.levante-emv.com/comunitat-valenciana/2026/05/15/protesta-estudiantes",
-  summary: "Students at the University of Valencia organised protests on 15 May 2026 against education funding cuts and policy changes. Demonstrators gathered on campus and marched through nearby areas. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the University of Valencia organised protests on 15 May 2026 against education funding cuts and policy changes. Demonstrators plan to gather on campus and march through nearby areas. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Farmers Protest Over Agricultural Policies",
@@ -297,7 +326,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-18T12:00:00",
   source: "https://www.diariodesevilla.es/sevilla/protesta-agricultores-2026",
-  summary: "Farmers gathered in Seville on 18 May 2026 to protest agricultural policies and pricing issues. Demonstrators blocked roads and gathered outside regional government offices, causing disruption in the area. Agricultural protests in Spain can escalate quickly due to economic pressures. Risk is assessed as high."
+  summary: "Farmers gathered in Seville on 18 May 2026 to protest agricultural policies and pricing issues. Demonstrators plan to block roads and gathered outside regional government offices, causing disruption in the area. Agricultural protests in Spain can escalate quickly due to economic pressures. Risk is assessed as high."
 },
 {
   title: "Anti-Government Protest",
@@ -369,7 +398,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-12T12:00:00",
   source: "https://www.ilrestodelcarlino.it/bologna/studenti-protesta-2026",
-  summary: "Students at the University of Bologna organised protests on 12 May 2026 against education policies and funding concerns. Demonstrators gathered on campus and marched through nearby streets. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the University of Bologna organised protests on 12 May 2026 against education policies and funding concerns. Demonstrators plan to gather on campus and march through nearby streets. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Port Workers Protest",
@@ -383,7 +412,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-15T12:00:00",
   source: "https://www.ilsecoloxix.it/genova/porto-protesta-lavoratori-2026",
-  summary: "Port workers in Genoa staged protests on 15 May 2026 over labour conditions and contract negotiations. Demonstrators gathered at port facilities, causing delays in cargo operations. Given the economic importance of the port and potential for escalation, the risk is assessed as high."
+  summary: "Port workers in Genoa plan protests on 15 May 2026 over labour conditions and contract negotiations. Demonstrators gathered at port facilities, causing delays in cargo operations. Given the economic importance of the port and potential for escalation, the risk is assessed as high."
 },
 {
   title: "Public Sector Workers Demonstration",
@@ -483,7 +512,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-18T12:00:00",
   source: "https://www.sueddeutsche.de/muenchen/student-protest-2026",
-  summary: "Students at Ludwig Maximilian University in Munich organised protests on 18 May 2026 against education policies and funding concerns. Demonstrators gathered on campus and held rallies. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at Ludwig Maximilian University in Munich organised protests on 18 May 2026 against education policies and funding concerns. Demonstrators plan to gather on campus and hold rallies. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Public Sector Workers Demonstration",
@@ -511,7 +540,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-28T12:00:00",
   source: "https://www.dw.com/en/protest-berlin-government-2026",
-  summary: "Protesters gathered near the Reichstag in Berlin on 28 May 2026 to demonstrate against government policies. Demonstrations included rallies and speeches organised by activist groups. Police presence was visible but the protest remained peaceful. Risk is assessed as medium."
+  summary: "Protesters plan to gather near the Reichstag in Berlin on 28 May 2026 to demonstrate against government policies. Demonstrations included rallies and speeches organised by activist groups. Police presence was visible but the protest remained peaceful. Risk is assessed as medium."
 },
 {
   title: "Transport Workers Protest",
@@ -571,7 +600,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-12T12:00:00",
   source: "https://www.yorkshireeveningpost.co.uk/education/student-protest-leeds-2026",
-  summary: "Students at the University of Leeds staged protests on 12 May 2026 over tuition fees and academic conditions. Demonstrators gathered on campus and organised rallies calling for reforms. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the University of Leeds plan protests on 12 May 2026 over tuition fees and academic conditions. Demonstrators plan to gather on campus and organised rallies calling for reforms. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Climate Protest by Extinction Rebellion",
@@ -699,7 +728,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-20T12:00:00",
   source: "https://www.houstonchronicle.com/business/energy/article/environmental-protest-2026",
-  summary: "Environmental activists staged protests in Houston on 20 May 2026 opposing oil and gas projects. Demonstrations included marches and rallies in central areas and near energy company offices. The protest remained peaceful but highlighted ongoing tensions around energy policy. Risk is assessed as medium."
+  summary: "Environmental activists plan protests in Houston on 20 May 2026 opposing oil and gas projects. Demonstrations included marches and rallies in central areas and near energy company offices. The protest remained peaceful but highlighted ongoing tensions around energy policy. Risk is assessed as medium."
 },
 {
   title: "Truckers Protest and Slow-Roll Action",
@@ -727,7 +756,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-25T12:00:00",
   source: "https://www.nytimes.com/2026/05/25/nyregion/columbia-protest-graduation",
-  summary: "Student activists organised protests at Columbia University on 25 May 2026 during graduation events, focusing on international political issues. Demonstrators gathered on campus and held rallies, drawing attention from media and authorities. The protest remained largely peaceful but occurred during a high-profile event. Risk is assessed as medium."
+  summary: "Student activists organised protests at Columbia University on 25 May 2026 during graduation events, focusing on international political issues. Demonstrators plan to gather on campus and hold rallies, drawing attention from media and authorities. The protest remained largely peaceful but occurred during a high-profile event. Risk is assessed as medium."
 },
 {
   title: "Anti-Government Protest",
@@ -815,7 +844,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-12T12:00:00",
   source: "https://www.jornada.com.mx/noticia/2026/05/12/protesta-feminista-cdmx",
-  summary: "Feminist groups gathered near the Angel of Independence in Mexico City on 12 May 2026 to protest gender violence and demand justice reforms. Demonstrators marched through central avenues, carrying banners and chanting slogans. The protest was largely peaceful but emotionally charged. Risk is assessed as medium."
+  summary: "Feminist groups plan to gather near the Angel of Independence in Mexico City on 12 May 2026 to protest gender violence and demand justice reforms. Demonstrators marched through central avenues, carrying banners and chanting slogans. The protest was largely peaceful but emotionally charged. Risk is assessed as medium."
 },
 {
   title: "University Student Protest",
@@ -829,7 +858,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-15T12:00:00",
   source: "https://www.informador.mx/jalisco/protesta-estudiantes-udg-2026",
-  summary: "Students at the University of Guadalajara staged protests on 15 May 2026 over funding concerns and academic conditions. Demonstrators gathered on campus and organised rallies calling for reforms. The protest remained peaceful and contained. Risk is assessed as medium."
+  summary: "Students at the University of Guadalajara plan protests on 15 May 2026 over funding concerns and academic conditions. Demonstrators plan to gather on campus and organised rallies calling for reforms. The protest remained peaceful and contained. Risk is assessed as medium."
 },
 {
   title: "Farmers Protest Over Water and Land Rights",
@@ -843,7 +872,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-18T12:00:00",
   source: "https://www.oaxaca.gob.mx/noticias/protesta-agricultores-2026",
-  summary: "Farmers in Oaxaca staged protests on 18 May 2026 outside state government offices over land rights and water access issues. Demonstrators blocked nearby roads and gathered in large groups, causing disruption in the area. Rural protests in southern Mexico can escalate quickly due to longstanding grievances. Risk is assessed as high."
+  summary: "Farmers in Oaxaca plan protests on 18 May 2026 outside state government offices over land rights and water access issues. Demonstrators plan to block nearby roads and gathered in large groups, causing disruption in the area. Rural protests in southern Mexico can escalate quickly due to longstanding grievances. Risk is assessed as high."
 },
 {
   title: "Anti-Government Protest",
@@ -873,7 +902,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-05T12:00:00",
   source: "https://www.thehindu.com/news/national/farmers-protest-delhi-may-2026",
-  summary: "Farmers gathered at the Singhu border near New Delhi on 5 May 2026 to protest crop pricing policies and demand government guarantees. Demonstrators blocked key access routes and organised sit-ins, causing traffic disruption. Farmer protests in India are often large-scale and prolonged, with significant political implications. Given the scale and history of escalation, the risk is assessed as high."
+  summary: "Farmers gathered at the Singhu border near New Delhi on 5 May 2026 to protest crop pricing policies and demand government guarantees. Demonstrators plan to block key access routes and organised sit-ins, causing traffic disruption. Farmer protests in India are often large-scale and prolonged, with significant political implications. Given the scale and history of escalation, the risk is assessed as high."
 },
 {
   title: "Nationwide Bank Workers Strike",
@@ -915,7 +944,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-15T12:00:00",
   source: "https://www.deccanherald.com/city/bengaluru/transport-workers-protest-may-2026",
-  summary: "Transport workers in Bangalore staged protests on 15 May 2026 over wages and fuel costs. Demonstrators gathered at key transport hubs including Majestic Bus Stand, causing delays and disruptions across the city. Transport protests in major Indian cities often impact daily commuting significantly. Risk is assessed as high."
+  summary: "Transport workers in Bangalore plan protests on 15 May 2026 over wages and fuel costs. Demonstrators gathered at key transport hubs including Majestic Bus Stand, causing delays and disruptions across the city. Transport protests in major Indian cities often impact daily commuting significantly. Risk is assessed as high."
 },
 {
   title: "Government Employees Protest",
@@ -929,7 +958,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-18T12:00:00",
   source: "https://www.thehindu.com/news/cities/Hyderabad/govt-employees-protest-2026",
-  summary: "Government employees in Hyderabad gathered near the Secretariat on 18 May 2026 to protest pay scales and service conditions. Demonstrators organised rallies and submitted demands to officials. The protest remained peaceful with moderate turnout. Risk is assessed as medium."
+  summary: "Government employees in Hyderabad plan to gather near the Secretariat on 18 May 2026 to protest pay scales and service conditions. Demonstrators organised rallies and submitted demands to officials. The protest remained peaceful with moderate turnout. Risk is assessed as medium."
 },
 {
   title: "Power Sector Workers Protest",
@@ -943,7 +972,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-05-20T12:00:00",
   source: "https://www.thehindu.com/news/cities/chennai/power-workers-protest-2026",
-  summary: "Power sector employees in Chennai staged protests on 20 May 2026 outside TNEB headquarters over working conditions and restructuring policies. Demonstrators organised rallies and raised concerns about job security. The protest remained peaceful but highlighted tensions in the energy sector. Risk is assessed as medium."
+  summary: "Power sector employees in Chennai plan protests on 20 May 2026 outside TNEB headquarters over working conditions and restructuring policies. Demonstrators organised rallies and raised concerns about job security. The protest remained peaceful but highlighted tensions in the energy sector. Risk is assessed as medium."
 },
 {
   title: "Anti-Government Protest",
@@ -1015,7 +1044,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-15T12:00:00",
   source: "https://www.france24.com/en/france/20260515-transport-fuel-protest-marseille",
-  summary: "Transport workers in Marseille staged protests on 15 May 2026 over fuel prices and operating costs. Demonstrators blocked access routes to port and industrial areas, causing disruption to logistics and freight movement. Police were deployed to manage the situation. Given the economic impact and use of blockades, the risk is assessed as high."
+  summary: "Transport workers in Marseille plan protests on 15 May 2026 over fuel prices and operating costs. Demonstrators plan to block access routes to port and industrial areas, causing disruption to logistics and freight movement. Police were deployed to manage the situation. Given the economic impact and use of blockades, the risk is assessed as high."
 },
 {
   title: "Public Sector Workers Demonstration",
@@ -1102,7 +1131,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-15T12:00:00",
   source: "https://www.presstelegram.com/2026/05/15/port-workers-protest-long-beach",
-  summary: "Dockworkers staged protests at the Port of Long Beach on 15 May 2026 over labour disputes and contract negotiations. Demonstrators gathered near port entrances, impacting cargo movement and logistics operations. Given the importance of the port to national supply chains, the protest had immediate economic implications. Risk is assessed as high."
+  summary: "Dockworkers plan protests at the Port of Long Beach on 15 May 2026 over labour disputes and contract negotiations. Demonstrators plan to gather near port entrances, impacting cargo movement and logistics operations. Given the importance of the port to national supply chains, the protest had immediate economic implications. Risk is assessed as high."
 },
 {
   title: "Climate Protest March",
@@ -1146,7 +1175,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-16T12:00:00",
   source: "https://www.newsfirst.lk/2026/04/16/student-protest-colombo",
-  summary: "University students in Colombo organised protests on 16 April 2026 over education reforms and funding issues. Demonstrators gathered on campus and marched through nearby areas. The protest remained peaceful and controlled. Risk is assessed as medium."
+  summary: "University students in Colombo organised protests on 16 April 2026 over education reforms and funding issues. Demonstrators plan to gather on campus and march through nearby areas. The protest remained peaceful and controlled. Risk is assessed as medium."
 },
 
   
@@ -1176,7 +1205,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-12T12:00:00",
   source: "https://citinewsroom.com/2026/04/students-protest-legon-2026",
-  summary: "Students at the University of Ghana organised protests on 12 April 2026 over academic conditions and fees. Demonstrators gathered on campus and held rallies calling for reforms. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the University of Ghana organised protests on 12 April 2026 over academic conditions and fees. Demonstrators plan to gather on campus and hold rallies calling for reforms. The protest remained peaceful and localised. Risk is assessed as medium."
 },
   
 
@@ -1193,7 +1222,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-09T12:00:00",
   source: "https://kathmandupost.com/national/2026/04/09/student-protest-kathmandu",
-  summary: "Student groups in Kathmandu gathered near Ratna Park on 9 April 2026 to protest government policies and economic conditions. Demonstrators organised marches through central areas and called for reforms. The protest remained largely peaceful but caused temporary traffic disruption. Student protests in Nepal are common and can escalate depending on political involvement. Risk is assessed as medium."
+  summary: "Student groups in Kathmandu plan to gather near Ratna Park on 9 April 2026 to protest government policies and economic conditions. Demonstrators organised marches through central areas and called for reforms. The protest remained largely peaceful but caused temporary traffic disruption. Student protests in Nepal are common and can escalate depending on political involvement. Risk is assessed as medium."
 },
 {
   title: "Teachers Protest for Salary Adjustments",
@@ -1238,7 +1267,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-12T12:00:00",
   source: "https://elcomercio.pe/lima/sucesos/protesta-estudiantes-san-marcos-2026",
-  summary: "Students at the National University of San Marcos staged protests on 12 April 2026 over education funding and administrative issues. Demonstrators gathered on campus and organised rallies calling for reforms. The protest remained largely peaceful and contained within university grounds. Risk is assessed as medium."
+  summary: "Students at the National University of San Marcos plan protests on 12 April 2026 over education funding and administrative issues. Demonstrators plan to gather on campus and organised rallies calling for reforms. The protest remained largely peaceful and contained within university grounds. Risk is assessed as medium."
 },
 {
   title: "Transport Workers Protest",
@@ -1252,7 +1281,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-15T12:00:00",
   source: "https://gestion.pe/peru/protesta-transportistas-lima-abril-2026",
-  summary: "Transport workers staged protests across Lima on 15 April 2026, blocking major roads and causing significant traffic disruption. Demonstrators demanded fuel subsidies and regulatory changes. Road blockades affected commuting and logistics across the capital. Transport protests in Peru frequently escalate due to economic pressures. Risk is assessed as high."
+  summary: "Transport workers plan protests across Lima on 15 April 2026, blocking major roads and causing significant traffic disruption. Demonstrators demanded fuel subsidies and regulatory changes. Road blockades affected commuting and logistics across the capital. Transport protests in Peru frequently escalate due to economic pressures. Risk is assessed as high."
 },
 {
   title: "Regional Farmers Protest",
@@ -1266,7 +1295,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-18T12:00:00",
   source: "https://rpp.pe/peru/arequipa/protesta-agricultores-arequipa-2026",
-  summary: "Farmers in Arequipa staged protests on 18 April 2026 outside regional government offices over agricultural pricing and water access issues. Demonstrators blocked roads and gathered in large groups, affecting regional transport routes. Rural protests in Peru often involve blockades and can escalate quickly. Given the disruption and regional tensions, the risk is assessed as high."
+  summary: "Farmers in Arequipa plan protests on 18 April 2026 outside regional government offices over agricultural pricing and water access issues. Demonstrators plan to block roads and gathered in large groups, affecting regional transport routes. Rural protests in Peru often involve blockades and can escalate quickly. Given the disruption and regional tensions, the risk is assessed as high."
 },
 {
   title: "May Day Workers Demonstration",
@@ -1325,7 +1354,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-18T12:00:00",
   source: "https://www.biobiochile.cl/noticias/economia/2026/04/18/protesta-portuarios-valparaiso.shtml",
-  summary: "Port workers in Valparaíso staged protests on 18 April 2026 over labour conditions and contract negotiations. Demonstrators gathered at port facilities, affecting cargo operations and logistics. The protest caused delays and disruptions in shipping activity. Given the economic importance of port operations and potential for escalation, the risk is assessed as high."
+  summary: "Port workers in Valparaíso plan protests on 18 April 2026 over labour conditions and contract negotiations. Demonstrators gathered at port facilities, affecting cargo operations and logistics. The protest caused delays and disruptions in shipping activity. Given the economic importance of port operations and potential for escalation, the risk is assessed as high."
 },
 {
   title: "Healthcare Workers Protest",
@@ -1369,7 +1398,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-08T12:00:00",
   source: "https://www.eluniversal.com.mx/nacion/cnte-protesta-zocalo-abril-2026",
-  summary: "Members of the CNTE teachers’ union staged protests and strike actions in Mexico City on 8 April 2026, gathering in the Zócalo to demand wage increases and oppose education reforms. Demonstrators set up encampments and blocked central streets, causing significant disruption in the historic centre. CNTE protests are known for their scale and persistence, often involving road blockades and prolonged occupation of public spaces. The risk is assessed as high due to the size, location, and disruption."
+  summary: "Members of the CNTE teachers’ union plan protests and strike actions in Mexico City on 8 April 2026, gathering in the Zócalo to demand wage increases and oppose education reforms. Demonstrators set up encampments and blocked central streets, causing significant disruption in the historic centre. CNTE protests are known for their scale and persistence, often involving road blockades and prolonged occupation of public spaces. The risk is assessed as high due to the size, location, and disruption."
 },
 {
   title: "Feminist Protest Against Gender Violence",
@@ -1397,7 +1426,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-15T12:00:00",
   source: "https://www.milenio.com/politica/protesta-transportistas-monterrey-2026",
-  summary: "Transport workers in Monterrey staged protests on 15 April 2026 over fuel prices and operating costs. Demonstrators blocked key roads and gathered near transport hubs, causing significant traffic disruption. The protest affected commuter movement and logistics across the city. Given the use of road blockades and potential for escalation, the risk is assessed as high."
+  summary: "Transport workers in Monterrey plan protests on 15 April 2026 over fuel prices and operating costs. Demonstrators plan to block key roads and gather near transport hubs, causing significant traffic disruption. The protest affected commuter movement and logistics across the city. Given the use of road blockades and potential for escalation, the risk is assessed as high."
 },
 {
   title: "University Student Protest",
@@ -1411,7 +1440,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-12T12:00:00",
   source: "https://www.jornada.com.mx/noticia/2026/04/12/estudiantes-protesta-unam",
-  summary: "Students at UNAM organised protests on 12 April 2026 against education policies and campus conditions. Demonstrators gathered on campus and held marches and assemblies. The protest remained peaceful and contained within university grounds. Student protests in Mexico City are common and typically organised. Risk is assessed as medium."
+  summary: "Students at UNAM organised protests on 12 April 2026 against education policies and campus conditions. Demonstrators plan to gather on campus and hold marches and assemblies. The protest remained peaceful and contained within university grounds. Student protests in Mexico City are common and typically organised. Risk is assessed as medium."
 },
 {
   title: "May Day Workers Demonstration",
@@ -1470,7 +1499,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-10T12:00:00",
   source: "https://www.koreaherald.com/view.php?ud=20260410000123",
-  summary: "University students in Seoul organised protests on 10 April 2026 against government education policies and youth employment concerns. Demonstrators gathered on campus and marched toward central areas. The protest remained largely peaceful but drew attention from authorities. Risk is assessed as medium."
+  summary: "University students in Seoul organised protests on 10 April 2026 against government education policies and youth employment concerns. Demonstrators plan to gather on campus and march toward central areas. The protest remained largely peaceful but drew attention from authorities. Risk is assessed as medium."
 },
 {
   title: "May Day Workers Demonstration",
@@ -1514,7 +1543,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-12T12:00:00",
   source: "https://www.thestar.com/news/gta/2026/04/12/student-protest-toronto-university.html",
-  summary: "Students at the University of Toronto staged protests on 12 April 2026 against tuition increases and education funding concerns. Demonstrators gathered on campus and organised rallies calling for policy changes. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the University of Toronto plan protests on 12 April 2026 against tuition increases and education funding concerns. Demonstrators plan to gather on campus and organised rallies calling for policy changes. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Housing Affordability Protest",
@@ -1600,7 +1629,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-12T12:00:00",
   source: "https://www.lavoz.com.ar/ciudadanos/protesta-estudiantil-cordoba-2026",
-  summary: "Students at the National University of Córdoba organised protests on 12 April 2026 over funding cuts and education policy concerns. Demonstrators gathered on campus and marched through surrounding areas, calling for increased investment in education. The protest remained peaceful and localised. Risk is assessed as medium."
+  summary: "Students at the National University of Córdoba organised protests on 12 April 2026 over funding cuts and education policy concerns. Demonstrators plan to gather on campus and march through surrounding areas, calling for increased investment in education. The protest remained peaceful and localised. Risk is assessed as medium."
 },
 {
   title: "Transport Workers Strike",
@@ -1691,7 +1720,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-12T12:00:00",
   source: "https://www.correiobraziliense.com.br/cidades-df/2026/04/protesto-estudantes-unb.shtml",
-  summary: "Students at the University of Brasília organised protests on 12 April 2026 over education funding and policy concerns. Demonstrators gathered on campus and held rallies calling for increased investment in higher education. The protest remained peaceful and contained within university grounds. Risk is assessed as medium."
+  summary: "Students at the University of Brasília organised protests on 12 April 2026 over education funding and policy concerns. Demonstrators plan to gather on campus and hold rallies calling for increased investment in higher education. The protest remained peaceful and contained within university grounds. Risk is assessed as medium."
 },
   
 {
@@ -1721,7 +1750,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-20T12:00:00",
   source: "https://www.gazetadopovo.com.br/parana/caminhoneiros-protesto-combustivel-2026/",
-  summary: "Truck drivers staged protests near Curitiba on 20 April 2026, blocking sections of the BR-116 highway to protest rising fuel prices and transport costs. Demonstrators used vehicles to obstruct traffic, causing delays in freight movement. Highway blockades by truckers have historically had significant economic impact in Brazil. The disruption to logistics and potential for escalation place the risk at high."
+  summary: "Truck drivers plan protests near Curitiba on 20 April 2026, blocking sections of the BR-116 highway to protest rising fuel prices and transport costs. Demonstrators used vehicles to obstruct traffic, causing delays in freight movement. Highway blockades by truckers have historically had significant economic impact in Brazil. The disruption to logistics and potential for escalation place the risk at high."
 },
   
 
@@ -1737,7 +1766,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-01T12:00:00",
   source: "https://www.sandiegouniontribune.com/news/story/2026-05-01/may-day-protests-san-diego",
-  summary: "Demonstrators gathered in San Diego on 1 May 2026 for May Day protests focusing on immigration reform, workers’ rights, and economic justice. Marches took place between Waterfront Park and the Civic Center, with participation from unions and advocacy groups. Road closures and police presence were reported throughout downtown. Given the scale and recurring nature of May Day protests, the risk is assessed as high."
+  summary: "Demonstrators plan to gather in San Diego on 1 May 2026 for May Day protests focusing on immigration reform, workers’ rights, and economic justice. Marches took place between Waterfront Park and the Civic Center, with participation from unions and advocacy groups. Road closures and police presence were reported throughout downtown. Given the scale and recurring nature of May Day protests, the risk is assessed as high."
 },
 {
   title: "Tenant Rights Protest",
@@ -1779,7 +1808,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-11T12:00:00",
   source: "https://madison.com/news/local/education/university-protest-budget-cuts-2026",
-  summary: "Students and faculty at the University of Wisconsin–Madison organised protests on 11 April 2026 against budget cuts affecting academic programmes. Demonstrators gathered on campus and held rallies calling for increased funding. The protest remained peaceful and contained. Risk is assessed as medium."
+  summary: "Students and faculty at the University of Wisconsin–Madison organised protests on 11 April 2026 against budget cuts affecting academic programmes. Demonstrators plan to gather on campus and hold rallies calling for increased funding. The protest remained peaceful and contained. Risk is assessed as medium."
 },
 {
   title: "Dockworkers Protest Over Labour Conditions",
@@ -1793,7 +1822,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-23T12:00:00",
   source: "https://www.mercurynews.com/2026/04/23/oakland-port-protest-workers",
-  summary: "Dockworkers staged protests at the Port of Oakland on 23 April 2026 over labour conditions and contract disputes. Demonstrators gathered at port entrances, affecting cargo movement and logistics operations. The protest caused delays and drew attention from port authorities. Given the critical infrastructure and potential economic impact, the risk is assessed as high."
+  summary: "Dockworkers plan protests at the Port of Oakland on 23 April 2026 over labour conditions and contract disputes. Demonstrators gathered at port entrances, affecting cargo movement and logistics operations. The protest caused delays and drew attention from port authorities. Given the critical infrastructure and potential economic impact, the risk is assessed as high."
 },
 {
   title: "Climate Protest and March",
@@ -1908,7 +1937,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-22T12:00:00",
   source: "https://www.houstonchronicle.com/business/article/truckers-protest-fuel-costs-2026",
-  summary: "Truck drivers staged protests near the Port of Houston on 22 April 2026 over rising fuel costs and operational pressures. Demonstrators used vehicles to slow traffic and disrupt access routes to port facilities. The protest impacted logistics and supply chain operations in one of the busiest ports in the United States. Given the economic impact and potential for escalation, the risk is assessed as high."
+  summary: "Truck drivers plan protests near the Port of Houston on 22 April 2026 over rising fuel costs and operational pressures. Demonstrators used vehicles to slow traffic and disrupt access routes to port facilities. The protest impacted logistics and supply chain operations in one of the busiest ports in the United States. Given the economic impact and potential for escalation, the risk is assessed as high."
 },
 {
   title: "State Capitol Protest Over Education Policy",
@@ -1980,7 +2009,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-05-01T12:00:00",
   source: "https://www.latimes.com/california/story/2026-05-01/may-day-protests-los-angeles",
-  summary: "Thousands of demonstrators gathered in downtown Los Angeles on 1 May 2026 for May Day protests focusing on immigration reform, workers’ rights, and economic justice. The march included labour unions, immigrant rights groups, and activists. Streets were closed across central areas as participants marched through the city. While the protest remained largely peaceful, the size, political themes, and history of May Day demonstrations in Los Angeles contribute to a high-risk classification."
+  summary: "Thousands of Demonstrators plan to gather in downtown Los Angeles on 1 May 2026 for May Day protests focusing on immigration reform, workers’ rights, and economic justice. The march included labour unions, immigrant rights groups, and activists. Streets were closed across central areas as participants marched through the city. While the protest remained largely peaceful, the size, political themes, and history of May Day demonstrations in Los Angeles contribute to a high-risk classification."
 },
 {
   title: "University Student Protest Over Tuition Costs",
@@ -2022,7 +2051,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-14T12:00:00",
   source: "https://www.sfchronicle.com/climate/article/extinction-rebellion-protest-sf-2026",
-  summary: "Climate activists associated with Extinction Rebellion staged protests in San Francisco on 14 April 2026, including marches and sit-ins along Market Street. Demonstrators called for urgent climate action and policy changes. Some disruptions to traffic were reported, though the protest remained largely peaceful. Risk is assessed as medium due to potential for disruption in central business areas."
+  summary: "Climate activists associated with Extinction Rebellion plan protests in San Francisco on 14 April 2026, including marches and sit-ins along Market Street. Demonstrators called for urgent climate action and policy changes. Some disruptions to traffic were reported, though the protest remained largely peaceful. Risk is assessed as medium due to potential for disruption in central business areas."
 },
 {
   title: "Port Workers Strike and Protest",
@@ -2067,7 +2096,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-10T12:00:00",
   source: "https://www.jn.pt/nacional/protesto-profissionais-saude-porto-2026.html",
-  summary: "Healthcare professionals in Porto staged a protest on 10 April 2026 outside Hospital de São João, calling for improved working conditions and staffing levels. Demonstrators gathered near the hospital entrance, drawing attention to pressures within the national health system. The protest was organised and peaceful, though it highlighted ongoing strain in healthcare services. Risk is assessed as medium due to operational relevance and sector sensitivity."
+  summary: "Healthcare professionals in Porto staged a protest on 10 April 2026 outside Hospital de São João, calling for improved working conditions and staffing levels. Demonstrators plan to gather near the hospital entrance, drawing attention to pressures within the national health system. The protest was organised and peaceful, though it highlighted ongoing strain in healthcare services. Risk is assessed as medium due to operational relevance and sector sensitivity."
 },
 {
   title: "Railway Workers Strike",
@@ -2126,7 +2155,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-07T12:00:00",
   source: "https://www.ekathimerini.com/news/2026/04/07/student-protests-thessaloniki-university-reforms/",
-  summary: "Students at Aristotle University of Thessaloniki staged protests on 7 April 2026 against proposed university reforms and security policies. Demonstrators gathered on campus and marched through surrounding streets, calling for academic freedom and policy changes. The protest remained largely peaceful, though student demonstrations in Thessaloniki have previously escalated into clashes with police. Risk is assessed as medium."
+  summary: "Students at Aristotle University of Thessaloniki plan protests on 7 April 2026 against proposed university reforms and security policies. Demonstrators gathered on campus and marched through surrounding streets, calling for academic freedom and policy changes. The protest remained largely peaceful, though student demonstrations in Thessaloniki have previously escalated into clashes with police. Risk is assessed as medium."
 },
 {
   title: "Transport Workers Strike",
@@ -2199,7 +2228,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-08T12:00:00",
   source: "https://nltimes.nl/2026/04/08/students-protest-housing-crisis-utrecht",
-  summary: "Students in Utrecht staged protests on 8 April 2026 highlighting the ongoing housing crisis affecting university populations. Demonstrators gathered near Utrecht University and marched through the city centre, calling for increased housing availability and government intervention. The protest was organised and peaceful, though it caused temporary disruption to traffic. Risk is assessed as medium."
+  summary: "Students in Utrecht plan protests on 8 April 2026 highlighting the ongoing housing crisis affecting university populations. Demonstrators plan to gather near Utrecht University and march through the city centre, calling for increased housing availability and government intervention. The protest was organised and peaceful, though it caused temporary disruption to traffic. Risk is assessed as medium."
 },
 {
   title: "May Day Demonstration",
@@ -2245,7 +2274,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-06T12:00:00",
   source: "https://www.ansa.it/english/news/2026/04/06/pro-palestine-rally-rome_456def.html",
-  summary: "Demonstrators gathered in Rome’s Piazza Venezia on 6 April 2026 for a pro-Palestine rally, expressing solidarity and calling for political action. The protest included speeches, banners, and coordinated participation from activist groups. Police monitored the demonstration due to its political sensitivity. The event remained largely peaceful, but central location and potential for counter-protests place the risk at medium."
+  summary: "Demonstrators plan to gather in Rome’s Piazza Venezia on 6 April 2026 for a pro-Palestine rally, expressing solidarity and calling for political action. The protest included speeches, banners, and coordinated participation from activist groups. Police monitored the demonstration due to its political sensitivity. The event remained largely peaceful, but central location and potential for counter-protests place the risk at medium."
 },
   
 {
@@ -2260,7 +2289,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-09T12:00:00",
   source: "https://www.bologna.repubblica.it/cronaca/2026/04/09/student-protest-education-bologna.html",
-  summary: "Students at the University of Bologna staged protests on 9 April 2026 against education reforms and funding concerns. Demonstrators gathered within university premises and marched through nearby streets, calling for policy changes and increased support for students. The protest remained peaceful and organised, though student demonstrations in Bologna have historically attracted large participation. Risk is assessed as medium."
+  summary: "Students at the University of Bologna plan protests on 9 April 2026 against education reforms and funding concerns. Demonstrators gathered within university premises and marched through nearby streets, calling for policy changes and increased support for students. The protest remained peaceful and organised, though student demonstrations in Bologna have historically attracted large participation. Risk is assessed as medium."
 },
   
 {
@@ -2385,7 +2414,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-04-04T12:00:00",
   source: "https://www.dw.com/en/germany-public-sector-strike-2026/a-68654321",
-  summary: "Public sector workers staged strike action and demonstrations in Berlin on 4 April 2026 as part of ongoing wage negotiations. Thousands of workers, including administrative staff and municipal employees, gathered near the Brandenburg Gate and government district to demand higher pay and improved conditions. The protest was organised by major trade unions and remained largely peaceful. While disruption to public services was reported, there were no major incidents, resulting in a medium risk classification."
+  summary: "Public sector workers staged strike action and demonstrations in Berlin on 4 April 2026 as part of ongoing wage negotiations. Thousands of workers, including administrative staff and municipal employees, plan to gather near the Brandenburg Gate and government district to demand higher pay and improved conditions. The protest was organised by major trade unions and remained largely peaceful. While disruption to public services was reported, there were no major incidents, resulting in a medium risk classification."
 },
 {
   title: "Climate Protest by Fridays for Future",
@@ -2486,7 +2515,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-04-07T12:00:00",
   source: "https://www.france24.com/en/europe/20260407-farmers-block-roads-france-protests",
-  summary: "Farmers staged protests around Lyon on 7 April 2026, blocking major motorway routes including the A6 and A7 in response to agricultural pricing pressures and regulatory concerns. Demonstrators used tractors and barricades to obstruct traffic, causing major disruption to transport and logistics. Police were deployed to manage the situation and prevent escalation. Road blockades by farmers are a common and impactful form of protest in France, often leading to significant economic disruption. Risk is assessed as high."
+  summary: "Farmers plan protests around Lyon on 7 April 2026, blocking major motorway routes including the A6 and A7 in response to agricultural pricing pressures and regulatory concerns. Demonstrators used tractors and barricades to obstruct traffic, causing major disruption to transport and logistics. Police were deployed to manage the situation and prevent escalation. Road blockades by farmers are a common and impactful form of protest in France, often leading to significant economic disruption. Risk is assessed as high."
 },
 {
   title: "Public Sector Workers Protest",
@@ -2612,7 +2641,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-03-25T12:00:00",
   source: "https://www.basnews.com/en/babat/820345",
-  summary: "Oil sector workers in Basra staged protests on 25 March 2026 outside the Basra Oil Company headquarters, demanding improved employment conditions, contract stability, and wage adjustments. Demonstrators gathered near key energy infrastructure sites, raising concerns over working conditions and job security. Oil sector protests in southern Iraq are highly sensitive due to their potential impact on national revenue and infrastructure. Given the strategic importance of the location and history of unrest in Basra, the risk is assessed as high."
+  summary: "Oil sector workers in Basra plan protests on 25 March 2026 outside the Basra Oil Company headquarters, demanding improved employment conditions, contract stability, and wage adjustments. Demonstrators plan to gather near key energy infrastructure sites, raising concerns over working conditions and job security. Oil sector protests in southern Iraq are highly sensitive due to their potential impact on national revenue and infrastructure. Given the strategic importance of the location and history of unrest in Basra, the risk is assessed as high."
 },
 {
   title: "Teachers Protest Over Contract Terms",
@@ -2659,7 +2688,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-22T12:00:00",
   source: "https://www.khaosodenglish.com/politics/2026/03/22/students-protest-education-reform-chiang-mai/",
-  summary: "Students at Chiang Mai University staged protests on 22 March 2026 opposing proposed education reforms and administrative policies. Demonstrators gathered on campus and organised rallies calling for greater student representation and policy transparency. The protest remained peaceful and confined to university grounds. Student activism in Thailand is historically influential, but this event did not escalate. Risk is assessed as medium."
+  summary: "Students at Chiang Mai University plan protests on 22 March 2026 opposing proposed education reforms and administrative policies. Demonstrators gathered on campus and organised rallies calling for greater student representation and policy transparency. The protest remained peaceful and confined to university grounds. Student activism in Thailand is historically influential, but this event did not escalate. Risk is assessed as medium."
 },
   
 {
@@ -2689,7 +2718,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-25T12:00:00",
   source: "https://www.bangkokpost.com/business/2026/labour-protest-rayong-industrial-estate",
-  summary: "Workers at the Map Ta Phut Industrial Estate in Rayong staged a protest on 25 March 2026 over wages and working conditions. Demonstrators gathered near factory entrances and industrial zones, raising concerns with employers and local authorities. The protest caused limited disruption to operations but highlighted labour tensions in Thailand’s key industrial region. Risk is assessed as medium due to the organised nature and economic significance of the area."
+  summary: "Workers at the Map Ta Phut Industrial Estate in Rayong staged a protest on 25 March 2026 over wages and working conditions. Demonstrators plan to gather near factory entrances and industrial zones, raising concerns with employers and local authorities. The protest caused limited disruption to operations but highlighted labour tensions in Thailand’s key industrial region. Risk is assessed as medium due to the organised nature and economic significance of the area."
 },
 
   
@@ -2706,7 +2735,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-03-23T12:00:00",
   source: "https://www.thedailystar.net/business/economy/news/garment-workers-protest-over-unpaid-wages-2026",
-  summary: "Garment workers staged protests in the Gazipur industrial area near Dhaka on 23 March 2026 over unpaid wages and factory closures. Demonstrators blocked roads and gathered outside factory premises, demanding immediate payment of salaries and improved working conditions. The protest disrupted traffic and industrial operations in one of Bangladesh’s key manufacturing hubs. Garment sector protests in Bangladesh frequently escalate due to large workforce participation and economic pressure, making this a high-risk event."
+  summary: "Garment workers plan protests in the Gazipur industrial area near Dhaka on 23 March 2026 over unpaid wages and factory closures. Demonstrators plan to block roads and gathered outside factory premises, demanding immediate payment of salaries and improved working conditions. The protest disrupted traffic and industrial operations in one of Bangladesh’s key manufacturing hubs. Garment sector protests in Bangladesh frequently escalate due to large workforce participation and economic pressure, making this a high-risk event."
 },
   
 {
@@ -2736,7 +2765,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-22T12:00:00",
   source: "https://www.thedailystar.net/news/bangladesh/education/news/students-protest-campus-issues-2026",
-  summary: "Students at the University of Chittagong staged protests on 22 March 2026 over campus facilities, accommodation shortages, and administrative issues. Demonstrators organised marches within the university grounds and called for reforms. The protest remained largely peaceful but highlighted ongoing tensions between students and administration. Student protests in Bangladesh can escalate depending on political affiliations and security response. The risk is assessed as medium."
+  summary: "Students at the University of Chittagong plan protests on 22 March 2026 over campus facilities, accommodation shortages, and administrative issues. Demonstrators organised marches within the university grounds and called for reforms. The protest remained largely peaceful but highlighted ongoing tensions between students and administration. Student protests in Bangladesh can escalate depending on political affiliations and security response. The risk is assessed as medium."
 },
   
 {
@@ -2751,7 +2780,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-03-24T12:00:00",
   source: "https://www.newagebd.net/article/transport-workers-protest-fuel-prices-2026",
-  summary: "Transport workers staged protests at Sayedabad Bus Terminal in Dhaka on 24 March 2026 over rising fuel prices and operational costs. Drivers and union members gathered in large numbers, causing disruption to bus services and commuter movement. The protest led to partial shutdowns of transport routes. Given the impact on urban mobility and the potential for escalation during transport-related unrest, the risk is assessed as high."
+  summary: "Transport workers plan protests at Sayedabad Bus Terminal in Dhaka on 24 March 2026 over rising fuel prices and operational costs. Drivers and union members gathered in large numbers, causing disruption to bus services and commuter movement. The protest led to partial shutdowns of transport routes. Given the impact on urban mobility and the potential for escalation during transport-related unrest, the risk is assessed as high."
 },
 
   
@@ -2768,7 +2797,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-03-24T12:00:00",
   source: "https://www.rappler.com/business/transport-groups-strike-jeepney-phaseout-march-2026/",
-  summary: "Transport groups in the Philippines staged a nationwide strike on 24 March 2026, with major protest activity centred in Manila near Mendiola Street. The protest opposed the government’s jeepney modernisation and phaseout programme, which drivers argue threatens their livelihoods. Demonstrators blocked roads, held rallies, and drew large participation from transport unions. The action caused significant disruption to commuting and traffic in Metro Manila. Given the scale, economic impact, and history of confrontations during transport strikes, the risk is assessed as high."
+  summary: "Transport groups in the Philippines staged a nationwide strike on 24 March 2026, with major protest activity centred in Manila near Mendiola Street. The protest opposed the government’s jeepney modernisation and phaseout programme, which drivers argue threatens their livelihoods. Demonstrators plan to block roads, held rallies, and drew large participation from transport unions. The action caused significant disruption to commuting and traffic in Metro Manila. Given the scale, economic impact, and history of confrontations during transport strikes, the risk is assessed as high."
 },
 {
   title: "Labour Day Protest Mobilisation (Pre-Event Rallies)",
@@ -2843,7 +2872,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-25T12:00:00",
   source: "https://www.antaranews.com/en/news/2026/labour-protest-surabaya-wages",
-  summary: "Labour unions in Surabaya staged protests on 25 March 2026 outside the East Java Governor’s Office, demanding revisions to wage regulations and improved labour protections. Workers gathered in coordinated groups, chanting slogans and presenting demands to local authorities. The demonstration caused minor disruption in the surrounding administrative area. Labour protests in Indonesia are typically organised and monitored, with occasional escalation if negotiations stall. The risk is assessed as medium."
+  summary: "Labour unions in Surabaya plan protests on 25 March 2026 outside the East Java Governor’s Office, demanding revisions to wage regulations and improved labour protections. Workers gathered in coordinated groups, chanting slogans and presenting demands to local authorities. The demonstration caused minor disruption in the surrounding administrative area. Labour protests in Indonesia are typically organised and monitored, with occasional escalation if negotiations stall. The risk is assessed as medium."
 },
   
 {
@@ -2858,7 +2887,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-22T12:00:00",
   source: "https://www.antaranews.com/en/news/2026/fishermen-protest-fuel-prices-makassar",
-  summary: "Fishermen in Makassar staged protests on 22 March 2026 over rising fuel prices impacting their livelihoods. Demonstrators gathered at port areas and blocked access routes to highlight economic pressures. The protest drew attention from local authorities and maritime officials. While largely peaceful, disruption to port operations and economic activity increases the operational significance of the event. Risk is assessed as medium."
+  summary: "Fishermen in Makassar plan protests on 22 March 2026 over rising fuel prices impacting their livelihoods. Demonstrators gathered at port areas and blocked access routes to highlight economic pressures. The protest drew attention from local authorities and maritime officials. While largely peaceful, disruption to port operations and economic activity increases the operational significance of the event. Risk is assessed as medium."
 },
   
 {
@@ -2920,7 +2949,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-22T12:00:00",
   source: "https://www.geo.tv/latest/karachi-students-protest-campus-safety",
-  summary: "Students at the University of Karachi staged protests on 22 March 2026 following concerns over campus safety and security incidents. Demonstrators gathered within university grounds and organised marches calling for increased protection measures. The protest remained largely contained but drew attention from university administration and local authorities. Student protests in Karachi can escalate depending on political affiliations and police response. The risk is assessed as medium due to the contained environment."
+  summary: "Students at the University of Karachi plan protests on 22 March 2026 following concerns over campus safety and security incidents. Demonstrators gathered within university grounds and organised marches calling for increased protection measures. The protest remained largely contained but drew attention from university administration and local authorities. Student protests in Karachi can escalate depending on political affiliations and police response. The risk is assessed as medium due to the contained environment."
 },
   
 {
@@ -2983,7 +3012,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-24T12:00:00",
   source: "https://www.thehindu.com/news/national/tamil-nadu/auto-workers-protest-chennai-2026/",
-  summary: "Automobile sector workers in the Sriperumbudur industrial belt near Chennai organised protests on 24 March 2026 over wages, contract employment conditions, and job security. Workers gathered near factory entrances and industrial zones, disrupting operations and drawing attention from labour authorities. Industrial protests in this region are typically organised but can escalate if negotiations fail. The risk is assessed as medium due to potential disruption to production and supply chains."
+  summary: "Automobile sector workers in the Sriperumbudur industrial belt near Chennai organised protests on 24 March 2026 over wages, contract employment conditions, and job security. Workers plan to gather near factory entrances and industrial zones, disrupting operations and drawing attention from labour authorities. Industrial protests in this region are typically organised but can escalate if negotiations fail. The risk is assessed as medium due to potential disruption to production and supply chains."
 },
 
   
@@ -3015,7 +3044,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-21T12:00:00",
   source: "https://www.assamtribune.com/contract-workers-protest-numaligarh-refinery-2026",
-  summary: "Contract workers at the Numaligarh Refinery near Guwahati staged protests on 21 March 2026 demanding better wages and job security. Demonstrators gathered near refinery gates, temporarily affecting operations. Industrial protests in energy infrastructure zones are closely monitored due to their economic significance. While the protest remained controlled, the location and sector importance place it at medium risk."
+  summary: "Contract workers at the Numaligarh Refinery near Guwahati plan protests on 21 March 2026 demanding better wages and job security. Demonstrators plan to gather near refinery gates, temporarily affecting operations. Industrial protests in energy infrastructure zones are closely monitored due to their economic significance. While the protest remained controlled, the location and sector importance place it at medium risk."
 },
 
   
@@ -3047,7 +3076,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-22T12:00:00",
   source: "https://www.thehindu.com/news/national/kerala/fishermen-protest-coastal-regulations-2026/",
-  summary: "Fishermen in Kochi staged protests on 22 March 2026 against new coastal regulations affecting their livelihoods. Demonstrators gathered at harbour areas and blocked access routes to highlight their concerns. The protest drew attention from local authorities and maritime officials. While largely peaceful, the disruption to port access and economic activity places the event at medium risk."
+  summary: "Fishermen in Kochi plan protests on 22 March 2026 against new coastal regulations affecting their livelihoods. Demonstrators gathered at harbour areas and blocked access routes to highlight their concerns. The protest drew attention from local authorities and maritime officials. While largely peaceful, the disruption to port access and economic activity places the event at medium risk."
 },
 
   
@@ -3096,7 +3125,7 @@ window.alertsData =[
   risk: "Medium",
   time: "2026-03-21T12:00:00",
   source: "https://www.hindustantimes.com/cities/mumbai-news/students-protest-fee-hike-university-mumbai-2026-03-21",
-  summary: "Students at the University of Mumbai staged protests on 21 March 2026 against recent tuition fee increases and administrative policies. Demonstrators gathered at the Kalina campus, organising marches and sit-ins while calling for policy reversal and greater transparency. The protest remained largely peaceful and confined to university grounds. Student protests in India can escalate depending on police response or political involvement, but this event is assessed as medium risk due to its contained nature."
+  summary: "Students at the University of Mumbai plan protests on 21 March 2026 against recent tuition fee increases and administrative policies. Demonstrators gathered at the Kalina campus, organising marches and sit-ins while calling for policy reversal and greater transparency. The protest remained largely peaceful and confined to university grounds. Student protests in India can escalate depending on police response or political involvement, but this event is assessed as medium risk due to its contained nature."
 },
 
   
@@ -3192,7 +3221,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-03-24T12:00:00",
   source: "https://www.iol.co.za/news/south-africa/kwazulu-natal/residents-protest-over-service-delivery-in-durban-2026-03-24/",
-  summary: "Residents in Durban staged a service delivery protest on 24 March 2026 outside eThekwini Municipality offices, demanding improved access to electricity, water, and sanitation services. Demonstrators blocked roads and gathered in significant numbers, drawing a response from local law enforcement. Service delivery protests in South Africa frequently escalate due to frustration over long-standing infrastructure issues, and road blockades are common. Given the potential for confrontation with authorities and disruption to transport networks, the risk is assessed as high."
+  summary: "Residents in Durban staged a service delivery protest on 24 March 2026 outside eThekwini Municipality offices, demanding improved access to electricity, water, and sanitation services. Demonstrators plan to block roads and gathered in significant numbers, drawing a response from local law enforcement. Service delivery protests in South Africa frequently escalate due to frustration over long-standing infrastructure issues, and road blockades are common. Given the potential for confrontation with authorities and disruption to transport networks, the risk is assessed as high."
 },
 
   
@@ -3288,7 +3317,7 @@ window.alertsData =[
   risk: "High",
   time: "2026-03-26T12:00:00",
   source: "https://www.vanguardngr.com/2026/03/transport-workers-protest-fuel-price-hike/",
-  summary: "Transport workers in Lagos staged protests on 26 March 2026 over rising fuel prices and the cost of vehicle operations. Demonstrations were concentrated around major transport hubs including Ojota Motor Park, with drivers and union members blocking sections of key roads. The protest caused traffic disruption and drew attention from law enforcement. Given Lagos’ density and history of transport-related unrest, such actions can escalate quickly, particularly if road blockades expand or confrontations occur. The disruption to mobility and economic activity elevates this to a high-risk event."
+  summary: "Transport workers in Lagos plan protests on 26 March 2026 over rising fuel prices and the cost of vehicle operations. Demonstrations were concentrated around major transport hubs including Ojota Motor Park, with drivers and union members blocking sections of key roads. The protest caused traffic disruption and drew attention from law enforcement. Given Lagos’ density and history of transport-related unrest, such actions can escalate quickly, particularly if road blockades expand or confrontations occur. The disruption to mobility and economic activity elevates this to a high-risk event."
 },
 
 
@@ -11932,7 +11961,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
     risk:"medium",
     time:"2025-10-31T10:30:00",
     source:"https://www.reuters.com/world/americas/peru-mining-protests-cusco-2025-10-31/",
-    summary:"Local communities in Cusco protested pollution from a nearby copper mine. Further detail: demonstrators blocked a key highway leading to the southern mining corridor. Medium risk: police used tear gas; disruption to freight transport."
+    summary:"Local communities in Cusco protested pollution from a nearby copper mine. Further detail: Demonstrators plan to block a key highway leading to the southern mining corridor. Medium risk: police used tear gas; disruption to freight transport."
   },
 
   {
