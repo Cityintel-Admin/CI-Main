@@ -23,6 +23,110 @@ window.alertsData =[
 
 
 
+{
+  title: "Economic Conditions Protest",
+  city: "Cairo",
+  lat: 30.0444,
+  lng: 31.2357,
+  address: "Tahrir Square (Vicinity)",
+  postcode: "11511",
+  country: "Egypt",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-04-18T12:00:00",
+  source: "https://www.reuters.com/world/africa/",
+  summary: "Small-scale demonstrations were reported in central Cairo regarding economic conditions and rising living costs. Protests in Egypt are tightly controlled and often dispersed quickly by authorities. Given the political sensitivity and potential for rapid escalation, the risk is assessed as high."
+},
+  
+{
+  title: "Service Delivery Protest",
+  city: "Johannesburg",
+  lat: -26.2041,
+  lng: 28.0473,
+  address: "Soweto / Municipal Offices",
+  postcode: "1804",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-04-12T12:00:00",
+  source: "https://www.news24.com",
+  summary: "Residents in Soweto staged protests over service delivery issues, including electricity and water access. Demonstrators blocked roads and gathered near municipal offices. Service delivery protests in South Africa frequently escalate and involve infrastructure disruption. Risk is assessed as high."
+},
+{
+  title: "Transport Workers Protest",
+  city: "Cape Town",
+  lat: -33.9249,
+  lng: 18.4241,
+  address: "Cape Town Station / CBD",
+  postcode: "8000",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-05-14T12:00:00",
+  source: "https://www.iol.co.za",
+  summary: "Transport workers gathered in Cape Town’s central business district to protest wages and working conditions. Demonstrations affected commuter services and caused delays in central areas. Transport protests in South Africa often have significant operational impact. Risk is assessed as high."
+},
+  
+
+{
+  title: "Anti-Government Protest",
+  city: "Nairobi",
+  lat: -1.2921,
+  lng: 36.8219,
+  address: "CBD / Parliament Area",
+  postcode: "00100",
+  country: "Kenya",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-04-15T12:00:00",
+  source: "https://www.nation.africa",
+  summary: "Demonstrators gathered in Nairobi’s central business district near Parliament to protest government policies and economic conditions. Police presence was significant and some confrontations were reported. Political protests in Kenya often involve large crowds and can escalate quickly. Risk is assessed as high."
+},
+{
+  title: "University Student Protest",
+  city: "Nairobi",
+  lat: -1.2800,
+  lng: 36.8200,
+  address: "University of Nairobi",
+  postcode: "00100",
+  country: "Kenya",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-05-08T12:00:00",
+  source: "https://www.standardmedia.co.ke",
+  summary: "Students at the University of Nairobi organised protests over tuition fees and academic conditions. Demonstrators gathered on campus and marched into surrounding streets. The protest remained largely peaceful but caused temporary disruption. Risk is assessed as medium."
+},
+  
+
+
+{
+  title: "Labour Union Protest Over Cost of Living",
+  city: "Abuja",
+  lat: 9.0765,
+  lng: 7.3986,
+  address: "National Assembly Complex",
+  postcode: "900103",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-04-10T12:00:00",
+  source: "https://www.premiumtimesng.com/news/headlines",
+  summary: "Labour unions and civil society groups gathered near the National Assembly in Abuja to protest rising living costs and economic conditions. Demonstrators called for wage adjustments and policy reforms. Protests linked to economic hardship in Nigeria have previously drawn large crowds and occasionally escalated. Given the political location and economic sensitivity, the risk is assessed as high."
+},
+{
+  title: "Fuel Price Protest",
+  city: "Lagos",
+  lat: 6.5244,
+  lng: 3.3792,
+  address: "Ojota / Lagos Mainland",
+  postcode: "100242",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-05-05T12:00:00",
+  source: "https://www.punchng.com",
+  summary: "Protesters gathered in Lagos to oppose rising fuel prices, blocking key roads and organising rallies in Ojota and surrounding areas. Demonstrations caused traffic disruption and drew attention from security forces. Fuel-related protests in Lagos have historically escalated due to widespread public participation. Risk is assessed as high."
+},
   
 
 {
