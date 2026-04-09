@@ -21,9 +21,186 @@ window.alertsData =[
 },
 
 
+
+ {
+  title: "Student Protest on Education Funding",
+  city: "Brisbane",
+  lat: -27.4698,
+  lng: 153.0251,
+  address: "University of Queensland / CBD",
+  postcode: "4072",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-07-08T12:00:00",
+  source: "https://www.greenleft.org.au/events",
+  summary: "Student groups are expected to organise protests in Brisbane focusing on education funding and university policies. Demonstrators are expected to gather on campus and potentially move into surrounding areas. The protest is expected to remain peaceful with limited disruption. Risk is assessed as medium."
+}, 
+
+{
+  title: "Stop War Coalition Rally",
+  city: "Auckland",
+  lat: -36.8518,
+  lng: 174.7637,
+  address: "Aotea Square",
+  postcode: "1010",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "High",
+  time: "2026-06-14T14:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Organisers are expected to hold a Stop War Coalition rally and march in central Auckland at Aotea Square. The event is part of ongoing anti-war mobilisation and is expected to include a march through the central business district. Given the combination of a rally and march in a central urban area, disruption potential is elevated. Risk is assessed as high."
+},
+{
+  title: "Silent Vigil for Palestine (Recurring)",
+  city: "Wellington",
+  lat: -41.2795,
+  lng: 174.7772,
+  address: "Parliament Grounds",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-06-16T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "A recurring silent vigil for Palestine is scheduled to continue outside Parliament in Wellington. Participants are expected to gather during the late morning period as part of an ongoing series of demonstrations. While politically visible, the event format is typically static and controlled. Risk is assessed as medium."
+},
+
+{
+  title: "National Day of Climate Action",
+  city: "Sydney",
+  lat: -33.8688,
+  lng: 151.2093,
+  address: "Sydney Town Hall",
+  postcode: "2000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-06-12T12:00:00",
+  source: "https://www.greenleft.org.au/events",
+  summary: "Climate action groups are expected to organise a national day of protest in Sydney, gathering at Town Hall before planned marches through the central business district. Organisers have called for stronger climate policies and environmental protections. As a coordinated national mobilisation in a major city centre, moderate disruption is expected. Risk is assessed as medium."
+},
+{
+  title: "Workers Rights Protest",
+  city: "Melbourne",
+  lat: -37.8136,
+  lng: 144.9631,
+  address: "State Library Victoria / CBD",
+  postcode: "3000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-06-18T12:00:00",
+  source: "https://www.greenleft.org.au/events",
+  summary: "Workers and union-affiliated groups are expected to gather in central Melbourne to protest wages and employment conditions. Demonstrators are expected to assemble near State Library Victoria and may march through the CBD. The protest is expected to be organised and peaceful, with potential for minor disruption. Risk is assessed as medium."
+},
   
 
+{
+  title: "Labour Demonstration",
+  city: "Rabat",
+  lat: 34.0209,
+  lng: -6.8416,
+  address: "Parliament Area",
+  postcode: "10000",
+  country: "Morocco",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-06-22T12:00:00",
+  source: "https://www.moroccoworldnews.com/",
+  summary: "Labour groups are expected to organise demonstrations near the Parliament area in Rabat over wages and employment conditions. Demonstrators are expected to gather in central locations and hold rallies. The protest is expected to remain peaceful. Risk is assessed as medium."
+},
 
+{
+  title: "Economic Conditions Protest",
+  city: "Accra",
+  lat: 5.6037,
+  lng: -0.1870,
+  address: "Independence Square",
+  postcode: "GA184",
+  country: "Ghana",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-06-20T12:00:00",
+  source: "https://www.graphic.com.gh/",
+  summary: "Demonstrators are expected to gather at Independence Square in Accra to protest economic conditions and cost-of-living pressures. Protest organisers have called for government action on inflation and wages. The demonstration is expected to remain peaceful but may draw moderate turnout. Risk is assessed as medium."
+},
+
+
+{
+  title: "Service Delivery Protest",
+  city: "Durban",
+  lat: -29.8587,
+  lng: 31.0218,
+  address: "Municipal Offices / City Centre",
+  postcode: "4001",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-06-12T12:00:00",
+  source: "https://www.news24.com/",
+  summary: "Residents in Durban are expected to organise protests over service delivery issues, including electricity and water access. Demonstrators are expected to gather near municipal offices and may block surrounding roads. Service delivery protests in South Africa frequently escalate and can involve significant disruption. Risk is assessed as high."
+},
+{
+  title: "Public Sector Workers Protest",
+  city: "Pretoria",
+  lat: -25.7479,
+  lng: 28.2293,
+  address: "Union Buildings",
+  postcode: "0002",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-07-02T12:00:00",
+  source: "https://www.iol.co.za/",
+  summary: "Public sector workers are expected to gather at the Union Buildings in Pretoria to protest wages and working conditions. Organisers have indicated continued mobilisation in the public sector. The protest is expected to be organised and largely peaceful. Risk is assessed as medium."
+},
+  
+
+{
+  title: "Opposition Protest",
+  city: "Nairobi",
+  lat: -1.2921,
+  lng: 36.8219,
+  address: "CBD / Parliament Area",
+  postcode: "00100",
+  country: "Kenya",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-06-15T12:00:00",
+  source: "https://www.nation.africa/",
+  summary: "Opposition groups are expected to organise demonstrations in Nairobi’s central business district near Parliament. Protesters are expected to gather to express dissatisfaction with government policies and economic conditions. Political protests in Nairobi frequently draw large crowds and may involve police intervention. Risk is assessed as high."
+},
+  
+
+{
+  title: "Labour Union Protest Over Economic Conditions",
+  city: "Abuja",
+  lat: 9.0765,
+  lng: 7.3986,
+  address: "National Assembly Complex",
+  postcode: "900103",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-06-10T12:00:00",
+  source: "https://www.premiumtimesng.com/",
+  summary: "Labour unions and civil society groups are expected to organise demonstrations near the National Assembly in Abuja over rising living costs and economic conditions. Protest organisers have indicated continued mobilisation following earlier actions in the year. Given the political location and history of escalation during economic protests, the risk is assessed as high."
+},
+{
+  title: "Fuel Price Protest",
+  city: "Lagos",
+  lat: 6.5244,
+  lng: 3.3792,
+  address: "Ojota / Lagos Mainland",
+  postcode: "100242",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-06-18T12:00:00",
+  source: "https://www.punchng.com/",
+  summary: "Protest activity is expected in Lagos around Ojota and surrounding areas over fuel prices and cost-of-living pressures. Previous protests in this area have involved road blockades and large public turnout. Demonstrators are expected to gather at key junctions, potentially affecting traffic flow. Risk is assessed as high."
+},
 
 {
   title: "Peaceful Rally: Fund Yerrabi Yurwang Health",
