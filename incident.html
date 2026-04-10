@@ -681,7 +681,7 @@
     </div>
 
     <div class="location-note" id="incidentLocationNote">
-      Live map plotting is not enabled on this version, so this card focuses on practical operational context instead.
+      The map stays focused on the incident area; nearest office details are still shown below even when the office marker is outside the local view.
     </div>
   </div>
 </section>
@@ -1561,46 +1561,53 @@ function renderIncidentMap(inc){
   const radiusCircle = L.circle(center, { radius: radiusKm * 1000, color:'#ff5a5f', weight:1.5, dashArray:'6,6', fillColor:'#ff5a5f', fillOpacity:0.08 }).addTo(__incidentMapLayer);
 
   const offices = getOffices();
-  let bounds = L.latLngBounds([center]);
+  const localBounds = L.latLngBounds(radiusCircle.getBounds());
   let best = null;
+
   (Array.isArray(offices) ? offices : []).forEach(office => {
     if (!Number.isFinite(office?.lat) || !Number.isFinite(office?.lon)) return;
     const km = computeDistanceKm(coords.lat, coords.lon, office.lat, office.lon);
     if (!best || km < best.km) best = { office, km };
-    const m = L.circleMarker([office.lat, office.lon], { radius: 6, color:'#93c5fd', weight:2, fillColor:'#1d4ed8', fillOpacity:0.95 }).addTo(__incidentMapLayer);
-    m.bindTooltip(office.name || office.city || 'Office', { direction:'top' });
-    bounds.extend([office.lat, office.lon]);
   });
+
+  // Keep the map focused on the incident area.
+  // Only plot the nearest office when it is regionally close enough to be useful on a local incident map.
+  const SHOW_OFFICE_WITHIN_KM = 350;
+  if (best?.office?.lat && best?.office?.lon && best.km <= SHOW_OFFICE_WITHIN_KM) {
+    const m = L.circleMarker([best.office.lat, best.office.lon], {
+      radius: 6, color:'#93c5fd', weight:2, fillColor:'#1d4ed8', fillOpacity:0.95
+    }).addTo(__incidentMapLayer);
+    m.bindTooltip(best.office.name || best.office.city || 'Office', { direction:'top' });
+    localBounds.extend([best.office.lat, best.office.lon]);
+  }
 
   (exposure.assets || []).forEach(asset => {
     const c = parseExposureCoords(asset);
     if (!c) return;
-    const m = L.circleMarker([c.lat, c.lon], { radius: 5, color:'#60a5fa', weight:2, fillColor:'#2563eb', fillOpacity:0.95 }).addTo(__incidentMapLayer);
+    const m = L.circleMarker([c.lat, c.lon], {
+      radius: 5, color:'#60a5fa', weight:2, fillColor:'#2563eb', fillOpacity:0.95
+    }).addTo(__incidentMapLayer);
     m.bindTooltip(formatNearbyPrimary(asset, 'Asset'), { direction:'top' });
-    bounds.extend([c.lat, c.lon]);
+    localBounds.extend([c.lat, c.lon]);
   });
+
   (exposure.travellers || []).forEach(traveller => {
     const c = parseExposureCoords(traveller);
     if (!c) return;
-    const m = L.circleMarker([c.lat, c.lon], { radius: 5, color:'#34d399', weight:2, fillColor:'#059669', fillOpacity:0.95 }).addTo(__incidentMapLayer);
+    const m = L.circleMarker([c.lat, c.lon], {
+      radius: 5, color:'#34d399', weight:2, fillColor:'#059669', fillOpacity:0.95
+    }).addTo(__incidentMapLayer);
     m.bindTooltip(formatNearbyPrimary(traveller, 'Traveller'), { direction:'top' });
-    bounds.extend([c.lat, c.lon]);
+    localBounds.extend([c.lat, c.lon]);
   });
 
   try{
-    __incidentMap.setView(center, coords.precise ? 11 : 9, { animate:false });
-    const hasExposure = (exposure.assets || []).length || (exposure.travellers || []).length;
-    const officeOnlyBounds = L.latLngBounds([center]);
-    if (best?.office?.lat && best?.office?.lon) officeOnlyBounds.extend([best.office.lat, best.office.lon]);
-
-    if (hasExposure || best) {
-      bounds.extend(radiusCircle.getBounds());
-      __incidentMap.fitBounds(bounds.pad(0.22), { animate:true, duration:0.35, maxZoom: 11 });
-    } else if (officeOnlyBounds.isValid() && !officeOnlyBounds.getNorthEast().equals(officeOnlyBounds.getSouthWest())) {
-      __incidentMap.fitBounds(officeOnlyBounds.pad(0.45), { animate:true, duration:0.35, maxZoom: coords.precise ? 10 : 8 });
-    } else {
-      __incidentMap.fitBounds(radiusCircle.getBounds().pad(0.35), { animate:true, duration:0.35, maxZoom: coords.precise ? 11 : 9 });
-    }
+    __incidentMap.setView(center, coords.precise ? 11 : 10, { animate:false });
+    __incidentMap.fitBounds(localBounds.pad(0.28), {
+      animate:true,
+      duration:0.35,
+      maxZoom: coords.precise ? 12 : 10
+    });
     requestAnimationFrame(() => { try { __incidentMap.invalidateSize(true); } catch(e){} });
     setTimeout(() => { try { __incidentMap.invalidateSize(true); } catch(e){} }, 200);
   }catch(e){}
