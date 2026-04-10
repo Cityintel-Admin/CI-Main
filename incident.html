@@ -797,8 +797,8 @@
   if (window.CIAuth && CIAuth.isLoggedIn()) {
     const u = CIAuth.who(); // {name,email,role,subscribed?...}
     const initials = initialsOf(u.name || u.email);
-    const role = u.role || 'Member';
-    const isAdmin = String(role).toLowerCase() === 'admin';
+    const role = u.roleLabel || u.role || 'Member';
+    const isMaster = CIAuth.isMasterAdmin();
 
     host.innerHTML = `
       <div class="user" id="userChip" style="cursor:pointer">
@@ -806,7 +806,7 @@
         ${role}
       </div>
       <div class="dropdown" id="userMenu">
-        ${isAdmin ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
+        ${isMaster ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
         <a href="settings.html">Manage Billing</a>
         <a href="#" id="logoutLink">Log out</a>
       </div>
@@ -975,7 +975,13 @@ const CITY_COORDS = {
   'São Paulo': { lat: -23.5505, lon: -46.6333 },
   'Sao Paulo': { lat: -23.5505, lon: -46.6333 },
   Seoul: { lat: 37.5665, lon: 126.9780 },
-  'Seoul Special City': { lat: 37.5665, lon: 126.9780 }
+  'Seoul Special City': { lat: 37.5665, lon: 126.9780 },
+  Nairobi: { lat: -1.2864, lon: 36.8172 },
+  Tunis: { lat: 36.8065, lon: 10.1815 },
+  Abuja: { lat: 9.0765, lon: 7.3986 },
+  Rome: { lat: 41.9028, lon: 12.4964 },
+  Lima: { lat: -12.0464, lon: -77.0428 },
+  Auckland: { lat: -36.8509, lon: 174.7645 }
 };
 
 const CITY_COORDS_NORMALIZED = Object.fromEntries(
@@ -1647,9 +1653,14 @@ function buildIncidentInsight(inc) {
 /* ---------- incident loader: supports Live Feed (id=) AND Brief (search=) ---------- */
 (function loadIncident(){
   const params    = new URLSearchParams(location.search);
-  const incId     = params.get('id');
-  const searchQ   = (params.get('search') || '').trim().toLowerCase();
-  const fromBrief = params.get('from') === 'brief';
+  const incId       = params.get('id');
+  const searchQ     = (params.get('search') || '').trim().toLowerCase();
+  const cityQ       = (params.get('city') || '').trim().toLowerCase();
+  const countryQ    = (params.get('country') || '').trim().toLowerCase();
+  const timeQ       = (params.get('time') || '').trim();
+  const riskQ       = (params.get('risk') || '').trim().toLowerCase();
+  const fromBrief   = params.get('from') === 'brief';
+  const fromAlerts  = params.get('from') === 'alerts';
 
   const titleEl   = document.getElementById('incidentTitle');
   const metaEl    = document.getElementById('incidentMeta');
@@ -1689,19 +1700,21 @@ function buildIncidentInsight(inc) {
     const title = (inc && inc.title) ? inc.title : 'Selected incident';
     contextBanner.style.display = 'block';
 
-    if (fromBrief) {
-      if (contextKicker) contextKicker.textContent = 'Opened from Intelligence Brief';
+    if (fromBrief || fromAlerts) {
+      if (contextKicker) contextKicker.textContent = fromAlerts ? 'Opened from High Risk Events' : 'Opened from Intelligence Brief';
       if (contextTitle) contextTitle.textContent = title;
-      if (contextNote) contextNote.textContent = 'You opened this incident from the Brief workflow. Return to Brief or review matching alerts from here.';
+      if (contextNote) contextNote.textContent = fromAlerts
+        ? 'You opened this incident from High Risk Events. Return to alerts or review the briefing view from here.'
+        : 'You opened this incident from the Brief workflow. Return to Brief or review matching alerts from here.';
       if (contextBackPrimary) {
         contextBackPrimary.style.display = 'inline-flex';
-        contextBackPrimary.href = 'brief.html';
-        contextBackPrimary.textContent = '← Back to Brief';
+        contextBackPrimary.href = fromAlerts ? 'alerts.html' : 'brief.html';
+        contextBackPrimary.textContent = fromAlerts ? '← Back to Alerts' : '← Back to Brief';
       }
       if (contextBackSecondary) {
         contextBackSecondary.style.display = 'inline-flex';
-        contextBackSecondary.href = `alerts.html?search=${encodeURIComponent(inc.title || '')}&window=7d&from=brief`;
-        contextBackSecondary.textContent = 'View matching alerts';
+        contextBackSecondary.href = fromAlerts ? 'brief.html' : `alerts.html?search=${encodeURIComponent(inc.title || '')}&window=7d&from=brief`;
+        contextBackSecondary.textContent = fromAlerts ? 'Open Intelligence Brief' : 'View matching alerts';
       }
     } else if (incId) {
       if (contextKicker) contextKicker.textContent = 'Opened from Live Feed';
@@ -1738,7 +1751,7 @@ function buildIncidentInsight(inc) {
       return;
     }
 
-  } else if (fromBrief && searchQ) {
+  } else if ((fromBrief || fromAlerts) && searchQ) {
     // ---- PATH B: from Intelligence Brief (new) ----
     const data = Array.isArray(window.alertsData) ? window.alertsData : [];
     if (!data.length) {
@@ -1746,17 +1759,53 @@ function buildIncidentInsight(inc) {
       return;
     }
 
-    // Find the alert whose title best matches ?search=
+    // Find the alert using title plus any extra context passed from Alerts
+    const normalizeRiskMatch = (r) => {
+      const s = String(r || '').toLowerCase();
+      if (s.startsWith('hi')) return 'high';
+      if (s.startsWith('me')) return 'med';
+      if (s.startsWith('lo')) return 'low';
+      return '';
+    };
+    const requestedTimeMs = timeQ ? new Date(timeQ).getTime() : NaN;
+
     let best = null;
+    let bestScore = -1;
+
     data.forEach(a => {
-      const t = (a.title || '').toLowerCase();
-      if (!t) return;
-      if (t === searchQ && !best) {
-        best = a;
-        return;
+      const title = String(a.title || '').trim().toLowerCase();
+      const city = String(a.city || '').trim().toLowerCase();
+      const country = String(a.country || a.Country || '').trim().toLowerCase();
+      const risk = normalizeRiskMatch(a.risk);
+      const timeMs = new Date(a.time || a.datetime || a.date || a.when || '').getTime();
+
+      if (!title) return;
+
+      let score = 0;
+      if (title === searchQ) score += 100;
+      else if (title.includes(searchQ)) score += 70;
+      else if (searchQ.includes(title)) score += 45;
+      else return;
+
+      if (cityQ) {
+        if (city === cityQ) score += 50;
+        else if (city && (city.includes(cityQ) || cityQ.includes(city))) score += 20;
       }
-      if (!best && t.includes(searchQ)) {
+      if (countryQ) {
+        if (country === countryQ) score += 20;
+        else if (country && (country.includes(countryQ) || countryQ.includes(country))) score += 8;
+      }
+      if (riskQ && risk === riskQ) score += 10;
+      if (Number.isFinite(requestedTimeMs) && Number.isFinite(timeMs)) {
+        const diff = Math.abs(timeMs - requestedTimeMs);
+        if (diff === 0) score += 35;
+        else if (diff <= 60 * 60 * 1000) score += 20;
+        else if (diff <= 24 * 60 * 60 * 1000) score += 8;
+      }
+
+      if (score > bestScore) {
         best = a;
+        bestScore = score;
       }
     });
 
