@@ -233,8 +233,9 @@
     </aside>
 
     <main class="main">
-      <div id="patternContext" class="context-strip" style="display:none"></div>
 	
+      <div id="patternContext" class="context-strip" style="display:none"></div>
+
       <div class="card">
         <h3>Upcoming Events</h3>
         <table>
@@ -262,19 +263,20 @@
   const patternKey = (params.get('pattern') || '').toLowerCase().trim();
   const searchTerm = (params.get('search') || '').toLowerCase().trim();
   const from = (params.get('from') || '').toLowerCase().trim();
+  const scopeDays = Number(params.get('days') || ((from === 'dashboard' && (patternKey || searchTerm)) ? 7 : 0));
 
   const patternMeta = {
     labour: {
       label: 'Labour & wage disputes',
-      terms: ['strike','union','worker','workers','wage','wages','rail','railway','teacher','teachers','transport']
+      terms: ['strike','union','worker','workers','wage','wages','rail','railway','teacher','teachers','transport','labour','labor','dock','metro','bus']
     },
     cost: {
       label: 'Cost-of-living pressure',
-      terms: ['cost of living','inflation','price','prices','fuel','rent','budget','living cost','food prices']
+      terms: ['cost of living','inflation','price','prices','fuel','rent','budget','living cost','food prices','economic conditions','crop prices','housing','tenant','truck drivers','fuel costs']
     },
     governance: {
       label: 'Governance & anti-government pressure',
-      terms: ['government','anti-government','parliament','assembly','corruption','policy','service delivery','protest']
+      terms: ['government','anti-government','parliament','assembly','corruption','policy','service delivery','opposition','reform','government policies','anti austerity']
     }
   };
 
@@ -287,14 +289,15 @@
   const textOf = i => `${i.title || ''} ${i.summary || ''} ${i.city || ''} ${i.country || i.Country || ''}`.toLowerCase();
 
   const now = new Date();
+  const end = scopeDays > 0 ? new Date(now.getTime() + scopeDays * 24 * 60 * 60 * 1000) : null;
   const upcoming = (window.alertsData||[])
-    .map(i => ({...i, risk: norm(i.risk)}))
-    .filter(i => !isNaN(new Date(i.time)) && new Date(i.time) >= now)
-    .sort((a,b) => new Date(a.time) - new Date(b.time));
+    .map(i => ({...i, risk: norm(i.risk), _dt: new Date(i.time)}))
+    .filter(i => !isNaN(i._dt) && i._dt >= now && (!end || i._dt <= end))
+    .sort((a,b) => a._dt - b._dt);
 
   let filtered = upcoming.slice();
-  let modeLabel = 'All upcoming events';
-  let modeMeta = '';
+  let modeLabel = scopeDays > 0 ? `Upcoming Events (${scopeDays} days)` : 'All upcoming events';
+  let modeMeta = scopeDays > 0 ? `Showing the same ${scopeDays}-day forward window used on the dashboard.` : '';
 
   if (patternKey && patternMeta[patternKey]) {
     const terms = patternMeta[patternKey].terms;
@@ -306,7 +309,7 @@
       filtered = upcoming.filter(i => textOf(i).includes(searchTerm));
     }
     modeLabel = patternMeta[patternKey].label;
-    modeMeta = `Dashboard emerging pattern • matched terms: ${terms.slice(0,5).join(', ')}`;
+    modeMeta = `${scopeDays > 0 ? `Dashboard emerging pattern • next ${scopeDays} days` : 'Dashboard emerging pattern'} • matched terms: ${terms.slice(0,5).join(', ')}`;
   } else if (searchTerm) {
     filtered = upcoming.filter(i => textOf(i).includes(searchTerm));
     if (!filtered.length) {
@@ -317,10 +320,10 @@
       });
     }
     modeLabel = `Search results for “${params.get('search') || ''}”`;
-    modeMeta = from ? `Opened from ${from}` : 'Filtered event view';
+    modeMeta = `${from ? `Opened from ${from}` : 'Filtered event view'}${scopeDays > 0 ? ` • next ${scopeDays} days only` : ''}`;
   }
 
-  if (context && (patternKey || searchTerm)) {
+  if (context && (patternKey || searchTerm || scopeDays > 0)) {
     context.style.display = '';
     context.innerHTML = `
       <div class="kicker">Filtered event view</div>
@@ -332,8 +335,7 @@
   tbody.innerHTML = "";
 
   filtered.forEach(i => {
-    const when = new Date(i.time);
-    const pretty = when.toLocaleString('en-GB', {
+    const pretty = i._dt.toLocaleString('en-GB', {
       timeZone:'Europe/London',
       day:'2-digit', month:'short', year:'numeric',
       hour:'2-digit', minute:'2-digit'
@@ -345,7 +347,7 @@
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${i.title}</td>
+      <td>${i.title || 'Untitled event'}</td>
       <td>${i.city || '—'}</td>
       <td>${pretty}</td>
       <td>${pill}</td>
