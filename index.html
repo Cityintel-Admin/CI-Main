@@ -363,6 +363,110 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .lv1{background:#20312b} .lv3{background:#473a23} .lv4{background:#5c2b2b}
 .cell:hover{outline:2px solid #D01616;cursor:pointer}
 
+
+/* ===== Dashboard intel layer ===== */
+.priority-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px;
+}
+.priority-city-card{
+  border:1px solid var(--brand-gray-600);
+  border-radius:14px;
+  padding:12px;
+  background:rgba(255,255,255,0.02);
+  cursor:pointer;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+.priority-city-card:hover{
+  transform:translateY(-1px);
+  border-color:rgba(208,22,22,.55);
+  background:rgba(208,22,22,.06);
+}
+.priority-city-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.priority-city-name{font-size:18px;font-weight:800;line-height:1.1}
+.priority-city-score{
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  color:#fff;
+  background:rgba(208,22,22,.18);
+  border:1px solid rgba(208,22,22,.45);
+}
+.priority-city-mix{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
+}
+.priority-city-next{
+  margin-top:10px;
+  padding-top:8px;
+  border-top:1px solid rgba(255,255,255,.06);
+  font-size:12px;
+  color:var(--text);
+}
+.priority-city-next strong{display:block;font-size:13px;line-height:1.25}
+.signal-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.signal-card{
+  border:1px solid var(--brand-gray-600);
+  border-radius:14px;
+  padding:12px;
+  background:rgba(255,255,255,0.02);
+  cursor:pointer;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+.signal-card:hover{
+  transform:translateY(-1px);
+  border-color:rgba(208,22,22,.55);
+  background:rgba(208,22,22,.06);
+}
+.signal-kicker{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--muted);
+}
+.signal-title{
+  margin-top:6px;
+  font-size:18px;
+  font-weight:800;
+  line-height:1.15;
+}
+.signal-meta{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
+}
+.signal-strength{
+  margin-top:10px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  background:rgba(255,90,95,.12);
+  color:var(--danger);
+  border:1px solid rgba(255,90,95,.30);
+}
+@media (max-width: 1100px){
+  .priority-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width: 880px){
+  .priority-grid,.signal-grid{grid-template-columns:1fr}
+}
+
 /* Keep Real-Time Alerts compact */
 #realtimeAlerts{max-height:220px;overflow-y:auto}
 
@@ -590,7 +694,20 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="grid">
         <!-- KPIs -->
 
-        <section class="card" style="grid-column: span 3;">
+        
+        <section class="card" style="grid-column: span 12;">
+          <h3>Priority Cities (Live)</h3>
+          <p style="color:var(--muted);margin:6px 0 12px">Weighted by upcoming risk so you can see where to focus first.</p>
+          <div id="priorityCities" class="priority-grid"></div>
+        </section>
+
+        <section class="card" style="grid-column: span 12;">
+          <h3>Emerging Patterns</h3>
+          <p style="color:var(--muted);margin:6px 0 12px">Fast signal layer from upcoming alerts, grouped by what is starting to cluster.</p>
+          <div id="trendSignals" class="signal-grid"></div>
+        </section>
+
+<section class="card" style="grid-column: span 3;">
           <h3>Active Protests (24h)</h3>
           <div class="metric">    
           <div class="value" id="kpi-active-24h">0</div>
@@ -2326,6 +2443,137 @@ function CI_updatePanicMapOverlayIndex(st){
 </script>
 
 	
+
+<script>
+(function mountDashboardIntelLayer(){
+  const priorityHost = document.getElementById('priorityCities');
+  const trendsHost = document.getElementById('trendSignals');
+  if (!priorityHost && !trendsHost) return;
+
+  const parse = v => (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
+  const normRisk = (r='') => {
+    const s = String(r || '').toLowerCase();
+    if (s.startsWith('hi')) return 'high';
+    if (s.startsWith('me')) return 'med';
+    return 'low';
+  };
+  const riskWeight = { high: 3, med: 2, low: 1 };
+  const now = new Date();
+  const next7 = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const upcoming = (Array.isArray(window.alertsData) ? window.alertsData : [])
+    .map(a => ({ ...a, _dt: parse(a.time ?? a.datetime ?? a.date ?? a.when), _risk: normRisk(a.risk) }))
+    .filter(a => a._dt && a._dt >= now && a._dt <= next7)
+    .sort((a,b) => a._dt - b._dt);
+
+  function gotoCity(city){
+    location.href = `alerts.html?search=${encodeURIComponent(city)}&from=dashboard`;
+  }
+
+  if (priorityHost) {
+    const byCity = new Map();
+    upcoming.forEach(a => {
+      const city = String(a.city || a.country || a.Country || 'Unspecified').trim();
+      if (!city) return;
+      if (!byCity.has(city)) {
+        byCity.set(city, { score: 0, high: 0, med: 0, low: 0, next: null });
+      }
+      const row = byCity.get(city);
+      row.score += riskWeight[a._risk] || 1;
+      row[a._risk] += 1;
+      if (!row.next || a._dt < row.next._dt) row.next = a;
+    });
+
+    const ranked = [...byCity.entries()]
+      .sort((a,b) => b[1].score - a[1].score || (b[1].high - a[1].high))
+      .slice(0,5);
+
+    if (!ranked.length) {
+      priorityHost.innerHTML = '<div style="color:var(--muted)">No live city priorities in the next 7 days.</div>';
+    } else {
+      priorityHost.innerHTML = '';
+      ranked.forEach(([city, meta]) => {
+        const next = meta.next;
+        const pretty = next && next._dt
+          ? next._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+          : 'Time pending';
+        const card = document.createElement('div');
+        card.className = 'priority-city-card';
+        card.innerHTML = `
+          <div class="priority-city-top">
+            <div class="priority-city-name">${city}</div>
+            <div class="priority-city-score">${meta.score}</div>
+          </div>
+          <div class="priority-city-mix">${meta.high} high • ${meta.med} medium • ${meta.low} low</div>
+          <div class="priority-city-next">
+            <strong>${next?.title || 'Next incident pending'}</strong>
+            <span>${pretty}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => gotoCity(city));
+        priorityHost.appendChild(card);
+      });
+    }
+  }
+
+  if (trendsHost) {
+    const trendDefs = [
+      {
+        key: 'labour',
+        label: 'Labour & wage disputes',
+        matcher: /labour|labor|union|wage|strike|workers?|transport workers?|teachers?/
+      },
+      {
+        key: 'governance',
+        label: 'Governance pressure',
+        matcher: /anti[- ]?government|government|corruption|service delivery|policy|parliament|assembly/
+      },
+      {
+        key: 'civic',
+        label: 'Civic mobilisation',
+        matcher: /protest|march|rally|demonstration|coalition|solidarity|palestine|ceasefire|hands off/
+      }
+    ];
+
+    const trendRows = trendDefs.map(def => {
+      const matches = upcoming.filter(a => def.matcher.test(`${a.title || ''} ${a.summary || ''}`.toLowerCase()));
+      const uniqueCities = new Set(matches.map(a => String(a.city || '').trim()).filter(Boolean));
+      return {
+        ...def,
+        count: matches.length,
+        cities: uniqueCities,
+        strongestRisk: matches.some(a => a._risk === 'high') ? 'High pressure' :
+                       matches.some(a => a._risk === 'med') ? 'Moderate pressure' : 'Baseline',
+        lead: matches[0] || null
+      };
+    }).filter(x => x.count > 0).sort((a,b) => b.count - a.count).slice(0,3);
+
+    if (!trendRows.length) {
+      trendsHost.innerHTML = '<div style="color:var(--muted)">No strong clustered patterns detected in the next 7 days.</div>';
+    } else {
+      trendsHost.innerHTML = '';
+      trendRows.forEach(row => {
+        const leadCity = row.lead?.city || row.lead?.country || row.lead?.Country || 'Global';
+        const leadPretty = row.lead?._dt
+          ? row.lead._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+          : 'Time pending';
+        const card = document.createElement('div');
+        card.className = 'signal-card';
+        card.innerHTML = `
+          <div class="signal-kicker">Emerging pattern</div>
+          <div class="signal-title">${row.label}</div>
+          <div class="signal-meta">${row.count} upcoming event${row.count !== 1 ? 's' : ''} across ${row.cities.size || 1} city${row.cities.size === 1 ? '' : 'ies'}.</div>
+          <div class="signal-meta">Lead example: ${row.lead?.title || 'Pattern cluster'} — ${leadCity} • ${leadPretty}</div>
+          <div class="signal-strength">${row.strongestRisk}</div>
+        `;
+        card.addEventListener('click', () => gotoCity(leadCity));
+        trendsHost.appendChild(card);
+      });
+    }
+  }
+})();
+</script>
+
 </body>
 </html>
 
