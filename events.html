@@ -181,6 +181,12 @@
 }
 
 	  
+
+    .context-strip{background:linear-gradient(90deg,rgba(208,22,22,.14),rgba(208,22,22,0));border:1px solid var(--gray-600);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+    .context-strip .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8e97a3}
+    .context-strip .title{font-size:18px;font-weight:800;margin-top:4px}
+    .context-strip .meta{font-size:12px;color:#8e97a3;margin-top:4px}
+
   </style>
 </head>
 
@@ -227,6 +233,7 @@
     </aside>
 
     <main class="main">
+      <div id="patternContext" class="context-strip" style="display:none"></div>
 	
       <div class="card">
         <h3>Upcoming Events</h3>
@@ -248,9 +255,36 @@
 <script>
 (function renderEvents(){
   const tbody = document.getElementById('eventsBody');
+  const context = document.getElementById('patternContext');
   if(!tbody) return;
 
-  const norm = r => (r||'').toLowerCase().replace('medium','med'); // med/high/low
+  const params = new URLSearchParams(window.location.search);
+  const patternKey = (params.get('pattern') || '').toLowerCase().trim();
+  const searchTerm = (params.get('search') || '').toLowerCase().trim();
+  const from = (params.get('from') || '').toLowerCase().trim();
+
+  const patternMeta = {
+    labour: {
+      label: 'Labour & wage disputes',
+      terms: ['strike','union','worker','workers','wage','wages','rail','railway','teacher','teachers','transport']
+    },
+    cost: {
+      label: 'Cost-of-living pressure',
+      terms: ['cost of living','inflation','price','prices','fuel','rent','budget','living cost','food prices']
+    },
+    governance: {
+      label: 'Governance & anti-government pressure',
+      terms: ['government','anti-government','parliament','assembly','corruption','policy','service delivery','protest']
+    }
+  };
+
+  const norm = r => {
+    const s = String(r || '').toLowerCase();
+    if (s.startsWith('hi')) return 'high';
+    if (s.startsWith('me')) return 'med';
+    return 'low';
+  };
+  const textOf = i => `${i.title || ''} ${i.summary || ''} ${i.city || ''} ${i.country || i.Country || ''}`.toLowerCase();
 
   const now = new Date();
   const upcoming = (window.alertsData||[])
@@ -258,9 +292,46 @@
     .filter(i => !isNaN(new Date(i.time)) && new Date(i.time) >= now)
     .sort((a,b) => new Date(a.time) - new Date(b.time));
 
+  let filtered = upcoming.slice();
+  let modeLabel = 'All upcoming events';
+  let modeMeta = '';
+
+  if (patternKey && patternMeta[patternKey]) {
+    const terms = patternMeta[patternKey].terms;
+    filtered = upcoming.filter(i => {
+      const text = textOf(i);
+      return terms.some(term => text.includes(term));
+    });
+    if (!filtered.length && searchTerm) {
+      filtered = upcoming.filter(i => textOf(i).includes(searchTerm));
+    }
+    modeLabel = patternMeta[patternKey].label;
+    modeMeta = `Dashboard emerging pattern • matched terms: ${terms.slice(0,5).join(', ')}`;
+  } else if (searchTerm) {
+    filtered = upcoming.filter(i => textOf(i).includes(searchTerm));
+    if (!filtered.length) {
+      const looseWords = searchTerm.split(/\s+/).filter(Boolean);
+      filtered = upcoming.filter(i => {
+        const text = textOf(i);
+        return looseWords.some(word => word.length > 2 && text.includes(word));
+      });
+    }
+    modeLabel = `Search results for “${params.get('search') || ''}”`;
+    modeMeta = from ? `Opened from ${from}` : 'Filtered event view';
+  }
+
+  if (context && (patternKey || searchTerm)) {
+    context.style.display = '';
+    context.innerHTML = `
+      <div class="kicker">Filtered event view</div>
+      <div class="title">${modeLabel}</div>
+      <div class="meta">${modeMeta}${modeMeta ? ' • ' : ''}${filtered.length} matching upcoming event${filtered.length !== 1 ? 's' : ''}</div>
+    `;
+  }
+
   tbody.innerHTML = "";
 
-  upcoming.forEach(i => {
+  filtered.forEach(i => {
     const when = new Date(i.time);
     const pretty = when.toLocaleString('en-GB', {
       timeZone:'Europe/London',
@@ -268,7 +339,6 @@
       hour:'2-digit', minute:'2-digit'
     });
 
-    // risk pill
     const label = i.risk === 'high' ? 'High' : i.risk === 'med' ? 'Medium' : 'Low';
     const cls   = i.risk === 'high' ? 'risk-high' : i.risk === 'med' ? 'risk-med' : 'risk-low';
     const pill  = `<span class="risk-pill ${cls}">${label}</span>`;
@@ -276,7 +346,7 @@
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${i.title}</td>
-      <td>${i.city}</td>
+      <td>${i.city || '—'}</td>
       <td>${pretty}</td>
       <td>${pill}</td>
     `;
@@ -290,7 +360,7 @@
 
   if (!tbody.children.length) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="4" style="color:#8e97a3">No upcoming events found.</td>`;
+    tr.innerHTML = `<td colspan="4" style="color:#8e97a3">No upcoming events found for this filter.</td>`;
     tbody.appendChild(tr);
   }
 })();
