@@ -72,6 +72,11 @@
       flex-wrap:wrap;
       gap:10px;
     }
+
+    .scope-note{background:linear-gradient(90deg,rgba(208,22,22,.14),rgba(208,22,22,0));border:1px solid #2e3238;border-radius:14px;padding:14px 16px;margin:0 0 16px 0;color:#cfd6df}
+    .scope-note .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8e97a3}
+    .scope-note .title{font-size:16px;font-weight:800;margin-top:4px;color:#e9edf2}
+    .scope-note .meta{font-size:12px;color:#8e97a3;margin-top:4px}
   </style>
 </head>
 <body>
@@ -85,6 +90,7 @@
     <span class="sep">›</span>
     <a id="crumb-city" href="#"></a>
   </nav>
+  <div id="scopeNote" class="scope-note" style="display:none"></div>
 
   <!-- ===== New: Continent Overview (only shown in continent mode) ===== -->
   <div id="continentOverviewBlock" style="display:none;">
@@ -213,6 +219,8 @@
   const regionParam    = (qs.get('region') || qs.get('country') || '').trim();
   const cityParam      = (qs.get('city') || '').trim();
   const eventIdParam   = qs.get('eventId');
+  const fromParam      = (qs.get('from') || '').trim().toLowerCase();
+  const scopeDays      = Number(qs.get('days') || ((fromParam === 'dashboard' && !continentParam && !regionParam) ? 7 : 0));
 
   const norm  = r => { r=(r||'').toLowerCase(); if(r.startsWith('hi')) return 'high'; if(r.startsWith('me')) return 'med'; return 'low'; };
   const label = r => r==='high'?'High':r==='med'?'Medium':'Low';
@@ -237,8 +245,10 @@
     : all.filter(a => (a.city||'').toLowerCase().includes(cityParam.toLowerCase()));
 
   const now = new Date();
-  const upcoming = subset.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt);
-  const recent   = subset.filter(a => a._dt && a._dt < now).sort((a,b)=>b._dt-a._dt);
+  const scopeEnd = scopeDays > 0 ? new Date(now.getTime() + scopeDays * 24 * 60 * 60 * 1000) : null;
+  const scopedRows = scopeEnd ? subset.filter(a => a._dt && a._dt >= now && a._dt <= scopeEnd) : subset;
+  const upcoming = (scopeEnd ? scopedRows : subset.filter(a => a._dt && a._dt >= now)).sort((a,b)=>a._dt-b._dt);
+  const recent   = scopeEnd ? [] : subset.filter(a => a._dt && a._dt < now).sort((a,b)=>b._dt-a._dt);
 
   const pageTitle = document.getElementById('pageTitle');
   const riskLevel = document.getElementById('riskLevel');
@@ -253,7 +263,7 @@
     focus = subset.find(a => key(a) === decodeURIComponent(eventIdParam)) || null;
   }
   if (!focus) {
-    focus = upcoming.find(a=>a.risk==='high') || upcoming[0] || recent[0] || null;
+    focus = upcoming.find(a=>a.risk==='high') || upcoming[0] || recent[0] || subset[0] || null;
   }
 
   // header title
@@ -274,15 +284,17 @@
   };
 
   let badgeRisk = 'low';
-  if (subset.length) badgeRisk = aggregate(upcoming.length?upcoming:subset).majority;
+  if ((scopeEnd ? scopedRows : subset).length) badgeRisk = aggregate(scopeEnd ? scopedRows : (upcoming.length ? upcoming : subset)).majority;
   riskLevel.textContent = label(badgeRisk);
   riskLevel.className = 'tag ' + badgeRisk;
 
   if (focus) {
     const when = focus._dt ? fmt(focus._dt) : '';
-    riskSummary.innerHTML = `${focus.title||''}${when?` — <span style="color:#8e97a3">${when}</span>`:''}<br>${focus.summary||''}`;
+    const countsForSummary = aggregate(scopeEnd ? scopedRows : (upcoming.length ? upcoming : subset)).c;
+    const scopeLine = scopeEnd ? `<br><span style="color:#8e97a3">Scoped to next ${scopeDays} days: ${countsForSummary.high} high • ${countsForSummary.med} medium • ${countsForSummary.low} low</span>` : '';
+    riskSummary.innerHTML = `${focus.title||''}${when?` — <span style="color:#8e97a3">${when}</span>`:''}<br>${focus.summary||''}${scopeLine}`;
   } else {
-    riskSummary.textContent = `${subset.length||0} records found (${badgeRisk} risk overall).`;
+    riskSummary.textContent = `${(scopeEnd ? scopedRows.length : subset.length)||0} records found (${badgeRisk} risk overall).`;
   }
 
   // location card
@@ -349,11 +361,24 @@
     crumbsEl.hidden = partsShown === 0;
   })();
 
+  (function renderScopeNote(){
+    const note = document.getElementById('scopeNote');
+    if (!note || !scopeEnd) return;
+    const counts = aggregate(scopedRows).c;
+    const place = focus?.city || cityParam || focus?.country || regionParam || continentParam || 'Selected area';
+    note.style.display = '';
+    note.innerHTML = `
+      <div class="kicker">Dashboard scope preserved</div>
+      <div class="title">${place} — next ${scopeDays} days only</div>
+      <div class="meta">Showing the same forward window used on the dashboard card • ${counts.high} high • ${counts.med} medium • ${counts.low} low</div>
+    `;
+  })();
+
   // render tables
-  const fillTable = (tbody, rows)=>{
+  const fillTable = (tbody, rows, emptyMessage='No data.')=>{
     tbody.innerHTML='';
-    if(!rows.length){ tbody.innerHTML=`<tr><td colspan="3" style="color:#8e97a3">No data.</td></tr>`; return; }
-    rows.slice(0,8).forEach(r=>{
+    if(!rows.length){ tbody.innerHTML=`<tr><td colspan="3" style="color:#8e97a3">${emptyMessage}</td></tr>`; return; }
+    rows.slice(0, scopeEnd ? 12 : 8).forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.title || ''} ${((mode==='continent')||(mode==='region'))?`<span style="color:#8e97a3">(${r.country} — ${r.city})</span>`:''}</td>
                     <td>${fmt(r._dt)}</td>
@@ -369,8 +394,8 @@
 
   const alertsBody = document.getElementById('alertsBody');
   const eventsBody = document.getElementById('eventsBody');
-  fillTable(alertsBody, recent);
-  fillTable(eventsBody, upcoming);
+  fillTable(alertsBody, recent, scopeEnd ? 'Historical alerts are hidden while dashboard scope is active.' : 'No data.');
+  fillTable(eventsBody, upcoming, scopeEnd ? `No upcoming events in the next ${scopeDays} days.` : 'No data.');
 
   // ===== NEW: Continent Overview + Pie =====
   (function renderContinentOverview(){
