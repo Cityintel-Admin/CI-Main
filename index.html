@@ -1,4 +1,4 @@
-<!doctype html>  
+<!doctype html>
 <html lang="en">
 <head>
 
@@ -389,7 +389,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   justify-content:space-between;
   gap:8px;
 }
-.priority-city-name{font-size:18px;font-weight:800;line-height:1.1}
+.priority-city-name{font-size:17px;font-weight:800;line-height:1.1}
 .priority-city-score{
   padding:4px 8px;
   border-radius:999px;
@@ -438,7 +438,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 }
 .signal-title{
   margin-top:6px;
-  font-size:18px;
+  font-size:17px;
   font-weight:800;
   line-height:1.15;
 }
@@ -695,18 +695,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <!-- KPIs -->
 
         
-        <section class="card" style="grid-column: span 12;">
-          <h3>Priority Cities (Live)</h3>
-          <p style="color:var(--muted);margin:6px 0 12px">Weighted by upcoming risk so you can see where to focus first.</p>
-          <div id="priorityCities" class="priority-grid"></div>
-        </section>
-
-        <section class="card" style="grid-column: span 12;">
-          <h3>Emerging Patterns</h3>
-          <p style="color:var(--muted);margin:6px 0 12px">Fast signal layer from upcoming alerts, grouped by what is starting to cluster.</p>
-          <div id="trendSignals" class="signal-grid"></div>
-        </section>
-
 <section class="card" style="grid-column: span 3;">
           <h3>Active Protests (24h)</h3>
           <div class="metric">    
@@ -738,6 +726,19 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <h3>Data Freshness</h3>
           <div class="metric"><div class="value">96%</div><div class="delta up">+4%</div></div>
           <small style="color:var(--muted)">Last ingest: 10 mins ago</small>
+        </section>
+
+
+        <section class="card" style="grid-column: span 12;">
+          <h3>Priority Cities (Live)</h3>
+          <p style="color:var(--muted);margin:6px 0 12px">Weighted by upcoming risk so you can see where to focus first.</p>
+          <div id="priorityCities" class="priority-grid"></div>
+        </section>
+
+        <section class="card" style="grid-column: span 12;">
+          <h3>Emerging Patterns</h3>
+          <p style="color:var(--muted);margin:6px 0 12px">Fast signal layer from upcoming alerts, grouped by what is starting to cluster.</p>
+          <div id="trendSignals" class="signal-grid"></div>
         </section>
 
 
@@ -2444,6 +2445,7 @@ function CI_updatePanicMapOverlayIndex(st){
 
 	
 
+
 <script>
 (function mountDashboardIntelLayer(){
   const priorityHost = document.getElementById('priorityCities');
@@ -2466,26 +2468,41 @@ function CI_updatePanicMapOverlayIndex(st){
     .filter(a => a._dt && a._dt >= now && a._dt <= next7)
     .sort((a,b) => a._dt - b._dt);
 
-  function gotoCity(city){
-    location.href = `alerts.html?search=${encodeURIComponent(city)}&from=dashboard`;
+  function goToCityDetail(city, country=''){
+    const qs = new URLSearchParams();
+    qs.set('city', city);
+    if (country) qs.set('country', country);
+    location.href = `risk-detail.html?${qs.toString()}`;
+  }
+
+  function goToPatternAlerts(searchTerm){
+    const qs = new URLSearchParams();
+    qs.set('search', searchTerm);
+    qs.set('from', 'dashboard');
+    location.href = `alerts.html?${qs.toString()}`;
   }
 
   if (priorityHost) {
     const byCity = new Map();
     upcoming.forEach(a => {
-      const city = String(a.city || a.country || a.Country || 'Unspecified').trim();
+      const city = String(a.city || '').trim();
       if (!city) return;
       if (!byCity.has(city)) {
-        byCity.set(city, { score: 0, high: 0, med: 0, low: 0, next: null });
+        byCity.set(city, {
+          score: 0, high: 0, med: 0, low: 0,
+          next: null,
+          country: a.country || a.Country || ''
+        });
       }
       const row = byCity.get(city);
       row.score += riskWeight[a._risk] || 1;
       row[a._risk] += 1;
       if (!row.next || a._dt < row.next._dt) row.next = a;
+      if (!row.country && (a.country || a.Country)) row.country = a.country || a.Country || '';
     });
 
     const ranked = [...byCity.entries()]
-      .sort((a,b) => b[1].score - a[1].score || (b[1].high - a[1].high))
+      .sort((a,b) => b[1].score - a[1].score || b[1].high - a[1].high || b[1].med - a[1].med)
       .slice(0,5);
 
     if (!ranked.length) {
@@ -2504,13 +2521,13 @@ function CI_updatePanicMapOverlayIndex(st){
             <div class="priority-city-name">${city}</div>
             <div class="priority-city-score">${meta.score}</div>
           </div>
-          <div class="priority-city-mix">${meta.high} high • ${meta.med} medium • ${meta.low} low</div>
+          <div class="priority-city-mix">${meta.high} high • ${meta.med} medium • ${meta.low} low in next 7 days</div>
           <div class="priority-city-next">
             <strong>${next?.title || 'Next incident pending'}</strong>
             <span>${pretty}</span>
           </div>
         `;
-        card.addEventListener('click', () => gotoCity(city));
+        card.addEventListener('click', () => goToCityDetail(city, meta.country));
         priorityHost.appendChild(card);
       });
     }
@@ -2521,30 +2538,40 @@ function CI_updatePanicMapOverlayIndex(st){
       {
         key: 'labour',
         label: 'Labour & wage disputes',
-        matcher: /labour|labor|union|wage|strike|workers?|transport workers?|teachers?/
+        searchTerm: 'strike',
+        matcher: /labour|labor|union|wage|strike|workers?|teachers?|railway|transport workers?/,
+      },
+      {
+        key: 'cost',
+        label: 'Cost-of-living pressure',
+        searchTerm: 'cost of living',
+        matcher: /cost[- ]?of[- ]?living|inflation|price rise|budget cuts?|fuel prices?/,
       },
       {
         key: 'governance',
-        label: 'Governance pressure',
-        matcher: /anti[- ]?government|government|corruption|service delivery|policy|parliament|assembly/
-      },
-      {
-        key: 'civic',
-        label: 'Civic mobilisation',
-        matcher: /protest|march|rally|demonstration|coalition|solidarity|palestine|ceasefire|hands off/
+        label: 'Governance & anti-government pressure',
+        searchTerm: 'government protest',
+        matcher: /anti[- ]?government|government|parliament|assembly|service delivery|corruption|policy protest/,
       }
     ];
 
     const trendRows = trendDefs.map(def => {
       const matches = upcoming.filter(a => def.matcher.test(`${a.title || ''} ${a.summary || ''}`.toLowerCase()));
-      const uniqueCities = new Set(matches.map(a => String(a.city || '').trim()).filter(Boolean));
+      const cityCounts = {};
+      matches.forEach(a => {
+        const city = String(a.city || a.country || a.Country || 'Unknown').trim();
+        cityCounts[city] = (cityCounts[city] || 0) + 1;
+      });
+      const topCity = Object.entries(cityCounts).sort((a,b) => b[1] - a[1])[0];
+      const lead = matches[0] || null;
       return {
         ...def,
         count: matches.length,
-        cities: uniqueCities,
+        topCity: topCity ? topCity[0] : '',
+        topCityCount: topCity ? topCity[1] : 0,
         strongestRisk: matches.some(a => a._risk === 'high') ? 'High pressure' :
                        matches.some(a => a._risk === 'med') ? 'Moderate pressure' : 'Baseline',
-        lead: matches[0] || null
+        lead
       };
     }).filter(x => x.count > 0).sort((a,b) => b.count - a.count).slice(0,3);
 
@@ -2553,7 +2580,6 @@ function CI_updatePanicMapOverlayIndex(st){
     } else {
       trendsHost.innerHTML = '';
       trendRows.forEach(row => {
-        const leadCity = row.lead?.city || row.lead?.country || row.lead?.Country || 'Global';
         const leadPretty = row.lead?._dt
           ? row.lead._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
           : 'Time pending';
@@ -2562,17 +2588,19 @@ function CI_updatePanicMapOverlayIndex(st){
         card.innerHTML = `
           <div class="signal-kicker">Emerging pattern</div>
           <div class="signal-title">${row.label}</div>
-          <div class="signal-meta">${row.count} upcoming event${row.count !== 1 ? 's' : ''} across ${row.cities.size || 1} city${row.cities.size === 1 ? '' : 'ies'}.</div>
-          <div class="signal-meta">Lead example: ${row.lead?.title || 'Pattern cluster'} — ${leadCity} • ${leadPretty}</div>
+          <div class="signal-meta">${row.count} upcoming event${row.count !== 1 ? 's' : ''} detected.</div>
+          <div class="signal-meta">Strongest city: ${row.topCity || 'Global'}${row.topCity ? ` (${row.topCityCount})` : ''}</div>
+          <div class="signal-meta">Lead example: ${row.lead?.title || 'Pattern cluster'} • ${leadPretty}</div>
           <div class="signal-strength">${row.strongestRisk}</div>
         `;
-        card.addEventListener('click', () => gotoCity(leadCity));
+        card.addEventListener('click', () => goToPatternAlerts(row.searchTerm));
         trendsHost.appendChild(card);
       });
     }
   }
 })();
 </script>
+
 
 </body>
 </html>
