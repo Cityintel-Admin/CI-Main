@@ -89,6 +89,18 @@
     .scope-summary-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3}
     .scope-summary-value{font-size:16px;font-weight:800;color:#e9edf2;margin-top:4px}
     .scope-summary-sub{font-size:12px;color:#8e97a3;margin-top:2px}
+
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .section-sub{font-size:12px;color:#8e97a3;margin-top:4px}
+    .mix-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .mix-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid #2e3238;background:#1c1e22;color:#cfd6e1}
+    .mix-pill .dot{width:8px;height:8px;border-radius:50%}
+    .info-note{font-size:12px;color:#8e97a3;margin-top:8px}
+    details.context-reveal{margin-top:10px;border:1px solid #2e3238;border-radius:12px;background:#1a1c20}
+    details.context-reveal summary{cursor:pointer;list-style:none;padding:12px 14px;color:#cfd6e1;font-weight:700}
+    details.context-reveal summary::-webkit-details-marker{display:none}
+    details.context-reveal .context-inner{padding:0 14px 14px 14px}
+
     @media (max-width: 860px){
       .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
@@ -333,8 +345,19 @@
 
 
   <div class="card">
-    <h2>Protest Risk Level: <span id="riskLevel" class="tag">Unknown</span></h2>
+    <div class="section-head">
+      <div>
+        <h2 style="margin:0;">Lead Event Risk: <span id="riskLevel" class="tag">Unknown</span></h2>
+        <div class="section-sub" id="riskLeadMeta">Primary event selected from this page scope.</div>
+      </div>
+    </div>
     <p id="riskSummary">Loading data…</p>
+    <div id="scopeMixRow" class="mix-row" style="display:none;">
+      <span class="mix-pill"><span class="dot" style="background:#ff5a5f"></span><span id="mixHigh">0 high</span></span>
+      <span class="mix-pill"><span class="dot" style="background:#f0b429"></span><span id="mixMed">0 medium</span></span>
+      <span class="mix-pill"><span class="dot" style="background:#33c48d"></span><span id="mixLow">0 low</span></span>
+    </div>
+    <div id="riskScopeNote" class="info-note">Scope mix will appear here.</div>
   </div>
 
   <!-- Location -->
@@ -356,16 +379,37 @@
 
   <!-- Recent Alerts -->
   <div class="card">
-    <h2>Recent Alerts</h2>
-    <table>
-      <thead><tr><th>Alert</th><th>Date</th><th>Risk</th></tr></thead>
-      <tbody id="alertsBody"></tbody>
-    </table>
+    <div class="section-head">
+      <div>
+        <h2 style="margin:0;">Recent Alerts</h2>
+        <div id="recentAlertsMeta" class="section-sub">Historical context for this location.</div>
+      </div>
+    </div>
+    <div id="recentAlertsDirect">
+      <table>
+        <thead><tr><th>Alert</th><th>Date</th><th>Risk</th></tr></thead>
+        <tbody id="alertsBody"></tbody>
+      </table>
+    </div>
+    <details id="recentAlertsReveal" class="context-reveal" style="display:none;">
+      <summary>Show broader historical context</summary>
+      <div class="context-inner">
+        <table>
+          <thead><tr><th>Alert</th><th>Date</th><th>Risk</th></tr></thead>
+          <tbody id="alertsBodyExpanded"></tbody>
+        </table>
+      </div>
+    </details>
   </div>
 
   <!-- Upcoming Events -->
   <div class="card">
-    <h2>Upcoming Events</h2>
+    <div class="section-head">
+      <div>
+        <h2 style="margin:0;">Upcoming Events</h2>
+        <div id="upcomingEventsMeta" class="section-sub">Forward scheduled events for this page.</div>
+      </div>
+    </div>
     <table>
       <thead><tr><th>Event</th><th>Date</th><th>Risk</th></tr></thead>
       <tbody id="eventsBody"></tbody>
@@ -420,6 +464,16 @@
   const pageTitle = document.getElementById('pageTitle');
   const riskLevel = document.getElementById('riskLevel');
   const riskSummary = document.getElementById('riskSummary');
+  const riskLeadMeta = document.getElementById('riskLeadMeta');
+  const riskScopeNote = document.getElementById('riskScopeNote');
+  const scopeMixRow = document.getElementById('scopeMixRow');
+  const mixHigh = document.getElementById('mixHigh');
+  const mixMed = document.getElementById('mixMed');
+  const mixLow = document.getElementById('mixLow');
+  const recentAlertsMeta = document.getElementById('recentAlertsMeta');
+  const upcomingEventsMeta = document.getElementById('upcomingEventsMeta');
+  const recentAlertsReveal = document.getElementById('recentAlertsReveal');
+  const alertsBodyExpanded = document.getElementById('alertsBodyExpanded');
   const locCountry = document.getElementById('loc-country');
   const locCity = document.getElementById('loc-city');
   const locRisk = document.getElementById('loc-risk');
@@ -450,18 +504,48 @@
     return {c,majority};
   };
 
+  const displayRows = scopeEnd ? scopedRows : (upcoming.length ? upcoming : subset);
   let badgeRisk = 'low';
-  if ((scopeEnd ? scopedRows : subset).length) badgeRisk = aggregate(scopeEnd ? scopedRows : (upcoming.length ? upcoming : subset)).majority;
-  riskLevel.textContent = label(badgeRisk);
-  riskLevel.className = 'tag ' + badgeRisk;
+  if (displayRows.length) badgeRisk = aggregate(displayRows).majority;
+
+  const leadRisk = focus ? focus.risk : badgeRisk;
+  riskLevel.textContent = label(leadRisk);
+  riskLevel.className = 'tag ' + leadRisk;
+
+  const countsForSummary = aggregate(displayRows).c;
+  if (scopeMixRow) {
+    scopeMixRow.style.display = '';
+    mixHigh.textContent = `${countsForSummary.high} high`;
+    mixMed.textContent = `${countsForSummary.med} medium`;
+    mixLow.textContent = `${countsForSummary.low} low`;
+  }
+  if (riskScopeNote) {
+    riskScopeNote.textContent = scopeEnd
+      ? `Scope preserved from dashboard: next ${scopeDays} days only.`
+      : `Overall mix for the current page scope.`;
+  }
 
   if (focus) {
     const when = focus._dt ? fmt(focus._dt) : '';
-    const countsForSummary = aggregate(scopeEnd ? scopedRows : (upcoming.length ? upcoming : subset)).c;
-    const scopeLine = scopeEnd ? `<br><span style="color:#8e97a3">Scoped to next ${scopeDays} days: ${countsForSummary.high} high • ${countsForSummary.med} medium • ${countsForSummary.low} low</span>` : '';
+    if (riskLeadMeta) {
+      riskLeadMeta.textContent = `Lead event selected: ${focus.title || 'Current focus'}${when ? ` • ${when}` : ''}`;
+    }
+    const scopeLine = scopeEnd ? `<br><span style="color:#8e97a3">Scope mix: ${countsForSummary.high} high • ${countsForSummary.med} medium • ${countsForSummary.low} low</span>` : '';
     riskSummary.innerHTML = `${focus.title||''}${when?` — <span style="color:#8e97a3">${when}</span>`:''}<br>${focus.summary||''}${scopeLine}`;
   } else {
-    riskSummary.textContent = `${(scopeEnd ? scopedRows.length : subset.length)||0} records found (${badgeRisk} risk overall).`;
+    if (riskLeadMeta) riskLeadMeta.textContent = 'No lead event available in the current scope.';
+    riskSummary.textContent = `${displayRows.length||0} records found (${label(badgeRisk)} overall mix).`;
+  }
+
+  if (upcomingEventsMeta) {
+    upcomingEventsMeta.textContent = scopeEnd
+      ? `Showing only the preserved next ${scopeDays}-day dashboard window.`
+      : `Forward scheduled events for this page scope.`;
+  }
+  if (recentAlertsMeta) {
+    recentAlertsMeta.textContent = scopeEnd
+      ? 'Historical context is hidden by default while dashboard scope is active.'
+      : 'Historical context for this location.';
   }
 
   // location card
@@ -570,10 +654,12 @@
   })();
 
   // render tables
-  const fillTable = (tbody, rows, emptyMessage='No data.')=>{
+  const fillTable = (tbody, rows, emptyMessage='No data.', limit=null)=>{
+    if (!tbody) return;
     tbody.innerHTML='';
     if(!rows.length){ tbody.innerHTML=`<tr><td colspan="3" style="color:#8e97a3">${emptyMessage}</td></tr>`; return; }
-    rows.slice(0, scopeEnd ? 12 : 8).forEach(r=>{
+    const sliced = typeof limit === 'number' ? rows.slice(0, limit) : rows;
+    sliced.forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.title || ''} ${((mode==='continent')||(mode==='region'))?`<span style="color:#8e97a3">(${r.country} — ${r.city})</span>`:''}</td>
                     <td>${fmt(r._dt)}</td>
@@ -589,8 +675,16 @@
 
   const alertsBody = document.getElementById('alertsBody');
   const eventsBody = document.getElementById('eventsBody');
-  fillTable(alertsBody, recent, scopeEnd ? 'Historical alerts are hidden while dashboard scope is active.' : 'No data.');
-  fillTable(eventsBody, upcoming, scopeEnd ? `No upcoming events in the next ${scopeDays} days.` : 'No data.');
+
+  if (scopeEnd) {
+    fillTable(alertsBody, [], 'Historical alerts are hidden while dashboard scope is active.');
+    if (recentAlertsReveal) recentAlertsReveal.style.display = recent.length ? '' : 'none';
+    fillTable(alertsBodyExpanded, recent, 'No broader historical alerts found.', 12);
+    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12);
+  } else {
+    fillTable(alertsBody, recent, 'No historical alerts found.', 8);
+    fillTable(eventsBody, upcoming, 'No upcoming events found.', 12);
+  }
 
   // ===== NEW: Continent Overview + Pie =====
   (function renderContinentOverview(){
