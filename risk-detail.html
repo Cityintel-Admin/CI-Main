@@ -77,6 +77,25 @@
     .scope-note .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8e97a3}
     .scope-note .title{font-size:16px;font-weight:800;margin-top:4px;color:#e9edf2}
     .scope-note .meta{font-size:12px;color:#8e97a3;margin-top:4px}
+
+    .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .chart-meta{font-size:12px;color:#8e97a3;margin-top:4px}
+    .chart-toggle{display:inline-flex;gap:6px;flex-wrap:wrap}
+    .chart-toggle button{background:#1c1e22;border:1px solid #2e3238;color:#cfd6e1;border-radius:999px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}
+    .chart-toggle button.active{background:rgba(208,22,22,.14);border-color:rgba(208,22,22,.45);color:#fff}
+    .scope-summary{display:none;padding:12px 16px}
+    .scope-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .scope-summary-item{background:#1c1e22;border:1px solid #2e3238;border-radius:12px;padding:10px 12px}
+    .scope-summary-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3}
+    .scope-summary-value{font-size:16px;font-weight:800;color:#e9edf2;margin-top:4px}
+    .scope-summary-sub{font-size:12px;color:#8e97a3;margin-top:2px}
+    @media (max-width: 860px){
+      .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width: 560px){
+      .scope-summary-grid{grid-template-columns:1fr}
+    }
+
   </style>
 </head>
 <body>
@@ -91,6 +110,31 @@
     <a id="crumb-city" href="#"></a>
   </nav>
   <div id="scopeNote" class="scope-note" style="display:none"></div>
+
+  <div id="scopeSummary" class="card scope-summary">
+    <div class="scope-summary-grid">
+      <div class="scope-summary-item">
+        <div class="scope-summary-label">Events in scope</div>
+        <div id="sum-total" class="scope-summary-value">0</div>
+        <div class="scope-summary-sub">Forward window count</div>
+      </div>
+      <div class="scope-summary-item">
+        <div class="scope-summary-label">Top risk</div>
+        <div id="sum-risk" class="scope-summary-value">—</div>
+        <div class="scope-summary-sub">Highest active band</div>
+      </div>
+      <div class="scope-summary-item">
+        <div class="scope-summary-label">Next event</div>
+        <div id="sum-next" class="scope-summary-value">—</div>
+        <div id="sum-next-sub" class="scope-summary-sub">No scheduled event</div>
+      </div>
+      <div class="scope-summary-item">
+        <div class="scope-summary-label">Focus area</div>
+        <div id="sum-city" class="scope-summary-value">—</div>
+        <div id="sum-city-sub" class="scope-summary-sub">Most active place in scope</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== New: Continent Overview (only shown in continent mode) ===== -->
   <div id="continentOverviewBlock" style="display:none;">
@@ -120,21 +164,38 @@
   <!-- ===== End: Continent Overview ===== -->
 
 <div class="card">
-  <h2>Activity Trend (last 180 days)</h2>
-  <canvas id="miniTrend" height="60"></canvas>
+  <div class="chart-head">
+    <div>
+      <h2 id="trendTitle" style="margin:0;">Activity Trend (last 180 days)</h2>
+      <div id="trendSubtitle" class="chart-meta">Daily alert count within selected scope.</div>
+    </div>
+    <div class="chart-toggle" id="trendToggle" style="display:none;">
+      <button type="button" data-mode="history" class="active">History (180d)</button>
+      <button type="button" data-mode="scope">Scope only</button>
+    </div>
+  </div>
+  <canvas id="miniTrend" height="80"></canvas>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script>
 (function miniTrend(){
-  const ctx = document.getElementById('miniTrend'); if(!ctx||!window.alertsData) return;
+  const ctx = document.getElementById('miniTrend');
+  if(!ctx || !window.alertsData || !window.Chart) return;
 
   const qs = new URLSearchParams(location.search);
   const continentParam = (qs.get('continent')||'').trim().toLowerCase();
   const cityParam = (qs.get('city')||'').trim().toLowerCase();
   const regionParam = (qs.get('region')||qs.get('country')||'').trim().toLowerCase();
+  const fromParam = (qs.get('from')||'').trim().toLowerCase();
+  const scopeDays = Number(qs.get('days') || ((fromParam === 'dashboard' && !continentParam && !regionParam) ? 7 : 0));
+
+  const titleEl = document.getElementById('trendTitle');
+  const subtitleEl = document.getElementById('trendSubtitle');
+  const toggleEl = document.getElementById('trendToggle');
 
   const parseTime = v => { const d=new Date(v); return isNaN(d)?null:d; };
   const dayKey = d => new Date(d).toLocaleDateString('en-CA', { timeZone:'Europe/London' });
+  const fmtShort = d => new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short' });
 
   const scopeFilter = a => {
     if (continentParam) return String(a.continent||a.Continent||'').toLowerCase()===continentParam;
@@ -143,24 +204,130 @@
     return true;
   };
 
-  const now=new Date(), windowDays=180, start=new Date(+now-windowDays*864e5);
-  const buckets = new Map();
-  (window.alertsData||[]).filter(scopeFilter).forEach(a=>{
-    const dt=parseTime(a.time); if(!dt||dt<start||dt>now) return;
-    const k=dayKey(dt); buckets.set(k, (buckets.get(k)||0)+1);
-  });
+  const rows = (window.alertsData||[]).filter(scopeFilter).map(a => ({
+    ...a,
+    _dt: parseTime(a.time)
+  })).filter(a => a._dt);
 
-  const labels=[], data=[];
-  for(let i=windowDays;i>=0;i--){
-    const d=new Date(+now-i*864e5), k=dayKey(d);
-    labels.push(k); data.push(buckets.get(k)||0);
+  const now = new Date();
+  const historyDays = 180;
+  const scopeWindowDays = scopeDays > 0 ? scopeDays : 7;
+  let mode = 'history';
+
+  if (scopeDays > 0 && toggleEl) toggleEl.style.display = 'inline-flex';
+
+  const buttons = toggleEl ? Array.from(toggleEl.querySelectorAll('button')) : [];
+  let chart = null;
+
+  function buildSeries(days, futureOnly){
+    const start = futureOnly ? new Date(now) : new Date(+now - days*864e5);
+    const end = futureOnly ? new Date(+now + days*864e5) : new Date(now);
+    const buckets = new Map();
+
+    rows.forEach(a=>{
+      if(a._dt < start || a._dt > end) return;
+      const k = dayKey(a._dt);
+      buckets.set(k, (buckets.get(k)||0)+1);
+    });
+
+    const labels=[], data=[];
+    if (futureOnly){
+      for(let i=0;i<=days;i++){
+        const d = new Date(+now + i*864e5), k = dayKey(d);
+        labels.push(fmtShort(d));
+        data.push(buckets.get(k)||0);
+      }
+    } else {
+      for(let i=days;i>=0;i--){
+        const d = new Date(+now - i*864e5), k = dayKey(d);
+        labels.push(fmtShort(d));
+        data.push(buckets.get(k)||0);
+      }
+    }
+    return {labels, data};
   }
 
-  new Chart(ctx, {
-    type:'line',
-    data:{ labels, datasets:[{ label:'Daily', data, borderWidth:2, pointRadius:0, tension:.25 }] },
-    options:{ responsive:true, maintainAspectRatio:true, aspectRatio:3.2, plugins:{legend:{display:false}}, scales:{x:{display:false},y:{display:false}} }
+  function updateHeader(){
+    if (!titleEl || !subtitleEl) return;
+    if (mode === 'scope' && scopeDays > 0){
+      titleEl.textContent = `Activity Trend (next ${scopeWindowDays} days)`;
+      subtitleEl.textContent = 'Daily forward event count inside the preserved dashboard scope.';
+    } else {
+      titleEl.textContent = 'Activity Trend (last 180 days)';
+      subtitleEl.textContent = 'Daily alert count within selected scope over the trailing 180 days.';
+    }
+  }
+
+  function render(){
+    const isScope = mode === 'scope' && scopeDays > 0;
+    const series = buildSeries(isScope ? scopeWindowDays : historyDays, isScope);
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels:series.labels,
+        datasets:[{
+          label:'Daily alerts',
+          data:series.data,
+          borderColor:'#2ea8ff',
+          backgroundColor:'rgba(46,168,255,.12)',
+          fill:true,
+          borderWidth:2,
+          pointRadius:0,
+          tension:.25
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:true,
+        aspectRatio:3,
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            callbacks:{
+              title:(items)=>items && items[0] ? items[0].label : '',
+              label:(item)=>`${item.raw} alert${item.raw===1?'':'s'}`
+            }
+          }
+        },
+        scales:{
+          x:{
+            display:true,
+            ticks:{
+              maxTicksLimit:isScope ? Math.min(scopeWindowDays + 1, 8) : 6,
+              color:'#8e97a3',
+              font:{size:10},
+              maxRotation:0,
+              minRotation:0
+            },
+            grid:{display:false}
+          },
+          y:{
+            display:true,
+            beginAtZero:true,
+            ticks:{
+              precision:0,
+              stepSize:1,
+              color:'#8e97a3',
+              font:{size:10}
+            },
+            grid:{color:'rgba(255,255,255,0.05)'}
+          }
+        }
+      }
+    });
+    updateHeader();
+    buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+  }
+
+  buttons.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      mode = btn.dataset.mode === 'scope' ? 'scope' : 'history';
+      render();
+    });
   });
+
+  render();
 })();
 </script>
 
@@ -372,6 +539,34 @@
       <div class="title">${place} — next ${scopeDays} days only</div>
       <div class="meta">Showing the same forward window used on the dashboard card • ${counts.high} high • ${counts.med} medium • ${counts.low} low</div>
     `;
+  })();
+  (function renderScopeSummary(){
+    const box = document.getElementById('scopeSummary');
+    if (!box || !scopeEnd) return;
+
+    const counts = aggregate(scopedRows).c;
+    const total = scopedRows.length;
+    const topRisk = counts.high ? 'High' : counts.med ? 'Medium' : counts.low ? 'Low' : 'None';
+
+    const nextEvent = scopedRows
+      .filter(a => a._dt)
+      .sort((a,b)=>a._dt-b._dt)[0] || null;
+
+    const cityCounts = {};
+    scopedRows.forEach(a=>{
+      const place = a.city || a.country || 'Unknown';
+      cityCounts[place] = (cityCounts[place] || 0) + 1;
+    });
+    const topCityEntry = Object.entries(cityCounts).sort((a,b)=>b[1]-a[1])[0] || null;
+
+    document.getElementById('sum-total').textContent = total;
+    document.getElementById('sum-risk').textContent = topRisk;
+    document.getElementById('sum-next').textContent = nextEvent ? fmt(nextEvent._dt) : '—';
+    document.getElementById('sum-next-sub').textContent = nextEvent ? (nextEvent.title || 'Scheduled event') : 'No scheduled event in scope';
+    document.getElementById('sum-city').textContent = topCityEntry ? topCityEntry[0] : '—';
+    document.getElementById('sum-city-sub').textContent = topCityEntry ? `${topCityEntry[1]} event${topCityEntry[1]===1?'':'s'} in scope` : 'No clear focus area';
+
+    box.style.display = '';
   })();
 
   // render tables
