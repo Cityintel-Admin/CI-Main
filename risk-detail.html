@@ -100,6 +100,10 @@
     details.context-reveal summary{cursor:pointer;list-style:none;padding:12px 14px;color:#cfd6e1;font-weight:700}
     details.context-reveal summary::-webkit-details-marker{display:none}
     details.context-reveal .context-inner{padding:0 14px 14px 14px}
+    .match-chip{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid #2e3238;background:#1c1e22;color:#cfd6e1;white-space:nowrap}
+    .match-exact{background:rgba(208,22,22,.14);border-color:rgba(208,22,22,.45);color:#fff}
+    .match-near{background:rgba(240,180,41,.12);border-color:rgba(240,180,41,.35);color:#f0b429}
+    .match-broad{background:rgba(51,196,141,.12);border-color:rgba(51,196,141,.30);color:#9fe5c9}
 
     @media (max-width: 860px){
       .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -387,7 +391,7 @@
     </div>
     <div id="recentAlertsDirect">
       <table>
-        <thead><tr><th>Alert</th><th>Date</th><th>Risk</th></tr></thead>
+        <thead><tr><th>Alert</th><th>Date</th><th>Risk</th><th>Context</th></tr></thead>
         <tbody id="alertsBody"></tbody>
       </table>
     </div>
@@ -395,7 +399,7 @@
       <summary>Show broader historical context</summary>
       <div class="context-inner">
         <table>
-          <thead><tr><th>Alert</th><th>Date</th><th>Risk</th></tr></thead>
+          <thead><tr><th>Alert</th><th>Date</th><th>Risk</th><th>Context</th></tr></thead>
           <tbody id="alertsBodyExpanded"></tbody>
         </table>
       </div>
@@ -411,7 +415,7 @@
       </div>
     </div>
     <table>
-      <thead><tr><th>Event</th><th>Date</th><th>Risk</th></tr></thead>
+      <thead><tr><th>Event</th><th>Date</th><th>Risk</th><th>Match</th></tr></thead>
       <tbody id="eventsBody"></tbody>
     </table>
   </div>
@@ -521,7 +525,7 @@
   }
   if (riskScopeNote) {
     riskScopeNote.textContent = scopeEnd
-      ? `Scope preserved from dashboard: next ${scopeDays} days only.`
+      ? `Scope preserved from dashboard: next ${scopeDays} days only, with exact-match labelling below.`
       : `Overall mix for the current page scope.`;
   }
 
@@ -539,13 +543,13 @@
 
   if (upcomingEventsMeta) {
     upcomingEventsMeta.textContent = scopeEnd
-      ? `Showing only the preserved next ${scopeDays}-day dashboard window.`
-      : `Forward scheduled events for this page scope.`;
+      ? `Showing only the preserved next ${scopeDays}-day dashboard window, with row labels for exact matches.`
+      : `Forward scheduled events for this page scope, with match labels for quick scanning.`;
   }
   if (recentAlertsMeta) {
     recentAlertsMeta.textContent = scopeEnd
-      ? 'Historical context is hidden by default while dashboard scope is active.'
-      : 'Historical context for this location.';
+      ? 'Historical context is hidden by default while dashboard scope is active; open the reveal to inspect earlier context labels.'
+      : 'Historical context for this location, with row labels for match strength.';
   }
 
   // location card
@@ -654,16 +658,63 @@
   })();
 
   // render tables
-  const fillTable = (tbody, rows, emptyMessage='No data.', limit=null)=>{
+  const lower = v => String(v || '').trim().toLowerCase();
+  const focusCityKey = lower(focus?.city || cityParam);
+  const focusCountryKey = lower(focus?.country || regionParam);
+  const focusContinentKey = lower(focus?.continent || continentParam);
+
+  function rowContextMeta(r, tableKind='upcoming'){
+    const rowCity = lower(r.city);
+    const rowCountry = lower(r.country);
+    const rowContinent = lower(r.continent);
+
+    if (mode === 'city') {
+      if (rowCity && focusCityKey && rowCity === focusCityKey) {
+        return tableKind === 'recent'
+          ? { text: 'Earlier same-city', cls: 'match-exact' }
+          : { text: 'Exact city match', cls: 'match-exact' };
+      }
+      if (rowCountry && focusCountryKey && rowCountry === focusCountryKey) {
+        return tableKind === 'recent'
+          ? { text: 'Earlier country context', cls: 'match-near' }
+          : { text: 'Country context', cls: 'match-near' };
+      }
+      return { text: tableKind === 'recent' ? 'Broader historical' : 'Broader context', cls: 'match-broad' };
+    }
+
+    if (mode === 'region') {
+      if (rowCountry && lower(regionParam) && rowCountry === lower(regionParam)) {
+        return tableKind === 'recent'
+          ? { text: 'Earlier same-country', cls: 'match-exact' }
+          : { text: 'Exact country match', cls: 'match-exact' };
+      }
+      return { text: tableKind === 'recent' ? 'Regional history' : 'Regional context', cls: 'match-broad' };
+    }
+
+    if (mode === 'continent') {
+      if (rowContinent && lower(continentParam) && rowContinent === lower(continentParam)) {
+        return tableKind === 'recent'
+          ? { text: 'Earlier same-continent', cls: 'match-exact' }
+          : { text: 'Exact continent match', cls: 'match-exact' };
+      }
+      return { text: tableKind === 'recent' ? 'Broader history' : 'Broader context', cls: 'match-broad' };
+    }
+
+    return { text: tableKind === 'recent' ? 'Historical context' : 'In scope', cls: 'match-broad' };
+  }
+
+  const fillTable = (tbody, rows, emptyMessage='No data.', limit=null, tableKind='upcoming')=>{
     if (!tbody) return;
     tbody.innerHTML='';
-    if(!rows.length){ tbody.innerHTML=`<tr><td colspan="3" style="color:#8e97a3">${emptyMessage}</td></tr>`; return; }
+    if(!rows.length){ tbody.innerHTML=`<tr><td colspan="4" style="color:#8e97a3">${emptyMessage}</td></tr>`; return; }
     const sliced = typeof limit === 'number' ? rows.slice(0, limit) : rows;
     sliced.forEach(r=>{
       const tr=document.createElement('tr');
+      const meta = rowContextMeta(r, tableKind);
       tr.innerHTML=`<td>${r.title || ''} ${((mode==='continent')||(mode==='region'))?`<span style="color:#8e97a3">(${r.country} — ${r.city})</span>`:''}</td>
                     <td>${fmt(r._dt)}</td>
-                    <td><span style="font-weight:700;color:${color(r.risk)}">${label(r.risk)}</span></td>`;
+                    <td><span style="font-weight:700;color:${color(r.risk)}">${label(r.risk)}</span></td>
+                    <td><span class="match-chip ${meta.cls}">${meta.text}</span></td>`;
       tr.addEventListener('click',()=>{
         const q=new URLSearchParams(location.search);
         q.set('eventId',encodeURIComponent(key(r)));
@@ -677,13 +728,13 @@
   const eventsBody = document.getElementById('eventsBody');
 
   if (scopeEnd) {
-    fillTable(alertsBody, [], 'Historical alerts are hidden while dashboard scope is active.');
+    fillTable(alertsBody, [], 'Historical alerts are hidden while dashboard scope is active.', null, 'recent');
     if (recentAlertsReveal) recentAlertsReveal.style.display = recent.length ? '' : 'none';
-    fillTable(alertsBodyExpanded, recent, 'No broader historical alerts found.', 12);
-    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12);
+    fillTable(alertsBodyExpanded, recent, 'No broader historical alerts found.', 12, 'recent');
+    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12, 'upcoming');
   } else {
-    fillTable(alertsBody, recent, 'No historical alerts found.', 8);
-    fillTable(eventsBody, upcoming, 'No upcoming events found.', 12);
+    fillTable(alertsBody, recent, 'No historical alerts found.', 8, 'recent');
+    fillTable(eventsBody, upcoming, 'No upcoming events found.', 12, 'upcoming');
   }
 
   // ===== NEW: Continent Overview + Pie =====
