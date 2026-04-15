@@ -104,6 +104,14 @@
     .match-exact{background:rgba(208,22,22,.14);border-color:rgba(208,22,22,.45);color:#fff}
     .match-near{background:rgba(240,180,41,.12);border-color:rgba(240,180,41,.35);color:#f0b429}
     .match-broad{background:rgba(51,196,141,.12);border-color:rgba(51,196,141,.30);color:#9fe5c9}
+    .proximity-chip{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid rgba(46,168,255,.28);background:rgba(46,168,255,.10);color:#9fd6ff;white-space:nowrap}
+    .event-priority-row td{background:rgba(208,22,22,.08)}
+    .event-priority-row:hover td{background:rgba(208,22,22,.12)}
+    .event-title-wrap{display:flex;flex-direction:column;gap:4px}
+    .why-block{margin-top:14px;padding:12px 14px;border:1px solid #2e3238;border-radius:12px;background:#1a1c20}
+    .why-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3;margin-bottom:8px}
+    .why-list{margin:0;padding-left:18px;color:#e9edf2}
+    .why-list li+li{margin-top:4px}
 
     @media (max-width: 860px){
       .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -362,6 +370,10 @@
       <span class="mix-pill"><span class="dot" style="background:#33c48d"></span><span id="mixLow">0 low</span></span>
     </div>
     <div id="riskScopeNote" class="info-note">Scope mix will appear here.</div>
+    <div id="whyBlock" class="why-block" style="display:none;">
+      <div class="why-kicker">Why this matters</div>
+      <ul id="whyList" class="why-list"></ul>
+    </div>
   </div>
 
   <!-- Location -->
@@ -442,6 +454,29 @@
   const color = r => r==='high'?'#ff5a5f':r==='med'?'#f0b429':'#33c48d';
   const key   = a => `${a.title}|${a.time||''}|${a.city||''}|${a.country||a.Country||''}`;
   const fmt   = t => { const d=new Date(t); return isNaN(d)?'':d.toLocaleString('en-GB',{timeZone:'Europe/London',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
+  const startOfDay = d => { const x=new Date(d); x.setHours(0,0,0,0); return x; };
+  const daysDiff = (a,b) => Math.round((startOfDay(a)-startOfDay(b))/86400000);
+  const timeProximity = d => {
+    if(!d || isNaN(d)) return '';
+    const diff = daysDiff(d, new Date());
+    if (diff < 0) return 'Past event';
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    return `In ${diff} days`;
+  };
+  function whyThisMatters(a, rows, counts){
+    if(!a) return [];
+    const items=[];
+    const s=`${a.title||''} ${a.summary||''}`.toLowerCase();
+    if(/labour|labor|union|wage|strike|workers/.test(s)) items.push('Labour mobilisation is a primary driver, which can scale quickly and disrupt transport or business operations.');
+    if(/government|anti[- ]?government|opposition|corruption|parliament|service delivery|political/.test(s)) items.push('Political or governance pressure increases the chance of escalation, visible policing, and route controls.');
+    if(/student|university|education|campus/.test(s)) items.push('Education-linked mobilisation can spread fast across campuses and city centres with short notice.');
+    if(/cost[- ]?of[- ]?living|inflation|price|fuel|economic|housing/.test(s)) items.push('Economic pressure themes often attract broader turnout and repeat actions across nearby locations.');
+    const place = a.city || a.country || 'this area';
+    items.push(`The lead event is centred on ${place}, so disruption risk is concentrated around key routes, public spaces, and transport hubs.`);
+    if ((counts.high||0) + (counts.med||0) > 1) items.push(`Multiple events are clustering in the current scope (${counts.high||0} high, ${counts.med||0} medium), which raises operational attention.`);
+    return items.slice(0,3);
+  }
 
   const all = (window.alertsData || []).map(a => ({
     ...a,
@@ -481,6 +516,8 @@
   const locCountry = document.getElementById('loc-country');
   const locCity = document.getElementById('loc-city');
   const locRisk = document.getElementById('loc-risk');
+  const whyBlock = document.getElementById('whyBlock');
+  const whyList = document.getElementById('whyList');
 
   // pick a focus event
   let focus = null;
@@ -536,6 +573,11 @@
     }
     const scopeLine = scopeEnd ? `<br><span style="color:#8e97a3">Scope mix: ${countsForSummary.high} high • ${countsForSummary.med} medium • ${countsForSummary.low} low</span>` : '';
     riskSummary.innerHTML = `${focus.title||''}${when?` — <span style="color:#8e97a3">${when}</span>`:''}<br>${focus.summary||''}${scopeLine}`;
+    const whyItems = whyThisMatters(focus, displayRows, countsForSummary);
+    if (whyBlock && whyList && whyItems.length) {
+      whyList.innerHTML = whyItems.map(item => `<li>${item}</li>`).join('');
+      whyBlock.style.display = '';
+    }
   } else {
     if (riskLeadMeta) riskLeadMeta.textContent = 'No lead event available in the current scope.';
     riskSummary.textContent = `${displayRows.length||0} records found (${label(badgeRisk)} overall mix).`;
@@ -543,8 +585,8 @@
 
   if (upcomingEventsMeta) {
     upcomingEventsMeta.textContent = scopeEnd
-      ? `Showing only the preserved next ${scopeDays}-day dashboard window, with row labels to separate exact city matches from wider context.`
-      : `Forward scheduled events for this page scope, with match labels for quick scanning.`;
+      ? `Showing only the preserved next ${scopeDays}-day dashboard window, with exact city matches vs wider context.`
+      : `Forward scheduled events for this page scope, with match labels for fast scanning.`;
   }
   if (recentAlertsMeta) {
     recentAlertsMeta.textContent = scopeEnd
@@ -671,36 +713,36 @@
     if (mode === 'city') {
       if (rowCity && focusCityKey && rowCity === focusCityKey) {
         return tableKind === 'recent'
-          ? { text: 'Earlier same-city', cls: 'match-exact' }
-          : { text: 'Exact city match', cls: 'match-exact' };
+          ? { text: '📍 Earlier same-city', cls: 'match-exact' }
+          : { text: '📍 Exact city match', cls: 'match-exact' };
       }
       if (rowCountry && focusCountryKey && rowCountry === focusCountryKey) {
         return tableKind === 'recent'
-          ? { text: 'Earlier country context', cls: 'match-near' }
-          : { text: 'Country context', cls: 'match-near' };
+          ? { text: '🌐 Earlier country context', cls: 'match-near' }
+          : { text: '🌐 Country context', cls: 'match-near' };
       }
-      return { text: tableKind === 'recent' ? 'Broader historical' : 'Broader context', cls: 'match-broad' };
+      return { text: tableKind === 'recent' ? '🧭 Broader historical' : '🧭 Broader context', cls: 'match-broad' };
     }
 
     if (mode === 'region') {
       if (rowCountry && lower(regionParam) && rowCountry === lower(regionParam)) {
         return tableKind === 'recent'
-          ? { text: 'Earlier same-country', cls: 'match-exact' }
-          : { text: 'Exact country match', cls: 'match-exact' };
+          ? { text: '🌐 Earlier same-country', cls: 'match-exact' }
+          : { text: '🌐 Exact country match', cls: 'match-exact' };
       }
-      return { text: tableKind === 'recent' ? 'Regional history' : 'Regional context', cls: 'match-broad' };
+      return { text: tableKind === 'recent' ? '🧭 Regional history' : '🧭 Regional context', cls: 'match-broad' };
     }
 
     if (mode === 'continent') {
       if (rowContinent && lower(continentParam) && rowContinent === lower(continentParam)) {
         return tableKind === 'recent'
-          ? { text: 'Earlier same-continent', cls: 'match-exact' }
-          : { text: 'Exact continent match', cls: 'match-exact' };
+          ? { text: '🧭 Earlier same-continent', cls: 'match-exact' }
+          : { text: '🧭 Exact continent match', cls: 'match-exact' };
       }
-      return { text: tableKind === 'recent' ? 'Broader history' : 'Broader context', cls: 'match-broad' };
+      return { text: tableKind === 'recent' ? '🧭 Broader history' : '🧭 Broader context', cls: 'match-broad' };
     }
 
-    return { text: tableKind === 'recent' ? 'Historical context' : 'In scope', cls: 'match-broad' };
+    return { text: tableKind === 'recent' ? '🧭 Historical context' : '🧭 In scope', cls: 'match-broad' };
   }
 
   const fillTable = (tbody, rows, emptyMessage='No data.', limit=null, tableKind='upcoming')=>{
@@ -708,10 +750,15 @@
     tbody.innerHTML='';
     if(!rows.length){ tbody.innerHTML=`<tr><td colspan="4" style="color:#8e97a3">${emptyMessage}</td></tr>`; return; }
     const sliced = typeof limit === 'number' ? rows.slice(0, limit) : rows;
+    let priorityMarked = false;
     sliced.forEach(r=>{
       const tr=document.createElement('tr');
       const meta = rowContextMeta(r, tableKind);
-      tr.innerHTML=`<td>${r.title || ''} ${((mode==='continent')||(mode==='region'))?`<span style="color:#8e97a3">(${r.country} — ${r.city})</span>`:''}</td>
+      const proximity = tableKind === 'upcoming' ? timeProximity(r._dt) : '';
+      const isPriority = tableKind === 'upcoming' && !priorityMarked && r.risk === 'high';
+      if (isPriority) { tr.className = 'event-priority-row'; priorityMarked = true; }
+      const titleMeta = ((mode==='continent')||(mode==='region')) ? ` <span style="color:#8e97a3">(${r.country} — ${r.city})</span>` : '';
+      tr.innerHTML=`<td><div class="event-title-wrap"><span>${r.title || ''}${titleMeta}</span>${proximity ? `<span class="proximity-chip">${proximity}</span>` : ''}</div></td>
                     <td>${fmt(r._dt)}</td>
                     <td><span style="font-weight:700;color:${color(r.risk)}">${label(r.risk)}</span></td>
                     <td><span class="match-chip ${meta.cls}">${meta.text}</span></td>`;
