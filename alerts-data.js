@@ -20,7 +20,65 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  {
+  "title": "Animal Rights March UK 2026",
+  "city": "London",
+  "lat": 51.5131,
+  "lng": -0.1588,
+  "address": "Marble Arch",
+  "postcode": "W2 2UH",
+  "country": "United Kingdom",
+  "continent": "Europe",
+  "risk": "Moderate",
+  "time": "2026-07-25T11:00:00",
+  "source": "https://www.facebook.com/events/marble-arch/animal-rights-march-uk-2026/1447012969722337/",
+  "summary": "A gathering at Marble Arch to advocate for vegan education and the abolition of all animal use."
+},
 
+  {
+  "title": "Nakba 78: March for Palestine",
+  "city": "London",
+  "lat": 51.5074,
+  "lng": -0.1278,
+  "address": "Central London",
+  "postcode": "N/A",
+  "country": "United Kingdom",
+  "continent": "Europe",
+  "risk": "High",
+  "time": "2026-05-16T12:00:00",
+  "source": "https://palestinecampaign.org/events/",
+  "summary": "A major national march in central London commemorating the 78th anniversary of the Nakba and calling for Palestinian liberation."
+},
+
+  {
+  "title": "National Housing Demo",
+  "city": "London",
+  "lat": 51.5145,
+  "lng": -0.1321,
+  "address": "Soho Square Gardens",
+  "postcode": "W1D 3QP",
+  "country": "United Kingdom",
+  "continent": "Europe",
+  "risk": "Moderate",
+  "time": "2026-04-18T13:00:00",
+  "source": "https://www.facebook.com/StreetsKitchenOfficial/",
+  "summary": "A national demonstration focused on housing rights and issues, assembling at Soho Square Gardens."
+},
+
+  {
+  "title": "Palestinian Prisoners' Day",
+  "city": "London",
+  "lat": 51.5074,
+  "lng": -0.1278,
+  "address": "Central London",
+  "postcode": "N/A",
+  "country": "United Kingdom",
+  "continent": "Europe",
+  "risk": "Moderate",
+  "time": "2026-04-17T18:00:00",
+  "source": "https://palestinecampaign.org/",
+  "summary": "A protest in central London marking Palestinian Prisoners' Day to raise awareness and demand rights for detainees."
+},
 
  {
   title: "Student Protest on Education Funding",
@@ -36,6 +94,21 @@ window.alertsData =[
   source: "https://www.greenleft.org.au/events",
   summary: "Student groups are expected to organise protests in Brisbane focusing on education funding and university policies. Demonstrators are expected to gather on campus and potentially move into surrounding areas. The protest is expected to remain peaceful with limited disruption. Risk is assessed as medium."
 }, 
+
+  {
+  "title": "Apartheid in South Africa and Palestine",
+  "city": "London",
+  "lat": 51.5074,
+  "lng": -0.1278,
+  "address": "Central London",
+  "postcode": "N/A",
+  "country": "United Kingdom",
+  "continent": "Europe",
+  "risk": "Low/Moderate",
+  "time": "2026-04-18T12:00:00",
+  "source": "https://palestinecampaign.org/",
+  "summary": "An educational and solidarity event comparing historical apartheid in South Africa with the current situation in Palestine."
+},
 
 {
   title: "Stop War Coalition Rally",
