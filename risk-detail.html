@@ -10,6 +10,8 @@
 
   <!-- Chart.js for the pie -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     body {
@@ -113,6 +115,17 @@
     .why-list{margin:0;padding-left:18px;color:#e9edf2}
     .why-list li+li{margin-top:4px}
 
+    .continent-map-card{background:linear-gradient(180deg,#1a1c20,#131417); border:1px solid #2e3238;}
+    .continent-map-head{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap}
+    .continent-map-meta{font-size:12px; color:#8e97a3}
+    .continent-map-wrap{height:320px; border-radius:12px; overflow:hidden; border:1px solid #2e3238; background:#111214}
+    .continent-map-legend{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:#cfd6e1}
+    .continent-map-legend span{display:inline-flex; align-items:center; gap:6px}
+    .continent-map-legend i{display:inline-block; width:10px; height:10px; border-radius:50%}
+    .map-empty-note{font-size:12px; color:#8e97a3; margin-top:8px}
+    .leaflet-container{background:#111214;}
+    .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#17191d; color:#e9edf2; border:1px solid #2e3238;}
+
     @media (max-width: 860px){
       .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
@@ -177,11 +190,18 @@
           <span><span style="display:inline-block;width:10px;height:10px;background:#6bcf6b;border-radius:2px;margin-right:6px"></span>Low</span>
         </div>
       </div>
-      <div class="card" style="background:linear-gradient(180deg,#1a1c20,#131417); border:1px solid #2e3238;">
-        <h3 style="margin:0 0 6px 0;">Analyst Brief</h3>
-        <ul id="contBullets" style="margin:6px 0 0 18px; color:#cfd6df;">
-          <!-- bullets injected -->
-        </ul>
+      <div class="card continent-map-card">
+        <div class="continent-map-head">
+          <h3 style="margin:0;">Continent Protest Map</h3>
+          <span id="contMapMeta" class="continent-map-meta">Current month only</span>
+        </div>
+        <div id="continentMap" class="continent-map-wrap" aria-label="Continent protest map"></div>
+        <div class="continent-map-legend">
+          <span><i style="background:#ff5a5f"></i>High</span>
+          <span><i style="background:#f0b429"></i>Medium</span>
+          <span><i style="background:#6bcf6b"></i>Low</span>
+        </div>
+        <div id="continentMapNote" class="map-empty-note"></div>
       </div>
     </div>
   </div>
@@ -792,8 +812,10 @@
     const contTitle = document.getElementById('contTitle');
     const contPieTitle = document.getElementById('contPieTitle');
     const contNarrative = document.getElementById('contNarrative');
-    const bullets = document.getElementById('contBullets');
     const pieEl = document.getElementById('contRiskPie');
+    const mapEl = document.getElementById('continentMap');
+    const mapMeta = document.getElementById('contMapMeta');
+    const mapNote = document.getElementById('continentMapNote');
 
     // Compute current-month window automatically from today
     const today = new Date();
@@ -819,7 +841,7 @@
       ? `This month shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints early to mid-month; medium-risk actions are broadly distributed.`
       : `No tracked protest events across ${continentParam} so far this month.`;
 
-    // Bullets — quick themes from titles/summaries
+    // Quick theme summary for map meta/note
     const themeDetect = (a => {
       const s = `${a.title||''} ${a.summary||''}`.toLowerCase();
       if (s.match(/labour|union|wage|strike|cosatu|workers/)) return 'Labour & wage disputes';
@@ -831,10 +853,18 @@
     });
     const topThemes = {};
     monthRows.forEach(a => { const t = themeDetect(a); topThemes[t] = (topThemes[t]||0)+1; });
-    const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,4);
-    bullets.innerHTML = themeList.length
-      ? themeList.map(([t,c])=>`<li>${t} — ${c} event${c!==1?'s':''}</li>`).join('')
-      : `<li>No dominant themes detected yet for this month.</li>`;
+    const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+    if (mapMeta) {
+      mapMeta.textContent = total
+        ? `${total} mapped event${total!==1?'s':''} in ${monthLongLabel}`
+        : `No mapped events in ${monthLongLabel}`;
+    }
+    if (mapNote) {
+      mapNote.textContent = themeList.length
+        ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}`
+        : `No dominant protest themes detected yet for this month.`;
+    }
 
     // Pie
     if (window.Chart && pieEl) {
@@ -864,6 +894,67 @@
           }
         }
       });
+    }
+
+    // Map
+    const continentBounds = {
+      africa: [[-36, -20], [38, 55]],
+      asia: [[-10, 25], [60, 150]],
+      europe: [[34, -25], [72, 45]],
+      'north america': [[5, -170], [83, -50]],
+      'south america': [[-58, -92], [15, -30]],
+      oceania: [[-50, 110], [5, 180]]
+    };
+    const validMapRows = monthRows.filter(a =>
+      Number.isFinite(Number(a.lat)) && Number.isFinite(Number(a.lng))
+    );
+
+    if (mapEl && window.L) {
+      mapEl.innerHTML = '';
+      const map = L.map(mapEl, {
+        zoomControl: true,
+        attributionControl: true,
+        scrollWheelZoom: false
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+      }).addTo(map);
+
+      const markerBounds = [];
+      validMapRows.forEach(r => {
+        const lat = Number(r.lat), lng = Number(r.lng);
+        const fill = color(r.risk);
+        const marker = L.circleMarker([lat, lng], {
+          radius: 6,
+          color: fill,
+          weight: 1,
+          fillColor: fill,
+          fillOpacity: 0.85
+        }).addTo(map);
+        marker.bindPopup(`
+          <strong>${r.title || 'Untitled event'}</strong><br>
+          ${r.city || 'Unknown city'}, ${r.country || 'Unknown country'}<br>
+          <span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br>
+          <span style="color:#8e97a3;">${fmt(r._dt)}</span>
+        `);
+        markerBounds.push([lat, lng]);
+      });
+
+      if (markerBounds.length) {
+        const bounds = L.latLngBounds(markerBounds);
+        map.fitBounds(bounds, { padding: [20, 20] });
+        if (bounds.isValid() && map.getZoom() > 5) map.setZoom(5);
+      } else {
+        const fallback = continentBounds[String(continentParam).toLowerCase()];
+        if (fallback) {
+          map.fitBounds(fallback, { padding: [20, 20] });
+        } else {
+          map.setView([20, 0], 2);
+        }
+      }
+
+      setTimeout(() => map.invalidateSize(), 0);
     }
 
     // reveal
