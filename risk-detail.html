@@ -109,6 +109,8 @@
     .proximity-chip{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid rgba(46,168,255,.28);background:rgba(46,168,255,.10);color:#9fd6ff;white-space:nowrap}
     .event-priority-row td{background:rgba(208,22,22,.08)}
     .event-priority-row:hover td{background:rgba(208,22,22,.12)}
+    .event-map-highlight td{background:rgba(46,168,255,.12)!important; box-shadow: inset 3px 0 0 rgba(46,168,255,.9);}
+    .event-map-highlight:hover td{background:rgba(46,168,255,.16)!important;}
     .event-title-wrap{display:flex;flex-direction:column;gap:4px}
     .why-block{margin-top:14px;padding:12px 14px;border:1px solid #2e3238;border-radius:12px;background:#1a1c20}
     .why-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3;margin-bottom:8px}
@@ -538,6 +540,31 @@
   const locRisk = document.getElementById('loc-risk');
   const whyBlock = document.getElementById('whyBlock');
   const whyList = document.getElementById('whyList');
+  const mapRowRegistry = new Map();
+
+  function registerMapRow(rowKey, tr){
+    if(!rowKey || !tr) return;
+    if(!mapRowRegistry.has(rowKey)) mapRowRegistry.set(rowKey, []);
+    mapRowRegistry.get(rowKey).push(tr);
+  }
+
+  function clearMapHighlights(){
+    document.querySelectorAll('.event-map-highlight').forEach(el => el.classList.remove('event-map-highlight'));
+  }
+
+  function highlightMappedEvent(rowKey){
+    if(!rowKey || !mapRowRegistry.has(rowKey)) return false;
+    clearMapHighlights();
+    const rows = mapRowRegistry.get(rowKey) || [];
+    const target = rows[0];
+    if(!target) return false;
+    const reveal = target.closest('details.context-reveal');
+    if(reveal && !reveal.open) reveal.open = true;
+    rows.forEach(r => r.classList.add('event-map-highlight'));
+    target.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(() => rows.forEach(r => r.classList.remove('event-map-highlight')), 2600);
+    return true;
+  }
 
   // pick a focus event
   let focus = null;
@@ -778,13 +805,16 @@
       const isPriority = tableKind === 'upcoming' && !priorityMarked && r.risk === 'high';
       if (isPriority) { tr.className = 'event-priority-row'; priorityMarked = true; }
       const titleMeta = ((mode==='continent')||(mode==='region')) ? ` <span style="color:#8e97a3">(${r.country} — ${r.city})</span>` : '';
+      const rowKey = key(r);
+      tr.dataset.eventKey = rowKey;
       tr.innerHTML=`<td><div class="event-title-wrap"><span>${r.title || ''}${titleMeta}</span>${proximity ? `<span class="proximity-chip">${proximity}</span>` : ''}</div></td>
                     <td>${fmt(r._dt)}</td>
                     <td><span style="font-weight:700;color:${color(r.risk)}">${label(r.risk)}</span></td>
                     <td><span class="match-chip ${meta.cls}">${meta.text}</span></td>`;
+      registerMapRow(rowKey, tr);
       tr.addEventListener('click',()=>{
         const q=new URLSearchParams(location.search);
-        q.set('eventId',encodeURIComponent(key(r)));
+        q.set('eventId',encodeURIComponent(rowKey));
         location.search=q.toString();
       });
       tbody.appendChild(tr);
@@ -911,10 +941,13 @@
 
     if (mapEl && window.L) {
       mapEl.innerHTML = '';
+      const fallback = continentBounds[String(continentParam).toLowerCase()];
       const map = L.map(mapEl, {
         zoomControl: true,
         attributionControl: true,
-        scrollWheelZoom: false
+        scrollWheelZoom: true,
+        wheelPxPerZoomLevel: 120,
+        minZoom: 2
       });
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -936,23 +969,35 @@
           <strong>${r.title || 'Untitled event'}</strong><br>
           ${r.city || 'Unknown city'}, ${r.country || 'Unknown country'}<br>
           <span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br>
-          <span style="color:#8e97a3;">${fmt(r._dt)}</span>
+          <span style="color:#8e97a3;">${fmt(r._dt)}</span><br>
+          <span style="color:#9fd6ff;">Click marker to locate matching row below</span>
         `);
+        const rowKey = key(r);
+        marker.on('click', () => {
+          highlightMappedEvent(rowKey);
+        });
         markerBounds.push([lat, lng]);
       });
 
-      if (markerBounds.length) {
+      if (fallback) {
+        const fallbackBounds = L.latLngBounds(fallback);
+        map.fitBounds(fallbackBounds, { padding: [18, 18] });
+        map.setMaxBounds(fallbackBounds.pad(0.18));
+        if (markerBounds.length) {
+          const eventBounds = L.latLngBounds(markerBounds);
+          const preferredCenter = eventBounds.isValid() ? eventBounds.getCenter() : fallbackBounds.getCenter();
+          map.panInside(preferredCenter, { paddingTopLeft:[20,20], paddingBottomRight:[20,20] });
+        }
+      } else if (markerBounds.length) {
         const bounds = L.latLngBounds(markerBounds);
         map.fitBounds(bounds, { padding: [20, 20] });
-        if (bounds.isValid() && map.getZoom() > 5) map.setZoom(5);
       } else {
-        const fallback = continentBounds[String(continentParam).toLowerCase()];
-        if (fallback) {
-          map.fitBounds(fallback, { padding: [20, 20] });
-        } else {
-          map.setView([20, 0], 2);
-        }
+        map.setView([20, 0], 2);
       }
+
+      map.on('mouseover', () => map.scrollWheelZoom.enable());
+      map.on('mouseout', () => map.scrollWheelZoom.disable());
+      map.scrollWheelZoom.disable();
 
       setTimeout(() => map.invalidateSize(), 0);
     }
