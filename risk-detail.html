@@ -474,7 +474,8 @@
   const norm  = r => { r=(r||'').toLowerCase(); if(r.startsWith('hi')) return 'high'; if(r.startsWith('me')) return 'med'; return 'low'; };
   const label = r => r==='high'?'High':r==='med'?'Medium':'Low';
   const color = r => r==='high'?'#ff5a5f':r==='med'?'#f0b429':'#33c48d';
-  const key   = a => `${a.title}|${a.time||''}|${a.city||''}|${a.country||a.Country||''}`;
+  const legacyKey = a => `${a.title}|${a.time||''}|${a.city||''}|${a.country||a.Country||''}`;
+  const key   = a => a && a._rowId ? String(a._rowId) : legacyKey(a);
   const fmt   = t => { const d=new Date(t); return isNaN(d)?'':d.toLocaleString('en-GB',{timeZone:'Europe/London',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
   const startOfDay = d => { const x=new Date(d); x.setHours(0,0,0,0); return x; };
   const daysDiff = (a,b) => Math.round((startOfDay(a)-startOfDay(b))/86400000);
@@ -500,8 +501,9 @@
     return items.slice(0,3);
   }
 
-  const all = (window.alertsData || []).map(a => ({
+  const all = (window.alertsData || []).map((a, idx) => ({
     ...a,
+    _rowId: `alert-${idx}`,
     risk: norm(a.risk),
     continent: a.continent || a.Continent || '',
     country: a.country || a.Country || '',
@@ -569,7 +571,8 @@
   // pick a focus event
   let focus = null;
   if (eventIdParam) {
-    focus = subset.find(a => key(a) === decodeURIComponent(eventIdParam)) || null;
+    const decodedEventId = decodeURIComponent(eventIdParam);
+    focus = subset.find(a => key(a) === decodedEventId || legacyKey(a) === decodedEventId) || null;
   }
   if (!focus) {
     focus = upcoming.find(a=>a.risk==='high') || upcoming[0] || recent[0] || subset[0] || null;
@@ -981,25 +984,24 @@
 
       if (fallback) {
         const fallbackBounds = L.latLngBounds(fallback);
-        map.fitBounds(fallbackBounds, { padding: [18, 18] });
-        map.setMaxBounds(fallbackBounds.pad(0.18));
-        if (markerBounds.length) {
-          const eventBounds = L.latLngBounds(markerBounds);
-          const preferredCenter = eventBounds.isValid() ? eventBounds.getCenter() : fallbackBounds.getCenter();
-          map.panInside(preferredCenter, { paddingTopLeft:[20,20], paddingBottomRight:[20,20] });
-        }
+        map.fitBounds(fallbackBounds, { padding: [28, 28] });
       } else if (markerBounds.length) {
         const bounds = L.latLngBounds(markerBounds);
-        map.fitBounds(bounds, { padding: [20, 20] });
+        map.fitBounds(bounds, { padding: [24, 24] });
       } else {
         map.setView([20, 0], 2);
       }
 
-      map.on('mouseover', () => map.scrollWheelZoom.enable());
-      map.on('mouseout', () => map.scrollWheelZoom.disable());
-      map.scrollWheelZoom.disable();
+      map.scrollWheelZoom.enable();
 
-      setTimeout(() => map.invalidateSize(), 0);
+      setTimeout(() => {
+        map.invalidateSize();
+        if (fallback) {
+          map.fitBounds(L.latLngBounds(fallback), { padding: [28, 28] });
+        } else if (markerBounds.length) {
+          map.fitBounds(L.latLngBounds(markerBounds), { padding: [24, 24] });
+        }
+      }, 60);
     }
 
     // reveal
