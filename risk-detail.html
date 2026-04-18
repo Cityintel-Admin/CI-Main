@@ -180,6 +180,28 @@
     <div class="card" style="margin-bottom:12px;">
       <h2 id="contTitle">Current Month Overview</h2>
       <p id="contNarrative" style="color:#cfd6df; margin-top:6px;"></p>
+      <div id="contOverviewStats" class="scope-summary-grid" style="margin-top:14px; display:none;">
+        <div class="scope-summary-item">
+          <div class="scope-summary-label">Current month total</div>
+          <div id="contStatTotal" class="scope-summary-value">0</div>
+          <div class="scope-summary-sub">Mapped events this month</div>
+        </div>
+        <div class="scope-summary-item">
+          <div class="scope-summary-label">Top hotspot</div>
+          <div id="contStatHotspot" class="scope-summary-value">—</div>
+          <div id="contStatHotspotSub" class="scope-summary-sub">Most active country</div>
+        </div>
+        <div class="scope-summary-item">
+          <div class="scope-summary-label">Next scheduled</div>
+          <div id="contStatNext" class="scope-summary-value">—</div>
+          <div id="contStatNextSub" class="scope-summary-sub">Next event in continent view</div>
+        </div>
+        <div class="scope-summary-item">
+          <div class="scope-summary-label">Dominant band</div>
+          <div id="contStatBand" class="scope-summary-value">—</div>
+          <div id="contStatBandSub" class="scope-summary-sub">Largest monthly risk share</div>
+        </div>
+      </div>
     </div>
 
     <div class="overview-grid">
@@ -519,9 +541,17 @@
     : all.filter(a => (a.city||'').toLowerCase().includes(cityParam.toLowerCase()));
 
   const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const inCurrentMonth = d => !!(d && d >= currentMonthStart && d < currentMonthEnd);
   const scopeEnd = scopeDays > 0 ? new Date(now.getTime() + scopeDays * 24 * 60 * 60 * 1000) : null;
   const scopedRows = scopeEnd ? subset.filter(a => a._dt && a._dt >= now && a._dt <= scopeEnd) : subset;
-  const upcoming = (scopeEnd ? scopedRows : subset.filter(a => a._dt && a._dt >= now)).sort((a,b)=>a._dt-b._dt);
+  const upcomingBase = scopeEnd
+    ? scopedRows
+    : mode === 'continent'
+      ? subset.filter(a => a._dt && a._dt >= now && a._dt < currentMonthEnd)
+      : subset.filter(a => a._dt && a._dt >= now);
+  const upcoming = upcomingBase.sort((a,b)=>a._dt-b._dt);
   const recent   = scopeEnd ? [] : subset.filter(a => a._dt && a._dt < now).sort((a,b)=>b._dt-a._dt);
 
   const pageTitle = document.getElementById('pageTitle');
@@ -636,7 +666,9 @@
   if (upcomingEventsMeta) {
     upcomingEventsMeta.textContent = scopeEnd
       ? `Showing only the preserved next ${scopeDays}-day dashboard window, with exact city matches vs wider context.`
-      : `Forward scheduled events for this page scope, with match labels for fast scanning.`;
+      : mode === 'continent'
+        ? `Forward scheduled events remaining in the current month for this continent view, with match labels for fast scanning.`
+        : `Forward scheduled events for this page scope, with match labels for fast scanning.`;
   }
   if (recentAlertsMeta) {
     recentAlertsMeta.textContent = scopeEnd
@@ -795,7 +827,7 @@
     return { text: tableKind === 'recent' ? '🧭 Historical context' : '🧭 In scope', cls: 'match-broad' };
   }
 
-  const fillTable = (tbody, rows, emptyMessage='No data.', limit=null, tableKind='upcoming')=>{
+  const fillTable = (tbody, rows, emptyMessage='No data.', limit=null, tableKind='upcoming', enablePriority=true)=>{
     if (!tbody) return;
     tbody.innerHTML='';
     if(!rows.length){ tbody.innerHTML=`<tr><td colspan="4" style="color:#8e97a3">${emptyMessage}</td></tr>`; return; }
@@ -805,7 +837,7 @@
       const tr=document.createElement('tr');
       const meta = rowContextMeta(r, tableKind);
       const proximity = tableKind === 'upcoming' ? timeProximity(r._dt) : '';
-      const isPriority = tableKind === 'upcoming' && !priorityMarked && r.risk === 'high';
+      const isPriority = enablePriority && tableKind === 'upcoming' && !priorityMarked && r.risk === 'high';
       if (isPriority) { tr.className = 'event-priority-row'; priorityMarked = true; }
       const titleMeta = ((mode==='continent')||(mode==='region')) ? ` <span style="color:#8e97a3">(${r.country} — ${r.city})</span>` : '';
       const rowKey = key(r);
@@ -831,10 +863,10 @@
     fillTable(alertsBody, [], 'Historical alerts are hidden while dashboard scope is active.', null, 'recent');
     if (recentAlertsReveal) recentAlertsReveal.style.display = recent.length ? '' : 'none';
     fillTable(alertsBodyExpanded, recent, 'No broader historical alerts found.', 12, 'recent');
-    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12, 'upcoming');
+    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12, 'upcoming', mode !== 'continent');
   } else {
     fillTable(alertsBody, recent, 'No historical alerts found.', 8, 'recent');
-    fillTable(eventsBody, upcoming, 'No upcoming events found.', 12, 'upcoming');
+    fillTable(eventsBody, upcoming, mode === 'continent' ? 'No further events this month.' : 'No upcoming events found.', 12, 'upcoming', mode !== 'continent');
   }
 
   // ===== NEW: Continent Overview + Pie =====
@@ -850,13 +882,9 @@
     const mapMeta = document.getElementById('contMapMeta');
     const mapNote = document.getElementById('continentMapNote');
 
-    // Compute current-month window automatically from today
-    const today = new Date();
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthEnd   = new Date(today.getFullYear(), today.getMonth()+1, 1);
-
-    const inMonth = d => (d && d >= monthStart && d < monthEnd);
-
+    const monthStart = currentMonthStart;
+    const monthEnd   = currentMonthEnd;
+    const inMonth = inCurrentMonth;
     const monthRows = subset.filter(a => inMonth(a._dt));
     const counts = {high:0, med:0, low:0};
     monthRows.forEach(r => counts[r.risk]++);
@@ -897,6 +925,26 @@
       mapNote.textContent = themeList.length
         ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}`
         : `No dominant protest themes detected yet for this month.`;
+    }
+
+    const statsWrap = document.getElementById('contOverviewStats');
+    const hotspotCountryEntry = Object.entries(monthRows.reduce((acc, row) => {
+      const k = row.country || 'Unknown';
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {})).sort((a,b)=>b[1]-a[1])[0];
+    const nextMonthEvent = monthRows.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt)[0] || null;
+    const dominantBand = hi >= me && hi >= lo ? 'High' : me >= lo ? 'Medium' : 'Low';
+
+    if (statsWrap) {
+      document.getElementById('contStatTotal').textContent = String(total);
+      document.getElementById('contStatHotspot').textContent = hotspotCountryEntry ? hotspotCountryEntry[0] : '—';
+      document.getElementById('contStatHotspotSub').textContent = hotspotCountryEntry ? `${hotspotCountryEntry[1]} event${hotspotCountryEntry[1]===1?'':'s'} this month` : 'No clear hotspot';
+      document.getElementById('contStatNext').textContent = nextMonthEvent ? fmt(nextMonthEvent._dt) : '—';
+      document.getElementById('contStatNextSub').textContent = nextMonthEvent ? `${nextMonthEvent.city || nextMonthEvent.country || continentParam} — ${nextMonthEvent.title || 'Scheduled event'}` : 'No further events this month';
+      document.getElementById('contStatBand').textContent = dominantBand;
+      document.getElementById('contStatBandSub').textContent = total ? `${dominantBand.toLowerCase()} risk is the largest share this month` : 'No monthly distribution yet';
+      statsWrap.style.display = 'grid';
     }
 
     // Pie
@@ -949,7 +997,7 @@
         zoomControl: true,
         attributionControl: true,
         scrollWheelZoom: true,
-        wheelPxPerZoomLevel: 128,
+        wheelPxPerZoomLevel: 120,
         minZoom: 2
       });
 
