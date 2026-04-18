@@ -125,6 +125,11 @@
     .continent-map-legend span{display:inline-flex; align-items:center; gap:6px}
     .continent-map-legend i{display:inline-block; width:10px; height:10px; border-radius:50%}
     .map-empty-note{font-size:12px; color:#8e97a3; margin-top:8px}
+    .active-map-event{margin-top:10px;padding:10px 12px;border:1px solid #2e3238;border-radius:12px;background:#1a1c20}
+    .active-map-event .label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3;margin-bottom:4px}
+    .active-map-event .title{font-size:14px;font-weight:800;color:#e9edf2}
+    .active-map-event .meta{font-size:12px;color:#cfd6e1;margin-top:4px}
+    .active-map-event .hint{font-size:11px;color:#8e97a3;margin-top:4px}
     .leaflet-container{background:#111214;}
     .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#17191d; color:#e9edf2; border:1px solid #2e3238;}
 
@@ -226,6 +231,12 @@
           <span><i style="background:#6bcf6b"></i>Low</span>
         </div>
         <div id="continentMapNote" class="map-empty-note"></div>
+        <div id="activeMapEvent" class="active-map-event" style="display:none;">
+          <div class="label">Selected map event</div>
+          <div id="activeMapEventTitle" class="title">No marker selected</div>
+          <div id="activeMapEventMeta" class="meta"></div>
+          <div class="hint">Click a marker to sync the corresponding row below.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -546,12 +557,18 @@
   const inCurrentMonth = d => !!(d && d >= currentMonthStart && d < currentMonthEnd);
   const scopeEnd = scopeDays > 0 ? new Date(now.getTime() + scopeDays * 24 * 60 * 60 * 1000) : null;
   const scopedRows = scopeEnd ? subset.filter(a => a._dt && a._dt >= now && a._dt <= scopeEnd) : subset;
+  const continentMonthRows = mode === 'continent'
+    ? subset.filter(a => inCurrentMonth(a._dt))
+    : [];
+  const continentUpcomingRows = mode === 'continent'
+    ? continentMonthRows.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt)
+    : [];
   const upcomingBase = scopeEnd
     ? scopedRows
     : mode === 'continent'
-      ? subset.filter(a => a._dt && a._dt >= now && a._dt < currentMonthEnd)
+      ? continentUpcomingRows
       : subset.filter(a => a._dt && a._dt >= now);
-  const upcoming = upcomingBase.sort((a,b)=>a._dt-b._dt);
+  const upcoming = [...upcomingBase].sort((a,b)=>a._dt-b._dt);
   const recent   = scopeEnd ? [] : subset.filter(a => a._dt && a._dt < now).sort((a,b)=>b._dt-a._dt);
 
   const pageTitle = document.getElementById('pageTitle');
@@ -573,6 +590,8 @@
   const whyBlock = document.getElementById('whyBlock');
   const whyList = document.getElementById('whyList');
   const mapRowRegistry = new Map();
+  const rowMarkerRegistry = new Map();
+  const markerStateRegistry = new Map();
 
   function registerMapRow(rowKey, tr){
     if(!rowKey || !tr) return;
@@ -584,17 +603,57 @@
     document.querySelectorAll('.event-map-highlight').forEach(el => el.classList.remove('event-map-highlight'));
   }
 
+  function setActiveMapEvent(eventRow){
+    const wrap = document.getElementById('activeMapEvent');
+    const titleEl = document.getElementById('activeMapEventTitle');
+    const metaEl = document.getElementById('activeMapEventMeta');
+    if(!wrap || !titleEl || !metaEl) return;
+    if(!eventRow){
+      wrap.style.display = 'none';
+      titleEl.textContent = 'No marker selected';
+      metaEl.textContent = '';
+      return;
+    }
+    wrap.style.display = '';
+    titleEl.textContent = eventRow.title || 'Selected event';
+    metaEl.innerHTML = `${eventRow.city || 'Unknown city'}, ${eventRow.country || 'Unknown country'} • <span style="color:${color(eventRow.risk)};font-weight:700;">${label(eventRow.risk)}</span> • ${fmt(eventRow._dt)}`;
+  }
+
+  function clearMarkerHighlights(){
+    markerStateRegistry.forEach((marker, rowKey) => {
+      if(!marker || !marker.setStyle) return;
+      const baseColor = marker.__baseColor || '#2ea8ff';
+      marker.setStyle({ radius: 6, weight: 1, color: baseColor, fillColor: baseColor, fillOpacity: 0.85 });
+    });
+  }
+
   function highlightMappedEvent(rowKey){
     if(!rowKey || !mapRowRegistry.has(rowKey)) return false;
     clearMapHighlights();
+    clearMarkerHighlights();
     const rows = mapRowRegistry.get(rowKey) || [];
     const target = rows[0];
     if(!target) return false;
     const reveal = target.closest('details.context-reveal');
     if(reveal && !reveal.open) reveal.open = true;
     rows.forEach(r => r.classList.add('event-map-highlight'));
+    const marker = markerStateRegistry.get(rowKey);
+    if(marker && marker.setStyle){
+      const baseColor = marker.__baseColor || '#2ea8ff';
+      marker.setStyle({ radius: 9, weight: 2, color: '#ffffff', fillColor: baseColor, fillOpacity: 1 });
+      if(marker.openPopup) marker.openPopup();
+    }
     target.scrollIntoView({behavior:'smooth', block:'center'});
-    setTimeout(() => rows.forEach(r => r.classList.remove('event-map-highlight')), 2600);
+    return true;
+  }
+
+  function focusMarkerForRow(rowKey){
+    const marker = rowMarkerRegistry.get(rowKey) || markerStateRegistry.get(rowKey);
+    if(!marker) return false;
+    if(marker._map && marker.getLatLng){
+      marker._map.panTo(marker.getLatLng(), { animate:true });
+    }
+    highlightMappedEvent(rowKey);
     return true;
   }
 
@@ -667,7 +726,7 @@
     upcomingEventsMeta.textContent = scopeEnd
       ? `Showing only the preserved next ${scopeDays}-day dashboard window, with exact city matches vs wider context.`
       : mode === 'continent'
-        ? `Forward scheduled events remaining in the current month for this continent view, with match labels for fast scanning.`
+        ? `Forward scheduled events remaining in the current calendar month for this continent view, with map-linked row highlighting.`
         : `Forward scheduled events for this page scope, with match labels for fast scanning.`;
   }
   if (recentAlertsMeta) {
@@ -848,6 +907,7 @@
                     <td><span class="match-chip ${meta.cls}">${meta.text}</span></td>`;
       registerMapRow(rowKey, tr);
       tr.addEventListener('click',()=>{
+        if(mode === 'continent' && focusMarkerForRow(rowKey)) return;
         const q=new URLSearchParams(location.search);
         q.set('eventId',encodeURIComponent(rowKey));
         location.search=q.toString();
@@ -866,7 +926,7 @@
     fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12, 'upcoming', mode !== 'continent');
   } else {
     fillTable(alertsBody, recent, 'No historical alerts found.', 8, 'recent');
-    fillTable(eventsBody, upcoming, mode === 'continent' ? 'No further events this month.' : 'No upcoming events found.', 12, 'upcoming', mode !== 'continent');
+    fillTable(eventsBody, upcoming, mode === 'continent' ? 'No further events in the current month.' : 'No upcoming events found.', 12, 'upcoming', mode !== 'continent');
   }
 
   // ===== NEW: Continent Overview + Pie =====
@@ -894,12 +954,17 @@
 
     const monthLongLabel = monthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
     const monthShortLabel = monthStart.toLocaleString('en-GB',{month:'short'});
+    const hotspotCountryEntry = Object.entries(monthRows.reduce((acc, row) => {
+      const k = row.country || 'Unknown';
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {})).sort((a,b)=>b[1]-a[1])[0];
 
     // Narrative
     contTitle.textContent = `${continentParam} — ${monthLongLabel} Overview`;
     if (contPieTitle) contPieTitle.textContent = `Risk Distribution (${monthShortLabel})`;
     contNarrative.textContent = total
-      ? `This month shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints early to mid-month; medium-risk actions are broadly distributed.`
+      ? `This month shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. ${hotspotCountryEntry ? `${hotspotCountryEntry[0]} is currently the strongest hotspot` : 'Current activity is distributed across multiple countries'}${secondHotspot ? `, followed by ${secondHotspot[0]}` : ''}. ${nextMonthEvent ? `The next scheduled event is in ${nextMonthEvent.city || nextMonthEvent.country || continentParam} on ${fmt(nextMonthEvent._dt)}.` : 'There are no further scheduled events in the remainder of this month.'}`
       : `No tracked protest events across ${continentParam} so far this month.`;
 
     // Quick theme summary for map meta/note
@@ -928,13 +993,10 @@
     }
 
     const statsWrap = document.getElementById('contOverviewStats');
-    const hotspotCountryEntry = Object.entries(monthRows.reduce((acc, row) => {
-      const k = row.country || 'Unknown';
-      acc[k] = (acc[k] || 0) + 1;
-      return acc;
-    }, {})).sort((a,b)=>b[1]-a[1])[0];
-    const nextMonthEvent = monthRows.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt)[0] || null;
+    const nextMonthEvent = continentUpcomingRows[0] || null;
     const dominantBand = hi >= me && hi >= lo ? 'High' : me >= lo ? 'Medium' : 'Low';
+    const monthlyCountryCounts = monthRows.reduce((acc, row) => { const k = row.country || 'Unknown'; acc[k] = (acc[k] || 0) + 1; return acc; }, {});
+    const secondHotspot = Object.entries(monthlyCountryCounts).sort((a,b)=>b[1]-a[1])[1] || null;
 
     if (statsWrap) {
       document.getElementById('contStatTotal').textContent = String(total);
@@ -998,7 +1060,8 @@
         attributionControl: true,
         scrollWheelZoom: true,
         wheelPxPerZoomLevel: 120,
-        minZoom: 2
+        minZoom: 2,
+        worldCopyJump: false
       });
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -1016,6 +1079,7 @@
           fillColor: fill,
           fillOpacity: 0.85
         }).addTo(map);
+        marker.__baseColor = fill;
         marker.bindPopup(`
           <strong>${r.title || 'Untitled event'}</strong><br>
           ${r.city || 'Unknown city'}, ${r.country || 'Unknown country'}<br>
@@ -1024,7 +1088,10 @@
           <span style="color:#9fd6ff;">Click marker to locate matching row below</span>
         `);
         const rowKey = key(r);
+        rowMarkerRegistry.set(rowKey, marker);
+        markerStateRegistry.set(rowKey, marker);
         marker.on('click', () => {
+          setActiveMapEvent(r);
           highlightMappedEvent(rowKey);
         });
         markerBounds.push([lat, lng]);
@@ -1032,22 +1099,25 @@
 
       if (fallback) {
         const fallbackBounds = L.latLngBounds(fallback);
-        map.fitBounds(fallbackBounds, { padding: [28, 28] });
+        map.setMaxBounds(fallbackBounds.pad(0.15));
+        map.fitBounds(fallbackBounds, { padding: [36, 36], maxZoom: 4 });
       } else if (markerBounds.length) {
         const bounds = L.latLngBounds(markerBounds);
-        map.fitBounds(bounds, { padding: [24, 24] });
+        map.fitBounds(bounds.pad(0.18), { padding: [32, 32], maxZoom: 5 });
       } else {
         map.setView([20, 0], 2);
       }
 
       map.scrollWheelZoom.enable();
+      setActiveMapEvent(null);
 
       setTimeout(() => {
         map.invalidateSize();
         if (fallback) {
-          map.fitBounds(L.latLngBounds(fallback), { padding: [28, 28] });
+          const fallbackBounds = L.latLngBounds(fallback);
+          map.fitBounds(fallbackBounds, { padding: [36, 36], maxZoom: 4 });
         } else if (markerBounds.length) {
-          map.fitBounds(L.latLngBounds(markerBounds), { padding: [24, 24] });
+          map.fitBounds(L.latLngBounds(markerBounds).pad(0.18), { padding: [32, 32], maxZoom: 5 });
         }
       }, 60);
     }
@@ -1060,5 +1130,3 @@
 
 </body>
 </html>
-
-
