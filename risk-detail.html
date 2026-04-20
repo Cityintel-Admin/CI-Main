@@ -916,15 +916,27 @@
     monthRows.forEach(a => { const t = themeDetect(a); topThemes[t] = (topThemes[t]||0)+1; });
     const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
+    const overlapGroups = (() => {
+      const counter = new Map();
+      validMapRows.forEach(r => {
+        const k = `${Number(r.lat).toFixed(4)}|${Number(r.lng).toFixed(4)}`;
+        counter.set(k, (counter.get(k) || 0) + 1);
+      });
+      return Array.from(counter.values()).filter(v => v > 1).length;
+    })();
+
     if (mapMeta) {
       mapMeta.textContent = total
-        ? `${total} mapped event${total!==1?'s':''} in ${monthLongLabel}`
+        ? `${total} mapped event${total!==1?'s':''} in ${monthLongLabel}${overlapGroups ? ` • ${overlapGroups} stacked location${overlapGroups===1?'':'s'} expanded` : ''}`
         : `No mapped events in ${monthLongLabel}`;
     }
     if (mapNote) {
-      mapNote.textContent = themeList.length
+      const themeText = themeList.length
         ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}`
         : `No dominant protest themes detected yet for this month.`;
+      mapNote.textContent = overlapGroups
+        ? `${themeText} • Multi-event cities are fanned out slightly so overlapping protests stay visible without heavy zoom.`
+        : themeText;
     }
 
     const statsWrap = document.getElementById('contOverviewStats');
@@ -990,6 +1002,43 @@
       Number.isFinite(Number(a.lat)) && Number.isFinite(Number(a.lng))
     );
 
+    function buildExpandedMarkerRows(rows){
+      const grouped = new Map();
+      rows.forEach(r => {
+        const lat = Number(r.lat);
+        const lng = Number(r.lng);
+        const key = `${lat.toFixed(4)}|${lng.toFixed(4)}`;
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(r);
+      });
+      const expanded = [];
+      grouped.forEach(group => {
+        if (group.length === 1) {
+          expanded.push({ ...group[0], _mapLat: Number(group[0].lat), _mapLng: Number(group[0].lng), _stackSize: 1, _stackIndex: 0 });
+          return;
+        }
+        const baseLat = Number(group[0].lat);
+        const baseLng = Number(group[0].lng);
+        const radius = 0.22;
+        group.forEach((row, idx) => {
+          const angle = (Math.PI * 2 * idx) / group.length;
+          const latOffset = Math.sin(angle) * radius;
+          const lngScale = Math.max(Math.cos(baseLat * Math.PI / 180), 0.25);
+          const lngOffset = (Math.cos(angle) * radius) / lngScale;
+          expanded.push({
+            ...row,
+            _mapLat: baseLat + latOffset,
+            _mapLng: baseLng + lngOffset,
+            _stackSize: group.length,
+            _stackIndex: idx
+          });
+        });
+      });
+      return expanded;
+    }
+
+    const expandedMapRows = buildExpandedMarkerRows(validMapRows);
+
     if (mapEl && window.L) {
       mapEl.innerHTML = '';
       const fallback = continentBounds[String(continentParam).toLowerCase()];
@@ -1006,21 +1055,22 @@
       }).addTo(map);
 
       const markerBounds = [];
-      validMapRows.forEach(r => {
-        const lat = Number(r.lat), lng = Number(r.lng);
+      expandedMapRows.forEach(r => {
+        const lat = Number(r._mapLat), lng = Number(r._mapLng);
         const fill = color(r.risk);
+        const hasOverlap = Number(r._stackSize || 1) > 1;
         const marker = L.circleMarker([lat, lng], {
-          radius: 6,
+          radius: hasOverlap ? 7 : 6,
           color: fill,
-          weight: 1,
+          weight: hasOverlap ? 2 : 1,
           fillColor: fill,
-          fillOpacity: 0.85
+          fillOpacity: 0.88
         }).addTo(map);
         marker.bindPopup(`
           <strong>${r.title || 'Untitled event'}</strong><br>
           ${r.city || 'Unknown city'}, ${r.country || 'Unknown country'}<br>
           <span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br>
-          <span style="color:#8e97a3;">${fmt(r._dt)}</span><br>
+          <span style="color:#8e97a3;">${fmt(r._dt)}</span>${hasOverlap ? `<br><span style="color:#f0b429;">Expanded from stacked city markers (${r._stackIndex + 1}/${r._stackSize})</span>` : ''}<br>
           <span style="color:#9fd6ff;">Click marker to locate matching row below</span>
         `);
         const rowKey = key(r);
