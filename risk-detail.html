@@ -128,23 +128,6 @@
     .leaflet-container{background:#111214;}
     .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#17191d; color:#e9edf2; border:1px solid #2e3238;}
 
-    .continent-map-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 8px}
-    .segmented-toggle{display:inline-flex;gap:6px;flex-wrap:wrap}
-    .segmented-toggle button,.risk-chip-btn{background:#1c1e22;border:1px solid #2e3238;color:#cfd6e1;border-radius:999px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}
-    .segmented-toggle button.active,.risk-chip-btn.active{background:rgba(208,22,22,.14);border-color:rgba(208,22,22,.45);color:#fff}
-    .risk-chip-btn[data-risk="high"].active{background:rgba(255,90,95,.16);border-color:rgba(255,90,95,.45)}
-    .risk-chip-btn[data-risk="med"].active{background:rgba(240,180,41,.16);border-color:rgba(240,180,41,.42)}
-    .risk-chip-btn[data-risk="low"].active{background:rgba(51,196,141,.16);border-color:rgba(51,196,141,.38)}
-    .continent-risk-filters{display:inline-flex;gap:6px;flex-wrap:wrap}
-    .active-event-strip{display:none;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(46,168,255,.28);background:rgba(46,168,255,.08)}
-    .active-event-strip-main{min-width:0}
-    .active-event-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3}
-    .active-event-title{font-size:13px;font-weight:800;color:#e9edf2;margin-top:2px}
-    .active-event-meta{font-size:12px;color:#9fd6ff;margin-top:3px}
-    .active-event-risk{white-space:nowrap}
-    tr.table-row-hidden{display:none}
-
-
     @media (max-width: 860px){
       .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
@@ -236,30 +219,11 @@
           <h3 style="margin:0;">Continent Protest Map</h3>
           <span id="contMapMeta" class="continent-map-meta">Current month only</span>
         </div>
-        <div class="continent-map-controls">
-          <div id="contViewToggle" class="segmented-toggle" role="group" aria-label="Continent view mode">
-            <button type="button" data-view="month" class="active">This month only</button>
-            <button type="button" data-view="all">All upcoming</button>
-          </div>
-          <div id="contRiskFilters" class="continent-risk-filters" role="group" aria-label="Filter by risk">
-            <button type="button" class="risk-chip-btn active" data-risk="high">High</button>
-            <button type="button" class="risk-chip-btn active" data-risk="med">Medium</button>
-            <button type="button" class="risk-chip-btn active" data-risk="low">Low</button>
-          </div>
-        </div>
         <div id="continentMap" class="continent-map-wrap" aria-label="Continent protest map"></div>
         <div class="continent-map-legend">
           <span><i style="background:#ff5a5f"></i>High</span>
           <span><i style="background:#f0b429"></i>Medium</span>
           <span><i style="background:#6bcf6b"></i>Low</span>
-        </div>
-        <div id="continentActiveEvent" class="active-event-strip" aria-live="polite">
-          <div class="active-event-strip-main">
-            <div class="active-event-kicker">Active event</div>
-            <div id="continentActiveEventTitle" class="active-event-title">No event selected</div>
-            <div id="continentActiveEventMeta" class="active-event-meta">Click a marker or row to sync the map and table.</div>
-          </div>
-          <div id="continentActiveEventRisk" class="active-event-risk tag low">Low</div>
         </div>
         <div id="continentMapNote" class="map-empty-note"></div>
       </div>
@@ -584,7 +548,9 @@
   const scopedRows = scopeEnd ? subset.filter(a => a._dt && a._dt >= now && a._dt <= scopeEnd) : subset;
   const upcomingBase = scopeEnd
     ? scopedRows
-    : subset.filter(a => a._dt && a._dt >= now);
+    : mode === 'continent'
+      ? subset.filter(a => a._dt && a._dt >= now && a._dt < currentMonthEnd)
+      : subset.filter(a => a._dt && a._dt >= now);
   const upcoming = upcomingBase.sort((a,b)=>a._dt-b._dt);
   const recent   = scopeEnd ? [] : subset.filter(a => a._dt && a._dt < now).sort((a,b)=>b._dt-a._dt);
 
@@ -607,14 +573,6 @@
   const whyBlock = document.getElementById('whyBlock');
   const whyList = document.getElementById('whyList');
   const mapRowRegistry = new Map();
-  const mapMarkerRegistry = new Map();
-  let continentMapInstance = null;
-  let continentMapFallbackBounds = null;
-  let continentMapDefaultBounds = [];
-  let activeContinentRiskFilters = new Set(['high','med','low']);
-  let activeContinentView = 'month';
-  let applyContinentFilters = null;
-  let focusContinentEvent = null;
 
   function registerMapRow(rowKey, tr){
     if(!rowKey || !tr) return;
@@ -637,47 +595,6 @@
     rows.forEach(r => r.classList.add('event-map-highlight'));
     target.scrollIntoView({behavior:'smooth', block:'center'});
     setTimeout(() => rows.forEach(r => r.classList.remove('event-map-highlight')), 2600);
-    return true;
-  }
-
-  function registerMapMarker(rowKey, marker, rowData){
-    if(!rowKey || !marker) return;
-    mapMarkerRegistry.set(rowKey, { marker, rowData });
-  }
-
-  function setContinentActiveEvent(row){
-    const strip = document.getElementById('continentActiveEvent');
-    const titleEl = document.getElementById('continentActiveEventTitle');
-    const metaEl = document.getElementById('continentActiveEventMeta');
-    const riskEl = document.getElementById('continentActiveEventRisk');
-    if(!strip || !titleEl || !metaEl || !riskEl) return;
-    if(!row){
-      strip.style.display = 'none';
-      return;
-    }
-    strip.style.display = 'flex';
-    titleEl.textContent = row.title || 'Selected event';
-    metaEl.textContent = `${row.city || 'Unknown city'}, ${row.country || 'Unknown country'} • ${fmt(row._dt)}${row.summary ? ' • ' + row.summary : ''}`;
-    riskEl.textContent = label(row.risk);
-    riskEl.className = `active-event-risk tag ${row.risk}`;
-  }
-
-  function focusContinentEventByKey(rowKey, opts = {}){
-    if(!rowKey || !mapMarkerRegistry.has(rowKey)) return false;
-    const entry = mapMarkerRegistry.get(rowKey);
-    if(!entry || !entry.marker) return false;
-    const { marker, rowData } = entry;
-    if(continentMapInstance){
-      continentMapInstance.panTo(marker.getLatLng(), { animate:true });
-    }
-    marker.openPopup();
-    highlightMappedEvent(rowKey);
-    setContinentActiveEvent(rowData);
-    if(opts.updateQuery !== false){
-      const q = new URLSearchParams(location.search);
-      q.set('eventId', rowKey);
-      history.replaceState(null, '', `${location.pathname}?${q.toString()}`);
-    }
     return true;
   }
 
@@ -931,9 +848,8 @@
                     <td><span class="match-chip ${meta.cls}">${meta.text}</span></td>`;
       registerMapRow(rowKey, tr);
       tr.addEventListener('click',()=>{
-        if (mode === 'continent' && focusContinentEvent && focusContinentEvent(rowKey)) return;
         const q=new URLSearchParams(location.search);
-        q.set('eventId', rowKey);
+        q.set('eventId',encodeURIComponent(rowKey));
         location.search=q.toString();
       });
       tbody.appendChild(tr);
@@ -965,31 +881,28 @@
     const mapEl = document.getElementById('continentMap');
     const mapMeta = document.getElementById('contMapMeta');
     const mapNote = document.getElementById('continentMapNote');
-    const statsWrap = document.getElementById('contOverviewStats');
-    const viewToggle = document.getElementById('contViewToggle');
-    const riskFilters = document.getElementById('contRiskFilters');
-    const upcomingEmptyBase = 'No upcoming events found for the current filter.';
 
     const monthStart = currentMonthStart;
     const monthEnd   = currentMonthEnd;
     const inMonth = inCurrentMonth;
     const monthRows = subset.filter(a => inMonth(a._dt));
-    const futureRows = subset.filter(a => a._dt && a._dt >= now);
+    const counts = {high:0, med:0, low:0};
+    monthRows.forEach(r => counts[r.risk]++);
+
+    const total = monthRows.length;
+    const hi = counts.high, me = counts.med, lo = counts.low;
 
     const monthLongLabel = monthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
     const monthShortLabel = monthStart.toLocaleString('en-GB',{month:'short'});
 
-    const counts = {high:0, med:0, low:0};
-    monthRows.forEach(r => counts[r.risk]++);
-    const total = monthRows.length;
-    const hi = counts.high, me = counts.med, lo = counts.low;
-
+    // Narrative
     contTitle.textContent = `${continentParam} — ${monthLongLabel} Overview`;
     if (contPieTitle) contPieTitle.textContent = `Risk Distribution (${monthShortLabel})`;
     contNarrative.textContent = total
       ? `This month shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints early to mid-month; medium-risk actions are broadly distributed.`
       : `No tracked protest events across ${continentParam} so far this month.`;
 
+    // Quick theme summary for map meta/note
     const themeDetect = (a => {
       const s = `${a.title||''} ${a.summary||''}`.toLowerCase();
       if (s.match(/labour|union|wage|strike|cosatu|workers/)) return 'Labour & wage disputes';
@@ -1003,12 +916,18 @@
     monthRows.forEach(a => { const t = themeDetect(a); topThemes[t] = (topThemes[t]||0)+1; });
     const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
+    if (mapMeta) {
+      mapMeta.textContent = total
+        ? `${total} mapped event${total!==1?'s':''} in ${monthLongLabel}`
+        : `No mapped events in ${monthLongLabel}`;
+    }
     if (mapNote) {
       mapNote.textContent = themeList.length
         ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}`
         : `No dominant protest themes detected yet for this month.`;
     }
 
+    const statsWrap = document.getElementById('contOverviewStats');
     const hotspotCountryEntry = Object.entries(monthRows.reduce((acc, row) => {
       const k = row.country || 'Unknown';
       acc[k] = (acc[k] || 0) + 1;
@@ -1028,6 +947,7 @@
       statsWrap.style.display = 'grid';
     }
 
+    // Pie
     if (window.Chart && pieEl) {
       new Chart(pieEl, {
         type: 'pie',
@@ -1057,6 +977,7 @@
       });
     }
 
+    // Map
     const continentBounds = {
       africa: [[-36, -20], [38, 55]],
       asia: [[-10, 25], [60, 150]],
@@ -1065,17 +986,14 @@
       'south america': [[-58, -92], [15, -30]],
       oceania: [[-50, 110], [5, 180]]
     };
-
-    const validFutureRows = futureRows.filter(a =>
+    const validMapRows = monthRows.filter(a =>
       Number.isFinite(Number(a.lat)) && Number.isFinite(Number(a.lng))
     );
 
     if (mapEl && window.L) {
       mapEl.innerHTML = '';
-      mapMarkerRegistry.clear();
       const fallback = continentBounds[String(continentParam).toLowerCase()];
-      continentMapFallbackBounds = fallback ? L.latLngBounds(fallback) : null;
-      continentMapInstance = L.map(mapEl, {
+      const map = L.map(mapEl, {
         zoomControl: true,
         attributionControl: true,
         scrollWheelZoom: true,
@@ -1085,10 +1003,10 @@
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO'
-      }).addTo(continentMapInstance);
+      }).addTo(map);
 
-      continentMapDefaultBounds = [];
-      validFutureRows.forEach(r => {
+      const markerBounds = [];
+      validMapRows.forEach(r => {
         const lat = Number(r.lat), lng = Number(r.lng);
         const fill = color(r.risk);
         const marker = L.circleMarker([lat, lng], {
@@ -1097,176 +1015,49 @@
           weight: 1,
           fillColor: fill,
           fillOpacity: 0.85
-        }).addTo(continentMapInstance);
+        }).addTo(map);
         marker.bindPopup(`
           <strong>${r.title || 'Untitled event'}</strong><br>
           ${r.city || 'Unknown city'}, ${r.country || 'Unknown country'}<br>
           <span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br>
           <span style="color:#8e97a3;">${fmt(r._dt)}</span><br>
-          <span style="color:#9fd6ff;">Marker and table stay in sync</span>
+          <span style="color:#9fd6ff;">Click marker to locate matching row below</span>
         `);
         const rowKey = key(r);
-        marker.__rowKey = rowKey;
-        marker.__rowData = r;
-        registerMapMarker(rowKey, marker, r);
         marker.on('click', () => {
           highlightMappedEvent(rowKey);
-          setContinentActiveEvent(r);
         });
-        continentMapDefaultBounds.push([lat, lng]);
+        markerBounds.push([lat, lng]);
       });
 
-      if (continentMapFallbackBounds) {
-        continentMapInstance.fitBounds(continentMapFallbackBounds, { padding: [28, 28] });
-      } else if (continentMapDefaultBounds.length) {
-        continentMapInstance.fitBounds(L.latLngBounds(continentMapDefaultBounds), { padding: [24, 24] });
+      if (fallback) {
+        const fallbackBounds = L.latLngBounds(fallback);
+        map.fitBounds(fallbackBounds, { padding: [28, 28] });
+      } else if (markerBounds.length) {
+        const bounds = L.latLngBounds(markerBounds);
+        map.fitBounds(bounds, { padding: [24, 24] });
       } else {
-        continentMapInstance.setView([20, 0], 2);
+        map.setView([20, 0], 2);
       }
 
-      continentMapInstance.scrollWheelZoom.enable();
+      map.scrollWheelZoom.enable();
 
       setTimeout(() => {
-        continentMapInstance.invalidateSize();
-        if (continentMapFallbackBounds) {
-          continentMapInstance.fitBounds(continentMapFallbackBounds, { padding: [28, 28] });
-        } else if (continentMapDefaultBounds.length) {
-          continentMapInstance.fitBounds(L.latLngBounds(continentMapDefaultBounds), { padding: [24, 24] });
+        map.invalidateSize();
+        if (fallback) {
+          map.fitBounds(L.latLngBounds(fallback), { padding: [28, 28] });
+        } else if (markerBounds.length) {
+          map.fitBounds(L.latLngBounds(markerBounds), { padding: [24, 24] });
         }
       }, 60);
     }
 
-    function rowsForCurrentView(){
-      const base = activeContinentView === 'all' ? futureRows : monthRows;
-      return base.filter(r => activeContinentRiskFilters.has(r.risk));
-    }
-
-    function syncTableRows(){
-      const tableRows = Array.from(eventsBody.querySelectorAll('tr[data-event-key]'));
-      let visibleCount = 0;
-      tableRows.forEach(tr => {
-        const rowKey = tr.dataset.eventKey;
-        const rowData = subset.find(a => key(a) === rowKey);
-        const shouldShow = !!rowData &&
-          ((activeContinentView === 'all' && rowData._dt && rowData._dt >= now) || (activeContinentView === 'month' && inMonth(rowData._dt))) &&
-          activeContinentRiskFilters.has(rowData.risk);
-        tr.classList.toggle('table-row-hidden', !shouldShow);
-        if (shouldShow) visibleCount++;
-      });
-      let emptyRow = eventsBody.querySelector('tr[data-empty-row="true"]');
-      if (!visibleCount) {
-        if (!emptyRow) {
-          emptyRow = document.createElement('tr');
-          emptyRow.dataset.emptyRow = 'true';
-          emptyRow.innerHTML = `<td colspan="4" style="color:#8e97a3">${upcomingEmptyBase}</td>`;
-          eventsBody.appendChild(emptyRow);
-        }
-      } else if (emptyRow) {
-        emptyRow.remove();
-      }
-
-      if (upcomingEventsMeta) {
-        const viewLabel = activeContinentView === 'all' ? 'all upcoming' : 'this month only';
-        const riskLabel = activeContinentRiskFilters.size === 3
-          ? 'all risk bands'
-          : Array.from(activeContinentRiskFilters).map(r => label(r)).join(' / ');
-        upcomingEventsMeta.textContent = `Continent view: ${viewLabel} • Filtered to ${riskLabel} • Marker and row clicks stay synced.`;
-      }
-      return visibleCount;
-    }
-
-    applyContinentFilters = function(){
-      const filteredRows = rowsForCurrentView();
-      const visibleBounds = [];
-
-      mapMarkerRegistry.forEach(({ marker, rowData }, rowKey) => {
-        const inView = filteredRows.some(r => key(r) === rowKey);
-        if (inView) {
-          if (!continentMapInstance.hasLayer(marker)) marker.addTo(continentMapInstance);
-          visibleBounds.push(marker.getLatLng());
-        } else if (continentMapInstance.hasLayer(marker)) {
-          continentMapInstance.removeLayer(marker);
-        }
-      });
-
-      const visibleCount = syncTableRows();
-
-      if (mapMeta) {
-        mapMeta.textContent = activeContinentView === 'all'
-          ? `${visibleCount} mapped event${visibleCount!==1?'s':''} across all upcoming dates`
-          : `${visibleCount} mapped event${visibleCount!==1?'s':''} in ${monthLongLabel}`;
-      }
-
-      if (continentMapInstance) {
-        if (visibleBounds.length) {
-          continentMapInstance.fitBounds(L.latLngBounds(visibleBounds), { padding: [24, 24] });
-        } else if (continentMapFallbackBounds) {
-          continentMapInstance.fitBounds(continentMapFallbackBounds, { padding: [28, 28] });
-        }
-      }
-
-      const currentFocusedKey = eventIdParam || '';
-      if (currentFocusedKey) {
-        focusContinentEventByKey(currentFocusedKey, { updateQuery:false });
-      } else if (filteredRows.length) {
-        setContinentActiveEvent(filteredRows[0]);
-      } else {
-        setContinentActiveEvent(null);
-      }
-
-      if (viewToggle) {
-        Array.from(viewToggle.querySelectorAll('button')).forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.view === activeContinentView);
-        });
-      }
-      if (riskFilters) {
-        Array.from(riskFilters.querySelectorAll('button')).forEach(btn => {
-          btn.classList.toggle('active', activeContinentRiskFilters.has(btn.dataset.risk));
-        });
-      }
-    };
-
-    focusContinentEvent = function(rowKey){
-      return focusContinentEventByKey(rowKey, { updateQuery:true });
-    };
-
-    if (viewToggle) {
-      Array.from(viewToggle.querySelectorAll('button')).forEach(btn => {
-        btn.addEventListener('click', () => {
-          activeContinentView = btn.dataset.view === 'all' ? 'all' : 'month';
-          applyContinentFilters && applyContinentFilters();
-        });
-      });
-    }
-
-    if (riskFilters) {
-      Array.from(riskFilters.querySelectorAll('button')).forEach(btn => {
-        btn.addEventListener('click', () => {
-          const risk = btn.dataset.risk;
-          if (activeContinentRiskFilters.has(risk) && activeContinentRiskFilters.size > 1) {
-            activeContinentRiskFilters.delete(risk);
-          } else {
-            activeContinentRiskFilters.add(risk);
-          }
-          applyContinentFilters && applyContinentFilters();
-        });
-      });
-    }
-
+    // reveal
     block.style.display = 'block';
-    applyContinentFilters && applyContinentFilters();
-
-    if (eventIdParam) {
-      setTimeout(() => {
-        focusContinentEventByKey(eventIdParam, { updateQuery:false });
-      }, 120);
-    }
-  })();
   })();
 })();
 </script>
 
 </body>
 </html>
-
 
