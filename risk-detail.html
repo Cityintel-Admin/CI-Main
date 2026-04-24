@@ -969,11 +969,12 @@
     const viewToggle = document.getElementById('contViewToggle');
     const riskFilters = document.getElementById('contRiskFilters');
     const upcomingEmptyBase = 'No events found for the selected month and filters.';
+    let continentRiskPieChart = null;
 
     const monthStart = currentMonthStart;
     const monthEnd   = currentMonthEnd;
     const inMonth = inCurrentMonth;
-    const monthRows = subset.filter(a => inMonth(a._dt));
+    const monthRows = subset.filter(a => inMonth(a._dt) && a._dt >= now);
     const futureRows = subset.filter(a => a._dt && a._dt >= now);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const nextMonthEnd = new Date(now.getFullYear(), now.getMonth() + 2, 1);
@@ -982,17 +983,97 @@
     const monthLongLabel = monthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
     const monthShortLabel = monthStart.toLocaleString('en-GB',{month:'short'});
     const nextMonthLongLabel = nextMonthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
+    const nextMonthShortLabel = nextMonthStart.toLocaleString('en-GB',{month:'short'});
 
-    const counts = {high:0, med:0, low:0};
-    monthRows.forEach(r => counts[r.risk]++);
-    const total = monthRows.length;
-    const hi = counts.high, me = counts.med, lo = counts.low;
+    function getActiveMonthRows(){
+      return activeContinentView === 'next' ? nextMonthRows : monthRows;
+    }
 
-    contTitle.textContent = `${continentParam} — ${monthLongLabel} Overview`;
-    if (contPieTitle) contPieTitle.textContent = `Risk Distribution (${monthShortLabel})`;
-    contNarrative.textContent = total
-      ? `This month shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints early to mid-month; medium-risk actions are broadly distributed.`
-      : `No tracked protest events across ${continentParam} so far this month.`;
+    function getActiveMonthLabel(){
+      return activeContinentView === 'next' ? nextMonthLongLabel : monthLongLabel;
+    }
+
+    function getActiveMonthShortLabel(){
+      return activeContinentView === 'next' ? nextMonthShortLabel : monthShortLabel;
+    }
+
+    function renderActiveMonthOverview(){
+      const activeRows = getActiveMonthRows();
+      const activeLabel = getActiveMonthLabel();
+      const activeShort = getActiveMonthShortLabel();
+      const monthText = activeContinentView === 'next' ? 'Next month' : 'This month';
+
+      const counts = {high:0, med:0, low:0};
+      activeRows.forEach(r => counts[r.risk]++);
+      const total = activeRows.length;
+      const hi = counts.high, me = counts.med, lo = counts.low;
+
+      if (contTitle) contTitle.textContent = `${continentParam} — ${activeLabel} Overview`;
+      if (contPieTitle) contPieTitle.textContent = `Risk Distribution (${activeShort})`;
+      if (contNarrative) {
+        contNarrative.textContent = total
+          ? `${monthText} shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints; medium- and low-risk activity remains visible across the selected monthly window.`
+          : `No tracked protest events across ${continentParam} for ${monthText.toLowerCase()}.`;
+      }
+
+      const topThemes = {};
+      activeRows.forEach(a => { const t = themeDetect(a); topThemes[t] = (topThemes[t]||0)+1; });
+      const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      if (mapNote) {
+        mapNote.textContent = themeList.length
+          ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}`
+          : `No dominant protest themes detected for ${activeLabel}.`;
+      }
+
+      const hotspotCountryEntry = Object.entries(activeRows.reduce((acc, row) => {
+        const k = row.country || 'Unknown';
+        acc[k] = (acc[k] || 0) + 1;
+        return acc;
+      }, {})).sort((a,b)=>b[1]-a[1])[0];
+      const nextActiveEvent = activeRows.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt)[0] || null;
+      const dominantBand = hi >= me && hi >= lo ? 'High' : me >= lo ? 'Medium' : 'Low';
+
+      if (statsWrap) {
+        document.getElementById('contStatTotal').textContent = String(total);
+        document.getElementById('contStatHotspot').textContent = hotspotCountryEntry ? hotspotCountryEntry[0] : '—';
+        document.getElementById('contStatHotspotSub').textContent = hotspotCountryEntry ? `${hotspotCountryEntry[1]} event${hotspotCountryEntry[1]===1?'':'s'} in ${activeShort}` : 'No clear hotspot';
+        document.getElementById('contStatNext').textContent = nextActiveEvent ? fmt(nextActiveEvent._dt) : '—';
+        document.getElementById('contStatNextSub').textContent = nextActiveEvent ? `${nextActiveEvent.city || nextActiveEvent.country || continentParam} — ${nextActiveEvent.title || 'Scheduled event'}` : `No further events in ${activeShort}`;
+        document.getElementById('contStatBand').textContent = total ? dominantBand : '—';
+        document.getElementById('contStatBandSub').textContent = total ? `${dominantBand.toLowerCase()} risk is the largest share in ${activeShort}` : 'No monthly distribution yet';
+        statsWrap.style.display = 'grid';
+      }
+
+      if (window.Chart && pieEl) {
+        if (continentRiskPieChart) continentRiskPieChart.destroy();
+        continentRiskPieChart = new Chart(pieEl, {
+          type: 'pie',
+          data: {
+            labels: ['High','Medium','Low'],
+            datasets: [{
+              data: [hi, me, lo],
+              backgroundColor: ['#ff5a5f','#f0b429','#6bcf6b'],
+              borderColor: '#0f1115',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (tt) => {
+                    const v = tt.parsed || 0;
+                    const pct = total ? Math.round((v/total)*100) : 0;
+                    return `${tt.label}: ${v} (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
 
     const themeDetect = (a => {
       const s = `${a.title||''} ${a.summary||''}`.toLowerCase();
@@ -1003,63 +1084,8 @@
       if (s.match(/campus|university|student|education/)) return 'Education sector mobilisation';
       return 'Civic mobilisation';
     });
-    const topThemes = {};
-    monthRows.forEach(a => { const t = themeDetect(a); topThemes[t] = (topThemes[t]||0)+1; });
-    const themeList = Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
-    if (mapNote) {
-      mapNote.textContent = themeList.length
-        ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}`
-        : `No dominant protest themes detected yet for this month.`;
-    }
-
-    const hotspotCountryEntry = Object.entries(monthRows.reduce((acc, row) => {
-      const k = row.country || 'Unknown';
-      acc[k] = (acc[k] || 0) + 1;
-      return acc;
-    }, {})).sort((a,b)=>b[1]-a[1])[0];
-    const nextMonthEvent = monthRows.filter(a => a._dt && a._dt >= now).sort((a,b)=>a._dt-b._dt)[0] || null;
-    const dominantBand = hi >= me && hi >= lo ? 'High' : me >= lo ? 'Medium' : 'Low';
-
-    if (statsWrap) {
-      document.getElementById('contStatTotal').textContent = String(total);
-      document.getElementById('contStatHotspot').textContent = hotspotCountryEntry ? hotspotCountryEntry[0] : '—';
-      document.getElementById('contStatHotspotSub').textContent = hotspotCountryEntry ? `${hotspotCountryEntry[1]} event${hotspotCountryEntry[1]===1?'':'s'} this month` : 'No clear hotspot';
-      document.getElementById('contStatNext').textContent = nextMonthEvent ? fmt(nextMonthEvent._dt) : '—';
-      document.getElementById('contStatNextSub').textContent = nextMonthEvent ? `${nextMonthEvent.city || nextMonthEvent.country || continentParam} — ${nextMonthEvent.title || 'Scheduled event'}` : 'No further events this month';
-      document.getElementById('contStatBand').textContent = dominantBand;
-      document.getElementById('contStatBandSub').textContent = total ? `${dominantBand.toLowerCase()} risk is the largest share this month` : 'No monthly distribution yet';
-      statsWrap.style.display = 'grid';
-    }
-
-    if (window.Chart && pieEl) {
-      new Chart(pieEl, {
-        type: 'pie',
-        data: {
-          labels: ['High','Medium','Low'],
-          datasets: [{
-            data: [hi, me, lo],
-            backgroundColor: ['#ff5a5f','#f0b429','#6bcf6b'],
-            borderColor: '#0f1115',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (tt) => {
-                  const v = tt.parsed || 0;
-                  const pct = total ? Math.round((v/total)*100) : 0;
-                  return `${tt.label}: ${v} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
+    renderActiveMonthOverview();
 
     const continentBounds = {
       africa: [[-36, -20], [38, 55]],
@@ -1228,7 +1254,8 @@
 
       if (mapMeta) {
         const activeWindowLabel = activeContinentView === 'next' ? nextMonthLongLabel : monthLongLabel;
-        mapMeta.textContent = `${visibleCount} mapped event${visibleCount!==1?'s':''} in ${activeWindowLabel}`;
+        const counterPrefix = activeContinentView === 'month' ? 'upcoming mapped' : 'mapped';
+        mapMeta.textContent = `${visibleCount} ${counterPrefix} event${visibleCount!==1?'s':''} in ${activeWindowLabel}`;
       }
 
       if (continentMapInstance) {
@@ -1267,6 +1294,7 @@
         btn.addEventListener('click', () => {
           activeContinentView = btn.dataset.view === 'next' ? 'next' : 'month';
           activeContinentRiskFilters = new Set(['high','med','low']);
+          renderActiveMonthOverview();
           applyContinentFilters && applyContinentFilters();
         });
       });
