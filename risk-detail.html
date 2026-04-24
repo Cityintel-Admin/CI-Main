@@ -225,6 +225,10 @@
       <div class="card" style="background:linear-gradient(180deg,#1a1c20,#131417); border:1px solid #2e3238;">
         <h3 id="contPieTitle" style="margin:0 0 8px 0;">Risk Distribution</h3>
         <canvas id="contRiskPie" width="320" height="320" aria-label="Risk distribution"></canvas>
+        <div id="contRiskPieFullWrap" style="margin-top:16px; padding-top:14px; border-top:1px solid #2e3238;">
+          <div id="contRiskPieFullTitle" style="text-align:center; font-size:12px; color:#8e97a3; margin-bottom:6px; font-weight:700;">Full Month Context</div>
+          <canvas id="contRiskPieFull" width="260" height="260" aria-label="Full month risk distribution" style="max-width:260px; max-height:260px; margin:0 auto; display:block;"></canvas>
+        </div>
         <div style="display:flex; gap:10px; justify-content:center; margin-top:8px; font-size:12px; color:#e9edf2">
           <span><span style="display:inline-block;width:10px;height:10px;background:#ff5a5f;border-radius:2px;margin-right:6px"></span>High</span>
           <span><span style="display:inline-block;width:10px;height:10px;background:#f0b429;border-radius:2px;margin-right:6px"></span>Medium</span>
@@ -962,6 +966,8 @@
     const contPieTitle = document.getElementById('contPieTitle');
     const contNarrative = document.getElementById('contNarrative');
     const pieEl = document.getElementById('contRiskPie');
+    const pieFullEl = document.getElementById('contRiskPieFull');
+    const pieFullTitle = document.getElementById('contRiskPieFullTitle');
     const mapEl = document.getElementById('continentMap');
     const mapMeta = document.getElementById('contMapMeta');
     const mapNote = document.getElementById('continentMapNote');
@@ -970,11 +976,13 @@
     const riskFilters = document.getElementById('contRiskFilters');
     const upcomingEmptyBase = 'No events found for the selected month and filters.';
     let continentRiskPieChart = null;
+    let continentRiskPieFullChart = null;
 
     const monthStart = currentMonthStart;
     const monthEnd   = currentMonthEnd;
     const inMonth = inCurrentMonth;
     const monthRows = subset.filter(a => inMonth(a._dt) && a._dt >= now);
+    const fullMonthRows = subset.filter(a => inMonth(a._dt));
     const futureRows = subset.filter(a => a._dt && a._dt >= now);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const nextMonthEnd = new Date(now.getFullYear(), now.getMonth() + 2, 1);
@@ -989,6 +997,10 @@
       return activeContinentView === 'next' ? nextMonthRows : monthRows;
     }
 
+    function getFullActiveMonthRows(){
+      return activeContinentView === 'next' ? nextMonthRows : fullMonthRows;
+    }
+
     function getActiveMonthLabel(){
       return activeContinentView === 'next' ? nextMonthLongLabel : monthLongLabel;
     }
@@ -999,6 +1011,7 @@
 
     function renderActiveMonthOverview(){
       const activeRows = getActiveMonthRows();
+      const fullRows = getFullActiveMonthRows();
       const activeLabel = getActiveMonthLabel();
       const activeShort = getActiveMonthShortLabel();
       const monthText = activeContinentView === 'next' ? 'Next month' : 'This month';
@@ -1008,8 +1021,15 @@
       const total = activeRows.length;
       const hi = counts.high, me = counts.med, lo = counts.low;
 
+      const fullCounts = {high:0, med:0, low:0};
+      fullRows.forEach(r => fullCounts[r.risk]++);
+      const fullTotal = fullRows.length;
+
       if (contTitle) contTitle.textContent = `${continentParam} — ${activeLabel} Overview`;
-      if (contPieTitle) contPieTitle.textContent = `Risk Distribution (${activeShort})`;
+      if (contPieTitle) contPieTitle.textContent = activeContinentView === 'next'
+        ? `Scheduled Risk Distribution (${activeShort})`
+        : `Remaining Risk Distribution (${activeShort})`;
+      if (pieFullTitle) pieFullTitle.textContent = `Full Month Context (${activeShort})`;
       if (contNarrative) {
         contNarrative.textContent = total
           ? `${monthText} shows ${total} tracked protest events across ${continentParam}, with ${hi} high, ${me} medium and ${lo} low risk. High-risk activity is concentrated around known flashpoints; medium- and low-risk activity remains visible across the selected monthly window.`
@@ -1065,6 +1085,36 @@
                   label: (tt) => {
                     const v = tt.parsed || 0;
                     const pct = total ? Math.round((v/total)*100) : 0;
+                    return `${tt.label}: ${v} (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      if (window.Chart && pieFullEl) {
+        if (continentRiskPieFullChart) continentRiskPieFullChart.destroy();
+        continentRiskPieFullChart = new Chart(pieFullEl, {
+          type: 'pie',
+          data: {
+            labels: ['High','Medium','Low'],
+            datasets: [{
+              data: [fullCounts.high, fullCounts.med, fullCounts.low],
+              backgroundColor: ['#ff5a5f','#f0b429','#6bcf6b'],
+              borderColor: '#0f1115',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (tt) => {
+                    const v = tt.parsed || 0;
+                    const pct = fullTotal ? Math.round((v/fullTotal)*100) : 0;
                     return `${tt.label}: ${v} (${pct}%)`;
                   }
                 }
