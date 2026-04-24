@@ -192,6 +192,45 @@
     </div>
   </div>
 
+
+  <!-- ===== New: City Operational Overview (only shown in city mode) ===== -->
+  <div id="cityOverviewBlock" style="display:none;">
+    <div class="card" style="margin-bottom:12px;">
+      <h2 id="cityOverviewTitle">7-Day City Overview</h2>
+      <p id="cityOverviewNarrative" style="color:#cfd6df; margin-top:6px;"></p>
+      <div id="cityOverviewStats" class="scope-summary-grid" style="margin-top:14px; display:none;">
+        <div class="scope-summary-item"><div class="scope-summary-label">7-day total</div><div id="cityStatTotal" class="scope-summary-value">0</div><div class="scope-summary-sub">Upcoming events in window</div></div>
+        <div class="scope-summary-item"><div class="scope-summary-label">Highest active risk</div><div id="cityStatRisk" class="scope-summary-value">—</div><div id="cityStatRiskSub" class="scope-summary-sub">Forward risk signal</div></div>
+        <div class="scope-summary-item"><div class="scope-summary-label">Next scheduled</div><div id="cityStatNext" class="scope-summary-value">—</div><div id="cityStatNextSub" class="scope-summary-sub">Next event in city view</div></div>
+        <div class="scope-summary-item"><div class="scope-summary-label">Month context</div><div id="cityStatMonth" class="scope-summary-value">0</div><div id="cityStatMonthSub" class="scope-summary-sub">Events this month</div></div>
+      </div>
+    </div>
+
+    <div class="overview-grid">
+      <div class="card" style="background:linear-gradient(180deg,#1a1c20,#131417); border:1px solid #2e3238;">
+        <h3 id="cityPieTitle" style="margin:0 0 8px 0;">7-Day Risk Distribution</h3>
+        <canvas id="cityRiskPie" width="320" height="320" aria-label="7-day city risk distribution"></canvas>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid #2e3238;">
+          <div id="cityRiskPieFullTitle" style="text-align:center; font-size:12px; color:#8e97a3; margin-bottom:6px; font-weight:700;">Full Month Context</div>
+          <canvas id="cityRiskPieFull" width="260" height="260" aria-label="Full month city risk distribution" style="max-width:260px; max-height:260px; margin:0 auto; display:block;"></canvas>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:8px; font-size:12px; color:#e9edf2">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#ff5a5f;border-radius:2px;margin-right:6px"></span>High</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#f0b429;border-radius:2px;margin-right:6px"></span>Medium</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#6bcf6b;border-radius:2px;margin-right:6px"></span>Low</span>
+        </div>
+      </div>
+      <div class="card continent-map-card">
+        <div class="continent-map-head"><h3 style="margin:0;">City Protest Map</h3><span id="cityMapMeta" class="continent-map-meta">Next 7 days</span></div>
+        <div id="cityMap" class="continent-map-wrap" aria-label="City protest map"></div>
+        <div class="continent-map-legend"><span><i style="background:#ff5a5f"></i>High</span><span><i style="background:#f0b429"></i>Medium</span><span><i style="background:#6bcf6b"></i>Low</span></div>
+        <div id="cityActiveEvent" class="active-event-strip" aria-live="polite"><div class="active-event-strip-main"><div class="active-event-kicker">Active event</div><div id="cityActiveEventTitle" class="active-event-title">No event selected</div><div id="cityActiveEventMeta" class="active-event-meta">Click a marker or row to sync the map and table.</div></div><div id="cityActiveEventRisk" class="active-event-risk tag low">Low</div></div>
+        <div id="cityMapNote" class="map-empty-note"></div>
+      </div>
+    </div>
+  </div>
+  <!-- ===== End: City Operational Overview ===== -->
+
   <!-- ===== New: Continent Overview (only shown in continent mode) ===== -->
   <div id="continentOverviewBlock" style="display:none;">
     <div class="card" style="margin-bottom:12px;">
@@ -242,7 +281,7 @@
         </div>
         <div class="continent-map-controls">
           <div id="contViewToggle" class="segmented-toggle" role="group" aria-label="Continent view mode">
-            <button type="button" data-view="month" class="active">Current month</button>
+            <button type="button" data-view="month" class="active">This month only</button>
             <button type="button" data-view="next">Next month</button>
           </div>
           <div id="contRiskFilters" class="continent-risk-filters" role="group" aria-label="Filter by risk">
@@ -619,6 +658,7 @@
   let activeContinentView = 'month';
   let applyContinentFilters = null;
   let focusContinentEvent = null;
+  let focusCityEvent = null;
 
   function registerMapRow(rowKey, tr){
     if(!rowKey || !tr) return;
@@ -936,6 +976,7 @@
       registerMapRow(rowKey, tr);
       tr.addEventListener('click',()=>{
         if (mode === 'continent' && focusContinentEvent && focusContinentEvent(rowKey)) return;
+        if (mode === 'city' && focusCityEvent && focusCityEvent(rowKey)) return;
         const q=new URLSearchParams(location.search);
         q.set('eventId', rowKey);
         location.search=q.toString();
@@ -956,6 +997,160 @@
     fillTable(alertsBody, recent, 'No historical alerts found.', 8, 'recent');
     fillTable(eventsBody, upcoming, mode === 'continent' ? 'No further events this month.' : 'No upcoming events found.', mode === 'continent' ? null : 12, 'upcoming', mode !== 'continent');
   }
+
+
+  // ===== NEW: City 7-Day Operational Overview + Map =====
+  (function renderCityOperationalOverview(){
+    if (mode !== 'city') return;
+    const block = document.getElementById('cityOverviewBlock');
+    if (!block) return;
+
+    const cityWindowDays = scopeDays > 0 ? scopeDays : 7;
+    const cityWindowEnd = new Date(now.getTime() + cityWindowDays * 86400000);
+    const cityRows = subset.filter(a => a._dt && a._dt >= now && a._dt <= cityWindowEnd).sort((a,b)=>a._dt-b._dt);
+    const cityMonthRows = subset.filter(a => inCurrentMonth(a._dt)).sort((a,b)=>a._dt-b._dt);
+    const cityName = focus?.city || cityParam || 'Selected city';
+    const monthShort = currentMonthStart.toLocaleString('en-GB',{month:'short'});
+    const monthLong = currentMonthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
+
+    const counts7 = {high:0, med:0, low:0};
+    cityRows.forEach(r=>counts7[r.risk]++);
+    const countsMonth = {high:0, med:0, low:0};
+    cityMonthRows.forEach(r=>countsMonth[r.risk]++);
+
+    const total7 = cityRows.length;
+    const totalMonth = cityMonthRows.length;
+    const topRisk = counts7.high ? 'High' : counts7.med ? 'Medium' : counts7.low ? 'Low' : 'None';
+    const dominant = counts7.high >= counts7.med && counts7.high >= counts7.low ? 'High' : counts7.med >= counts7.low ? 'Medium' : 'Low';
+    const nextCityEvent = cityRows[0] || null;
+
+    block.style.display = '';
+    document.getElementById('cityOverviewTitle').textContent = `${cityName} — Next ${cityWindowDays} Days Overview`;
+    document.getElementById('cityOverviewNarrative').textContent = total7
+      ? `The next ${cityWindowDays} days show ${total7} tracked protest event${total7===1?'':'s'} in ${cityName}, with ${counts7.high} high, ${counts7.med} medium and ${counts7.low} low risk. The lower chart adds full-month context for ${monthLong}.`
+      : `No tracked protest events are scheduled in ${cityName} over the next ${cityWindowDays} days. Full-month context remains available below.`;
+
+    const statsWrap = document.getElementById('cityOverviewStats');
+    if (statsWrap) {
+      document.getElementById('cityStatTotal').textContent = String(total7);
+      document.getElementById('cityStatRisk').textContent = topRisk;
+      document.getElementById('cityStatRiskSub').textContent = total7 ? `${dominant.toLowerCase()} risk is the dominant 7-day signal` : 'No active 7-day signal';
+      document.getElementById('cityStatNext').textContent = nextCityEvent ? fmt(nextCityEvent._dt) : '—';
+      document.getElementById('cityStatNextSub').textContent = nextCityEvent ? (nextCityEvent.title || 'Scheduled event') : `No events in next ${cityWindowDays} days`;
+      document.getElementById('cityStatMonth').textContent = String(totalMonth);
+      document.getElementById('cityStatMonthSub').textContent = `${monthLong} city context`;
+      statsWrap.style.display = 'grid';
+    }
+
+    const fullTitle = document.getElementById('cityRiskPieFullTitle');
+    if (fullTitle) fullTitle.textContent = `Full Month Context (${monthShort})`;
+
+    function pieConfig(counts,total){
+      return {
+        type:'pie',
+        data:{
+          labels:['High','Medium','Low'],
+          datasets:[{
+            data:[counts.high,counts.med,counts.low],
+            backgroundColor:['#ff5a5f','#f0b429','#6bcf6b'],
+            borderColor:'#0f1115',
+            borderWidth:1
+          }]
+        },
+        options:{
+          plugins:{
+            legend:{display:false},
+            tooltip:{ callbacks:{ label:(tt)=>{
+              const v=tt.parsed||0;
+              const pct=total?Math.round((v/total)*100):0;
+              return `${tt.label}: ${v} (${pct}%)`;
+            }}}
+          }
+        }
+      };
+    }
+
+    if (window.Chart && document.getElementById('cityRiskPie')) {
+      new Chart(document.getElementById('cityRiskPie'), pieConfig(counts7,total7));
+    }
+    if (window.Chart && document.getElementById('cityRiskPieFull')) {
+      setTimeout(()=>new Chart(document.getElementById('cityRiskPieFull'), pieConfig(countsMonth,totalMonth)),0);
+    }
+
+    function setCityActiveEvent(row){
+      const strip=document.getElementById('cityActiveEvent');
+      const title=document.getElementById('cityActiveEventTitle');
+      const meta=document.getElementById('cityActiveEventMeta');
+      const risk=document.getElementById('cityActiveEventRisk');
+      if(!strip||!title||!meta||!risk) return;
+      if(!row){ strip.style.display='none'; return; }
+      strip.style.display='flex';
+      title.textContent=row.title||'Selected event';
+      meta.textContent=`${row.city || cityName}, ${row.country || ''} • ${fmt(row._dt)}${row.summary ? ' • ' + row.summary : ''}`;
+      risk.textContent=label(row.risk);
+      risk.className=`active-event-risk tag ${row.risk}`;
+    }
+
+    const mapEl=document.getElementById('cityMap');
+    const cityMarkerRegistry=new Map();
+    if (mapEl && window.L) {
+      mapEl.innerHTML='';
+      const map=L.map(mapEl,{zoomControl:true,attributionControl:true,scrollWheelZoom:true,wheelPxPerZoomLevel:120,minZoom:2});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(map);
+      const bounds=[];
+      cityRows.filter(r=>Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lng))).forEach(r=>{
+        const lat=Number(r.lat), lng=Number(r.lng), fill=color(r.risk);
+        const marker=L.circleMarker([lat,lng],{radius:7,color:fill,weight:1,fillColor:fill,fillOpacity:.9}).addTo(map);
+        marker.bindPopup(`<strong>${r.title||'Untitled event'}</strong><br>${r.city||cityName}, ${r.country||'Unknown country'}<br><span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br><span style="color:#8e97a3;">${fmt(r._dt)}</span><br><span style="color:#9fd6ff;">City map and table stay in sync</span>`);
+        const rowKey=key(r);
+        cityMarkerRegistry.set(rowKey,{marker,rowData:r});
+        marker.on('click',()=>{highlightMappedEvent(rowKey); setCityActiveEvent(r);});
+        bounds.push([lat,lng]);
+      });
+      if(bounds.length) map.fitBounds(L.latLngBounds(bounds),{padding:[28,28],maxZoom:13});
+      else if(focus && Number.isFinite(Number(focus.lat)) && Number.isFinite(Number(focus.lng))) map.setView([Number(focus.lat),Number(focus.lng)],11);
+      else map.setView([20,0],2);
+
+      setTimeout(()=>{
+        map.invalidateSize();
+        if(bounds.length) map.fitBounds(L.latLngBounds(bounds),{padding:[28,28],maxZoom:13});
+      },80);
+
+      focusCityEvent=function(rowKey){
+        const entry=cityMarkerRegistry.get(rowKey);
+        if(!entry) return false;
+        map.panTo(entry.marker.getLatLng(),{animate:true});
+        entry.marker.openPopup();
+        highlightMappedEvent(rowKey);
+        setCityActiveEvent(entry.rowData);
+        const q=new URLSearchParams(location.search);
+        q.set('eventId',rowKey);
+        history.replaceState(null,'',`${location.pathname}?${q.toString()}`);
+        return true;
+      };
+    }
+
+    const mapMeta=document.getElementById('cityMapMeta');
+    if(mapMeta) mapMeta.textContent=`${total7} mapped event${total7===1?'':'s'} in next ${cityWindowDays} days`;
+    const mapNote=document.getElementById('cityMapNote');
+    if(mapNote){
+      const topThemes={};
+      cityRows.forEach(a=>{
+        const st=`${a.title||''} ${a.summary||''}`.toLowerCase();
+        const theme=/labour|union|wage|strike|workers/.test(st)?'Labour & wage disputes'
+          :/cost[- ]?of[- ]?living|price|inflation/.test(st)?'Cost-of-living'
+          :/government|opposition|corruption|parliament|political/.test(st)?'Governance & legitimacy'
+          :/student|university|education|campus/.test(st)?'Education sector mobilisation'
+          :'Civic mobilisation';
+        topThemes[theme]=(topThemes[theme]||0)+1;
+      });
+      const themeList=Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      mapNote.textContent=themeList.length ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}` : `No dominant protest themes detected in the next ${cityWindowDays} days.`;
+    }
+
+    const active=cityRows.find(r=>r._dt && startOfDay(r._dt).getTime()===startOfDay(new Date()).getTime()) || nextCityEvent;
+    setCityActiveEvent(active||null);
+  })();
 
   // ===== NEW: Continent Overview + Pie =====
   (function renderContinentOverview(){
