@@ -239,7 +239,7 @@
         <div class="continent-map-controls">
           <div id="contViewToggle" class="segmented-toggle" role="group" aria-label="Continent view mode">
             <button type="button" data-view="month" class="active">This month only</button>
-            <button type="button" data-view="all">All upcoming</button>
+            <button type="button" data-view="next">Next month</button>
           </div>
           <div id="contRiskFilters" class="continent-risk-filters" role="group" aria-label="Filter by risk">
             <button type="button" class="risk-chip-btn active" data-risk="high">High</button>
@@ -947,10 +947,10 @@
     fillTable(alertsBody, [], 'Historical alerts are hidden while dashboard scope is active.', null, 'recent');
     if (recentAlertsReveal) recentAlertsReveal.style.display = recent.length ? '' : 'none';
     fillTable(alertsBodyExpanded, recent, 'No broader historical alerts found.', 12, 'recent');
-    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, 12, 'upcoming', mode !== 'continent');
+    fillTable(eventsBody, upcoming, `No upcoming events in the next ${scopeDays} days.`, mode === 'continent' ? null : 12, 'upcoming', mode !== 'continent');
   } else {
     fillTable(alertsBody, recent, 'No historical alerts found.', 8, 'recent');
-    fillTable(eventsBody, upcoming, mode === 'continent' ? 'No further events this month.' : 'No upcoming events found.', 12, 'upcoming', mode !== 'continent');
+    fillTable(eventsBody, upcoming, mode === 'continent' ? 'No further events this month.' : 'No upcoming events found.', mode === 'continent' ? null : 12, 'upcoming', mode !== 'continent');
   }
 
   // ===== NEW: Continent Overview + Pie =====
@@ -968,16 +968,20 @@
     const statsWrap = document.getElementById('contOverviewStats');
     const viewToggle = document.getElementById('contViewToggle');
     const riskFilters = document.getElementById('contRiskFilters');
-    const upcomingEmptyBase = 'No upcoming events found for the current filter.';
+    const upcomingEmptyBase = 'No events found for the selected month and filters.';
 
     const monthStart = currentMonthStart;
     const monthEnd   = currentMonthEnd;
     const inMonth = inCurrentMonth;
     const monthRows = subset.filter(a => inMonth(a._dt));
     const futureRows = subset.filter(a => a._dt && a._dt >= now);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const nextMonthEnd = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+    const nextMonthRows = subset.filter(a => a._dt && a._dt >= nextMonthStart && a._dt < nextMonthEnd);
 
     const monthLongLabel = monthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
     const monthShortLabel = monthStart.toLocaleString('en-GB',{month:'short'});
+    const nextMonthLongLabel = nextMonthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
 
     const counts = {high:0, med:0, low:0};
     monthRows.forEach(r => counts[r.risk]++);
@@ -1066,7 +1070,10 @@
       oceania: [[-50, 110], [5, 180]]
     };
 
-    const validFutureRows = futureRows.filter(a =>
+    const markerSourceRows = [...monthRows, ...nextMonthRows].filter((row, idx, arr) =>
+      arr.findIndex(x => key(x) === key(row)) === idx
+    );
+    const validFutureRows = markerSourceRows.filter(a =>
       Number.isFinite(Number(a.lat)) && Number.isFinite(Number(a.lng))
     );
 
@@ -1136,9 +1143,36 @@
       }, 60);
     }
 
+    function baseRowsForCurrentView(){
+      return activeContinentView === 'next' ? nextMonthRows : monthRows;
+    }
+
     function rowsForCurrentView(){
-      const base = activeContinentView === 'all' ? futureRows : monthRows;
-      return base.filter(r => activeContinentRiskFilters.has(r.risk));
+      return baseRowsForCurrentView().filter(r => activeContinentRiskFilters.has(r.risk));
+    }
+
+    function preferredActiveEvent(rows){
+      const today = startOfDay(new Date()).getTime();
+      const todaysEvent = rows
+        .filter(r => r._dt && startOfDay(r._dt).getTime() === today)
+        .sort((a,b)=>a._dt-b._dt)[0] || null;
+      if (todaysEvent) return todaysEvent;
+      return rows.filter(r => r._dt && r._dt >= new Date()).sort((a,b)=>a._dt-b._dt)[0] || null;
+    }
+
+    function syncRiskChipVisibility(){
+      if (!riskFilters) return;
+      const available = new Set(baseRowsForCurrentView().map(r => r.risk));
+      Array.from(riskFilters.querySelectorAll('button')).forEach(btn => {
+        const risk = btn.dataset.risk;
+        const hasData = available.has(risk);
+        btn.style.display = hasData ? '' : 'none';
+        btn.disabled = !hasData;
+        if (!hasData) activeContinentRiskFilters.delete(risk);
+      });
+      if (!activeContinentRiskFilters.size) {
+        available.forEach(r => activeContinentRiskFilters.add(r));
+      }
     }
 
     function syncTableRows(){
@@ -1148,7 +1182,7 @@
         const rowKey = tr.dataset.eventKey;
         const rowData = subset.find(a => key(a) === rowKey);
         const shouldShow = !!rowData &&
-          ((activeContinentView === 'all' && rowData._dt && rowData._dt >= now) || (activeContinentView === 'month' && inMonth(rowData._dt))) &&
+          ((activeContinentView === 'next' && rowData._dt && rowData._dt >= nextMonthStart && rowData._dt < nextMonthEnd) || (activeContinentView === 'month' && inMonth(rowData._dt))) &&
           activeContinentRiskFilters.has(rowData.risk);
         tr.classList.toggle('table-row-hidden', !shouldShow);
         if (shouldShow) visibleCount++;
@@ -1166,7 +1200,7 @@
       }
 
       if (upcomingEventsMeta) {
-        const viewLabel = activeContinentView === 'all' ? 'all upcoming' : 'this month only';
+        const viewLabel = activeContinentView === 'next' ? `next month (${nextMonthLongLabel})` : `this month (${monthLongLabel})`;
         const riskLabel = activeContinentRiskFilters.size === 3
           ? 'all risk bands'
           : Array.from(activeContinentRiskFilters).map(r => label(r)).join(' / ');
@@ -1176,6 +1210,7 @@
     }
 
     applyContinentFilters = function(){
+      syncRiskChipVisibility();
       const filteredRows = rowsForCurrentView();
       const visibleBounds = [];
 
@@ -1192,9 +1227,8 @@
       const visibleCount = syncTableRows();
 
       if (mapMeta) {
-        mapMeta.textContent = activeContinentView === 'all'
-          ? `${visibleCount} mapped event${visibleCount!==1?'s':''} across all upcoming dates`
-          : `${visibleCount} mapped event${visibleCount!==1?'s':''} in ${monthLongLabel}`;
+        const activeWindowLabel = activeContinentView === 'next' ? nextMonthLongLabel : monthLongLabel;
+        mapMeta.textContent = `${visibleCount} mapped event${visibleCount!==1?'s':''} in ${activeWindowLabel}`;
       }
 
       if (continentMapInstance) {
@@ -1205,11 +1239,9 @@
         }
       }
 
-      const currentFocusedKey = eventIdParam || '';
-      if (currentFocusedKey) {
-        focusContinentEventByKey(currentFocusedKey, { updateQuery:false });
-      } else if (filteredRows.length) {
-        setContinentActiveEvent(filteredRows[0]);
+      const preferred = preferredActiveEvent(filteredRows);
+      if (preferred) {
+        setContinentActiveEvent(preferred);
       } else {
         setContinentActiveEvent(null);
       }
@@ -1233,7 +1265,8 @@
     if (viewToggle) {
       Array.from(viewToggle.querySelectorAll('button')).forEach(btn => {
         btn.addEventListener('click', () => {
-          activeContinentView = btn.dataset.view === 'all' ? 'all' : 'month';
+          activeContinentView = btn.dataset.view === 'next' ? 'next' : 'month';
+          activeContinentRiskFilters = new Set(['high','med','low']);
           applyContinentFilters && applyContinentFilters();
         });
       });
@@ -1256,11 +1289,8 @@
     block.style.display = 'block';
     applyContinentFilters && applyContinentFilters();
 
-    if (eventIdParam) {
-      setTimeout(() => {
-        focusContinentEventByKey(eventIdParam, { updateQuery:false });
-      }, 120);
-    }
+    // On initial page load, the active strip deliberately favours today's protest or the next upcoming protest.
+    // Row/marker clicks can still focus a specific event after the page has loaded.
   })();
 })();
 </script>
