@@ -38,7 +38,7 @@
       roleLabel: 'Master Admin',
       passHash: '2af37cad7dca2c87d8aa6f5e8136e299e652be3953c182d1bc558f0f80bdb64e'
     },
-    'mm@cityintel.com': {
+    'mmadmin@cityintel.com': {
       name: 'Morris',
       role: 'Admin',
       roleKey: 'master-admin',
