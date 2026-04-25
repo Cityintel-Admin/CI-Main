@@ -730,6 +730,12 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 
         <section class="card" style="grid-column: span 12;">
+          <h3>Priority Countries (Live)</h3>
+          <p style="color:var(--muted);margin:6px 0 12px">Country-level operational priorities for the next 7 days, weighted by upcoming risk and spread across cities.</p>
+          <div id="priorityCountries" class="priority-grid"></div>
+        </section>
+
+        <section class="card" style="grid-column: span 12;">
           <h3>Priority Cities (Live)</h3>
           <p style="color:var(--muted);margin:6px 0 12px">Weighted by upcoming risk so you can see where to focus first.</p>
           <div id="priorityCities" class="priority-grid"></div>
@@ -2449,9 +2455,10 @@ function CI_updatePanicMapOverlayIndex(st){
 
 <script>
 (function mountDashboardIntelLayer(){
+  const countryPriorityHost = document.getElementById('priorityCountries');
   const priorityHost = document.getElementById('priorityCities');
   const trendsHost = document.getElementById('trendSignals');
-  if (!priorityHost && !trendsHost) return;
+  if (!countryPriorityHost && !priorityHost && !trendsHost) return;
 
   const parse = v => (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
   const normRisk = (r='') => {
@@ -2468,6 +2475,14 @@ function CI_updatePanicMapOverlayIndex(st){
     .map(a => ({ ...a, _dt: parse(a.time ?? a.datetime ?? a.date ?? a.when), _risk: normRisk(a.risk) }))
     .filter(a => a._dt && a._dt >= now && a._dt <= next7)
     .sort((a,b) => a._dt - b._dt);
+
+  function goToCountryDetail(country){
+    const qs = new URLSearchParams();
+    qs.set('country', country);
+    qs.set('days', '7');
+    qs.set('from', 'dashboard');
+    location.href = `risk-detail.html?${qs.toString()}`;
+  }
 
   function goToCityDetail(city, country=''){
     const qs = new URLSearchParams();
@@ -2487,6 +2502,77 @@ function CI_updatePanicMapOverlayIndex(st){
     qs.set('days', '7');
     qs.set('from', 'dashboard');
     location.href = `events.html?${qs.toString()}`;
+  }
+
+  if (countryPriorityHost) {
+    const byCountry = new Map();
+    upcoming.forEach(a => {
+      const country = String(a.country || a.Country || '').trim();
+      if (!country) return;
+      if (!byCountry.has(country)) {
+        byCountry.set(country, {
+          score: 0, high: 0, med: 0, low: 0,
+          next: null,
+          cities: new Map(),
+          continent: a.continent || a.Continent || ''
+        });
+      }
+      const row = byCountry.get(country);
+      row.score += riskWeight[a._risk] || 1;
+      row[a._risk] += 1;
+      const city = String(a.city || 'Unknown city').trim();
+      row.cities.set(city, (row.cities.get(city) || 0) + 1);
+
+      // Default country card lead: nearest upcoming high risk first, then medium, then low.
+      // If risk is tied, keep the earlier event.
+      if (!row.next) {
+        row.next = a;
+      } else {
+        const currentWeight = riskWeight[row.next._risk] || 1;
+        const candidateWeight = riskWeight[a._risk] || 1;
+        if (candidateWeight > currentWeight || (candidateWeight === currentWeight && a._dt < row.next._dt)) {
+          row.next = a;
+        }
+      }
+    });
+
+    const rankedCountries = [...byCountry.entries()]
+      .sort((a,b) =>
+        b[1].score - a[1].score ||
+        b[1].high - a[1].high ||
+        b[1].med - a[1].med ||
+        b[1].cities.size - a[1].cities.size
+      )
+      .slice(0,5);
+
+    if (!rankedCountries.length) {
+      countryPriorityHost.innerHTML = '<div style="color:var(--muted)">No live country priorities in the next 7 days.</div>';
+    } else {
+      countryPriorityHost.innerHTML = '';
+      rankedCountries.forEach(([country, meta]) => {
+        const next = meta.next;
+        const pretty = next && next._dt
+          ? next._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+          : 'Time pending';
+        const topCity = [...meta.cities.entries()].sort((a,b)=>b[1]-a[1])[0];
+        const citySpread = meta.cities.size;
+        const card = document.createElement('div');
+        card.className = 'priority-city-card';
+        card.innerHTML = `
+          <div class="priority-city-top">
+            <div class="priority-city-name">${country}</div>
+            <div class="priority-city-score">${meta.score}</div>
+          </div>
+          <div class="priority-city-mix">${meta.high} high • ${meta.med} medium • ${meta.low} low across ${citySpread} cit${citySpread===1?'y':'ies'}</div>
+          <div class="priority-city-next">
+            <strong>${next?.title || 'Next incident pending'}</strong>
+            <span>${topCity ? `${topCity[0]} • ` : ''}${pretty}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => goToCountryDetail(country));
+        countryPriorityHost.appendChild(card);
+      });
+    }
   }
 
   if (priorityHost) {
