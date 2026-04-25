@@ -144,9 +144,16 @@
     .active-event-risk{white-space:nowrap}
     tr.table-row-hidden{display:none}
 
+    .drill-selectors{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:-4px 0 18px 0}
+    .drill-selectors .field{display:flex;flex-direction:column;gap:5px}
+    .drill-selectors label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8e97a3}
+    .drill-selectors select{width:100%;background:#1c1e22;border:1px solid #2e3238;color:#e9edf2;border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;outline:none}
+    .drill-selectors select:focus{border-color:rgba(46,168,255,.55);box-shadow:0 0 0 2px rgba(46,168,255,.10)}
+    .drill-selectors-note{font-size:12px;color:#8e97a3;margin-top:-8px;margin-bottom:14px;display:none}
 
     @media (max-width: 860px){
       .scope-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .drill-selectors{grid-template-columns:1fr}
     }
     @media (max-width: 560px){
       .scope-summary-grid{grid-template-columns:1fr}
@@ -165,6 +172,21 @@
     <span class="sep">›</span>
     <a id="crumb-city" href="#"></a>
   </nav>
+  <div id="drillSelectors" class="drill-selectors" aria-label="Risk detail drill-down selectors">
+    <div class="field">
+      <label for="drillContinentSelect">Continent</label>
+      <select id="drillContinentSelect"></select>
+    </div>
+    <div class="field">
+      <label for="drillCountrySelect">Country</label>
+      <select id="drillCountrySelect"></select>
+    </div>
+    <div class="field">
+      <label for="drillCitySelect">City</label>
+      <select id="drillCitySelect"></select>
+    </div>
+  </div>
+  <div id="drillSelectorsNote" class="drill-selectors-note">Use the selectors to move between continent, country, and city views without losing the drill-down context.</div>
   <div id="scopeNote" class="scope-note" style="display:none"></div>
 
   <div id="scopeSummary" class="card scope-summary">
@@ -790,14 +812,42 @@
   }
 
   // pick a focus event
+  function riskRank(r){ return r === 'high' ? 3 : r === 'med' ? 2 : 1; }
+  function countryForwardScore(countryName){
+    const rows = all.filter(a =>
+      (a.country || '').toLowerCase() === String(countryName || '').toLowerCase() &&
+      a._dt && a._dt >= now
+    );
+    return rows.reduce((sum, r) => sum + (r.risk === 'high' ? 100 : r.risk === 'med' ? 20 : 5), 0);
+  }
+  function pickDefaultFocus(){
+    const forward = subset.filter(a => a._dt && a._dt >= now);
+    if (!forward.length) return recent[0] || subset[0] || null;
+
+    if (mode === 'continent') {
+      return forward.slice().sort((a,b) =>
+        riskRank(b.risk) - riskRank(a.risk) ||
+        countryForwardScore(b.country) - countryForwardScore(a.country) ||
+        a._dt - b._dt
+      )[0] || null;
+    }
+
+    if (mode === 'region') {
+      return forward.slice().sort((a,b) => a._dt - b._dt || riskRank(b.risk) - riskRank(a.risk))[0] || null;
+    }
+
+    return forward.slice().sort((a,b) =>
+      riskRank(b.risk) - riskRank(a.risk) ||
+      a._dt - b._dt
+    )[0] || null;
+  }
+
   let focus = null;
   if (eventIdParam) {
     const decodedEventId = decodeURIComponent(eventIdParam);
     focus = subset.find(a => key(a) === decodedEventId || legacyKey(a) === decodedEventId) || null;
   }
-  if (!focus) {
-    focus = upcoming.find(a=>a.risk==='high') || upcoming[0] || recent[0] || subset[0] || null;
-  }
+  if (!focus) focus = pickDefaultFocus();
 
   // header title
   if (mode === 'continent') {
@@ -870,7 +920,7 @@
   // location card
   if (focus) {
     locCountry.textContent = focus.country || (mode==='continent'?continentParam: mode==='region'?regionParam:'—');
-    locCity.textContent = focus.city || (mode==='region' ? 'Multiple / region view' : '—');
+    locCity.textContent = mode==='region' ? 'Multiple / country view' : (focus.city || '—');
     locRisk.textContent = label(focus.risk);
     locRisk.className = 'tag ' + focus.risk;
   } else {
@@ -897,11 +947,19 @@
     const show = el => el && (el.style.display = '');
     const hide = el => el && (el.style.display = 'none');
 
-    const continentName = (focus?.continent)
-      || (mode === 'continent' ? continentParam : (subset[0]?.continent || ''));
-    const countryName = (focus?.country) || (mode === 'region' ? regionParam : (subset[0]?.country || ''));
-    const cityName = (focus?.city)
-      || (mode === 'city' ? cityParam : '');
+    const continentName = mode === 'continent'
+      ? continentParam
+      : (mode === 'region' || mode === 'city')
+        ? (focus?.continent || subset[0]?.continent || '')
+        : '';
+    const countryName = mode === 'region'
+      ? regionParam
+      : mode === 'city'
+        ? (regionParam || focus?.country || subset[0]?.country || '')
+        : '';
+    const cityName = mode === 'city'
+      ? (cityParam || focus?.city || '')
+      : '';
 
     let partsShown = 0;
 
@@ -934,6 +992,67 @@
     if (!countryName || !cityName) sep2 && (sep2.style.display='none');
 
     crumbsEl.hidden = partsShown === 0;
+  })();
+
+
+  (function setupDrillSelectors(){
+    const wrap = document.getElementById('drillSelectors');
+    const note = document.getElementById('drillSelectorsNote');
+    const contSel = document.getElementById('drillContinentSelect');
+    const countrySel = document.getElementById('drillCountrySelect');
+    const citySel = document.getElementById('drillCitySelect');
+    if (!wrap || !contSel || !countrySel || !citySel) return;
+
+    const clean = v => String(v || '').trim();
+    const uniq = arr => Array.from(new Set(arr.map(clean).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+    const selectedContinent = mode === 'continent' ? continentParam : (focus?.continent || subset[0]?.continent || '');
+    const selectedCountry = mode === 'region' ? regionParam : mode === 'city' ? (regionParam || focus?.country || subset[0]?.country || '') : '';
+    const selectedCity = mode === 'city' ? cityParam : '';
+
+    const continents = uniq(all.map(a => a.continent));
+    const countries = uniq(all
+      .filter(a => !selectedContinent || clean(a.continent).toLowerCase() === clean(selectedContinent).toLowerCase())
+      .map(a => a.country));
+    const cities = uniq(all
+      .filter(a => !selectedCountry || clean(a.country).toLowerCase() === clean(selectedCountry).toLowerCase())
+      .filter(a => selectedCountry || !selectedContinent || clean(a.continent).toLowerCase() === clean(selectedContinent).toLowerCase())
+      .map(a => a.city));
+
+    function fillSelect(sel, items, placeholder, selected){
+      sel.innerHTML = '';
+      const first = document.createElement('option');
+      first.value = '';
+      first.textContent = placeholder;
+      sel.appendChild(first);
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item;
+        opt.textContent = item;
+        if (clean(item).toLowerCase() === clean(selected).toLowerCase()) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    fillSelect(contSel, continents, 'Select continent', selectedContinent);
+    fillSelect(countrySel, countries, mode === 'continent' ? 'Select country' : 'Country view', selectedCountry);
+    fillSelect(citySel, cities, mode === 'city' ? 'City view' : 'Select city', selectedCity);
+
+    contSel.addEventListener('change', () => {
+      if (!contSel.value) return;
+      location.href = `risk-detail.html?continent=${encodeURIComponent(contSel.value)}`;
+    });
+    countrySel.addEventListener('change', () => {
+      if (!countrySel.value) return;
+      location.href = `risk-detail.html?country=${encodeURIComponent(countrySel.value)}`;
+    });
+    citySel.addEventListener('change', () => {
+      if (!citySel.value) return;
+      const country = countrySel.value || selectedCountry;
+      location.href = `risk-detail.html?city=${encodeURIComponent(citySel.value)}${country ? `&country=${encodeURIComponent(country)}` : ''}`;
+    });
+
+    wrap.style.display = 'grid';
+    if (note) note.style.display = '';
   })();
 
   (function renderScopeNote(){
@@ -2079,3 +2198,5 @@
 
 </body>
 </html>
+
+
