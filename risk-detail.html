@@ -222,6 +222,18 @@
       </div>
       <div class="card continent-map-card">
         <div class="continent-map-head"><h3 style="margin:0;">City Protest Map</h3><span id="cityMapMeta" class="continent-map-meta">Next 7 days</span></div>
+        <div class="continent-map-controls">
+          <div id="cityViewToggle" class="segmented-toggle" role="group" aria-label="City view mode">
+            <button type="button" data-view="current" class="active">Current 7 days</button>
+            <button type="button" data-view="next">Next 7 days</button>
+          </div>
+          <div id="cityRiskFilters" class="continent-risk-filters" role="group" aria-label="Filter city map by risk">
+            <button type="button" class="risk-chip-btn active" data-risk="high">High</button>
+            <button type="button" class="risk-chip-btn active" data-risk="med">Medium</button>
+            <button type="button" class="risk-chip-btn active" data-risk="low">Low</button>
+          </div>
+        </div>
+        <div id="cityDateRange" class="continent-map-meta" style="margin:-2px 0 8px 2px;">Viewing date range</div>
         <div id="cityMap" class="continent-map-wrap" aria-label="City protest map"></div>
         <div class="continent-map-legend"><span><i style="background:#ff5a5f"></i>High</span><span><i style="background:#f0b429"></i>Medium</span><span><i style="background:#6bcf6b"></i>Low</span></div>
         <div id="cityActiveEvent" class="active-event-strip" aria-live="polite"><div class="active-event-strip-main"><div class="active-event-kicker">Active event</div><div id="cityActiveEventTitle" class="active-event-title">No event selected</div><div id="cityActiveEventMeta" class="active-event-meta">Click a marker or row to sync the map and table.</div></div><div id="cityActiveEventRisk" class="active-event-risk tag low">Low</div></div>
@@ -1006,44 +1018,53 @@
     if (!block) return;
 
     const cityWindowDays = scopeDays > 0 ? scopeDays : 7;
-    const cityWindowEnd = new Date(now.getTime() + cityWindowDays * 86400000);
-    const cityRows = subset.filter(a => a._dt && a._dt >= now && a._dt <= cityWindowEnd).sort((a,b)=>a._dt-b._dt);
-    const cityMonthRows = subset.filter(a => inCurrentMonth(a._dt)).sort((a,b)=>a._dt-b._dt);
+    let activeCityWindow = 'current';
+    let activeCityRiskFilters = new Set(['high','med','low']);
+    let cityRiskPieChart = null;
+    let cityRiskPieFullChart = null;
+    let cityMapInstance = null;
+    let cityMarkerRegistry = new Map();
+
     const cityName = focus?.city || cityParam || 'Selected city';
-    const monthShort = currentMonthStart.toLocaleString('en-GB',{month:'short'});
-    const monthLong = currentMonthStart.toLocaleString('en-GB',{month:'long', year:'numeric'});
+    const countryName = focus?.country || regionParam || subset[0]?.country || '';
 
-    const counts7 = {high:0, med:0, low:0};
-    cityRows.forEach(r=>counts7[r.risk]++);
-    const countsMonth = {high:0, med:0, low:0};
-    cityMonthRows.forEach(r=>countsMonth[r.risk]++);
-
-    const total7 = cityRows.length;
-    const totalMonth = cityMonthRows.length;
-    const topRisk = counts7.high ? 'High' : counts7.med ? 'Medium' : counts7.low ? 'Low' : 'None';
-    const dominant = counts7.high >= counts7.med && counts7.high >= counts7.low ? 'High' : counts7.med >= counts7.low ? 'Medium' : 'Low';
-    const nextCityEvent = cityRows[0] || null;
+    const cityViewToggle = document.getElementById('cityViewToggle');
+    const cityRiskFilters = document.getElementById('cityRiskFilters');
+    const mapEl = document.getElementById('cityMap');
 
     block.style.display = '';
-    document.getElementById('cityOverviewTitle').textContent = `${cityName} — Next ${cityWindowDays} Days Overview`;
-    document.getElementById('cityOverviewNarrative').textContent = total7
-      ? `The next ${cityWindowDays} days show ${total7} tracked protest event${total7===1?'':'s'} in ${cityName}, with ${counts7.high} high, ${counts7.med} medium and ${counts7.low} low risk. The lower chart adds full-month context for ${monthLong}.`
-      : `No tracked protest events are scheduled in ${cityName} over the next ${cityWindowDays} days. Full-month context remains available below.`;
 
-    const statsWrap = document.getElementById('cityOverviewStats');
-    if (statsWrap) {
-      document.getElementById('cityStatTotal').textContent = String(total7);
-      document.getElementById('cityStatRisk').textContent = topRisk;
-      document.getElementById('cityStatRiskSub').textContent = total7 ? `${dominant.toLowerCase()} risk is the dominant 7-day signal` : 'No active 7-day signal';
-      document.getElementById('cityStatNext').textContent = nextCityEvent ? fmt(nextCityEvent._dt) : '—';
-      document.getElementById('cityStatNextSub').textContent = nextCityEvent ? (nextCityEvent.title || 'Scheduled event') : `No events in next ${cityWindowDays} days`;
-      document.getElementById('cityStatMonth').textContent = String(totalMonth);
-      document.getElementById('cityStatMonthSub').textContent = `${monthLong} city context`;
-      statsWrap.style.display = 'grid';
+    const addDays = (d, days) => new Date(d.getTime() + days * 86400000);
+    const startOfWindow = () => activeCityWindow === 'next' ? addDays(now, cityWindowDays) : new Date(now);
+    const endOfWindow = () => activeCityWindow === 'next' ? addDays(now, cityWindowDays * 2) : addDays(now, cityWindowDays);
+
+    function rangeLabel(start, end){
+      const sameYear = start.getFullYear() === end.getFullYear();
+      const sameMonth = sameYear && start.getMonth() === end.getMonth();
+      const startOpts = sameMonth ? {day:'2-digit'} : (sameYear ? {day:'2-digit', month:'short'} : {day:'2-digit', month:'short', year:'numeric'});
+      const endOpts = {day:'2-digit', month:'short', year:'numeric'};
+      return `${start.toLocaleDateString('en-GB', startOpts)}–${end.toLocaleDateString('en-GB', endOpts)}`;
     }
 
-    const fullTitle = document.getElementById('cityRiskPieFullTitle');
-    if (fullTitle) fullTitle.textContent = `Full Month Context (${monthShort})`;
+    function monthWindowFor(date){
+      const start = new Date(date.getFullYear(), date.getMonth(), 1);
+      const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+      return { start, end };
+    }
+
+    function countsFor(rows){
+      const counts = {high:0, med:0, low:0};
+      rows.forEach(r => counts[r.risk]++);
+      return counts;
+    }
+
+    function dominantRisk(counts, total){
+      if (!total) return 'None';
+      if (counts.high) return 'High';
+      if (counts.med) return 'Medium';
+      if (counts.low) return 'Low';
+      return 'None';
+    }
 
     function pieConfig(counts,total){
       return {
@@ -1070,13 +1091,6 @@
       };
     }
 
-    if (window.Chart && document.getElementById('cityRiskPie')) {
-      new Chart(document.getElementById('cityRiskPie'), pieConfig(counts7,total7));
-    }
-    if (window.Chart && document.getElementById('cityRiskPieFull')) {
-      setTimeout(()=>new Chart(document.getElementById('cityRiskPieFull'), pieConfig(countsMonth,totalMonth)),0);
-    }
-
     function setCityActiveEvent(row){
       const strip=document.getElementById('cityActiveEvent');
       const title=document.getElementById('cityActiveEventTitle');
@@ -1086,40 +1100,100 @@
       if(!row){ strip.style.display='none'; return; }
       strip.style.display='flex';
       title.textContent=row.title||'Selected event';
-      meta.textContent=`${row.city || cityName}, ${row.country || ''} • ${fmt(row._dt)}${row.summary ? ' • ' + row.summary : ''}`;
+      meta.textContent=`${row.city || cityName}, ${row.country || countryName || ''} • ${fmt(row._dt)}${row.summary ? ' • ' + row.summary : ''}`;
       risk.textContent=label(row.risk);
       risk.className=`active-event-risk tag ${row.risk}`;
     }
 
-    const mapEl=document.getElementById('cityMap');
-    const cityMarkerRegistry=new Map();
-    if (mapEl && window.L) {
+    function themeSummary(rows){
+      const topThemes={};
+      rows.forEach(a=>{
+        const st=`${a.title||''} ${a.summary||''}`.toLowerCase();
+        const theme=/labour|union|wage|strike|workers/.test(st)?'Labour & wage disputes'
+          :/cost[- ]?of[- ]?living|price|inflation/.test(st)?'Cost-of-living'
+          :/government|opposition|corruption|parliament|political/.test(st)?'Governance & legitimacy'
+          :/student|university|education|campus/.test(st)?'Education sector mobilisation'
+          :'Civic mobilisation';
+        topThemes[theme]=(topThemes[theme]||0)+1;
+      });
+      return Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    }
+
+    function rowsForActiveWindow(){
+      const start = startOfWindow();
+      const end = endOfWindow();
+      return subset.filter(a => a._dt && a._dt >= start && a._dt < end).sort((a,b)=>a._dt-b._dt);
+    }
+
+    function filteredRowsForActiveWindow(){
+      return rowsForActiveWindow().filter(r => activeCityRiskFilters.has(r.risk));
+    }
+
+    function syncRiskChipVisibility(baseRows){
+      if (!cityRiskFilters) return;
+      const available = new Set(baseRows.map(r => r.risk));
+      Array.from(cityRiskFilters.querySelectorAll('button')).forEach(btn => {
+        const risk = btn.dataset.risk;
+        const hasData = available.has(risk);
+        btn.style.display = hasData ? '' : 'none';
+        btn.disabled = !hasData;
+        if (!hasData) activeCityRiskFilters.delete(risk);
+      });
+      if (!activeCityRiskFilters.size) available.forEach(r => activeCityRiskFilters.add(r));
+      Array.from(cityRiskFilters.querySelectorAll('button')).forEach(btn => {
+        btn.classList.toggle('active', activeCityRiskFilters.has(btn.dataset.risk));
+      });
+    }
+
+    function renderCityTable(rows){
+      if (!eventsBody) return;
+      mapRowRegistry.clear();
+      const empty = activeCityWindow === 'next'
+        ? `No city events found in the next ${cityWindowDays}-day window.`
+        : `No city events found in the current ${cityWindowDays}-day window.`;
+      fillTable(eventsBody, rows, empty, null, 'upcoming', false);
+      if (upcomingEventsMeta) {
+        const riskLabel = activeCityRiskFilters.size === 3
+          ? 'all risk bands'
+          : Array.from(activeCityRiskFilters).map(r => label(r)).join(' / ');
+        const range = rangeLabel(startOfWindow(), endOfWindow());
+        upcomingEventsMeta.textContent = `City view: ${activeCityWindow === 'next' ? 'next' : 'current'} ${cityWindowDays} days (${range}) • Filtered to ${riskLabel} • Marker and row clicks stay synced.`;
+      }
+    }
+
+    function renderCityMap(rows){
+      if (!mapEl || !window.L) return;
+      if (cityMapInstance) {
+        cityMapInstance.remove();
+        cityMapInstance = null;
+      }
       mapEl.innerHTML='';
-      const map=L.map(mapEl,{zoomControl:true,attributionControl:true,scrollWheelZoom:true,wheelPxPerZoomLevel:120,minZoom:2});
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(map);
+      cityMarkerRegistry = new Map();
+      cityMapInstance=L.map(mapEl,{zoomControl:true,attributionControl:true,scrollWheelZoom:true,wheelPxPerZoomLevel:120,minZoom:2});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(cityMapInstance);
       const bounds=[];
-      cityRows.filter(r=>Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lng))).forEach(r=>{
+      rows.filter(r=>Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lng))).forEach(r=>{
         const lat=Number(r.lat), lng=Number(r.lng), fill=color(r.risk);
-        const marker=L.circleMarker([lat,lng],{radius:7,color:fill,weight:1,fillColor:fill,fillOpacity:.9}).addTo(map);
-        marker.bindPopup(`<strong>${r.title||'Untitled event'}</strong><br>${r.city||cityName}, ${r.country||'Unknown country'}<br><span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br><span style="color:#8e97a3;">${fmt(r._dt)}</span><br><span style="color:#9fd6ff;">City map and table stay in sync</span>`);
+        const marker=L.circleMarker([lat,lng],{radius:7,color:fill,weight:1,fillColor:fill,fillOpacity:.9}).addTo(cityMapInstance);
+        marker.bindPopup(`<strong>${r.title||'Untitled event'}</strong><br>${r.city||cityName}, ${r.country||countryName||'Unknown country'}<br><span style="color:${fill};font-weight:700;">${label(r.risk)} risk</span><br><span style="color:#8e97a3;">${fmt(r._dt)}</span><br><span style="color:#9fd6ff;">City map and table stay in sync</span>`);
         const rowKey=key(r);
         cityMarkerRegistry.set(rowKey,{marker,rowData:r});
         marker.on('click',()=>{highlightMappedEvent(rowKey); setCityActiveEvent(r);});
         bounds.push([lat,lng]);
       });
-      if(bounds.length) map.fitBounds(L.latLngBounds(bounds),{padding:[28,28],maxZoom:13});
-      else if(focus && Number.isFinite(Number(focus.lat)) && Number.isFinite(Number(focus.lng))) map.setView([Number(focus.lat),Number(focus.lng)],11);
-      else map.setView([20,0],2);
+      if(bounds.length) cityMapInstance.fitBounds(L.latLngBounds(bounds),{padding:[28,28],maxZoom:13});
+      else if(focus && Number.isFinite(Number(focus.lat)) && Number.isFinite(Number(focus.lng))) cityMapInstance.setView([Number(focus.lat),Number(focus.lng)],11);
+      else cityMapInstance.setView([20,0],2);
 
       setTimeout(()=>{
-        map.invalidateSize();
-        if(bounds.length) map.fitBounds(L.latLngBounds(bounds),{padding:[28,28],maxZoom:13});
+        cityMapInstance.invalidateSize();
+        if(bounds.length) cityMapInstance.fitBounds(L.latLngBounds(bounds),{padding:[28,28],maxZoom:13});
       },80);
 
       focusCityEvent=function(rowKey){
         const entry=cityMarkerRegistry.get(rowKey);
         if(!entry) return false;
-        map.panTo(entry.marker.getLatLng(),{animate:true});
+        cityMapInstance.panTo(entry.marker.getLatLng(),{animate:true});
         entry.marker.openPopup();
         highlightMappedEvent(rowKey);
         setCityActiveEvent(entry.rowData);
@@ -1130,26 +1204,103 @@
       };
     }
 
-    const mapMeta=document.getElementById('cityMapMeta');
-    if(mapMeta) mapMeta.textContent=`${total7} mapped event${total7===1?'':'s'} in next ${cityWindowDays} days`;
-    const mapNote=document.getElementById('cityMapNote');
-    if(mapNote){
-      const topThemes={};
-      cityRows.forEach(a=>{
-        const st=`${a.title||''} ${a.summary||''}`.toLowerCase();
-        const theme=/labour|union|wage|strike|workers/.test(st)?'Labour & wage disputes'
-          :/cost[- ]?of[- ]?living|price|inflation/.test(st)?'Cost-of-living'
-          :/government|opposition|corruption|parliament|political/.test(st)?'Governance & legitimacy'
-          :/student|university|education|campus/.test(st)?'Education sector mobilisation'
-          :'Civic mobilisation';
-        topThemes[theme]=(topThemes[theme]||0)+1;
-      });
-      const themeList=Object.entries(topThemes).sort((a,b)=>b[1]-a[1]).slice(0,3);
-      mapNote.textContent=themeList.length ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}` : `No dominant protest themes detected in the next ${cityWindowDays} days.`;
+    function renderCityWindow(){
+      const baseRows = rowsForActiveWindow();
+      syncRiskChipVisibility(baseRows);
+      const cityRows = filteredRowsForActiveWindow();
+      const windowStart = startOfWindow();
+      const windowEnd = endOfWindow();
+      const dateRange = rangeLabel(windowStart, windowEnd);
+      const monthWindow = monthWindowFor(windowStart);
+      const cityMonthRows = subset.filter(a => a._dt && a._dt >= monthWindow.start && a._dt < monthWindow.end).sort((a,b)=>a._dt-b._dt);
+      const monthShort = monthWindow.start.toLocaleString('en-GB',{month:'short'});
+      const monthLong = monthWindow.start.toLocaleString('en-GB',{month:'long', year:'numeric'});
+
+      const counts7 = countsFor(cityRows);
+      const countsMonth = countsFor(cityMonthRows);
+      const total7 = cityRows.length;
+      const totalMonth = cityMonthRows.length;
+      const topRisk = dominantRisk(counts7,total7);
+      const nextCityEvent = cityRows[0] || null;
+      const windowLabel = activeCityWindow === 'next' ? `Next ${cityWindowDays} Days` : `Current ${cityWindowDays} Days`;
+
+      document.getElementById('cityOverviewTitle').textContent = `${cityName} — ${windowLabel} Overview`;
+      document.getElementById('cityOverviewNarrative').textContent = total7
+        ? `The ${windowLabel.toLowerCase()} window (${dateRange}) shows ${total7} tracked protest event${total7===1?'':'s'} in ${cityName}, with ${counts7.high} high, ${counts7.med} medium and ${counts7.low} low risk. The lower chart adds full-month context for ${monthLong}.`
+        : `No tracked protest events are scheduled in ${cityName} for ${dateRange}. Full-month context for ${monthLong} remains available below.`;
+
+      const statsWrap = document.getElementById('cityOverviewStats');
+      if (statsWrap) {
+        document.getElementById('cityStatTotal').textContent = String(total7);
+        document.getElementById('cityStatRisk').textContent = topRisk;
+        document.getElementById('cityStatRiskSub').textContent = total7 ? `${topRisk.toLowerCase()} is the highest active risk in this window` : 'No active 7-day signal';
+        document.getElementById('cityStatNext').textContent = nextCityEvent ? fmt(nextCityEvent._dt) : '—';
+        document.getElementById('cityStatNextSub').textContent = nextCityEvent ? (nextCityEvent.title || 'Scheduled event') : `No events in this ${cityWindowDays}-day window`;
+        document.getElementById('cityStatMonth').textContent = String(totalMonth);
+        document.getElementById('cityStatMonthSub').textContent = `${monthLong} city context`;
+        statsWrap.style.display = 'grid';
+      }
+
+      const pieTitle = document.getElementById('cityPieTitle');
+      if (pieTitle) pieTitle.textContent = `${windowLabel} Risk Distribution`;
+      const fullTitle = document.getElementById('cityRiskPieFullTitle');
+      if (fullTitle) fullTitle.textContent = `Full Month Context (${monthShort})`;
+
+      const pieEl = document.getElementById('cityRiskPie');
+      const pieFullEl = document.getElementById('cityRiskPieFull');
+      if (window.Chart && pieEl) {
+        if (cityRiskPieChart) cityRiskPieChart.destroy();
+        cityRiskPieChart = new Chart(pieEl, pieConfig(counts7,total7));
+      }
+      if (window.Chart && pieFullEl) {
+        if (cityRiskPieFullChart) cityRiskPieFullChart.destroy();
+        cityRiskPieFullChart = new Chart(pieFullEl, pieConfig(countsMonth,totalMonth));
+      }
+
+      renderCityTable(cityRows);
+      renderCityMap(cityRows);
+
+      const mapMeta=document.getElementById('cityMapMeta');
+      if(mapMeta) mapMeta.textContent=`${total7} mapped event${total7===1?'':'s'} • ${dateRange}`;
+      const dateRangeEl = document.getElementById('cityDateRange');
+      if(dateRangeEl) dateRangeEl.textContent = `Viewing: ${dateRange}`;
+
+      const mapNote=document.getElementById('cityMapNote');
+      if(mapNote){
+        const themeList=themeSummary(cityRows);
+        mapNote.textContent=themeList.length ? `Top themes: ${themeList.map(([t,c])=>`${t} (${c})`).join(' • ')}` : `No dominant protest themes detected for ${dateRange}.`;
+      }
+
+      const active=cityRows.find(r=>r._dt && startOfDay(r._dt).getTime()===startOfDay(new Date()).getTime()) || nextCityEvent;
+      setCityActiveEvent(active||null);
+
+      if (cityViewToggle) {
+        Array.from(cityViewToggle.querySelectorAll('button')).forEach(btn => btn.classList.toggle('active', btn.dataset.view === activeCityWindow));
+      }
     }
 
-    const active=cityRows.find(r=>r._dt && startOfDay(r._dt).getTime()===startOfDay(new Date()).getTime()) || nextCityEvent;
-    setCityActiveEvent(active||null);
+    if (cityViewToggle) {
+      Array.from(cityViewToggle.querySelectorAll('button')).forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeCityWindow = btn.dataset.view === 'next' ? 'next' : 'current';
+          activeCityRiskFilters = new Set(['high','med','low']);
+          renderCityWindow();
+        });
+      });
+    }
+
+    if (cityRiskFilters) {
+      Array.from(cityRiskFilters.querySelectorAll('button')).forEach(btn => {
+        btn.addEventListener('click', () => {
+          const risk = btn.dataset.risk;
+          if (activeCityRiskFilters.has(risk) && activeCityRiskFilters.size > 1) activeCityRiskFilters.delete(risk);
+          else activeCityRiskFilters.add(risk);
+          renderCityWindow();
+        });
+      });
+    }
+
+    renderCityWindow();
   })();
 
   // ===== NEW: Continent Overview + Pie =====
