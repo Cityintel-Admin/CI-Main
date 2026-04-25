@@ -362,6 +362,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   font-size:12px;
 }
 
+.map-window-buttons{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.map-window-btn{appearance:none;border:1px solid var(--brand-gray-600);background:rgba(255,255,255,.03);color:var(--text);border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer}
+.map-window-btn.active{border-color:rgba(208,22,22,.85);background:rgba(208,22,22,.18)}
+.map-layer-toggle{display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap}
+.map-subtle-meta{color:var(--muted);font-size:12px;margin:4px 0 8px}
+.ci-protest-marker{width:22px;height:22px;border-radius:999px;border:2px solid rgba(0,0,0,.72);box-shadow:0 0 8px rgba(0,0,0,.55)}
+.ci-protest-marker.high{background:#ff5a5f}
+.ci-protest-marker.medium{background:#f0b429}
+.ci-protest-marker.low{background:#33c48d}
+
 
 
 	  
@@ -750,7 +760,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
         <!-- Strategic layer: Continent Risk Overview -->
         <section class="card" style="grid-column: span 12;">
-          <h3>Continent Risk Overview </h3>
+          <h3>Continent Risk Overview (Monthly)</h3>
           <p style="color:var(--muted);margin:6px 0 12px">Strategic monthly risk distribution across continents. Click a continent to drill down.</p>
           <div id="risk-heatmap" class="heatmap"></div>
           <div class="legend" style="margin-top:10px">
@@ -814,18 +824,22 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         placeholder="Search country or city…"
       />
 
-      <!-- Window + predictive toggle -->
+      <!-- Protest map window + optional overlay toggles -->
       <div class="map-window-ctl">
-        <span>Window: Next <span id="wval">30</span> days</span>
-        <input id="wslider" type="range" min="7" max="90" step="1" value="30" />
-        <label class="map-pred-toggle">
-          <input id="togglePred" type="checkbox" />
-          Include predictive entries
-        </label>
+        <span>Window:</span>
+        <div class="map-window-buttons" role="group" aria-label="Map time window">
+          <button type="button" class="map-window-btn active" data-map-window="7d">Next 7 days</button>
+          <button type="button" class="map-window-btn" data-map-window="month">Current month</button>
+          <button type="button" class="map-window-btn" data-map-window="next-month">Next month</button>
+        </div>
+        <label class="map-layer-toggle"><input id="toggleAssets" type="checkbox" /> Assets</label>
+        <label class="map-layer-toggle"><input id="toggleTravellers" type="checkbox" /> Travellers</label>
+        <label class="map-layer-toggle"><input id="togglePred" type="checkbox" /> Predictive</label>
       </div>
     </div>
   </div>
 
+  <div id="riskMapMeta" class="map-subtle-meta">Showing protest markers for the next 7 days. Assets and travellers are hidden by default.</div>
   <div id="riskMap"></div>
 </div>
 
@@ -1691,8 +1705,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     iconSize: [18, 18]
   });
 
-let windowDays       = 30;      // default
+let mapWindowMode = '7d';      // default: protest markers for next 7 days
   let includePredictive = false;
+  let showAssets = false;
+  let showTravellers = false;
 
   const norm = s => (s || '').trim().toLowerCase();
 
@@ -1721,8 +1737,9 @@ let windowDays       = 30;      // default
     boxZoom: false         // prevent grey zoom box lines
   }).setView([18, 10], 2);
 
-	const assetLayer     = L.layerGroup().addTo(map);
-    const travellerLayer = L.layerGroup().addTo(map);
+	const assetLayer     = L.layerGroup();
+    const travellerLayer = L.layerGroup();
+    const protestLayer   = L.layerGroup().addTo(map);
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
@@ -1742,8 +1759,6 @@ let windowDays       = 30;      // default
     }
   });
 
-	L.control.layers(null, { "Company assets": assetLayer, "Travellers": travellerLayer}, {
-    position: 'topright', collapsed: true}).addTo(map);
 
   map.addControl(new Legend({position:'bottomright'}));
 
@@ -1756,9 +1771,32 @@ let windowDays       = 30;      // default
 const parseTime = v =>
   (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v ? new Date(v) : null);
 
+function mapWindowRange(){
+  const now = new Date();
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const startOfFollowingMonth = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+  if (mapWindowMode === 'month') {
+    return { start: now, end: startOfNextMonth, label: `remaining ${now.toLocaleString('en-GB', { month:'long' })}` };
+  }
+  if (mapWindowMode === 'next-month') {
+    return { start: startOfNextMonth, end: startOfFollowingMonth, label: startOfNextMonth.toLocaleString('en-GB', { month:'long', year:'numeric' }) };
+  }
+  return { start: now, end: new Date(+now + 7 * 86400000), label: 'next 7 days' };
+}
+function formatShortDate(d){ return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short' }); }
+function updateMapMeta(count=0){
+  const el = document.getElementById('riskMapMeta');
+  if (!el) return;
+  const win = mapWindowRange();
+  const plural = count === 1 ? 'marker' : 'markers';
+  el.textContent = `Showing ${count} protest ${plural} for ${win.label} (${formatShortDate(win.start)}–${formatShortDate(win.end)}). Assets and travellers are optional overlays.`;
+}
+
 function aggregate(alerts){
   const now        = new Date();
-  const futureEnd  = new Date(+now + windowDays * 86400000);
+  const win        = mapWindowRange();
+  const futureEnd  = win.end;
+  const futureStart = win.start;
   const histStart  = new Date(+now - HISTORY_DAYS * 86400000);
 
   const by = {};
@@ -1801,7 +1839,7 @@ function aggregate(alerts){
     }
 
     // Future window (current/forecast) – honour includePredictive
-    if (dt > now && dt <= futureEnd) {
+    if (dt >= futureStart && dt < futureEnd) {
       if (!includePredictive && a.predictive === true) {
         // skip predictive if checkbox is off
       } else {
@@ -1870,6 +1908,45 @@ function escapeHtml(str){
 }
 
 	
+function protestIconFor(risk){
+  const s = norm(risk);
+  const band = s.startsWith('hi') ? 'high' : s.startsWith('me') ? 'medium' : 'low';
+  return L.divIcon({ className: `ci-protest-marker ${band}`, html: '', iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-10] });
+}
+function eventLatLon(a){
+  const lat = Number(a.lat ?? a.latitude ?? a.Latitude ?? a.event_lat ?? a.eventLat);
+  const lon = Number(a.lon ?? a.lng ?? a.longitude ?? a.Longitude ?? a.event_lon ?? a.eventLng);
+  return (isFinite(lat) && isFinite(lon)) ? [lat, lon] : null;
+}
+function renderProtestMarkers(){
+  protestLayer.clearLayers();
+  const win = mapWindowRange();
+  const rows = (Array.isArray(window.alertsData) ? window.alertsData : [])
+    .map(a => ({...a, _dt: parseTime(a.time ?? a.datetime ?? a.date ?? a.when)}))
+    .filter(a => {
+      if (!a._dt || a._dt < win.start || a._dt >= win.end) return false;
+      if (!includePredictive && a.predictive === true) return false;
+      return !!eventLatLon(a);
+    })
+    .sort((a,b)=> a._dt - b._dt);
+  rows.forEach(a => {
+    const ll = eventLatLon(a);
+    if (!ll) return;
+    const pretty = a._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    const cityCountry = [a.city, a.country || a.Country].filter(Boolean).join(', ');
+    L.marker(ll, { icon: protestIconFor(a.risk), keyboard:false })
+      .addTo(protestLayer)
+      .bindPopup(`<b>${escapeHtml(a.title || 'Protest event')}</b><br>${escapeHtml(cityCountry)}${cityCountry ? '<br>' : ''}${escapeHtml(pretty)}<br>Risk: <b>${escapeHtml(String(a.risk || 'low'))}</b>`);
+  });
+  updateMapMeta(rows.length);
+}
+function updatePresenceLayerVisibility(){
+  if (showAssets) { if (!map.hasLayer(assetLayer)) assetLayer.addTo(map); }
+  else if (map.hasLayer(assetLayer)) { map.removeLayer(assetLayer); }
+  if (showTravellers) { if (!map.hasLayer(travellerLayer)) travellerLayer.addTo(map); }
+  else if (map.hasLayer(travellerLayer)) { map.removeLayer(travellerLayer); }
+}
+
 // ----- Company assets & travellers on map -----
 function renderAssetsAndTravellers(){
   assetLayer.clearLayers();
@@ -1975,6 +2052,7 @@ function renderAssetsAndTravellers(){
         { maxWidth: 360 }
       );
   }
+  updatePresenceLayerVisibility();
 }
 
 // Allow other parts of the page (and the org-sync poller) to trigger a refresh
@@ -2071,12 +2149,13 @@ function countPresenceForCountry(countryName){
       + `<span class="chip" style="background:${palette.low}"></span>${h.low}`
     : `Last 6 months: no data`;
 
+  const win = mapWindowRange();
   const futLine = futTotal
-    ? `Next ${windowDays} days: `
+    ? `${win.label}: `
       + `<span class="chip" style="background:${palette.high}"></span>${fwd.high} `
       + `<span class="chip" style="background:${palette.medium}"></span>${fwd.medium} `
       + `<span class="chip" style="background:${palette.low}"></span>${fwd.low}`
-    : `Next ${windowDays} days: no scheduled events`;
+    : `${win.label}: no scheduled events`;
 
   const presence = countPresenceForCountry(name);
 
@@ -2094,28 +2173,42 @@ function countPresenceForCountry(countryName){
 }
 
         }).addTo(map);
+        renderProtestMarkers();
       });
   }
 
    // ----- Wire header controls -----
-  const slider = document.getElementById('wslider');
-  const wval   = document.getElementById('wval');
-
-  if (slider && wval) {
-    slider.value = windowDays;
-    wval.textContent = windowDays;
-    slider.addEventListener('input', () => {
-      windowDays = parseInt(slider.value, 10) || 30;
-      wval.textContent = windowDays;
+  document.querySelectorAll('[data-map-window]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mapWindowMode = btn.getAttribute('data-map-window') || '7d';
+      document.querySelectorAll('[data-map-window]').forEach(b => b.classList.toggle('active', b === btn));
       draw();
     });
-  }
+  });
 
   const predChk = document.getElementById('togglePred');
   if (predChk) {
     predChk.addEventListener('change', () => {
       includePredictive = predChk.checked;
       draw();
+    });
+  }
+
+  const assetChk = document.getElementById('toggleAssets');
+  if (assetChk) {
+    assetChk.checked = false;
+    assetChk.addEventListener('change', () => {
+      showAssets = assetChk.checked;
+      renderAssetsAndTravellers();
+    });
+  }
+
+  const travellerChk = document.getElementById('toggleTravellers');
+  if (travellerChk) {
+    travellerChk.checked = false;
+    travellerChk.addEventListener('change', () => {
+      showTravellers = travellerChk.checked;
+      renderAssetsAndTravellers();
     });
   }
 
