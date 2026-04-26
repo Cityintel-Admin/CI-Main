@@ -197,7 +197,7 @@
     /* ===== Alerts v1 filter polish ===== */
     .feed-toolbar{
       display:grid;
-      grid-template-columns:repeat(4,minmax(160px,1fr));
+      grid-template-columns:repeat(5,minmax(150px,1fr));
       gap:10px;
       margin:10px 0 14px;
       align-items:end;
@@ -238,6 +238,7 @@
       text-decoration:none;
     }
     .feed-clear:hover{border-color:var(--brand-red);background:rgba(208,22,22,.08)}
+    @media (max-width:1100px){.feed-toolbar{grid-template-columns:repeat(3,1fr)}}
     @media (max-width:900px){.feed-toolbar{grid-template-columns:1fr 1fr}}
     @media (max-width:620px){.feed-toolbar{grid-template-columns:1fr}}
 
@@ -303,6 +304,10 @@
             </select>
           </div>
           <div class="feed-filter">
+            <label for="feedCountryFilter">Country</label>
+            <select id="feedCountryFilter"><option value="">All countries</option></select>
+          </div>
+          <div class="feed-filter">
             <label for="feedCityFilter">City</label>
             <select id="feedCityFilter"><option value="">All cities</option></select>
           </div>
@@ -340,6 +345,7 @@
   (function renderAlerts() {
     const feed = document.getElementById('alertsFeed');
     const meta = document.getElementById('alertsFeedMeta');
+    const countrySelect = document.getElementById('feedCountryFilter');
     const citySelect = document.getElementById('feedCityFilter');
     const riskSelect = document.getElementById('feedRiskFilter');
     const windowSelect = document.getElementById('feedWindowFilter');
@@ -350,6 +356,7 @@
     const params = new URLSearchParams(window.location.search);
     const searchQ    = (params.get('search')    || '').trim().toLowerCase();
     const continentQ = (params.get('continent') || '').trim().toLowerCase();
+    const countryQ   = (params.get('country')   || '').trim();
     const cityQ      = (params.get('city')      || '').trim();
     const riskParam  = (params.get('risk')      || '').trim().toLowerCase();
     const windowParam = (params.get('window') || params.get('range') || '').trim().toLowerCase();
@@ -420,12 +427,23 @@
       };
     }
 
+    function populateCountryOptions(rows){
+      if (!countrySelect) return;
+      const current = countrySelect.value || countryQ;
+      const countries = [...new Set(rows.map(countryOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      countrySelect.innerHTML = `<option value="">All countries</option>` + countries.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if (current && countries.includes(current)) countrySelect.value = current;
+    }
+
     function populateCityOptions(rows){
       if (!citySelect) return;
       const current = citySelect.value || cityQ;
-      const cities = [...new Set(rows.map(cityOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      const selectedCountry = (countrySelect?.value || countryQ || '').trim().toLowerCase();
+      const cityRows = rows.filter(a => !selectedCountry || countryOf(a).toLowerCase() === selectedCountry);
+      const cities = [...new Set(cityRows.map(cityOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
       citySelect.innerHTML = `<option value="">All cities</option>` + cities.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
       if (current && cities.includes(current)) citySelect.value = current;
+      else citySelect.value = '';
     }
 
     function escapeHtml(str){
@@ -435,13 +453,16 @@
     function updateUrlState(){
       const url = new URL(window.location.href);
       const w = windowSelect?.value || '7d';
+      const co = countrySelect?.value || '';
       const c = citySelect?.value || '';
       const r = riskSelect?.value || '';
       url.searchParams.delete('month');
       url.searchParams.delete('window');
+      url.searchParams.delete('country');
       url.searchParams.delete('city');
       url.searchParams.delete('risk');
       if (w !== '7d') url.searchParams.set('window', w);
+      if (co) url.searchParams.set('country', co);
       if (c) url.searchParams.set('city', c);
       if (r) url.searchParams.set('risk', r);
       history.replaceState(null, '', url.toString());
@@ -449,6 +470,7 @@
 
     function render(){
       const selectedWindow = windowSelect?.value || '7d';
+      const selectedCountry = (countrySelect?.value || '').trim().toLowerCase();
       const selectedCity = (citySelect?.value || '').trim().toLowerCase();
       const selectedRisk = (riskSelect?.value || '').trim().toLowerCase();
       const win = getWindow(selectedWindow);
@@ -459,18 +481,21 @@
         .filter(a => !searchQ || textOf(a).includes(searchQ))
         .sort((a,b) => a._dt - b._dt);
 
+      populateCountryOptions(windowRows);
       populateCityOptions(windowRows);
 
       let alerts = windowRows
+        .filter(a => !selectedCountry || countryOf(a).toLowerCase() === selectedCountry)
         .filter(a => !selectedCity || cityOf(a).toLowerCase() === selectedCity)
         .filter(a => !selectedRisk || a.risk === selectedRisk);
 
       feed.innerHTML = '';
 
       if (meta) {
+        const countryTxt = selectedCountry ? ` • ${countrySelect.value}` : '';
         const cityTxt = selectedCity ? ` • ${citySelect.value}` : '';
         const riskTxt = selectedRisk ? ` • ${riskLabel(selectedRisk)} risk` : ' • all risk levels';
-        meta.textContent = `Showing ${alerts.length} protest event${alerts.length !== 1 ? 's' : ''} • ${win.label}${cityTxt}${riskTxt}`;
+        meta.textContent = `Showing ${alerts.length} protest event${alerts.length !== 1 ? 's' : ''} • ${win.label}${countryTxt}${cityTxt}${riskTxt}`;
       }
 
       if (!alerts.length) {
@@ -538,10 +563,20 @@
     if (windowSelect) windowSelect.value = defaultWindow();
     if (riskSelect && requestedRisk) riskSelect.value = requestedRisk;
 
-    // Build city options from the default window before applying query city.
-    populateCityOptions(baseAlerts.filter(a => a._dt >= getWindow(windowSelect?.value || '7d').start && a._dt < getWindow(windowSelect?.value || '7d').end));
+    // Build country/city options from the default window before applying query params.
+    const initialWin = getWindow(windowSelect?.value || '7d');
+    const initialRows = baseAlerts.filter(a => a._dt >= initialWin.start && a._dt < initialWin.end);
+    populateCountryOptions(initialRows);
+    if (countrySelect && countryQ) countrySelect.value = countryQ;
+    populateCityOptions(initialRows);
     if (citySelect && cityQ) citySelect.value = cityQ;
 
+    if (countrySelect) {
+      countrySelect.addEventListener('change', () => {
+        if (citySelect) citySelect.value = '';
+        render();
+      });
+    }
     [windowSelect, citySelect, riskSelect].forEach(el => {
       if (el) el.addEventListener('change', render);
     });
@@ -549,6 +584,7 @@
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
         if (windowSelect) windowSelect.value = '7d';
+        if (countrySelect) countrySelect.value = '';
         if (citySelect) citySelect.value = '';
         if (riskSelect) riskSelect.value = '';
         render();
