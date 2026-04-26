@@ -2149,6 +2149,65 @@
     height: clamp(360px, 56vh, 620px);
   }
 }
+
+/* === Neighbourhood Intel v2 map tools polish === */
+#niMapCard .ni-map-hd{
+  align-items:center;
+  flex-wrap:wrap;
+}
+#niMapCard .map-head-tools{
+  flex:1;
+  justify-content:flex-end;
+}
+#niMapCard .map-search-input{
+  min-width:260px;
+  max-width:360px;
+  flex:1 1 280px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.28);
+  color:rgba(255,255,255,.92);
+  padding:8px 12px;
+  outline:none;
+}
+#niMapCard .map-search-input:focus{
+  border-color:rgba(208,22,22,.55);
+  box-shadow:0 0 0 3px rgba(208,22,22,.14);
+}
+#niMapCard .map-legend{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  gap:10px 18px !important;
+  margin:0 !important;
+  padding:12px 14px !important;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  font-size:12px !important;
+}
+#niMapCard .map-legend .item{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:7px !important;
+  white-space:nowrap !important;
+}
+#btnMeasureMap.active{
+  border-color:rgba(208,22,22,.55);
+  background:rgba(208,22,22,.18);
+}
+.measure-tooltip{
+  background:rgba(15,23,42,.94) !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  color:#fff !important;
+  border-radius:999px !important;
+  padding:4px 8px !important;
+  font-weight:800 !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.35) !important;
+}
+@media (max-width: 760px){
+  #niMapCard .map-head-tools{justify-content:flex-start;}
+  #niMapCard .map-search-input{min-width:100%;max-width:none;}
+}
+
 </style>
 
 </head>
@@ -2278,7 +2337,7 @@
 
       <!-- Bottom: map -->
       <div class="ni-card ni-map-card" id="niMapCard">
-        <div class="hd"><h2>Map</h2><div class="map-head-tools"><span class="pill" id="pillPin">Pin not set</span><button class="event-toggle active" id="btnToggleEvents" type="button">Events on</button><select class="event-window" id="eventWindow"><option value="3">Next 3d</option><option value="7" selected>Next 7d</option><option value="14">Next 14d</option></select><span class="event-map-badge" id="eventCountBadge">0 events</span></div></div>
+        <div class="hd ni-map-hd"><h2>Map</h2><div class="map-head-tools"><input class="map-search-input" id="niMapSearch" type="search" placeholder="Search address or place..." autocomplete="off" /><button class="event-toggle" id="btnMeasureMap" type="button">Measure</button><span class="pill" id="pillMeasure" style="display:none">Click start point</span><span class="pill" id="pillPin">Pin not set</span><button class="event-toggle active" id="btnToggleEvents" type="button">Events on</button><select class="event-window" id="eventWindow"><option value="3">Next 3d</option><option value="7" selected>Next 7d</option><option value="14">Next 14d</option></select><span class="event-map-badge" id="eventCountBadge">0 events</span></div></div>
         <div class="map-legend">
           <span class="item"><span class="swatch legend-post"></span>Neighbourhood post</span>
           <span class="item"><span class="swatch high"></span>High-risk event</span>
@@ -2473,6 +2532,9 @@ async function loadOrgHQ() {
     pillPin: document.getElementById('pillPin'),
     btnToggleEvents: document.getElementById('btnToggleEvents'),
     eventWindow: document.getElementById('eventWindow'),
+    niMapSearch: document.getElementById('niMapSearch'),
+    btnMeasureMap: document.getElementById('btnMeasureMap'),
+    pillMeasure: document.getElementById('pillMeasure'),
     eventCountBadge: document.getElementById('eventCountBadge'),
     pillOrg: document.getElementById('pillOrg'),
     detailHeading: document.getElementById('detailHeading'),
@@ -2893,6 +2955,7 @@ async function loadOrgHQ() {
   // recalculate its container once CSS layout has settled.
   requestAnimationFrame(() => { try { map.invalidateSize(); } catch(e) {} });
   setTimeout(() => { try { map.invalidateSize(); } catch(e) {} }, 350);
+  map.on('click', (ev) => { if (measureMode) handleMeasureClick(ev.latlng); });
   try { selectedPostMarker.bindTooltip('1', {permanent:true, direction:'center', className:'point-badge-tooltip'}).openTooltip(); } catch(e) {}
 
   let pinMarker = null;
@@ -2904,6 +2967,105 @@ async function loadOrgHQ() {
   let trailLine = null;
   let eventsVisible = true;
   let eventMarkers = [];
+
+  // v2 map tools: simple SOC-style measure ruler + address/place search.
+  let measureMode = false;
+  let measureStart = null;
+  let measureLine = null;
+  let measureMarkers = [];
+
+  function fmtMeasureDistance(meters){
+    const m = Number(meters) || 0;
+    if (m >= 1000) return `${(m/1000).toFixed(m >= 10000 ? 1 : 2)} km`;
+    return `${Math.round(m)} m`;
+  }
+
+  function clearMeasure(){
+    if (measureLine) { try { map.removeLayer(measureLine); } catch(e) {} }
+    measureLine = null;
+    for (const mk of measureMarkers) { try { map.removeLayer(mk); } catch(e) {} }
+    measureMarkers = [];
+    measureStart = null;
+  }
+
+  function setMeasureMode(on){
+    measureMode = !!on;
+    if (measureMode) {
+      pinDropMode = false;
+      if (els.pillPin && !pinLatLng) els.pillPin.textContent = 'No pin';
+      clearMeasure();
+      if (els.pillMeasure) { els.pillMeasure.style.display = ''; els.pillMeasure.textContent = 'Click start point'; }
+      if (els.btnMeasureMap) els.btnMeasureMap.classList.add('active');
+      try { map.getContainer().style.cursor = 'crosshair'; } catch(e) {}
+    } else {
+      if (els.pillMeasure) els.pillMeasure.style.display = 'none';
+      if (els.btnMeasureMap) els.btnMeasureMap.classList.remove('active');
+      try { map.getContainer().style.cursor = ''; } catch(e) {}
+    }
+  }
+
+  function handleMeasureClick(latlng){
+    if (!measureMode || !latlng) return;
+    if (!measureStart) {
+      measureStart = latlng;
+      const mk = L.circleMarker(latlng, {radius:6, weight:2, color:'#e5e7eb', fillColor:'#3b82f6', fillOpacity:.95}).addTo(map);
+      measureMarkers.push(mk);
+      if (els.pillMeasure) els.pillMeasure.textContent = 'Click end point';
+      return;
+    }
+
+    const end = latlng;
+    const mk = L.circleMarker(end, {radius:6, weight:2, color:'#e5e7eb', fillColor:'#D01616', fillOpacity:.95}).addTo(map);
+    measureMarkers.push(mk);
+    measureLine = L.polyline([measureStart, end], {color:'#e5e7eb', weight:3, opacity:.95, dashArray:'6 8'}).addTo(map);
+    const meters = measureStart.distanceTo(end);
+    const mid = L.latLng((measureStart.lat + end.lat)/2, (measureStart.lng + end.lng)/2);
+    measureLine.bindTooltip(fmtMeasureDistance(meters), {permanent:true, direction:'center', className:'measure-tooltip'}).openTooltip(mid);
+    if (els.pillMeasure) els.pillMeasure.textContent = fmtMeasureDistance(meters);
+    setMeasureMode(false);
+  }
+
+  let searchMarker = null;
+  async function searchMapPlace(q){
+    q = String(q || '').trim();
+    if (!q) return;
+    const input = els.niMapSearch;
+    const old = input ? input.value : '';
+    try {
+      if (input) input.value = 'Searching…';
+      let data = null;
+      const urls = [
+        `https://geocode.maps.co/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`
+      ];
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, {headers:{'Accept':'application/json'}});
+          if (!res.ok) continue;
+          const tmp = await res.json();
+          if (Array.isArray(tmp) && tmp.length) { data = tmp; break; }
+        } catch(_) {}
+      }
+      if (!data || !data.length) { alert('Location not found. Try a more specific address or place.'); return; }
+      const r = data[0];
+      const lat = Number(r.lat), lon = Number(r.lon ?? r.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      if (searchMarker) { try { map.removeLayer(searchMarker); } catch(e) {} }
+      searchMarker = L.marker([lat, lon]).addTo(map).bindPopup(escapeHtml(r.display_name || q));
+      if (Array.isArray(r.boundingbox) && r.boundingbox.length === 4) {
+        const b = L.latLngBounds([Number(r.boundingbox[0]), Number(r.boundingbox[2])], [Number(r.boundingbox[1]), Number(r.boundingbox[3])]);
+        map.fitBounds(b.pad(.2));
+      } else {
+        map.setView([lat, lon], 15);
+      }
+      searchMarker.openPopup();
+    } catch(err) {
+      console.error('Neighbourhood map search failed', err);
+      alert('Map search failed. Please try again.');
+    } finally {
+      if (input) input.value = old;
+    }
+  }
 
   let allPosts = [];
   let visiblePosts = [];
@@ -3831,6 +3993,12 @@ els.btnRefresh.addEventListener('click', refresh);
     });
   }
   if (els.eventWindow) els.eventWindow.addEventListener('change', renderEventOverlay);
+  if (els.btnMeasureMap) els.btnMeasureMap.addEventListener('click', () => setMeasureMode(!measureMode));
+  if (els.niMapSearch) {
+    els.niMapSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); searchMapPlace(els.niMapSearch.value); }
+    });
+  }
   if (els.btnToggleFilter) {
     els.btnToggleFilter.addEventListener('click', () => {
       setFilterCollapsed(!els.filterBody || !els.filterBody.hidden ? true : false);
