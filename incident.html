@@ -443,6 +443,79 @@
   background:rgba(240,180,41,.08);
 }
 
+
+
+/* --- Incident readability + related activity filter patch --- */
+.incident-situation-card .field-block{
+  position:relative;
+  margin-bottom:18px;
+  padding-bottom:15px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.incident-situation-card .field-block:last-child{
+  margin-bottom:0;
+  padding-bottom:0;
+  border-bottom:none;
+}
+.incident-situation-card .field-block::before{
+  content:"";
+  position:absolute;
+  left:-16px;
+  top:4px;
+  width:3px;
+  height:20px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.09);
+}
+.incident-situation-card .field-label{
+  margin-bottom:7px;
+  letter-spacing:.065em;
+}
+.incident-section-copy{
+  line-height:1.72;
+}
+.related-controls{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.related-filter{
+  display:flex;
+  gap:5px;
+  align-items:center;
+  padding:3px;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:999px;
+  background:rgba(255,255,255,0.025);
+}
+.related-filter-btn{
+  appearance:none;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  border-radius:999px;
+  padding:4px 9px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+.related-filter-btn:hover{
+  border-color:rgba(208,22,22,.35);
+  background:rgba(208,22,22,.08);
+  color:#fff;
+}
+.related-filter-btn.active{
+  border-color:rgba(208,22,22,.55);
+  background:rgba(208,22,22,.16);
+  color:#fff;
+}
+.related-list.is-filtered-empty::before{display:none;}
+@media(max-width:720px){
+  .related-head{align-items:flex-start;}
+  .related-controls{width:100%;justify-content:space-between;}
+}
+
 @media(max-width:900px){.location-grid,.nearby-grid{grid-template-columns:1fr}}
 
 /* ===== Mobile layout tweaks ===== */
@@ -583,7 +656,7 @@
     <div class="incident-grid">
 
       <!-- LEFT COLUMN -->
-      <section class="card" style="grid-column: span 7;">
+      <section class="card incident-situation-card" style="grid-column: span 7;">
         <h3>
           Situation
           <span id="incidentRiskPill" class="risk-pill risk-high" style="display:none;">High</span>
@@ -591,21 +664,21 @@
 
         <div class="field-block">
           <span class="field-label">Summary</span>
-          <div class="field-value" id="incidentSummary">
+          <div class="field-value incident-section-copy" id="incidentSummary">
             —
           </div>
         </div>
 
         <div class="field-block">
           <span class="field-label">Location / Proximity</span>
-          <div class="field-value" id="incidentLocation">
+          <div class="field-value incident-section-copy" id="incidentLocation">
             —
           </div>
         </div>
 
         <div class="field-block">
           <span class="field-label">Impact to Operations</span>
-          <div class="field-value" id="incidentImpact">
+          <div class="field-value incident-section-copy" id="incidentImpact">
             —
           </div>
         </div>
@@ -613,7 +686,14 @@
         <div class="field-block">
           <div class="related-head">
             <h4 class="related-heading">Earlier related activity</h4>
-            <div class="related-count" id="relatedCount">No linked items yet</div>
+            <div class="related-controls">
+              <div class="related-filter" id="relatedFilter" aria-label="Earlier related activity timeframe">
+                <button type="button" class="related-filter-btn active" data-related-range="7">7d</button>
+                <button type="button" class="related-filter-btn" data-related-range="30">Month</button>
+                <button type="button" class="related-filter-btn" data-related-range="all">All</button>
+              </div>
+              <div class="related-count" id="relatedCount">No linked items yet</div>
+            </div>
           </div>
           <div class="related-subtext">Earlier actions in the same city or country that help frame build-up and pattern continuity.</div>
           <div id="relatedList" class="related-list">
@@ -1698,14 +1778,40 @@ function updateDistancePanel(inc) {
 
 
 /* ---------- render related activity list (shared helper) ---------- */
+  let RELATED_ACTIVITY_RANGE = '7';
+
+  function getRelatedActivityRange(){
+    return RELATED_ACTIVITY_RANGE || '7';
+  }
+
+  function setupRelatedActivityFilter(inc){
+    const host = document.getElementById('relatedFilter');
+    if (!host || host.dataset.bound === 'true') return;
+    host.dataset.bound = 'true';
+
+    host.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-related-range]');
+      if (!btn) return;
+      RELATED_ACTIVITY_RANGE = btn.dataset.relatedRange || '7';
+      host.querySelectorAll('.related-filter-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+      });
+      if (window.__currentIncident) renderRelatedActivity(window.__currentIncident);
+    });
+  }
+
   function renderRelatedActivity(inc) {
     const box = document.getElementById('relatedList');
     const countEl = document.getElementById('relatedCount');
     if (!box) return;
 
+    setupRelatedActivityFilter(inc);
+    box.classList.remove('is-filtered-empty');
+
     if (!inc || !Array.isArray(inc.related) || !inc.related.length) {
       box.innerHTML = '<div class="muted">No earlier related items.</div>';
       if (countEl) countEl.textContent = 'No linked items yet';
+      box.classList.add('is-filtered-empty');
       return;
     }
 
@@ -1716,7 +1822,8 @@ function updateDistancePanel(inc) {
     };
 
     const mainWhen = parseWhen(inc.when);
-    const items = inc.related.slice().sort((a, b) => {
+    const range = getRelatedActivityRange();
+    const allItems = inc.related.slice().sort((a, b) => {
       const da = parseWhen(a.when);
       const db = parseWhen(b.when);
       if (!da && !db) return 0;
@@ -1724,6 +1831,20 @@ function updateDistancePanel(inc) {
       if (!db) return -1;
       return da - db;
     });
+
+    const filterItems = (items) => {
+      if (!mainWhen || range === 'all') return items;
+      const days = range === '30' ? 30 : Number(range || 7);
+      const from = new Date(mainWhen.getTime() - (days * 24 * 60 * 60 * 1000));
+      return items.filter(item => {
+        const dt = parseWhen(item.when);
+        if (!dt) return true;
+        return dt < mainWhen && dt >= from;
+      });
+    };
+
+    const items = filterItems(allItems);
+    const rangeLabel = range === 'all' ? 'all earlier' : (range === '30' ? 'month context' : 'last 7 days');
 
     const earlierLabel = (ref, other) => {
       if (!ref || !other) return '';
@@ -1740,7 +1861,16 @@ function updateDistancePanel(inc) {
     };
 
     box.innerHTML = '';
-    if (countEl) countEl.textContent = `${items.length} earlier item${items.length !== 1 ? 's' : ''}`;
+    if (countEl) {
+      const totalSuffix = allItems.length !== items.length ? ` of ${allItems.length}` : '';
+      countEl.textContent = `${items.length}${totalSuffix} item${items.length !== 1 ? 's' : ''} · ${rangeLabel}`;
+    }
+
+    if (!items.length) {
+      box.classList.add('is-filtered-empty');
+      box.innerHTML = `<div class="muted">No earlier related items in ${rangeLabel}. Try Month or All.</div>`;
+      return;
+    }
 
     items.forEach(r => {
       const div = document.createElement('div');
@@ -2191,6 +2321,7 @@ function buildIncidentInsight(inc) {
 	
 // Auto-augment related activity with alerts from same city/country (last 30 days)
 inc.related = buildAutoRelatedFromAlerts(inc);
+window.__currentIncident = inc;
 renderRelatedActivity(inc);
   
  
