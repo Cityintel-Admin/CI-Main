@@ -1749,8 +1749,27 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
     ['scotland','united kingdom'],
     ['wales','united kingdom'],
     ['czech republic','czechia'],
-    ['vatican city','holy see']
+    ['vatican city','holy see'],
+
+    // v28: match CityIntel data variants to the world-atlas country name.
+    // world-atlas uses "United States of America", while alerts often use
+    // "United States", "US", "USA", or dotted variants.
+    ['united states','united states of america'],
+    ['united states of america','united states of america'],
+    ['usa','united states of america'],
+    ['us','united states of america'],
+    ['u s','united states of america'],
+    ['u s a','united states of america'],
+    ['america','united states of america']
   ]);
+
+  function countryKey(value){
+    const cleaned = norm(value)
+      .replace(/\./g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return alias.get(cleaned) || cleaned;
+  }
 
   function emitCountrySelected(name, items){
     try {
@@ -1843,9 +1862,7 @@ function aggregate(alerts){
     let rawCountry = (a.country ?? a.Country ?? a.country_name ?? '').trim();
     if (!rawCountry) continue;
 
-    const key = norm(rawCountry);
-    if (alias.has(key)) rawCountry = alias.get(key);
-    const country = rawCountry.replace(/\b\w/g, m => m.toUpperCase());
+    const country = countryKey(rawCountry);
 
     // Normalise risk band
     const rk = norm(a.risk);
@@ -2098,7 +2115,7 @@ function countPresenceForCountry(countryName){
   const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
   const trips  = Array.isArray(window.CITravellers) ? window.CITravellers : [];
 
-  const normCountry = c => (c || '').trim().toLowerCase();
+  const normCountry = c => countryKey(c);
   const key = normCountry(countryName);
 
   const today = new Date();
@@ -2134,13 +2151,16 @@ function countPresenceForCountry(countryName){
 
         const alerts = window.alertsData || [];
         const agg = aggregate(alerts);
+        if (agg['united states of america']) {
+          console.info('CityIntel map: United States shaded as', agg['united states of america'].band, agg['united states of america']);
+        }
 
         if (geoLayer) geoLayer.remove();
 
         geoLayer = L.geoJSON(geo, {
           style: f => {
   const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-  const row  = agg[name];
+  const row  = agg[countryKey(name)];
 
   if (!row || row.band === 'none') {
     return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
@@ -2160,7 +2180,7 @@ function countPresenceForCountry(countryName){
 			
           onEachFeature: (f, layer) => {
   const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-  const row  = agg[name];
+  const row  = agg[countryKey(name)];
 
   if (!row) {
     const presence = countPresenceForCountry(name);
