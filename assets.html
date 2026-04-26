@@ -237,6 +237,51 @@
 
 
     
+
+  /* ===== Assets v1 filter polish ===== */
+  .asset-toolbar{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(140px,1fr));
+    gap:10px;
+    margin:12px 0 10px;
+    align-items:end;
+  }
+  .asset-filter label{
+    display:block;
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 4px;
+  }
+  .asset-filter select{
+    width:100%;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid var(--brand-gray-600);
+    background:var(--brand-gray-800);
+    color:var(--text);
+    outline:none;
+  }
+  .asset-filter select:focus{border-color:rgba(208,22,22,.75)}
+  .asset-meta{
+    margin:4px 0 10px;
+    color:var(--muted);
+    font-size:12px;
+  }
+  .asset-clear{
+    display:inline-flex;align-items:center;justify-content:center;
+    border:1px solid var(--brand-gray-600);
+    border-radius:10px;
+    background:rgba(255,255,255,.03);
+    color:var(--text);
+    padding:8px 10px;
+    cursor:pointer;
+  }
+  .asset-clear:hover{border-color:var(--brand-red);background:rgba(208,22,22,.08)}
+  @media (max-width:900px){.asset-toolbar{grid-template-columns:1fr 1fr}}
+  @media (max-width:620px){.asset-toolbar{grid-template-columns:1fr}}
+
   </style>
 </head>
 
@@ -290,12 +335,32 @@
             These will be overlaid on the risk map to show exposure.
           </p>
 
+          <div class="asset-toolbar" aria-label="Asset register filters">
+            <div class="asset-filter">
+              <label for="assetCountryFilter">Country</label>
+              <select id="assetCountryFilter"><option value="">All countries</option></select>
+            </div>
+            <div class="asset-filter">
+              <label for="assetCityFilter">City</label>
+              <select id="assetCityFilter"><option value="">All cities</option></select>
+            </div>
+            <div class="asset-filter">
+              <label for="assetTypeFilter">Type</label>
+              <select id="assetTypeFilter"><option value="">All types</option></select>
+            </div>
+            <div class="asset-filter">
+              <label>&nbsp;</label>
+              <button id="assetClearFilters" class="asset-clear" type="button">Reset filters</button>
+            </div>
+          </div>
+          <div id="assetRegisterMeta" class="asset-meta">Showing all company assets.</div>
+
           <table style="margin-top:10px">
             <thead>
               <tr>
                 <th>Name</th>
-                <th>City</th>
                 <th>Country</th>
+                <th>City</th>
                 <th>Type</th>
                 <th>Lat</th>
                 <th>Lon</th>
@@ -575,10 +640,72 @@
     const resetBtn   = document.getElementById('resetBtn');
     const deleteBtn  = document.getElementById('deleteBtn');
     const geoBtn     = document.getElementById('geoBtn');
+    const assetCountryFilter = document.getElementById('assetCountryFilter');
+    const assetCityFilter = document.getElementById('assetCityFilter');
+    const assetTypeFilter = document.getElementById('assetTypeFilter');
+    const assetClearFilters = document.getElementById('assetClearFilters');
+    const assetRegisterMeta = document.getElementById('assetRegisterMeta');
+
+    function esc(str){
+      return String(str || '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    }
+
+    function typeLabel(t){
+      const map = {
+        office:'Office', hq:'Headquarters', plant:'Plant / Factory',
+        warehouse:'Warehouse / DC', 'data-centre':'Data Centre',
+        retail:'Retail / Store', other:'Other'
+      };
+      return map[String(t || '').toLowerCase()] || (t || 'Asset');
+    }
+
+    function populateAssetFilters(){
+      const currentCountry = assetCountryFilter?.value || '';
+      const currentCity = assetCityFilter?.value || '';
+      const currentType = assetTypeFilter?.value || '';
+
+      const countries = [...new Set(assets.map(a => (a.country || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      const countryScoped = currentCountry ? assets.filter(a => (a.country || '').trim() === currentCountry) : assets;
+      const cities = [...new Set(countryScoped.map(a => (a.city || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      const types = [...new Set(assets.map(a => (a.type || 'asset').trim()).filter(Boolean))].sort((a,b)=>typeLabel(a).localeCompare(typeLabel(b)));
+
+      if (assetCountryFilter) {
+        assetCountryFilter.innerHTML = '<option value="">All countries</option>' + countries.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        if (currentCountry && countries.includes(currentCountry)) assetCountryFilter.value = currentCountry;
+      }
+      if (assetCityFilter) {
+        assetCityFilter.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        if (currentCity && cities.includes(currentCity)) assetCityFilter.value = currentCity;
+      }
+      if (assetTypeFilter) {
+        assetTypeFilter.innerHTML = '<option value="">All types</option>' + types.map(t => `<option value="${esc(t)}">${esc(typeLabel(t))}</option>`).join('');
+        if (currentType && types.includes(currentType)) assetTypeFilter.value = currentType;
+      }
+    }
+
+    function filteredAssets(){
+      const ctry = (assetCountryFilter?.value || '').trim();
+      const city = (assetCityFilter?.value || '').trim();
+      const type = (assetTypeFilter?.value || '').trim();
+      return assets.map((a, idx) => ({...a, _idx: idx}))
+        .filter(a => !ctry || (a.country || '').trim() === ctry)
+        .filter(a => !city || (a.city || '').trim() === city)
+        .filter(a => !type || (a.type || '').trim() === type);
+    }
 
     function renderTable(){
       if (!tbody) return;
+      populateAssetFilters();
       tbody.innerHTML = '';
+
+      const rows = filteredAssets();
+      if (assetRegisterMeta) {
+        const bits = [];
+        if (assetCountryFilter?.value) bits.push(assetCountryFilter.value);
+        if (assetCityFilter?.value) bits.push(assetCityFilter.value);
+        if (assetTypeFilter?.value) bits.push(typeLabel(assetTypeFilter.value));
+        assetRegisterMeta.textContent = `Showing ${rows.length} asset${rows.length !== 1 ? 's' : ''}${bits.length ? ' • ' + bits.join(' • ') : ' • all locations'}.`;
+      }
 
       if (!assets.length){
         tbody.innerHTML = `
@@ -590,17 +717,27 @@
         return;
       }
 
-      assets.forEach((a, idx)=>{
+      if (!rows.length){
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="color:#8e97a3;padding:10px">
+              No assets match the selected filters.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      rows.forEach((a)=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${a.name || ''}</td>
-          <td>${a.city || ''}</td>
-          <td>${a.country || ''}</td>
-          <td><span class="badge">${a.type || 'asset'}</span></td>
+          <td>${esc(a.name || '')}</td>
+          <td>${esc(a.country || '')}</td>
+          <td>${esc(a.city || '')}</td>
+          <td><span class="badge">${esc(typeLabel(a.type || 'asset'))}</span></td>
           <td>${typeof a.lat === 'number' ? a.lat.toFixed(4) : '-'}</td>
           <td>${typeof a.lon === 'number' ? a.lon.toFixed(4) : '-'}</td>
           <td>
-            <button class="btn" data-action="edit" data-idx="${idx}" style="padding:3px 8px;font-size:11px;">Edit</button>
+            <button class="btn" data-action="edit" data-idx="${a._idx}" style="padding:3px 8px;font-size:11px;">Edit</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -772,6 +909,22 @@
         saveAssetsOrgAware(assets);
         renderTable();
         clearForm();
+      });
+    }
+
+    [assetCountryFilter, assetCityFilter, assetTypeFilter].forEach(el => {
+      if (el) el.addEventListener('change', () => {
+        if (el === assetCountryFilter && assetCityFilter) assetCityFilter.value = '';
+        renderTable();
+      });
+    });
+
+    if (assetClearFilters) {
+      assetClearFilters.addEventListener('click', () => {
+        if (assetCountryFilter) assetCountryFilter.value = '';
+        if (assetCityFilter) assetCityFilter.value = '';
+        if (assetTypeFilter) assetTypeFilter.value = '';
+        renderTable();
       });
     }
 
