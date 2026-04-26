@@ -193,6 +193,54 @@
       background:rgba(51,196,141,.14);border-color:rgba(51,196,141,.35);color:#d8fff0;
     }
 
+
+    /* ===== Alerts v1 filter polish ===== */
+    .feed-toolbar{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(160px,1fr));
+      gap:10px;
+      margin:10px 0 14px;
+      align-items:end;
+    }
+    .feed-filter label{
+      display:block;
+      font-size:11px;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:#8e97a3;
+      margin:0 0 4px;
+    }
+    .feed-filter select{
+      width:100%;
+      background:#1c1e22;
+      color:var(--text);
+      border:1px solid var(--gray-600);
+      border-radius:10px;
+      padding:9px 10px;
+      outline:none;
+    }
+    .feed-filter select:focus{border-color:rgba(208,22,22,.75)}
+    .feed-meta{
+      margin:4px 0 12px;
+      color:#8e97a3;
+      font-size:12px;
+    }
+    .feed-clear{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--gray-600);
+      border-radius:10px;
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:9px 10px;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .feed-clear:hover{border-color:var(--brand-red);background:rgba(208,22,22,.08)}
+    @media (max-width:900px){.feed-toolbar{grid-template-columns:1fr 1fr}}
+    @media (max-width:620px){.feed-toolbar{grid-template-columns:1fr}}
+
   </style>
 </head>
 
@@ -244,7 +292,35 @@
 
 		
       <div class="card">
-        <h3>Protest Feed</h3>  
+        <h3>Protest Feed</h3>
+        <div class="feed-toolbar" aria-label="Protest feed filters">
+          <div class="feed-filter">
+            <label for="feedWindowFilter">Timeframe</label>
+            <select id="feedWindowFilter">
+              <option value="7d">Next 7 days</option>
+              <option value="month">Remaining month</option>
+              <option value="next-month">Next month</option>
+            </select>
+          </div>
+          <div class="feed-filter">
+            <label for="feedCityFilter">City</label>
+            <select id="feedCityFilter"><option value="">All cities</option></select>
+          </div>
+          <div class="feed-filter">
+            <label for="feedRiskFilter">Risk</label>
+            <select id="feedRiskFilter">
+              <option value="">All risk</option>
+              <option value="high">High</option>
+              <option value="med">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="feed-filter">
+            <label>&nbsp;</label>
+            <button id="feedClearFilters" class="feed-clear" type="button">Reset filters</button>
+          </div>
+        </div>
+        <div id="alertsFeedMeta" class="feed-meta">Showing upcoming protest data.</div>
         <div id="alertsFeed"></div>
       </div>
 
@@ -263,17 +339,22 @@
 	<script>
   (function renderAlerts() {
     const feed = document.getElementById('alertsFeed');
+    const meta = document.getElementById('alertsFeedMeta');
+    const citySelect = document.getElementById('feedCityFilter');
+    const riskSelect = document.getElementById('feedRiskFilter');
+    const windowSelect = document.getElementById('feedWindowFilter');
+    const resetBtn = document.getElementById('feedClearFilters');
+    const context = document.getElementById('incidentSnapshot');
     if (!feed) return;
 
-    feed.innerHTML = "";
-
-    const params     = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search);
     const searchQ    = (params.get('search')    || '').trim().toLowerCase();
     const continentQ = (params.get('continent') || '').trim().toLowerCase();
+    const cityQ      = (params.get('city')      || '').trim();
     const riskParam  = (params.get('risk')      || '').trim().toLowerCase();
+    const windowParam = (params.get('window') || params.get('range') || '').trim().toLowerCase();
     const fromBrief  = (params.get('from')      || '') === 'brief';
 
-    // Normalise risk to: high / med / low
     const normalizeRisk = (r) => {
       const s = String(r || '').toLowerCase();
       if (s.startsWith('hi')) return 'high';
@@ -282,7 +363,18 @@
       return '';
     };
 
-    // Risk requested from URL (?risk=...)
+    const riskLabel = (r) => r === 'high' ? 'High' : r === 'med' ? 'Medium' : 'Low';
+    const riskClass = (r) => r === 'high' ? 'high' : r === 'med' ? 'med' : 'low';
+
+    const parseDate = (a) => {
+      const d = new Date(a.time || a.datetime || a.date || a.when);
+      return isNaN(d) ? null : d;
+    };
+
+    const countryOf = (a) => (a.country || a.Country || a.location || '').trim();
+    const cityOf = (a) => (a.city || '').trim();
+    const textOf = (a) => `${a.title || ''} ${a.summary || ''} ${cityOf(a)} ${countryOf(a)}`.toLowerCase();
+
     let requestedRisk = '';
     if (riskParam) {
       if (riskParam.startsWith('hi')) requestedRisk = 'high';
@@ -290,187 +382,186 @@
       else if (riskParam.startsWith('lo')) requestedRisk = 'low';
     }
 
-    const now = new Date();
-    // If we came from brief, cap at next 7 days
-    const end = fromBrief ? new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
+    function defaultWindow(){
+      if (windowParam === 'month' || params.get('month') === 'current') return 'month';
+      if (windowParam === 'next-month' || params.get('month') === 'next') return 'next-month';
+      return '7d';
+    }
 
     const data = Array.isArray(window.alertsData) ? window.alertsData : [];
-
     const baseAlerts = data.map(a => {
       const risk = normalizeRisk(a.risk);
-      const dt   = new Date(a.time || a.datetime || a.date || a.when);
+      const dt = parseDate(a);
       const cont = (a.continent || a.Continent || '').toLowerCase();
       return { ...a, risk, _dt: dt, _continent: cont };
-    });
+    }).filter(a => a._dt && !isNaN(a._dt));
 
-
-   // 2) If we came from brief with a specific "search" title, find that alert
-    const searchTitle = (params.get('search') || '').toLowerCase();
-    let primary = null;
-    if (fromBrief && searchTitle) {
-      primary = baseAlerts.find(a =>
-        (a.title || '').toLowerCase().includes(searchTitle)
-      );
+    function getWindow(value){
+      const now = new Date();
+      if (value === 'month') {
+        return {
+          label: `Remaining ${now.toLocaleString('en-GB', {month:'long'})}`,
+          start: now,
+          end: new Date(now.getFullYear(), now.getMonth() + 1, 1)
+        };
+      }
+      if (value === 'next-month') {
+        const s = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        return {
+          label: `Next month (${s.toLocaleString('en-GB', {month:'long'})})`,
+          start: s,
+          end: new Date(now.getFullYear(), now.getMonth() + 2, 1)
+        };
+      }
+      return {
+        label: 'Next 7 days',
+        start: now,
+        end: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      };
     }
 
-// If we found it, build a richer snapshot panel
-if (primary) {
-  const snap = document.getElementById('incidentSnapshot');
-  if (snap) {
-    // simple helpers
-    const riskLabel = primary.risk === 'high' ? 'High risk'
-                    : primary.risk === 'med'  ? 'Medium risk'
-                    : 'Low risk';
+    function populateCityOptions(rows){
+      if (!citySelect) return;
+      const current = citySelect.value || cityQ;
+      const cities = [...new Set(rows.map(cityOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      citySelect.innerHTML = `<option value="">All cities</option>` + cities.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if (current && cities.includes(current)) citySelect.value = current;
+    }
 
-    const dt = primary._dt || (primary.time ? new Date(primary.time) : null);
-    const whenPretty = dt
-      ? dt.toLocaleString('en-GB', {
+    function escapeHtml(str){
+      return String(str || '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    }
+
+    function updateUrlState(){
+      const url = new URL(window.location.href);
+      const w = windowSelect?.value || '7d';
+      const c = citySelect?.value || '';
+      const r = riskSelect?.value || '';
+      url.searchParams.delete('month');
+      url.searchParams.delete('window');
+      url.searchParams.delete('city');
+      url.searchParams.delete('risk');
+      if (w !== '7d') url.searchParams.set('window', w);
+      if (c) url.searchParams.set('city', c);
+      if (r) url.searchParams.set('risk', r);
+      history.replaceState(null, '', url.toString());
+    }
+
+    function render(){
+      const selectedWindow = windowSelect?.value || '7d';
+      const selectedCity = (citySelect?.value || '').trim().toLowerCase();
+      const selectedRisk = (riskSelect?.value || '').trim().toLowerCase();
+      const win = getWindow(selectedWindow);
+
+      const windowRows = baseAlerts
+        .filter(a => a._dt >= win.start && a._dt < win.end)
+        .filter(a => !continentQ || a._continent === continentQ)
+        .filter(a => !searchQ || textOf(a).includes(searchQ))
+        .sort((a,b) => a._dt - b._dt);
+
+      populateCityOptions(windowRows);
+
+      let alerts = windowRows
+        .filter(a => !selectedCity || cityOf(a).toLowerCase() === selectedCity)
+        .filter(a => !selectedRisk || a.risk === selectedRisk);
+
+      feed.innerHTML = '';
+
+      if (meta) {
+        const cityTxt = selectedCity ? ` • ${citySelect.value}` : '';
+        const riskTxt = selectedRisk ? ` • ${riskLabel(selectedRisk)} risk` : ' • all risk levels';
+        meta.textContent = `Showing ${alerts.length} protest event${alerts.length !== 1 ? 's' : ''} • ${win.label}${cityTxt}${riskTxt}`;
+      }
+
+      if (!alerts.length) {
+        feed.innerHTML = `<p style="color:#8e97a3">No protest events matching the selected filters.</p>`;
+        return;
+      }
+
+      alerts.forEach(a => {
+        const pretty = a._dt.toLocaleString('en-GB', {
+          timeZone: 'Europe/London',
           day: '2-digit', month: 'short', year: 'numeric',
           hour: '2-digit', minute: '2-digit'
-        })
-      : '';
+        });
 
-    const where = [primary.city || '', primary.country || primary.Country || '']
-      .filter(Boolean)
-      .join(' — ');
+        const country = countryOf(a);
+        const city = cityOf(a);
+        const placeTitle = [city, country].filter(Boolean).join(', ') || 'Unknown location';
 
-    // turn summary into bullet-ish lines
-    const summary = (primary.summary || '').split(/\. +/)
-      .filter(x => x.trim().length)
-      .map(x => x.trim());
+        const card = document.createElement('div');
+        card.className = `alert ${riskClass(a.risk)}`;
+        card.innerHTML = `
+          <strong>${escapeHtml(placeTitle)} — ${escapeHtml(a.title || 'Untitled event')}</strong>
+          <div style="color:#8e97a3;font-size:12px;margin:2px 0 8px">
+            ${pretty} • ${riskLabel(a.risk)} risk
+          </div>
+          <p style="margin:0">${escapeHtml(a.summary || '')}</p>
+          <div class="alert-actions">
+            ${a.source ? `<a href="${escapeHtml(a.source)}" target="_blank" rel="noopener" class="btn">View source</a>` : ''}
+          </div>
+        `;
 
-    // simple canned guidance per risk
-    let guidance = '';
-    if (primary.risk === 'high') {
-      guidance = 'Expect significant disruption near the venue and march route. Consider alternate routes, remote work options and heightened security posture for nearby offices.';
-    } else if (primary.risk === 'med') {
-      guidance = 'Localised disruption possible around key junctions and transport hubs. Monitor turnout and policing posture; prepare light mitigation (staff comms, travel advice).';
-    } else {
-      guidance = 'Limited disruption expected; maintain watching brief only.';
-    }
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          const q = new URLSearchParams();
+          q.set('search', a.title || '');
+          q.set('city', city || '');
+          q.set('country', country || '');
+          q.set('time', a.time || a.datetime || a.date || a.when || '');
+          q.set('risk', a.risk || '');
+          q.set('from', 'alerts');
+          location.href = 'incident.html?' + q.toString();
+        });
 
-    snap.style.display = 'block';
-    snap.innerHTML = `
-      <h2>Protest Preview</h2>
-      <div style="margin-bottom:6px;">
-        <span class="pill ${primary.risk}">${riskLabel}</span>
-        ${where ? `<strong style="margin-left:8px;">${where}</strong>` : ''}
-      </div>
-      ${whenPretty ? `<div class="muted" style="margin-bottom:10px;">${whenPretty}</div>` : ''}
-      ${summary.length ? `
-        <div style="margin-bottom:8px;">
-          <strong>What’s happening</strong>
-          <ul class="clean" style="margin-top:4px;">
-            ${summary.map(s => `<li>${s}.</li>`).join('')}
-          </ul>
-        </div>` : ''}
-      <div style="margin-top:4px;">
-        <strong>Operational take</strong>
-        <div class="muted" style="margin-top:4px;">${guidance}</div>
-      </div>
-    `;
-  }
-}
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-brief';
+        btn.textContent = 'Add to Brief';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const existing = localStorage.getItem('ci_brief_pad') || '';
+          const line = `${a.title || ''} — ${placeTitle}\n`;
+          localStorage.setItem('ci_brief_pad', existing + line);
+          btn.textContent = 'Added ✓';
+          btn.classList.add('added');
+        };
+        const actions = card.querySelector('.alert-actions');
+        if (actions) actions.appendChild(btn);
 
-
-		// 4) Now apply filters to produce the main Alerts Feed
-    const alerts = baseAlerts
-      // Time filter: always upcoming, and if from brief, only next 7 days
-      .filter(a => a._dt && a._dt >= now && (!end || a._dt <= end))
-      // Risk filter:
-      //  - default: only HIGH + MED (old behaviour)
-      //  - if a risk was requested, allow LOW too and show only that level
-      .filter(a => {
-        if (!requestedRisk) {
-          return a.risk === 'high';
-        }
-        return a.risk === requestedRisk;
-      })
-      // Continent filter (from Regional Outlook clicks)
-      .filter(a => {
-        if (continentQ && a._continent !== continentQ) return false;
-        return true;
-      })
-      // Search filter (from Top Upcoming High-Risk clicks)
-      .filter(a => {
-        if (!searchQ) return true;
-        const hay = (
-          (a.title || '')   + ' ' +
-          (a.summary || '') + ' ' +
-          (a.city || '')    + ' ' +
-          (a.country || '')
-        ).toLowerCase();
-        return hay.includes(searchQ);
-      })
-      .sort((a, b) => a._dt - b._dt); // soonest first
-
-    if (!alerts.length) {
-      feed.innerHTML = `<p style="color:#8e97a3">No alerts matching the selected filters.</p>`;
-      return;
-    }
-
-    const riskClass = (r) =>
-      r === 'high' ? 'high' :
-      r === 'med'  ? 'med'  :
-      'low';
-
-    const riskLabel = (r) =>
-      r === 'high' ? 'High' :
-      r === 'med'  ? 'Medium' :
-      'Low';
-
-    alerts.forEach(a => {
-      const pretty = a._dt.toLocaleString('en-GB', {
-        timeZone: 'Europe/London',
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+        feed.appendChild(card);
       });
 
-      const card = document.createElement('div');
-      card.className = `alert ${riskClass(a.risk)}`;
-      card.innerHTML = `
-        <strong>${a.city || a.country || ''} — ${a.title}</strong>
-        <div style="color:#8e97a3;font-size:12px;margin:2px 0 8px">
-          ${pretty} • ${riskLabel(a.risk)} risk
-        </div>
-        <p style="margin:0">${a.summary || ''}</p>
-        <div class="alert-actions">
-          ${a.source ? `<a href="${a.source}" target="_blank" rel="noopener" class="btn">View source</a>` : ''}
-        </div>
-      `;
-      
-      // click to incident
-      card.style.cursor = 'pointer';
-      card.addEventListener('click', () => {
-        const params = new URLSearchParams();
-        params.set('search', a.title || '');
-        params.set('city', a.city || '');
-        params.set('country', a.country || a.Country || '');
-        params.set('time', a.time || a.datetime || a.date || a.when || '');
-        params.set('risk', a.risk || '');
-        params.set('from', 'alerts');
-        location.href = 'incident.html?' + params.toString();
-      });
+      updateUrlState();
+    }
 
-      // add to brief button
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn-brief';
-      btn.textContent = 'Add to Brief';
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const existing = localStorage.getItem('ci_brief_pad') || '';
-        const line = (a.title || '') + ' — ' + (a.city || '') + '\n';
-        localStorage.setItem('ci_brief_pad', existing + line);
-        btn.textContent = 'Added ✓';
-        btn.classList.add('added');
-      };
-      const actions = card.querySelector('.alert-actions');
-      if (actions) actions.appendChild(btn);
+    if (windowSelect) windowSelect.value = defaultWindow();
+    if (riskSelect && requestedRisk) riskSelect.value = requestedRisk;
 
-      feed.appendChild(card);
+    // Build city options from the default window before applying query city.
+    populateCityOptions(baseAlerts.filter(a => a._dt >= getWindow(windowSelect?.value || '7d').start && a._dt < getWindow(windowSelect?.value || '7d').end));
+    if (citySelect && cityQ) citySelect.value = cityQ;
 
+    [windowSelect, citySelect, riskSelect].forEach(el => {
+      if (el) el.addEventListener('change', render);
     });
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (windowSelect) windowSelect.value = '7d';
+        if (citySelect) citySelect.value = '';
+        if (riskSelect) riskSelect.value = '';
+        render();
+      });
+    }
+
+    // Keep brief snapshot support for inbound links, but do not force high-only feed.
+    if (fromBrief && searchQ && context) {
+      const primary = baseAlerts.find(a => (a.title || '').toLowerCase().includes(searchQ));
+      if (primary) context.style.display = 'block';
+    }
+
+    render();
   })();
 </script>
 
