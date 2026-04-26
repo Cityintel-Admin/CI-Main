@@ -180,7 +180,18 @@
   }
 }
 
-	  
+    .events-toolbar{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:12px 0 14px}
+    .events-filter{display:flex;flex-direction:column;gap:5px}
+    .events-filter label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8e97a3}
+    .events-filter select{width:100%;background:#1c1e22;color:var(--text);border:1px solid var(--gray-600);border-radius:10px;padding:9px 10px;outline:none}
+    .events-filter select:focus{border-color:rgba(208,22,22,.75);box-shadow:0 0 0 2px rgba(208,22,22,.14)}
+    .events-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 12px;color:#8e97a3;font-size:12px}
+    .events-summary strong{color:var(--text)}
+    .events-reset{background:rgba(208,22,22,.12);color:#fecaca;border:1px solid rgba(208,22,22,.35);border-radius:999px;padding:6px 10px;cursor:pointer;font-weight:700}
+    .events-reset:hover{background:rgba(208,22,22,.20)}
+    @media (max-width: 900px){.events-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width: 560px){.events-toolbar{grid-template-columns:1fr} table{font-size:12px} tbody td, thead th{padding:9px 7px}}
+
 
     .context-strip{background:linear-gradient(90deg,rgba(208,22,22,.14),rgba(208,22,22,0));border:1px solid var(--gray-600);border-radius:14px;padding:12px 14px;margin-bottom:16px}
     .context-strip .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8e97a3}
@@ -238,9 +249,41 @@
 
       <div class="card">
         <h3>Upcoming Events</h3>
+        <div class="events-toolbar" aria-label="Event filters">
+          <div class="events-filter">
+            <label for="timeFilter">Time window</label>
+            <select id="timeFilter">
+              <option value="7d">Next 7 days</option>
+              <option value="month">Remaining month</option>
+              <option value="next-month">Next month</option>
+              <option value="all">All upcoming</option>
+            </select>
+          </div>
+          <div class="events-filter">
+            <label for="countryFilter">Country</label>
+            <select id="countryFilter"><option value="">All countries</option></select>
+          </div>
+          <div class="events-filter">
+            <label for="cityFilter">City</label>
+            <select id="cityFilter"><option value="">All cities</option></select>
+          </div>
+          <div class="events-filter">
+            <label for="riskFilter">Risk</label>
+            <select id="riskFilter">
+              <option value="">All risk levels</option>
+              <option value="high">High</option>
+              <option value="med">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="events-summary">
+          <span id="eventsSummaryText">Loading events…</span>
+          <button id="eventsResetBtn" class="events-reset" type="button">Reset filters</button>
+        </div>
         <table>
           <thead>
-            <tr><th>Event</th><th>City</th><th>Date</th><th>Risk</th></tr>
+            <tr><th>Event</th><th>Country</th><th>City</th><th>Date</th><th>Risk</th></tr>
           </thead>
           <tbody id="eventsBody"></tbody>
         </table>
@@ -257,13 +300,18 @@
 (function renderEvents(){
   const tbody = document.getElementById('eventsBody');
   const context = document.getElementById('patternContext');
+  const timeFilter = document.getElementById('timeFilter');
+  const countryFilter = document.getElementById('countryFilter');
+  const cityFilter = document.getElementById('cityFilter');
+  const riskFilter = document.getElementById('riskFilter');
+  const summaryText = document.getElementById('eventsSummaryText');
+  const resetBtn = document.getElementById('eventsResetBtn');
   if(!tbody) return;
 
   const params = new URLSearchParams(window.location.search);
   const patternKey = (params.get('pattern') || '').toLowerCase().trim();
   const searchTerm = (params.get('search') || '').toLowerCase().trim();
   const from = (params.get('from') || '').toLowerCase().trim();
-  const scopeDays = Number(params.get('days') || ((from === 'dashboard' && (patternKey || searchTerm)) ? 7 : 0));
 
   const patternMeta = {
     labour: {
@@ -286,85 +334,188 @@
     if (s.startsWith('me')) return 'med';
     return 'low';
   };
-  const textOf = i => `${i.title || ''} ${i.summary || ''} ${i.city || ''} ${i.country || i.Country || ''}`.toLowerCase();
+  const riskLabel = r => r === 'high' ? 'High' : r === 'med' ? 'Medium' : 'Low';
+  const countryOf = i => (i.country || i.Country || i.location || '').trim() || '—';
+  const cityOf = i => (i.city || i.City || '').trim() || '—';
+  const textOf = i => `${i.title || ''} ${i.summary || ''} ${cityOf(i)} ${countryOf(i)}`.toLowerCase();
+  const parseDate = i => {
+    const raw = i.time ?? i.datetime ?? i.date ?? i.when;
+    const d = new Date(raw);
+    return isNaN(d) ? null : d;
+  };
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 
   const now = new Date();
-  const end = scopeDays > 0 ? new Date(now.getTime() + scopeDays * 24 * 60 * 60 * 1000) : null;
-  const upcoming = (window.alertsData||[])
-    .map(i => ({...i, risk: norm(i.risk), _dt: new Date(i.time)}))
-    .filter(i => !isNaN(i._dt) && i._dt >= now && (!end || i._dt <= end))
+  const allUpcoming = (window.alertsData||[])
+    .map(i => ({...i, risk: norm(i.risk), _dt: parseDate(i)}))
+    .filter(i => i._dt && i._dt >= now)
     .sort((a,b) => a._dt - b._dt);
 
-  let filtered = upcoming.slice();
-  let modeLabel = scopeDays > 0 ? `Upcoming Events (${scopeDays} days)` : 'All upcoming events';
-  let modeMeta = scopeDays > 0 ? `Showing the same ${scopeDays}-day forward window used on the dashboard.` : '';
-
-  if (patternKey && patternMeta[patternKey]) {
-    const terms = patternMeta[patternKey].terms;
-    filtered = upcoming.filter(i => {
-      const text = textOf(i);
-      return terms.some(term => text.includes(term));
-    });
-    if (!filtered.length && searchTerm) {
-      filtered = upcoming.filter(i => textOf(i).includes(searchTerm));
+  function windowFor(value){
+    if (value === 'month') {
+      return {
+        label: 'Remaining month',
+        start: now,
+        end: new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      };
     }
-    modeLabel = patternMeta[patternKey].label;
-    modeMeta = `${scopeDays > 0 ? `Dashboard emerging pattern • next ${scopeDays} days` : 'Dashboard emerging pattern'} • matched terms: ${terms.slice(0,5).join(', ')}`;
-  } else if (searchTerm) {
-    filtered = upcoming.filter(i => textOf(i).includes(searchTerm));
-    if (!filtered.length) {
-      const looseWords = searchTerm.split(/\s+/).filter(Boolean);
-      filtered = upcoming.filter(i => {
-        const text = textOf(i);
-        return looseWords.some(word => word.length > 2 && text.includes(word));
+    if (value === 'next-month') {
+      return {
+        label: 'Next month',
+        start: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+        end: new Date(now.getFullYear(), now.getMonth() + 2, 1)
+      };
+    }
+    if (value === 'all') {
+      return { label: 'All upcoming', start: now, end: null };
+    }
+    return {
+      label: 'Next 7 days',
+      start: now,
+      end: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    };
+  }
+
+  function inferInitialTime(){
+    if (params.get('month') === 'current') return 'month';
+    if (params.get('month') === 'next') return 'next-month';
+    const days = Number(params.get('days') || 0);
+    if (days === 7) return '7d';
+    if (from === 'dashboard' && (patternKey || searchTerm)) return '7d';
+    return '7d';
+  }
+
+  function setSelectValue(sel, value){
+    if (!sel) return;
+    const v = String(value || '');
+    if ([...sel.options].some(o => o.value === v)) sel.value = v;
+  }
+
+  if (timeFilter) timeFilter.value = inferInitialTime();
+
+  function populateFilters(baseRows){
+    const selectedCountry = params.get('country') || params.get('Country') || '';
+    const selectedCity = params.get('city') || params.get('City') || '';
+    const selectedRisk = (params.get('risk') || '').toLowerCase();
+
+    const countries = [...new Set(baseRows.map(countryOf).filter(v => v && v !== '—'))].sort((a,b)=>a.localeCompare(b));
+    const cities = [...new Set(baseRows.map(cityOf).filter(v => v && v !== '—'))].sort((a,b)=>a.localeCompare(b));
+
+    if (countryFilter) {
+      countryFilter.innerHTML = '<option value="">All countries</option>' + countries.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      setSelectValue(countryFilter, selectedCountry);
+    }
+    if (cityFilter) {
+      cityFilter.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      setSelectValue(cityFilter, selectedCity);
+    }
+    if (riskFilter) setSelectValue(riskFilter, selectedRisk === 'medium' ? 'med' : selectedRisk);
+  }
+
+  function refreshCityOptions(rowsForTimeAndCountry){
+    if (!cityFilter) return;
+    const current = cityFilter.value;
+    const cities = [...new Set(rowsForTimeAndCountry.map(cityOf).filter(v => v && v !== '—'))].sort((a,b)=>a.localeCompare(b));
+    cityFilter.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    if (cities.includes(current)) cityFilter.value = current;
+  }
+
+  function render(){
+    const win = windowFor(timeFilter ? timeFilter.value : '7d');
+    let rows = allUpcoming.filter(i => i._dt >= win.start && (!win.end || i._dt < win.end));
+
+    if (patternKey && patternMeta[patternKey]) {
+      const terms = patternMeta[patternKey].terms;
+      rows = rows.filter(i => terms.some(term => textOf(i).includes(term)));
+      if (!rows.length && searchTerm) rows = allUpcoming.filter(i => textOf(i).includes(searchTerm));
+    } else if (searchTerm) {
+      rows = rows.filter(i => textOf(i).includes(searchTerm));
+      if (!rows.length) {
+        const looseWords = searchTerm.split(/\s+/).filter(Boolean);
+        rows = rows.filter(i => looseWords.some(word => word.length > 2 && textOf(i).includes(word)));
+      }
+    }
+
+    const country = countryFilter ? countryFilter.value : '';
+    if (country) rows = rows.filter(i => countryOf(i) === country);
+    refreshCityOptions(allUpcoming.filter(i => i._dt >= win.start && (!win.end || i._dt < win.end) && (!country || countryOf(i) === country)));
+
+    const city = cityFilter ? cityFilter.value : '';
+    if (city) rows = rows.filter(i => cityOf(i) === city);
+
+    const risk = riskFilter ? riskFilter.value : '';
+    if (risk) rows = rows.filter(i => i.risk === risk);
+
+    tbody.innerHTML = '';
+
+    rows.forEach(i => {
+      const pretty = i._dt.toLocaleString('en-GB', {
+        timeZone:'Europe/London',
+        day:'2-digit', month:'short', year:'numeric',
+        hour:'2-digit', minute:'2-digit'
       });
-    }
-    modeLabel = `Search results for “${params.get('search') || ''}”`;
-    modeMeta = `${from ? `Opened from ${from}` : 'Filtered event view'}${scopeDays > 0 ? ` • next ${scopeDays} days only` : ''}`;
-  }
-
-  if (context && (patternKey || searchTerm || scopeDays > 0)) {
-    context.style.display = '';
-    context.innerHTML = `
-      <div class="kicker">Filtered event view</div>
-      <div class="title">${modeLabel}</div>
-      <div class="meta">${modeMeta}${modeMeta ? ' • ' : ''}${filtered.length} matching upcoming event${filtered.length !== 1 ? 's' : ''}</div>
-    `;
-  }
-
-  tbody.innerHTML = "";
-
-  filtered.forEach(i => {
-    const pretty = i._dt.toLocaleString('en-GB', {
-      timeZone:'Europe/London',
-      day:'2-digit', month:'short', year:'numeric',
-      hour:'2-digit', minute:'2-digit'
+      const cls = i.risk === 'high' ? 'risk-high' : i.risk === 'med' ? 'risk-med' : 'risk-low';
+      const pill = `<span class="risk-pill ${cls}">${riskLabel(i.risk)}</span>`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(i.title || 'Untitled event')}</td>
+        <td>${esc(countryOf(i))}</td>
+        <td>${esc(cityOf(i))}</td>
+        <td>${esc(pretty)}</td>
+        <td>${pill}</td>
+      `;
+      if (i.source) {
+        tr.style.cursor = 'pointer';
+        tr.addEventListener('click', () => window.open(i.source, '_blank', 'noopener'));
+      }
+      tbody.appendChild(tr);
     });
 
-    const label = i.risk === 'high' ? 'High' : i.risk === 'med' ? 'Medium' : 'Low';
-    const cls   = i.risk === 'high' ? 'risk-high' : i.risk === 'med' ? 'risk-med' : 'risk-low';
-    const pill  = `<span class="risk-pill ${cls}">${label}</span>`;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${i.title || 'Untitled event'}</td>
-      <td>${i.city || '—'}</td>
-      <td>${pretty}</td>
-      <td>${pill}</td>
-    `;
-
-    if (i.source) {
-      tr.style.cursor = 'pointer';
-      tr.addEventListener('click', () => window.open(i.source, '_blank', 'noopener'));
+    if (!rows.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" style="color:#8e97a3">No upcoming events found for this filter.</td>`;
+      tbody.appendChild(tr);
     }
-    tbody.appendChild(tr);
-  });
 
-  if (!tbody.children.length) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="4" style="color:#8e97a3">No upcoming events found for this filter.</td>`;
-    tbody.appendChild(tr);
+    const filters = [];
+    if (country) filters.push(country);
+    if (city) filters.push(city);
+    if (risk) filters.push(riskLabel(risk));
+    const suffix = filters.length ? ` · ${filters.join(' · ')}` : '';
+    if (summaryText) summaryText.innerHTML = `Showing <strong>${rows.length}</strong> event${rows.length !== 1 ? 's' : ''} · ${esc(win.label)}${esc(suffix)}`;
+
+    if (context) {
+      const shouldShowContext = patternKey || searchTerm || (timeFilter && timeFilter.value !== '7d') || country || city || risk;
+      context.style.display = shouldShowContext ? '' : 'none';
+      if (shouldShowContext) {
+        let modeLabel = win.label;
+        let modeMeta = `${rows.length} matching upcoming event${rows.length !== 1 ? 's' : ''}`;
+        if (patternKey && patternMeta[patternKey]) {
+          modeLabel = patternMeta[patternKey].label;
+          modeMeta = `Dashboard emerging pattern • ${win.label.toLowerCase()} • matched terms: ${patternMeta[patternKey].terms.slice(0,5).join(', ')} • ${rows.length} matching upcoming event${rows.length !== 1 ? 's' : ''}`;
+        } else if (searchTerm) {
+          modeLabel = `Search results for “${params.get('search') || ''}”`;
+          modeMeta = `${from ? `Opened from ${from}` : 'Filtered event view'} • ${win.label.toLowerCase()} • ${rows.length} matching upcoming event${rows.length !== 1 ? 's' : ''}`;
+        }
+        context.innerHTML = `
+          <div class="kicker">Filtered event view</div>
+          <div class="title">${esc(modeLabel)}</div>
+          <div class="meta">${esc(modeMeta)}</div>
+        `;
+      }
+    }
   }
+
+  populateFilters(allUpcoming);
+  [timeFilter, countryFilter, cityFilter, riskFilter].forEach(el => el && el.addEventListener('change', render));
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    if (timeFilter) timeFilter.value = '7d';
+    if (countryFilter) countryFilter.value = '';
+    if (cityFilter) cityFilter.value = '';
+    if (riskFilter) riskFilter.value = '';
+    render();
+  });
+  render();
 })();
 </script>
 
