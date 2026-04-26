@@ -183,6 +183,24 @@
 
 
     
+
+  /* ===== Travellers v1 table + filters polish ===== */
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .card-head h3{margin-bottom:4px}
+  .toolbar{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:12px 0 12px;align-items:end}
+  .filter-field{display:flex;flex-direction:column;gap:4px}
+  .filter-field label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .filter-field select{width:100%;background:var(--brand-gray-800);color:var(--text);border:1px solid var(--brand-gray-600);border-radius:10px;padding:8px 10px;outline:none}
+  .filter-field select:focus{border-color:var(--brand-red)}
+  .table-meta{color:var(--muted);font-size:12px;margin:4px 0 10px}
+  .table-wrap{overflow-x:auto;border-radius:12px}
+  .traveller-form-card{display:none;grid-column:span 12}
+  .traveller-form-card.open{display:block}
+  .mini,.btn-mini{padding:4px 9px;border-radius:999px;border:1px solid var(--brand-gray-600);background:var(--brand-gray-700);color:var(--text);font-size:12px;cursor:pointer}
+  .mini:hover,.btn-mini:hover{border-color:var(--brand-red);background:rgba(208,22,22,.08)}
+  @media (max-width:900px){.toolbar{grid-template-columns:1fr 1fr}}
+  @media (max-width:620px){.toolbar{grid-template-columns:1fr}}
+
   </style>
 </head>
 <body>
@@ -223,32 +241,59 @@
     <!-- MAIN -->
     <main class="main">
       <div class="grid">
-        <!-- Left: Travellers table -->
-        <section class="card" style="grid-column: span 7;">
-          <h3>Active & Upcoming Travellers</h3>
-          <p style="color:var(--muted);margin-top:4px">
-            Track travelling staff and their locations. These records feed into the Global Protest Risk Map
-            so you can see exposure to events.
-          </p>
+        <!-- Travellers table -->
+        <section class="card" style="grid-column: span 12;">
+          <div class="card-head">
+            <div>
+              <h3>Active & Upcoming Travellers</h3>
+              <p style="color:var(--muted);margin-top:4px">
+                Track travelling staff and their locations. These records feed into the Global Protest Risk Map
+                so you can see exposure to events.
+              </p>
+            </div>
+            <button type="button" class="btn" id="toggleTravellerForm">+ Add traveller</button>
+          </div>
 
-          <table style="margin-top:10px">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Role</th><th>Phone</th><th>Email</th>
-                <th>City</th>
-                <th>Country</th>
-                <th>From</th>
-                <th>To</th>
-                <th style="width:80px">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="travellersBody"></tbody>
-          </table>
+          <div class="toolbar" aria-label="Traveller table filters">
+            <div class="filter-field">
+              <label for="travCountryFilter">Country</label>
+              <select id="travCountryFilter"><option value="">All countries</option></select>
+            </div>
+            <div class="filter-field">
+              <label for="travCityFilter">City</label>
+              <select id="travCityFilter"><option value="">All cities</option></select>
+            </div>
+            <div class="filter-field">
+              <label for="travRoleFilter">Role</label>
+              <select id="travRoleFilter"><option value="">All roles</option></select>
+            </div>
+            <div class="filter-field">
+              <label>&nbsp;</label>
+              <button type="button" class="btn" id="travFilterReset">Reset filters</button>
+            </div>
+          </div>
+          <div id="travellersMeta" class="table-meta">Showing travellers.</div>
+
+          <div class="table-wrap">
+            <table style="margin-top:10px">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th><th>Phone</th><th>Email</th>
+                  <th>Country</th>
+                  <th>City</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th style="width:80px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="travellersBody"></tbody>
+            </table>
+          </div>
         </section>
 
-        <!-- Right: Traveller form -->
-        <section class="card" style="grid-column: span 5;">
+        <!-- Traveller form -->
+        <section class="card traveller-form-card" id="travellerFormCard">
           <h3>Add / Edit Traveller</h3>
           <p class="pill-hint">
             Add travellers with their trip window and hotel. Lat/Lon are optional but required if you want
@@ -328,6 +373,7 @@
             <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
               <button type="submit" class="btn" id="travSaveBtn">Save traveller</button>
               <button type="button" class="btn" id="travResetBtn">Clear form</button>
+              <button type="button" class="btn" id="travCloseFormBtn">Hide form</button>
               <button type="button" class="btn btn-danger" id="travDeleteBtn" style="margin-left:auto;display:none">
                 Delete traveller
               </button>
@@ -543,15 +589,82 @@ const hotelInput   = document.getElementById('travHotel');
     const latInput     = document.getElementById('travLat');
     const lonInput     = document.getElementById('travLon');
     const resetBtn     = document.getElementById('travResetBtn');
+    const closeFormBtn = document.getElementById('travCloseFormBtn');
     const deleteBtn    = document.getElementById('travDeleteBtn');
     const geoBtn       = document.getElementById('travGeoBtn');
+    const formCard     = document.getElementById('travellerFormCard');
+    const toggleFormBtn= document.getElementById('toggleTravellerForm');
+    const countryFilter= document.getElementById('travCountryFilter');
+    const cityFilter   = document.getElementById('travCityFilter');
+    const roleFilter   = document.getElementById('travRoleFilter');
+    const filterReset  = document.getElementById('travFilterReset');
+    const tableMeta    = document.getElementById('travellersMeta');
 
     
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+
+function showForm(open=true){
+  if (!formCard) return;
+  formCard.classList.toggle('open', !!open);
+  if (toggleFormBtn) toggleFormBtn.textContent = open ? 'Hide form' : '+ Add traveller';
+  if (open) formCard.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function populateFilters(){
+  const keepCountry = countryFilter?.value || '';
+  const keepCity = cityFilter?.value || '';
+  const keepRole = roleFilter?.value || '';
+
+  const countries = [...new Set(travellers.map(t => String(t?.country || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const selectedCountry = keepCountry.toLowerCase();
+  const citySource = selectedCountry ? travellers.filter(t => String(t?.country || '').trim().toLowerCase() === selectedCountry) : travellers;
+  const cities = [...new Set(citySource.map(t => String(t?.city || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const roles = [...new Set(travellers.map(t => String(t?.role || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+
+  if (countryFilter) {
+    countryFilter.innerHTML = '<option value="">All countries</option>' + countries.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if (keepCountry && countries.includes(keepCountry)) countryFilter.value = keepCountry;
+  }
+  if (cityFilter) {
+    cityFilter.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if (keepCity && cities.includes(keepCity)) cityFilter.value = keepCity;
+  }
+  if (roleFilter) {
+    roleFilter.innerHTML = '<option value="">All roles</option>' + roles.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+    if (keepRole && roles.includes(keepRole)) roleFilter.value = keepRole;
+  }
+}
+
+function filteredTravellers(){
+  const ctry = String(countryFilter?.value || '').trim().toLowerCase();
+  const city = String(cityFilter?.value || '').trim().toLowerCase();
+  const role = String(roleFilter?.value || '').trim().toLowerCase();
+  return travellers
+    .map((t, idx) => ({t, idx}))
+    .filter(({t}) => !ctry || String(t?.country || '').trim().toLowerCase() === ctry)
+    .filter(({t}) => !city || String(t?.city || '').trim().toLowerCase() === city)
+    .filter(({t}) => !role || String(t?.role || '').trim().toLowerCase() === role);
+}
+
 function renderTable(){
   // Table columns MUST match the <thead> order:
-  // Name | Role | Phone | Email | City | Country | From | To | Actions
+  // Name | Role | Phone | Email | Country | City | From | To | Actions
   const body = tbody;
+  if (!body) return;
+  populateFilters();
+  const rows = filteredTravellers();
   body.innerHTML = '';
+
+  if (tableMeta) {
+    const bits = [];
+    if (countryFilter?.value) bits.push(countryFilter.value);
+    if (cityFilter?.value) bits.push(cityFilter.value);
+    if (roleFilter?.value) bits.push(roleFilter.value);
+    tableMeta.textContent = `Showing ${rows.length} of ${travellers.length} traveller${travellers.length !== 1 ? 's' : ''}${bits.length ? ' • ' + bits.join(' • ') : ''}.`;
+  }
+
   if (!Array.isArray(travellers) || travellers.length === 0){
     const tr = document.createElement('tr');
     const td = document.createElement('td');
@@ -563,7 +676,18 @@ function renderTable(){
     return;
   }
 
-  travellers.forEach((t, i) => {
+  if (!rows.length){
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 9;
+    td.className = 'muted';
+    td.textContent = 'No travellers match the selected filters.';
+    tr.appendChild(td);
+    body.appendChild(tr);
+    return;
+  }
+
+  rows.forEach(({t, idx}) => {
     const tr = document.createElement('tr');
 
     const cells = [
@@ -571,8 +695,8 @@ function renderTable(){
       t?.role ?? '',
       t?.phone ?? '',
       t?.email ?? '',
-      t?.city ?? '',
       t?.country ?? '',
+      t?.city ?? '',
       t?.from ?? '',
       t?.to ?? ''
     ];
@@ -583,7 +707,6 @@ function renderTable(){
       tr.appendChild(td);
     }
 
-    // Actions
     const actionsTd = document.createElement('td');
     actionsTd.style.whiteSpace = 'nowrap';
 
@@ -591,10 +714,8 @@ function renderTable(){
     edit.className = 'mini';
     edit.type = 'button';
     edit.textContent = 'Edit';
-    edit.addEventListener('click', () => fillFormFromTraveller(t, i));
+    edit.addEventListener('click', () => fillFormFromTraveller(t, idx));
     actionsTd.appendChild(edit);
-
-    // (Delete button is shown in the form; keep table clean)
 
     tr.appendChild(actionsTd);
     body.appendChild(tr);
@@ -635,6 +756,7 @@ function renderTable(){
       latInput.value = (typeof t.lat === 'number') ? t.lat : (t.lat || '');
       lonInput.value = (typeof t.lon === 'number') ? t.lon : (t.lon || '');
       deleteBtn.style.display = 'inline-block';
+      showForm(true);
     }
 
     // Table edit click
@@ -645,6 +767,41 @@ function renderTable(){
         const idx = parseInt(btn.getAttribute('data-idx'), 10);
         if (isNaN(idx) || !travellers[idx]) return;
         fillFormFromTraveller(travellers[idx], idx);
+      });
+    }
+
+    if (toggleFormBtn) {
+      toggleFormBtn.addEventListener('click', () => {
+        const open = !(formCard && formCard.classList.contains('open'));
+        if (open) clearForm();
+        showForm(open);
+      });
+    }
+
+    if (closeFormBtn) {
+      closeFormBtn.addEventListener('click', e => {
+        e.preventDefault();
+        showForm(false);
+      });
+    }
+
+    [countryFilter, cityFilter, roleFilter].forEach(el => {
+      if (el) el.addEventListener('change', renderTable);
+    });
+
+    if (countryFilter) {
+      countryFilter.addEventListener('change', () => {
+        if (cityFilter) cityFilter.value = '';
+        renderTable();
+      });
+    }
+
+    if (filterReset) {
+      filterReset.addEventListener('click', () => {
+        if (countryFilter) countryFilter.value = '';
+        if (cityFilter) cityFilter.value = '';
+        if (roleFilter) roleFilter.value = '';
+        renderTable();
       });
     }
 
