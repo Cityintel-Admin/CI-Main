@@ -372,13 +372,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .ci-protest-marker.medium{background:#f0b429}
 .ci-protest-marker.low{background:#33c48d}
 
-/* v29: optional US state risk overlay */
-#usStatesToggleWrap{
-  border-left:1px solid rgba(255,255,255,.08);
-  padding-left:8px;
-}
-
-
 
 
 	  
@@ -847,7 +840,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <label class="map-layer-toggle"><input id="toggleAssets" type="checkbox" /> Assets</label>
         <label class="map-layer-toggle"><input id="toggleTravellers" type="checkbox" /> Travellers</label>
         <label class="map-layer-toggle"><input id="togglePred" type="checkbox" /> Predictive</label>
-        <label id="usStatesToggleWrap" class="map-layer-toggle" style="display:none"><input id="toggleUSStates" type="checkbox" /> US states</label>
       </div>
     </div>
   </div>
@@ -1728,7 +1720,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 (function(){
   const MAP_EL   = 'riskMap';
   const TOPO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-  const US_STATES_TOPO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
   const palette   = { low:'#6bcf6b', medium:'#f0b429', high:'#ff5a5f', none:'#2e3238' };
   const riskScore = { low:1, medium:2, high:3 };
@@ -1750,8 +1741,6 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
   let includePredictive = false;
   let showAssets = false;
   let showTravellers = false;
-  let showUSStates = false;
-  let usStatesGeo = null;
 
   const norm = s => (s || '').trim().toLowerCase();
 
@@ -1780,41 +1769,6 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
       .replace(/\s+/g, ' ')
       .trim();
     return alias.get(cleaned) || cleaned;
-  }
-
-  const US_FIPS_NAMES = {
-    '01':'Alabama','02':'Alaska','04':'Arizona','05':'Arkansas','06':'California','08':'Colorado','09':'Connecticut','10':'Delaware','11':'District of Columbia','12':'Florida','13':'Georgia','15':'Hawaii','16':'Idaho','17':'Illinois','18':'Indiana','19':'Iowa','20':'Kansas','21':'Kentucky','22':'Louisiana','23':'Maine','24':'Maryland','25':'Massachusetts','26':'Michigan','27':'Minnesota','28':'Mississippi','29':'Missouri','30':'Montana','31':'Nebraska','32':'Nevada','33':'New Hampshire','34':'New Jersey','35':'New Mexico','36':'New York','37':'North Carolina','38':'North Dakota','39':'Ohio','40':'Oklahoma','41':'Oregon','42':'Pennsylvania','44':'Rhode Island','45':'South Carolina','46':'South Dakota','47':'Tennessee','48':'Texas','49':'Utah','50':'Vermont','51':'Virginia','53':'Washington','54':'West Virginia','55':'Wisconsin','56':'Wyoming'
-  };
-
-  const US_STATE_ALIASES = new Map([
-    ['alabama','Alabama'],['alaska','Alaska'],['arizona','Arizona'],['arkansas','Arkansas'],['california','California'],['colorado','Colorado'],['connecticut','Connecticut'],['delaware','Delaware'],['district of columbia','District of Columbia'],['dc','District of Columbia'],['florida','Florida'],['georgia','Georgia'],['hawaii','Hawaii'],['idaho','Idaho'],['illinois','Illinois'],['indiana','Indiana'],['iowa','Iowa'],['kansas','Kansas'],['kentucky','Kentucky'],['louisiana','Louisiana'],['maine','Maine'],['maryland','Maryland'],['massachusetts','Massachusetts'],['michigan','Michigan'],['minnesota','Minnesota'],['mississippi','Mississippi'],['missouri','Missouri'],['montana','Montana'],['nebraska','Nebraska'],['nevada','Nevada'],['new hampshire','New Hampshire'],['new jersey','New Jersey'],['new mexico','New Mexico'],['new york','New York'],['north carolina','North Carolina'],['north dakota','North Dakota'],['ohio','Ohio'],['oklahoma','Oklahoma'],['oregon','Oregon'],['pennsylvania','Pennsylvania'],['rhode island','Rhode Island'],['south carolina','South Carolina'],['south dakota','South Dakota'],['tennessee','Tennessee'],['texas','Texas'],['utah','Utah'],['vermont','Vermont'],['virginia','Virginia'],['washington','Washington'],['west virginia','West Virginia'],['wisconsin','Wisconsin'],['wyoming','Wyoming'],
-    ['az','Arizona'],['ca','California'],['co','Colorado'],['dc','District of Columbia'],['fl','Florida'],['ga','Georgia'],['il','Illinois'],['ma','Massachusetts'],['mi','Michigan'],['nj','New Jersey'],['nv','Nevada'],['ny','New York'],['oh','Ohio'],['or','Oregon'],['pa','Pennsylvania'],['tx','Texas'],['wa','Washington']
-  ]);
-
-  // Fallback for current CityIntel US cities when state/region is not provided by the alert row.
-  const US_CITY_TO_STATE = new Map([
-    ['phoenix','Arizona'],['los angeles','California'],['san diego','California'],['san francisco','California'],['sacramento','California'],
-    ['new york','New York'],['nyc','New York'],['brooklyn','New York'],['queens','New York'],['buffalo','New York'],
-    ['washington','District of Columbia'],['washington dc','District of Columbia'],['washington d c','District of Columbia'],
-    ['chicago','Illinois'],['houston','Texas'],['dallas','Texas'],['austin','Texas'],['miami','Florida'],['atlanta','Georgia'],
-    ['boston','Massachusetts'],['philadelphia','Pennsylvania'],['seattle','Washington'],['portland','Oregon'],['denver','Colorado'],
-    ['las vegas','Nevada'],['detroit','Michigan'],['cleveland','Ohio']
-  ]);
-
-  function stateKey(value){
-    const cleaned = norm(value).replace(/\./g,'').replace(/\s+/g,' ').trim();
-    return US_STATE_ALIASES.get(cleaned) || (cleaned ? cleaned.replace(/\b\w/g, c => c.toUpperCase()) : '');
-  }
-
-  function isUSAlert(a){
-    return countryKey(a && (a.country ?? a.Country ?? a.country_name ?? '')) === 'united states of america';
-  }
-
-  function stateFromAlert(a){
-    const explicit = a.state ?? a.State ?? a.region ?? a.Region ?? a.province ?? a.admin1 ?? a.admin_area ?? a.subdivision;
-    if (explicit) return stateKey(explicit);
-    const city = norm(String(a.city || '').split('/')[0]);
-    return US_CITY_TO_STATE.get(city) || '';
   }
 
   function emitCountrySelected(name, items){
@@ -1860,7 +1814,6 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
   map.addControl(new Legend({position:'bottomright'}));
 
   let geoLayer = null;
-  let usStateLayer = null;
 
 	
 
@@ -1990,130 +1943,6 @@ function aggregate(alerts){
   }
 
   return by;
-}
-
-function aggregateUSStates(alerts){
-  const now = new Date();
-  const win = mapWindowRange();
-  const histStart = new Date(+now - HISTORY_DAYS * 86400000);
-  const by = {};
-
-  for (const a of alerts || []) {
-    if (!a || !isUSAlert(a)) continue;
-    const state = stateFromAlert(a);
-    if (!state) continue;
-    const dt = parseTime(a.time ?? a.datetime ?? a.date ?? a.when);
-    if (!dt) continue;
-
-    const rk = norm(a.risk);
-    const band = rk.startsWith('hi') ? 'high' : rk.startsWith('me') ? 'medium' : 'low';
-    if (!by[state]) by[state] = { hist:{low:0,medium:0,high:0}, fut:{low:0,medium:0,high:0}, items:[], mixFuture:false, band:'none' };
-    const row = by[state];
-
-    if (dt >= histStart && dt <= now) row.hist[band]++;
-    if (dt >= win.start && dt < win.end) {
-      if (!includePredictive && a.predictive === true) {
-        // skip predictive if checkbox is off
-      } else {
-        row.fut[band]++;
-        row.items.push(a);
-      }
-    }
-  }
-
-  for (const state in by) {
-    const row = by[state];
-    const f = row.fut;
-    row.mixFuture = (f.high && f.low) || (f.high && f.medium) || (f.medium && f.low);
-
-    const highScore = 3 * (row.hist.high + 2 * row.fut.high);
-    const mediumScore = 2 * (row.hist.medium + 2 * row.fut.medium);
-    const lowScore = 1 * (row.hist.low + 2 * row.fut.low);
-    const totalScore = highScore + mediumScore + lowScore;
-    if (!totalScore) { row.band = 'none'; continue; }
-
-    const highRatio = highScore / totalScore;
-    const midRatio = (highScore + mediumScore) / totalScore;
-    row.band = (highRatio >= 0.4 || highScore >= 6) ? 'high' : (midRatio >= 0.5 || mediumScore >= 4) ? 'medium' : 'low';
-  }
-  return by;
-}
-
-function hasUSData(alerts){
-  return (alerts || []).some(a => isUSAlert(a));
-}
-
-function updateUSStatesToggleVisibility(alerts){
-  const wrap = document.getElementById('usStatesToggleWrap');
-  if (!wrap) return;
-  const show = hasUSData(alerts);
-  wrap.style.display = show ? 'flex' : 'none';
-  if (!show) {
-    showUSStates = false;
-    const chk = document.getElementById('toggleUSStates');
-    if (chk) chk.checked = false;
-    if (usStateLayer) { usStateLayer.remove(); usStateLayer = null; }
-  }
-}
-
-function featureStateName(f){
-  const p = f.properties || {};
-  const raw = p.name || p.NAME || p.NAME10 || p.ADMIN || '';
-  if (raw) return stateKey(raw);
-  const id = String(f.id || p.id || p.STATEFP || '').padStart(2, '0');
-  return US_FIPS_NAMES[id] || '';
-}
-
-function renderUSStatesLayer(alerts){
-  if (usStateLayer) { usStateLayer.remove(); usStateLayer = null; }
-  if (!showUSStates) return;
-
-  const stateAgg = aggregateUSStates(alerts);
-  const load = usStatesGeo
-    ? Promise.resolve(usStatesGeo)
-    : fetch(US_STATES_TOPO_URL)
-        .then(r => r.json())
-        .then(us => {
-          usStatesGeo = topojson.feature(us, us.objects.states);
-          return usStatesGeo;
-        });
-
-  load.then(geo => {
-    if (!showUSStates) return;
-    usStateLayer = L.geoJSON(geo, {
-      pane: 'overlayPane',
-      style: f => {
-        const state = featureStateName(f);
-        const row = stateAgg[state];
-        if (!row || row.band === 'none') {
-          return { fillColor:'transparent', fillOpacity:0, color:'rgba(255,255,255,.2)', weight:.4 };
-        }
-        return {
-          fillColor: palette[row.band] || palette.low,
-          fillOpacity: .88,
-          color: row.mixFuture ? '#ffffff' : '#111',
-          dashArray: row.mixFuture ? '6 3' : null,
-          weight: row.mixFuture ? 1.4 : .8
-        };
-      },
-      onEachFeature: (f, layer) => {
-        const state = featureStateName(f);
-        const row = stateAgg[state];
-        if (!row || row.band === 'none') return;
-        const h = row.hist, fut = row.fut;
-        const win = mapWindowRange();
-        const histTotal = h.low + h.medium + h.high;
-        const futTotal = fut.low + fut.medium + fut.high;
-        const histLine = histTotal
-          ? `Last 6 months: <span class="chip" style="background:${palette.high}"></span>${h.high} <span class="chip" style="background:${palette.medium}"></span>${h.medium} <span class="chip" style="background:${palette.low}"></span>${h.low}`
-          : 'Last 6 months: no data';
-        const futLine = futTotal
-          ? `${win.label}: <span class="chip" style="background:${palette.high}"></span>${fut.high} <span class="chip" style="background:${palette.medium}"></span>${fut.medium} <span class="chip" style="background:${palette.low}"></span>${fut.low}`
-          : `${win.label}: no scheduled events`;
-        layer.bindPopup(`<b>${escapeHtml(state)}</b><br>US state band: <b>${escapeHtml(row.band.toUpperCase())}</b><br>${histLine}<br>${futLine}<br><br><small>US state overlay is tactical context; country shading remains the global baseline.</small>`);
-      }
-    }).addTo(map);
-  }).catch(err => console.warn('CityIntel map: failed to load US states overlay', err));
 }
 
 
@@ -2321,7 +2150,6 @@ function countPresenceForCountry(countryName){
         });
 
         const alerts = window.alertsData || [];
-        updateUSStatesToggleVisibility(alerts);
         const agg = aggregate(alerts);
         if (agg['united states of america']) {
           console.info('CityIntel map: United States shaded as', agg['united states of america'].band, agg['united states of america']);
@@ -2398,7 +2226,6 @@ function countPresenceForCountry(countryName){
 
         }).addTo(map);
         renderProtestMarkers();
-        renderUSStatesLayer(alerts);
       });
   }
 
@@ -2416,15 +2243,6 @@ function countPresenceForCountry(countryName){
     predChk.addEventListener('change', () => {
       includePredictive = predChk.checked;
       draw();
-    });
-  }
-
-  const usStatesChk = document.getElementById('toggleUSStates');
-  if (usStatesChk) {
-    usStatesChk.checked = false;
-    usStatesChk.addEventListener('change', () => {
-      showUSStates = usStatesChk.checked;
-      renderUSStatesLayer(window.alertsData || []);
     });
   }
 
