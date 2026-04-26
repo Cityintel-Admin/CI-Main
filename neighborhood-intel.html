@@ -2190,18 +2190,48 @@
   gap:7px !important;
   white-space:nowrap !important;
 }
-#btnMeasureMap.active{
-  border-color:rgba(208,22,22,.55);
-  background:rgba(208,22,22,.18);
+#btnMeasureMap.active,
+#btnRadiusMap.active{
+  border-color:rgba(208,22,22,.72);
+  background:rgba(208,22,22,.26);
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(208,22,22,.12);
+}
+#btnClearMap{
+  border-style:dashed;
+  opacity:.9;
 }
 .measure-tooltip{
-  background:rgba(15,23,42,.94) !important;
-  border:1px solid rgba(255,255,255,.18) !important;
+  background:rgba(0,0,0,.88) !important;
+  border:1px solid rgba(255,255,255,.30) !important;
   color:#fff !important;
-  border-radius:999px !important;
-  padding:4px 8px !important;
-  font-weight:800 !important;
-  box-shadow:0 10px 24px rgba(0,0,0,.35) !important;
+  border-radius:8px !important;
+  padding:5px 9px !important;
+  font-weight:900 !important;
+  font-size:12px !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.45) !important;
+}
+.measure-tooltip:before{display:none!important;}
+.measure-point{background:transparent;border:0;}
+.measure-point-dot{
+  width:14px;
+  height:14px;
+  border-radius:999px;
+  background:#050505;
+  border:2px solid #fff;
+  box-shadow:0 0 0 2px rgba(0,0,0,.35), 0 4px 14px rgba(0,0,0,.55);
+}
+.radius-center-dot{
+  width:16px;
+  height:16px;
+  border-radius:999px;
+  background:#050505;
+  border:2px solid #fff;
+  box-shadow:0 0 0 2px rgba(208,22,22,.35), 0 4px 14px rgba(0,0,0,.55);
+}
+.map-tool-hint{
+  border-color:rgba(255,255,255,.18)!important;
+  background:rgba(0,0,0,.32)!important;
 }
 @media (max-width: 760px){
   #niMapCard .map-head-tools{justify-content:flex-start;}
@@ -2337,7 +2367,7 @@
 
       <!-- Bottom: map -->
       <div class="ni-card ni-map-card" id="niMapCard">
-        <div class="hd ni-map-hd"><h2>Map</h2><div class="map-head-tools"><input class="map-search-input" id="niMapSearch" type="search" placeholder="Search address or place..." autocomplete="off" /><button class="event-toggle" id="btnMeasureMap" type="button">Measure</button><span class="pill" id="pillMeasure" style="display:none">Click start point</span><span class="pill" id="pillPin">Pin not set</span><button class="event-toggle active" id="btnToggleEvents" type="button">Events on</button><select class="event-window" id="eventWindow"><option value="3">Next 3d</option><option value="7" selected>Next 7d</option><option value="14">Next 14d</option></select><span class="event-map-badge" id="eventCountBadge">0 events</span></div></div>
+        <div class="hd ni-map-hd"><h2>Map</h2><div class="map-head-tools"><input class="map-search-input" id="niMapSearch" type="search" placeholder="Search address or place..." autocomplete="off" /><button class="event-toggle" id="btnMeasureMap" type="button">Measure</button><button class="event-toggle" id="btnRadiusMap" type="button">Radius 500m</button><button class="event-toggle" id="btnClearMap" type="button">Clear tools</button><span class="pill map-tool-hint" id="pillMeasure" style="display:none">Click start point</span><span class="pill" id="pillPin">Pin not set</span><button class="event-toggle active" id="btnToggleEvents" type="button">Events on</button><select class="event-window" id="eventWindow"><option value="3">Next 3d</option><option value="7" selected>Next 7d</option><option value="14">Next 14d</option></select><span class="event-map-badge" id="eventCountBadge">0 events</span></div></div>
         <div class="map-legend">
           <span class="item"><span class="swatch legend-post"></span>Neighbourhood post</span>
           <span class="item"><span class="swatch high"></span>High-risk event</span>
@@ -2534,6 +2564,8 @@ async function loadOrgHQ() {
     eventWindow: document.getElementById('eventWindow'),
     niMapSearch: document.getElementById('niMapSearch'),
     btnMeasureMap: document.getElementById('btnMeasureMap'),
+    btnRadiusMap: document.getElementById('btnRadiusMap'),
+    btnClearMap: document.getElementById('btnClearMap'),
     pillMeasure: document.getElementById('pillMeasure'),
     eventCountBadge: document.getElementById('eventCountBadge'),
     pillOrg: document.getElementById('pillOrg'),
@@ -2955,7 +2987,7 @@ async function loadOrgHQ() {
   // recalculate its container once CSS layout has settled.
   requestAnimationFrame(() => { try { map.invalidateSize(); } catch(e) {} });
   setTimeout(() => { try { map.invalidateSize(); } catch(e) {} }, 350);
-  map.on('click', (ev) => { if (measureMode) handleMeasureClick(ev.latlng); });
+  map.on('click', (ev) => { if (measureMode) handleMeasureClick(ev.latlng); else if (radiusMode) handleRadiusClick(ev.latlng); });
   try { selectedPostMarker.bindTooltip('1', {permanent:true, direction:'center', className:'point-badge-tooltip'}).openTooltip(); } catch(e) {}
 
   let pinMarker = null;
@@ -2968,11 +3000,30 @@ async function loadOrgHQ() {
   let eventsVisible = true;
   let eventMarkers = [];
 
-  // v2 map tools: simple SOC-style measure ruler + address/place search.
+  // v3 map tools: SOC-style measure, 500m radius and address/place search.
   let measureMode = false;
-  let measureStart = null;
+  let radiusMode = false;
+  let measurePoints = [];
   let measureLine = null;
+  let measureOutline = null;
   let measureMarkers = [];
+  let measureTooltip = null;
+  let radiusCircle = null;
+  let radiusMarker = null;
+  let radiusTooltip = null;
+
+  const measurePointIcon = L.divIcon({
+    className: 'measure-point',
+    html: '<div class="measure-point-dot"></div>',
+    iconSize: [18,18],
+    iconAnchor: [9,9]
+  });
+  const radiusCenterIcon = L.divIcon({
+    className: 'measure-point',
+    html: '<div class="radius-center-dot"></div>',
+    iconSize: [20,20],
+    iconAnchor: [10,10]
+  });
 
   function fmtMeasureDistance(meters){
     const m = Number(meters) || 0;
@@ -2980,49 +3031,138 @@ async function loadOrgHQ() {
     return `${Math.round(m)} m`;
   }
 
-  function clearMeasure(){
-    if (measureLine) { try { map.removeLayer(measureLine); } catch(e) {} }
-    measureLine = null;
-    for (const mk of measureMarkers) { try { map.removeLayer(mk); } catch(e) {} }
-    measureMarkers = [];
-    measureStart = null;
+  function totalMeasureDistance(){
+    let total = 0;
+    for (let i = 1; i < measurePoints.length; i++) total += measurePoints[i-1].distanceTo(measurePoints[i]);
+    return total;
   }
 
-  function setMeasureMode(on){
+  function clearMeasure(){
+    for (const layer of [measureLine, measureOutline, measureTooltip]) {
+      if (layer) { try { map.removeLayer(layer); } catch(e) {} }
+    }
+    measureLine = null;
+    measureOutline = null;
+    measureTooltip = null;
+    for (const mk of measureMarkers) { try { map.removeLayer(mk); } catch(e) {} }
+    measureMarkers = [];
+    measurePoints = [];
+  }
+
+  function clearRadius(){
+    for (const layer of [radiusCircle, radiusMarker, radiusTooltip]) {
+      if (layer) { try { map.removeLayer(layer); } catch(e) {} }
+    }
+    radiusCircle = null;
+    radiusMarker = null;
+    radiusTooltip = null;
+  }
+
+  function clearMapTools(){
+    clearMeasure();
+    clearRadius();
+    setMeasureMode(false, {keepLayers:true});
+    setRadiusMode(false, {keepLayers:true});
+    if (els.pillMeasure) els.pillMeasure.style.display = 'none';
+  }
+
+  function updateMeasureLine(){
+    if (measurePoints.length < 2) return;
+    if (!measureOutline) {
+      measureOutline = L.polyline(measurePoints, {
+        color:'#ffffff', weight:8, opacity:.72, lineCap:'butt', interactive:false
+      }).addTo(map);
+    } else {
+      measureOutline.setLatLngs(measurePoints);
+    }
+    if (!measureLine) {
+      measureLine = L.polyline(measurePoints, {
+        color:'#050505', weight:4, opacity:1, dashArray:'10,7', lineCap:'butt', interactive:false
+      }).addTo(map);
+    } else {
+      measureLine.setLatLngs(measurePoints);
+    }
+    const total = totalMeasureDistance();
+    const labelPoint = measurePoints[measurePoints.length - 1];
+    if (measureTooltip) { try { map.removeLayer(measureTooltip); } catch(e) {} }
+    measureTooltip = L.tooltip({permanent:true, direction:'top', offset:[0,-12], className:'measure-tooltip'})
+      .setLatLng(labelPoint)
+      .setContent(`Total ${fmtMeasureDistance(total)}`)
+      .addTo(map);
+    if (els.pillMeasure) els.pillMeasure.textContent = `Total ${fmtMeasureDistance(total)} · click more points`;
+  }
+
+  function setMeasureMode(on, opts={}){
     measureMode = !!on;
     if (measureMode) {
+      radiusMode = false;
+      if (els.btnRadiusMap) els.btnRadiusMap.classList.remove('active');
       pinDropMode = false;
       if (els.pillPin && !pinLatLng) els.pillPin.textContent = 'No pin';
-      clearMeasure();
-      if (els.pillMeasure) { els.pillMeasure.style.display = ''; els.pillMeasure.textContent = 'Click start point'; }
+      if (!opts.keepLayers) clearMeasure();
+      if (els.pillMeasure) { els.pillMeasure.style.display = ''; els.pillMeasure.textContent = 'Measure: click start point'; }
       if (els.btnMeasureMap) els.btnMeasureMap.classList.add('active');
       try { map.getContainer().style.cursor = 'crosshair'; } catch(e) {}
     } else {
-      if (els.pillMeasure) els.pillMeasure.style.display = 'none';
+      if (!radiusMode) {
+        if (els.pillMeasure && !measurePoints.length && !radiusCircle) els.pillMeasure.style.display = 'none';
+        try { map.getContainer().style.cursor = ''; } catch(e) {}
+      }
       if (els.btnMeasureMap) els.btnMeasureMap.classList.remove('active');
-      try { map.getContainer().style.cursor = ''; } catch(e) {}
+    }
+  }
+
+  function setRadiusMode(on, opts={}){
+    radiusMode = !!on;
+    if (radiusMode) {
+      measureMode = false;
+      if (els.btnMeasureMap) els.btnMeasureMap.classList.remove('active');
+      pinDropMode = false;
+      if (!opts.keepLayers) clearRadius();
+      if (els.pillMeasure) { els.pillMeasure.style.display = ''; els.pillMeasure.textContent = 'Radius: click centre point'; }
+      if (els.btnRadiusMap) els.btnRadiusMap.classList.add('active');
+      try { map.getContainer().style.cursor = 'crosshair'; } catch(e) {}
+    } else {
+      if (!measureMode) {
+        if (els.pillMeasure && !measurePoints.length && !radiusCircle) els.pillMeasure.style.display = 'none';
+        try { map.getContainer().style.cursor = ''; } catch(e) {}
+      }
+      if (els.btnRadiusMap) els.btnRadiusMap.classList.remove('active');
     }
   }
 
   function handleMeasureClick(latlng){
     if (!measureMode || !latlng) return;
-    if (!measureStart) {
-      measureStart = latlng;
-      const mk = L.circleMarker(latlng, {radius:6, weight:2, color:'#e5e7eb', fillColor:'#3b82f6', fillOpacity:.95}).addTo(map);
-      measureMarkers.push(mk);
-      if (els.pillMeasure) els.pillMeasure.textContent = 'Click end point';
+    measurePoints.push(latlng);
+    const mk = L.marker(latlng, {icon: measurePointIcon, interactive:false}).addTo(map);
+    measureMarkers.push(mk);
+    if (measurePoints.length === 1) {
+      if (els.pillMeasure) els.pillMeasure.textContent = 'Measure: click next point';
       return;
     }
+    updateMeasureLine();
+  }
 
-    const end = latlng;
-    const mk = L.circleMarker(end, {radius:6, weight:2, color:'#e5e7eb', fillColor:'#D01616', fillOpacity:.95}).addTo(map);
-    measureMarkers.push(mk);
-    measureLine = L.polyline([measureStart, end], {color:'#e5e7eb', weight:3, opacity:.95, dashArray:'6 8'}).addTo(map);
-    const meters = measureStart.distanceTo(end);
-    const mid = L.latLng((measureStart.lat + end.lat)/2, (measureStart.lng + end.lng)/2);
-    measureLine.bindTooltip(fmtMeasureDistance(meters), {permanent:true, direction:'center', className:'measure-tooltip'}).openTooltip(mid);
-    if (els.pillMeasure) els.pillMeasure.textContent = fmtMeasureDistance(meters);
-    setMeasureMode(false);
+  function handleRadiusClick(latlng){
+    if (!radiusMode || !latlng) return;
+    clearRadius();
+    const radius = 500;
+    radiusCircle = L.circle(latlng, {
+      radius,
+      color:'#050505',
+      weight:3,
+      opacity:1,
+      dashArray:'10,7',
+      fillColor:'#D01616',
+      fillOpacity:.08
+    }).addTo(map);
+    radiusMarker = L.marker(latlng, {icon: radiusCenterIcon, interactive:false}).addTo(map);
+    radiusTooltip = L.tooltip({permanent:true, direction:'top', offset:[0,-14], className:'measure-tooltip'})
+      .setLatLng(latlng)
+      .setContent('500 m radius')
+      .addTo(map);
+    if (els.pillMeasure) { els.pillMeasure.style.display = ''; els.pillMeasure.textContent = '500 m radius set'; }
+    setRadiusMode(false, {keepLayers:true});
   }
 
   let searchMarker = null;
@@ -3994,6 +4134,8 @@ els.btnRefresh.addEventListener('click', refresh);
   }
   if (els.eventWindow) els.eventWindow.addEventListener('change', renderEventOverlay);
   if (els.btnMeasureMap) els.btnMeasureMap.addEventListener('click', () => setMeasureMode(!measureMode));
+  if (els.btnRadiusMap) els.btnRadiusMap.addEventListener('click', () => setRadiusMode(!radiusMode));
+  if (els.btnClearMap) els.btnClearMap.addEventListener('click', clearMapTools);
   if (els.niMapSearch) {
     els.niMapSearch.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); searchMapPlace(els.niMapSearch.value); }
