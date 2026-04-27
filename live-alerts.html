@@ -2088,6 +2088,32 @@ padding-bottom: 12px;
 }
 
 
+
+/* Manual alert escalation button */
+.manual-alert-slot{
+  margin-top:12px;
+  padding:10px 0 0;
+  border-top:1px solid #2e3238;
+}
+.manual-alert-btn{
+  width:100%;
+  border-radius:999px;
+  border:1px solid rgba(248,113,113,.48);
+  background:rgba(127,29,29,.38);
+  color:#fee2e2;
+  font-size:12px;
+  font-weight:800;
+  padding:8px 10px;
+  cursor:pointer;
+}
+.manual-alert-btn:hover{
+  background:rgba(127,29,29,.58);
+  border-color:rgba(248,113,113,.75);
+}
+.manual-alert-modal .ci-field.full{grid-column:1 / -1;}
+.manual-alert-modal .ci-modal-body{background:#fff;}
+.manual-alert-modal .ci-hint{font-size:12px;opacity:.72;margin-top:4px;}
+
 /* ===== Operator Transition Modal (TOPO-style) ===== */
 .ci-modal-overlay{
   position: fixed;
@@ -2493,6 +2519,13 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
     </div>
     <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
+  </div>
+
+  <div class="manual-alert-slot">
+    <button type="button" class="manual-alert-btn" id="manualAlertBtn">
+      + Manual alert escalation
+    </button>
+    <div class="small" style="opacity:.72;margin-top:6px;">Create an escalated alert from off-platform intelligence.</div>
   </div>
 
 	  &nbsp;
@@ -6878,6 +6911,137 @@ function redrawIncidentRadius(){
 
   let openFeedId = null;
 
+
+  // --- Manual alerts (operator-created, local-first) ----------------
+  const CI_MANUAL_ALERTS_KEY = 'ci_manual_alerts_v1';
+
+  function loadManualAlerts(){
+    try{
+      const all = JSON.parse(localStorage.getItem(CI_MANUAL_ALERTS_KEY) || '{}') || {};
+      const user = getOperatorEmail();
+      return Array.isArray(all[user]) ? all[user] : [];
+    }catch(_){ return []; }
+  }
+
+  function saveManualAlerts(list){
+    try{
+      const all = JSON.parse(localStorage.getItem(CI_MANUAL_ALERTS_KEY) || '{}') || {};
+      const user = getOperatorEmail();
+      all[user] = Array.isArray(list) ? list : [];
+      localStorage.setItem(CI_MANUAL_ALERTS_KEY, JSON.stringify(all));
+    }catch(_){}
+  }
+
+  function ciManualNowLocal(){
+    try{ return toLocalInputValue(new Date().toISOString()); }catch(_){ return ''; }
+  }
+
+  function openManualAlertModal(){
+    const overlay = document.getElementById('ciManualAlertOverlay');
+    if (!overlay) return;
+    const title = document.getElementById('manualAlertTitle');
+    const city = document.getElementById('manualAlertCity');
+    const country = document.getElementById('manualAlertCountry');
+    const risk = document.getElementById('manualAlertRisk');
+    const when = document.getElementById('manualAlertWhen');
+    const loc = document.getElementById('manualAlertLocation');
+    const conf = document.getElementById('manualAlertConfidence');
+    const summary = document.getElementById('manualAlertSummary');
+    const note = document.getElementById('manualAlertNote');
+
+    if (title) title.value = '';
+    if (city) city.value = '';
+    if (country) country.value = '';
+    if (risk) risk.value = 'High';
+    if (when) when.value = ciManualNowLocal();
+    if (loc) loc.value = '';
+    if (conf) conf.value = 'Operator observed';
+    if (summary) summary.value = '';
+    if (note) note.value = '';
+
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden','false');
+    setTimeout(()=>{ try{ title && title.focus(); }catch(_){} }, 50);
+  }
+
+  function closeManualAlertModal(){
+    const overlay = document.getElementById('ciManualAlertOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden','true');
+  }
+
+  function createManualEscalatedAlert(){
+    const title = (document.getElementById('manualAlertTitle')?.value || '').trim();
+    const city = (document.getElementById('manualAlertCity')?.value || '').trim();
+    const country = (document.getElementById('manualAlertCountry')?.value || '').trim();
+    const risk = (document.getElementById('manualAlertRisk')?.value || 'High').trim();
+    const whenLocal = (document.getElementById('manualAlertWhen')?.value || '').trim();
+    const location = (document.getElementById('manualAlertLocation')?.value || '').trim();
+    const confidence = (document.getElementById('manualAlertConfidence')?.value || 'Operator observed').trim();
+    const summary = (document.getElementById('manualAlertSummary')?.value || '').trim();
+    const note = (document.getElementById('manualAlertNote')?.value || '').trim();
+
+    if (!title || !summary){
+      alert('Please add at least a title and summary for the manual alert.');
+      return;
+    }
+
+    const whenIso = whenLocal ? new Date(whenLocal).toISOString() : new Date().toISOString();
+    const item = {
+      id: 'manual_' + Date.now() + '_' + ciHash(title + summary),
+      title,
+      city: city || 'Manual alert',
+      country,
+      risk,
+      when: whenIso,
+      location,
+      summary,
+      description: summary,
+      source: 'Manual alert',
+      src: 'Manual alert',
+      confidence,
+      manual: true,
+      _feedId: '__manual__',
+      _feedLabel: 'Manual alerts',
+      createdBy: getOperatorEmail(),
+      createdIso: ciNowIso()
+    };
+
+    const list = loadManualAlerts();
+    list.unshift(item);
+    saveManualAlerts(list.slice(0, 200));
+
+    const payload = {
+      reasons: ['manual_operator_escalation'],
+      urgency: 'urgent',
+      incidentType: '',
+      whenLocal,
+      location,
+      note: note || confidence,
+      confidence,
+      manual: true
+    };
+
+    setDisposition(item, 'escalated', note || confidence);
+    saveTransitionPayload(item, 'escalated', payload, { draft:false, targetStatus:'escalated' });
+
+    closeManualAlertModal();
+    if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
+    renderQueueList('escalated');
+  }
+
+  (function bindManualAlertModal(){
+    const btn = document.getElementById('manualAlertBtn');
+    const cancel = document.getElementById('manualAlertCancel');
+    const save = document.getElementById('manualAlertSave');
+    const overlay = document.getElementById('ciManualAlertOverlay');
+    if (btn) btn.addEventListener('click', openManualAlertModal);
+    if (cancel) cancel.addEventListener('click', closeManualAlertModal);
+    if (save) save.addEventListener('click', createManualEscalatedAlert);
+    if (overlay) overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeManualAlertModal(); });
+  })();
+
   // --- Operator queues (Escalated / Monitoring / Cleared) ----------------
   function collectAllCachedEvents(){
     const feeds = (typeof loadFeeds === 'function') ? loadFeeds() : [];
@@ -6894,6 +7058,16 @@ function redrawIncidentRadius(){
         out.push(item);
       });
     });
+    // Include manually escalated operator alerts
+    try{
+      loadManualAlerts().forEach(ev=>{
+        const item = Object.assign({}, ev);
+        item._feedId = item._feedId || '__manual__';
+        item._feedLabel = item._feedLabel || 'Manual alerts';
+        out.push(item);
+      });
+    }catch(_){}
+
     // sort newest first
     out.sort((a,b)=>(Date.parse(b.when)||0)-(Date.parse(a.when)||0));
     return out;
@@ -7533,6 +7707,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script src="admin-links.js"></script>
 
+
+
+<!-- Manual Alert Escalation Modal -->
+<div class="ci-modal-overlay" id="ciManualAlertOverlay" aria-hidden="true">
+  <div class="ci-modal manual-alert-modal" role="dialog" aria-modal="true" aria-labelledby="ciManualAlertTitle">
+    <header>
+      <span id="ciManualAlertTitle">Manual alert escalation</span>
+      <span class="ci-pill">Escalated</span>
+      <div class="ci-modal-meta">Create an escalated alert from intelligence not yet visible in CityIntel feeds.</div>
+    </header>
+    <div class="ci-modal-body">
+      <div class="ci-form-grid">
+        <div class="ci-field full">
+          <label>Alert title</label>
+          <input id="manualAlertTitle" type="text" placeholder="e.g. Suspicious activity reported near Stratford Station">
+        </div>
+        <div class="ci-field">
+          <label>City / area</label>
+          <input id="manualAlertCity" type="text" placeholder="e.g. London">
+        </div>
+        <div class="ci-field">
+          <label>Country</label>
+          <input id="manualAlertCountry" type="text" placeholder="e.g. United Kingdom">
+        </div>
+        <div class="ci-field">
+          <label>Risk</label>
+          <select id="manualAlertRisk">
+            <option value="High" selected>High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="ci-field">
+          <label>Date / time</label>
+          <input id="manualAlertWhen" type="datetime-local">
+        </div>
+        <div class="ci-field">
+          <label>Location detail</label>
+          <input id="manualAlertLocation" type="text" placeholder="Street, venue, postcode, station, or area">
+        </div>
+        <div class="ci-field">
+          <label>Source / confidence</label>
+          <select id="manualAlertConfidence">
+            <option value="Operator observed">Operator observed</option>
+            <option value="Trusted source">Trusted source</option>
+            <option value="Open source report">Open source report</option>
+            <option value="Unverified report">Unverified report</option>
+          </select>
+        </div>
+        <div class="ci-field full">
+          <label>Summary</label>
+          <textarea id="manualAlertSummary" placeholder="What happened, who/what is affected, why it should be escalated"></textarea>
+        </div>
+        <div class="ci-field full">
+          <label>Operator note</label>
+          <textarea id="manualAlertNote" placeholder="Optional action note, e.g. notify duty manager, contact travellers, monitor CCTV"></textarea>
+          <div class="ci-hint">Manual alerts are saved locally for now and automatically added to the Escalated queue.</div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <button type="button" class="ci-btn ghost sep" id="manualAlertCancel">Cancel</button>
+      <button type="button" class="ci-btn primary" id="manualAlertSave">Create Escalated Alert</button>
+    </footer>
+  </div>
+</div>
 
 <!-- Operator Transition Modal -->
 <div class="ci-modal-overlay" id="ciTransitionOverlay" aria-hidden="true">
