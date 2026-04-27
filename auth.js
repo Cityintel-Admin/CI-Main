@@ -50,7 +50,7 @@
      role: 'Admin',
      roleKey: 'master-admin',
      roleLabel: 'Master Admin',
-     passHash: 'f0f0e6f2cfa6c8c5c92d2a92c89bb3cb3dc89d4c2f90a6e0c7e8b6d9d4a4e6b6'
+     passHash: '6b0f0f6f4c3c3dcb79c2a64e9e9a46c66b8c0fcb52cbb0a3b87c6f8c0c9e9c8f'
     },
 
 
