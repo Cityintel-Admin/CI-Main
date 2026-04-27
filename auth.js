@@ -242,7 +242,9 @@
     async login(email, password) {
       const e = String(email || '').trim().toLowerCase();
       const p = String(password || '');
-
+      const debugHash = await sha256(p);
+      console.log('REAL HASH:', debugHash);
+     
       if (!isValidEmail(e)) throw new Error('Please enter a valid email address.');
 
       // 1) Internal master admins still require password
