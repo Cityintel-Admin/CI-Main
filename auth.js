@@ -45,12 +45,12 @@
       roleLabel: 'Master Admin',
       passHash: 'ef2c36181af9977b4359eedab2d21a6715d266e0d5a35200f333d743adb2cc5e'
     },
-    'nat@cityintel.com': {
-      name: 'Nat',
-      role: 'Admin',
-      roleKey: 'master-admin',
-      roleLabel: 'Master Admin',
-      passHash: 'be9f7196b951dbd1187cd865aebc8c34386e067e241a78e57fd77c736c51c993'
+    'emma@cityintel.com': {
+     name: 'Emma',
+     role: 'Admin',
+     roleKey: 'master-admin',
+     roleLabel: 'Master Admin',
+     passHash: 'f0f0e6f2cfa6c8c5c92d2a92c89bb3cb3dc89d4c2f90a6e0c7e8b6d9d4a4e6b6'
     },
 
 
