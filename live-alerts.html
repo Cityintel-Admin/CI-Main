@@ -3333,6 +3333,104 @@ function loadUiCache(feedId) {
   }
 }
 
+
+// Persistent backend cache: alerts collected by the Worker/Cron while operators are offline.
+let CI_PERSISTENT_ALERT_CACHE_PROMISE = null;
+let CI_PERSISTENT_ALERT_CACHE_AT = 0;
+const CI_PERSISTENT_ALERT_CACHE_TTL = 60 * 1000;
+
+function normaliseAlertEvent(ev){
+  if (!ev || typeof ev !== 'object') return null;
+  const when = ev.when || ev.when_ts || ev.created_at || ev.publishedAt || new Date().toISOString();
+  const title = ev.title || ev.summary || ev.description || 'Untitled alert';
+  const city = ev.city || ev.location || ev.area || '—';
+  const risk = String(ev.risk || ev.level || 'low').toLowerCase().replace('medium','med');
+  const src = ev.src || ev.source || 'Stored alert';
+  const id = ev.id || `${city}_${Date.parse(when) || Date.now()}_${title}`;
+  return Object.assign({}, ev, { id, title, city, risk, when, src });
+}
+
+async function fetchPersistentAlertCache(){
+  const now = Date.now();
+  if (CI_PERSISTENT_ALERT_CACHE_PROMISE && (now - CI_PERSISTENT_ALERT_CACHE_AT) < CI_PERSISTENT_ALERT_CACHE_TTL) {
+    return CI_PERSISTENT_ALERT_CACHE_PROMISE;
+  }
+
+  CI_PERSISTENT_ALERT_CACHE_AT = now;
+  CI_PERSISTENT_ALERT_CACHE_PROMISE = (async () => {
+    try {
+      const headers = await authHeaders({ 'Accept': 'application/json' });
+      const res = await fetch(API_ORIGIN + '/api/live-alerts/cache?limit=300', { headers });
+      const data = await res.json().catch(() => ({}));
+      const rows = Array.isArray(data.events) ? data.events : (Array.isArray(data.data) ? data.data : []);
+      return rows.map(normaliseAlertEvent).filter(Boolean);
+    } catch (e) {
+      console.warn('CityIntel: persistent live-alert cache unavailable', e);
+      return [];
+    }
+  })();
+
+  return CI_PERSISTENT_ALERT_CACHE_PROMISE;
+}
+
+function feedRegionMatchesPlace(place, city){
+  const p = String(place || '').trim().toLowerCase();
+  const c = String(city || '').trim().toLowerCase();
+  if (!p || p === 'global') return true;
+  if (!c) return false;
+  if (c.includes(p) || p.includes(c)) return true;
+
+  const regionCities = {
+    uk: ['london','manchester','birmingham','leeds','liverpool','bristol','glasgow','edinburgh','cardiff','belfast'],
+    eu: ['paris','berlin','madrid','rome','barcelona','milan','munich','amsterdam','brussels','vienna','dublin','lisbon','warsaw','prague'],
+    emea: ['london','paris','berlin','rome','madrid','lagos','cairo','nairobi','johannesburg','dubai','riyadh','istanbul','doha'],
+    mea: ['lagos','cairo','nairobi','johannesburg','dubai','riyadh','istanbul','doha','beirut','tel aviv'],
+    mena: ['cairo','dubai','riyadh','doha','amman','beirut','tel aviv','casablanca','algiers','tunis'],
+    apac: ['tokyo','seoul','beijing','shanghai','singapore','jakarta','bangkok','manila','sydney','melbourne','hong kong'],
+    latam: ['mexico city','bogota','lima','santiago','buenos aires','são paulo','sao paulo','rio de janeiro'],
+    us: ['new york','los angeles','chicago','houston','dallas','washington','boston','san francisco','seattle']
+  };
+  return Array.isArray(regionCities[p]) && regionCities[p].some(x => c.includes(x));
+}
+
+function eventMatchesFeed(ev, feed){
+  if (!ev || !feed) return false;
+  const risks = (feed.risks || []).map(r => String(r).toLowerCase().replace('medium','med'));
+  const erisk = String(ev.risk || 'low').toLowerCase().replace('medium','med');
+  if (risks.length && !risks.includes(erisk)) return false;
+
+  const places = feed.places || [];
+  if (places.length && !places.some(p => feedRegionMatchesPlace(p, ev.city))) return false;
+
+  const keywords = (feed.keywords || []).map(k => String(k).toLowerCase().trim()).filter(Boolean);
+  if (keywords.length) {
+    const text = `${ev.title || ''} ${ev.description || ''} ${ev.src || ''}`.toLowerCase();
+    if (!keywords.some(k => text.includes(k))) return false;
+  }
+  return true;
+}
+
+function dedupeClientEvents(events){
+  const seen = new Set();
+  const out = [];
+  for (const ev of (events || [])) {
+    const e = normaliseAlertEvent(ev);
+    if (!e) continue;
+    const day = String(e.when || '').slice(0, 10);
+    const key = `${e.id || ''}::${day}::${String(e.city || '').toLowerCase()}::${String(e.title || '').toLowerCase().replace(/\s+/g,' ').trim()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(e);
+  }
+  out.sort((a,b) => (Date.parse(b.when) || 0) - (Date.parse(a.when) || 0));
+  return out;
+}
+
+async function loadPersistentEventsForFeed(feed){
+  const all = await fetchPersistentAlertCache();
+  return dedupeClientEvents(all.filter(ev => eventMatchesFeed(ev, feed)));
+}
+
 function storeFeedEvents(feedId, events) {
   const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
   all[feedId] = { at: Date.now(), events };
@@ -3640,9 +3738,11 @@ params.set('window', String(windowHours));
         `${base}/api/live?${params.toString()}&alt=1`                                // backup – change to your 2nd key
       ];
 
+  const requestHeaders = await authHeaders({ 'Accept': 'application/json' });
+
   for (const url of urls) {
     try {
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const res = await fetch(url, { headers: requestHeaders });
       // if quota hit we often get 429
       if (!res.ok) {
         if (res.status === 429) continue; // try next URL
@@ -5752,6 +5852,9 @@ if (feeds.length === 0){
 }
 
   grid.innerHTML = '';
+  // Force one fresh backend cache read per page render.
+  CI_PERSISTENT_ALERT_CACHE_PROMISE = null;
+  CI_PERSISTENT_ALERT_CACHE_AT = 0;
 
   for (const feed of feeds){
     const risksLabel  = (feed.risks||[]).join(', ');
@@ -5854,7 +5957,8 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
         const url  = base + '/api/live-news?' + params.toString();
 
         try {
-          const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          const headers = await authHeaders({ 'Accept': 'application/json' });
+          const res  = await fetch(url, { headers });
           const data = await res.json().catch(() => ({}));
           const events = Array.isArray(data.events) ? data.events : [];
 
@@ -5889,6 +5993,18 @@ if (uiEvents && uiEvents.length) {
   if (cached && cached.events) {
     renderEventsIntoCard(card, cached.events, feed);
   }
+}
+
+// 2b) backend persistent cache: alerts collected by Worker/Cron while offline
+try {
+  const persisted = await loadPersistentEventsForFeed(feed);
+  if (persisted && persisted.length) {
+    archiveMerge(feed.id, persisted);
+    const merged = loadArchive(feed.id);
+    renderEventsIntoCard(card, merged, feed);
+  }
+} catch (e) {
+  console.warn('CityIntel: could not load persistent alerts for feed', feed.id, e);
 }
 
   if (window.ciRefreshMapSidebarFeeds) {
