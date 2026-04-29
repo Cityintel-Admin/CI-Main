@@ -3341,13 +3341,28 @@ const CI_PERSISTENT_ALERT_CACHE_TTL = 60 * 1000;
 
 function normaliseAlertEvent(ev){
   if (!ev || typeof ev !== 'object') return null;
-  const when = ev.when || ev.when_ts || ev.created_at || ev.publishedAt || new Date().toISOString();
+
+  // Worker/D1 cache may return when_ts instead of when. Keep every UI path on a single `when` field.
+  const whenRaw = ev.when || ev.when_ts || ev.created_at || ev.createdAt || ev.publishedAt || ev.date || ev.time || new Date().toISOString();
+  const whenDate = new Date(whenRaw);
+  const when = Number.isNaN(whenDate.getTime()) ? new Date().toISOString() : whenDate.toISOString();
+
   const title = ev.title || ev.summary || ev.description || 'Untitled alert';
   const city = ev.city || ev.location || ev.area || '—';
   const risk = String(ev.risk || ev.level || 'low').toLowerCase().replace('medium','med');
   const src = ev.src || ev.source || 'Stored alert';
-  const id = ev.id || `${city}_${Date.parse(when) || Date.now()}_${title}`;
-  return Object.assign({}, ev, { id, title, city, risk, when, src });
+  const status = String(ev.status || ev.disposition || 'untriaged').toLowerCase();
+  const id = ev.id || `${city}_${Date.parse(when) || Date.now()}_${String(title).slice(0,80)}`;
+
+  return Object.assign({}, ev, { id, title, city, risk, when, src, status });
+}
+
+function normaliseAlertList(list){
+  return dedupeClientEvents((Array.isArray(list) ? list : []).map(normaliseAlertEvent).filter(Boolean));
+}
+
+function eventWhen(ev){
+  return (normaliseAlertEvent(ev) || {}).when || new Date().toISOString();
 }
 
 async function fetchPersistentAlertCache(){
@@ -3550,7 +3565,7 @@ function archiveMerge(feedId, events, { maxItems = 300 } = {}){
     }
   }
 
-  current.sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0));
+  current.sort((a,b) => (Date.parse(eventWhen(b))||0) - (Date.parse(eventWhen(a))||0));
   map[feedId] = current.slice(0, maxItems);
   saveArchiveMap(map);
 }
@@ -3576,16 +3591,16 @@ function getEventsForFeed(feed){
   if (!feed || !feed.id) return [];
   // 1) 7-day archive
   let events = loadArchive(feed.id);
-  if (Array.isArray(events) && events.length) return events;
+  if (Array.isArray(events) && events.length) return normaliseAlertList(events);
 
   // 2) per-feed UI cache
   const ui = loadUiCache(feed.id);
-  if (Array.isArray(ui) && ui.length) return ui;
+  if (Array.isArray(ui) && ui.length) return normaliseAlertList(ui);
 
   // 3) 15-min feedEvents cache
   const cached = loadFeedEvents(feed.id);
   if (cached && Array.isArray(cached.events) && cached.events.length) {
-    return cached.events;
+    return normaliseAlertList(cached.events);
   }
   return [];
 }
@@ -3602,7 +3617,7 @@ function updateFeedHeaderStats(feed, events){
 
   const list = Array.isArray(events) ? events : [];
   const inWindow = list.filter(ev => {
-    const t = Date.parse(ev.when || '');
+    const t = Date.parse(eventWhen(ev));
     return !isNaN(t) && t >= cutoffMs;
   });
 
@@ -3815,7 +3830,7 @@ function recomputeGlobalStrip(){
   feeds.forEach(feed => {
     const evs = getEventsForFeed(feed);
     evs.forEach(ev => {
-      const t = Date.parse(ev.when || '');
+      const t = Date.parse(eventWhen(ev));
       if (!t || t < cutoffMs) return;
       all.push({ ...ev, __feedId: feed.id });
     });
@@ -5508,7 +5523,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
   const now       = Date.now();
   const MAX_AGE_MS = 3 * 60 * 60 * 1000;
   const fresh = renderList.filter(ev => {
-    const t = Date.parse(ev.when || '');
+    const t = Date.parse(eventWhen(ev));
     return !isNaN(t) && (now - t <= MAX_AGE_MS);
   });
 
@@ -6072,7 +6087,7 @@ viewFullBtn.addEventListener('click', (e)=>{
     url: window.__lastDetailItem?.url || null,
     src: window.__lastDetailItem?.src || null,
     description: window.__lastDetailItem?.description || null,
-    when: window.__lastDetailItem?.when || null,
+    when: eventWhen(window.__lastDetailItem) || null,
     city: window.__lastDetailItem?.city || null,
     risk: window.__lastDetailItem?.risk || null,
 	lat: window.__lastDetailItem?.lat ?? null,
@@ -7607,7 +7622,7 @@ function redrawIncidentRadius(){
     }catch(_){}
 
     // sort newest first
-    out.sort((a,b)=>(Date.parse(b.when)||0)-(Date.parse(a.when)||0));
+    out.sort((a,b)=>(Date.parse(eventWhen(b))||0)-(Date.parse(eventWhen(a))||0));
     return out;
   }
 
@@ -8016,32 +8031,32 @@ function getFeedEvents(feedId){
     // 1) 7-day archive
     if (typeof window.loadArchive === 'function') {
       const a = window.loadArchive(feedId);
-      if (Array.isArray(a) && a.length) return a;
+      if (Array.isArray(a) && a.length) return normaliseAlertList(a);
     }
     // (fallback if loadArchive is not attached to window for any reason)
     if (typeof loadArchive === 'function') {
       const a = loadArchive(feedId);
-      if (Array.isArray(a) && a.length) return a;
+      if (Array.isArray(a) && a.length) return normaliseAlertList(a);
     }
 
     // 2) per-feed UI cache
     if (typeof window.loadUiCache === 'function') {
       const u = window.loadUiCache(feedId);
-      if (Array.isArray(u) && u.length) return u;
+      if (Array.isArray(u) && u.length) return normaliseAlertList(u);
     }
     if (typeof loadUiCache === 'function') {
       const u = loadUiCache(feedId);
-      if (Array.isArray(u) && u.length) return u;
+      if (Array.isArray(u) && u.length) return normaliseAlertList(u);
     }
 
     // 3) 15-min cache
     if (typeof window.loadFeedEvents === 'function') {
       const c = window.loadFeedEvents(feedId);
-      if (c && Array.isArray(c.events) && c.events.length) return c.events;
+      if (c && Array.isArray(c.events) && c.events.length) return normaliseAlertList(c.events);
     }
     if (typeof loadFeedEvents === 'function') {
       const c = loadFeedEvents(feedId);
-      if (c && Array.isArray(c.events) && c.events.length) return c.events;
+      if (c && Array.isArray(c.events) && c.events.length) return normaliseAlertList(c.events);
     }
   } catch (e) {
     console.warn('getFeedEvents failed', e);
@@ -8062,7 +8077,7 @@ function getFeedEvents(feedId){
 
     const events = getFeedEvents(feedId)
       .slice()
-      .sort((a,b) => (Date.parse(b.when)||0) - (Date.parse(a.when)||0))
+      .sort((a,b) => (Date.parse(eventWhen(b))||0) - (Date.parse(eventWhen(a))||0))
       // Default view: only show untriaged in the feed list (triaged live in Operator queues)
       .filter(ev => (getDisposition(ev) || 'untriaged') === 'untriaged')
       .slice(0, 12);
