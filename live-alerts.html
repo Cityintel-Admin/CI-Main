@@ -3360,10 +3360,16 @@ async function fetchPersistentAlertCache(){
   CI_PERSISTENT_ALERT_CACHE_PROMISE = (async () => {
     try {
       const headers = await authHeaders({ 'Accept': 'application/json' });
-      const res = await fetch(API_ORIGIN + '/api/live-alerts/cache?limit=300', { headers });
+      const since = new Date(Date.now() - getCurrentWindowHours() * 60 * 60 * 1000).toISOString();
+      const url = `${API_ORIGIN}/api/live-alerts/cache?limit=500&since=${encodeURIComponent(since)}`;
+      const res = await fetch(url, { headers });
       const data = await res.json().catch(() => ({}));
+      if (!data || data.ok === false) {
+        console.warn('CityIntel: live-alert cache response not ok', data);
+        return [];
+      }
       const rows = Array.isArray(data.events) ? data.events : (Array.isArray(data.data) ? data.data : []);
-      return rows.map(normaliseAlertEvent).filter(Boolean);
+      return dedupeClientEvents(rows.map(normaliseAlertEvent).filter(Boolean));
     } catch (e) {
       console.warn('CityIntel: persistent live-alert cache unavailable', e);
       return [];
@@ -3722,20 +3728,25 @@ async function fetchMockEventsForFeed(feed) {
   if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
   if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
 
-  const base = 'https://api.cityintelapi.com';
+  const base = API_ORIGIN || 'https://api.cityintelapi.com';
   const provider = 'newsdata';
   const windowHours = getCurrentWindowHours();
-params.set('window', String(windowHours));
+  params.set('window', String(windowHours));
 
-  // primary + backup candidates
+  // Important separation:
+  // - unticked modal checkbox => feed.useLive === true => real Worker run-now route.
+  //   This saves returned alerts into D1 so they are available later from /api/live-alerts/cache.
+  // - ticked modal checkbox => feed.useLive === false => mock/demo route only.
   const urls = feed.useLive
     ? [
-        `${base}/api/live-news?${params.toString()}&provider=${provider}`,            // primary
-        `${base}/api/live-news?${params.toString()}&provider=${provider}&alt=1`      // backup – change to your 2nd key
+        `${base}/api/live-alerts/run-now?${params.toString()}&provider=${provider}`,
+        `${base}/api/live-alerts/run-now?${params.toString()}&provider=${provider}&alt=1`,
+        // Fallback only: if run-now is temporarily unavailable, still try live-news.
+        `${base}/api/live-news?${params.toString()}&provider=${provider}`
       ]
     : [
-        `${base}/api/live?${params.toString()}`,                                     // primary
-        `${base}/api/live?${params.toString()}&alt=1`                                // backup – change to your 2nd key
+        `${base}/api/live?${params.toString()}`,
+        `${base}/api/live?${params.toString()}&alt=1`
       ];
 
   const requestHeaders = await authHeaders({ 'Accept': 'application/json' });
@@ -3743,27 +3754,26 @@ params.set('window', String(windowHours));
   for (const url of urls) {
     try {
       const res = await fetch(url, { headers: requestHeaders });
-      // if quota hit we often get 429
-      if (!res.ok) {
-        if (res.status === 429) continue; // try next URL
+      if (!res.ok) continue;
+
+      const data = await res.json().catch(() => ({}));
+      if (!data || data.ok === false) {
+        console.warn('CityIntel: live feed response not ok', data);
         continue;
       }
-		
-      const data = await res.json().catch(() => ({}));
+
       let events = Array.isArray(data.events) ? data.events : [];
+      events = dedupeClientEvents(events.map(normaliseAlertEvent).filter(Boolean));
 
-// FRONTEND safety filter (client-side guard)
-events = events.filter(isLikelyIncidentClient);
+      // FRONTEND safety filter (client-side guard)
+      events = events.filter(isLikelyIncidentClient);
 
-return events;
-		
+      return events;
     } catch (err) {
-      // try next candidate
       continue;
     }
   }
 
-  // if both failed
   return [];
 }
 
@@ -5325,11 +5335,32 @@ document.addEventListener('keydown', (e) => {
   }
 })();
 
-// Re-render a single card (fetch -> DOM -> schedule next refresh)
+// Re-render a single card (backend cache -> fresh pull -> archive -> DOM -> schedule next refresh)
 async function refreshSingleFeedCard(cardEl, feed){
   try {
-    const events = await fetchMockEventsForFeed(feed);
-    renderEventsIntoCard(cardEl, events, feed);
+    let combined = [];
+
+    // 1) Load alerts collected by the Worker/Cron while the operator was offline.
+    try {
+      const persisted = await loadPersistentEventsForFeed(feed);
+      if (persisted && persisted.length) combined.push(...persisted);
+    } catch (e) {
+      console.warn('CityIntel: persistent cache merge failed for feed', feed?.id, e);
+    }
+
+    // 2) Pull fresh alerts for this feed. For live feeds this uses /api/live-alerts/run-now,
+    // which stores the same events back to D1 for future missed-alert recovery.
+    const fresh = await fetchMockEventsForFeed(feed);
+    if (fresh && fresh.length) combined.push(...fresh);
+
+    // 3) Merge with browser archive so the card does not blank if a request returns zero.
+    combined = dedupeClientEvents(combined);
+    if (combined.length) archiveMerge(feed.id, combined);
+
+    const archived = loadArchive(feed.id);
+    const finalEvents = dedupeClientEvents([...(archived || []), ...combined]);
+
+    renderEventsIntoCard(cardEl, finalEvents, feed);
   } finally {
     scheduleNextRefresh(cardEl, feed);
   }
@@ -5641,14 +5672,14 @@ function scheduleNextRefresh(cardEl, feed){
   cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
   const { lastLen, lastHighAt } = cardEl.__state;
 
-  // base cadence
-  let base = feed.useLive ? 600_000 : 1200_000;
+  // base cadence: match the Worker cron interval for live feeds; mock/demo can be slower.
+  let base = feed.useLive ? 300_000 : 1200_000;
 
-  // if last pull had zero items on a LIVE feed, try a bit sooner
-  if (feed.useLive && lastLen === 0) base = 600_000;
+  // if last pull had zero items on a LIVE feed, still check the cache/fresh source every 5 minutes
+  if (feed.useLive && lastLen === 0) base = 300_000;
 
-  // if we saw a high-risk item recently, keep it hot for 5 minutes
-  if (feed.useLive && Date.now() - lastHighAt < 5*60_000) base = Math.min(base, 25_000);
+  // if we saw a high-risk item recently, keep the active page moderately warm
+  if (feed.useLive && Date.now() - lastHighAt < 5*60_000) base = Math.min(base, 120_000);
 
   const jitter = Math.floor(Math.random() * 60_000) - 30_000;
   const ms = Math.max(60_000, base + jitter);
