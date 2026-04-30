@@ -2087,6 +2087,43 @@ padding-bottom: 12px;
   font-size:11px;
 }
 
+.queue-action-row{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin:0 0 10px;
+}
+.btn-danger-small{
+  border:1px solid rgba(248,113,113,.55);
+  background:rgba(127,29,29,.28);
+  color:#fecaca;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.btn-danger-small:hover{
+  background:rgba(127,29,29,.48);
+  border-color:rgba(248,113,113,.85);
+  color:#fff;
+}
+.map-alert-delete{
+  margin-left:auto;
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  border:1px solid rgba(248,113,113,.45);
+  background:rgba(127,29,29,.25);
+  color:#fecaca;
+  cursor:pointer;
+  font-weight:900;
+  line-height:1;
+}
+.map-alert-delete:hover{
+  background:rgba(127,29,29,.55);
+}
+
 
 
 /* Manual alert escalation button */
@@ -3274,9 +3311,17 @@ window.ciFeedSummaries = window.ciFeedSummaries || {};
 function publishFeedSummary(feed, events){
   if (!feed || !feed.id) return;
   const incomingList = Array.isArray(events) ? events : [];
-  const list = (typeof ciAlertStoreMerge === 'function')
+  const mergedList = (typeof ciAlertStoreMerge === 'function')
     ? ciAlertStoreMerge(feed, incomingList)
     : incomingList;
+
+  // Feed tiles show the operator's active working set. Once an alert is
+  // deleted, escalated, monitored, or cleared, remove it from feed counts
+  // and leave it in the relevant operator queue instead.
+  const list = (mergedList || []).filter(ev => {
+    if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
+    return (typeof getDisposition === 'function') ? getDisposition(ev) === 'untriaged' : true;
+  });
 
   let hi = 0, med = 0, low = 0;
   list.forEach(ev => {
@@ -3444,6 +3489,98 @@ function eventMatchesFeed(ev, feed){
 // and operator queues are always reading from the same source.
 window.CI_ALL_ALERTS = Array.isArray(window.CI_ALL_ALERTS) ? window.CI_ALL_ALERTS : [];
 
+// Alerts dismissed from an operator queue are hidden globally on this device.
+// This keeps duplicated alerts in overlapping feeds (for example Lagos + EMEA)
+// in sync until the backend gets a first-class delete/status endpoint.
+const CI_ALERT_HIDDEN_KEY = 'ci_alert_hidden_v1';
+
+function loadHiddenAlertMap(){
+  try{ return JSON.parse(localStorage.getItem(CI_ALERT_HIDDEN_KEY) || '{}') || {}; }catch(_){ return {}; }
+}
+function saveHiddenAlertMap(map){
+  try{ localStorage.setItem(CI_ALERT_HIDDEN_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+function alertIdentityKeys(ev){
+  const out = new Set();
+  try{ const k = alertKey(ev); if (k) out.add(k); }catch(_){}
+  try{ const k = ciSharedAlertKey(ev); if (k) out.add('shared_' + k); }catch(_){}
+  const e = normaliseAlertEvent(ev);
+  if (e && e.id) out.add('id_' + String(e.id));
+  return Array.from(out).filter(Boolean);
+}
+function isAlertHidden(ev){
+  const user = (typeof getOperatorEmail === 'function') ? getOperatorEmail() : 'default';
+  const hidden = loadHiddenAlertMap();
+  const userHidden = hidden[user] || {};
+  return alertIdentityKeys(ev).some(k => !!userHidden[k]);
+}
+function markAlertHidden(ev){
+  const user = (typeof getOperatorEmail === 'function') ? getOperatorEmail() : 'default';
+  const hidden = loadHiddenAlertMap();
+  hidden[user] = hidden[user] || {};
+  alertIdentityKeys(ev).forEach(k => { hidden[user][k] = Date.now(); });
+  saveHiddenAlertMap(hidden);
+}
+
+function pruneAlertList(list){
+  return (Array.isArray(list) ? list : []).filter(ev => !isAlertHidden(ev));
+}
+
+function removeAlertEverywhere(ev){
+  if (!ev) return;
+  markAlertHidden(ev);
+  const keys = new Set(alertIdentityKeys(ev));
+  const shouldKeep = (item) => !alertIdentityKeys(item).some(k => keys.has(k)) && !isAlertHidden(item);
+
+  // Shared in-memory store.
+  window.CI_ALL_ALERTS = pruneAlertList(window.CI_ALL_ALERTS || []).filter(shouldKeep);
+
+  // Per-feed archive cache.
+  try{
+    const archiveMap = JSON.parse(localStorage.getItem(FEED_ARCHIVE_KEY) || '{}') || {};
+    Object.keys(archiveMap).forEach(fid => { archiveMap[fid] = pruneAlertList(archiveMap[fid]).filter(shouldKeep); });
+    localStorage.setItem(FEED_ARCHIVE_KEY, JSON.stringify(archiveMap));
+  }catch(_){}
+
+  // Short feed events cache.
+  try{
+    const eventsMap = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}') || {};
+    Object.keys(eventsMap).forEach(fid => {
+      if (eventsMap[fid] && Array.isArray(eventsMap[fid].events)) {
+        eventsMap[fid].events = pruneAlertList(eventsMap[fid].events).filter(shouldKeep);
+      }
+    });
+    localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(eventsMap));
+  }catch(_){}
+
+  // UI feed caches.
+  try{
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith('ci_ui_feed_')) continue;
+      const obj = JSON.parse(localStorage.getItem(k) || 'null');
+      if (obj && Array.isArray(obj.events)) {
+        obj.events = pruneAlertList(obj.events).filter(shouldKeep);
+        localStorage.setItem(k, JSON.stringify(obj));
+      }
+    }
+  }catch(_){}
+
+  // Manual escalations.
+  try{
+    const list = (typeof loadManualAlerts === 'function') ? loadManualAlerts() : [];
+    if (typeof saveManualAlerts === 'function') saveManualAlerts(pruneAlertList(list).filter(shouldKeep));
+  }catch(_){}
+}
+
+function removeAlertsEverywhere(items){
+  (items || []).forEach(removeAlertEverywhere);
+  if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
+  if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+}
+window.removeAlertEverywhere = removeAlertEverywhere;
+window.removeAlertsEverywhere = removeAlertsEverywhere;
+
 function ciSharedAlertKey(ev){
   const e = normaliseAlertEvent(ev);
   if (!e) return '';
@@ -3463,7 +3600,7 @@ function ciAlertStoreMerge(feed, events){
 
   existing.forEach(ev => {
     const e = normaliseAlertEvent(ev);
-    if (!e) return;
+    if (!e || isAlertHidden(e)) return;
     const key = ciSharedAlertKey(e);
     if (!key) return;
     byKey.set(key, Object.assign({}, e, {
@@ -3481,6 +3618,7 @@ function ciAlertStoreMerge(feed, events){
   ) : '';
 
   incoming.forEach(ev => {
+    if (isAlertHidden(ev)) return;
     const key = ciSharedAlertKey(ev);
     if (!key) return;
     const current = byKey.get(key) || ev;
@@ -3504,7 +3642,7 @@ function ciAlertStoreMerge(feed, events){
 }
 
 function ciAlertStoreGetAll(){
-  return normaliseAlertList(window.CI_ALL_ALERTS || []);
+  return normaliseAlertList(pruneAlertList(window.CI_ALL_ALERTS || []));
 }
 
 function ciAlertStoreForFeed(feedOrId){
@@ -3566,7 +3704,17 @@ function loadFeeds(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return [];
     const arr = JSON.parse(raw);
-    return Array.isArray(arr)?arr:[];
+    if (!Array.isArray(arr)) return [];
+    const regionKeys = new Set(['emea','mena','mea','eu','europe','apac','latam','global','uk','gb','us']);
+    return arr.map(f => {
+      if (!f || typeof f !== 'object') return f;
+      const raw = String(f.rawCities || f.displayLabel || '').trim().toLowerCase();
+      const singlePlace = Array.isArray(f.places) && f.places.length === 1 ? String(f.places[0]).toLowerCase() : '';
+      if ((regionKeys.has(raw) || regionKeys.has(singlePlace)) && f.mock !== true && f.demo !== true) {
+        return Object.assign({}, f, { useLive: true });
+      }
+      return f;
+    });
   }catch(e){
     return [];
   }
@@ -3689,21 +3837,21 @@ function getEventsForFeed(feed){
   // 0) shared in-memory store (keeps feed cards, map and queues in sync)
   if (typeof ciAlertStoreForFeed === 'function') {
     const shared = ciAlertStoreForFeed(feed);
-    if (Array.isArray(shared) && shared.length) return normaliseAlertList(shared);
+    if (Array.isArray(shared) && shared.length) return normaliseAlertList(pruneAlertList(shared));
   }
 
   // 1) 7-day archive
   let events = loadArchive(feed.id);
-  if (Array.isArray(events) && events.length) return normaliseAlertList(events);
+  if (Array.isArray(events) && events.length) return normaliseAlertList(pruneAlertList(events));
 
   // 2) per-feed UI cache
   const ui = loadUiCache(feed.id);
-  if (Array.isArray(ui) && ui.length) return normaliseAlertList(ui);
+  if (Array.isArray(ui) && ui.length) return normaliseAlertList(pruneAlertList(ui));
 
   // 3) 15-min feedEvents cache
   const cached = loadFeedEvents(feed.id);
   if (cached && Array.isArray(cached.events) && cached.events.length) {
-    return normaliseAlertList(cached.events);
+    return normaliseAlertList(pruneAlertList(cached.events));
   }
   return [];
 }
@@ -3720,6 +3868,8 @@ function updateFeedHeaderStats(feed, events){
 
   const list = Array.isArray(events) ? events : [];
   const inWindow = list.filter(ev => {
+    if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
+    if (typeof getDisposition === 'function' && getDisposition(ev) !== 'untriaged') return false;
     const t = Date.parse(eventWhen(ev));
     return !isNaN(t) && t >= cutoffMs;
   });
@@ -3840,9 +3990,30 @@ function initWindowSelector() {
 document.addEventListener('DOMContentLoaded', initWindowSelector);
 
 // -------------------- RENDER / FETCH MOCK DATA --------------------
+
+function feedQueryPlaces(feed){
+  if (!feed) return [];
+  const places = Array.isArray(feed.places) ? feed.places : [];
+  const raw = String(feed.rawCities || feed.displayLabel || '').trim().toLowerCase();
+  const regionKey = places.length === 1 ? String(places[0]).trim().toLowerCase() : raw;
+  const regionMap = {
+    emea: ['London','Paris','Berlin','Madrid','Rome','Brussels','Amsterdam','Vienna','Warsaw','Dublin','Lisbon','Athens','Stockholm','Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Johannesburg','Cape Town','Nairobi','Lagos','Accra'],
+    eu: ['Paris','Berlin','Madrid','Rome','Milan','Brussels','Amsterdam','Rotterdam','Vienna','Prague','Warsaw','Dublin','Lisbon','Athens','Stockholm','Copenhagen','Helsinki','Oslo','Budapest','Bucharest'],
+    europe: ['Paris','Berlin','Madrid','Rome','Milan','Brussels','Amsterdam','Rotterdam','Vienna','Prague','Warsaw','Dublin','Lisbon','Athens','Stockholm','Copenhagen','Helsinki','Oslo','Budapest','Bucharest'],
+    mea: ['Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Johannesburg','Cape Town','Nairobi','Lagos','Accra'],
+    mena: ['Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Beirut','Amman','Tel Aviv','Istanbul','Ankara'],
+    apac: ['Tokyo','Osaka','Seoul','Busan','Beijing','Shanghai','Hong Kong','Taipei','Singapore','Kuala Lumpur','Bangkok','Jakarta','Manila','Hanoi','Ho Chi Minh City','Mumbai','Delhi','Bengaluru','Sydney','Melbourne','Auckland'],
+    latam: ['Mexico City','Guadalajara','Monterrey','Bogota','Medellin','Lima','Santiago','Buenos Aires','Cordoba','Rio de Janeiro','Sao Paulo','Brasilia','Quito','Guayaquil','Caracas','Panama City','San Jose']
+  };
+  if (regionMap[regionKey]) return regionMap[regionKey];
+  if (raw && regionMap[raw]) return regionMap[raw];
+  return places;
+}
+
 async function fetchMockEventsForFeed(feed) {
   const params = new URLSearchParams();
-  if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+  const queryPlaces = feedQueryPlaces(feed);
+  if (queryPlaces?.length)   params.set('cities',   queryPlaces.join(','));
   if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
   if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
 
@@ -5635,7 +5806,10 @@ function renderEventsIntoCard(cardEl, events, feed) {
     return !isNaN(t) && (now - t <= MAX_AGE_MS);
   });
 
-  const displayEvents = fresh.length ? fresh : renderList;
+  const displayEvents = (fresh.length ? fresh : renderList).filter(ev => {
+    if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
+    return (typeof getDisposition === 'function') ? getDisposition(ev) === 'untriaged' : true;
+  });
 
   // update shared store + per-feed header/map/sidebar stats
   if (typeof ciAlertStoreMerge === 'function') {
@@ -5944,7 +6118,14 @@ const EXPANSIONS = {
 };
 
 if (places.length) {
-    places = places.flatMap(p => EXPANSIONS[p.toLowerCase()] || [p]);
+    // Keep a recognised region shortcut as the canonical feed place so
+    // matching/display stay as EMEA/MENA/APAC etc. The API request is expanded
+    // later by feedQueryPlaces().
+    if (places.length === 1 && EXPANSIONS[places[0].toLowerCase()]) {
+      places = [places[0].toLowerCase()];
+    } else {
+      places = places.flatMap(p => EXPANSIONS[p.toLowerCase()] || [p]);
+    }
   }
 
   // keywords
@@ -6111,7 +6292,8 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
         card.__historyStep = step + 1;  // next click will go further back
 
         const params = new URLSearchParams();
-        if (feed.places?.length)   params.set('cities',   feed.places.join(','));
+        const queryPlaces = feedQueryPlaces(feed);
+        if (queryPlaces?.length)   params.set('cities',   queryPlaces.join(','));
         if (feed.risks?.length)    params.set('risk',     feed.risks.join(','));
         if (feed.keywords?.length) params.set('keywords', feed.keywords.join(','));
         params.set('provider', 'newsdata');
@@ -7786,6 +7968,21 @@ function redrawIncidentRadius(){
     alertsTitle.textContent = label;
     alertsList.innerHTML = '';
 
+    if (items.length && st === 'all') {
+      const action = document.createElement('div');
+      action.className = 'queue-action-row';
+      action.innerHTML = `<button type="button" class="btn-danger-small" id="queueDeleteAllVisible">Delete all visible alerts</button>`;
+      alertsList.appendChild(action);
+      const delAll = action.querySelector('#queueDeleteAllVisible');
+      if (delAll) delAll.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm(`Delete ${items.length} visible alert${items.length === 1 ? '' : 's'} from all feeds and queues on this device?`)) return;
+        removeAlertsEverywhere(items);
+        renderQueueList('all');
+        try { renderFeeds(); } catch(_) {}
+      });
+    }
+
     if (!items.length){
       alertsList.innerHTML = `<div class="map-alert-empty">No items in ${label.toLowerCase()}.</div>`;
       showAlerts();
@@ -7832,8 +8029,17 @@ function redrawIncidentRadius(){
           ${riskPill(ev.risk)}
           ${st === 'draft' ? `<span class="ci-status-pill" data-status="monitoring">Draft · ${safe(statusLabel(getDraftTargetStatus(ev) || 'untriaged'))}</span>` : renderStatusPill(getDisposition(ev))}
           <span style="opacity:.85;">${safe(city)}</span>
+          <button type="button" class="map-alert-delete" title="Delete this alert from all feeds">×</button>
         </div>
       `;
+      const delBtn = row.querySelector('.map-alert-delete');
+      if (delBtn) delBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm('Delete this alert from all feeds and queues on this device?')) return;
+        removeAlertEverywhere(ev);
+        renderQueueList(st);
+        try { renderFeeds(); } catch(_) {}
+      });
       row.addEventListener('click', ()=>selectEvent(ev, row));
       alertsList.appendChild(row);
       rows.push(row);
@@ -7847,7 +8053,7 @@ function redrawIncidentRadius(){
   }
 
   function updateQueueCounts(){
-    const all = collectAllCachedEvents();
+    const all = collectAllCachedEvents().filter(ev => !(typeof isAlertHidden === 'function' && isAlertHidden(ev)));
     const total = all.length;
     const esc = filterByDisposition(all, 'escalated').length;
     const mon = filterByDisposition(all, 'monitoring').length;
@@ -8161,13 +8367,13 @@ function getFeedEvents(feedId){
     // 0) shared alert store used by feeds, map and queues
     if (typeof window.ciAlertStoreForFeed === 'function') {
       const shared = window.ciAlertStoreForFeed(feedId);
-      if (Array.isArray(shared) && shared.length) return normaliseAlertList(shared);
+      if (Array.isArray(shared) && shared.length) return normaliseAlertList(pruneAlertList(shared));
     }
 
     // 1) 7-day archive
     if (typeof window.loadArchive === 'function') {
       const a = window.loadArchive(feedId);
-      if (Array.isArray(a) && a.length) return normaliseAlertList(a);
+      if (Array.isArray(a) && a.length) return normaliseAlertList(pruneAlertList(a));
     }
     // (fallback if loadArchive is not attached to window for any reason)
     if (typeof loadArchive === 'function') {
@@ -8178,7 +8384,7 @@ function getFeedEvents(feedId){
     // 2) per-feed UI cache
     if (typeof window.loadUiCache === 'function') {
       const u = window.loadUiCache(feedId);
-      if (Array.isArray(u) && u.length) return normaliseAlertList(u);
+      if (Array.isArray(u) && u.length) return normaliseAlertList(pruneAlertList(u));
     }
     if (typeof loadUiCache === 'function') {
       const u = loadUiCache(feedId);
@@ -8188,7 +8394,7 @@ function getFeedEvents(feedId){
     // 3) 15-min cache
     if (typeof window.loadFeedEvents === 'function') {
       const c = window.loadFeedEvents(feedId);
-      if (c && Array.isArray(c.events) && c.events.length) return normaliseAlertList(c.events);
+      if (c && Array.isArray(c.events) && c.events.length) return normaliseAlertList(pruneAlertList(c.events));
     }
     if (typeof loadFeedEvents === 'function') {
       const c = loadFeedEvents(feedId);
