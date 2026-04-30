@@ -3311,7 +3311,7 @@ function publishFeedSummary(feed, events){
 }
 
 // per-feed UI cache (so cards can show stuff before network finishes)
-const FEED_UI_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const FEED_UI_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days: keep cards populated immediately after refresh/return
 
 function saveUiCache(feedId, events) {
   if (!feedId) return;
@@ -3382,7 +3382,9 @@ async function fetchPersistentAlertCache(){
       const res = await fetch(url, { headers });
       const data = await res.json().catch(() => ({}));
       if (!data || data.ok === false) {
-        console.warn('CityIntel: live-alert cache response not ok', data);
+        // Backend persistent cache is a nice-to-have. If it is empty/unavailable,
+        // keep using the browser archive + fresh live pull without alarming operators.
+        console.debug('CityIntel: live-alert cache unavailable/non-ok', data);
         return [];
       }
       const rows = Array.isArray(data.events) ? data.events : (Array.isArray(data.data) ? data.data : []);
@@ -3464,8 +3466,8 @@ function loadFeedEvents(feedId) {
   const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
   const entry = all[feedId];
   if (!entry) return null;
-  // 15-minute TTL
-  if (Date.now() - entry.at > 15 * 60 * 1000) return null;
+  // 7-day TTL: keep last seen alerts visible while the live refresh catches up.
+  if (Date.now() - entry.at > 7 * 24 * 60 * 60 * 1000) return null;
   return entry;
 }
 
@@ -5365,12 +5367,17 @@ async function refreshSingleFeedCard(cardEl, feed){
       console.warn('CityIntel: persistent cache merge failed for feed', feed?.id, e);
     }
 
-    // 2) Pull fresh alerts for this feed. For live feeds this uses /api/live-alerts/run-now,
+    // 2) Include anything already in the browser archive before network refresh.
+    // This keeps the card populated even if the next provider request returns zero.
+    const existing = getEventsForFeed(feed);
+    if (existing && existing.length) combined.push(...existing);
+
+    // 3) Pull fresh alerts for this feed. For live feeds this uses /api/live-alerts/run-now,
     // which stores the same events back to D1 for future missed-alert recovery.
     const fresh = await fetchMockEventsForFeed(feed);
     if (fresh && fresh.length) combined.push(...fresh);
 
-    // 3) Merge with browser archive so the card does not blank if a request returns zero.
+    // 4) Merge with browser archive so the card does not blank if a request returns zero.
     combined = dedupeClientEvents(combined);
     if (combined.length) archiveMerge(feed.id, combined);
 
@@ -6038,17 +6045,11 @@ if (kwEl) kwEl.addEventListener('click', () => openFeedModal(feed));
   setTimeout(() => card.classList.remove('feed-card-pulse'), 1400);
 };
 
-// 1) try UI cache (prettier, per-feed)
-const uiEvents = loadUiCache(feed.id);
-if (uiEvents && uiEvents.length) {
-  renderEventsIntoCard(card, uiEvents, feed);
-} else {
-  // 2) fallback to your existing 15min cache
-  const cached = loadFeedEvents(feed.id);
-  if (cached && cached.events) {
-    renderEventsIntoCard(card, cached.events, feed);
-  }
-}
+// 1) immediately render whatever we already know for this feed
+//    (7-day archive > UI cache > short cache). This prevents the card
+//    disappearing while the live network refresh is still in-flight.
+const initialEvents = getEventsForFeed(feed);
+renderEventsIntoCard(card, initialEvents, feed);
 
 // 2b) backend persistent cache: alerts collected by Worker/Cron while offline
 try {
