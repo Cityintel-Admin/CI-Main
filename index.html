@@ -518,6 +518,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .ci-feed-post{border:1px solid var(--brand-gray-600);border-radius:14px;background:rgba(255,255,255,.02);padding:14px}
 .ci-feed-post-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .ci-feed-post h4{margin:0;font-size:16px;line-height:1.25}.ci-feed-meta{color:var(--muted);font-size:12px;margin-top:4px}.ci-feed-body{margin:10px 0 0;white-space:pre-wrap;color:#dbe3ee}
+.ci-feed-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 0}
+.ci-feed-detail-row{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);border-radius:12px;padding:8px 10px}
+.ci-feed-detail-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;margin-bottom:2px}
+.ci-feed-detail-value{display:block;color:#e9edf2;font-size:13px}
+@media (max-width:720px){.ci-feed-detail-grid{grid-template-columns:1fr}}
 .ci-risk-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#cfd6e1;text-transform:uppercase}.ci-risk-pill.high{color:var(--danger);background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.3)}.ci-risk-pill.med{color:var(--warn);background:rgba(240,180,41,.12);border-color:rgba(240,180,41,.3)}.ci-risk-pill.low{color:var(--ok);background:rgba(51,196,141,.12);border-color:rgba(51,196,141,.3)}
 .ci-feed-actions{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.ci-link-btn{appearance:none;border:0;background:transparent;color:#cfd6e1;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-size:12px}.ci-link-btn:hover{color:#fff}
 .ci-comments{margin-top:12px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px;display:grid;gap:8px}.ci-comment{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}.ci-comment-body{white-space:pre-wrap;color:#dbe3ee;margin-top:4px}.ci-comment-form{display:flex;gap:8px;align-items:center;margin-top:8px}.ci-comment-form button{flex-shrink:0}
@@ -1705,6 +1710,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   const latInput = document.getElementById('ciFeedLat');
   const lonInput = document.getElementById('ciFeedLon');
   const expiryInput = document.getElementById('ciFeedExpiry');
+  let editingPostId = null;
   if (!list || !status) return;
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
@@ -1735,6 +1741,43 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     const hours = Number(hoursValue || 0);
     if (!Number.isFinite(hours) || hours <= 0) return null;
     return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+  };
+
+  const isoToLocalInput = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
+
+  const feedPostHasMap = (p) => Number.isFinite(Number(p?.lat)) && Number.isFinite(Number(p?.lon));
+
+  function resetFeedForm(){
+    editingPostId = null;
+    form?.reset();
+    form?.removeAttribute('data-editing-post-id');
+    const submit = form?.querySelector('button[type="submit"]');
+    if (submit) submit.textContent = 'Publish';
+  }
+
+  function openFeedFormForPost(p){
+    if (!form || !p) return;
+    editingPostId = p.id;
+    form.dataset.editingPostId = p.id;
+    if (titleInput) titleInput.value = p.title || '';
+    if (bodyInput) bodyInput.value = p.body || '';
+    if (riskInput) riskInput.value = p.risk || 'info';
+    if (eventAtInput) eventAtInput.value = isoToLocalInput(p.event_at);
+    if (locationInput) locationInput.value = p.location_label || '';
+    if (latInput) latInput.value = (p.lat !== null && p.lat !== undefined) ? p.lat : '';
+    if (lonInput) lonInput.value = (p.lon !== null && p.lon !== undefined) ? p.lon : '';
+    if (expiryInput) expiryInput.value = '';
+    const submit = form.querySelector('button[type="submit"]');
+    if (submit) submit.textContent = 'Save changes';
+    form.style.display = 'grid';
+    form.scrollIntoView({ behavior:'smooth', block:'center' });
+    titleInput?.focus();
   };
 
   async function api(path, opts={}){
@@ -1773,28 +1816,48 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   }
 
   function renderPosts(posts){
-    list.innerHTML = posts.map(p => `
-      <article class="ci-feed-post" data-post-id="${esc(p.id)}">
-        <div class="ci-feed-post-top">
-          <div>
-            <h4>${esc(p.title)}</h4>
-            <div class="ci-feed-meta">
-              ${esc(p.created_by_name || p.created_by_email || 'CityIntel')} · ${esc(fmtDate(p.created_at))}
-              ${p.event_at ? ` · Event: ${esc(fmtDate(p.event_at))}` : ``}
-              ${p.location_label ? ` · ${esc(p.location_label)}` : ``}
-              ${(p.lat !== null && p.lat !== undefined && p.lon !== null && p.lon !== undefined) ? ` · Map: ${esc(Number(p.lat).toFixed(4))}, ${esc(Number(p.lon).toFixed(4))}` : ``}
+    list.innerHTML = posts.map(p => {
+      const hasEvent = !!p.event_at;
+      const hasLocation = !!p.location_label;
+      const hasMap = feedPostHasMap(p);
+      const detailHtml = (hasEvent || hasLocation) ? `
+        <div class="ci-feed-detail-grid">
+          ${hasEvent ? `
+            <div class="ci-feed-detail-row">
+              <span class="ci-feed-detail-label">Date / time</span>
+              <span class="ci-feed-detail-value">${esc(fmtDate(p.event_at))}</span>
+            </div>` : ``}
+          ${hasLocation ? `
+            <div class="ci-feed-detail-row">
+              <span class="ci-feed-detail-label">Location</span>
+              <span class="ci-feed-detail-value">${esc(p.location_label)}</span>
+            </div>` : ``}
+        </div>` : ``;
+
+      return `
+        <article class="ci-feed-post" data-post-id="${esc(p.id)}">
+          <div class="ci-feed-post-top">
+            <div>
+              <h4>${esc(p.title)}</h4>
+              <div class="ci-feed-meta">
+                ${esc(p.created_by_name || p.created_by_email || 'CityIntel')} · Posted ${esc(fmtDate(p.created_at))}
+                ${p.expires_at ? ` · Expires ${esc(fmtDate(p.expires_at))}` : ``}
+              </div>
             </div>
+            <span class="ci-risk-pill ${esc(p.risk || 'info')}">${esc(p.risk || 'info')}</span>
           </div>
-          <span class="ci-risk-pill ${esc(p.risk || 'info')}">${esc(p.risk || 'info')}</span>
-        </div>
-        <div class="ci-feed-body">${esc(p.body)}</div>
-        <div class="ci-feed-actions">
-          <button class="ci-link-btn ci-toggle-comments" type="button" data-post-id="${esc(p.id)}">Comments (${Number(p.comment_count || 0)})</button>
-          ${isMaster() ? `<button class="ci-link-btn ci-delete-post" type="button" data-post-id="${esc(p.id)}">Delete post</button>` : ``}
-        </div>
-        <div class="ci-comments" id="ci-comments-${esc(p.id)}" style="display:none"></div>
-      </article>
-    `).join('');
+          ${detailHtml}
+          <div class="ci-feed-body">${esc(p.body)}</div>
+          <div class="ci-feed-actions">
+            <button class="ci-link-btn ci-toggle-comments" type="button" data-post-id="${esc(p.id)}">Comments (${Number(p.comment_count || 0)})</button>
+            ${hasMap ? `<button class="ci-link-btn ci-show-feed-map" type="button" data-post-id="${esc(p.id)}">Show on map</button>` : ``}
+            ${isMaster() ? `<button class="ci-link-btn ci-edit-post" type="button" data-post-id="${esc(p.id)}">Edit post</button>` : ``}
+            ${isMaster() ? `<button class="ci-link-btn ci-delete-post" type="button" data-post-id="${esc(p.id)}">Delete post</button>` : ``}
+          </div>
+          <div class="ci-comments" id="ci-comments-${esc(p.id)}" style="display:none"></div>
+        </article>
+      `;
+    }).join('');
   }
 
   async function loadFeed(){
@@ -1802,6 +1865,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       setStatus('Loading feed…');
       const data = await api('/api/feed');
       const posts = data.data || [];
+      window.CICityIntelFeedPosts = posts;
+      try { window.dispatchEvent(new CustomEvent('ci:feed-posts-updated', { detail: { posts } })); } catch(_) {}
       if (!posts.length) {
         list.innerHTML = '';
         setStatus(isMaster() ? 'No posts yet. Use New Post to publish your first update.' : 'No CityIntel feed posts yet.');
@@ -1818,7 +1883,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   if (isMaster() && newBtn) newBtn.style.display = '';
 
   newBtn?.addEventListener('click', () => {
-    form.style.display = form.style.display === 'none' ? 'grid' : 'none';
+    const wasHidden = form.style.display === 'none';
+    resetFeedForm();
+    form.style.display = wasHidden ? 'grid' : 'none';
     if (form.style.display !== 'none' && eventAtInput && !eventAtInput.value) {
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -1827,7 +1894,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     titleInput?.focus();
   });
   cancelBtn?.addEventListener('click', () => {
-    form.reset();
+    resetFeedForm();
     form.style.display = 'none';
   });
 
@@ -1847,14 +1914,15 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         status: 'active'
       };
 
-      await api('/api/feed', {
-        method:'POST',
+      const path = editingPostId ? `/api/feed/${encodeURIComponent(editingPostId)}` : '/api/feed';
+      await api(path, {
+        method: editingPostId ? 'PUT' : 'POST',
         body: JSON.stringify(payload)
       });
-      form.reset();
+      resetFeedForm();
       form.style.display = 'none';
       await loadFeed();
-    }catch(err){ setStatus('Could not publish: ' + err.message); }
+    }catch(err){ setStatus((editingPostId ? 'Could not update: ' : 'Could not publish: ') + err.message); }
   });
 
   list.addEventListener('click', async (e) => {
@@ -1869,6 +1937,25 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         await loadComments(postId, host);
         host.dataset.loaded = '1';
       }
+      return;
+    }
+
+    const showMap = e.target.closest('.ci-show-feed-map');
+    if (showMap) {
+      const post = (window.CICityIntelFeedPosts || []).find(x => String(x.id) === String(showMap.dataset.postId));
+      if (post && typeof window.CIFocusFeedPostOnMap === 'function') {
+        window.CIFocusFeedPostOnMap(post.id);
+      } else {
+        const mapEl = document.getElementById('riskMap');
+        if (mapEl) mapEl.scrollIntoView({ behavior:'smooth', block:'center' });
+      }
+      return;
+    }
+
+    const editPost = e.target.closest('.ci-edit-post');
+    if (editPost) {
+      const post = (window.CICityIntelFeedPosts || []).find(x => String(x.id) === String(editPost.dataset.postId));
+      if (post) openFeedFormForPost(post);
       return;
     }
 
@@ -2127,6 +2214,8 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
 	const assetLayer     = L.layerGroup();
     const travellerLayer = L.layerGroup();
     const protestLayer   = L.layerGroup().addTo(map);
+    const feedFocusLayer = L.layerGroup().addTo(map);
+    window.ciIndexMap = map;
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
@@ -2306,8 +2395,22 @@ function eventLatLon(a){
 function renderProtestMarkers(){
   protestLayer.clearLayers();
   const win = mapWindowRange();
-  const rows = (Array.isArray(window.alertsData) ? window.alertsData : [])
-    .map(a => ({...a, _dt: parseTime(a.time ?? a.datetime ?? a.date ?? a.when)}))
+  const feedEvents = (Array.isArray(window.CICityIntelFeedPosts) ? window.CICityIntelFeedPosts : [])
+    .filter(p => eventLatLon(p))
+    .map(p => ({
+      ...p,
+      title: p.title || 'CityIntel feed post',
+      city: p.location_label || 'CityIntel feed',
+      country: '',
+      risk: p.risk || 'info',
+      time: p.event_at || p.created_at,
+      source: 'CityIntel Feed',
+      summary: p.body || '',
+      _feedPostId: p.id
+    }));
+
+  const rows = (Array.isArray(window.alertsData) ? window.alertsData : []).concat(feedEvents)
+    .map(a => ({...a, _dt: parseTime(a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at)}))
     .filter(a => {
       if (!a._dt || a._dt < win.start || a._dt >= win.end) return false;
       if (!includePredictive && a.predictive === true) return false;
@@ -2325,6 +2428,24 @@ function renderProtestMarkers(){
   });
   updateMapMeta(rows.length);
 }
+
+window.CIFocusFeedPostOnMap = function(postId){
+  const post = (window.CICityIntelFeedPosts || []).find(p => String(p.id) === String(postId));
+  if (!post || !eventLatLon(post)) return;
+  const ll = eventLatLon(post);
+  feedFocusLayer.clearLayers();
+  const marker = L.marker(ll, { icon: protestIconFor(post.risk || 'info'), keyboard:false })
+    .addTo(feedFocusLayer)
+    .bindPopup(`<b>${escapeHtml(post.title || 'CityIntel feed post')}</b><br>${escapeHtml(post.location_label || '')}${post.event_at ? '<br>' + escapeHtml(new Date(post.event_at).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })) : ''}`);
+  map.setView(ll, Math.max(map.getZoom(), 13), { animate:true });
+  marker.openPopup();
+  const mapEl = document.getElementById('riskMap');
+  if (mapEl) mapEl.scrollIntoView({ behavior:'smooth', block:'center' });
+};
+
+window.addEventListener('ci:feed-posts-updated', () => {
+  try { renderProtestMarkers(); } catch(_) {}
+});
 function updatePresenceLayerVisibility(){
   if (showAssets) { if (!map.hasLayer(assetLayer)) assetLayer.addTo(map); }
   else if (map.hasLayer(assetLayer)) { map.removeLayer(assetLayer); }
