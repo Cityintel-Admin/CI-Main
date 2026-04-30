@@ -3273,7 +3273,10 @@ window.ciFeedSummaries = window.ciFeedSummaries || {};
  */
 function publishFeedSummary(feed, events){
   if (!feed || !feed.id) return;
-  const list = Array.isArray(events) ? events : [];
+  const incomingList = Array.isArray(events) ? events : [];
+  const list = (typeof ciAlertStoreMerge === 'function')
+    ? ciAlertStoreMerge(feed, incomingList)
+    : incomingList;
 
   let hi = 0, med = 0, low = 0;
   list.forEach(ev => {
@@ -3435,6 +3438,92 @@ function eventMatchesFeed(ev, feed){
   return true;
 }
 
+
+// === SHARED ALERT STORE (feed → map → operator queues) ==================
+// This keeps one canonical in-memory list of alerts so feed cards, map sidebar
+// and operator queues are always reading from the same source.
+window.CI_ALL_ALERTS = Array.isArray(window.CI_ALL_ALERTS) ? window.CI_ALL_ALERTS : [];
+
+function ciSharedAlertKey(ev){
+  const e = normaliseAlertEvent(ev);
+  if (!e) return '';
+  const when = String(e.when || '').slice(0, 16);
+  const src = String(e.src || '').toLowerCase().trim();
+  const city = String(e.city || '').toLowerCase().trim();
+  const title = String(e.title || '').toLowerCase().replace(/\s+/g, ' ').trim().slice(0, 120);
+  return `${src}|${when}|${city}|${title}`;
+}
+
+function ciAlertStoreMerge(feed, events){
+  const incoming = normaliseAlertList(events || []);
+  if (!incoming.length) return ciAlertStoreForFeed(feed);
+
+  const existing = Array.isArray(window.CI_ALL_ALERTS) ? window.CI_ALL_ALERTS : [];
+  const byKey = new Map();
+
+  existing.forEach(ev => {
+    const e = normaliseAlertEvent(ev);
+    if (!e) return;
+    const key = ciSharedAlertKey(e);
+    if (!key) return;
+    byKey.set(key, Object.assign({}, e, {
+      _feedIds: Array.isArray(e._feedIds) ? e._feedIds.slice() : (e._feedId ? [e._feedId] : []),
+      _feedLabels: Array.isArray(e._feedLabels) ? e._feedLabels.slice() : (e._feedLabel ? [e._feedLabel] : [])
+    }));
+  });
+
+  const feedId = feed && feed.id ? String(feed.id) : '';
+  const feedLabel = feed ? (
+    feed.displayLabel || feed.rawCities ||
+    ((feed.places && feed.places.length) ? feed.places.join(', ') : '') ||
+    ((feed.keywords && feed.keywords.length) ? feed.keywords.join(', ') : '') ||
+    feedId || 'Feed'
+  ) : '';
+
+  incoming.forEach(ev => {
+    const key = ciSharedAlertKey(ev);
+    if (!key) return;
+    const current = byKey.get(key) || ev;
+    const merged = Object.assign({}, current, ev);
+    const ids = new Set(Array.isArray(current._feedIds) ? current._feedIds : []);
+    const labels = new Set(Array.isArray(current._feedLabels) ? current._feedLabels : []);
+    if (feedId) ids.add(feedId);
+    if (feedLabel) labels.add(feedLabel);
+    merged._feedIds = Array.from(ids);
+    merged._feedLabels = Array.from(labels);
+    if (feedId) merged._feedId = feedId;
+    if (feedLabel) merged._feedLabel = feedLabel;
+    byKey.set(key, merged);
+  });
+
+  window.CI_ALL_ALERTS = Array.from(byKey.values())
+    .sort((a,b)=>(Date.parse(eventWhen(b))||0)-(Date.parse(eventWhen(a))||0))
+    .slice(0, 1000);
+
+  return ciAlertStoreForFeed(feed);
+}
+
+function ciAlertStoreGetAll(){
+  return normaliseAlertList(window.CI_ALL_ALERTS || []);
+}
+
+function ciAlertStoreForFeed(feedOrId){
+  const feed = (feedOrId && typeof feedOrId === 'object')
+    ? feedOrId
+    : ((typeof loadFeeds === 'function') ? (loadFeeds().find(f => f.id === feedOrId) || { id: feedOrId }) : { id: feedOrId });
+  const feedId = feed && feed.id ? String(feed.id) : '';
+  const all = ciAlertStoreGetAll();
+  if (!feedId && !feed) return all;
+  return all.filter(ev => {
+    if (Array.isArray(ev._feedIds) && ev._feedIds.includes(feedId)) return true;
+    return feed && typeof eventMatchesFeed === 'function' ? eventMatchesFeed(ev, feed) : false;
+  });
+}
+
+window.ciAlertStoreMerge = ciAlertStoreMerge;
+window.ciAlertStoreGetAll = ciAlertStoreGetAll;
+window.ciAlertStoreForFeed = ciAlertStoreForFeed;
+
 function dedupeClientEvents(events){
   const seen = new Set();
   const out = [];
@@ -3578,6 +3667,9 @@ function loadArchive(feedId){
   const map = loadArchiveMap();
   return Array.isArray(map[feedId]) ? map[feedId] : [];
 }
+window.loadArchive = loadArchive;
+window.loadUiCache = loadUiCache;
+window.loadFeedEvents = loadFeedEvents;
 
 	function renderKeywordsLine(keywords = []) {
   if (!keywords.length) return '';
@@ -3593,6 +3685,13 @@ function loadArchive(feedId){
 // ---- unified way to get events for a feed (archive > UI cache > short cache) ----
 function getEventsForFeed(feed){
   if (!feed || !feed.id) return [];
+
+  // 0) shared in-memory store (keeps feed cards, map and queues in sync)
+  if (typeof ciAlertStoreForFeed === 'function') {
+    const shared = ciAlertStoreForFeed(feed);
+    if (Array.isArray(shared) && shared.length) return normaliseAlertList(shared);
+  }
+
   // 1) 7-day archive
   let events = loadArchive(feed.id);
   if (Array.isArray(events) && events.length) return normaliseAlertList(events);
@@ -5538,7 +5637,10 @@ function renderEventsIntoCard(cardEl, events, feed) {
 
   const displayEvents = fresh.length ? fresh : renderList;
 
-  // update per-feed header stats
+  // update shared store + per-feed header/map/sidebar stats
+  if (typeof ciAlertStoreMerge === 'function') {
+    ciAlertStoreMerge(feed, displayEvents);
+  }
   updateFeedHeaderStats(feed, displayEvents);
   publishFeedSummary(feed, displayEvents);
 	
@@ -7608,22 +7710,37 @@ function redrawIncidentRadius(){
   // --- Operator queues (Escalated / Monitoring / Cleared) ----------------
   function collectAllCachedEvents(){
     const feeds = (typeof loadFeeds === 'function') ? loadFeeds() : [];
-    const out = [];
-    feeds.forEach(f=>{
-      const evs = getFeedEvents(f.id) || [];
-      evs.forEach(ev=>{
-        // clone lightweight with feed context
+    let out = [];
+
+    // Prefer the unified alert store so queues do not double-count the same alert
+    // when it matches more than one feed/region.
+    if (typeof ciAlertStoreGetAll === 'function') {
+      out = ciAlertStoreGetAll().map(ev => {
         const item = Object.assign({}, ev);
-        item._feedId = f.id;
-        item._feedLabel =
-          f.displayLabel ||
-          f.rawCities ||
-          (f.places && f.places.length ? f.places.join(', ') :
-          (f.keywords && f.keywords.length ? f.keywords.join(', ') :
-          (f.name || f.id || 'Feed')));
-        out.push(item);
+        item._feedId = item._feedId || (Array.isArray(item._feedIds) ? item._feedIds[0] : null);
+        item._feedLabel = item._feedLabel || (Array.isArray(item._feedLabels) ? item._feedLabels[0] : null) || 'Live alerts';
+        return item;
       });
-    });
+    }
+
+    // Fallback for first paint before the shared store is populated.
+    if (!out.length) {
+      feeds.forEach(f=>{
+        const evs = getFeedEvents(f.id) || [];
+        evs.forEach(ev=>{
+          const item = Object.assign({}, ev);
+          item._feedId = f.id;
+          item._feedLabel =
+            f.displayLabel ||
+            f.rawCities ||
+            (f.places && f.places.length ? f.places.join(', ') :
+            (f.keywords && f.keywords.length ? f.keywords.join(', ') :
+            (f.name || f.id || 'Feed')));
+          out.push(item);
+        });
+      });
+    }
+
     // Include manually escalated operator alerts
     try{
       loadManualAlerts().forEach(ev=>{
@@ -8041,6 +8158,12 @@ async function resolveEventLatLng(ev){
 
 function getFeedEvents(feedId){
   try {
+    // 0) shared alert store used by feeds, map and queues
+    if (typeof window.ciAlertStoreForFeed === 'function') {
+      const shared = window.ciAlertStoreForFeed(feedId);
+      if (Array.isArray(shared) && shared.length) return normaliseAlertList(shared);
+    }
+
     // 1) 7-day archive
     if (typeof window.loadArchive === 'function') {
       const a = window.loadArchive(feedId);
