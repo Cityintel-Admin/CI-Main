@@ -3112,8 +3112,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <input id="feedCityInput" type="text" placeholder="London" />
 
 	  <div style="font-size:11px;color:var(--muted);line-height:1.4;">
-  Tip: you can use shortcuts like <code>uk</code>, <code>us</code>, <code>eu</code>, 
-  <code>emea</code>, <code>mena</code>, <code>apac</code>, <code>latam</code>, or <code>global</code>.
+  Tip: you can use shortcuts like <code>UK</code>, <code>US</code>, <code>EU</code>, 
+  <code>EMEA</code>, <code>MENA</code>, <code>APAC</code>, <code>LATAM</code>, or <code>GLOBAL</code>.
 </div></div>
 
 <div class="modal-row">
@@ -3284,11 +3284,13 @@ function publishFeedSummary(feed, events){
   });
 
   const label =
-    (feed.places && feed.places.length)
+    feed.displayLabel ||
+    feed.rawCities ||
+    ((feed.places && feed.places.length)
       ? feed.places.join(', ')
       : (feed.keywords && feed.keywords.length
            ? feed.keywords.join(', ')
-           : 'Custom feed');
+           : 'Custom feed'));
 
   window.ciFeedSummaries[feed.id] = {
     id: feed.id,
@@ -5727,7 +5729,7 @@ function openFeedModal(feed){
   overlayEl.style.display='flex';
 
   if(feed){
-    cityInput.value = (feed.places||[]).join(', ');
+    cityInput.value = feed.rawCities || feed.displayLabel || (feed.places||[]).join(', ');
     // reset all first
     for (let i=0;i<riskSel.options.length;i++){
       riskSel.options[i].selected = false;
@@ -5794,7 +5796,9 @@ saveBtn.addEventListener('click', ()=>{
     return;
   }
 	
-  let places = rawCities ? rawCities.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const rawPlaces = rawCities ? rawCities.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const displayLabel = rawPlaces.length ? rawPlaces.join(', ') : (rawKeywords || 'Custom feed');
+  let places = rawPlaces.slice();
 
 // Expand region shortcuts
 const UK_CITIES = [
@@ -5820,6 +5824,9 @@ const EXPANSIONS = {
   britain: UK_CITIES,
   eu: ['Paris','Berlin','Madrid','Rome','Milan','Brussels','Amsterdam','Rotterdam','Vienna','Prague','Warsaw','Dublin','Lisbon','Athens','Stockholm','Copenhagen','Helsinki','Oslo','Budapest','Bucharest'],
   emea: ['London','Paris','Berlin','Madrid','Rome','Brussels','Amsterdam','Vienna','Warsaw','Dublin','Lisbon','Athens','Stockholm','Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Johannesburg','Cape Town','Nairobi','Lagos','Accra'],
+  europe: ['Paris','Berlin','Madrid','Rome','Milan','Brussels','Amsterdam','Rotterdam','Vienna','Prague','Warsaw','Dublin','Lisbon','Athens','Stockholm','Copenhagen','Helsinki','Oslo','Budapest','Bucharest'],
+  'middle east': ['Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Beirut','Amman','Tel Aviv','Istanbul','Ankara'],
+  africa: ['Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Johannesburg','Cape Town','Nairobi','Lagos','Accra'],
   mea: ['Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Johannesburg','Cape Town','Nairobi','Lagos','Accra'],
   mena: ['Dubai','Abu Dhabi','Doha','Riyadh','Jeddah','Kuwait City','Manama','Muscat','Cairo','Alexandria','Casablanca','Rabat','Tunis','Algiers','Beirut','Amman','Tel Aviv','Istanbul','Ankara'],
   apac: ['Tokyo','Osaka','Seoul','Busan','Beijing','Shanghai','Hong Kong','Taipei','Singapore','Kuala Lumpur','Bangkok','Jakarta','Manila','Hanoi','Ho Chi Minh City','Mumbai','Delhi','Bengaluru','Sydney','Melbourne','Auckland'],
@@ -5855,6 +5862,8 @@ if (places.length) {
     const idx = feeds.findIndex(f=>f.id===editingFeedId);
     if(idx>=0){
       feeds[idx].places = places;
+      feeds[idx].rawCities = rawCities;
+      feeds[idx].displayLabel = displayLabel;
       feeds[idx].risks  = risks;
 	  feeds[idx].useLive = liveMode;
 	  feeds[idx].keywords = keywords;
@@ -5863,7 +5872,7 @@ if (places.length) {
   } else {
     // create new
     const id = 'feed-' + Date.now().toString(36);
-    feeds.push({ id, places, risks, useLive: liveMode, keywords });
+    feeds.push({ id, places, rawCities, displayLabel, risks, useLive: liveMode, keywords });
   }
   saveFeeds(feeds);
   closeFeedModal();
@@ -5919,7 +5928,7 @@ const prettyName =
     null
   ) : null;
 
-const citiesLabel = prettyName ?? (feed.places || []).join(', ');  
+const citiesLabel = prettyName ?? (feed.displayLabel || feed.rawCities || (feed.places || []).join(', '));  
 	  
        card.innerHTML = `
       <div class="feed-head">
@@ -7605,9 +7614,12 @@ function redrawIncidentRadius(){
         // clone lightweight with feed context
         const item = Object.assign({}, ev);
         item._feedId = f.id;
-        item._feedLabel = (f.places && f.places.length) ? f.places.join(', ') :
-                          (f.keywords && f.keywords.length) ? f.keywords.join(', ') :
-                          (f.name || f.id || 'Feed');
+        item._feedLabel =
+          f.displayLabel ||
+          f.rawCities ||
+          (f.places && f.places.length ? f.places.join(', ') :
+          (f.keywords && f.keywords.length ? f.keywords.join(', ') :
+          (f.name || f.id || 'Feed')));
         out.push(item);
       });
     });
