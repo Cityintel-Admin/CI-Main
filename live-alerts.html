@@ -3484,9 +3484,11 @@ async function fetchPersistentAlertCache(){
   CI_PERSISTENT_ALERT_CACHE_PROMISE = (async () => {
     try {
       const headers = await authHeaders({ 'Accept': 'application/json' });
-      const since = new Date(Date.now() - getCurrentWindowHours() * 60 * 60 * 1000).toISOString();
-      const url = `${API_ORIGIN}/api/live-alerts/cache?limit=500&since=${encodeURIComponent(since)}`;
-      const res = await fetch(url, { headers });
+      // Pull the shared worker/D1 cache directly. Do not add a narrow `since`
+      // filter here: the UI applies the active time window itself, and the
+      // cache endpoint is also used to rehydrate cards after a page return.
+      const url = `${API_ORIGIN}/api/live-alerts/cache?limit=500&_=${Date.now()}`;
+      const res = await fetch(url, { headers, cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
       if (!data || data.ok === false) {
         // Backend persistent cache is a nice-to-have. If it is empty/unavailable,
@@ -3741,6 +3743,50 @@ async function loadPersistentEventsForFeed(feed){
   const all = await fetchPersistentAlertCache();
   return dedupeClientEvents(all.filter(ev => eventMatchesFeed(ev, feed)));
 }
+
+// Pull cached alerts into every visible feed and queue without waiting for a manual refresh.
+// This bridges Worker/D1 `/api/live-alerts/cache` -> cards -> counters -> map.
+async function syncPersistentCacheToFeeds(opts = {}){
+  const renderCards = opts.renderCards !== false;
+  const feeds = (typeof loadFeeds === 'function' ? loadFeeds() : []) || [];
+  if (!Array.isArray(feeds) || !feeds.length) return [];
+
+  const all = await fetchPersistentAlertCache();
+  const rows = normaliseAlertList(all || []);
+  if (!rows.length) {
+    if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
+    if (typeof recomputeGlobalStrip === 'function') recomputeGlobalStrip();
+    return [];
+  }
+
+  // Keep operator queue aware of all stored alerts, even if a feed is deleted later.
+  if (typeof ciAlertStoreMerge === 'function') {
+    try { ciAlertStoreMerge(null, rows); } catch (_) {}
+  }
+
+  feeds.forEach(feed => {
+    const matched = dedupeClientEvents(rows.filter(ev => eventMatchesFeed(ev, feed)));
+    if (!matched.length) return;
+
+    try { archiveMerge(feed.id, matched); } catch (_) {}
+    try { storeFeedEvents(feed.id, matched); } catch (_) {}
+    try { saveUiCache(feed.id, matched); } catch (_) {}
+    try { if (typeof ciAlertStoreMerge === 'function') ciAlertStoreMerge(feed, matched); } catch (_) {}
+
+    const card = document.querySelector(`.feed-card[data-id="${feed.id}"]`);
+    const renderSource = dedupeClientEvents([...(loadArchive(feed.id) || []), ...matched]);
+    if (renderCards && card) renderEventsIntoCard(card, renderSource, feed);
+    else publishFeedSummary(feed, renderSource);
+  });
+
+  if (typeof recomputeGlobalStrip === 'function') recomputeGlobalStrip();
+  if (typeof window.ciRefreshMapSidebarFeeds === 'function') window.ciRefreshMapSidebarFeeds();
+  if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
+  if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+  markLiveUpdated();
+  return rows;
+}
+window.syncPersistentCacheToFeeds = syncPersistentCacheToFeeds;
 
 function storeFeedEvents(feedId, events) {
   const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
@@ -6481,7 +6527,23 @@ refreshSingleFeedCard(card, feed);
 }
 
 // -------------------- INIT --------------------
-renderFeeds().then(()=>{ markLiveUpdated(); const modeText = (window.CILiveStatus && window.CILiveStatus.modeText) || 'Org data'; setLiveStatus({ sync:'ok', syncText:'Alerts ready', mode:'ok', modeText }); }).catch(()=>{ setLiveStatus({ sync:'warn', syncText:'Alerts loaded with issues', note:'Some live feeds may be delayed. Review the feed cards below for current results.', noteState:'warn' }); });
+renderFeeds()
+  .then(async ()=>{
+    try { await syncPersistentCacheToFeeds({ renderCards:true }); } catch(e) { console.warn('CityIntel: initial cache sync failed', e); }
+    markLiveUpdated();
+    const modeText = (window.CILiveStatus && window.CILiveStatus.modeText) || 'Org data';
+    setLiveStatus({ sync:'ok', syncText:'Alerts ready', mode:'ok', modeText });
+  })
+  .catch(()=>{
+    setLiveStatus({ sync:'warn', syncText:'Alerts loaded with issues', note:'Some live feeds may be delayed. Review the feed cards below for current results.', noteState:'warn' });
+  });
+
+// Keep D1/Worker cache flowing into the UI while the page stays open.
+setInterval(()=>{
+  if (typeof syncPersistentCacheToFeeds === 'function') {
+    syncPersistentCacheToFeeds({ renderCards:true }).catch(()=>{});
+  }
+}, 60 * 1000);
 
 // ---- link View Full Incident to incident.html ----
 viewFullBtn.addEventListener('click', (e)=>{
