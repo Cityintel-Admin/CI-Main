@@ -2788,6 +2788,24 @@ padding-bottom: 12px;
 .ci-admin-marker{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:#D01616;color:#fff;border:2px solid rgba(255,255,255,.78);box-shadow:0 8px 22px rgba(0,0,0,.55);font-size:12px;font-weight:900;}
 @media (max-width:1050px){#liveMapCard .global-map-side{grid-template-areas:"radius" "add" "manual" "feeds" "queues" "admin" "alerts" !important;}.ci-admin-posts-list{grid-template-columns:1fr !important;}}
 </style>
+
+<style>
+/* === v3: Admin post drawer polish + detail-open layout guard === */
+#detailPanel[data-source-type="cityintel-admin-post"] .detail-section{background:linear-gradient(180deg,#191b20,#121418);}
+#detailPanel[data-source-type="cityintel-admin-post"] #detailSummary{display:flex;flex-direction:column;gap:10px;}
+.ci-admin-detail-kv{display:grid;grid-template-columns:1fr;gap:8px;}
+.ci-admin-detail-row{border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(15,23,42,.42);padding:9px 10px;}
+.ci-admin-detail-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;font-weight:800;margin-bottom:3px;}
+.ci-admin-detail-value{color:#f8fafc;font-size:12px;line-height:1.35;}
+.ci-admin-detail-body{color:#dbeafe;line-height:1.45;white-space:pre-wrap;}
+@media (min-width:1100px){
+  body.detail-open #liveMapCard .live-radius-block{flex-wrap:wrap !important;align-items:flex-start !important;}
+  body.detail-open #liveMapCard .live-radius-pills{flex:1 1 280px !important;max-width:420px !important;}
+  body.detail-open #liveMapCard .live-radius-block > .gm-legend-row:nth-of-type(1){margin-left:0 !important;}
+  body.detail-open #liveMapCard .live-radius-block .gm-legend-row{flex:0 1 auto !important;}
+  body.detail-open #liveMapCard .live-radius-block .gm-legend-label{white-space:nowrap !important;}
+}
+</style>
 </head>
 
 <script>
@@ -5339,9 +5357,28 @@ async function resolveItemLatLon(item, exposure){
 
 
 
+
+function ciAdminPostDetailHtml(item){
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const title = item && item.title ? item.title : 'CityIntel admin post';
+  const body = (item && (item.body || item.description || item.summary)) || '';
+  const location = (item && (item.location || item.location_label || item.city)) || 'Mapped location';
+  const when = item && item.when ? fmtWhen(item.when) : (item && item.event_at ? fmtWhen(item.event_at) : 'Not specified');
+  const src = (item && (item.created_by_name || item.createdBy || item.author || item.src)) || 'CityIntel Admin';
+  return '<div class="ci-admin-detail-kv">' +
+    '<div class="ci-admin-detail-row"><div class="ci-admin-detail-label">Event / date</div><div class="ci-admin-detail-value">' + esc(when) + '</div></div>' +
+    '<div class="ci-admin-detail-row"><div class="ci-admin-detail-label">Location</div><div class="ci-admin-detail-value">' + esc(location) + '</div></div>' +
+    '<div class="ci-admin-detail-row"><div class="ci-admin-detail-label">Source</div><div class="ci-admin-detail-value">' + esc(src) + '</div></div>' +
+    '</div>' +
+    '<div class="ci-admin-detail-row"><div class="ci-admin-detail-label">Summary</div><div class="ci-admin-detail-body">' + esc(body || title) + '</div></div>';
+}
+
 function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
+
+  const detailIsAdminPost = String(item && item.sourceType || '').toLowerCase() === 'cityintel-admin-post';
+  if (detailPanel) detailPanel.setAttribute('data-source-type', detailIsAdminPost ? 'cityintel-admin-post' : 'standard-alert');
 
   const earlier = (relatedList || [])
     .filter(x => x.city === item.city && x.when !== item.when)
@@ -5356,7 +5393,7 @@ function openDetailPanel(item, relatedList){
     const k = alertKey(item);
     detailPanel.setAttribute('data-alertkey', k);
 
-    const isAdminPost = String(item && item.sourceType || '').toLowerCase() === 'cityintel-admin-post';
+    const isAdminPost = detailIsAdminPost;
     if (detailDispositionEl){
       const wantedMode = isAdminPost ? 'admin-post' : 'standard-alert';
       if (detailDispositionEl.getAttribute('data-mode') !== wantedMode){
@@ -5400,12 +5437,21 @@ function openDetailPanel(item, relatedList){
   }
 
 	  // NEW: richer intel-style summary
-  detailSummaryEl.textContent = buildIntelSummary(item, earlier);
+  if (detailIsAdminPost) {
+    detailSummaryEl.innerHTML = ciAdminPostDetailHtml(item);
+  } else {
+    detailSummaryEl.textContent = buildIntelSummary(item, earlier);
+  }
   renderLanguageTools(item);
 
     // location text
+  if (detailIsAdminPost) {
+    const adminLoc = item.location || item.location_label || item.city || 'mapped location';
+    detailLocationEl.textContent = `Approx area: ${adminLoc}${item.country ? ', ' + item.country : ''}.`;
+  } else {
     detailLocationEl.textContent =
     `Approx area: ${item.city || 'unknown'}${item.country ? ', ' + item.country : ''}.`;
+  }
 
   // real exposure based on stored assets/travellers
   let exposure = { assets: [], travellers: [] };
@@ -5588,6 +5634,7 @@ if (pubSec) pubSec.style.display = '';
     ctx.clearRect(0, 0, cvs.width, cvs.height);
   }
   detailPanel.classList.remove('open');
+  try{ detailPanel.removeAttribute('data-source-type'); }catch(_){}
   document.body.classList.remove('detail-open');
 
   // Re-expand the map area smoothly
@@ -5626,8 +5673,12 @@ document.addEventListener('keydown', (e) => {
     // manual alert escalation form with the admin post details prefilled.
     if (st === 'manual_alert') {
       try { detailDispositionEl.value = prevSt || 'untriaged'; } catch(e) {}
-      if (typeof openManualAlertModal === 'function') {
+      if (typeof window.openManualAlertModal === 'function') {
+        window.openManualAlertModal(item);
+      } else if (typeof openManualAlertModal === 'function') {
         openManualAlertModal(item);
+      } else {
+        console.warn('CityIntel: manual alert modal function is not available yet');
       }
       return;
     }
@@ -8004,14 +8055,19 @@ function redrawIncidentRadius(){
 
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden','false');
+    try{ document.body.classList.add('ci-manual-alert-open'); }catch(_){}
     setTimeout(()=>{ try{ title && title.focus(); }catch(_){} }, 50);
   }
+
+  // Expose this so admin-post detail dropdown can open the same manual alert form.
+  window.openManualAlertModal = openManualAlertModal;
 
   function closeManualAlertModal(){
     const overlay = document.getElementById('ciManualAlertOverlay');
     if (!overlay) return;
     overlay.style.display = 'none';
     overlay.setAttribute('aria-hidden','true');
+    try{ document.body.classList.remove('ci-manual-alert-open'); }catch(_){}
   }
 
   function createManualEscalatedAlert(){
