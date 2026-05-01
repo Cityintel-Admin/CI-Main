@@ -2761,6 +2761,34 @@ padding-bottom: 12px;
 }
 </style>
 
+
+<style>
+/* === CityIntel Admin Posts on Live Alerts map === */
+#liveMapCard .global-map-side{
+  grid-template-areas:
+    "radius radius"
+    "add manual"
+    "feeds queues"
+    "admin admin"
+    "alerts alerts" !important;
+}
+#liveMapCard #cityintelAdminPostsPanel{grid-area:admin !important;border:1px solid rgba(248,113,113,.16) !important;border-left:3px solid rgba(208,22,22,.78) !important;border-radius:14px !important;background:linear-gradient(180deg, rgba(127,29,29,.16), rgba(0,0,0,.18)) !important;padding:12px !important;margin:0 !important;min-height:104px !important;}
+.ci-admin-posts-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.ci-admin-posts-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.78);font-weight:800;}
+.ci-admin-posts-count{min-width:24px;text-align:center;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);padding:2px 8px;font-size:11px;font-weight:800;color:#fee2e2;}
+.ci-admin-posts-list{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:8px;}
+.ci-admin-post-card{border:1px solid rgba(255,255,255,.10);background:rgba(15,23,42,.70);border-radius:12px;padding:9px 10px;cursor:pointer;min-width:0;color:inherit;text-align:left;}
+.ci-admin-post-card:hover{border-color:rgba(248,113,113,.55);background:rgba(30,41,59,.88);}
+.ci-admin-post-card.active{border-color:rgba(248,113,113,.95);box-shadow:0 0 0 2px rgba(248,113,113,.18) inset;}
+.ci-admin-post-top{display:flex;align-items:flex-start;gap:8px;}
+.ci-admin-post-pin{flex:0 0 auto;width:22px;height:22px;display:grid;place-items:center;border-radius:999px;background:rgba(208,22,22,.22);border:1px solid rgba(248,113,113,.45);color:#fecaca;font-size:12px;}
+.ci-admin-post-title{display:block;font-size:12px;line-height:1.25;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-admin-post-meta{display:block;margin-top:3px;font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-admin-post-empty{color:#9ca3af;font-size:12px;padding:8px 2px;}
+.ci-admin-marker{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:#D01616;color:#fff;border:2px solid rgba(255,255,255,.78);box-shadow:0 8px 22px rgba(0,0,0,.55);font-size:12px;font-weight:900;}
+@media (max-width:1050px){#liveMapCard .global-map-side{grid-template-areas:"radius" "add" "manual" "feeds" "queues" "admin" "alerts" !important;}.ci-admin-posts-list{grid-template-columns:1fr !important;}}
+@media (max-width:1350px) and (min-width:1051px){.ci-admin-posts-list{grid-template-columns:repeat(2, minmax(0,1fr));}}
+</style>
 </head>
 
 <script>
@@ -2959,6 +2987,20 @@ document.addEventListener('DOMContentLoaded', () => {
       onclick="window.ciOpenAddFeed && window.ciOpenAddFeed()">
       + Add feed
     </button>
+  </div>
+
+  <!-- CityIntel Admin Posts overlay/feed for mapped dashboard posts -->
+  <div class="live-map-sidebar-section" id="cityintelAdminPostsPanel">
+    <div class="ci-admin-posts-head">
+      <div>
+        <div class="ci-admin-posts-title">CityIntel Admin Posts</div>
+        <div class="small" style="opacity:.72;margin-top:3px;">Mapped posts from the dashboard feed.</div>
+      </div>
+      <span class="ci-admin-posts-count" id="cityintelAdminPostsCount">0</span>
+    </div>
+    <div id="cityintelAdminPostsList" class="ci-admin-posts-list">
+      <div class="ci-admin-post-empty">Loading mapped posts…</div>
+    </div>
   </div>
 
  <!-- ✅ PASTE PART 1 HERE (directly under feeds summary) -->
@@ -7671,6 +7713,105 @@ const assetIcon = L.divIcon({
       }
     }
   });
+
+
+  // === CityIntel Admin Posts overlay on Live Alerts map =================
+  const cityIntelAdminLayer = L.layerGroup().addTo(map);
+  const cityIntelAdminIcon = L.divIcon({ className:'ci-admin-marker', html:'📍', iconSize:[24,24], iconAnchor:[12,24], popupAnchor:[0,-22] });
+
+  function ciFeedPostHasCoords(post){ return Number.isFinite(Number(post && post.lat)) && Number.isFinite(Number(post && post.lon)); }
+  function ciFeedPostWhen(post){
+    const raw = (post && (post.event_at || post.created_at || post.updated_at)) || '';
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString([], { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+  function ciEscapeAdminPost(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+
+  async function ciLoadCityIntelAdminPosts(){
+    const list = document.getElementById('cityintelAdminPostsList');
+    const count = document.getElementById('cityintelAdminPostsCount');
+    if (!list) return;
+    try{
+      list.innerHTML = '<div class="ci-admin-post-empty">Loading mapped posts…</div>';
+      const headers = await authHeaders({ 'Accept':'application/json' });
+      const res = await fetch(withEmailParam(API_ORIGIN + '/api/feed'), { headers });
+      const data = await res.json().catch(function(){ return null; });
+      if (!res.ok || !data || data.ok === false) throw new Error((data && data.error) || ('feed failed ' + res.status));
+
+      const posts = (Array.isArray(data.data) ? data.data : [])
+        .filter(ciFeedPostHasCoords)
+        .filter(function(p){ return String((p && p.status) || 'active').toLowerCase() !== 'inactive'; });
+
+      window.CICityIntelAdminPosts = posts;
+      cityIntelAdminLayer.clearLayers();
+      if (count) count.textContent = String(posts.length);
+
+      if (!posts.length){
+        list.innerHTML = '<div class="ci-admin-post-empty">No mapped admin posts currently active.</div>';
+        return;
+      }
+
+      const rowIndex = new Map();
+      list.innerHTML = posts.slice(0, 6).map(function(p){
+        const id = ciEscapeAdminPost(p.id);
+        const title = ciEscapeAdminPost(p.title || 'CityIntel post');
+        const loc = ciEscapeAdminPost(p.location_label || 'Mapped location');
+        const when = ciEscapeAdminPost(ciFeedPostWhen(p));
+        return '' +
+          '<button type="button" class="ci-admin-post-card" data-post-id="' + id + '" title="Show on map">' +
+            '<div class="ci-admin-post-top">' +
+              '<span class="ci-admin-post-pin">📍</span>' +
+              '<span style="min-width:0;flex:1;">' +
+                '<span class="ci-admin-post-title">' + title + '</span>' +
+                '<span class="ci-admin-post-meta">' + (when ? when + ' · ' : '') + loc + '</span>' +
+              '</span>' +
+            '</div>' +
+          '</button>';
+      }).join('');
+
+      list.querySelectorAll('.ci-admin-post-card').forEach(function(el){ rowIndex.set(String(el.dataset.postId), el); });
+
+      function focusPost(post, openPopup){
+        const lat = Number(post.lat), lon = Number(post.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        rowIndex.forEach(function(r){ r.classList.remove('active'); });
+        const row = rowIndex.get(String(post.id));
+        if (row) row.classList.add('active');
+        window.ciLastIncident = { lat:lat, lon:lon, label: post.title || 'CityIntel Admin Post' };
+        pulseAt(lat, lon, post.title || 'CityIntel Admin Post');
+        if (openPopup && post.__ciMarker) { try { post.__ciMarker.openPopup(); } catch(_) {} }
+      }
+
+      posts.forEach(function(post){
+        const lat = Number(post.lat), lon = Number(post.lon);
+        const popup = '' +
+          '<div style="min-width:230px">' +
+            '<div style="font-weight:900;margin-bottom:4px;">' + ciEscapeAdminPost(post.title || 'CityIntel Admin Post') + '</div>' +
+            '<div style="font-size:12px;opacity:.82;margin-bottom:6px;">' + ciEscapeAdminPost(post.location_label || 'Mapped location') + (post.event_at ? ' · ' + ciEscapeAdminPost(ciFeedPostWhen(post)) : '') + '</div>' +
+            '<div style="font-size:12px;line-height:1.35;">' + ciEscapeAdminPost(post.body || '').slice(0,220) + '</div>' +
+          '</div>';
+        const marker = L.marker([lat, lon], { icon: cityIntelAdminIcon, zIndexOffset:1600 }).addTo(cityIntelAdminLayer).bindPopup(popup, { maxWidth:320 });
+        post.__ciMarker = marker;
+        marker.on('click', function(){ focusPost(post, false); });
+      });
+
+      list.querySelectorAll('.ci-admin-post-card').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          const post = posts.find(function(p){ return String(p.id) === String(btn.dataset.postId); });
+          if (post) focusPost(post, true);
+        });
+      });
+    }catch(e){
+      console.warn('CityIntel admin posts failed', e);
+      if (count) count.textContent = '0';
+      list.innerHTML = '<div class="ci-admin-post-empty">Could not load dashboard posts.</div>';
+    }
+  }
+
+  window.ciRefreshCityIntelAdminPosts = ciLoadCityIntelAdminPosts;
+  ciLoadCityIntelAdminPosts();
+  setInterval(ciLoadCityIntelAdminPosts, 60000);
 
   // === SIDEBAR FEED LIST RENDERER =========================
   window.ciUpdateMapSidebar = function(summaryMap){
