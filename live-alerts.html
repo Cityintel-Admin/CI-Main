@@ -2787,7 +2787,6 @@ padding-bottom: 12px;
 .ci-admin-post-empty{color:#9ca3af;font-size:12px;padding:8px 2px;}
 .ci-admin-marker{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:#D01616;color:#fff;border:2px solid rgba(255,255,255,.78);box-shadow:0 8px 22px rgba(0,0,0,.55);font-size:12px;font-weight:900;}
 @media (max-width:1050px){#liveMapCard .global-map-side{grid-template-areas:"radius" "add" "manual" "feeds" "queues" "admin" "alerts" !important;}.ci-admin-posts-list{grid-template-columns:1fr !important;}}
-@media (max-width:1350px) and (min-width:1051px){.ci-admin-posts-list{grid-template-columns:repeat(2, minmax(0,1fr));}}
 </style>
 </head>
 
@@ -7745,15 +7744,16 @@ const assetIcon = L.divIcon({
 
       window.CICityIntelAdminPosts = posts;
       cityIntelAdminLayer.clearLayers();
-      if (count) count.textContent = String(posts.length);
-
       if (!posts.length){
         list.innerHTML = '<div class="ci-admin-post-empty">No mapped admin posts currently active.</div>';
         return;
       }
 
       const rowIndex = new Map();
-      list.innerHTML = posts.slice(0, 6).map(function(p){
+      const visiblePosts = posts.slice(0, 3);
+      if (count) count.textContent = String(visiblePosts.length);
+
+      list.innerHTML = visiblePosts.map(function(p){
         const id = ciEscapeAdminPost(p.id);
         const title = ciEscapeAdminPost(p.title || 'CityIntel post');
         const loc = ciEscapeAdminPost(p.location_label || 'Mapped location');
@@ -7772,7 +7772,27 @@ const assetIcon = L.divIcon({
 
       list.querySelectorAll('.ci-admin-post-card').forEach(function(el){ rowIndex.set(String(el.dataset.postId), el); });
 
-      function focusPost(post, openPopup){
+      function ciAdminPostToDetailItem(post){
+        const lat = Number(post && post.lat), lon = Number(post && post.lon);
+        const loc = String((post && post.location_label) || '').trim();
+        return {
+          id: 'ci_admin_' + String((post && post.id) || ''),
+          sourceType: 'cityintel-admin-post',
+          title: (post && post.title) || 'CityIntel Admin Post',
+          summary: (post && post.body) || '',
+          description: (post && post.body) || '',
+          body: (post && post.body) || '',
+          city: loc || 'Mapped location',
+          location: loc || 'Mapped location',
+          risk: String((post && post.risk) || 'med').toLowerCase(),
+          when: (post && (post.event_at || post.created_at || post.updated_at)) || new Date().toISOString(),
+          src: 'CityIntel Admin Post',
+          lat: Number.isFinite(lat) ? lat : null,
+          lon: Number.isFinite(lon) ? lon : null
+        };
+      }
+
+      function focusPost(post, openPopup, openSidePanel){
         const lat = Number(post.lat), lon = Number(post.lon);
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
         rowIndex.forEach(function(r){ r.classList.remove('active'); });
@@ -7781,6 +7801,10 @@ const assetIcon = L.divIcon({
         window.ciLastIncident = { lat:lat, lon:lon, label: post.title || 'CityIntel Admin Post' };
         pulseAt(lat, lon, post.title || 'CityIntel Admin Post');
         if (openPopup && post.__ciMarker) { try { post.__ciMarker.openPopup(); } catch(_) {} }
+        if (openSidePanel && typeof openDetailPanel === 'function') {
+          const item = ciAdminPostToDetailItem(post);
+          try { openDetailPanel(item, [item]); } catch(e) { console.warn('CityIntel admin post detail failed', e); }
+        }
       }
 
       posts.forEach(function(post){
@@ -7793,13 +7817,13 @@ const assetIcon = L.divIcon({
           '</div>';
         const marker = L.marker([lat, lon], { icon: cityIntelAdminIcon, zIndexOffset:1600 }).addTo(cityIntelAdminLayer).bindPopup(popup, { maxWidth:320 });
         post.__ciMarker = marker;
-        marker.on('click', function(){ focusPost(post, false); });
+        marker.on('click', function(){ focusPost(post, false, true); });
       });
 
       list.querySelectorAll('.ci-admin-post-card').forEach(function(btn){
         btn.addEventListener('click', function(){
           const post = posts.find(function(p){ return String(p.id) === String(btn.dataset.postId); });
-          if (post) focusPost(post, true);
+          if (post) focusPost(post, true, true);
         });
       });
     }catch(e){
