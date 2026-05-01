@@ -5356,11 +5356,23 @@ function openDetailPanel(item, relatedList){
     const k = alertKey(item);
     detailPanel.setAttribute('data-alertkey', k);
 
+    const isAdminPost = String(item && item.sourceType || '').toLowerCase() === 'cityintel-admin-post';
+    if (detailDispositionEl){
+      const wantedMode = isAdminPost ? 'admin-post' : 'standard-alert';
+      if (detailDispositionEl.getAttribute('data-mode') !== wantedMode){
+        detailDispositionEl.setAttribute('data-mode', wantedMode);
+        detailDispositionEl.innerHTML = isAdminPost
+          ? '<option value="untriaged">Triage</option><option value="manual_alert">Manual alert</option>'
+          : '<option value="untriaged">Untriaged</option><option value="escalated">Escalate</option><option value="monitoring">Monitor</option><option value="cleared">Clear</option>';
+      }
+    }
+
     const st = getDisposition(item);
     const note = getDispositionNote(item);
 
     if (detailDispositionEl){
       detailDispositionEl.value = st;
+      if (detailDispositionEl.value !== st) detailDispositionEl.value = 'untriaged';
     }
     if (detailDispositionNoteEl){
       detailDispositionNoteEl.value = note || '';
@@ -5608,6 +5620,18 @@ document.addEventListener('keydown', (e) => {
     const st = (detailDispositionEl.value || 'untriaged').toLowerCase();
     const note = detailDispositionNoteEl ? (detailDispositionNoteEl.value || '') : '';
     const prevSt = getDisposition(item);
+
+    // CityIntel Admin Posts can be converted into Manual Alerts.
+    // We do not save a "manual_alert" disposition; selecting it simply opens the
+    // manual alert escalation form with the admin post details prefilled.
+    if (st === 'manual_alert') {
+      try { detailDispositionEl.value = prevSt || 'untriaged'; } catch(e) {}
+      if (typeof openManualAlertModal === 'function') {
+        openManualAlertModal(item);
+      }
+      return;
+    }
+
     const rec = setDisposition(item, st, note);
     // If transitioning into a workflow state, show TOPO-style transition form
     if (st !== prevSt && (st === 'escalated' || st === 'cleared')){
@@ -7948,7 +7972,7 @@ function redrawIncidentRadius(){
     try{ return toLocalInputValue(new Date().toISOString()); }catch(_){ return ''; }
   }
 
-  function openManualAlertModal(){
+  function openManualAlertModal(prefill){
     const overlay = document.getElementById('ciManualAlertOverlay');
     if (!overlay) return;
     const title = document.getElementById('manualAlertTitle');
@@ -7961,15 +7985,22 @@ function redrawIncidentRadius(){
     const summary = document.getElementById('manualAlertSummary');
     const note = document.getElementById('manualAlertNote');
 
-    if (title) title.value = '';
-    if (city) city.value = '';
-    if (country) country.value = '';
-    if (risk) risk.value = 'High';
-    if (when) when.value = ciManualNowLocal();
-    if (loc) loc.value = '';
-    if (conf) conf.value = 'Operator observed';
-    if (summary) summary.value = '';
-    if (note) note.value = '';
+    const p = (prefill && typeof prefill === 'object') ? prefill : null;
+    const cleanRisk = String(p?.risk || '').toLowerCase();
+    const riskValue = cleanRisk === 'low' ? 'Low' : (cleanRisk === 'med' || cleanRisk === 'medium' ? 'Medium' : 'High');
+    const locationText = String(p?.location || p?.location_label || p?.city || '').trim();
+    const cityText = String(p?.city || '').trim();
+    const summaryText = String(p?.summary || p?.description || p?.body || '').trim();
+
+    if (title) title.value = p ? String(p.title || '').trim() : '';
+    if (city) city.value = p ? cityText : '';
+    if (country) country.value = p ? String(p.country || '').trim() : '';
+    if (risk) risk.value = p ? riskValue : 'High';
+    if (when) when.value = p?.when ? toLocalInputValue(p.when) : ciManualNowLocal();
+    if (loc) loc.value = p ? locationText : '';
+    if (conf) conf.value = p ? 'Trusted source' : 'Operator observed';
+    if (summary) summary.value = p ? summaryText : '';
+    if (note) note.value = p ? 'Converted from CityIntel Admin Post.' : '';
 
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden','false');
