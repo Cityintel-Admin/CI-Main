@@ -3723,18 +3723,57 @@ window.ciAlertStoreMerge = ciAlertStoreMerge;
 window.ciAlertStoreGetAll = ciAlertStoreGetAll;
 window.ciAlertStoreForFeed = ciAlertStoreForFeed;
 
+function ciDedupeText(value){
+  return String(value || '')
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/&[a-z]+;/g, ' ')
+    .replace(/[’‘`]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/(breaking|live|latest|update|updates|updated|video|videos|photos|watch|report|reports|reported|says|say|said|according|exclusive)/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function ciTitleSignature(title){
+  const stop = new Set([
+    'the','a','an','and','or','but','to','of','in','on','at','for','from','with','by','as','is','are','was','were','be','been','being',
+    'after','before','over','under','near','into','about','this','that','these','those','new','news','uk','us','city','local','man','woman','people'
+  ]);
+  return Array.from(new Set(
+    ciDedupeText(title).split(' ').filter(t => t.length > 2 && !stop.has(t))
+  )).sort().slice(0, 12).join('-');
+}
+
 function dedupeClientEvents(events){
   const seen = new Set();
   const out = [];
-  for (const ev of (events || [])) {
-    const e = normaliseAlertEvent(ev);
-    if (!e) continue;
+  const riskWeight = { high: 3, med: 2, medium: 2, low: 1 };
+
+  const rows = (events || []).map(normaliseAlertEvent).filter(Boolean).sort((a,b) => {
+    const rw = (riskWeight[String(b.risk || '').toLowerCase()] || 0) - (riskWeight[String(a.risk || '').toLowerCase()] || 0);
+    if (rw) return rw;
+    return (Date.parse(b.when) || 0) - (Date.parse(a.when) || 0);
+  });
+
+  for (const e of rows) {
     const day = String(e.when || '').slice(0, 10);
-    const key = `${e.id || ''}::${day}::${String(e.city || '').toLowerCase()}::${String(e.title || '').toLowerCase().replace(/\s+/g,' ').trim()}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const city = ciDedupeText(e.city || '').replace(/\s+/g, '-') || 'unknown-city';
+    const exactTitle = ciDedupeText(e.title || '').slice(0, 180);
+    const sig = ciTitleSignature(e.title || '') || exactTitle;
+
+    // Do not include id/source here: old cache rows may have unique ids per source,
+    // but they can still be the same incident/story.
+    const exactKey = `${day}::${city}::${exactTitle}`;
+    const sigKey = `${day}::${city}::${sig}`;
+    if (seen.has(exactKey) || seen.has(sigKey)) continue;
+
+    seen.add(exactKey);
+    seen.add(sigKey);
     out.push(e);
   }
+
   out.sort((a,b) => (Date.parse(b.when) || 0) - (Date.parse(a.when) || 0));
   return out;
 }
