@@ -90,6 +90,14 @@
     .lead-table td{color:#e9edf2}
     .lead-muted{color:var(--muted);font-size:12px}
     .lead-message{max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+    .lead-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .lead-action-btn{padding:5px 8px;border-radius:8px;border:1px solid var(--g500);background:#1c1e22;color:var(--text);font-size:12px;cursor:pointer}
+    .lead-action-btn:hover{border-color:#D01616}
+    .lead-action-btn.contact{border-color:#f0b429;color:#fde68a}
+    .lead-action-btn.approve{border-color:#33c48d;color:#bbf7d0}
+    .lead-action-btn.reject{border-color:#ff5a5f;color:#fecaca}
+    .lead-action-btn:disabled{opacity:.45;cursor:not-allowed}
+
 
 
 /* ===== Mobile layout tweaks ===== */
@@ -256,10 +264,11 @@
           <th>Status</th>
           <th>Submitted</th>
           <th>Message</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="leadRequestsBody">
-        <tr><td colspan="8" class="lead-muted">Loading access requests…</td></tr>
+        <tr><td colspan="9" class="lead-muted">Loading access requests…</td></tr>
       </tbody>
     </table>
   </div>
@@ -794,10 +803,24 @@ const makeBar = (label, count, color) => {
     return `<span class="lead-status ${esc(s)}">${esc(s)}</span>`;
   }
 
+  function actionButtons(row){
+    const id = esc(row.id);
+    const status = String(row.status || 'new').toLowerCase();
+    const disabled = (target) => status === target ? 'disabled' : '';
+
+    return `
+      <div class="lead-actions">
+        <button class="lead-action-btn contact" data-lead-action="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
+        <button class="lead-action-btn approve" data-lead-action="approved" data-lead-id="${id}" ${disabled('approved')}>Approve</button>
+        <button class="lead-action-btn reject" data-lead-action="rejected" data-lead-id="${id}" ${disabled('rejected')}>Reject</button>
+      </div>
+    `;
+  }
+
   function renderRows(rows){
     if (!body) return;
     if (!rows.length) {
-      body.innerHTML = `<tr><td colspan="8" class="lead-muted">No access requests found.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" class="lead-muted">No access requests found.</td></tr>`;
       return;
     }
 
@@ -814,6 +837,7 @@ const makeBar = (label, count, color) => {
           <td>${statusBadge(r.status)}</td>
           <td>${esc(fmtDate(r.created_at))}</td>
           <td><div class="lead-message" title="${esc(r.message)}">${esc(r.message)}</div></td>
+          <td>${actionButtons(r)}</td>
         </tr>
       `;
     }).join('');
@@ -829,7 +853,7 @@ const makeBar = (label, count, color) => {
 
   async function loadLeads(){
     if (!body) return;
-    body.innerHTML = `<tr><td colspan="8" class="lead-muted">Loading access requests…</td></tr>`;
+    body.innerHTML = `<tr><td colspan="9" class="lead-muted">Loading access requests…</td></tr>`;
 
     const status = filter ? filter.value : 'all';
     const url = `${API_BASE}/api/admin/lead-requests?status=${encodeURIComponent(status)}&limit=100`;
@@ -843,8 +867,48 @@ const makeBar = (label, count, color) => {
       renderRows(rows);
     } catch (e) {
       console.error('lead request load failed', e);
-      body.innerHTML = `<tr><td colspan="8" style="color:#fecaca;padding:12px">Unable to load access requests: ${esc(e.message || e)}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" style="color:#fecaca;padding:12px">Unable to load access requests: ${esc(e.message || e)}</td></tr>`;
     }
+  }
+
+  async function updateLeadStatus(id, status, btn){
+    if (!id || !status) return;
+
+    const label = btn ? btn.textContent : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(id)}/status`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Update failed: ${res.status}`);
+
+      await loadLeads();
+    } catch (e) {
+      alert(`Unable to update lead status: ${e.message || e}`);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    }
+  }
+
+  if (body) {
+    body.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-lead-action]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-lead-id');
+      const status = btn.getAttribute('data-lead-action');
+      updateLeadStatus(id, status, btn);
+    });
   }
 
   if (filter) filter.addEventListener('change', loadLeads);
@@ -924,5 +988,8 @@ const makeBar = (label, count, color) => {
 </body>
 
 </html>
+
+
+
 
 
