@@ -76,6 +76,20 @@
     .bar > span{position:absolute;left:0;top:0;bottom:0}
 
 
+    .lead-status{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:12px;border:1px solid var(--g500);color:var(--text);background:var(--g700)}
+    .lead-status.new{border-color:#3b82f6;color:#bfdbfe;background:rgba(59,130,246,.12)}
+    .lead-status.contacted{border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)}
+    .lead-status.approved{border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)}
+    .lead-status.rejected{border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)}
+    .lead-table-wrap{overflow:auto;border:1px solid var(--g600);border-radius:12px}
+    .lead-table{width:100%;border-collapse:collapse;min-width:920px}
+    .lead-table th,.lead-table td{padding:10px;border-bottom:1px solid var(--g600);text-align:left;vertical-align:top}
+    .lead-table th{background:#1c1e22;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .lead-table td{color:#e9edf2}
+    .lead-muted{color:var(--muted);font-size:12px}
+    .lead-message{max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+
+
 /* ===== Mobile layout tweaks ===== */
 @media (max-width: 720px) {
   /* Stack layout: topbar, sidebar row, then main content */
@@ -185,6 +199,69 @@
 
     <!-- MAIN -->
     <main class="main">
+
+
+<!-- ACCESS REQUESTS / LEAD INTAKE -->
+<div class="grid" style="margin-bottom:20px;">
+  <section class="card" style="grid-column:span 3">
+    <h3>Access Requests</h3>
+    <div class="kpi"><div id="kpiLeadAll" class="value">0</div></div>
+    <div class="legend">Total requests received</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>New Requests</h3>
+    <div class="kpi"><div id="kpiLeadNew" class="value" style="color:#93c5fd">0</div></div>
+    <div class="legend">Awaiting review</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Contacted</h3>
+    <div class="kpi"><div id="kpiLeadContacted" class="value" style="color:#f0b429">0</div></div>
+    <div class="legend">Follow-up started</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Approved / Converted</h3>
+    <div class="kpi"><div id="kpiLeadApproved" class="value" style="color:#33c48d">0</div></div>
+    <div class="legend">Approved or converted</div>
+  </section>
+</div>
+
+<section class="card" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Access Request Review Queue</h3>
+      <div class="legend">Latest demo, pilot, and private access requests from the website.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="leadStatusFilter" class="btn" style="background:#16171a;color:var(--text)">
+        <option value="all">All statuses</option>
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button id="leadRefreshBtn" class="btn" type="button">Refresh</button>
+    </div>
+  </div>
+  <div class="lead-table-wrap">
+    <table class="lead-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Company</th>
+          <th>Role</th>
+          <th>Interest</th>
+          <th>Region</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="leadRequestsBody">
+        <tr><td colspan="8" class="lead-muted">Loading access requests…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
 <div class="grid" style="margin-bottom:20px;">
   <section class="card" style="grid-column: span 3;">
@@ -689,6 +766,96 @@ const makeBar = (label, count, color) => {
   })();
 </script>
 
+<script>
+(function renderLeadRequests(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const body = document.getElementById('leadRequestsBody');
+  const filter = document.getElementById('leadStatusFilter');
+  const refresh = document.getElementById('leadRefreshBtn');
+
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const esc = (v) => String(v ?? '—')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+
+  function fmtDate(v){
+    const d = new Date(v || '');
+    if (isNaN(d)) return '—';
+    return d.toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' });
+  }
+
+  function statusBadge(status){
+    const s = String(status || 'new').toLowerCase();
+    return `<span class="lead-status ${esc(s)}">${esc(s)}</span>`;
+  }
+
+  function renderRows(rows){
+    if (!body) return;
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="8" class="lead-muted">No access requests found.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = rows.map(r => {
+      const name = `${r.first_name || ''} ${r.surname || ''}`.trim() || '—';
+      const email = r.email || '';
+      return `
+        <tr>
+          <td><strong>${esc(name)}</strong><div class="lead-muted">${esc(email)}</div></td>
+          <td>${esc(r.company)}</td>
+          <td>${esc(r.role)}</td>
+          <td>${esc(r.interest)}</td>
+          <td>${esc(r.region)}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${esc(fmtDate(r.created_at))}</td>
+          <td><div class="lead-message" title="${esc(r.message)}">${esc(r.message)}</div></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function updateKpis(rows){
+    const count = (s) => rows.filter(r => String(r.status || 'new').toLowerCase() === s).length;
+    setText('kpiLeadAll', rows.length);
+    setText('kpiLeadNew', count('new'));
+    setText('kpiLeadContacted', count('contacted'));
+    setText('kpiLeadApproved', count('approved'));
+  }
+
+  async function loadLeads(){
+    if (!body) return;
+    body.innerHTML = `<tr><td colspan="8" class="lead-muted">Loading access requests…</td></tr>`;
+
+    const status = filter ? filter.value : 'all';
+    const url = `${API_BASE}/api/admin/lead-requests?status=${encodeURIComponent(status)}&limit=100`;
+
+    try {
+      const res = await fetch(url, { credentials:'include' });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
+      const rows = Array.isArray(data.data) ? data.data : [];
+      updateKpis(rows);
+      renderRows(rows);
+    } catch (e) {
+      console.error('lead request load failed', e);
+      body.innerHTML = `<tr><td colspan="8" style="color:#fecaca;padding:12px">Unable to load access requests: ${esc(e.message || e)}</td></tr>`;
+    }
+  }
+
+  if (filter) filter.addEventListener('change', loadLeads);
+  if (refresh) refresh.addEventListener('click', loadLeads);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadLeads);
+  } else {
+    loadLeads();
+  }
+})();
+</script>
+
 		<script src="admin-links.js"></script>
 
 
@@ -755,8 +922,5 @@ const makeBar = (label, count, color) => {
 </body>
 
 </html>
-
-
-
 
 
