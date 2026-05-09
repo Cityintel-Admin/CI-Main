@@ -288,7 +288,7 @@
   location.href = next;
 
   return profile;
-}
+},
 
     logout() {
       LS.del('ci_user');
