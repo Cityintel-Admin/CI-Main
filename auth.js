@@ -230,65 +230,70 @@
       return !!(u && u.capabilities && u.capabilities[capability]);
     },
 
-    async login(email, password) {
-      const e = String(email || '').trim().toLowerCase();
-      const p = String(password || '');
-      const debugHash = await sha256(p);
-      console.log('REAL HASH:', debugHash);
-     
-      if (!isValidEmail(e)) throw new Error('Please enter a valid email address.');
+   async login(email, password) {
+  const e = String(email || '').trim().toLowerCase();
+  const p = String(password || '');
 
-      // 1) Internal master admins still require password
-      const admin = USERS[e];
-      if (admin) {
-        if (!p) throw new Error('Please enter your password.');
-        const given = await sha256(p);
-        if (given !== admin.passHash) throw new Error('Incorrect password.');
-        const profile = normalizeProfile({
-          email: e,
-          name: admin.name,
-          role: admin.role,            // stays 'Admin' for compatibility
-          roleKey: admin.roleKey,      // new role system
-          roleLabel: admin.roleLabel,
-          is_admin: true,
-          is_master: true
-        });
-        persistProfile(profile);
-        LS.set('ci_token', token());
-        localStorage.setItem('ci_subscribed', 'true'); // internal admins always have access
-        const params = new URLSearchParams(location.search);
-        const next = params.get('next') || 'index.html';
-        location.href = next;
-        return profile;
-      }
+  if (!isValidEmail(e)) {
+    throw new Error('Please enter a valid email address.');
+  }
 
-      // 2) Customer users: check subscription status in Worker (email-only login for testing)
-      const sub = await fetchSubStatus(e); // {subscribed, plan, trialEndsAt, roleKey?}
-      if (!sub || (!sub.subscribed && !sub.trialEndsAt)) {
-        throw new Error('No active subscription found for this email. Please subscribe first.');
-      }
+  if (!p) {
+    throw new Error('Please enter your password.');
+  }
 
-      const roleKey = String(sub.roleKey || '').toLowerCase() === 'org-admin' ? 'org-admin' : 'operator';
-      const profile = normalizeProfile({
-      email: e,
-      name: admin.name,
-      role: admin.role,
-      roleKey: admin.roleKey,
-      roleLabel: admin.roleLabel,
-      is_admin: admin.roleKey === 'master-admin',
-      is_master: admin.roleKey === 'master-admin'
-      });
-
-      persistProfile(profile);
-      LS.set('ci_token', token());
-      localStorage.setItem('ci_subscribed', String(!!sub.subscribed || !!sub.trialEndsAt));
-      if (sub.plan) localStorage.setItem('ci_plan', sub.plan); else localStorage.removeItem('ci_plan');
-
-      const params = new URLSearchParams(location.search);
-      const next = params.get('next') || 'index.html';
-      location.href = next;
-      return profile;
+  // REAL BACKEND LOGIN
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
     },
+    body: JSON.stringify({
+      email: e,
+      password: p
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error || 'Login failed.');
+  }
+
+  const user = data.user || {};
+
+  const profile = normalizeProfile({
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    roleKey: user.roleKey,
+    roleLabel: user.roleLabel,
+    is_admin: user.roleKey === 'master-admin',
+    is_master: user.roleKey === 'master-admin'
+  });
+
+  persistProfile(profile);
+
+  LS.set('ci_token', token());
+
+  localStorage.setItem(
+    'ci_subscribed',
+    String(user.accessType === 'internal' || user.status === 'active')
+  );
+
+  if (user.plan) {
+    localStorage.setItem('ci_plan', user.plan);
+  } else {
+    localStorage.removeItem('ci_plan');
+  }
+
+  const params = new URLSearchParams(location.search);
+  const next = params.get('next') || 'index.html';
+
+  location.href = next;
+
+  return profile;
+}
 
     logout() {
       LS.del('ci_user');
