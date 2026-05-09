@@ -1,8 +1,3 @@
- // Carlton — Admin:  cjladmin@cityintel.com  /  Kieron12!
-  // Morris  — Admin:  mmadmin@cityintel.com        /  Morrisintel@01
- //test --- orgadmin@cityintel.com / OrgAdmin@01
-//test--- operator@cityintel.com / Operator@01
-
 /**
  * CityIntel Auth (frontend-only; swap to real backend later)
  * Stores: ci_user, ci_token, ci_subscribed, ci_plan in localStorage
