@@ -301,6 +301,18 @@
   </div>
 </div>
 
+<!-- LEAD HISTORY MODAL -->
+<div id="leadHistoryModal" class="lead-modal-backdrop" aria-hidden="true">
+  <div class="lead-modal" role="dialog" aria-modal="true">
+    <h3 style="margin-bottom:4px;">Conversation History</h3>
+    <div id="leadHistoryRecipient" class="lead-muted" style="margin-bottom:14px;">Loading conversation...</div>
+    <div id="leadHistoryBody" style="display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow:auto;padding-right:4px;"></div>
+    <div class="lead-modal-actions">
+      <button id="leadHistoryClose" class="btn" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="grid" style="margin-bottom:20px;">
   <section class="card" style="grid-column: span 3;">
     <h3>Subscriptions (All)</h3>
@@ -819,6 +831,11 @@ const makeBar = (label, count, color) => {
   const modalCancel = document.getElementById('leadModalCancel');
   const modalSend = document.getElementById('leadModalSend');
 
+  const historyModal = document.getElementById('leadHistoryModal');
+  const historyBody = document.getElementById('leadHistoryBody');
+  const historyRecipient = document.getElementById('leadHistoryRecipient');
+  const historyClose = document.getElementById('leadHistoryClose');
+
   let latestRows = [];
   let activeLead = null;
   let activeMessageType = 'reply';
@@ -880,6 +897,7 @@ const makeBar = (label, count, color) => {
 
     return `
       <div class="lead-actions">
+        <button class="lead-action-btn reply" data-lead-history="${id}">Messages</button>
         <button class="lead-action-btn reply" data-lead-message="reply" data-lead-id="${id}">Reply</button>
         <button class="lead-action-btn contact" data-lead-message="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
         <button class="lead-action-btn approve" data-lead-action="approved" data-lead-id="${id}" ${disabled('approved')}>Approve</button>
@@ -973,6 +991,56 @@ const makeBar = (label, count, color) => {
     }
   }
 
+  async function openLeadHistory(id){
+    const row = latestRows.find(r => String(r.id) === String(id));
+    if (!row || !historyModal || !historyBody) return;
+
+    historyModal.style.display = 'flex';
+    historyModal.setAttribute('aria-hidden', 'false');
+    historyRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    historyBody.innerHTML = `<div class="lead-muted">Loading conversation…</div>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(row.id)}/messages`, {
+        credentials: 'include'
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `History failed: ${res.status}`);
+
+      const rows = Array.isArray(data.data) ? data.data : [];
+      if (!rows.length) {
+        historyBody.innerHTML = `<div class="lead-muted">No conversation history found.</div>`;
+        return;
+      }
+
+      historyBody.innerHTML = rows.map(msg => {
+        const outgoing = String(msg.direction || '').toLowerCase() === 'sent';
+        const title = outgoing ? 'CityIntel → User' : 'User Reply';
+        const bg = outgoing ? 'rgba(59,130,246,.08)' : 'rgba(255,255,255,.03)';
+        return `
+          <div style="border:1px solid var(--g600);border-radius:12px;padding:12px;background:${bg};">
+            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+              <div style="font-weight:700;">${title}</div>
+              <div class="lead-muted">${esc(fmtDate(msg.created_at))}</div>
+            </div>
+            <div style="font-size:13px;color:#cbd5e1;margin-bottom:10px;">${esc(msg.subject || '(No subject)')}</div>
+            <div style="white-space:pre-wrap;line-height:1.5;">${esc(msg.message || '')}</div>
+            <div class="lead-muted" style="margin-top:10px;">${esc(msg.from_email || '—')} → ${esc(msg.to_email || '—')}</div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      console.error('lead history load failed', e);
+      historyBody.innerHTML = `<div style="color:#fecaca;">Failed to load conversation history: ${esc(e.message || e)}</div>`;
+    }
+  }
+
+  function closeLeadHistory(){
+    if (!historyModal) return;
+    historyModal.style.display = 'none';
+    historyModal.setAttribute('aria-hidden', 'true');
+  }
+
   function openMessageModal(id, type){
     const row = latestRows.find(r => String(r.id) === String(id));
     if (!row || !modal) return;
@@ -1039,6 +1107,13 @@ const makeBar = (label, count, color) => {
 
   if (body) {
     body.addEventListener('click', (e) => {
+      const historyBtn = e.target.closest('[data-lead-history]');
+      if (historyBtn) {
+        const id = historyBtn.getAttribute('data-lead-history');
+        openLeadHistory(id);
+        return;
+      }
+
       const messageBtn = e.target.closest('[data-lead-message]');
       if (messageBtn) {
         const id = messageBtn.getAttribute('data-lead-id');
@@ -1058,7 +1133,14 @@ const makeBar = (label, count, color) => {
   if (modalCancel) modalCancel.addEventListener('click', closeMessageModal);
   if (modalSend) modalSend.addEventListener('click', sendLeadMessage);
   if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeMessageModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMessageModal(); });
+  if (historyClose) historyClose.addEventListener('click', closeLeadHistory);
+  if (historyModal) historyModal.addEventListener('click', (e) => { if (e.target === historyModal) closeLeadHistory(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeMessageModal();
+      closeLeadHistory();
+    }
+  });
 
   if (filter) filter.addEventListener('change', loadLeads);
   if (refresh) refresh.addEventListener('click', loadLeads);
