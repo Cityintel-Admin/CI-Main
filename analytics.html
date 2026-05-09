@@ -96,6 +96,16 @@
     .lead-action-btn.contact{border-color:#f0b429;color:#fde68a}
     .lead-action-btn.approve{border-color:#33c48d;color:#bbf7d0}
     .lead-action-btn.reject{border-color:#ff5a5f;color:#fecaca}
+
+    .lead-action-btn.reply{border-color:#60a5fa;color:#bfdbfe}
+    .lead-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
+    .lead-modal{width:min(720px,100%);background:#16171a;border:1px solid var(--g600);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:18px}
+    .lead-modal h3{margin:0 0 6px;font-size:18px}
+    .lead-modal label{display:block;margin:12px 0 6px;color:#cbd5e1;font-weight:700;font-size:13px}
+    .lead-modal input,.lead-modal textarea{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:10px;font:inherit}
+    .lead-modal textarea{min-height:170px;resize:vertical;line-height:1.45}
+    .lead-modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+    .lead-modal-note{color:var(--muted);font-size:12px;margin-top:4px}
     .lead-action-btn:disabled{opacity:.45;cursor:not-allowed}
 
 
@@ -273,6 +283,23 @@
     </table>
   </div>
 </section>
+
+<!-- LEAD MESSAGE MODAL -->
+<div id="leadMessageModal" class="lead-modal-backdrop" aria-hidden="true">
+  <div class="lead-modal" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+    <h3 id="leadModalTitle">Send message</h3>
+    <div id="leadModalRecipient" class="lead-muted">Recipient details loading…</div>
+    <label for="leadModalSubject">Subject</label>
+    <input id="leadModalSubject" type="text" />
+    <label for="leadModalMessage">Message</label>
+    <textarea id="leadModalMessage"></textarea>
+    <div class="lead-modal-note">This email will be sent from CityIntel &lt;contact@city-intel.com&gt;. Replies will go to your CityIntel inbox routing for now.</div>
+    <div class="lead-modal-actions">
+      <button id="leadModalCancel" class="btn" type="button">Cancel</button>
+      <button id="leadModalSend" class="btn primary" type="button">Send message</button>
+    </div>
+  </div>
+</div>
 
 <div class="grid" style="margin-bottom:20px;">
   <section class="card" style="grid-column: span 3;">
@@ -784,6 +811,19 @@ const makeBar = (label, count, color) => {
   const filter = document.getElementById('leadStatusFilter');
   const refresh = document.getElementById('leadRefreshBtn');
 
+  const modal = document.getElementById('leadMessageModal');
+  const modalTitle = document.getElementById('leadModalTitle');
+  const modalRecipient = document.getElementById('leadModalRecipient');
+  const modalSubject = document.getElementById('leadModalSubject');
+  const modalMessage = document.getElementById('leadModalMessage');
+  const modalCancel = document.getElementById('leadModalCancel');
+  const modalSend = document.getElementById('leadModalSend');
+
+  let latestRows = [];
+  let activeLead = null;
+  let activeMessageType = 'reply';
+  let activeStatusAfterSend = 'contacted';
+
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   const esc = (v) => String(v ?? '—')
     .replace(/&/g,'&amp;')
@@ -803,6 +843,36 @@ const makeBar = (label, count, color) => {
     return `<span class="lead-status ${esc(s)}">${esc(s)}</span>`;
   }
 
+  function fullName(row){
+    return `${row?.first_name || ''} ${row?.surname || ''}`.trim() || 'there';
+  }
+
+  function templateFor(type, row){
+    const name = fullName(row);
+    if (type === 'reject') {
+      return {
+        title: 'Reject access request',
+        subject: 'CityIntel access request update',
+        message: `Hi ${name},\n\nThank you for your interest in CityIntel.\n\nAfter reviewing your request, we are unable to provide access at this stage.\n\nReason:\n\n\nRegards,\nCityIntel`,
+        status: 'rejected'
+      };
+    }
+    if (type === 'contacted') {
+      return {
+        title: 'Send follow-up message',
+        subject: 'CityIntel access request follow-up',
+        message: `Hi ${name},\n\nThank you for your interest in CityIntel.\n\nWe have reviewed your request and would like to follow up with you regarding your access/demo enquiry.\n\nRegards,\nCityIntel`,
+        status: 'contacted'
+      };
+    }
+    return {
+      title: 'Reply to lead',
+      subject: 'CityIntel access request',
+      message: `Hi ${name},\n\nThank you for your interest in CityIntel.\n\n\n\nRegards,\nCityIntel`,
+      status: 'contacted'
+    };
+  }
+
   function actionButtons(row){
     const id = esc(row.id);
     const status = String(row.status || 'new').toLowerCase();
@@ -810,9 +880,10 @@ const makeBar = (label, count, color) => {
 
     return `
       <div class="lead-actions">
-        <button class="lead-action-btn contact" data-lead-action="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
+        <button class="lead-action-btn reply" data-lead-message="reply" data-lead-id="${id}">Reply</button>
+        <button class="lead-action-btn contact" data-lead-message="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
         <button class="lead-action-btn approve" data-lead-action="approved" data-lead-id="${id}" ${disabled('approved')}>Approve</button>
-        <button class="lead-action-btn reject" data-lead-action="rejected" data-lead-id="${id}" ${disabled('rejected')}>Reject</button>
+        <button class="lead-action-btn reject" data-lead-message="reject" data-lead-id="${id}" ${disabled('rejected')}>Reject</button>
       </div>
     `;
   }
@@ -863,6 +934,7 @@ const makeBar = (label, count, color) => {
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
       const rows = Array.isArray(data.data) ? data.data : [];
+      latestRows = rows;
       updateKpis(rows);
       renderRows(rows);
     } catch (e) {
@@ -901,8 +973,80 @@ const makeBar = (label, count, color) => {
     }
   }
 
+  function openMessageModal(id, type){
+    const row = latestRows.find(r => String(r.id) === String(id));
+    if (!row || !modal) return;
+
+    activeLead = row;
+    activeMessageType = type;
+    const tpl = templateFor(type, row);
+    activeStatusAfterSend = tpl.status;
+
+    modalTitle.textContent = tpl.title;
+    modalRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    modalSubject.value = tpl.subject;
+    modalMessage.value = tpl.message;
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => modalMessage.focus(), 50);
+  }
+
+  function closeMessageModal(){
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    activeLead = null;
+  }
+
+  async function sendLeadMessage(){
+    if (!activeLead) return;
+    const subject = modalSubject.value.trim();
+    const message = modalMessage.value.trim();
+    if (!subject || !message) {
+      alert('Please enter both a subject and message.');
+      return;
+    }
+
+    const old = modalSend.textContent;
+    modalSend.disabled = true;
+    modalSend.textContent = 'Sending…';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(activeLead.id)}/message`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: activeMessageType,
+          subject,
+          message,
+          status: activeStatusAfterSend
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Message failed: ${res.status}`);
+
+      closeMessageModal();
+      await loadLeads();
+    } catch (e) {
+      alert(`Unable to send message: ${e.message || e}`);
+    } finally {
+      modalSend.disabled = false;
+      modalSend.textContent = old;
+    }
+  }
+
   if (body) {
     body.addEventListener('click', (e) => {
+      const messageBtn = e.target.closest('[data-lead-message]');
+      if (messageBtn) {
+        const id = messageBtn.getAttribute('data-lead-id');
+        const type = messageBtn.getAttribute('data-lead-message');
+        openMessageModal(id, type);
+        return;
+      }
+
       const btn = e.target.closest('[data-lead-action]');
       if (!btn) return;
       const id = btn.getAttribute('data-lead-id');
@@ -910,6 +1054,11 @@ const makeBar = (label, count, color) => {
       updateLeadStatus(id, status, btn);
     });
   }
+
+  if (modalCancel) modalCancel.addEventListener('click', closeMessageModal);
+  if (modalSend) modalSend.addEventListener('click', sendLeadMessage);
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeMessageModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMessageModal(); });
 
   if (filter) filter.addEventListener('change', loadLeads);
   if (refresh) refresh.addEventListener('click', loadLeads);
