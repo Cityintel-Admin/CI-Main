@@ -1,6 +1,5 @@
  // Carlton — Admin:  cjladmin@cityintel.com  /  Kieron12!
   // Morris  — Admin:  mmadmin@cityintel.com        /  Morrisintel@01
-// Emma  — Admin:  emma@cityintel.com        /  Emcity@01
  //test --- orgadmin@cityintel.com / OrgAdmin@01
 //test--- operator@cityintel.com / Operator@01
 
@@ -45,15 +44,7 @@
       roleLabel: 'Master Admin',
       passHash: 'ef2c36181af9977b4359eedab2d21a6715d266e0d5a35200f333d743adb2cc5e'
     },
-    'emma@cityintel.com': {
-     name: 'Emma',
-     role: 'Admin',
-     roleKey: 'master-admin',
-     roleLabel: 'Master Admin',
-     passHash: '42b82e6dba5919ac57dc40c90d38e719a3e717c4c709f952896e03ad83ecf385'
-    },
-
-
+    
    'orgadmin@cityintel.com': {
   name: 'Demo Org Admin',
   role: 'Org Admin',
