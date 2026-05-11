@@ -316,7 +316,15 @@
         const last = Number(sessionStorage.getItem('ci_sub_checked_at') || 0);
         if (!force && Date.now() - last < 120_000) return;
 
-        const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`);
+        const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`, {
+  method: 'GET',
+  headers: {
+    'X-User-Email': p.email,
+    'X-User-Name': p.name || '',
+    'X-User-Role-Key': p.roleKey || '',
+    'X-User-Role': p.role || ''
+  }
+});
         if (!res.ok) return;
         const data = await res.json();
 
