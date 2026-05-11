@@ -1132,19 +1132,40 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   }
   // Keep local org lists fresh (travellers/assets) for map overlays & panels
   (function startOrgSync(){
-    async function tick(){
-      try {
-        await Promise.all([syncOrgTravellers(), syncOrgAssets()]);
-        // If the dashboard map is already initialised, re-render presence markers
-        // (test.html does this via refreshPresenceMarkers()).
-        if (typeof window.ciOnPresenceChanged === 'function') {
-          try { window.ciOnPresenceChanged(); } catch(_) {}
-        }
-      } catch(e) {}
+  function canSyncOrgPresence(){
+    try {
+      if (!window.CIAuth || !CIAuth.isLoggedIn()) return false;
+      return CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin();
+    } catch (_) {
+      return false;
     }
-    tick();
-    setInterval(tick, 5000);
-  })();
+  }
+
+  async function tick(){
+    if (!canSyncOrgPresence()) {
+      window.CIAssets = [];
+      window.CITravellers = [];
+      try {
+        localStorage.removeItem('ci_assets');
+        localStorage.removeItem('ci_travellers');
+      } catch (_) {}
+      if (typeof window.ciOnPresenceChanged === 'function') {
+        try { window.ciOnPresenceChanged(); } catch(_) {}
+      }
+      return;
+    }
+
+    try {
+      await Promise.all([syncOrgTravellers(), syncOrgAssets()]);
+      if (typeof window.ciOnPresenceChanged === 'function') {
+        try { window.ciOnPresenceChanged(); } catch(_) {}
+      }
+    } catch(e) {}
+  }
+
+  tick();
+  setInterval(tick, 5000);
+})();
 
 </script>
 <script>
