@@ -307,7 +307,7 @@
       }
     },
 
-    async refreshSubStatus(force = false) {
+        async refreshSubStatus(force = false) {
       try {
         const p = normalizeProfile(JSON.parse(localStorage.getItem('ci_profile') || '{}'));
         if (!p || !p.email || p.is_master) return;
@@ -320,20 +320,40 @@
         if (!res.ok) return;
         const data = await res.json();
 
-        localStorage.setItem('ci_subscribed', String(!!data.subscribed));
-        if (data.plan) localStorage.setItem('ci_plan', data.plan); else localStorage.removeItem('ci_plan');
+        const accessType = String(data.accessType || data.access_type || p.accessType || '').toLowerCase();
+        const status = String(data.status || p.status || '').toLowerCase();
 
-        const nextRoleKey = String(data.roleKey || '').toLowerCase() === 'org-admin'
-          ? 'org-admin'
-          : (p.roleKey || 'operator');
+        const allowed =
+          !!data.subscribed ||
+          accessType === 'internal' ||
+          accessType === 'demo' ||
+          status === 'active';
+
+        localStorage.setItem('ci_subscribed', String(allowed));
+
+        if (data.plan) {
+          localStorage.setItem('ci_plan', data.plan);
+        } else {
+          localStorage.removeItem('ci_plan');
+        }
+
+        const rawRoleKey = String(data.roleKey || data.role_key || p.roleKey || 'operator').toLowerCase();
+
+        const nextRoleKey =
+          rawRoleKey === 'master-admin' ? 'master-admin' :
+          rawRoleKey === 'org-admin' ? 'org-admin' :
+          'operator';
 
         const refreshedProfile = normalizeProfile({
           ...p,
           name: data.name || p.name,
           roleKey: nextRoleKey,
           role: roleStringForCompatibility(nextRoleKey),
-          roleLabel: roleLabelFromKey(nextRoleKey)
+          roleLabel: roleLabelFromKey(nextRoleKey),
+          accessType,
+          status: status || p.status
         });
+
         persistProfile(refreshedProfile);
 
         sessionStorage.setItem('ci_sub_checked_at', String(Date.now()));
@@ -341,11 +361,20 @@
         const path = (location.pathname.split('/').pop() || '').toLowerCase();
         const protectedPages = [
           'index.html','alerts.html','events.html','reports.html','watch.html',
-          'operations-log.html','analytics.html','system-flow.html','sources.html','settings.html',
-          'live-alerts.html','assets.html','travellers.html','brief.html','trends.html'
+          'operations-log.html','operationslog.html','analytics.html','system-flow.html','sources.html','settings.html',
+          'live-alerts.html','assets.html','travellers.html','brief.html','trends.html',
+          'neighborhood-intel.html','neighbourhood-intel.html'
         ];
-        const isAuthPage = ['login.html','subscribe.html','forgottenpassword.html','unsubscribe.html'].includes(path);
-        if (!data.subscribed && protectedPages.includes(path) && !isAuthPage) {
+
+        const isAuthPage = [
+          'login.html',
+          'subscribe.html',
+          'forgottenpassword.html',
+          'unsubscribe.html',
+          'set-password.html'
+        ].includes(path);
+
+        if (!allowed && protectedPages.includes(path) && !isAuthPage) {
           location.href = 'subscribe.html?reason=expired';
         }
       } catch (e) {
