@@ -591,6 +591,129 @@ async function loadOrgContext() {
 })();
 </script>
 
+<script>
+/*
+ * Phase 7A: Operational severity scoring.
+ * Provider-ready layer: works with current alerts and any future geolocated API.
+ */
+(function(){
+  const norm = (v)=>String(v || '').trim().toLowerCase();
+  const esc = (v)=>String(v ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+
+  function riskWeight(risk){
+    const r = norm(risk);
+    if (['severe','critical'].includes(r)) return 10;
+    if (r === 'high') return 7;
+    if (['medium','med'].includes(r)) return 4;
+    if (r === 'low') return 2;
+    return 3;
+  }
+
+  function assetCriticalityWeight(asset){
+    const c = norm(asset && (asset.criticality || asset.siteCriticality || asset.priority));
+    const t = norm(asset && asset.type);
+    if (['critical','tier 1','tier1'].includes(c) || /data\s*centre|datacenter|hq|headquarters/.test(t)) return 5;
+    if (['high','tier 2','tier2'].includes(c)) return 3;
+    if (['medium','med'].includes(c)) return 2;
+    return 1;
+  }
+
+  function travellerWeight(t){
+    const role = norm(t && t.role);
+    const status = norm(t && (t.exposureStatus || t.riskStatus || t.status));
+    let w = 2;
+    if (/ceo|cfo|coo|director|executive|vip/.test(role)) w += 3;
+    if (status === 'critical') w += 4;
+    else if (status === 'elevated') w += 3;
+    else if (status === 'monitor') w += 1;
+    return w;
+  }
+
+  function panicMatch(ev){
+    try{
+      const st = window.__ciPanicState || window.__ciPanicResolved || null;
+      if (!st || st.active === false) return false;
+      const city = norm(ev && ev.city);
+      const loc = norm(st.location || st.city || st.loc || '');
+      if (city && loc && loc.includes(city)) return true;
+      return !!(st.lat && st.lon && (ev.lat || ev.lon || ev.lng));
+    }catch(_){ return false; }
+  }
+
+  function levelFromScore(score){
+    if (score >= 18) return { level:'Severe', className:'severe', queue:'Critical queue' };
+    if (score >= 14) return { level:'Critical', className:'critical', queue:'Critical queue' };
+    if (score >= 9)  return { level:'Elevated', className:'elevated', queue:'Escalated queue' };
+    if (score >= 5)  return { level:'Monitor', className:'monitor', queue:'Monitoring queue' };
+    return { level:'Low', className:'low', queue:'Watchlist' };
+  }
+
+  function scoreIncident(ev, exposure){
+    let exp = exposure || null;
+    if (!exp && window.CIExposure && CIExposure.exposureFor) {
+      const coords = (typeof parseLatLonFromAny === 'function') ? parseLatLonFromAny(ev) : null;
+      exp = CIExposure.exposureFor({
+        city: ev && (ev.city || ev.City),
+        country: ev && (ev.country || ev.Country),
+        lat: coords && coords.lat,
+        lng: coords && coords.lon,
+        radiusKm: 10,
+        risk: ev && (ev.risk || ev.Risk || ev.severity || ev.category)
+      });
+    }
+    exp = exp || { assets:[], travellers:[] };
+
+    const assets = Array.isArray(exp.assets || exp.assetsNearby) ? (exp.assets || exp.assetsNearby) : [];
+    const travellers = Array.isArray(exp.travellers || exp.travellersNearby) ? (exp.travellers || exp.travellersNearby) : [];
+    const panic = panicMatch(ev);
+
+    let score = riskWeight(ev && (ev.risk || ev.Risk || ev.severity || ev.category));
+    score += Math.min(8, assets.reduce((sum,a)=>sum + assetCriticalityWeight(a), 0));
+    score += Math.min(10, travellers.reduce((sum,t)=>sum + travellerWeight(t), 0));
+    if (panic) score += 8;
+
+    const meta = levelFromScore(score);
+    const hasVip = travellers.some(t => /ceo|cfo|coo|director|executive|vip/.test(norm(t.role)));
+
+    return {
+      score,
+      level: meta.level,
+      className: meta.className,
+      queue: meta.queue,
+      assets,
+      travellers,
+      panic,
+      hasVip,
+      exposure: exp
+    };
+  }
+
+  function badgesHtml(result){
+    if (!result) return '';
+    const parts = [];
+    parts.push(`<span class="ci-op-pill ${esc(result.className)}">${esc(result.level)} <span class="ci-score-small">${Number(result.score || 0)}</span></span>`);
+    parts.push(`<span class="ci-exposure-badge queue">${esc(result.queue)}</span>`);
+    if (result.travellers.length) parts.push(`<span class="ci-exposure-badge traveller">${result.travellers.length} Traveller${result.travellers.length>1?'s':''} nearby</span>`);
+    if (result.assets.length) parts.push(`<span class="ci-exposure-badge asset">${result.assets.length} Asset${result.assets.length>1?'s':''} nearby</span>`);
+    if (result.hasVip) parts.push(`<span class="ci-exposure-badge vip">VIP exposure</span>`);
+    if (result.panic) parts.push(`<span class="ci-exposure-badge panic">Panic correlation</span>`);
+    return `<div class="ci-op-score-row">${parts.join('')}</div>`;
+  }
+
+  function sortByOperationalPriority(list){
+    return (list || []).slice().sort((a,b)=>{
+      const as = scoreIncident(a).score;
+      const bs = scoreIncident(b).score;
+      if (bs !== as) return bs - as;
+      return (Date.parse(b.when || b.raw_time || '') || 0) - (Date.parse(a.when || a.raw_time || '') || 0);
+    });
+  }
+
+  window.CISeverity = { scoreIncident, badgesHtml, sortByOperationalPriority };
+})();
+</script>
+
+
 	<link rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
@@ -2160,6 +2283,50 @@ padding-bottom: 12px;
 .ci-status-pill[data-status="escalated"]{ border-color: rgba(255,90,95,0.6); background: rgba(255,90,95,0.16); }
 .ci-status-pill[data-status="monitoring"]{ border-color: rgba(240,180,41,0.6); background: rgba(240,180,41,0.14); }
 .ci-status-pill[data-status="cleared"]{ border-color: rgba(51,196,141,0.6); background: rgba(51,196,141,0.14); }
+
+
+/* ===== Phase 7A Operational Severity + Exposure Badges ===== */
+.ci-op-score-row{
+  margin-top:7px;
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.ci-op-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.02em;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);
+  color:#e5e7eb;
+}
+.ci-op-pill.severe{border-color:rgba(248,113,113,.85);background:rgba(127,29,29,.42);color:#fee2e2;}
+.ci-op-pill.critical{border-color:rgba(249,115,22,.75);background:rgba(124,45,18,.35);color:#ffedd5;}
+.ci-op-pill.elevated{border-color:rgba(251,191,36,.7);background:rgba(113,63,18,.28);color:#fef3c7;}
+.ci-op-pill.monitor{border-color:rgba(96,165,250,.6);background:rgba(30,64,175,.22);color:#dbeafe;}
+.ci-op-pill.low{border-color:rgba(74,222,128,.45);background:rgba(20,83,45,.2);color:#dcfce7;}
+.ci-exposure-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid rgba(255,255,255,.14);
+}
+.ci-exposure-badge.asset{background:rgba(59,130,246,.22);border-color:rgba(59,130,246,.65);color:#dbeafe;}
+.ci-exposure-badge.traveller{background:rgba(245,158,11,.22);border-color:rgba(245,158,11,.7);color:#fff7ed;}
+.ci-exposure-badge.panic{background:rgba(244,63,94,.24);border-color:rgba(244,63,94,.75);color:#ffe4e6;}
+.ci-exposure-badge.vip{background:rgba(168,85,247,.23);border-color:rgba(168,85,247,.7);color:#f3e8ff;}
+.ci-exposure-badge.queue{background:rgba(15,23,42,.8);border-color:rgba(148,163,184,.32);color:#e2e8f0;}
+.ci-score-small{opacity:.78;font-weight:700;}
 
 /* ===== Phase 6B Traveller Exposure Scoring ===== */
 .exposure-status-pill{
@@ -5668,6 +5835,16 @@ function openDetailPanel(item, relatedList){
   const nA = exposure.assets.length;
   const nT = exposure.travellers.length;
 
+  let ciSeverity = null;
+  let ciSeverityHtml = '';
+  try {
+    if (window.CISeverity && CISeverity.scoreIncident) {
+      ciSeverity = CISeverity.scoreIncident(item, exposure);
+      item.__ciSeverity = ciSeverity;
+      ciSeverityHtml = CISeverity.badgesHtml(ciSeverity);
+    }
+  } catch(e) { console.warn('CityIntel detail severity failed', e); }
+
   window.__ciCurrentExposure = exposure;
 
   if (nA || nT) {
@@ -5679,6 +5856,7 @@ function openDetailPanel(item, relatedList){
       : 'no mapped travellers';
 
     detailImpactEl.innerHTML = `
+      ${ciSeverityHtml}
       <span style="font-weight:700;letter-spacing:.03em;font-size:11px;color:#fecaca;">
         ASSETS &amp; TRAVELLERS </span><br>
       <span class="exposure-status-pill ${exposure.className || 'normal'}">${exposure.status || 'Normal'}</span>
@@ -5689,6 +5867,7 @@ function openDetailPanel(item, relatedList){
     `;
   } else {
     detailImpactEl.innerHTML = `
+      ${ciSeverityHtml}
       <span style="font-weight:700;letter-spacing:.03em;font-size:11px;color:#9ca3af;">
         ASSETS &amp; TRAVELLERS</span><br><span style="opacity:.9;">
         No mapped company assets or travellers currently in this city(based on stored data). </span>
@@ -6183,30 +6362,24 @@ function renderEventsIntoCard(cardEl, events, feed) {
       const groupEl  = document.createElement('div');
       const ageClass = getAgeClass(first.when);
 
-      // NEW: exposure (assets + travellers) for this city/country
-            let exposureHtml = '';
-      if (window.CIExposure && CIExposure.exposureFor) {
-        const firstCoords = parseLatLonFromAny(first);
-        const exp = CIExposure.exposureFor({
-          city: first.city || first.City,
-          country: first.country || first.Country,
-          lat: firstCoords && firstCoords.lat,
-          lng: firstCoords && firstCoords.lon,
-          radiusKm: 10,
-          risk: first.risk || first.Risk || first.severity || first.category
-        });
-        const nA = exp.assets.length;
-        const nT = exp.travellers.length;
-        if (nA || nT) {
-          exposureHtml = `
-            <div class="eg-exposure" style="margin-top:6px;font-size:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-              <span class="exposure-status-pill ${exp.className || 'normal'}">${exp.status || 'Normal'}</span>
-              <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(59,130,246,0.32);border:1px solid rgba(59,130,246,0.9);color:#e5f0ff;font-weight:600;">Assets: <b>${nA}</b></span>
-              <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(245,158,11,0.32);border:1px solid rgba(245,158,11,0.9);color:#fff7e6;font-weight:600;">Travellers: <b>${nT}</b></span>
-            </div>
-          `;
+      // Phase 7A: operational severity + exposure badges for this grouped alert
+      let exposureHtml = '';
+      try {
+        if (window.CISeverity && CISeverity.scoreIncident) {
+          const firstCoords = parseLatLonFromAny(first);
+          const exp = (window.CIExposure && CIExposure.exposureFor) ? CIExposure.exposureFor({
+            city: first.city || first.City,
+            country: first.country || first.Country,
+            lat: firstCoords && firstCoords.lat,
+            lng: firstCoords && firstCoords.lon,
+            radiusKm: 10,
+            risk: first.risk || first.Risk || first.severity || first.category
+          }) : null;
+          const sev = CISeverity.scoreIncident(first, exp);
+          first.__ciSeverity = sev;
+          exposureHtml = CISeverity.badgesHtml(sev);
         }
-      }
+      } catch(e) { console.warn('CityIntel severity badge failed', e); }
 
             groupEl.className = `event-group ${ageClass}`;
             groupEl.setAttribute('data-alertkey', alertKey(first));
@@ -6730,7 +6903,8 @@ viewFullBtn.addEventListener('click', (e)=>{
     city: window.__lastDetailItem?.city || null,
     risk: window.__lastDetailItem?.risk || null,
 	lat: window.__lastDetailItem?.lat ?? null,
-    lon: window.__lastDetailItem?.lon ?? null  
+    lon: window.__lastDetailItem?.lon ?? null,
+    operationalSeverity: window.__lastDetailItem?.__ciSeverity || null
   };
 
   // Generate a temp ID (could use timestamp)
