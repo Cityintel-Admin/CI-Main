@@ -418,7 +418,8 @@ async function loadOrgContext() {
 /*
  * CIExposure
  * - Provides nearby assets/travellers for an incident location.
- * - Data comes from localStorage (ci_assets / ci_travellers) so users never need lat/lng manually.
+ * - Adds Phase 6B traveller exposure scoring: Normal / Monitor / Elevated / Critical.
+ * - Data comes from localStorage (ci_assets / ci_travellers), refreshed from org API by the page boot sync.
  */
 (function () {
   const norm = (s) => (s || "").toString().trim().toLowerCase();
@@ -439,6 +440,30 @@ async function loadOrgContext() {
     return Number.isFinite(n) ? n : null;
   }
 
+  function riskText(v) {
+    const r = norm(v || 'medium');
+    if (['critical','severe'].includes(r)) return 'critical';
+    if (['high'].includes(r)) return 'high';
+    if (['medium','med'].includes(r)) return 'medium';
+    if (['low'].includes(r)) return 'low';
+    return 'medium';
+  }
+
+  function incidentWeight(risk) {
+    const r = riskText(risk);
+    if (r === 'critical') return 4;
+    if (r === 'high') return 3;
+    if (r === 'medium') return 2;
+    return 1;
+  }
+
+  function statusFromScore(score) {
+    if (score >= 9) return { status:'Critical', className:'critical', action:'Immediate check-in and escalation recommended' };
+    if (score >= 6) return { status:'Elevated', className:'elevated', action:'Contact traveller / site lead and monitor closely' };
+    if (score >= 3) return { status:'Monitor', className:'monitor', action:'Monitor the situation and prepare check-in' };
+    return { status:'Normal', className:'normal', action:'No immediate action required' };
+  }
+
   // Haversine distance (km)
   function distanceKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -453,11 +478,16 @@ async function loadOrgContext() {
     return R * c;
   }
 
+  function coordsOf(item) {
+    const lat = toNum(item?.lat ?? item?.latitude);
+    const lon = toNum(item?.lng ?? item?.lon ?? item?.longitude);
+    return (lat === null || lon === null) ? null : { lat, lon };
+  }
+
   function itemWithinRadius(item, centerLat, centerLng, radiusKm) {
-    const ilat = toNum(item.lat ?? item.latitude);
-    const ilng = toNum(item.lng ?? item.lon ?? item.longitude);
-    if (ilat === null || ilng === null) return false;
-    return distanceKm(centerLat, centerLng, ilat, ilng) <= radiusKm;
+    const c = coordsOf(item);
+    if (!c) return false;
+    return distanceKm(centerLat, centerLng, c.lat, c.lon) <= radiusKm;
   }
 
   function itemMatchesCityCountry(item, city, country) {
@@ -465,15 +495,50 @@ async function loadOrgContext() {
     const icountry = norm(item.country);
     const c = norm(city);
     const k = norm(country);
-    // If we only have city, match city. If we have both, match both.
     if (c && k) return icity === c && icountry === k;
     if (c) return icity === c;
     return false;
   }
 
+  function scoreTraveller(t, opts) {
+    const incidentRisk = opts?.risk || opts?.severity || opts?.riskLevel || 'medium';
+    const w = incidentWeight(incidentRisk);
+    const tc = coordsOf(t);
+    const la = toNum(opts?.lat);
+    const ln = toNum(opts?.lng);
+    let distance = null;
+    let score = 0;
+    let matchType = '';
+
+    if (tc && la !== null && ln !== null) {
+      distance = distanceKm(la, ln, tc.lat, tc.lon);
+      matchType = 'distance';
+      if (distance <= 1) score = w + 6;
+      else if (distance <= 5) score = w + 4;
+      else if (distance <= 10) score = w + 2;
+      else score = w;
+    } else if (itemMatchesCityCountry(t, opts?.city, opts?.country)) {
+      matchType = 'city';
+      score = w + 2;
+    } else {
+      score = 0;
+    }
+
+    const s = statusFromScore(score);
+    return {
+      ...t,
+      exposureScore: score,
+      exposureStatus: s.status,
+      exposureClass: s.className,
+      exposureAction: s.action,
+      exposureDistanceKm: distance,
+      exposureMatchType: matchType
+    };
+  }
+
   // IMPORTANT: keep this synchronous. The UI calls it without `await`.
-  // Also support both call styles:
-  //   exposureFor({ city, country, lat, lng, radiusKm })
+  // Supports both call styles:
+  //   exposureFor({ city, country, lat, lng, radiusKm, risk })
   //   exposureFor(city, country, lat, lng, radiusKm)
   function exposureFor(cityOrOpts, country, lat, lng, radiusKm) {
     const opts = (cityOrOpts && typeof cityOrOpts === 'object')
@@ -484,7 +549,7 @@ async function loadOrgContext() {
     const ctry = opts?.country || "";
     const la = toNum(opts?.lat);
     const ln = toNum(opts?.lng);
-    const radKm = Number(opts?.radiusKm) || 1;
+    const radKm = Number(opts?.radiusKm) || 10;
 
     const assets = safeJson("ci_assets", []);
     const travellers = safeJson("ci_travellers", []);
@@ -496,17 +561,33 @@ async function loadOrgContext() {
       assetsNearby = assets.filter(a => itemWithinRadius(a, la, ln, radKm));
       travellersNearby = travellers.filter(t => itemWithinRadius(t, la, ln, radKm));
     } else {
-      // Fallback: city/country match (no lat/lng on incident)
       assetsNearby = assets.filter(a => itemMatchesCityCountry(a, city, ctry));
       travellersNearby = travellers.filter(t => itemMatchesCityCountry(t, city, ctry));
     }
 
-    // Return both new + legacy names (older UI expects `assets`/`travellers`).
-    return { assetsNearby, travellersNearby, assets: assetsNearby, travellers: travellersNearby };
+    const travellerScores = travellersNearby
+      .map(t => scoreTraveller(t, { ...opts, city, country: ctry, lat: la, lng: ln }))
+      .sort((a,b) => (b.exposureScore || 0) - (a.exposureScore || 0));
+
+    const topScore = travellerScores.reduce((m,t)=>Math.max(m, t.exposureScore || 0), 0);
+    const overall = statusFromScore(topScore);
+
+    return {
+      assetsNearby,
+      travellersNearby: travellerScores,
+      assets: assetsNearby,
+      travellers: travellerScores,
+      score: topScore,
+      status: overall.status,
+      className: overall.className,
+      recommendedAction: overall.action,
+      radiusKm: radKm
+    };
   }
 
   window.CIExposure = window.CIExposure || {};
   window.CIExposure.exposureFor = exposureFor;
+  window.CIExposure.distanceKm = distanceKm;
 })();
 </script>
 
@@ -2079,6 +2160,21 @@ padding-bottom: 12px;
 .ci-status-pill[data-status="escalated"]{ border-color: rgba(255,90,95,0.6); background: rgba(255,90,95,0.16); }
 .ci-status-pill[data-status="monitoring"]{ border-color: rgba(240,180,41,0.6); background: rgba(240,180,41,0.14); }
 .ci-status-pill[data-status="cleared"]{ border-color: rgba(51,196,141,0.6); background: rgba(51,196,141,0.14); }
+
+/* ===== Phase 6B Traveller Exposure Scoring ===== */
+.exposure-status-pill{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:3px 9px; border-radius:999px;
+  font-size:11px; font-weight:800; letter-spacing:.02em;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.06); color:#e5e7eb;
+}
+.exposure-status-pill.normal{ border-color:rgba(51,196,141,.45); background:rgba(51,196,141,.12); color:#bbf7d0; }
+.exposure-status-pill.monitor{ border-color:rgba(251,191,36,.55); background:rgba(251,191,36,.13); color:#fde68a; }
+.exposure-status-pill.elevated{ border-color:rgba(249,115,22,.6); background:rgba(249,115,22,.15); color:#fed7aa; }
+.exposure-status-pill.critical{ border-color:rgba(248,113,113,.72); background:rgba(127,29,29,.35); color:#fecaca; }
+.exposure-action-note{ margin-top:6px; font-size:12px; opacity:.9; }
+.exposure-distance{ opacity:.78; font-size:11px; margin-left:6px; }
 
 .queue-grid{ display:flex; gap:8px; flex-wrap:wrap; }
 .queue-btn{
@@ -5557,10 +5653,17 @@ function openDetailPanel(item, relatedList){
   }
 
   // real exposure based on stored assets/travellers
-  let exposure = { assets: [], travellers: [] };
+  let exposure = { assets: [], travellers: [], status: 'Normal', className: 'normal', recommendedAction: 'No immediate action required' };
   if (window.CIExposure && CIExposure.exposureFor) {
-    exposure = CIExposure.exposureFor(item.city || item.City,
-                                      item.country || item.Country);
+    const itemCoords = parseLatLonFromAny(item);
+    exposure = CIExposure.exposureFor({
+      city: item.city || item.City,
+      country: item.country || item.Country,
+      lat: itemCoords && itemCoords.lat,
+      lng: itemCoords && itemCoords.lon,
+      radiusKm: 10,
+      risk: item.risk || item.Risk || item.severity || item.category
+    });
   }
   const nA = exposure.assets.length;
   const nT = exposure.travellers.length;
@@ -5578,9 +5681,11 @@ function openDetailPanel(item, relatedList){
     detailImpactEl.innerHTML = `
       <span style="font-weight:700;letter-spacing:.03em;font-size:11px;color:#fecaca;">
         ASSETS &amp; TRAVELLERS </span><br>
-      <span style="color:#f97373;font-weight:600;">
+      <span class="exposure-status-pill ${exposure.className || 'normal'}">${exposure.status || 'Normal'}</span>
+      <span style="color:#f97373;font-weight:600;margin-left:6px;">
         ${assetStr}; ${travStr}
-      </span><br> <span style="opacity:.85;">Review posture for affected locations and contact travellers as needed.</span>
+      </span><br>
+      <div class="exposure-action-note">${exposure.recommendedAction || 'Review posture for affected locations and contact travellers as needed.'}</div>
     `;
   } else {
     detailImpactEl.innerHTML = `
@@ -5600,11 +5705,14 @@ function openDetailPanel(item, relatedList){
         }</li>`
       ).join('');
 
-      const travLines = exposure.travellers.map(t =>
-        `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${
+      const travLines = exposure.travellers.map(t => {
+        const dist = Number.isFinite(t.exposureDistanceKm)
+          ? `<span class="exposure-distance">${t.exposureDistanceKm.toFixed(t.exposureDistanceKm < 10 ? 1 : 0)}km</span>`
+          : '';
+        return `<li><b>${t.name || 'Traveller'}</b>${t.role ? ` — ${t.role}` : ''}${
           t.hotel ? ` — ${t.hotel}` : ''
-        }</li>`
-      ).join('');
+        } <span class="exposure-status-pill ${t.exposureClass || 'normal'}">${t.exposureStatus || 'Normal'}</span>${dist}</li>`;
+      }).join('');
 
       detailExposureListEl.innerHTML = `
         ${assetLines ? `<div style="margin-bottom:6px;"><b>Assets</b><ul>${assetLines}</ul></div>` : ''}
@@ -6078,22 +6186,24 @@ function renderEventsIntoCard(cardEl, events, feed) {
       // NEW: exposure (assets + travellers) for this city/country
             let exposureHtml = '';
       if (window.CIExposure && CIExposure.exposureFor) {
-        const exp = CIExposure.exposureFor(first.city || first.City,
-                                           first.country || first.Country);
+        const firstCoords = parseLatLonFromAny(first);
+        const exp = CIExposure.exposureFor({
+          city: first.city || first.City,
+          country: first.country || first.Country,
+          lat: firstCoords && firstCoords.lat,
+          lng: firstCoords && firstCoords.lon,
+          radiusKm: 10,
+          risk: first.risk || first.Risk || first.severity || first.category
+        });
         const nA = exp.assets.length;
         const nT = exp.travellers.length;
         if (nA || nT) {
           exposureHtml = `
-            <div class="eg-exposure" style="margin-top:6px;font-size:12px;">
-              <span style=" display:inline-block; padding:3px 8px;
-                border-radius:999px; background:rgba(59,130,246,0.32);   /* brighter blue */
-                border:1px solid rgba(59,130,246,0.9); color:#e5f0ff;
-                font-weight:600; margin-right:6px;">Assets: <b>${nA}</b></span>
-              
-			  <span style=" display:inline-block; padding:3px 8px; border-radius:999px;
-                background:rgba(245,158,11,0.32);   /* brighter amber */
-                border:1px solid rgba(245,158,11,0.9);color:#fff7e6;font-weight:600;
-              ">Travellers: <b>${nT}</b></span></div>
+            <div class="eg-exposure" style="margin-top:6px;font-size:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+              <span class="exposure-status-pill ${exp.className || 'normal'}">${exp.status || 'Normal'}</span>
+              <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(59,130,246,0.32);border:1px solid rgba(59,130,246,0.9);color:#e5f0ff;font-weight:600;">Assets: <b>${nA}</b></span>
+              <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(245,158,11,0.32);border:1px solid rgba(245,158,11,0.9);color:#fff7e6;font-weight:600;">Travellers: <b>${nT}</b></span>
+            </div>
           `;
         }
       }
