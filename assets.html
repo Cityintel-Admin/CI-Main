@@ -328,6 +328,16 @@
   .mini,.btn-mini{padding:4px 9px;border-radius:999px;border:1px solid var(--brand-gray-600);background:var(--brand-gray-700);color:var(--text);font-size:12px;cursor:pointer;}
   .mini:hover,.btn-mini:hover{border-color:var(--brand-red);background:rgba(208,22,22,.08)}
   .btn-row{display:flex;align-items:center;gap:8px;margin-top:14px;}
+
+  .bulk-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 2px;}
+  .bulk-panel{display:none;margin-top:12px;border:1px solid var(--brand-gray-600);border-radius:14px;background:rgba(255,255,255,.025);padding:12px;}
+  .bulk-panel.open{display:block;}
+  .bulk-panel h4{margin:0 0 8px;font-size:14px;}
+  .bulk-panel textarea{width:100%;min-height:110px;border-radius:10px;border:1px solid var(--brand-gray-600);background:var(--brand-gray-800);color:var(--text);padding:8px;font-size:12px;}
+  .bulk-preview{max-height:260px;overflow:auto;border:1px solid var(--brand-gray-600);border-radius:12px;margin-top:10px;}
+  .bulk-preview table{min-width:900px;margin:0;}
+  .bulk-msg{color:var(--muted);font-size:12px;margin-top:8px;}
+  .hidden-file-input{display:none;}
   @media (max-width:900px){.asset-toolbar{grid-template-columns:1fr 1fr;max-width:none}.table-wrap table{min-width:860px}}
   @media (max-width:620px){.asset-toolbar{grid-template-columns:1fr}.btn-row{flex-wrap:wrap}.asset-form-card{max-width:100%}}
 
@@ -387,6 +397,30 @@
               </p>
             </div>
             <button type="button" class="btn" id="toggleAssetForm">+ Add asset</button>
+          </div>
+
+
+
+          <div class="bulk-actions" aria-label="Bulk asset tools">
+            <button type="button" class="btn" id="assetDownloadTemplateBtn">Download CSV template</button>
+            <button type="button" class="btn" id="assetImportCsvBtn">Import CSV</button>
+            <button type="button" class="btn" id="assetExportCsvBtn">Export current assets</button>
+            <input type="file" id="assetCsvFileInput" class="hidden-file-input" accept=".csv,text/csv">
+          </div>
+
+          <div class="bulk-panel" id="assetBulkPanel">
+            <div class="card-head">
+              <div>
+                <h4>Bulk asset import preview</h4>
+                <div class="bulk-msg">Review the parsed rows before appending them to the register.</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn" id="assetConfirmImportBtn">Append previewed rows</button>
+                <button type="button" class="btn" id="assetCancelImportBtn">Cancel</button>
+              </div>
+            </div>
+            <div id="assetBulkMsg" class="bulk-msg"></div>
+            <div class="bulk-preview" id="assetBulkPreview"></div>
           </div>
 
           <div class="asset-toolbar" aria-label="Asset register filters">
@@ -824,11 +858,25 @@
     const assetFormCard = document.getElementById('assetFormCard');
     const toggleAssetForm = document.getElementById('toggleAssetForm');
     const assetCloseFormBtn = document.getElementById('assetCloseFormBtn');
+  const assetImportCsvBtn = document.getElementById('assetImportCsvBtn');
+  const assetDownloadTemplateBtn = document.getElementById('assetDownloadTemplateBtn');
+  const assetExportCsvBtn = document.getElementById('assetExportCsvBtn');
     const assetDrawerBackdrop = document.getElementById('assetDrawerBackdrop');
     const assetDrawerClose = document.getElementById('assetDrawerClose');
     const assetDrawerTitle = document.getElementById('assetDrawerTitle');
     const assetDrawerSub = document.getElementById('assetDrawerSub');
     const assetDrawerBody = document.getElementById('assetDrawerBody');
+
+    const assetDownloadTemplateBtn = document.getElementById('assetDownloadTemplateBtn');
+    const assetImportCsvBtn = document.getElementById('assetImportCsvBtn');
+    const assetExportCsvBtn = document.getElementById('assetExportCsvBtn');
+    const assetCsvFileInput = document.getElementById('assetCsvFileInput');
+    const assetBulkPanel = document.getElementById('assetBulkPanel');
+    const assetBulkPreview = document.getElementById('assetBulkPreview');
+    const assetBulkMsg = document.getElementById('assetBulkMsg');
+    const assetConfirmImportBtn = document.getElementById('assetConfirmImportBtn');
+    const assetCancelImportBtn = document.getElementById('assetCancelImportBtn');
+    let pendingBulkAssets = [];
 
     function esc(str){
       return String(str || '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
@@ -861,6 +909,142 @@
         'multi-tenant':'Multi-tenant / shared building'
       };
       return map[String(m || '').toLowerCase()] || 'Not set';
+    }
+
+
+
+    const ASSET_CSV_COLUMNS = [
+      'name','address','postcode','city','country','type','lat','lon','assetCode','criticality','status','manning','headcount','timezone',
+      'territoryManager','territoryManagerPhone','territoryManagerEmail','facilitiesManager','facilitiesManagerPhone','facilitiesManagerEmail',
+      'securityLead','securityLeadPhone','securityLeadEmail','assemblyPoint','backupSite','nearestHospital','nearestPolice','localSecurityProvider','alternateWorkspace','notes'
+    ];
+
+    function csvEscape(value){
+      const s = String(value ?? '');
+      return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+
+    function downloadTextFile(filename, text, mime='text/csv;charset=utf-8'){
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function parseCsv(text){
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++){
+        const ch = text[i];
+        const next = text[i + 1];
+        if (inQuotes){
+          if (ch === '"' && next === '"') { cell += '"'; i++; }
+          else if (ch === '"') inQuotes = false;
+          else cell += ch;
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === ',') { row.push(cell); cell = ''; }
+          else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+          else if (ch === '\r') { /* ignore */ }
+          else cell += ch;
+        }
+      }
+      row.push(cell);
+      rows.push(row);
+      return rows.filter(r => r.some(v => String(v || '').trim() !== ''));
+    }
+
+    function normaliseCsvKey(k){
+      return String(k || '').trim().replace(/^\uFEFF/, '').replace(/\s+/g, '').replace(/[_-]/g, '').toLowerCase();
+    }
+
+    function normaliseAssetValue(key, val){
+      const v = String(val ?? '').trim();
+      if (key === 'lat' || key === 'lon') {
+        const n = Number(v);
+        return isFinite(n) ? n : '';
+      }
+      if (key === 'headcount') {
+        const n = Number(v);
+        return isFinite(n) && v !== '' ? n : '';
+      }
+      return v;
+    }
+
+    function assetFromCsvRow(obj){
+      const out = { id:`asset-${Date.now()}-${Math.random().toString(16).slice(2,8)}` };
+      ASSET_CSV_COLUMNS.forEach(k => { out[k] = normaliseAssetValue(k, obj[k]); });
+      out.type = out.type || 'office';
+      out.criticality = out.criticality || 'medium';
+      out.status = out.status || 'open';
+      out.manning = out.manning || '24-7-manned';
+      return out;
+    }
+
+    function buildCsvTemplate(){
+      const example = {
+        name:'Example London Office', address:'1 Example Street', postcode:'EC3V 9BS', city:'London', country:'United Kingdom', type:'office', lat:'51.5074', lon:'-0.1278',
+        assetCode:'UK-LON-001', criticality:'medium', status:'open', manning:'24-7-manned', headcount:'120', timezone:'Europe/London',
+        territoryManager:'Jane Smith', territoryManagerPhone:'+44 20 0000 0000', territoryManagerEmail:'jane@example.com',
+        facilitiesManager:'Alex Brown', facilitiesManagerPhone:'+44 20 1111 1111', facilitiesManagerEmail:'alex@example.com',
+        securityLead:'Sam Green', securityLeadPhone:'+44 20 2222 2222', securityLeadEmail:'sam@example.com',
+        assemblyPoint:'Rear car park', backupSite:'Manchester Office', nearestHospital:'Example Hospital', nearestPolice:'Example Police Station',
+        localSecurityProvider:'Example Security', alternateWorkspace:'Fallback workspace', notes:'Operator notes here'
+      };
+      return ASSET_CSV_COLUMNS.join(',') + '\n' + ASSET_CSV_COLUMNS.map(k => csvEscape(example[k])).join(',') + '\n';
+    }
+
+    function exportAssetsCsv(){
+      const header = ASSET_CSV_COLUMNS.join(',');
+      const lines = assets.map(a => ASSET_CSV_COLUMNS.map(k => csvEscape(a[k])).join(','));
+      downloadTextFile(`cityintel-assets-${new Date().toISOString().slice(0,10)}.csv`, [header, ...lines].join('\n') + '\n');
+    }
+
+    function previewBulkAssets(rows){
+      pendingBulkAssets = rows;
+      if (!assetBulkPanel || !assetBulkPreview) return;
+      assetBulkPanel.classList.add('open');
+      assetBulkMsg.textContent = `${rows.length} valid row${rows.length !== 1 ? 's' : ''} ready to append.`;
+      const shown = rows.slice(0, 25);
+      assetBulkPreview.innerHTML = `
+        <table>
+          <thead><tr><th>Name</th><th>Country</th><th>City</th><th>Type</th><th>Status</th><th>Criticality</th><th>Asset Code</th></tr></thead>
+          <tbody>${shown.map(a => `<tr><td>${esc(a.name)}</td><td>${esc(a.country)}</td><td>${esc(a.city)}</td><td>${esc(typeLabel(a.type))}</td><td>${esc(statusLabel(a.status))}</td><td>${esc(criticalityLabel(a.criticality))}</td><td>${esc(a.assetCode)}</td></tr>`).join('')}</tbody>
+        </table>
+        ${rows.length > shown.length ? `<div class="bulk-msg" style="padding:8px">Showing first ${shown.length} of ${rows.length} rows.</div>` : ''}
+      `;
+      assetBulkPanel.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    async function handleCsvFile(file){
+      if (!file) return;
+      const text = await file.text();
+      const parsed = parseCsv(text);
+      if (parsed.length < 2) { alert('CSV has no data rows.'); return; }
+      const headers = parsed[0].map(normaliseCsvKey);
+      const colIndex = {};
+      ASSET_CSV_COLUMNS.forEach(k => {
+        const idx = headers.indexOf(normaliseCsvKey(k));
+        if (idx >= 0) colIndex[k] = idx;
+      });
+      if (colIndex.name === undefined || colIndex.city === undefined || colIndex.country === undefined) {
+        alert('CSV must include at least name, city and country columns. Use the template for the correct headings.');
+        return;
+      }
+      const rows = parsed.slice(1).map(r => {
+        const obj = {};
+        ASSET_CSV_COLUMNS.forEach(k => { obj[k] = colIndex[k] !== undefined ? r[colIndex[k]] : ''; });
+        return assetFromCsvRow(obj);
+      }).filter(a => a.name && a.city && a.country);
+      if (!rows.length) { alert('No valid rows found. Each row needs at least name, city and country.'); return; }
+      previewBulkAssets(rows);
     }
 
     function populateAssetFilters(){
@@ -1280,6 +1464,41 @@
       });
     }
 
+
+
+    if (assetDownloadTemplateBtn) {
+      assetDownloadTemplateBtn.addEventListener('click', () => downloadTextFile('cityintel-assets-template.csv', buildCsvTemplate()));
+    }
+
+    if (assetExportCsvBtn) {
+      assetExportCsvBtn.addEventListener('click', () => exportAssetsCsv());
+    }
+
+    if (assetImportCsvBtn && assetCsvFileInput) {
+      assetImportCsvBtn.addEventListener('click', () => assetCsvFileInput.click());
+      assetCsvFileInput.addEventListener('change', () => handleCsvFile(assetCsvFileInput.files && assetCsvFileInput.files[0]));
+    }
+
+    if (assetConfirmImportBtn) {
+      assetConfirmImportBtn.addEventListener('click', () => {
+        if (!pendingBulkAssets.length) return;
+        assets = assets.concat(pendingBulkAssets);
+        saveAssetsOrgAware(assets);
+        renderTable();
+        pendingBulkAssets = [];
+        if (assetBulkPanel) assetBulkPanel.classList.remove('open');
+        if (assetCsvFileInput) assetCsvFileInput.value = '';
+      });
+    }
+
+    if (assetCancelImportBtn) {
+      assetCancelImportBtn.addEventListener('click', () => {
+        pendingBulkAssets = [];
+        if (assetBulkPanel) assetBulkPanel.classList.remove('open');
+        if (assetCsvFileInput) assetCsvFileInput.value = '';
+      });
+    }
+
     // Initial render
     initAssets();
   })();
@@ -1358,9 +1577,12 @@
   const geoBtn = document.getElementById('geoBtn');
   const toggleAssetForm = document.getElementById('toggleAssetForm');
   const assetCloseFormBtn = document.getElementById('assetCloseFormBtn');
+  const assetImportCsvBtn = document.getElementById('assetImportCsvBtn');
+  const assetDownloadTemplateBtn = document.getElementById('assetDownloadTemplateBtn');
+  const assetExportCsvBtn = document.getElementById('assetExportCsvBtn');
 
   if (!canManage) {
-    [saveBtn, resetBtn, deleteBtn, geoBtn, toggleAssetForm, assetCloseFormBtn].forEach(el => {
+    [saveBtn, resetBtn, deleteBtn, geoBtn, toggleAssetForm, assetCloseFormBtn, assetImportCsvBtn, assetDownloadTemplateBtn, assetExportCsvBtn].forEach(el => {
       if (el) {
         el.disabled = true;
         el.style.display = el.id === 'deleteBtn' ? 'none' : '';
