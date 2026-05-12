@@ -328,8 +328,21 @@
         if (!res.ok) return;
         const data = await res.json();
 
-        const accessType = String(data.accessType || data.access_type || p.accessType || '').toLowerCase();
-        const status = String(data.status || p.status || '').toLowerCase();
+        const accessType = String(
+  data.accessType ||
+  data.access_type ||
+  p.accessType ||
+  p.access_type ||
+  localStorage.getItem('ci_access_type') ||
+  ''
+).toLowerCase();
+
+const status = String(
+  data.status ||
+  p.status ||
+  localStorage.getItem('ci_status') ||
+  ''
+).toLowerCase();
 
         const allowed =
           !!data.subscribed ||
@@ -338,7 +351,10 @@
           status === 'active';
 
         localStorage.setItem('ci_subscribed', String(allowed));
-
+        
+        if (accessType) localStorage.setItem('ci_access_type', accessType);
+        if (status) localStorage.setItem('ci_status', status);
+        
         if (data.plan) {
           localStorage.setItem('ci_plan', data.plan);
         } else {
