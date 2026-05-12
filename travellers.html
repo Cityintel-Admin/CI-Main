@@ -208,6 +208,31 @@
   .card{padding:12px}
 }
 
+  
+
+  /* ===== Phase 6 traveller bulk + drawer ===== */
+  .bulk-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}
+  .bulk-status{font-size:12px;color:var(--muted);margin:6px 0 0}
+  .traveller-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:90;display:none}
+  .traveller-drawer-backdrop.open{display:block}
+  .traveller-drawer{position:fixed;top:0;right:0;width:min(560px,96vw);height:100vh;background:linear-gradient(180deg,#1a1c20,#111214);border-left:1px solid var(--brand-gray-600);box-shadow:-12px 0 30px rgba(0,0,0,.45);z-index:91;transform:translateX(105%);transition:transform .18s ease;overflow:auto;padding:22px}
+  .traveller-drawer.open{transform:translateX(0)}
+  .drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .drawer-title{margin:0;font-size:20px}
+  .drawer-sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .drawer-item{border:1px solid var(--brand-gray-600);background:rgba(255,255,255,.03);border-radius:12px;padding:10px;min-height:64px}
+  .drawer-item.full{grid-column:1/-1}
+  .drawer-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px}
+  .drawer-value{white-space:pre-wrap;word-break:break-word}
+  .form-section-title{grid-column:1/-1;margin:12px 0 2px;padding-top:12px;border-top:1px solid var(--brand-gray-600);font-weight:700}
+  .field textarea{padding:6px 8px;border-radius:8px;border:1px solid var(--brand-gray-600);background:var(--brand-gray-800);color:var(--text);font-size:13px;min-height:78px;resize:vertical}
+  .field textarea:focus{outline:none;border-color:#D01616}
+  .import-preview{margin-top:10px;border:1px solid var(--brand-gray-600);border-radius:12px;padding:10px;background:rgba(255,255,255,.03);display:none}
+  .import-preview.open{display:block}
+  .import-preview table{min-width:900px}
+  @media(max-width:720px){.drawer-grid{grid-template-columns:1fr}.traveller-drawer{width:100vw}.bulk-actions .btn{font-size:12px}}
+
   </style>
 </head>
 <body>
@@ -259,6 +284,13 @@
               </p>
             </div>
             <button type="button" class="btn" id="toggleTravellerForm">+ Add traveller</button>
+            <div class="bulk-actions" aria-label="Traveller bulk actions">
+              <button type="button" class="btn" id="travDownloadTemplateBtn">Download CSV template</button>
+              <button type="button" class="btn" id="travImportBtn">Import CSV</button>
+              <button type="button" class="btn" id="travExportBtn">Export current travellers</button>
+              <input type="file" id="travCsvInput" accept=".csv,text/csv" style="display:none">
+            </div>
+            <div id="travBulkStatus" class="bulk-status"></div>
           </div>
 
           <div class="toolbar" aria-label="Traveller table filters">
@@ -280,13 +312,24 @@
             </div>
           </div>
           <div id="travellersMeta" class="table-meta">Showing travellers.</div>
+          <div id="travImportPreview" class="import-preview">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+              <b>CSV import preview</b>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn" id="travConfirmImportBtn">Import previewed rows</button>
+                <button type="button" class="btn" id="travCancelImportBtn">Cancel</button>
+              </div>
+            </div>
+            <div id="travImportPreviewMeta" class="bulk-status"></div>
+            <div class="table-wrap"><table><thead id="travImportPreviewHead"></thead><tbody id="travImportPreviewBody"></tbody></table></div>
+          </div>
 
           <div class="table-wrap">
             <table style="margin-top:10px">
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Role</th><th>Phone</th><th>Email</th>
+                  <th>Role</th><th>Status</th><th>Phone</th><th>Email</th>
                   <th>Country</th>
                   <th>City</th>
                   <th>From</th>
@@ -317,6 +360,26 @@
               <div class="field full">
                 <label for="travRole">Role / Title</label>
                 <input id="travRole" placeholder="e.g. Regional Sales Manager">
+              </div>
+              <div class="form-section-title">Operational status</div>
+              <div class="field">
+                <label for="travRiskStatus">Risk status</label>
+                <select id="travRiskStatus">
+                  <option value="Normal">Normal</option>
+                  <option value="Monitor">Monitor</option>
+                  <option value="Elevated">Elevated</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="travTravelStatus">Travel status</label>
+                <select id="travTravelStatus">
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="In country">In country</option>
+                  <option value="Delayed">Delayed</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
               </div>
         <div class="field half">
           <label for="travPhone">Phone (optional)</label>
@@ -358,6 +421,55 @@
                 <label for="travTo">To</label>
                 <input id="travTo" type="date" required>
               </div>
+              <div class="form-section-title">Itinerary & response details</div>
+              <div class="field">
+                <label for="travNationality">Nationality</label>
+                <input id="travNationality" placeholder="e.g. British">
+              </div>
+              <div class="field">
+                <label for="travPassportCountry">Passport country</label>
+                <input id="travPassportCountry" placeholder="e.g. United Kingdom">
+              </div>
+              <div class="field">
+                <label for="travFlightIn">Inbound / arrival flight</label>
+                <input id="travFlightIn" placeholder="e.g. BA123, 12 May 18:40">
+              </div>
+              <div class="field">
+                <label for="travFlightOut">Outbound / departure flight</label>
+                <input id="travFlightOut" placeholder="e.g. BA124, 28 May 12:10">
+              </div>
+              <div class="field">
+                <label for="travManagerName">Manager</label>
+                <input id="travManagerName" placeholder="Manager name">
+              </div>
+              <div class="field">
+                <label for="travManagerPhone">Manager phone</label>
+                <input id="travManagerPhone" placeholder="Phone">
+              </div>
+              <div class="field full">
+                <label for="travManagerEmail">Manager email</label>
+                <input id="travManagerEmail" type="email" placeholder="manager@example.com">
+              </div>
+              <div class="field">
+                <label for="travEmergencyName">Emergency contact</label>
+                <input id="travEmergencyName" placeholder="Contact name">
+              </div>
+              <div class="field">
+                <label for="travEmergencyPhone">Emergency contact phone</label>
+                <input id="travEmergencyPhone" placeholder="Phone">
+              </div>
+              <div class="field full">
+                <label for="travMedicalNotes">Medical / welfare notes</label>
+                <textarea id="travMedicalNotes" placeholder="Optional sensitive notes for incident response"></textarea>
+              </div>
+              <div class="field full">
+                <label for="travTransportProvider">Secure transport provider</label>
+                <input id="travTransportProvider" placeholder="Provider / driver / control room">
+              </div>
+              <div class="field full">
+                <label for="travExtractionNotes">Extraction / response notes</label>
+                <textarea id="travExtractionNotes" placeholder="Hotel safe area, evacuation route, local contact instructions, etc."></textarea>
+              </div>
               <div class="field">
                 <label for="travLat">Latitude</label>
                 <input id="travLat" type="number" step="0.000001" placeholder="40.7617">
@@ -390,6 +502,18 @@
       </div>
     </main>
   </div>
+
+  <div class="traveller-drawer-backdrop" id="travellerDrawerBackdrop"></div>
+  <aside class="traveller-drawer" id="travellerDrawer" aria-label="Traveller details drawer">
+    <div class="drawer-head">
+      <div>
+        <h2 class="drawer-title" id="travDrawerTitle">Traveller</h2>
+        <div class="drawer-sub" id="travDrawerSub">—</div>
+      </div>
+      <button type="button" class="btn" id="travDrawerClose">Close</button>
+    </div>
+    <div class="drawer-grid" id="travDrawerGrid"></div>
+  </aside>
 
   <!-- Active nav highlight (fallback) -->
   <script>
@@ -606,6 +730,8 @@ async function loadTravellersFromOrgOrLocal(seed){
     const idxInput     = document.getElementById('travIndex');
     const nameInput    = document.getElementById('travName');
     const roleInput    = document.getElementById('travRole');
+    const riskStatusInput = document.getElementById('travRiskStatus');
+    const travelStatusInput = document.getElementById('travTravelStatus');
         const phoneInput   = document.getElementById('travPhone');
     const emailInput   = document.getElementById('travEmail');
 const hotelInput   = document.getElementById('travHotel');
@@ -617,6 +743,18 @@ const hotelInput   = document.getElementById('travHotel');
     const toInput      = document.getElementById('travTo');
     const latInput     = document.getElementById('travLat');
     const lonInput     = document.getElementById('travLon');
+    const nationalityInput = document.getElementById('travNationality');
+    const passportCountryInput = document.getElementById('travPassportCountry');
+    const flightInInput = document.getElementById('travFlightIn');
+    const flightOutInput = document.getElementById('travFlightOut');
+    const managerNameInput = document.getElementById('travManagerName');
+    const managerPhoneInput = document.getElementById('travManagerPhone');
+    const managerEmailInput = document.getElementById('travManagerEmail');
+    const emergencyNameInput = document.getElementById('travEmergencyName');
+    const emergencyPhoneInput = document.getElementById('travEmergencyPhone');
+    const medicalNotesInput = document.getElementById('travMedicalNotes');
+    const transportProviderInput = document.getElementById('travTransportProvider');
+    const extractionNotesInput = document.getElementById('travExtractionNotes');
     const resetBtn     = document.getElementById('travResetBtn');
     const closeFormBtn = document.getElementById('travCloseFormBtn');
     const deleteBtn    = document.getElementById('travDeleteBtn');
@@ -628,6 +766,24 @@ const hotelInput   = document.getElementById('travHotel');
     const roleFilter   = document.getElementById('travRoleFilter');
     const filterReset  = document.getElementById('travFilterReset');
     const tableMeta    = document.getElementById('travellersMeta');
+    const bulkStatus = document.getElementById('travBulkStatus');
+    const csvInput = document.getElementById('travCsvInput');
+    const downloadTemplateBtn = document.getElementById('travDownloadTemplateBtn');
+    const importBtn = document.getElementById('travImportBtn');
+    const exportBtn = document.getElementById('travExportBtn');
+    const importPreview = document.getElementById('travImportPreview');
+    const importPreviewMeta = document.getElementById('travImportPreviewMeta');
+    const importPreviewHead = document.getElementById('travImportPreviewHead');
+    const importPreviewBody = document.getElementById('travImportPreviewBody');
+    const confirmImportBtn = document.getElementById('travConfirmImportBtn');
+    const cancelImportBtn = document.getElementById('travCancelImportBtn');
+    const drawer = document.getElementById('travellerDrawer');
+    const drawerBackdrop = document.getElementById('travellerDrawerBackdrop');
+    const drawerClose = document.getElementById('travDrawerClose');
+    const drawerTitle = document.getElementById('travDrawerTitle');
+    const drawerSub = document.getElementById('travDrawerSub');
+    const drawerGrid = document.getElementById('travDrawerGrid');
+    let pendingImportRows = [];
 
     
 function escapeHtml(str){
@@ -697,7 +853,7 @@ function renderTable(){
   if (!Array.isArray(travellers) || travellers.length === 0){
     const tr = document.createElement('tr');
     const td = document.createElement('td');
-    td.colSpan = 9;
+    td.colSpan = 10;
     td.className = 'muted';
     td.textContent = 'No travellers to show.';
     tr.appendChild(td);
@@ -708,7 +864,7 @@ function renderTable(){
   if (!rows.length){
     const tr = document.createElement('tr');
     const td = document.createElement('td');
-    td.colSpan = 9;
+    td.colSpan = 10;
     td.className = 'muted';
     td.textContent = 'No travellers match the selected filters.';
     tr.appendChild(td);
@@ -722,6 +878,7 @@ function renderTable(){
     const cells = [
       t?.name ?? '',
       t?.role ?? '',
+      t?.riskStatus || t?.status || 'Normal',
       t?.phone ?? '',
       t?.email ?? '',
       t?.country ?? '',
@@ -739,6 +896,14 @@ function renderTable(){
     const actionsTd = document.createElement('td');
     actionsTd.style.whiteSpace = 'nowrap';
 
+    const view = document.createElement('button');
+    view.className = 'mini';
+    view.type = 'button';
+    view.textContent = 'View';
+    view.style.marginRight = '6px';
+    view.addEventListener('click', () => openTravellerDrawer(t));
+    actionsTd.appendChild(view);
+
     const edit = document.createElement('button');
     edit.className = 'mini';
     edit.type = 'button';
@@ -755,6 +920,8 @@ function renderTable(){
       idxInput.value = '';
       nameInput.value = '';
       roleInput.value = '';
+      if (riskStatusInput) riskStatusInput.value = 'Normal';
+      if (travelStatusInput) travelStatusInput.value = 'Scheduled';
       if (phoneInput) phoneInput.value = '';
       if (emailInput) emailInput.value = '';
       hotelInput.value = '';
@@ -766,6 +933,7 @@ function renderTable(){
       toInput.value = '';
       latInput.value = '';
       lonInput.value = '';
+      [nationalityInput, passportCountryInput, flightInInput, flightOutInput, managerNameInput, managerPhoneInput, managerEmailInput, emergencyNameInput, emergencyPhoneInput, medicalNotesInput, transportProviderInput, extractionNotesInput].forEach(el => { if (el) el.value = ''; });
       deleteBtn.style.display = 'none';
     }
 
@@ -773,6 +941,8 @@ function renderTable(){
       idxInput.value = String(idx);
       nameInput.value = t.name || '';
       roleInput.value = t.role || '';
+      if (riskStatusInput) riskStatusInput.value = t.riskStatus || t.status || 'Normal';
+      if (travelStatusInput) travelStatusInput.value = t.travelStatus || 'Scheduled';
       if (phoneInput) phoneInput.value = t.phone || '';
       if (emailInput) emailInput.value = t.email || '';
       hotelInput.value = t.hotel || '';
@@ -784,6 +954,18 @@ function renderTable(){
       toInput.value = t.to || '';
       latInput.value = (typeof t.lat === 'number') ? t.lat : (t.lat || '');
       lonInput.value = (typeof t.lon === 'number') ? t.lon : (t.lon || '');
+      if (nationalityInput) nationalityInput.value = t.nationality || '';
+      if (passportCountryInput) passportCountryInput.value = t.passportCountry || '';
+      if (flightInInput) flightInInput.value = t.flightIn || '';
+      if (flightOutInput) flightOutInput.value = t.flightOut || '';
+      if (managerNameInput) managerNameInput.value = t.managerName || '';
+      if (managerPhoneInput) managerPhoneInput.value = t.managerPhone || '';
+      if (managerEmailInput) managerEmailInput.value = t.managerEmail || '';
+      if (emergencyNameInput) emergencyNameInput.value = t.emergencyName || '';
+      if (emergencyPhoneInput) emergencyPhoneInput.value = t.emergencyPhone || '';
+      if (medicalNotesInput) medicalNotesInput.value = t.medicalNotes || '';
+      if (transportProviderInput) transportProviderInput.value = t.transportProvider || '';
+      if (extractionNotesInput) extractionNotesInput.value = t.extractionNotes || '';
       deleteBtn.style.display = 'inline-block';
       showForm(true);
     }
@@ -897,6 +1079,8 @@ function renderTable(){
 
   name: nameInput.value.trim(),
   role: roleInput.value.trim(),
+  riskStatus: riskStatusInput ? riskStatusInput.value : 'Normal',
+  travelStatus: travelStatusInput ? travelStatusInput.value : 'Scheduled',
   phone: phoneInput.value.trim(),
   email: emailInput.value.trim(),
   hotel: hotelInput.value.trim(),
@@ -905,7 +1089,19 @@ function renderTable(){
   city: cityInput.value.trim(),
   country: countryInput.value.trim(),
   from: fromInput.value,
-  to: toInput.value
+  to: toInput.value,
+  nationality: nationalityInput ? nationalityInput.value.trim() : '',
+  passportCountry: passportCountryInput ? passportCountryInput.value.trim() : '',
+  flightIn: flightInInput ? flightInInput.value.trim() : '',
+  flightOut: flightOutInput ? flightOutInput.value.trim() : '',
+  managerName: managerNameInput ? managerNameInput.value.trim() : '',
+  managerPhone: managerPhoneInput ? managerPhoneInput.value.trim() : '',
+  managerEmail: managerEmailInput ? managerEmailInput.value.trim() : '',
+  emergencyName: emergencyNameInput ? emergencyNameInput.value.trim() : '',
+  emergencyPhone: emergencyPhoneInput ? emergencyPhoneInput.value.trim() : '',
+  medicalNotes: medicalNotesInput ? medicalNotesInput.value.trim() : '',
+  transportProvider: transportProviderInput ? transportProviderInput.value.trim() : '',
+  extractionNotes: extractionNotesInput ? extractionNotesInput.value.trim() : ''
 };
 
         const lat = parseFloat(latInput.value);
@@ -951,6 +1147,156 @@ function renderTable(){
         clearForm();
       });
     }
+
+
+
+    function setBulkStatus(msg){ if (bulkStatus) bulkStatus.textContent = msg || ''; }
+
+    const TRAV_CSV_FIELDS = [
+      'name','role','riskStatus','travelStatus','phone','email','hotel','address','postcode','city','country','from','to','lat','lon',
+      'nationality','passportCountry','flightIn','flightOut','managerName','managerPhone','managerEmail','emergencyName','emergencyPhone',
+      'medicalNotes','transportProvider','extractionNotes'
+    ];
+
+    function csvEscape(v){
+      const s = String(v ?? '');
+      return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }
+    function downloadCsv(filename, rows){
+      const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+    function parseCsv(text){
+      const rows=[]; let row=[]; let cur=''; let q=false;
+      for(let i=0;i<text.length;i++){
+        const ch=text[i], next=text[i+1];
+        if(q){
+          if(ch==='"' && next==='"'){cur+='"'; i++;}
+          else if(ch==='"'){q=false;}
+          else cur+=ch;
+        }else{
+          if(ch==='"') q=true;
+          else if(ch===','){row.push(cur); cur='';}
+          else if(ch==='\n'){row.push(cur); rows.push(row); row=[]; cur='';}
+          else if(ch==='\r'){}
+          else cur+=ch;
+        }
+      }
+      row.push(cur); rows.push(row);
+      return rows.filter(r => r.some(c => String(c||'').trim() !== ''));
+    }
+    function normalizeCsvKey(k){ return String(k||'').trim().replace(/\s+/g,'').replace(/_/g,'').toLowerCase(); }
+    function rowToTraveller(headers, row){
+      const map={}; headers.forEach((h,i)=>map[normalizeCsvKey(h)]=row[i] ?? '');
+      const get=(...keys)=>{ for(const k of keys){ const v=map[normalizeCsvKey(k)]; if(v !== undefined && String(v).trim() !== '') return String(v).trim(); } return ''; };
+      const t={
+        id:`trav-${Date.now()}-${Math.random().toString(16).slice(2,8)}`,
+        name:get('name','travellerName','fullName'), role:get('role','title'), riskStatus:get('riskStatus','status') || 'Normal', travelStatus:get('travelStatus') || 'Scheduled',
+        phone:get('phone','mobile'), email:get('email'), hotel:get('hotel'), address:get('address'), postcode:get('postcode','zip'),
+        city:get('city'), country:get('country'), from:get('from','startDate','arrivalDate'), to:get('to','endDate','departureDate'),
+        nationality:get('nationality'), passportCountry:get('passportCountry'), flightIn:get('flightIn','arrivalFlight'), flightOut:get('flightOut','departureFlight'),
+        managerName:get('managerName'), managerPhone:get('managerPhone'), managerEmail:get('managerEmail'),
+        emergencyName:get('emergencyName','emergencyContact'), emergencyPhone:get('emergencyPhone'), medicalNotes:get('medicalNotes'),
+        transportProvider:get('transportProvider','secureTransport'), extractionNotes:get('extractionNotes','responseNotes')
+      };
+      const lat=parseFloat(get('lat','latitude')); const lon=parseFloat(get('lon','longitude'));
+      if(!isNaN(lat)) t.lat=lat; if(!isNaN(lon)) t.lon=lon;
+      return t;
+    }
+    function validateImportRows(rows){
+      const seen = new Set(travellers.map(t => `${String(t.email||'').toLowerCase()}|${String(t.from||'')}|${String(t.to||'')}`));
+      const valid=[]; const issues=[];
+      rows.forEach((t,i)=>{
+        const rowNo=i+2; const problems=[];
+        if(!t.name) problems.push('missing name');
+        if(!t.city) problems.push('missing city');
+        if(!t.country) problems.push('missing country');
+        if(!t.from) problems.push('missing from date');
+        if(!t.to) problems.push('missing to date');
+        if(t.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t.email)) problems.push('invalid email');
+        if(t.from && t.to && t.from > t.to) problems.push('from date after to date');
+        const dupKey = `${String(t.email||'').toLowerCase()}|${String(t.from||'')}|${String(t.to||'')}`;
+        if(t.email && seen.has(dupKey)) problems.push('possible duplicate');
+        if(problems.length) issues.push(`Row ${rowNo}: ${problems.join(', ')}`); else { valid.push(t); if(t.email) seen.add(dupKey); }
+      });
+      return {valid, issues};
+    }
+    function showImportPreview(rows, issues){
+      pendingImportRows = rows;
+      if (!importPreview || !importPreviewHead || !importPreviewBody) return;
+      importPreview.classList.add('open');
+      if (importPreviewMeta) importPreviewMeta.textContent = `${rows.length} valid row(s) ready. ${issues.length ? issues.length + ' row(s) skipped: ' + issues.slice(0,3).join(' | ') : 'No validation issues.'}`;
+      const cols = ['name','role','riskStatus','travelStatus','country','city','from','to','email'];
+      importPreviewHead.innerHTML = '<tr>' + cols.map(c=>`<th>${escapeHtml(c)}</th>`).join('') + '</tr>';
+      importPreviewBody.innerHTML = rows.slice(0,25).map(t => '<tr>' + cols.map(c=>`<td>${escapeHtml(t[c] || '')}</td>`).join('') + '</tr>').join('');
+      importPreview.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    function closeImportPreview(){
+      pendingImportRows=[];
+      if (importPreview) importPreview.classList.remove('open');
+      if (importPreviewBody) importPreviewBody.innerHTML='';
+      if (importPreviewMeta) importPreviewMeta.textContent='';
+    }
+    function openTravellerDrawer(t){
+      if (!drawer || !drawerGrid) return;
+      drawerTitle.textContent = t.name || 'Traveller';
+      drawerSub.textContent = [t.role, t.city, t.country].filter(Boolean).join(' • ') || 'Traveller details';
+      const items = [
+        ['Risk status', t.riskStatus || t.status || 'Normal'], ['Travel status', t.travelStatus || 'Scheduled'],
+        ['Phone', t.phone], ['Email', t.email], ['Hotel', t.hotel], ['Address', [t.address,t.postcode].filter(Boolean).join(', ')],
+        ['City / Country', [t.city,t.country].filter(Boolean).join(', ')], ['Trip window', [t.from,t.to].filter(Boolean).join(' → ')],
+        ['Nationality', t.nationality], ['Passport country', t.passportCountry], ['Arrival flight', t.flightIn], ['Departure flight', t.flightOut],
+        ['Manager', t.managerName], ['Manager phone', t.managerPhone], ['Manager email', t.managerEmail],
+        ['Emergency contact', t.emergencyName], ['Emergency phone', t.emergencyPhone], ['Secure transport', t.transportProvider],
+        ['Medical / welfare notes', t.medicalNotes, true], ['Extraction / response notes', t.extractionNotes, true], ['Coordinates', [t.lat,t.lon].filter(v=>v!==undefined && v!=='').join(', ')]
+      ];
+      drawerGrid.innerHTML = items.map(([label,value,full]) => `<div class="drawer-item ${full?'full':''}"><div class="drawer-label">${escapeHtml(label)}</div><div class="drawer-value">${escapeHtml(value || '—')}</div></div>`).join('');
+      drawerBackdrop?.classList.add('open'); drawer.classList.add('open');
+    }
+    function closeTravellerDrawer(){ drawerBackdrop?.classList.remove('open'); drawer?.classList.remove('open'); }
+
+    downloadTemplateBtn?.addEventListener('click', () => {
+      downloadCsv(`cityintel-travellers-template-${new Date().toISOString().slice(0,10)}.csv`, [TRAV_CSV_FIELDS]);
+      setBulkStatus('Traveller CSV template downloaded.');
+    });
+    exportBtn?.addEventListener('click', () => {
+      const rows = [TRAV_CSV_FIELDS, ...travellers.map(t => TRAV_CSV_FIELDS.map(f => t[f] ?? ''))];
+      downloadCsv(`cityintel-travellers-${new Date().toISOString().slice(0,10)}.csv`, rows);
+      setBulkStatus(`Exported ${travellers.length} traveller(s).`);
+    });
+    importBtn?.addEventListener('click', () => csvInput?.click());
+    csvInput?.addEventListener('change', async () => {
+      const file = csvInput.files && csvInput.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const parsed = parseCsv(text);
+      if (parsed.length < 2){ setBulkStatus('CSV did not contain any data rows.'); return; }
+      const headers = parsed[0];
+      const mapped = parsed.slice(1).map(r => rowToTraveller(headers, r));
+      const {valid, issues} = validateImportRows(mapped);
+      showImportPreview(valid, issues);
+      setBulkStatus(`${valid.length} valid row(s) found. Review preview, then import.`);
+      csvInput.value = '';
+    });
+    confirmImportBtn?.addEventListener('click', async () => {
+      if (!pendingImportRows.length){ setBulkStatus('No previewed rows to import.'); return; }
+      travellers = travellers.concat(pendingImportRows);
+      await saveTravellers(travellers);
+      renderTable();
+      setBulkStatus(`Imported ${pendingImportRows.length} traveller(s).`);
+      closeImportPreview();
+    });
+    cancelImportBtn?.addEventListener('click', closeImportPreview);
+    drawerClose?.addEventListener('click', closeTravellerDrawer);
+    drawerBackdrop?.addEventListener('click', closeTravellerDrawer);
 
     // Initial render
     renderTable();
