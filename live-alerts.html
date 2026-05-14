@@ -1499,6 +1499,24 @@ async function loadOrgContext() {
 }
 .live-status-note[data-state="err"]{ border-color: rgba(248,113,113,.24); background: rgba(127,29,29,.18); color:#fee2e2; }
 
+/* Phase 7E geo validation badges */
+.ci-geo-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:999px;border:1px solid rgba(148,163,184,.28);
+  background:rgba(30,41,59,.45);color:#cbd5e1;
+  font-size:10px;font-weight:700;line-height:1;
+  padding:3px 7px;margin-left:6px;white-space:nowrap;
+}
+.ci-geo-badge.high{border-color:rgba(74,222,128,.35);background:rgba(20,83,45,.25);color:#bbf7d0;}
+.ci-geo-badge.medium{border-color:rgba(251,191,36,.35);background:rgba(120,53,15,.22);color:#fde68a;}
+.ci-geo-badge.low{border-color:rgba(248,113,113,.35);background:rgba(127,29,29,.25);color:#fecaca;}
+.ci-geo-note{
+  margin-top:10px;padding:9px 10px;border-radius:10px;
+  border:1px solid rgba(248,113,113,.28);
+  background:rgba(127,29,29,.14);color:#fecaca;
+  font-size:12px;line-height:1.35;
+}
+
     .btn-full-incident{
       background:#D01616;
       color:#fff;
@@ -3798,8 +3816,14 @@ function normaliseAlertEvent(ev){
   const id = ev.id || `${city}_${Date.parse(when) || Date.now()}_${String(title).slice(0,80)}`;
   const location_confidence = ev.location_confidence || ev.locationConfidence || 'unknown';
   const language = ev.language || ev.lang || ev.source_language || ev.sourceLanguage || '';
+  const geo_confidence = ev.geo_confidence ?? ev.geoConfidence ?? ev.location_confidence_score ?? ev.locationConfidenceScore ?? null;
+  const geo_reason = ev.geo_reason || ev.geoReason || ev.location_reason || ev.locationReason || '';
+  const geo_validated = ev.geo_validated ?? ev.geoValidated ?? false;
 
-  return Object.assign({}, ev, { id, title, city, risk, when, src, status, published_at, indexed_at, first_seen_at, location_confidence, language });
+  return Object.assign({}, ev, {
+    id, title, city, risk, when, src, status, published_at, indexed_at, first_seen_at,
+    location_confidence, language, geo_confidence, geo_reason, geo_validated
+  });
 }
 
 function normaliseAlertList(list){
@@ -3843,6 +3867,133 @@ async function fetchPersistentAlertCache(){
   return CI_PERSISTENT_ALERT_CACHE_PROMISE;
 }
 
+
+// ---------------------------------------------------------------------------
+// Phase 7E: Client-side geo validation guard.
+// The Worker should remain the source of truth, but this prevents visibly wrong
+// feed-context rows from being promoted in the UI while backend scoring evolves.
+// ---------------------------------------------------------------------------
+const CI_REGION_KEYS = new Set(['global','emea','mena','mea','eu','europe','apac','latam','uk','gb','us']);
+const CI_CITY_ALIASES = {
+  london: ['london','east london','west london','north london','south london','euston','westminster','harrow','croydon','hackney','camden','brixton','stratford'],
+  paris: ['paris','ile de france','île-de-france','seine','saint-denis','la defense','la défense'],
+  berlin: ['berlin','mitte','kreuzberg','neukolln','neukölln','charlottenburg'],
+  dubai: ['dubai','deira','jebel ali','downtown dubai','al barsha'],
+  'abu dhabi': ['abu dhabi','abudhabi','uae capital'],
+  'new york': ['new york','nyc','manhattan','brooklyn','queens','bronx','staten island','jersey city'],
+  'los angeles': ['los angeles','la ','l.a.','hollywood','montebello','pasadena','santa monica','beverly hills'],
+  madrid: ['madrid'], rome: ['rome','roma'], milan: ['milan','milano'], lagos: ['lagos'], doha: ['doha'], riyadh: ['riyadh'], cairo: ['cairo']
+};
+const CI_SOURCE_CITY_HINTS = {
+  london: ['london-now','standard.co.uk','my london','timeout.com/london'],
+  paris: ['leparisien','paris-normandie','sortiraparis'],
+  berlin: ['berliner','tagesspiegel','bz-berlin'],
+  'new york': ['ny post','nypost','nydailynews','amny','gothamist'],
+  'los angeles': ['latimes','laist','ktla','nbclosangeles','losangeles'],
+  dubai: ['khaleejtimes','gulfnews','thenationalnews'],
+  'abu dhabi': ['thenationalnews','wam.ae']
+};
+const CI_WEAK_GLOBAL_TERMS = [
+  'iran','russia','ukraine','oil','gas','energy','market','stock','crypto','internet blackout','government control',
+  'celebrity','rihanna','taylor swift','school district','cyberattack','research helps','yorkshire','dracula','bront'
+];
+
+function ciNormGeoText(value){
+  try {
+    return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s\.\-]/g, ' ').replace(/\s+/g, ' ').trim();
+  } catch(_) {
+    return String(value || '').toLowerCase();
+  }
+}
+function ciGeoText(ev){
+  return ciNormGeoText(`${ev?.title || ''} ${ev?.description || ''} ${ev?.summary || ''} ${ev?.src || ''} ${ev?.source || ''} ${ev?.url || ''}`);
+}
+function ciGeoHasCoords(ev){
+  return !!(parseLatLonFromAny && parseLatLonFromAny(ev));
+}
+function ciCityAliases(city){
+  const c = ciNormGeoText(city);
+  if (!c) return [];
+  return Array.from(new Set([c, ...(CI_CITY_ALIASES[c] || [])].filter(Boolean)));
+}
+function ciTextMentionsCity(text, city){
+  const t = ciNormGeoText(text);
+  return ciCityAliases(city).some(alias => {
+    const a = ciNormGeoText(alias);
+    if (!a) return false;
+    return new RegExp(`(^|\\s)${a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s|$)`, 'i').test(t);
+  });
+}
+function ciSourceHintsCity(text, city){
+  const c = ciNormGeoText(city);
+  const hints = CI_SOURCE_CITY_HINTS[c] || [];
+  return hints.some(h => ciNormGeoText(text).includes(ciNormGeoText(h)));
+}
+function ciIsRegionPlace(place){
+  return CI_REGION_KEYS.has(ciNormGeoText(place));
+}
+function ciFeedHasOnlyRegionPlaces(feed){
+  const places = Array.isArray(feed?.places) ? feed.places : [];
+  return !places.length || places.every(ciIsRegionPlace);
+}
+function ciHeadlineLooksGenericGlobal(ev){
+  const t = ciGeoText(ev);
+  return CI_WEAK_GLOBAL_TERMS.some(term => t.includes(ciNormGeoText(term)));
+}
+function ciGeoValidation(ev, feed){
+  const e = normaliseAlertEvent(ev);
+  if (!e) return { ok:false, confidence:0, level:'low', reason:'invalid alert' };
+  const city = e.city || '';
+  const text = ciGeoText(e);
+  const locConf = ciNormGeoText(e.location_confidence || '');
+  const hasCoords = ciGeoHasCoords(e);
+  const cityMention = city && ciTextMentionsCity(text, city);
+  const sourceHint = city && ciSourceHintsCity(text, city);
+  const exactish = hasCoords || ['exact','geocoded','coordinates','source coordinates'].some(x => locConf.includes(x));
+  const weakFeedContext = locConf.includes('feed context') || locConf.includes('city inferred') || locConf === 'unknown';
+  const regionFeed = ciFeedHasOnlyRegionPlaces(feed);
+
+  let confidence = exactish ? 0.95 : 0.35;
+  let reason = exactish ? 'coordinates or source-level geo supplied' : 'feed-level city context only';
+
+  if (cityMention) { confidence = Math.max(confidence, 0.82); reason = 'city/location mentioned in headline, summary, or source text'; }
+  else if (sourceHint) { confidence = Math.max(confidence, 0.68); reason = 'city inferred from known local source domain'; }
+
+  if (weakFeedContext && !cityMention && !sourceHint && !hasCoords) {
+    confidence = Math.min(confidence, 0.28);
+    reason = 'feed city was not found in the alert text/source';
+  }
+
+  if (ciHeadlineLooksGenericGlobal(e) && weakFeedContext && !cityMention && !hasCoords) {
+    confidence = Math.min(confidence, 0.18);
+    reason = 'generic/global headline with weak feed-context location';
+  }
+
+  const level = confidence >= 0.75 ? 'high' : confidence >= 0.45 ? 'medium' : 'low';
+  // Region feeds can still show low-confidence rows, but explicit city feeds should not inherit weak location.
+  const ok = regionFeed ? true : confidence >= 0.45;
+  return { ok, confidence, level, reason, cityMention, sourceHint, exactish };
+}
+function ciApplyGeoValidation(ev, feed){
+  const e = normaliseAlertEvent(ev);
+  if (!e) return null;
+  const g = ciGeoValidation(e, feed);
+  return Object.assign({}, e, {
+    geo_confidence: (e.geo_confidence !== null && e.geo_confidence !== undefined) ? e.geo_confidence : g.confidence,
+    geo_confidence_label: g.level,
+    geo_reason: e.geo_reason || g.reason,
+    geo_validated: g.ok,
+    geo_suspect: g.level === 'low'
+  });
+}
+function ciGeoBadgeHtml(ev){
+  const g = ciGeoValidation(ev, null);
+  const label = ev?.geo_confidence_label || g.level;
+  const reason = ev?.geo_reason || g.reason;
+  const pct = Math.round(Number(ev?.geo_confidence ?? g.confidence ?? 0) * 100);
+  return `<span class="ci-geo-badge ${escapeHtml(label)}" title="${escapeHtml(reason)}">Geo ${escapeHtml(label)} ${pct ? pct + '%' : ''}</span>`;
+}
+
 function feedRegionMatchesPlace(place, city){
   const p = String(place || '').trim().toLowerCase();
   const c = String(city || '').trim().toLowerCase();
@@ -3871,6 +4022,14 @@ function eventMatchesFeed(ev, feed){
 
   const places = feed.places || [];
   if (places.length && !places.some(p => feedRegionMatchesPlace(p, ev.city))) return false;
+
+  // Phase 7E: do not let a city-specific feed inherit weak provider/feed context
+  // unless the city is actually evidenced by title/summary/source/coords. Region
+  // feeds stay visible, but low-confidence rows are labelled in the detail panel.
+  try {
+    const geo = ciGeoValidation(ev, feed);
+    if (!geo.ok) return false;
+  } catch(_) {}
 
   const keywords = (feed.keywords || []).map(k => String(k).toLowerCase().trim()).filter(Boolean);
   if (keywords.length) {
@@ -4117,7 +4276,7 @@ function dedupeClientEvents(events){
 
 async function loadPersistentEventsForFeed(feed){
   const all = await fetchPersistentAlertCache();
-  return dedupeClientEvents(all.filter(ev => eventMatchesFeed(ev, feed)));
+  return dedupeClientEvents(all.filter(ev => eventMatchesFeed(ev, feed)).map(ev => ciApplyGeoValidation(ev, feed)).filter(Boolean));
 }
 
 // Pull cached alerts into every visible feed and queue without waiting for a manual refresh.
@@ -4141,7 +4300,7 @@ async function syncPersistentCacheToFeeds(opts = {}){
   }
 
   feeds.forEach(feed => {
-    const matched = dedupeClientEvents(rows.filter(ev => eventMatchesFeed(ev, feed)));
+    const matched = dedupeClientEvents(rows.filter(ev => eventMatchesFeed(ev, feed)).map(ev => ciApplyGeoValidation(ev, feed)).filter(Boolean));
     if (!matched.length) return;
 
     try { archiveMerge(feed.id, matched); } catch (_) {}
@@ -5920,6 +6079,8 @@ const timingHtml = `
     <div><b>Provider indexed:</b> ${indexedAt ? fmtWhen(indexedAt) : 'Unknown'}</div>
     <div><b>First seen by CityIntel:</b> ${firstSeenAt ? fmtWhen(firstSeenAt) : 'Unknown'}</div>
     <div><b>Location confidence:</b> ${esc(locConf)}</div>
+    <div><b>Geo validation:</b> ${esc(item.geo_confidence_label || ciGeoValidation(item, null).level)} ${item.geo_confidence !== null && item.geo_confidence !== undefined ? '(' + Math.round(Number(item.geo_confidence) * 100) + '%)' : ''}</div>
+    <div><b>Geo reason:</b> ${esc(item.geo_reason || ciGeoValidation(item, null).reason)}</div>
     <div><b>Source:</b> ${esc(sourceName)}</div>
     ${
       sourceUrl
@@ -5930,8 +6091,12 @@ const timingHtml = `
   </div>
 `;
 
+const geoNow = ciGeoValidation(item, null);
+const geoWarnHtml = (geoNow.level === 'low')
+  ? `<div class="ci-geo-note"><b>Geo caution:</b> ${esc(item.geo_reason || geoNow.reason)}. Treat this location as unconfirmed until a source, coordinates, or operator review confirms it.</div>`
+  : '';
 detailSummaryEl.innerHTML =
-  `<div>${esc(buildIntelSummary(item, earlier))}</div>${timingHtml}`;
+  `<div>${esc(buildIntelSummary(item, earlier))}</div>${geoWarnHtml}${timingHtml}`;
   }
   renderLanguageTools(item);
 
@@ -6439,10 +6604,14 @@ function renderEventsIntoCard(cardEl, events, feed) {
     return !isNaN(t) && (now - t <= MAX_AGE_MS);
   });
 
-  const displayEvents = (fresh.length ? fresh : renderList).filter(ev => {
-    if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
-    return (typeof getDisposition === 'function') ? getDisposition(ev) === 'untriaged' : true;
-  });
+  const displayEvents = (fresh.length ? fresh : renderList)
+    .filter(ev => eventMatchesFeed(ev, feed))
+    .map(ev => ciApplyGeoValidation(ev, feed))
+    .filter(Boolean)
+    .filter(ev => {
+      if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
+      return (typeof getDisposition === 'function') ? getDisposition(ev) === 'untriaged' : true;
+    });
 
   // update shared store + per-feed header/map/sidebar stats
   if (typeof ciAlertStoreMerge === 'function') {
@@ -6485,6 +6654,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
       const cat      = first.category || first.type || 'i';
       const whenNice = fmtWhen(first.when);
       const langBadgeHtml = getLanguageBadgeHtml(first);
+      const geoBadgeHtml = ciGeoBadgeHtml(first);
 
       const groupEl  = document.createElement('div');
       const ageClass = getAgeClass(first.when);
@@ -6514,7 +6684,7 @@ function renderEventsIntoCard(cardEl, events, feed) {
   	<div class="eg-header">
     <div class="eg-title">
       <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
-      ${first.title || first.summary || '(no title)'}${langBadgeHtml}
+      ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}
     </div>
     <div class="eg-meta">
       <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
