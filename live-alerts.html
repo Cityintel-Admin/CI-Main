@@ -3974,6 +3974,7 @@ function removeAlertsEverywhere(items){
   (items || []).forEach(removeAlertEverywhere);
   if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
   if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
+if (typeof window.ciApplyFeedActionLock === 'function') window.ciApplyFeedActionLock();
 }
 window.removeAlertEverywhere = removeAlertEverywhere;
 window.removeAlertsEverywhere = removeAlertsEverywhere;
@@ -6633,9 +6634,39 @@ const cancelBtn = document.getElementById('modalCancel');
 const saveBtn   = document.getElementById('modalSave');
 const addFeedBtn= document.getElementById('btnAddFeed');
 
+function ciCanManageFeeds(){
+  try {
+    return !!(window.CIAuth && (
+      (typeof CIAuth.isMasterAdmin === 'function' && CIAuth.isMasterAdmin()) ||
+      (typeof CIAuth.isOrgAdmin === 'function' && CIAuth.isOrgAdmin())
+    ));
+  } catch (_) {
+    return false;
+  }
+}
+window.ciCanManageFeeds = ciCanManageFeeds;
+
+function ciApplyFeedActionLock(){
+  const canManage = ciCanManageFeeds();
+  ['btnAddFeed','liveMapAddFeedBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = canManage ? '' : 'none';
+  });
+  const wrap = document.getElementById('liveMapAddFeedWrap');
+  if (wrap) wrap.style.display = canManage ? '' : 'none';
+  document.querySelectorAll('.live-map-feed-remove').forEach(el => {
+    el.style.display = canManage ? '' : 'none';
+  });
+}
+window.ciApplyFeedActionLock = ciApplyFeedActionLock;
+
 let editingFeedId = null;
 
 function openFeedModal(feed){
+  if (!ciCanManageFeeds()) {
+    alert('Only Master Admins and Org Admins can add or edit feeds.');
+    return;
+  }
   editingFeedId = feed ? feed.id : null;
   overlayEl.style.display='flex';
 
@@ -6685,12 +6716,17 @@ overlayEl.addEventListener('click',(e)=>{
     closeFeedModal();
   }
 });
-addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
+if (addFeedBtn) addFeedBtn.addEventListener('click', ()=>openFeedModal(null));
 
 // allow the map legend's "+ Add feed" button to open the same modal
 window.ciOpenAddFeed = function(){
+  if (!ciCanManageFeeds()) {
+    alert('Only Master Admins and Org Admins can add feeds.');
+    return;
+  }
   const btn = document.getElementById('btnAddFeed');
   if (btn) btn.click();
+  else openFeedModal(null);
   const grid = document.getElementById('feedsGrid');
   if (grid) {
     grid.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -8502,7 +8538,9 @@ const assetIcon = L.divIcon({
       removeBtn.textContent = '×';
 
       row.appendChild(openBtn);
-      row.appendChild(removeBtn);
+      if (typeof window.ciCanManageFeeds !== 'function' || window.ciCanManageFeeds()) {
+        row.appendChild(removeBtn);
+      }
       host.appendChild(row);
     });
 
@@ -8514,6 +8552,10 @@ window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('#liveMapAddFeedBtn');
     if (!btn) return;
+    if (typeof window.ciCanManageFeeds === 'function' && !window.ciCanManageFeeds()) {
+      e.preventDefault();
+      return;
+    }
     if (typeof window.ciOpenAddFeed === 'function') {
       window.ciOpenAddFeed();
     } else {
@@ -9301,6 +9343,11 @@ const selectEvent = async (ev, rowEl) => {
     // Remove feed button
     const removeBtn = e.target.closest('.live-map-feed-remove');
     if (removeBtn) {
+      if (typeof window.ciCanManageFeeds === 'function' && !window.ciCanManageFeeds()) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       const row = removeBtn.closest('.live-map-feed-row');
       const feedId = row && row.dataset.feedid;
       const label = (row && row.dataset.feedlabel) || feedId || '';
@@ -9610,6 +9657,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('a[href="travellers.html"]').forEach(el => {
     if (!canManageTravellers) el.style.display = 'none';
   });
+  if (typeof window.ciApplyFeedActionLock === 'function') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', window.ciApplyFeedActionLock);
+    } else {
+      window.ciApplyFeedActionLock();
+    }
+  }
 })();
 </script>
 
