@@ -1,4 +1,4 @@
-
+ 
      
 <!doctype html>
 <html lang="en">
@@ -3781,8 +3781,12 @@ const CI_PERSISTENT_ALERT_CACHE_TTL = 60 * 1000;
 function normaliseAlertEvent(ev){
   if (!ev || typeof ev !== 'object') return null;
 
-  // Worker/D1 cache may return when_ts instead of when. Keep every UI path on a single `when` field.
-  const whenRaw = ev.when || ev.when_ts || ev.created_at || ev.createdAt || ev.publishedAt || ev.date || ev.time || new Date().toISOString();
+  // Worker/D1 cache may return when_ts instead of when. Keep every UI path on a single `when` field,
+  // but preserve provider timing separately so operators can distinguish article time vs CityIntel first-seen time.
+  const published_at = ev.published_at || ev.publishedAt || ev.pubDate || ev.pub_date || null;
+  const indexed_at = ev.indexed_at || ev.indexedAt || null;
+  const first_seen_at = ev.first_seen_at || ev.firstSeenAt || ev.created_at || ev.createdAt || null;
+  const whenRaw = ev.when || ev.when_ts || published_at || indexed_at || first_seen_at || ev.date || ev.time || new Date().toISOString();
   const whenDate = new Date(whenRaw);
   const when = Number.isNaN(whenDate.getTime()) ? new Date().toISOString() : whenDate.toISOString();
 
@@ -3792,8 +3796,10 @@ function normaliseAlertEvent(ev){
   const src = ev.src || ev.source || 'Stored alert';
   const status = String(ev.status || ev.disposition || 'untriaged').toLowerCase();
   const id = ev.id || `${city}_${Date.parse(when) || Date.now()}_${String(title).slice(0,80)}`;
+  const location_confidence = ev.location_confidence || ev.locationConfidence || 'unknown';
+  const language = ev.language || ev.lang || ev.source_language || ev.sourceLanguage || '';
 
-  return Object.assign({}, ev, { id, title, city, risk, when, src, status });
+  return Object.assign({}, ev, { id, title, city, risk, when, src, status, published_at, indexed_at, first_seen_at, location_confidence, language });
 }
 
 function normaliseAlertList(list){
@@ -4564,6 +4570,38 @@ function fmtWhen(iso) {
   }
 }
 
+function ciParseDateMs(value){
+  const t = Date.parse(value || '');
+  return Number.isFinite(t) ? t : null;
+}
+
+function ciSameMinute(a, b){
+  const at = ciParseDateMs(a);
+  const bt = ciParseDateMs(b);
+  if (at === null || bt === null) return false;
+  return Math.abs(at - bt) < 60 * 1000;
+}
+
+function ciSourceTimingNote(publishedAt, indexedAt, firstSeenAt){
+  if (!publishedAt && !indexedAt && !firstSeenAt) return '';
+  if (publishedAt && indexedAt && ciSameMinute(publishedAt, indexedAt)) {
+    return 'Provider published and indexed times are identical or near-identical. Treat this as source/API timing, not confirmed incident occurrence time.';
+  }
+  if (publishedAt) {
+    return 'Published is the source/API article time. Incident occurrence time should only be treated as confirmed when the provider or source states it.';
+  }
+  return 'No source-published time was supplied; CityIntel is showing first-seen/indexed timing only.';
+}
+
+function ciLocationConfidenceLabel(value){
+  const raw = String(value || 'unknown').replace(/_/g, ' ').trim().toLowerCase();
+  if (raw === 'exact') return 'exact coordinates';
+  if (raw === 'feed context') return 'feed context';
+  if (raw === 'city inferred') return 'city inferred';
+  if (raw === 'unknown') return 'unknown';
+  return raw;
+}
+
 // ---- Global "Now" strip across all feeds ----
 function recomputeGlobalStrip(){
   const strip = document.getElementById('liveNowStrip');
@@ -4697,7 +4735,7 @@ function buildIntelSummary(ev, earlierList) {
   const whenLabel = ev.when ? fmtWhen(ev.when) : 'recently';
   const lines = [];
 
-  lines.push(`${riskLabel} incident reported in ${where} at ${whenLabel}.`);
+  lines.push(`${riskLabel} incident surfaced for ${where} with source timing ${whenLabel}.`);
 
   if (ev.title) {
     lines.push(`Headline: ${ev.title}`);
@@ -5813,11 +5851,10 @@ function openDetailPanel(item, relatedList){
   const indexedAt = item.indexed_at || item.indexedAt || item.created_at || '';
   const firstSeenAt = item.first_seen_at || item.firstSeenAt || '';
 
-  const locConf = String(item.location_confidence || item.locationConfidence || 'unknown')
-  .replace(/_/g, ' ');
+  const locConf = ciLocationConfidenceLabel(item.location_confidence || item.locationConfidence || 'unknown');
 
 detailMetaEl.textContent =
-  `${item.city || 'Unknown'} • ${item.risk || 'n/a'} • Published ${fmtWhen(publishedAt)} • Location: ${locConf}`;
+  `${item.city || 'Unknown'} • ${item.risk || 'n/a'} • Source published ${publishedAt ? fmtWhen(publishedAt) : 'unknown'} • Location: ${locConf}`;
 
   // --- disposition UI ---
   try{
@@ -5875,10 +5912,11 @@ detailMetaEl.textContent =
     const sourceName = item.src || item.source || 'Unknown source';
 const sourceUrl = item.url || item.link || '';
 
+const timingNote = ciSourceTimingNote(publishedAt, indexedAt, firstSeenAt);
 const timingHtml = `
-  <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#9ca3af;">
-    <div><b>Published:</b> ${publishedAt ? fmtWhen(publishedAt) : 'Unknown'}</div>
-    <div><b>Indexed:</b> ${indexedAt ? fmtWhen(indexedAt) : 'Unknown'}</div>
+  <div class="ci-alert-timing-block" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#9ca3af;">
+    <div><b>Source published:</b> ${publishedAt ? fmtWhen(publishedAt) : 'Unknown'}</div>
+    <div><b>Provider indexed:</b> ${indexedAt ? fmtWhen(indexedAt) : 'Unknown'}</div>
     <div><b>First seen by CityIntel:</b> ${firstSeenAt ? fmtWhen(firstSeenAt) : 'Unknown'}</div>
     <div><b>Location confidence:</b> ${esc(locConf)}</div>
     <div><b>Source:</b> ${esc(sourceName)}</div>
@@ -5887,6 +5925,7 @@ const timingHtml = `
         ? `<div><a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;">Open source article ↗</a></div>`
         : `<div><b>Source link:</b> Not provided by feed</div>`
     }
+    ${timingNote ? `<div style="margin-top:8px;color:#fbbf24;line-height:1.35;"><b>Timing note:</b> ${esc(timingNote)}</div>` : ''}
   </div>
 `;
 
