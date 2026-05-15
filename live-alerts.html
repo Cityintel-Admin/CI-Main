@@ -2877,6 +2877,9 @@ padding-bottom: 12px;
 .lang-badge.unknown{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.12);color:#fde68a}
 .translate-note{margin-top:6px;font-size:12px;opacity:.86;line-height:1.45;white-space:pre-wrap}
 .feed-lang-badge{display:inline-flex;align-items:center;margin-left:8px;padding:2px 6px;border-radius:999px;border:1px solid rgba(96,165,250,.35);background:rgba(59,130,246,.14);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#dbeafe;vertical-align:middle}
+.translate-block.translated{border-color:rgba(96,165,250,.35);background:rgba(59,130,246,.08)}
+.translate-note.translated-output{border-top:1px solid rgba(148,163,184,.18);padding-top:8px;color:#e5e7eb;opacity:1}
+
 
 </style>
 <style>
@@ -5349,30 +5352,45 @@ function containsIntlTerm(text, terms) {
 }
 
 function detectEventLanguage(ev) {
-  const raw = `${ev?.title || ''} ${ev?.description || ''}`.trim();
+  const raw = `${ev?.title || ''} ${ev?.description || ev?.summary || ''}`.trim();
   const norm = normalizeIntlText(raw);
   if (!raw) return { code: 'unknown', label: 'Unknown', isEnglish: true, confidence: 'low' };
 
+  // Script-based high-confidence checks first.
   if (/[\u0600-\u06FF]/.test(raw)) return { code: 'ar', label: 'Arabic', isEnglish: false, confidence: 'high' };
   if (/[\u0400-\u04FF]/.test(raw)) return { code: 'ru', label: 'Cyrillic', isEnglish: false, confidence: 'high' };
+  if (/[\u0900-\u097F]/.test(raw)) return { code: 'hi', label: 'Hindi / Devanagari', isEnglish: false, confidence: 'high' };
+  if (/[\u0370-\u03FF]/.test(raw)) return { code: 'el', label: 'Greek', isEnglish: false, confidence: 'high' };
+  if (/[\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/.test(raw)) return { code: 'zh', label: 'CJK source', isEnglish: false, confidence: 'high' };
 
+  // Keyword-based checks for Latin-script languages. Keep this intentionally broad:
+  // it only decides whether to show operator translation tools, not incident risk.
   const checks = [
-    { code:'es', label:'Spanish', terms:['protesta','manifestacion','manifestación','huelga','disturbios','bloqueo','tiroteo','apagón','apagon'] },
-    { code:'fr', label:'French', terms:['manifestation','greve','grève','emeute','émeute','incendie','fusillade','coupure de courant'] },
-    { code:'de', label:'German', terms:['streik','unruhen','brand','verkehr','stromausfall'] },
-    { code:'it', label:'Italian', terms:['manifestazione','sciopero','disordini','sparatoria','interruzione'] },
-    { code:'pt', label:'Portuguese', terms:['manifestacao','manifestação','greve','disturbios','distúrbios','bloqueio'] },
-    { code:'nl', label:'Dutch', terms:['demonstratie','staking','onrust','blokkade'] },
-    { code:'tr', label:'Turkish', terms:['gosteri','gösteri','grev'] }
+    { code:'es', label:'Spanish', terms:['protesta','manifestacion','manifestación','huelga','disturbios','bloqueo','tiroteo','apagón','apagon','incendio','ataque'] },
+    { code:'fr', label:'French', terms:['manifestation','greve','grève','emeute','émeute','incendie','fusillade','coupure de courant','attaque'] },
+    { code:'de', label:'German', terms:['streik','unruhen','brand','verkehr','stromausfall','angriff','tätern','taetern'] },
+    { code:'it', label:'Italian', terms:['manifestazione','sciopero','disordini','sparatoria','interruzione','capricci','richieste','giornata'] },
+    { code:'pt', label:'Portuguese', terms:['manifestacao','manifestação','greve','disturbios','distúrbios','bloqueio','incêndio','incendio'] },
+    { code:'nl', label:'Dutch', terms:['demonstratie','staking','onrust','blokkade','brand'] },
+    { code:'tr', label:'Turkish', terms:['protestosu','gosteri','gösteri','grev','saldırı','patlama'] },
+    { code:'sq', label:'Albanian', terms:['përgatit','bllokim','protestë','proteste','sulmues','bombën','bomben'] },
+    { code:'ro', label:'Romanian', terms:['protest','incendiu','atac','grevă','greva'] }
   ];
   for (const lang of checks) {
     if (lang.terms.some(term => norm.includes(normalizeIntlText(term)))) {
       return { code: lang.code, label: lang.label, isEnglish: false, confidence: 'medium' };
     }
   }
-  return { code: 'en', label: 'English', isEnglish: true, confidence: 'medium' };
-}
 
+  // Very small English signal to avoid showing translation tools for normal English alerts.
+  const englishSignals = [' the ',' and ',' in ',' after ',' before ',' police ',' fire ',' protest ',' shooting ',' stabbing ',' power ',' road ',' train '];
+  const padded = ` ${norm} `;
+  if (englishSignals.some(t => padded.includes(t))) {
+    return { code: 'en', label: 'English', isEnglish: true, confidence: 'medium' };
+  }
+
+  return { code: 'unknown', label: 'Unknown language', isEnglish: true, confidence: 'low' };
+}
 function getLanguageBadgeHtml(ev) {
   const info = detectEventLanguage(ev);
   if (!info || info.isEnglish || info.code === 'unknown') return '';
@@ -5465,7 +5483,9 @@ function resetTranslationPanel(){
   if (detailTranslatedTextEl){
     detailTranslatedTextEl.style.display = 'none';
     detailTranslatedTextEl.textContent = '';
+    detailTranslatedTextEl.classList.remove('translated-output');
   }
+  if (detailLanguageRowEl) detailLanguageRowEl.classList.remove('translated');
   if (detailTranslationStatusEl) detailTranslationStatusEl.textContent = '';
   if (detailTranslateBtnEl) detailTranslateBtnEl.style.display = '';
   if (detailShowOriginalBtnEl) detailShowOriginalBtnEl.style.display = 'none';
@@ -5487,7 +5507,7 @@ function renderLanguageTools(item){
     detailLanguageBadgeEl.classList.toggle('unknown', info.code === 'unknown');
   }
   if (detailTranslationStatusEl) {
-    detailTranslationStatusEl.textContent = 'Non-English source detected. Use Translate to generate an English version for the operator view.';
+    detailTranslationStatusEl.textContent = 'Non-English source detected. Use Translate to generate an English version for operator review. Original text remains unchanged for audit.';
   }
 }
 
@@ -5509,6 +5529,8 @@ function renderLanguageTools(item){
           if (detailTranslatedTextEl){
             detailTranslatedTextEl.textContent = parts.join('\n\n');
             detailTranslatedTextEl.style.display = '';
+            detailTranslatedTextEl.classList.add('translated-output');
+            if (detailLanguageRowEl) detailLanguageRowEl.classList.add('translated');
           }
           if (detailTranslationStatusEl) detailTranslationStatusEl.textContent = 'Translated to English for operator review.';
           detailTranslateBtnEl.style.display = 'none';
@@ -9493,7 +9515,7 @@ function redrawIncidentRadius(){
       row.setAttribute('data-alertkey', alertKey(ev));
       row.innerHTML = `
         <div class="map-alert-top">
-          <div class="map-alert-title">${safe(title)}</div>
+          <div class="map-alert-title">${safe(title)}${getLanguageBadgeHtml(ev)}</div>
           <div class="map-alert-when">${safe(when)}</div>
         </div>
         <div class="map-alert-meta">
@@ -9945,7 +9967,7 @@ const selectEvent = async (ev, rowEl) => {
       row.setAttribute('data-alertkey', alertKey(ev));
       row.innerHTML = `
         <div class="map-alert-top">
-          <div class="map-alert-title">${safe(title)}</div>
+          <div class="map-alert-title">${safe(title)}${getLanguageBadgeHtml(ev)}</div>
           <div class="map-alert-when">${safe(when)}</div>
         </div>
         <div class="map-alert-meta">
