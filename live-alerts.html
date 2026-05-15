@@ -1517,6 +1517,17 @@ async function loadOrgContext() {
   font-size:12px;line-height:1.35;
 }
 
+
+.queue-btn[data-queue="unverified"]{
+  border-color:rgba(251,191,36,.32);
+  color:#fef3c7;
+}
+.queue-btn[data-queue="unverified"] .queue-count{
+  border-color:rgba(251,191,36,.32);
+  background:rgba(120,53,15,.25);
+  color:#fde68a;
+}
+
 /* Phase 8A unverified / location verification queue */
 .ci-unverified-queue{
   margin-top:12px;
@@ -3382,6 +3393,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
       <button type="button" class="queue-btn" data-queue="monitoring">
         Monitoring <span class="queue-count" id="qMonitoring">0</span>
+      </button>
+      <button type="button" class="queue-btn" data-queue="unverified">
+        Unverified <span class="queue-count" id="qUnverified">0</span>
       </button>
       <button type="button" class="queue-btn" data-queue="cleared">
         Cleared <span class="queue-count" id="qCleared">0</span>
@@ -9121,15 +9135,22 @@ function redrawIncidentRadius(){
       st === 'draft' ? 'Draft queue' :
       st === 'escalated' ? 'Escalated queue' :
       st === 'monitoring' ? 'Monitoring queue' :
+      st === 'unverified' ? 'Unverified location queue' :
       st === 'cleared' ? 'Cleared queue' :
       'Queue';
 
     const all = collectAllCachedEvents();
+    const unverified = all.filter(ev =>
+      !(typeof isAlertHidden === 'function' && isAlertHidden(ev)) &&
+      (typeof ciIsLowGeoConfidence === 'function' ? ciIsLowGeoConfidence(ev) : false)
+    );
     const items = (st === 'all'
       ? all
       : st === 'draft'
         ? all.filter(ev => hasTransitionDraft(ev))
-        : filterByDisposition(all, st)
+        : st === 'unverified'
+          ? unverified.filter(ev => getDisposition(ev) === 'untriaged')
+          : filterByDisposition(all, st)
     ).slice(0, 60);
 
     openFeedId = '__queue__' + st;
@@ -9198,6 +9219,7 @@ function redrawIncidentRadius(){
         <div class="map-alert-meta">
           ${riskPill(ev.risk)}
           ${st === 'draft' ? `<span class="ci-status-pill" data-status="monitoring">Draft · ${safe(statusLabel(getDraftTargetStatus(ev) || 'untriaged'))}</span>` : renderStatusPill(getDisposition(ev))}
+          ${st === 'unverified' ? `<span class="ci-geo-badge low">Verify location</span>` : ''}
           <span style="opacity:.85;">${safe(city)}</span>
           <button type="button" class="map-alert-delete" title="Delete this alert from all feeds">×</button>
         </div>
@@ -9229,15 +9251,21 @@ function redrawIncidentRadius(){
     const mon = filterByDisposition(all, 'monitoring').length;
     const clr = filterByDisposition(all, 'cleared').length;
     const drf = all.filter(ev => hasTransitionDraft(ev)).length;
+    const unv = all.filter(ev =>
+      getDisposition(ev) === 'untriaged' &&
+      (typeof ciIsLowGeoConfidence === 'function' ? ciIsLowGeoConfidence(ev) : false)
+    ).length;
 
     const allEl = document.getElementById('qAllAlerts');
     const a = document.getElementById('qEscalated');
     const b = document.getElementById('qMonitoring');
+    const u = document.getElementById('qUnverified');
     const c = document.getElementById('qCleared');
     const d = document.getElementById('qDrafts');
     if (allEl) allEl.textContent = total;
     if (a) a.textContent = esc;
     if (b) b.textContent = mon;
+    if (u) u.textContent = unv;
     if (c) c.textContent = clr;
     if (d) d.textContent = drf;
   }
