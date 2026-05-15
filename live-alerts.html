@@ -1518,6 +1518,24 @@ async function loadOrgContext() {
 }
 
 
+/* Phase 8E duplicate suppression / linked-alert grouping */
+.ci-linked-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:999px;border:1px solid rgba(147,197,253,.32);
+  background:rgba(30,64,175,.22);color:#bfdbfe;
+  font-size:10px;font-weight:800;line-height:1;
+  padding:3px 7px;margin-left:6px;white-space:nowrap;
+}
+.ci-linked-detail{
+  margin-top:10px;padding:10px;border-radius:10px;
+  border:1px solid rgba(147,197,253,.22);
+  background:rgba(30,64,175,.12);color:#dbeafe;
+  font-size:12px;line-height:1.4;
+}
+.ci-linked-detail ul{margin:8px 0 0 18px;padding:0;}
+.ci-linked-detail li{margin:4px 0;color:#cbd5e1;}
+
+
 .queue-btn[data-queue="unverified"]{
   border-color:rgba(251,191,36,.32);
   color:#fef3c7;
@@ -4299,7 +4317,7 @@ function renderEventGroupsInto(list, events, limit){
       <div class="eg-header">
         <div class="eg-title">
           <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
-          ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}
+          ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}${ciLinkedBadgeHtml(first)}
         </div>
         <div class="eg-meta">
           <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
@@ -4379,7 +4397,7 @@ function renderUnverifiedQueueInto(list, events){
       <div class="ci-unverified-guidance">${escapeHtml(ciVerificationGuidanceText())}</div>
       ${low.slice(0, 12).map((ev, idx) => `
         <div class="ci-unverified-row" data-idx="${idx}">
-          <div class="ci-unverified-title">${escapeHtml(ev.title || ev.summary || '(no title)')}</div>
+          <div class="ci-unverified-title">${escapeHtml(ev.title || ev.summary || '(no title)')}${ciLinkedBadgeHtml(ev)}</div>
           <div class="ci-unverified-meta">
             <span>${escapeHtml(ev.city || 'Unknown')}</span>
             <span>${escapeHtml(ev.risk || 'n/a')}</span>
@@ -4471,6 +4489,16 @@ function alertIdentityKeys(ev){
   try{ const k = ciSharedAlertKey(ev); if (k) out.add('shared_' + k); }catch(_){}
   const e = normaliseAlertEvent(ev);
   if (e && e.id) out.add('id_' + String(e.id));
+  if (e && e._incidentKey) out.add('incident_' + String(e._incidentKey));
+  if (e && Array.isArray(e._linkedAlerts)) {
+    e._linkedAlerts.forEach(linked => {
+      try { const lk = alertKey(linked); if (lk) out.add(lk); } catch(_) {}
+      try { const sk = ciSharedAlertKey(linked); if (sk) out.add('shared_' + sk); } catch(_) {}
+      const le = normaliseAlertEvent(linked);
+      if (le && le.id) out.add('id_' + String(le.id));
+      if (le && le._incidentKey) out.add('incident_' + String(le._incidentKey));
+    });
+  }
   return Array.from(out).filter(Boolean);
 }
 function isAlertHidden(ev){
@@ -4548,32 +4576,18 @@ window.removeAlertEverywhere = removeAlertEverywhere;
 window.removeAlertsEverywhere = removeAlertsEverywhere;
 
 function ciSharedAlertKey(ev){
-  const e = normaliseAlertEvent(ev);
-  if (!e) return '';
-  const when = String(e.when || '').slice(0, 16);
-  const src = String(e.src || '').toLowerCase().trim();
-  const city = String(e.city || '').toLowerCase().trim();
-  const title = String(e.title || '').toLowerCase().replace(/\s+/g, ' ').trim().slice(0, 120);
-  return `${src}|${when}|${city}|${title}`;
+  // Phase 8E: shared store key is now incident-based rather than exact source/time based.
+  // This suppresses duplicate reports across overlapping feeds while retaining linked reports on the primary alert.
+  return ciIncidentKey(ev);
 }
+
 
 function ciAlertStoreMerge(feed, events){
   const incoming = normaliseAlertList(events || []);
   if (!incoming.length) return ciAlertStoreForFeed(feed);
 
   const existing = Array.isArray(window.CI_ALL_ALERTS) ? window.CI_ALL_ALERTS : [];
-  const byKey = new Map();
-
-  existing.forEach(ev => {
-    const e = normaliseAlertEvent(ev);
-    if (!e || isAlertHidden(e)) return;
-    const key = ciSharedAlertKey(e);
-    if (!key) return;
-    byKey.set(key, Object.assign({}, e, {
-      _feedIds: Array.isArray(e._feedIds) ? e._feedIds.slice() : (e._feedId ? [e._feedId] : []),
-      _feedLabels: Array.isArray(e._feedLabels) ? e._feedLabels.slice() : (e._feedLabel ? [e._feedLabel] : [])
-    }));
-  });
+  let mergedRows = [];
 
   const feedId = feed && feed.id ? String(feed.id) : '';
   const feedLabel = feed ? (
@@ -4583,24 +4597,27 @@ function ciAlertStoreMerge(feed, events){
     feedId || 'Feed'
   ) : '';
 
+  const seed = existing.map(normaliseAlertEvent).filter(Boolean).filter(e => !isAlertHidden(e));
+  seed.forEach(e => mergedRows.push(e));
+
   incoming.forEach(ev => {
     if (isAlertHidden(ev)) return;
-    const key = ciSharedAlertKey(ev);
-    if (!key) return;
-    const current = byKey.get(key) || ev;
-    const merged = Object.assign({}, current, ev);
-    const ids = new Set(Array.isArray(current._feedIds) ? current._feedIds : []);
-    const labels = new Set(Array.isArray(current._feedLabels) ? current._feedLabels : []);
+    let row = Object.assign({}, ev);
+    const ids = new Set(Array.isArray(row._feedIds) ? row._feedIds : []);
+    const labels = new Set(Array.isArray(row._feedLabels) ? row._feedLabels : []);
     if (feedId) ids.add(feedId);
     if (feedLabel) labels.add(feedLabel);
-    merged._feedIds = Array.from(ids);
-    merged._feedLabels = Array.from(labels);
-    if (feedId) merged._feedId = feedId;
-    if (feedLabel) merged._feedLabel = feedLabel;
-    byKey.set(key, merged);
+    row._feedIds = Array.from(ids);
+    row._feedLabels = Array.from(labels);
+    if (feedId) row._feedId = feedId;
+    if (feedLabel) row._feedLabel = feedLabel;
+
+    const idx = mergedRows.findIndex(x => ciAreLikelyLinkedAlerts(x, row));
+    if (idx >= 0) mergedRows[idx] = ciMergeLinkedAlerts(mergedRows[idx], row);
+    else mergedRows.push(row);
   });
 
-  window.CI_ALL_ALERTS = Array.from(byKey.values())
+  window.CI_ALL_ALERTS = dedupeClientEvents(mergedRows)
     .sort((a,b)=>(Date.parse(eventWhen(b))||0)-(Date.parse(eventWhen(a))||0))
     .slice(0, 1000);
 
@@ -4651,8 +4668,118 @@ function ciTitleSignature(title){
   )).sort().slice(0, 12).join('-');
 }
 
+
+function ciDedupeTokens(title){
+  const sig = ciTitleSignature(title || '');
+  return sig ? sig.split('-').filter(Boolean) : [];
+}
+
+function ciIncidentDay(ev){
+  const e = normaliseAlertEvent(ev);
+  return String((e && e.when) || '').slice(0, 10);
+}
+
+function ciIncidentCity(ev){
+  const e = normaliseAlertEvent(ev);
+  return ciDedupeText((e && (e.city || e.location || e.area)) || '').replace(/\s+/g, '-') || 'unknown-city';
+}
+
+function ciIncidentKey(ev){
+  const e = normaliseAlertEvent(ev);
+  if (!e) return '';
+  const day = ciIncidentDay(e) || 'unknown-day';
+  const city = ciIncidentCity(e);
+  const sig = ciTitleSignature(e.title || e.summary || e.description || '') || ciDedupeText(e.title || '').slice(0, 80) || 'untitled';
+  return `${day}::${city}::${sig}`;
+}
+
+function ciTokenOverlapScore(a, b){
+  const A = new Set(ciDedupeTokens(a));
+  const B = new Set(ciDedupeTokens(b));
+  if (!A.size || !B.size) return 0;
+  let common = 0;
+  A.forEach(t => { if (B.has(t)) common += 1; });
+  return common / Math.max(1, Math.min(A.size, B.size));
+}
+
+function ciAreLikelyLinkedAlerts(a, b){
+  const ea = normaliseAlertEvent(a), eb = normaliseAlertEvent(b);
+  if (!ea || !eb) return false;
+
+  const ua = String(ea.url || ea.link || '').trim().toLowerCase();
+  const ub = String(eb.url || eb.link || '').trim().toLowerCase();
+  if (ua && ub && ua === ub) return true;
+
+  const dayA = ciIncidentDay(ea), dayB = ciIncidentDay(eb);
+  if (dayA && dayB && dayA !== dayB) return false;
+
+  const ca = ciIncidentCity(ea), cb = ciIncidentCity(eb);
+  if (ca && cb && ca !== 'unknown-city' && cb !== 'unknown-city' && ca !== cb) return false;
+
+  const ta = Date.parse(ea.when || ea.published_at || ea.indexed_at || '');
+  const tb = Date.parse(eb.when || eb.published_at || eb.indexed_at || '');
+  if (Number.isFinite(ta) && Number.isFinite(tb) && Math.abs(ta - tb) > 12 * 60 * 60 * 1000) return false;
+
+  const titleA = ea.title || ea.summary || ea.description || '';
+  const titleB = eb.title || eb.summary || eb.description || '';
+  const exactA = ciDedupeText(titleA);
+  const exactB = ciDedupeText(titleB);
+  if (exactA && exactB && (exactA.includes(exactB) || exactB.includes(exactA))) return true;
+
+  return ciTokenOverlapScore(titleA, titleB) >= 0.45;
+}
+
+function ciMergeLinkedAlerts(primary, duplicate){
+  const p = normaliseAlertEvent(primary) || primary || {};
+  const d = normaliseAlertEvent(duplicate) || duplicate || {};
+  const riskWeight = { high: 3, med: 2, medium: 2, low: 1 };
+  const pRisk = riskWeight[String(p.risk || '').toLowerCase()] || 0;
+  const dRisk = riskWeight[String(d.risk || '').toLowerCase()] || 0;
+  const pTime = Date.parse(p.when || p.published_at || '') || 0;
+  const dTime = Date.parse(d.when || d.published_at || '') || 0;
+  const keepD = dRisk > pRisk || (dRisk === pRisk && dTime > pTime && !p.url && d.url);
+  const base = Object.assign({}, keepD ? p : d, keepD ? d : p);
+
+  const linked = [];
+  const pushLinked = (x) => {
+    if (!x) return;
+    const e = normaliseAlertEvent(x) || x;
+    const key = ciIncidentKey(e) + '|' + String(e.id || '') + '|' + String(e.src || e.source || '');
+    if (linked.some(v => (ciIncidentKey(v) + '|' + String(v.id || '') + '|' + String(v.src || v.source || '')) === key)) return;
+    linked.push(e);
+  };
+  (Array.isArray(p._linkedAlerts) ? p._linkedAlerts : []).forEach(pushLinked);
+  (Array.isArray(d._linkedAlerts) ? d._linkedAlerts : []).forEach(pushLinked);
+  pushLinked(keepD ? p : d);
+
+  const ids = new Set([...(Array.isArray(p._feedIds) ? p._feedIds : []), ...(Array.isArray(d._feedIds) ? d._feedIds : [])]);
+  const labels = new Set([...(Array.isArray(p._feedLabels) ? p._feedLabels : []), ...(Array.isArray(d._feedLabels) ? d._feedLabels : [])]);
+  if (p._feedId) ids.add(p._feedId); if (d._feedId) ids.add(d._feedId);
+  if (p._feedLabel) labels.add(p._feedLabel); if (d._feedLabel) labels.add(d._feedLabel);
+
+  base._feedIds = Array.from(ids).filter(Boolean);
+  base._feedLabels = Array.from(labels).filter(Boolean);
+  base._linkedAlerts = linked.slice(0, 10);
+  base._duplicateCount = linked.length + 1;
+  base._sourceNames = Array.from(new Set([p.src || p.source, d.src || d.source, ...linked.map(x => x.src || x.source)].filter(Boolean))).slice(0, 8);
+  base._incidentKey = ciIncidentKey(base);
+  return base;
+}
+
+function ciLinkedBadgeHtml(ev){
+  const count = Number(ev && (ev._duplicateCount || (Array.isArray(ev._linkedAlerts) ? ev._linkedAlerts.length + 1 : 0))) || 0;
+  return count > 1 ? `<span class="ci-linked-badge" title="Linked duplicate/source reports">${count} linked</span>` : '';
+}
+
+function ciLinkedDetailHtml(ev){
+  const linked = Array.isArray(ev && ev._linkedAlerts) ? ev._linkedAlerts : [];
+  if (!linked.length) return '';
+  const sources = Array.isArray(ev._sourceNames) ? ev._sourceNames : [];
+  const rows = linked.slice(0, 5).map(x => `<li>${escapeHtml(x.title || x.summary || '(linked report)')} <span style="opacity:.7;">${x.src || x.source ? '— ' + escapeHtml(x.src || x.source) : ''}${x.when ? ' · ' + fmtWhen(x.when) : ''}</span></li>`).join('');
+  return `<div class="ci-linked-detail"><b>Linked alert grouping:</b> ${linked.length + 1} related report${linked.length ? 's' : ''} suppressed into this incident.${sources.length ? `<div style="margin-top:4px;opacity:.85;">Sources: ${sources.map(escapeHtml).join(', ')}</div>` : ''}<ul>${rows}</ul></div>`;
+}
+
 function dedupeClientEvents(events){
-  const seen = new Set();
   const out = [];
   const riskWeight = { high: 3, med: 2, medium: 2, low: 1 };
 
@@ -4663,20 +4790,9 @@ function dedupeClientEvents(events){
   });
 
   for (const e of rows) {
-    const day = String(e.when || '').slice(0, 10);
-    const city = ciDedupeText(e.city || '').replace(/\s+/g, '-') || 'unknown-city';
-    const exactTitle = ciDedupeText(e.title || '').slice(0, 180);
-    const sig = ciTitleSignature(e.title || '') || exactTitle;
-
-    // Do not include id/source here: old cache rows may have unique ids per source,
-    // but they can still be the same incident/story.
-    const exactKey = `${day}::${city}::${exactTitle}`;
-    const sigKey = `${day}::${city}::${sig}`;
-    if (seen.has(exactKey) || seen.has(sigKey)) continue;
-
-    seen.add(exactKey);
-    seen.add(sigKey);
-    out.push(e);
+    const idx = out.findIndex(existing => ciAreLikelyLinkedAlerts(existing, e));
+    if (idx >= 0) out[idx] = ciMergeLinkedAlerts(out[idx], e);
+    else out.push(Object.assign({}, e, { _incidentKey: ciIncidentKey(e), _duplicateCount: e._duplicateCount || 1 }));
   }
 
   out.sort((a,b) => (Date.parse(b.when) || 0) - (Date.parse(a.when) || 0));
@@ -6526,8 +6642,9 @@ const geoWarnHtml = isGeoLow
   ? `<div class="ci-geo-note"><b>Geo caution:</b> ${esc(item.geo_reason || geoNow.reason)}. Treat this location as unconfirmed until a source, coordinates, or operator review confirms it.</div>
      <div class="ci-verify-lock-note"><b>Escalation locked:</b> ${esc(ciVerificationGuidanceText())}</div>`
   : '';
+const linkedDetailHtml = ciLinkedDetailHtml(item);
 detailSummaryEl.innerHTML =
-  `<div>${esc(buildIntelSummary(item, earlier))}</div>${geoWarnHtml}${timingHtml}`;
+  `<div>${esc(buildIntelSummary(item, earlier))}</div>${linkedDetailHtml}${geoWarnHtml}${timingHtml}`;
   }
   renderLanguageTools(item);
 
@@ -6899,79 +7016,29 @@ async function refreshSingleFeedCard(cardEl, feed){
 // GROUPING ENGINE — collapses similar alerts into update threads
 // -------------------------------------------------------------
 function groupEvents(events) {
-
-  // helper: normalise titles for fuzzy-matching
-  const norm = (s='') =>
-    s.toLowerCase()
-     .replace(/[^a-z0-9 ]+/g, '')
-     .replace(/\s+/g, ' ')
-     .trim();
-
-  // helper: check if two timestamps are within 60 minutes
-  const within60 = (a, b) => {
-    try {
-      const aa = new Date(a).getTime();
-      const bb = new Date(b).getTime();
-      return Math.abs(aa - bb) <= 3600_000; // 1 hour
-    } catch (e) {
-      return false;
-    }
-  };
-
   const groups = [];
-
-  events.forEach(ev => {
-    const nTitle = norm(ev.title || ev.summary || ev.description || '');
-
-    let matched = null;
-
-    // try to match with existing groups
-    for (const g of groups) {
-      if (
-        g.city === ev.city &&                  // same city
-        g.category === ev.category &&          // same category  
-        within60(g.latestWhen, ev.when) &&     // close in time
-        (norm(g.baseTitle).includes(nTitle) || // fuzzy title match
-         nTitle.includes(norm(g.baseTitle)))
-      ) {
-        matched = g;
-        break;
-      }
-    }
-
+  (events || []).map(normaliseAlertEvent).filter(Boolean).forEach(ev => {
+    let matched = groups.find(g => g.events.some(existing => ciAreLikelyLinkedAlerts(existing, ev)));
     if (!matched) {
-      // make a new group
       matched = {
         city: ev.city,
-        category: ev.category,
+        category: ev.category || ev.type || '',
         events: [],
         baseTitle: ev.title || ev.summary || '',
-        latestWhen: ev.when
+        latestWhen: ev.when,
+        incidentKey: ciIncidentKey(ev)
       };
       groups.push(matched);
     }
-
     matched.events.push(ev);
-
-    // update latest timestamp
-    if (new Date(ev.when) > new Date(matched.latestWhen)) {
+    if ((Date.parse(ev.when) || 0) > (Date.parse(matched.latestWhen) || 0)) {
       matched.latestWhen = ev.when;
       matched.baseTitle = ev.title || ev.summary || matched.baseTitle;
     }
   });
 
-  // sort groups newest → oldest
-  groups.sort((a, b) =>
-    new Date(b.latestWhen) - new Date(a.latestWhen)
-  );
-
-  // inside each group, sort events newest → oldest
-  groups.forEach(g =>
-    g.events.sort((a, b) =>
-      new Date(b.when) - new Date(a.when)
-    )
-  );
-
+  groups.sort((a, b) => (Date.parse(b.latestWhen) || 0) - (Date.parse(a.latestWhen) || 0));
+  groups.forEach(g => g.events.sort((a, b) => (Date.parse(b.when) || 0) - (Date.parse(a.when) || 0)));
   return groups;
 }
 
@@ -9515,7 +9582,7 @@ function redrawIncidentRadius(){
       row.setAttribute('data-alertkey', alertKey(ev));
       row.innerHTML = `
         <div class="map-alert-top">
-          <div class="map-alert-title">${safe(title)}${getLanguageBadgeHtml(ev)}</div>
+          <div class="map-alert-title">${safe(title)}${getLanguageBadgeHtml(ev)}${ciLinkedBadgeHtml(ev)}</div>
           <div class="map-alert-when">${safe(when)}</div>
         </div>
         <div class="map-alert-meta">
