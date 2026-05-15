@@ -2507,6 +2507,77 @@ padding-bottom: 12px;
   font-size:11px;
 }
 
+
+
+/* Phase 8C: operator feed / location filters */
+.ci-alert-filter-panel{
+  border:1px solid rgba(148,163,184,.18);
+  background:rgba(15,23,42,.32);
+  border-radius:14px;
+  padding:10px 12px;
+  margin-top:12px;
+}
+.ci-alert-filter-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+.ci-alert-filter-title{
+  font-size:11px;
+  font-weight:800;
+  color:#cbd5e1;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.ci-alert-filter-reset{
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(31,41,55,.48);
+  color:#e5e7eb;
+  border-radius:999px;
+  padding:3px 9px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+.ci-alert-filter-reset:hover{border-color:rgba(96,165,250,.45);}
+.ci-alert-filter-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.ci-alert-filter-grid .wide{grid-column:1 / -1;}
+.ci-alert-filter-panel label{
+  display:block;
+  font-size:10px;
+  font-weight:800;
+  color:#94a3b8;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.ci-alert-filter-panel input,
+.ci-alert-filter-panel select{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid rgba(148,163,184,.18);
+  background:rgba(2,6,23,.65);
+  color:#e5e7eb;
+  border-radius:10px;
+  padding:8px 9px;
+  font-size:12px;
+  outline:none;
+}
+.ci-alert-filter-panel input:focus,
+.ci-alert-filter-panel select:focus{border-color:rgba(96,165,250,.55);}
+.ci-alert-filter-help{
+  margin-top:7px;
+  color:#94a3b8;
+  font-size:11px;
+  line-height:1.35;
+}
+
 .queue-action-row{
   display:flex;
   justify-content:flex-end;
@@ -3438,6 +3509,43 @@ document.addEventListener('DOMContentLoaded', () => {
     <div id="cityintelAdminPostsList" class="ci-admin-posts-list">
       <div class="ci-admin-post-empty">Loading mapped posts…</div>
     </div>
+  </div>
+
+
+  <!-- Phase 8C: queue/search filters for operator review -->
+  <div class="live-map-sidebar-section ci-alert-filter-panel" id="ciAlertFilterPanel">
+    <div class="ci-alert-filter-head">
+      <div class="ci-alert-filter-title">Alert filters</div>
+      <button type="button" class="ci-alert-filter-reset" id="ciAlertFilterReset">Reset</button>
+    </div>
+    <div class="ci-alert-filter-grid">
+      <div class="wide">
+        <label for="ciAlertSearch">Search</label>
+        <input id="ciAlertSearch" type="search" placeholder="Title, source, city, country…" autocomplete="off">
+      </div>
+      <div>
+        <label for="ciAlertCountryFilter">Country</label>
+        <select id="ciAlertCountryFilter"><option value="">All countries</option></select>
+      </div>
+      <div>
+        <label for="ciAlertCityFilter">City</label>
+        <select id="ciAlertCityFilter"><option value="">All cities</option></select>
+      </div>
+      <div>
+        <label for="ciAlertRiskFilter">Risk</label>
+        <select id="ciAlertRiskFilter">
+          <option value="">All risk</option>
+          <option value="high">High</option>
+          <option value="med">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div>
+        <label for="ciAlertRegionFilter">Feed / region</label>
+        <select id="ciAlertRegionFilter"><option value="">All feeds</option></select>
+      </div>
+    </div>
+    <div class="ci-alert-filter-help">Filter the active queue without changing saved feeds.</div>
   </div>
 
  <!-- ✅ PASTE PART 1 HERE (directly under feeds summary) -->
@@ -9127,6 +9235,8 @@ function redrawIncidentRadius(){
 
   function renderQueueList(status){
     const st = String(status||'').toLowerCase();
+    ciQueueFilterState.activeQueue = st || 'all';
+    ciBindQueueFilters();
     const label =
       st === 'all' ? 'Verified alerts' :
       st === 'draft' ? 'Draft queue' :
@@ -9148,14 +9258,18 @@ function redrawIncidentRadius(){
       return !(isLowGeo && getDisposition(ev) === 'untriaged');
     });
 
-    const items = (st === 'all'
+    const baseItems = (st === 'all'
       ? verifiedAll
       : st === 'draft'
         ? all.filter(ev => hasTransitionDraft(ev))
         : st === 'unverified'
           ? unverified.filter(ev => getDisposition(ev) === 'untriaged')
           : filterByDisposition(all, st)
-    ).slice(0, 60);
+    );
+
+    ciRefreshQueueFilterOptions(baseItems);
+    const filteredItems = baseItems.filter(ciMatchesQueueFilters);
+    const items = filteredItems.slice(0, 60);
 
     openFeedId = '__queue__' + st;
     window.__ciOpenFeedId = openFeedId;
@@ -9194,7 +9308,8 @@ function redrawIncidentRadius(){
     }
 
     if (!items.length){
-      alertsList.innerHTML = `<div class="map-alert-empty">No items in ${label.toLowerCase()}.</div>`;
+      const filterActive = ciQueueFilterState.search || ciQueueFilterState.country || ciQueueFilterState.city || ciQueueFilterState.risk || ciQueueFilterState.region;
+      alertsList.innerHTML = `<div class="map-alert-empty">${filterActive ? 'No matching items in ' : 'No items in '}${label.toLowerCase()}.</div>`;
       showAlerts();
       return;
     }
@@ -9290,6 +9405,7 @@ function redrawIncidentRadius(){
     if (b) b.textContent = mon;
     if (u) u.textContent = unv;
     if (c) c.textContent = clr;
+    try { ciRefreshQueueFilterOptions(all); } catch(_) {}
   }
   window.ciUpdateQueueCounts = updateQueueCounts;
 
