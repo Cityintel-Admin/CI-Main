@@ -3388,20 +3388,17 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="queue-btn queue-btn-all" data-queue="all">
         All alerts <span class="queue-count" id="qAllAlerts">0</span>
       </button>
+      <button type="button" class="queue-btn" data-queue="unverified">
+        Unverified <span class="queue-count" id="qUnverified">0</span>
+      </button>
       <button type="button" class="queue-btn" data-queue="escalated">
         Escalated <span class="queue-count" id="qEscalated">0</span>
       </button>
       <button type="button" class="queue-btn" data-queue="monitoring">
         Monitoring <span class="queue-count" id="qMonitoring">0</span>
       </button>
-      <button type="button" class="queue-btn" data-queue="unverified">
-        Unverified <span class="queue-count" id="qUnverified">0</span>
-      </button>
       <button type="button" class="queue-btn" data-queue="cleared">
         Cleared <span class="queue-count" id="qCleared">0</span>
-      </button>
-      <button type="button" class="queue-btn" data-queue="draft">
-        Drafts <span class="queue-count" id="qDrafts">0</span>
       </button>
     </div>
     <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
@@ -9144,8 +9141,15 @@ function redrawIncidentRadius(){
       !(typeof isAlertHidden === 'function' && isAlertHidden(ev)) &&
       (typeof ciIsLowGeoConfidence === 'function' ? ciIsLowGeoConfidence(ev) : false)
     );
+    // Route unverified low-confidence items out of All Alerts until an operator
+    // verifies/triages them. This keeps the main feed focused on confirmed data.
+    const verifiedAll = all.filter(ev => {
+      const isLowGeo = (typeof ciIsLowGeoConfidence === 'function') ? ciIsLowGeoConfidence(ev) : false;
+      return !(isLowGeo && getDisposition(ev) === 'untriaged');
+    });
+
     const items = (st === 'all'
-      ? all
+      ? verifiedAll
       : st === 'draft'
         ? all.filter(ev => hasTransitionDraft(ev))
         : st === 'unverified'
@@ -9246,28 +9250,31 @@ function redrawIncidentRadius(){
 
   function updateQueueCounts(){
     const all = collectAllCachedEvents().filter(ev => !(typeof isAlertHidden === 'function' && isAlertHidden(ev)));
-    const total = all.length;
-    const esc = filterByDisposition(all, 'escalated').length;
-    const mon = filterByDisposition(all, 'monitoring').length;
-    const clr = filterByDisposition(all, 'cleared').length;
-    const drf = all.filter(ev => hasTransitionDraft(ev)).length;
     const unv = all.filter(ev =>
       getDisposition(ev) === 'untriaged' &&
       (typeof ciIsLowGeoConfidence === 'function' ? ciIsLowGeoConfidence(ev) : false)
     ).length;
+    // All Alerts excludes untriaged, low-confidence location items; they live only
+    // in Unverified until an operator verifies or routes them to Monitoring/Cleared.
+    const verifiedAll = all.filter(ev => {
+      const isLowGeo = (typeof ciIsLowGeoConfidence === 'function') ? ciIsLowGeoConfidence(ev) : false;
+      return !(isLowGeo && getDisposition(ev) === 'untriaged');
+    });
+    const total = verifiedAll.length;
+    const esc = filterByDisposition(all, 'escalated').length;
+    const mon = filterByDisposition(all, 'monitoring').length;
+    const clr = filterByDisposition(all, 'cleared').length;
 
     const allEl = document.getElementById('qAllAlerts');
     const a = document.getElementById('qEscalated');
     const b = document.getElementById('qMonitoring');
     const u = document.getElementById('qUnverified');
     const c = document.getElementById('qCleared');
-    const d = document.getElementById('qDrafts');
     if (allEl) allEl.textContent = total;
     if (a) a.textContent = esc;
     if (b) b.textContent = mon;
     if (u) u.textContent = unv;
     if (c) c.textContent = clr;
-    if (d) d.textContent = drf;
   }
   window.ciUpdateQueueCounts = updateQueueCounts;
 
