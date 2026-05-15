@@ -1536,6 +1536,31 @@ async function loadOrgContext() {
 .ci-linked-detail li{margin:4px 0;color:#cbd5e1;}
 
 
+/* Phase 8F source credibility / noise controls */
+.ci-source-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:999px;border:1px solid rgba(148,163,184,.28);
+  background:rgba(30,41,59,.42);color:#cbd5e1;
+  font-size:10px;font-weight:800;line-height:1;
+  padding:3px 7px;margin-left:6px;white-space:nowrap;
+}
+.ci-source-badge.high{border-color:rgba(74,222,128,.34);background:rgba(20,83,45,.24);color:#bbf7d0;}
+.ci-source-badge.medium{border-color:rgba(251,191,36,.34);background:rgba(120,53,15,.20);color:#fde68a;}
+.ci-source-badge.low{border-color:rgba(248,113,113,.34);background:rgba(127,29,29,.24);color:#fecaca;}
+.ci-source-badge.unknown{border-color:rgba(148,163,184,.25);background:rgba(30,41,59,.28);color:#cbd5e1;}
+.ci-source-detail{
+  margin-top:10px;padding:10px;border-radius:10px;
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(15,23,42,.42);color:#dbeafe;
+  font-size:12px;line-height:1.4;
+}
+.ci-source-detail.high{border-color:rgba(74,222,128,.22);background:rgba(20,83,45,.12);color:#d1fae5;}
+.ci-source-detail.medium{border-color:rgba(251,191,36,.22);background:rgba(120,53,15,.12);color:#fef3c7;}
+.ci-source-detail.low{border-color:rgba(248,113,113,.24);background:rgba(127,29,29,.14);color:#fee2e2;}
+.ci-source-detail .ci-source-row{display:flex;justify-content:space-between;gap:10px;margin-top:4px;}
+.ci-source-detail .ci-source-note{opacity:.88;margin-top:6px;}
+
+
 .queue-btn[data-queue="unverified"]{
   border-color:rgba(251,191,36,.32);
   color:#fef3c7;
@@ -4064,10 +4089,15 @@ function normaliseAlertEvent(ev){
   const geo_confidence = ev.geo_confidence ?? ev.geoConfidence ?? ev.location_confidence_score ?? ev.locationConfidenceScore ?? null;
   const geo_reason = ev.geo_reason || ev.geoReason || ev.location_reason || ev.locationReason || '';
   const geo_validated = ev.geo_validated ?? ev.geoValidated ?? false;
+  const source_domain = ev.source_domain || ev.sourceDomain || ev.domain || '';
+  const source_credibility = ev.source_credibility ?? ev.sourceCredibility ?? ev.source_score ?? ev.sourceScore ?? null;
+  const source_credibility_label = ev.source_credibility_label || ev.sourceCredibilityLabel || '';
+  const source_note = ev.source_note || ev.sourceNote || '';
 
   return Object.assign({}, ev, {
     id, title, city, risk, when, src, status, published_at, indexed_at, first_seen_at,
-    location_confidence, language, geo_confidence, geo_reason, geo_validated
+    location_confidence, language, geo_confidence, geo_reason, geo_validated,
+    source_domain, source_credibility, source_credibility_label, source_note
   });
 }
 
@@ -4289,6 +4319,7 @@ function renderEventGroupsInto(list, events, limit){
     const whenNice = fmtWhen(first.when);
     const langBadgeHtml = getLanguageBadgeHtml(first);
     const geoBadgeHtml = ciGeoBadgeHtml(first);
+    const sourceBadgeHtml = ciSourceBadgeHtml(first);
 
     const groupEl  = document.createElement('div');
     const ageClass = getAgeClass(first.when);
@@ -4317,7 +4348,7 @@ function renderEventGroupsInto(list, events, limit){
       <div class="eg-header">
         <div class="eg-title">
           <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
-          ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}${ciLinkedBadgeHtml(first)}
+          ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}${ciLinkedBadgeHtml(first)}${sourceBadgeHtml}
         </div>
         <div class="eg-meta">
           <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
@@ -4397,7 +4428,7 @@ function renderUnverifiedQueueInto(list, events){
       <div class="ci-unverified-guidance">${escapeHtml(ciVerificationGuidanceText())}</div>
       ${low.slice(0, 12).map((ev, idx) => `
         <div class="ci-unverified-row" data-idx="${idx}">
-          <div class="ci-unverified-title">${escapeHtml(ev.title || ev.summary || '(no title)')}${ciLinkedBadgeHtml(ev)}</div>
+          <div class="ci-unverified-title">${escapeHtml(ev.title || ev.summary || '(no title)')}${ciLinkedBadgeHtml(ev)}${ciSourceBadgeHtml(ev)}</div>
           <div class="ci-unverified-meta">
             <span>${escapeHtml(ev.city || 'Unknown')}</span>
             <span>${escapeHtml(ev.risk || 'n/a')}</span>
@@ -4777,6 +4808,128 @@ function ciLinkedDetailHtml(ev){
   const sources = Array.isArray(ev._sourceNames) ? ev._sourceNames : [];
   const rows = linked.slice(0, 5).map(x => `<li>${escapeHtml(x.title || x.summary || '(linked report)')} <span style="opacity:.7;">${x.src || x.source ? '— ' + escapeHtml(x.src || x.source) : ''}${x.when ? ' · ' + fmtWhen(x.when) : ''}</span></li>`).join('');
   return `<div class="ci-linked-detail"><b>Linked alert grouping:</b> ${linked.length + 1} related report${linked.length ? 's' : ''} suppressed into this incident.${sources.length ? `<div style="margin-top:4px;opacity:.85;">Sources: ${sources.map(escapeHtml).join(', ')}</div>` : ''}<ul>${rows}</ul></div>`;
+}
+
+
+function ciExtractSourceDomain(ev){
+  const rawUrl = String(ev && (ev.url || ev.link || ev.source_url || ev.sourceUrl || '') || '').trim();
+  if (rawUrl) {
+    try {
+      const u = new URL(rawUrl, window.location.origin);
+      return u.hostname.replace(/^www\./i, '').toLowerCase();
+    } catch(_) {}
+  }
+
+  const explicit = String(ev && (ev.source_domain || ev.sourceDomain || ev.domain || '') || '').trim().toLowerCase();
+  if (explicit) return explicit.replace(/^www\./i, '');
+
+  const name = String(ev && (ev.src || ev.source || ev.publisher || ev.provider || '') || '').trim().toLowerCase();
+  const knownNameMap = {
+    'reuters': 'reuters.com',
+    'associated press': 'apnews.com',
+    'ap': 'apnews.com',
+    'bbc': 'bbc.co.uk',
+    'bbc news': 'bbc.co.uk',
+    'cnn': 'cnn.com',
+    'sky news': 'news.sky.com',
+    'the guardian': 'theguardian.com',
+    'guardian': 'theguardian.com',
+    'al jazeera': 'aljazeera.com',
+    'france 24': 'france24.com',
+    'dw': 'dw.com',
+    'deutsche welle': 'dw.com',
+    'abc news': 'abcnews.go.com',
+    'nbc news': 'nbcnews.com',
+    'cbs news': 'cbsnews.com',
+    'fox news': 'foxnews.com',
+    'newsdata': 'newsdata.io',
+    'mediastack': 'mediastack.com'
+  };
+  if (knownNameMap[name]) return knownNameMap[name];
+  const domainMatch = name.match(/([a-z0-9-]+\.)+[a-z]{2,}/i);
+  return domainMatch ? domainMatch[0].replace(/^www\./i, '').toLowerCase() : '';
+}
+
+function ciSourceCredibility(ev){
+  const explicit = Number(ev && (ev.source_credibility ?? ev.sourceCredibility ?? ev.source_score ?? ev.sourceScore));
+  const explicitLabel = String(ev && (ev.source_credibility_label || ev.sourceCredibilityLabel || '') || '').toLowerCase();
+  const domain = ciExtractSourceDomain(ev);
+  const srcName = String(ev && (ev.src || ev.source || '') || '').trim();
+
+  const trusted = {
+    'reuters.com': 95,
+    'apnews.com': 94,
+    'bbc.co.uk': 92,
+    'bbc.com': 92,
+    'theguardian.com': 84,
+    'news.sky.com': 82,
+    'aljazeera.com': 80,
+    'france24.com': 80,
+    'dw.com': 80,
+    'cnn.com': 78,
+    'nbcnews.com': 78,
+    'abcnews.go.com': 78,
+    'cbsnews.com': 76,
+    'foxnews.com': 70
+  };
+  const aggregator = {
+    'newsdata.io': 62,
+    'mediastack.com': 60,
+    'google.com': 58,
+    'news.google.com': 58,
+    'msn.com': 56,
+    'yahoo.com': 55
+  };
+  const noisyHints = /(blog|wordpress|substack|medium\.com|press\s*release|sponsored|forum|reddit|facebook|x\.com|twitter|telegram|unknown)/i;
+
+  let score = Number.isFinite(explicit) ? explicit : null;
+  let reason = '';
+  if (score === null && domain && Object.prototype.hasOwnProperty.call(trusted, domain)) {
+    score = trusted[domain];
+    reason = 'Recognised major/newswire source.';
+  } else if (score === null && domain && Object.prototype.hasOwnProperty.call(aggregator, domain)) {
+    score = aggregator[domain];
+    reason = 'Aggregator/provider source; review original source when available.';
+  } else if (score === null && noisyHints.test(domain + ' ' + srcName)) {
+    score = 35;
+    reason = 'Low-trust or user-generated/noisy source pattern.';
+  } else if (score === null && (domain || srcName)) {
+    score = 52;
+    reason = 'Unprofiled source; treat as moderate/unknown until reviewed.';
+  } else if (score === null) {
+    score = 40;
+    reason = 'No source domain supplied.';
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let label = explicitLabel || (score >= 80 ? 'high' : score >= 55 ? 'medium' : score >= 40 ? 'unknown' : 'low');
+  if (!['high','medium','low','unknown'].includes(label)) label = score >= 80 ? 'high' : score >= 55 ? 'medium' : score >= 40 ? 'unknown' : 'low';
+  if (!reason) reason = label === 'high' ? 'High-credibility source profile.' : label === 'medium' ? 'Medium source confidence.' : label === 'low' ? 'Low-confidence source.' : 'Unknown source confidence.';
+
+  return { score, label, domain, source: srcName || domain || 'Unknown source', reason };
+}
+
+function ciSourceBadgeHtml(ev){
+  const q = ciSourceCredibility(ev);
+  return `<span class="ci-source-badge ${escapeHtml(q.label)}" title="${escapeHtml(q.reason)}">Source ${escapeHtml(q.label)} ${q.score}</span>`;
+}
+
+function ciSourceQualityDetailHtml(ev){
+  const q = ciSourceCredibility(ev);
+  const action = q.label === 'high'
+    ? 'Suitable for normal analyst use.'
+    : q.label === 'medium'
+      ? 'Review source context before high-impact escalation.'
+      : q.label === 'low'
+        ? 'Treat as noisy until corroborated by a stronger source.'
+        : 'Source is unprofiled; corroborate before relying on it.';
+  return `<div class="ci-source-detail ${escapeHtml(q.label)}">
+    <b>Source credibility</b>
+    <div class="ci-source-row"><span>Source</span><span>${escapeHtml(q.source)}</span></div>
+    <div class="ci-source-row"><span>Domain</span><span>${escapeHtml(q.domain || 'Unknown')}</span></div>
+    <div class="ci-source-row"><span>Score</span><span>${escapeHtml(q.label)} · ${q.score}/100</span></div>
+    <div class="ci-source-note">${escapeHtml(q.reason)} ${escapeHtml(action)}</div>
+  </div>`;
 }
 
 function dedupeClientEvents(events){
@@ -6643,8 +6796,9 @@ const geoWarnHtml = isGeoLow
      <div class="ci-verify-lock-note"><b>Escalation locked:</b> ${esc(ciVerificationGuidanceText())}</div>`
   : '';
 const linkedDetailHtml = ciLinkedDetailHtml(item);
+const sourceQualityHtml = ciSourceQualityDetailHtml(item);
 detailSummaryEl.innerHTML =
-  `<div>${esc(buildIntelSummary(item, earlier))}</div>${linkedDetailHtml}${geoWarnHtml}${timingHtml}`;
+  `<div>${esc(buildIntelSummary(item, earlier))}</div>${linkedDetailHtml}${sourceQualityHtml}${geoWarnHtml}${timingHtml}`;
   }
   renderLanguageTools(item);
 
