@@ -6313,6 +6313,15 @@ function buildTransitionContactsHtml(item, pre){
       </div>
     </div>`;
 }
+function selectedTransitionContacts(item){
+  const rows = ciGetMatchingEscalationContacts(item || {});
+  const checked = new Set(
+    Array.from(document.querySelectorAll('#ciTransitionBody [data-ci-transition-contact]:checked'))
+      .map(el => String(el.getAttribute('data-ci-transition-contact') || ''))
+  );
+  return rows.filter((c, idx) => checked.has(ciContactKey(c, idx)));
+}
+
 function buildTransitionBody(item, status){
   const st = String(status||'').toLowerCase();
   const pre = getTransitionPayload(item)?.payload || {};
@@ -6548,10 +6557,33 @@ function openTransitionModal(item, status, handlers){
     if (handlers.onDraft) handlers.onDraft(payload);
   };
 
-  const onSave = ()=>{
+  const onSave = async ()=>{
     const payload = collectTransitionPayload(st);
+    const selectedContacts = (st === 'escalated') ? selectedTransitionContacts(item) : [];
+
     saveTransitionPayload(item, st, payload, { draft:false, targetStatus: st });
     syncDetailNote(payload);
+
+    if (st === 'escalated') {
+      const originalText = btnSave.textContent;
+      btnSave.disabled = true;
+      btnSave.textContent = 'Saving…';
+
+      try {
+        const apiResult = await persistManualEscalationToApi(item, payload, selectedContacts);
+        payload.apiEscalationId = apiResult && apiResult.id ? apiResult.id : '';
+        payload.apiStatus = 'queued';
+        payload.contactCount = Number((apiResult && apiResult.contactCount) ?? selectedContacts.length);
+        saveTransitionPayload(item, st, payload, { draft:false, targetStatus: st });
+      } catch (e) {
+        console.warn('CityIntel: escalation audit save failed', e);
+        alert('Escalation was saved locally, but the Worker/D1 audit save failed. Check the Worker manual-escalations endpoint and try again.');
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = originalText;
+      }
+    }
+
     close();
     cleanup();
     if (handlers.onSave) handlers.onSave(payload);
@@ -10022,7 +10054,7 @@ function redrawIncidentRadius(){
       headers: await authHeaders(),
       body: JSON.stringify({
         incident: item,
-        payload,
+        payload: Object.assign({}, payload || {}, { sourceFlow: item && item.manual ? 'manual-alert' : 'incident-transition' }),
         contacts: contacts.map(c => ({
           id: c.id || '',
           name: c.name || '',
