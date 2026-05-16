@@ -11387,7 +11387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') closeManualAlertModalSafe();
   });
 
-  function resizeLiveMap(){ 
+  function resizeLiveMap(){
     try {
       if (window.ciLiveMap && typeof window.ciLiveMap.invalidateSize === 'function') {
         window.ciLiveMap.invalidateSize();
@@ -11401,5 +11401,165 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', function(){ setTimeout(resizeLiveMap, 150); });
 })();
 </script>
+
+<script>
+/* Manual escalation recipients robust populate patch v5 */
+(function(){
+  const API = (typeof API_ORIGIN !== 'undefined' ? API_ORIGIN : 'https://api.cityintelapi.com');
+  const CONTACT_KEY = 'ci_escalation_contacts_v1';
+  const norm = (v)=>String(v || '').trim().toLowerCase();
+  const esc = (v)=>String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const sevRank = { low:1, med:2, medium:2, high:3, critical:3, severe:3 };
+
+  const countryAliases = {
+    'uk':'united kingdom','u.k.':'united kingdom','gb':'united kingdom','great britain':'united kingdom','england':'united kingdom',
+    'usa':'united states','us':'united states','u.s.':'united states',
+    'uae':'united arab emirates'
+  };
+  const cleanCountry = (v)=>countryAliases[norm(v)] || norm(v);
+
+  const continentMap = {
+    'united kingdom':'Europe','ireland':'Europe','france':'Europe','germany':'Europe','italy':'Europe','spain':'Europe','netherlands':'Europe','belgium':'Europe','portugal':'Europe','switzerland':'Europe','austria':'Europe','poland':'Europe','sweden':'Europe','norway':'Europe','denmark':'Europe','finland':'Europe',
+    'united states':'North America','canada':'North America','mexico':'North America',
+    'brazil':'South America','argentina':'South America','chile':'South America','colombia':'South America','peru':'South America',
+    'south africa':'Africa','nigeria':'Africa','kenya':'Africa','egypt':'Africa','morocco':'Africa',
+    'united arab emirates':'Middle East','saudi arabia':'Middle East','qatar':'Middle East','kuwait':'Middle East','israel':'Middle East','iraq':'Middle East','iran':'Middle East','jordan':'Middle East',
+    'india':'Asia Pacific','singapore':'Asia Pacific','japan':'Asia Pacific','china':'Asia Pacific','australia':'Asia Pacific','new zealand':'Asia Pacific','south korea':'Asia Pacific','malaysia':'Asia Pacific','thailand':'Asia Pacific','philippines':'Asia Pacific','indonesia':'Asia Pacific'
+  };
+  const continentOf = (country)=>continentMap[cleanCountry(country)] || '';
+
+  function getFilters(){
+    return {
+      city: norm(document.getElementById('manualAlertMatchCity')?.value || document.getElementById('manualAlertCity')?.value || ''),
+      country: cleanCountry(document.getElementById('manualAlertMatchCountry')?.value || document.getElementById('manualAlertCountry')?.value || ''),
+      continent: String(document.getElementById('manualAlertMatchContinent')?.value || '').trim(),
+      severity: sevRank[norm(document.getElementById('manualAlertMatchRisk')?.value || document.getElementById('manualAlertRisk')?.value || 'medium')] || 2
+    };
+  }
+
+  function setList(html){
+    const el = document.getElementById('manualAlertContactsList');
+    if (el) el.innerHTML = html;
+  }
+
+  async function fetchContacts(){
+    let rows = [];
+    try{
+      const res = await fetch((typeof withEmailParam === 'function' ? withEmailParam(API + '/api/org/escalation-contacts') : API + '/api/org/escalation-contacts'), {
+        headers: (typeof authHeaders === 'function') ? await authHeaders() : { 'Content-Type':'application/json' }
+      });
+      const json = await res.json().catch(()=>null);
+      if (json && json.ok && Array.isArray(json.data)) rows = json.data;
+      else if (Array.isArray(json)) rows = json;
+    }catch(e){
+      console.warn('Manual escalation recipient fetch failed; using cache', e);
+    }
+
+    if (!rows.length) {
+      try{
+        const cached = JSON.parse(localStorage.getItem(CONTACT_KEY) || '[]');
+        if (Array.isArray(cached)) rows = cached;
+      }catch(_){}
+    }
+
+    try{ localStorage.setItem(CONTACT_KEY, JSON.stringify(rows)); }catch(_){}
+    window.CIEscalationContacts = rows;
+    return rows;
+  }
+
+  function matchContacts(rows){
+    const f = getFilters();
+    if (!f.city && !f.country && !f.continent) return [];
+
+    return (Array.isArray(rows) ? rows : [])
+      .filter(c => c && c.active !== false && c.active !== 0 && String(c.email || '').trim())
+      .map((c, idx)=>{
+        const cCity = norm(c.city);
+        const cCountry = cleanCountry(c.country);
+        const cContinent = continentOf(cCountry);
+        const cSeverity = sevRank[norm(c.severity || c.minSeverity || c.notifyFromSeverity || 'medium')] || 2;
+
+        const cityMatch = !!(f.city && cCity && cCity === f.city);
+        const countryMatch = !!(f.country && cCountry && cCountry === f.country);
+        const continentMatch = !!(f.continent && cContinent && cContinent === f.continent);
+        const globalMatch = !cCity && !cCountry;
+
+        if (cSeverity > f.severity) return null;
+        if (!(cityMatch || countryMatch || continentMatch || globalMatch)) return null;
+
+        const score = (cityMatch ? 8 : 0) + (countryMatch ? 4 : 0) + (continentMatch ? 2 : 0) + (globalMatch ? 1 : 0);
+        return { c, idx, score, cSeverity, cityMatch, countryMatch, continentMatch, globalMatch };
+      })
+      .filter(Boolean)
+      .sort((a,b)=>(b.score-a.score) || (b.cSeverity-a.cSeverity))
+      .slice(0, 12)
+      .map(x=>x.c);
+  }
+
+  function render(rows){
+    const f = getFilters();
+    if (!f.city && !f.country && !f.continent) {
+      setList('<div class="manual-alert-contact-empty">Select a continent/country or enter a city, then click <b>Populate recipients</b>.</div>');
+      return;
+    }
+
+    const matches = matchContacts(rows);
+    if (!matches.length) {
+      const where = [
+        f.city ? document.getElementById('manualAlertMatchCity')?.value : '',
+        f.country ? document.getElementById('manualAlertMatchCountry')?.value : '',
+        f.continent
+      ].filter(Boolean).join(', ') || 'this area';
+      const sevText = document.getElementById('manualAlertMatchRisk')?.value || 'selected';
+      setList(`<div class="manual-alert-contact-empty">No matching escalation contacts found for ${esc(where)} at ${esc(sevText)} severity. Try lowering the severity to Medium, choosing only the country/continent, or checking the contact coverage in Escalation Contacts.</div>`);
+      return;
+    }
+
+    setList(matches.map((c, idx)=>{
+      const id = esc(c.id || c.email || ('manual_contact_' + idx));
+      const label = [c.team, c.role].filter(Boolean).join(' • ') || 'Escalation contact';
+      const location = [c.city, c.country].filter(Boolean).join(', ') || 'Global';
+      return `
+        <label class="manual-alert-contact-row">
+          <input type="checkbox" class="manual-alert-contact-check" value="${id}" checked>
+          <span>
+            <strong>${esc(c.name || c.email || 'Escalation contact')}</strong>
+            <span class="meta">${esc(label)}</span>
+            <span class="meta">${esc(c.email || '')}${c.phone ? ' • ' + esc(c.phone) : ''}</span>
+            <span class="meta">${esc(location)} • ${(String(c.severity || 'medium').toUpperCase())}+ severity</span>
+          </span>
+        </label>`;
+    }).join(''));
+  }
+
+  async function populate(){
+    setList('<div class="manual-alert-contact-empty">Loading escalation contacts…</div>');
+    const rows = await fetchContacts();
+    render(rows);
+  }
+
+  window.populateManualAlertRecipientsNow = populate;
+
+  document.addEventListener('click', function(e){
+    const btn = e.target && e.target.closest && e.target.closest('#manualAlertRefreshContacts');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    populate();
+  }, true);
+
+  document.addEventListener('input', function(e){
+    if (!e.target || !['manualAlertMatchCity','manualAlertMatchCountry','manualAlertMatchContinent','manualAlertMatchRisk'].includes(e.target.id)) return;
+    render(Array.isArray(window.CIEscalationContacts) ? window.CIEscalationContacts : []);
+  }, true);
+
+  document.addEventListener('change', function(e){
+    if (!e.target || !['manualAlertMatchCity','manualAlertMatchCountry','manualAlertMatchContinent','manualAlertMatchRisk'].includes(e.target.id)) return;
+    render(Array.isArray(window.CIEscalationContacts) ? window.CIEscalationContacts : []);
+  }, true);
+})();
+</script>
+
 </body>
 </html>
