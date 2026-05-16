@@ -1,5 +1,4 @@
-
-     
+   
 <!doctype html>
 <html lang="en">
 <head>
@@ -2817,6 +2816,63 @@ padding-bottom: 12px;
   color:#64748b;
   font-size:12px;
 }
+
+.manual-alert-match-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 170px;
+  gap:8px;
+  margin:10px 0 6px;
+}
+.manual-alert-match-grid label{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  color:#334155;
+  font-size:10px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.manual-alert-match-grid input,
+.manual-alert-match-grid select{
+  width:100%;
+  border:1px solid rgba(11,15,22,.16);
+  background:#fff;
+  color:#0f172a;
+  border-radius:9px;
+  padding:8px 9px;
+  font-size:12px;
+  outline:none;
+}
+.manual-alert-match-grid input:focus,
+.manual-alert-match-grid select:focus{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.12);}
+.transition-contact-box{
+  grid-column:1 / -1;
+  border:1px solid rgba(99,102,241,.18);
+  background:rgba(238,242,255,.72);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.transition-contact-box .title{font-weight:900;color:#0f172a;font-size:12px;margin-bottom:2px;}
+.transition-contact-box .sub{color:#475569;font-size:11px;line-height:1.35;margin-bottom:8px;}
+.transition-contact-list{display:grid;gap:8px;}
+.transition-contact-row{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:9px;
+  align-items:start;
+  border:1px solid rgba(59,130,246,.18);
+  background:#fff;
+  border-radius:10px;
+  padding:9px 10px;
+}
+.transition-contact-row input{margin-top:3px;}
+.transition-contact-row strong{display:block;font-size:12px;color:#0f172a;}
+.transition-contact-row .meta{display:block;color:#475569;font-size:11px;line-height:1.35;margin-top:2px;}
+.transition-contact-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.transition-contact-actions button{border:1px solid rgba(11,15,22,.16);background:#fff;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;cursor:pointer;}
+.transition-contact-empty{border:1px dashed rgba(100,116,139,.35);background:#fff;border-radius:10px;padding:10px;color:#64748b;font-size:12px;}
+@media(max-width:760px){.manual-alert-match-grid{grid-template-columns:1fr;}}
 .manual-alert-api-status{
   grid-column:1 / -1;
   display:none;
@@ -6194,6 +6250,68 @@ function toLocalInputValue(iso){
   }catch(_){ return ''; }
 }
 
+
+function ciEscHtml(v){
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function ciContactKey(c, idx){
+  return String((c && (c.id || c.email)) || ('contact_' + idx));
+}
+function ciTransitionRouteLabel(c, item){
+  try {
+    if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.routeLabel === 'function') {
+      return CIEscalationContactsPreview.routeLabel(c, item || {});
+    }
+  } catch(_) {}
+  const sev = String((c && c.severity) || 'medium').toUpperCase();
+  return `${sev}+ severity`;
+}
+function ciGetMatchingEscalationContacts(item){
+  try {
+    if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.matchingContacts === 'function') {
+      return CIEscalationContactsPreview.matchingContacts(item || {}) || [];
+    }
+  } catch(e) { console.warn('CityIntel: escalation contact lookup failed', e); }
+  return [];
+}
+function buildTransitionContactsHtml(item, pre){
+  const rows = ciGetMatchingEscalationContacts(item);
+  const selected = Array.isArray(pre && pre.contactIds) ? new Set(pre.contactIds.map(String)) : null;
+  if (!rows.length) {
+    return `
+      <div class="transition-contact-box">
+        <div class="title">Escalation recipients</div>
+        <div class="sub">No matching escalation contacts were found for this alert’s city/country and severity.</div>
+        <div class="transition-contact-empty">Add matching recipients in Escalation Contacts or continue without recipients.</div>
+      </div>`;
+  }
+  return `
+    <div class="transition-contact-box">
+      <div class="title">Escalation recipients</div>
+      <div class="sub">These contacts match this incident. Untick anyone who should not receive the escalation.</div>
+      <div class="transition-contact-list">
+        ${rows.map((c, idx)=>{
+          const key = ciContactKey(c, idx);
+          const checked = !selected || selected.has(key) ? 'checked' : '';
+          const label = [c.team, c.role].filter(Boolean).join(' • ') || 'Escalation contact';
+          return `
+          <label class="transition-contact-row">
+            <input type="checkbox" data-ci-transition-contact="${ciEscHtml(key)}" data-email="${ciEscHtml(c.email || '')}" data-name="${ciEscHtml(c.name || '')}" ${checked}>
+            <span>
+              <strong>${ciEscHtml(c.name || c.email || 'Escalation contact')}</strong>
+              <span class="meta">${ciEscHtml(label)}</span>
+              <span class="meta">${ciEscHtml(c.email || '')}${c.phone ? ' • ' + ciEscHtml(c.phone) : ''}</span>
+              <span class="meta">Would notify: ${ciEscHtml(ciTransitionRouteLabel(c, item))}</span>
+            </span>
+          </label>`;
+        }).join('')}
+      </div>
+      <div class="transition-contact-actions">
+        <button type="button" data-ci-transition-select="all">Select all</button>
+        <button type="button" data-ci-transition-select="none">Clear</button>
+      </div>
+    </div>`;
+}
 function buildTransitionBody(item, status){
   const st = String(status||'').toLowerCase();
   const pre = getTransitionPayload(item)?.payload || {};
@@ -6282,6 +6400,8 @@ function buildTransitionBody(item, status){
     html += mkField('Date / time', `<input id="ciWhen" type="datetime-local" value="${pre.whenLocal || toLocalInputValue(item.when)}">`);
     html += mkField('Location', `<input id="ciLocation" type="text" placeholder="Optional location details" value="${esc(pre.location||'')}">`);
 
+    html += buildTransitionContactsHtml(item, pre);
+
     html += mkField('Assets nearby', `<textarea id="ciAssets" readonly>${aList.map(formatAsset).join('\n') || 'None mapped in proximity'}</textarea>`);
     html += mkField('Travellers nearby', `<textarea id="ciTravellers" readonly>${tList.map(formatTraveller).join('\n') || 'None mapped in proximity'}</textarea>`);
 
@@ -6347,6 +6467,15 @@ function collectTransitionPayload(status){
   const note = document.getElementById('ciNote');
   if (note) payload.note = note.value || '';
 
+  const contactChecks = [...document.querySelectorAll('#ciTransitionBody [data-ci-transition-contact]')];
+  if (contactChecks.length) {
+    const selected = contactChecks.filter(x => x.checked);
+    payload.contactIds = selected.map(x => x.getAttribute('data-ci-transition-contact')).filter(Boolean);
+    payload.contactEmails = selected.map(x => x.getAttribute('data-email')).filter(Boolean);
+    payload.contactNames = selected.map(x => x.getAttribute('data-name')).filter(Boolean);
+    payload.contactCount = selected.length;
+  }
+
   return payload;
 }
 
@@ -6375,6 +6504,12 @@ function openTransitionModal(item, status, handlers){
   if (btnDraft) btnDraft.style.display = (st === 'escalated' || st === 'cleared' || st === 'monitoring') ? '' : 'none';
 
   bodyEl.innerHTML = buildTransitionBody(item, st);
+  bodyEl.querySelectorAll('[data-ci-transition-select]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-ci-transition-select');
+      bodyEl.querySelectorAll('[data-ci-transition-contact]').forEach(cb => { cb.checked = mode === 'all'; });
+    });
+  });
 
   // show
   overlay.style.display = 'flex';
@@ -6931,7 +7066,7 @@ async function resolveItemLatLon(item, exposure){
 
   window.CIEscalationContacts = loadLocal();
   window.CIEscalationContactsSync = syncFromApi;
-  window.CIEscalationContactsPreview = { matchingContacts, renderPreview, syncFromApi };
+  window.CIEscalationContactsPreview = { matchingContacts, renderPreview, syncFromApi, routeLabel };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ()=>syncFromApi());
   else syncFromApi();
@@ -9657,10 +9792,17 @@ function redrawIncidentRadius(){
     if (conf) conf.value = p ? 'Trusted source' : 'Operator observed';
     if (summary) summary.value = p ? summaryText : '';
     if (note) note.value = p ? 'Converted from CityIntel Admin Post.' : '';
+    const matchCity = document.getElementById('manualAlertMatchCity');
+    const matchCountry = document.getElementById('manualAlertMatchCountry');
+    const matchRisk = document.getElementById('manualAlertMatchRisk');
+    if (matchCity) matchCity.value = p ? cityText : '';
+    if (matchCountry) matchCountry.value = p ? String(p.country || '').trim() : '';
+    if (matchRisk) matchRisk.value = p ? riskValue : (risk ? risk.value : 'High');
 
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden','false');
     try{ document.body.classList.add('ci-manual-alert-open'); }catch(_){}
+    setTimeout(()=>{ try{ renderManualAlertContacts(manualAlertDraftItem()); }catch(_){} }, 20);
     setTimeout(()=>{ try{ title && title.focus(); }catch(_){} }, 50);
   }
 
@@ -9678,9 +9820,9 @@ function redrawIncidentRadius(){
 
   function manualAlertDraftItem(){
     const title = (document.getElementById('manualAlertTitle')?.value || '').trim();
-    const city = (document.getElementById('manualAlertCity')?.value || '').trim();
-    const country = (document.getElementById('manualAlertCountry')?.value || '').trim();
-    const risk = (document.getElementById('manualAlertRisk')?.value || 'High').trim();
+    const city = ((document.getElementById('manualAlertMatchCity')?.value || document.getElementById('manualAlertCity')?.value || '')).trim();
+    const country = ((document.getElementById('manualAlertMatchCountry')?.value || document.getElementById('manualAlertCountry')?.value || '')).trim();
+    const risk = ((document.getElementById('manualAlertMatchRisk')?.value || document.getElementById('manualAlertRisk')?.value || 'High')).trim();
     const whenLocal = (document.getElementById('manualAlertWhen')?.value || '').trim();
     const location = (document.getElementById('manualAlertLocation')?.value || '').trim();
     const summary = (document.getElementById('manualAlertSummary')?.value || '').trim();
@@ -9717,7 +9859,9 @@ function redrawIncidentRadius(){
 
     const rows = manualAlertContactRows(item || manualAlertDraftItem());
     if (!rows.length) {
-      listEl.innerHTML = '<div class="manual-alert-contact-empty">No matching escalation contacts for this city/country/severity. You can still create the escalated alert, but no recipients will be selected.</div>';
+      const draft = item || manualAlertDraftItem();
+      const cityLabel = [draft.city, draft.country].filter(Boolean).join(', ') || 'this location';
+      listEl.innerHTML = `<div class="manual-alert-contact-empty">No matching escalation contacts for ${escLocal(cityLabel)} at ${escLocal(draft.risk || 'selected')} severity. You can still create the escalated alert, but no recipients will be selected.</div>`;
       return;
     }
 
@@ -9725,8 +9869,8 @@ function redrawIncidentRadius(){
     listEl.innerHTML = rows.map((c, idx) => {
       const id = escLocal(c.id || c.email || ('contact_' + idx));
       const label = [c.team, c.role].filter(Boolean).join(' • ') || 'Escalation contact';
-      const route = (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.matchingContacts === 'function')
-        ? 'Matched escalation route'
+      const route = (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.routeLabel === 'function')
+        ? CIEscalationContactsPreview.routeLabel(c, item || manualAlertDraftItem())
         : 'Selected recipient';
 
       return `
@@ -9794,9 +9938,9 @@ function redrawIncidentRadius(){
 
   async function createManualEscalatedAlert(){
     const title = (document.getElementById('manualAlertTitle')?.value || '').trim();
-    const city = (document.getElementById('manualAlertCity')?.value || '').trim();
-    const country = (document.getElementById('manualAlertCountry')?.value || '').trim();
-    const risk = (document.getElementById('manualAlertRisk')?.value || 'High').trim();
+    const city = ((document.getElementById('manualAlertCity')?.value || document.getElementById('manualAlertMatchCity')?.value || '')).trim();
+    const country = ((document.getElementById('manualAlertCountry')?.value || document.getElementById('manualAlertMatchCountry')?.value || '')).trim();
+    const risk = ((document.getElementById('manualAlertRisk')?.value || document.getElementById('manualAlertMatchRisk')?.value || 'High')).trim();
     const whenLocal = (document.getElementById('manualAlertWhen')?.value || '').trim();
     const location = (document.getElementById('manualAlertLocation')?.value || '').trim();
     const confidence = (document.getElementById('manualAlertConfidence')?.value || 'Operator observed').trim();
@@ -9894,10 +10038,17 @@ function redrawIncidentRadius(){
     if (save) save.addEventListener('click', createManualEscalatedAlert);
     if (overlay) overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeManualAlertModal(); });
 
-    ['manualAlertCity','manualAlertCountry','manualAlertRisk','manualAlertLocation'].forEach(id => {
+    ['manualAlertCity','manualAlertCountry','manualAlertRisk','manualAlertLocation','manualAlertMatchCity','manualAlertMatchCountry','manualAlertMatchRisk'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.addEventListener('input', ()=>renderManualAlertContacts(manualAlertDraftItem()));
-      if (el) el.addEventListener('change', ()=>renderManualAlertContacts(manualAlertDraftItem()));
+      if (!el) return;
+      const update = ()=>{
+        if (id === 'manualAlertCity') { const m = document.getElementById('manualAlertMatchCity'); if (m && !m.value.trim()) m.value = el.value; }
+        if (id === 'manualAlertCountry') { const m = document.getElementById('manualAlertMatchCountry'); if (m && !m.value.trim()) m.value = el.value; }
+        if (id === 'manualAlertRisk') { const m = document.getElementById('manualAlertMatchRisk'); if (m) m.value = el.value; }
+        renderManualAlertContacts(manualAlertDraftItem());
+      };
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
     });
 
     const refresh = document.getElementById('manualAlertRefreshContacts');
@@ -10900,8 +11051,23 @@ document.addEventListener('DOMContentLoaded', () => {
               <button type="button" id="manualAlertClearContacts">Clear</button>
             </div>
           </div>
+          <div class="manual-alert-match-grid" aria-label="Escalation recipient matching filters">
+            <label>Match city
+              <input id="manualAlertMatchCity" type="text" placeholder="e.g. London">
+            </label>
+            <label>Match country
+              <input id="manualAlertMatchCountry" type="text" placeholder="e.g. United Kingdom">
+            </label>
+            <label>Match severity
+              <select id="manualAlertMatchRisk">
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </label>
+          </div>
           <div id="manualAlertContactsList" class="manual-alert-contact-list">
-            <div class="manual-alert-contact-empty">Add a city/risk to preview matching escalation contacts.</div>
+            <div class="manual-alert-contact-empty">Add a city/risk above to preview matching escalation contacts.</div>
           </div>
         </div>
 
