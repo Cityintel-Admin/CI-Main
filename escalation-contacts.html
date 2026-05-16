@@ -42,11 +42,9 @@
     .brandbar .title{font-weight:700;font-size:18px;color:var(--text)}
     #topActions{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:fit-content;position:relative}
     .login-btn{display:inline-block;padding:8px 12px;border-radius:999px;background:#D01616;border:1px solid #9c0f0f;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap}
-    .user{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#1c1e22;border:1px solid #24272c;cursor:pointer;}
-	.avatar{width:28px;height:28px;background:#fff;color:#000;border-radius:50%;display:grid;place-items:center;font-weight:700;}
-	.user-meta{display:flex;flex-direction:column;line-height:1.1;}
-	.user-meta b{font-size:13px;}
-	.user-meta span{font-size:11px;color:var(--muted);}
+    .user{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#1c1e22;border:1px solid #24272c;cursor:pointer}
+    .avatar{width:28px;height:28px;background:#fff;color:#000;border-radius:50%;display:grid;place-items:center;font-weight:700}
+    .user-meta{display:flex;flex-direction:column;line-height:1.1}.user-meta b{font-size:13px}.user-meta span{font-size:11px;color:var(--muted)}
     .dropdown{position:absolute;right:0;top:calc(100% + 6px);background:#1a1c20;border:1px solid #24272c;border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:160px;z-index:50}
     .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}.dropdown a:hover{background:rgba(255,255,255,.05)}
     .app{grid-template-columns:260px 1fr;grid-template-rows:1fr;grid-template-areas:"sidebar main";min-height:calc(100vh - 93px)}
@@ -66,21 +64,13 @@
 </head>
 <body>
 <div class="brandbar">
-    <img src="CityintLogo.jpg" alt="CityIntel Logo">
-    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
-	<div id="trial-banner" style="display:none;position:absolute;
-    left:50%; transform:translateX(-50%); background:none;
-    color:#fecaca; padding:8px 12px; text-align:center;">
-  <span id="trial-text">Your trial ends soon.</span>
-</div>	
-	  <div id="topActions" style="position:relative"></div>
-  </div>
-
-
-
-  
+  <img src="CityintLogo.jpg" alt="CityIntel Logo">
+  <div class="title">CityIntel</div>
+  <div id="topActions"></div>
+</div>
 <div class="app">
   <aside class="sidebar">
+    <div class="brand"><span class="brand-dot"></span><span>CityIntel</span></div>
     <nav>
       <a href="index.html">Dashboard</a>
       <a href="neighborhood-intel.html">neighborhood-intel</a>
@@ -102,6 +92,9 @@
   <header class="topbar">
     <div>
       <div class="topbar-title">Escalation Contacts</div>
+      <div class="topbar-sub">Admin-only contact directory for alert escalation workflows.</div>
+    </div>
+    <div class="top-actions"><span class="badge">Admin only</span></div>
   </header>
 
   <main class="main">
@@ -173,6 +166,52 @@
 <script>
 (function(){
   const KEY = 'ci_escalation_contacts_v1';
+  const API_ORIGIN = 'https://api.cityintelapi.com';
+  function getClientEmail(){
+    try{ const explicit=(localStorage.getItem('ci_user_email')||'').trim(); if(explicit) return explicit; }catch(_){}
+    try{ const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):{}; if(u.email) return String(u.email).trim(); }catch(_){}
+    try{ const p=JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'{}'); return String(p.email || p.user?.email || '').trim(); }catch(_){}
+    return '';
+  }
+  function withEmailParam(url){
+    const email=getClientEmail();
+    const u=new URL(url, window.location.origin);
+    if(email) u.searchParams.set('email', email);
+    return u.toString();
+  }
+  async function authHeaders(extra){
+    const h=Object.assign({'Content-Type':'application/json'}, extra||{});
+    const email=getClientEmail();
+    if(email) h['X-User-Email']=email;
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):{};
+      if(u.name) h['X-User-Name']=u.name;
+      if(u.id||u.email) h['X-User-Id']=u.id||u.email;
+      if(u.roleKey) h['X-User-Role-Key']=u.roleKey;
+      if(u.role) h['X-User-Role']=u.role;
+    }catch(_){}
+    try{ const t=localStorage.getItem('ci_admin_token')||''; if(t) h['X-Admin-Token']=t; }catch(_){}
+    return h;
+  }
+  async function syncContactsFromApi(){
+    try{
+      const res=await fetch(withEmailParam(API_ORIGIN + '/api/org/escalation-contacts'), { headers: await authHeaders() });
+      const json=await res.json().catch(()=>null);
+      if(json && json.ok && Array.isArray(json.data)){
+        localStorage.setItem(KEY, JSON.stringify(json.data));
+        return json.data;
+      }
+    }catch(e){ console.warn('Escalation contacts API sync failed', e); }
+    return null;
+  }
+  async function persistContactsToApi(list){
+    try{
+      const res=await fetch(withEmailParam(API_ORIGIN + '/api/org/escalation-contacts'), { method:'PUT', headers: await authHeaders(), body: JSON.stringify(Array.isArray(list)?list:[]) });
+      const json=await res.json().catch(()=>null);
+      if(!res.ok || !json || !json.ok) throw new Error((json && (json.error||json.detail)) || 'save failed');
+    }catch(e){ console.warn('Escalation contacts API save failed; local copy retained', e); }
+  }
+
   const esc = (v='') => String(v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const norm = (v='') => String(v||'').trim().toLowerCase();
   const sevRank = { low:1, medium:2, high:3 };
@@ -185,7 +224,7 @@
     activeCount: document.getElementById('activeCount'), totalCount: document.getElementById('totalCount'), reset: document.getElementById('resetFormBtn'), formCard: document.getElementById('formCard'), toggleForm: document.getElementById('toggleFormBtn'), hideForm: document.getElementById('hideFormBtn'), deleteCurrent: document.getElementById('deleteCurrentBtn'), resetFilters: document.getElementById('resetFiltersBtn')
   };
   function load(){ try { const v=JSON.parse(localStorage.getItem(KEY)||'[]'); return Array.isArray(v)?v:[]; } catch(_) { return []; } }
-  function save(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+  function save(list){ localStorage.setItem(KEY, JSON.stringify(list)); persistContactsToApi(list); }
   function openForm(){ els.formCard && els.formCard.classList.add('open'); els.toggleForm && (els.toggleForm.textContent='Hide form'); }
   function closeForm(){ els.formCard && els.formCard.classList.remove('open'); els.toggleForm && (els.toggleForm.textContent='+ Add contact'); }
   function resetForm(){ els.form.reset(); els.id.value=''; els.active.checked=true; els.severity.value='medium'; els.formTitle.textContent='Add escalation contact'; if(els.deleteCurrent) els.deleteCurrent.style.display='none'; }
@@ -265,36 +304,21 @@
     save(list.filter(x=>x.id!==id)); resetForm(); render(); closeForm();
   });
   els.resetFilters && els.resetFilters.addEventListener('click', ()=>{ els.countryFilter.value=''; els.cityFilter.value=''; els.teamFilter.value=''; els.severityFilter.value=''; render(); });
+  syncContactsFromApi().then((rows)=>{ if(rows) render(); }).catch(()=>{});
   render();
 })();
 </script>
 
 
- <script>
+<script>
 (function mountTopActions(){
   const host = document.getElementById('topActions');
   if (!host) return;
-
-  const readJson = (key) => {
-    try { return JSON.parse(localStorage.getItem(key) || '{}'); }
-    catch { return {}; }
-  };
-
+  const readJson = (key) => { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; } };
   const profile = readJson('cityintel.profile.v1');
   const authUser = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : readJson('ci_user');
-
-  const displayName =
-    profile.displayName ||
-    authUser.name ||
-    authUser.email ||
-    'CityIntel User';
-
-  const displayRole =
-    profile.role ||
-    authUser.roleLabel ||
-    authUser.role ||
-    'Member';
-
+  const displayName = profile.displayName || authUser.name || authUser.email || 'CityIntel User';
+  const displayRole = profile.role || authUser.roleLabel || authUser.role || 'Member';
   const initialsOf = (nameOrEmail='CI') => {
     const s = String(nameOrEmail).trim();
     if (!s) return 'CI';
@@ -302,43 +326,25 @@
     const parts = s.split(/\s+/);
     return ((parts[0]?.[0] || 'C') + (parts[1]?.[0] || '')).toUpperCase();
   };
-
   if (window.CIAuth && CIAuth.isLoggedIn()) {
     const initials = initialsOf(displayName);
     const isMaster = CIAuth.isMasterAdmin ? CIAuth.isMasterAdmin() : false;
-
     host.innerHTML = `
-      <div class="user" id="userChip" style="cursor:pointer">
+      <div class="user" id="userChip">
         <div class="avatar">${initials}</div>
-        <div class="user-meta">
-          <b>${displayName}</b>
-          <span>${displayRole}</span>
-        </div>
+        <div class="user-meta"><b>${displayName}</b><span>${displayRole}</span></div>
       </div>
       <div class="dropdown" id="userMenu">
         ${isMaster ? `<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>` : ``}
         <a href="profile.html">Profile</a>
         <a href="settings.html">Manage Billing</a>
         <a href="#" id="logoutLink">Log out</a>
-      </div>
-    `;
-
+      </div>`;
     const chip = document.getElementById('userChip');
     const menu = document.getElementById('userMenu');
-
-    chip.addEventListener('click', () => {
-      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!host.contains(e.target)) menu.style.display = 'none';
-    });
-
-    document.getElementById('logoutLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      try { CIAuth.logout(); } catch(_) {}
-      location.href = 'index.html';
-    });
+    chip.addEventListener('click', () => { menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; });
+    document.addEventListener('click', (e) => { if (!host.contains(e.target)) menu.style.display = 'none'; });
+    document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); try { CIAuth.logout(); } catch(_) {} location.href = 'index.html'; });
   } else {
     const here = location.pathname.split('/').pop() || 'index.html';
     const next = encodeURIComponent(here + location.search + location.hash);
