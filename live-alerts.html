@@ -2742,6 +2742,103 @@ padding-bottom: 12px;
 .manual-alert-modal .ci-modal-body{background:#fff;}
 .manual-alert-modal .ci-hint{font-size:12px;opacity:.72;margin-top:4px;}
 
+.manual-alert-contact-box{
+  grid-column:1 / -1;
+  border:1px solid rgba(11,15,22,0.12);
+  background:linear-gradient(180deg,#f8fafc,#eef2f7);
+  border-radius:12px;
+  padding:12px 14px;
+}
+.manual-alert-contact-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+.manual-alert-contact-title{
+  font-weight:900;
+  color:#0b0f16;
+  font-size:13px;
+}
+.manual-alert-contact-sub{
+  color:rgba(11,15,22,.64);
+  font-size:12px;
+  line-height:1.35;
+  margin-top:2px;
+}
+.manual-alert-contact-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.manual-alert-contact-actions button{
+  border:1px solid rgba(11,15,22,.16);
+  background:#fff;
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.manual-alert-contact-actions button:hover{background:#f1f5f9;}
+.manual-alert-contact-list{
+  display:grid;
+  gap:8px;
+  margin-top:8px;
+}
+.manual-alert-contact-row{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:9px;
+  align-items:start;
+  border:1px solid rgba(59,130,246,.18);
+  background:#fff;
+  border-radius:10px;
+  padding:9px 10px;
+}
+.manual-alert-contact-row input{margin-top:3px;}
+.manual-alert-contact-row strong{
+  display:block;
+  font-size:12px;
+  color:#0f172a;
+}
+.manual-alert-contact-row .meta{
+  color:#475569;
+  font-size:11px;
+  line-height:1.35;
+  margin-top:2px;
+}
+.manual-alert-contact-empty{
+  border:1px dashed rgba(100,116,139,.35);
+  background:#fff;
+  border-radius:10px;
+  padding:10px;
+  color:#64748b;
+  font-size:12px;
+}
+.manual-alert-api-status{
+  grid-column:1 / -1;
+  display:none;
+  border-radius:10px;
+  padding:9px 10px;
+  font-size:12px;
+  line-height:1.35;
+}
+.manual-alert-api-status[data-state="ok"]{
+  display:block;
+  border:1px solid rgba(22,163,74,.24);
+  background:rgba(22,163,74,.08);
+  color:#166534;
+}
+.manual-alert-api-status[data-state="warn"]{
+  display:block;
+  border:1px solid rgba(245,158,11,.28);
+  background:rgba(245,158,11,.10);
+  color:#92400e;
+}
+
+
 /* ===== Operator Transition Modal (TOPO-style) ===== */
 .ci-modal-overlay{
   position: fixed;
@@ -9578,7 +9675,124 @@ function redrawIncidentRadius(){
     try{ document.body.classList.remove('ci-manual-alert-open'); }catch(_){}
   }
 
-  function createManualEscalatedAlert(){
+
+  function manualAlertDraftItem(){
+    const title = (document.getElementById('manualAlertTitle')?.value || '').trim();
+    const city = (document.getElementById('manualAlertCity')?.value || '').trim();
+    const country = (document.getElementById('manualAlertCountry')?.value || '').trim();
+    const risk = (document.getElementById('manualAlertRisk')?.value || 'High').trim();
+    const whenLocal = (document.getElementById('manualAlertWhen')?.value || '').trim();
+    const location = (document.getElementById('manualAlertLocation')?.value || '').trim();
+    const summary = (document.getElementById('manualAlertSummary')?.value || '').trim();
+
+    return {
+      title,
+      city: city || location || 'Manual alert',
+      country,
+      risk,
+      when: whenLocal ? new Date(whenLocal).toISOString() : new Date().toISOString(),
+      location,
+      summary,
+      description: summary,
+      source: 'Manual alert',
+      src: 'Manual alert',
+      manual: true
+    };
+  }
+
+  function manualAlertContactRows(item){
+    try {
+      if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.matchingContacts === 'function') {
+        return CIEscalationContactsPreview.matchingContacts(item || manualAlertDraftItem()) || [];
+      }
+    } catch(e) {
+      console.warn('CityIntel: manual contact matching failed', e);
+    }
+    return [];
+  }
+
+  function renderManualAlertContacts(item){
+    const listEl = document.getElementById('manualAlertContactsList');
+    if (!listEl) return;
+
+    const rows = manualAlertContactRows(item || manualAlertDraftItem());
+    if (!rows.length) {
+      listEl.innerHTML = '<div class="manual-alert-contact-empty">No matching escalation contacts for this city/country/severity. You can still create the escalated alert, but no recipients will be selected.</div>';
+      return;
+    }
+
+    const escLocal = (v)=>String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    listEl.innerHTML = rows.map((c, idx) => {
+      const id = escLocal(c.id || c.email || ('contact_' + idx));
+      const label = [c.team, c.role].filter(Boolean).join(' • ') || 'Escalation contact';
+      const route = (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.matchingContacts === 'function')
+        ? 'Matched escalation route'
+        : 'Selected recipient';
+
+      return `
+        <label class="manual-alert-contact-row">
+          <input type="checkbox" class="manual-alert-contact-check" value="${id}" checked>
+          <span>
+            <strong>${escLocal(c.name || c.email || 'Escalation contact')}</strong>
+            <span class="meta">${escLocal(label)}</span>
+            <span class="meta">${escLocal(c.email || '')}${c.phone ? ' • ' + escLocal(c.phone) : ''}</span>
+            <span class="meta">${escLocal(route)} • ${(String(c.severity || 'medium').toUpperCase())}+ severity</span>
+          </span>
+        </label>`;
+    }).join('');
+  }
+
+  function selectedManualAlertContacts(item){
+    const rows = manualAlertContactRows(item || manualAlertDraftItem());
+    const checked = new Set(Array.from(document.querySelectorAll('.manual-alert-contact-check:checked')).map(el => String(el.value || '')));
+    return rows.filter((c, idx) => checked.has(String(c.id || c.email || ('contact_' + idx))));
+  }
+
+  function setManualAlertApiStatus(state, msg){
+    const el = document.getElementById('manualAlertApiStatus');
+    if (!el) return;
+    if (!msg) {
+      el.removeAttribute('data-state');
+      el.style.display = 'none';
+      el.textContent = '';
+      return;
+    }
+    el.dataset.state = state || 'warn';
+    el.style.display = 'block';
+    el.textContent = msg;
+  }
+
+  async function persistManualEscalationToApi(item, payload, contacts){
+    if (typeof authHeaders !== 'function' || typeof withEmailParam !== 'function') {
+      return { ok:false, skipped:true, error:'Auth helpers unavailable' };
+    }
+
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/manual-escalations'), {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({
+        incident: item,
+        payload,
+        contacts: contacts.map(c => ({
+          id: c.id || '',
+          name: c.name || '',
+          role: c.role || '',
+          team: c.team || '',
+          email: c.email || '',
+          phone: c.phone || '',
+          severity: c.severity || ''
+        }))
+      })
+    });
+
+    const json = await res.json().catch(()=>null);
+    if (!res.ok || !json || json.ok === false) {
+      throw new Error((json && (json.error || json.message)) || ('Manual escalation API failed (' + res.status + ')'));
+    }
+    return json;
+  }
+
+  async function createManualEscalatedAlert(){
     const title = (document.getElementById('manualAlertTitle')?.value || '').trim();
     const city = (document.getElementById('manualAlertCity')?.value || '').trim();
     const country = (document.getElementById('manualAlertCountry')?.value || '').trim();
@@ -9588,6 +9802,7 @@ function redrawIncidentRadius(){
     const confidence = (document.getElementById('manualAlertConfidence')?.value || 'Operator observed').trim();
     const summary = (document.getElementById('manualAlertSummary')?.value || '').trim();
     const note = (document.getElementById('manualAlertNote')?.value || '').trim();
+    const saveBtn = document.getElementById('manualAlertSave');
 
     if (!title || !summary){
       alert('Please add at least a title and summary for the manual alert.');
@@ -9615,6 +9830,12 @@ function redrawIncidentRadius(){
       createdIso: ciNowIso()
     };
 
+    const selectedContacts = selectedManualAlertContacts(item);
+    if (!selectedContacts.length) {
+      const proceed = confirm('No escalation contacts are selected. Create the escalated alert anyway?');
+      if (!proceed) return;
+    }
+
     const list = loadManualAlerts();
     list.unshift(item);
     saveManualAlerts(list.slice(0, 200));
@@ -9627,11 +9848,36 @@ function redrawIncidentRadius(){
       location,
       note: note || confidence,
       confidence,
-      manual: true
+      manual: true,
+      contactIds: selectedContacts.map(c => c.id || c.email || '').filter(Boolean),
+      contactEmails: selectedContacts.map(c => c.email || '').filter(Boolean),
+      contactCount: selectedContacts.length
     };
 
     setDisposition(item, 'escalated', note || confidence);
     saveTransitionPayload(item, 'escalated', payload, { draft:false, targetStatus:'escalated' });
+
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Creating…';
+    }
+    setManualAlertApiStatus('', '');
+
+    try {
+      const apiResult = await persistManualEscalationToApi(item, payload, selectedContacts);
+      const count = Number(apiResult.contactCount ?? selectedContacts.length);
+      setManualAlertApiStatus('ok', `Escalated alert saved. ${count} recipient${count === 1 ? '' : 's'} selected for the next email dispatch phase.`);
+    } catch (e) {
+      console.warn('CityIntel: manual escalation API save failed', e);
+      const msg = 'Saved locally, but the Worker audit save failed. Deploy the manual-escalations Worker patch below, then try again.';
+      setManualAlertApiStatus('warn', msg);
+      alert(msg);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Create Escalated Alert';
+      }
+    }
 
     closeManualAlertModal();
     if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
@@ -9647,6 +9893,29 @@ function redrawIncidentRadius(){
     if (cancel) cancel.addEventListener('click', closeManualAlertModal);
     if (save) save.addEventListener('click', createManualEscalatedAlert);
     if (overlay) overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeManualAlertModal(); });
+
+    ['manualAlertCity','manualAlertCountry','manualAlertRisk','manualAlertLocation'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', ()=>renderManualAlertContacts(manualAlertDraftItem()));
+      if (el) el.addEventListener('change', ()=>renderManualAlertContacts(manualAlertDraftItem()));
+    });
+
+    const refresh = document.getElementById('manualAlertRefreshContacts');
+    const selectAll = document.getElementById('manualAlertSelectAllContacts');
+    const clear = document.getElementById('manualAlertClearContacts');
+
+    if (refresh) refresh.addEventListener('click', async ()=>{
+      if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.syncFromApi === 'function') {
+        await CIEscalationContactsPreview.syncFromApi().catch(()=>{});
+      }
+      renderManualAlertContacts(manualAlertDraftItem());
+    });
+    if (selectAll) selectAll.addEventListener('click', ()=>{
+      document.querySelectorAll('.manual-alert-contact-check').forEach(el => { el.checked = true; });
+    });
+    if (clear) clear.addEventListener('click', ()=>{
+      document.querySelectorAll('.manual-alert-contact-check').forEach(el => { el.checked = false; });
+    });
   })();
 
   // --- Operator queues (Escalated / Monitoring / Cleared) ----------------
@@ -10616,8 +10885,27 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="ci-field full">
           <label>Operator note</label>
           <textarea id="manualAlertNote" placeholder="Optional action note, e.g. notify duty manager, contact travellers, monitor CCTV"></textarea>
-          <div class="ci-hint">Manual alerts are saved locally for now and automatically added to the Escalated queue.</div>
+          <div class="ci-hint">Manual alerts are saved locally and sent to the Worker for audit logging. Email dispatch will be connected in the next Worker email phase.</div>
         </div>
+
+        <div class="manual-alert-contact-box">
+          <div class="manual-alert-contact-head">
+            <div>
+              <div class="manual-alert-contact-title">Escalation recipients</div>
+              <div class="manual-alert-contact-sub">Matched from your organisation’s Escalation Contacts by city/country and severity. Untick anyone who should not be included.</div>
+            </div>
+            <div class="manual-alert-contact-actions">
+              <button type="button" id="manualAlertRefreshContacts">Refresh</button>
+              <button type="button" id="manualAlertSelectAllContacts">Select all</button>
+              <button type="button" id="manualAlertClearContacts">Clear</button>
+            </div>
+          </div>
+          <div id="manualAlertContactsList" class="manual-alert-contact-list">
+            <div class="manual-alert-contact-empty">Add a city/risk to preview matching escalation contacts.</div>
+          </div>
+        </div>
+
+        <div id="manualAlertApiStatus" class="manual-alert-api-status" aria-live="polite"></div>
       </div>
     </div>
     <footer>
