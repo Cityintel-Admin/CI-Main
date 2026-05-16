@@ -1,4 +1,5 @@
-   
+
+     
 <!doctype html>
 <html lang="en">
 <head>
@@ -9794,15 +9795,29 @@ function redrawIncidentRadius(){
     if (note) note.value = p ? 'Converted from CityIntel Admin Post.' : '';
     const matchCity = document.getElementById('manualAlertMatchCity');
     const matchCountry = document.getElementById('manualAlertMatchCountry');
+    const matchContinent = document.getElementById('manualAlertMatchContinent');
     const matchRisk = document.getElementById('manualAlertMatchRisk');
     if (matchCity) matchCity.value = p ? cityText : '';
-    if (matchCountry) matchCountry.value = p ? String(p.country || '').trim() : '';
+    if (matchCountry) {
+      const cVal = p ? String(p.country || '').trim() : '';
+      matchCountry.value = Array.from(matchCountry.options || []).some(o => o.value === cVal) ? cVal : '';
+    }
+    if (matchContinent) {
+      const cVal = p ? String(p.country || '').trim() : '';
+      const europe = new Set(['United Kingdom','Ireland','France','Germany','Italy','Spain','Netherlands','Belgium','Portugal','Switzerland','Austria','Poland','Sweden','Norway','Denmark','Finland']);
+      const northAmerica = new Set(['United States','Canada','Mexico']);
+      const middleEast = new Set(['United Arab Emirates','Saudi Arabia','Qatar','Kuwait','Israel','Iraq','Iran','Jordan']);
+      const asiaPacific = new Set(['India','Singapore','Japan','China','Australia','New Zealand','South Korea','Malaysia','Thailand','Philippines','Indonesia']);
+      const africa = new Set(['South Africa','Nigeria','Kenya','Egypt','Morocco']);
+      const southAmerica = new Set(['Brazil','Argentina','Chile','Colombia','Peru']);
+      matchContinent.value = europe.has(cVal) ? 'Europe' : northAmerica.has(cVal) ? 'North America' : middleEast.has(cVal) ? 'Middle East' : asiaPacific.has(cVal) ? 'Asia Pacific' : africa.has(cVal) ? 'Africa' : southAmerica.has(cVal) ? 'South America' : '';
+    }
     if (matchRisk) matchRisk.value = p ? riskValue : (risk ? risk.value : 'High');
 
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden','false');
     try{ document.body.classList.add('ci-manual-alert-open'); }catch(_){}
-    setTimeout(()=>{ try{ renderManualAlertContacts(manualAlertDraftItem()); }catch(_){} }, 20);
+    setTimeout(()=>{ try{ populateManualAlertContacts(); }catch(_){ renderManualAlertContacts(manualAlertDraftItem()); } }, 20);
     setTimeout(()=>{ try{ title && title.focus(); }catch(_){} }, 50);
   }
 
@@ -9843,34 +9858,125 @@ function redrawIncidentRadius(){
   }
 
   function manualAlertContactRows(item){
+    const normLocal = (v)=>String(v || '').trim().toLowerCase();
+    const cleanCountry = (v)=>{
+      const x = normLocal(v);
+      const aliases = {
+        'uk':'united kingdom',
+        'u.k.':'united kingdom',
+        'great britain':'united kingdom',
+        'gb':'united kingdom',
+        'england':'united kingdom',
+        'usa':'united states',
+        'us':'united states',
+        'u.s.':'united states',
+        'uae':'united arab emirates'
+      };
+      return aliases[x] || x;
+    };
+    const sevRankLocal = { low:1, med:2, medium:2, high:3, critical:3, severe:3 };
+    const countryContinent = {
+      'united kingdom':'Europe','ireland':'Europe','france':'Europe','germany':'Europe','italy':'Europe','spain':'Europe','netherlands':'Europe','belgium':'Europe','portugal':'Europe','switzerland':'Europe','austria':'Europe','poland':'Europe','sweden':'Europe','norway':'Europe','denmark':'Europe','finland':'Europe',
+      'united states':'North America','canada':'North America','mexico':'North America',
+      'brazil':'South America','argentina':'South America','chile':'South America','colombia':'South America','peru':'South America',
+      'south africa':'Africa','nigeria':'Africa','kenya':'Africa','egypt':'Africa','morocco':'Africa',
+      'united arab emirates':'Middle East','saudi arabia':'Middle East','qatar':'Middle East','kuwait':'Middle East','israel':'Middle East','iraq':'Middle East','iran':'Middle East','jordan':'Middle East',
+      'india':'Asia Pacific','singapore':'Asia Pacific','japan':'Asia Pacific','china':'Asia Pacific','australia':'Asia Pacific','new zealand':'Asia Pacific','south korea':'Asia Pacific','malaysia':'Asia Pacific','thailand':'Asia Pacific','philippines':'Asia Pacific','indonesia':'Asia Pacific'
+    };
+    const continentOf = (country)=>countryContinent[cleanCountry(country)] || '';
+
+    let rows = [];
     try {
-      if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.matchingContacts === 'function') {
-        return CIEscalationContactsPreview.matchingContacts(item || manualAlertDraftItem()) || [];
+      rows = Array.isArray(window.CIEscalationContacts) ? window.CIEscalationContacts : [];
+      if (!rows.length) {
+        const local = JSON.parse(localStorage.getItem('ci_escalation_contacts_v1') || '[]');
+        rows = Array.isArray(local) ? local : [];
+      }
+    } catch(_) { rows = []; }
+
+    const draft = item || manualAlertDraftItem();
+    const city = normLocal(document.getElementById('manualAlertMatchCity')?.value || draft.city || '');
+    const country = cleanCountry(document.getElementById('manualAlertMatchCountry')?.value || draft.country || '');
+    const continent = String(document.getElementById('manualAlertMatchContinent')?.value || '').trim();
+    const sev = sevRankLocal[normLocal(document.getElementById('manualAlertMatchRisk')?.value || draft.risk || 'medium')] || 2;
+
+    const hasContext = !!(city || country || continent);
+    if (!hasContext) return [];
+
+    const matches = rows
+      .filter(c => c && c.active !== false && c.active !== 0 && String(c.email || '').trim())
+      .filter(c => {
+        const cCity = normLocal(c.city);
+        const cCountry = cleanCountry(c.country);
+        const cContinent = continentOf(cCountry);
+        const cSev = sevRankLocal[normLocal(c.severity || c.minSeverity || c.notifyFromSeverity || 'medium')] || 2;
+
+        if (cSev > sev) return false;
+
+        const cityOk = !!(city && cCity && cCity === city);
+        const countryOk = !!(country && cCountry && cCountry === country);
+        const continentOk = !!(continent && cContinent && cContinent === continent);
+        const globalOk = !cCity && !cCountry;
+
+        // City is optional but strongest. If city is supplied, a matching city wins even when country data is missing.
+        // Country and continent are broader filters for manual escalations.
+        return cityOk || countryOk || continentOk || globalOk;
+      })
+      .sort((a,b) => {
+        const acity = normLocal(a.city) === city ? 8 : 0;
+        const bcity = normLocal(b.city) === city ? 8 : 0;
+        const acountry = country && cleanCountry(a.country) === country ? 4 : 0;
+        const bcountry = country && cleanCountry(b.country) === country ? 4 : 0;
+        const acont = continent && continentOf(a.country) === continent ? 2 : 0;
+        const bcont = continent && continentOf(b.country) === continent ? 2 : 0;
+        const scoreDiff = (bcity + bcountry + bcont) - (acity + acountry + acont);
+        if (scoreDiff) return scoreDiff;
+        return (sevRankLocal[normLocal(b.severity || 'medium')] || 2) - (sevRankLocal[normLocal(a.severity || 'medium')] || 2);
+      });
+
+    return matches.slice(0, 12);
+  }
+
+  async function populateManualAlertContacts(){
+    const listEl = document.getElementById('manualAlertContactsList');
+    if (listEl) listEl.innerHTML = `<div class="manual-alert-contact-empty">Checking matching escalation contacts…</div>`;
+
+    try {
+      if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.syncFromApi === 'function') {
+        await CIEscalationContactsPreview.syncFromApi();
       }
     } catch(e) {
-      console.warn('CityIntel: manual contact matching failed', e);
+      console.warn('CityIntel: escalation contact refresh failed', e);
     }
-    return [];
+
+    renderManualAlertContacts(manualAlertDraftItem());
   }
 
   function renderManualAlertContacts(item){
     const listEl = document.getElementById('manualAlertContactsList');
     if (!listEl) return;
 
-    const rows = manualAlertContactRows(item || manualAlertDraftItem());
-    if (!rows.length) {
-      const draft = item || manualAlertDraftItem();
-      const cityLabel = [draft.city, draft.country].filter(Boolean).join(', ') || 'this location';
-      listEl.innerHTML = `<div class="manual-alert-contact-empty">No matching escalation contacts for ${escLocal(cityLabel)} at ${escLocal(draft.risk || 'selected')} severity. You can still create the escalated alert, but no recipients will be selected.</div>`;
+    const escLocal = (v)=>String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const draft = item || manualAlertDraftItem();
+    const hasMatchContext = String(draft.city || '').trim() || String(draft.country || '').trim();
+
+    if (!hasMatchContext) {
+      listEl.innerHTML = `<div class="manual-alert-contact-empty">Add a city/country, then click <b>Populate recipients</b> to preview matching escalation contacts.</div>`;
       return;
     }
 
-    const escLocal = (v)=>String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const rows = manualAlertContactRows(draft);
+    if (!rows.length) {
+      const cityLabel = [draft.city, draft.country].filter(Boolean).join(', ') || 'this location';
+      listEl.innerHTML = `<div class="manual-alert-contact-empty">No matching escalation contacts for ${escLocal(cityLabel)} at ${escLocal(draft.risk || 'selected')} severity. Check the city/country spelling, lower the match severity, or add a matching recipient in Escalation Contacts.</div>`;
+      return;
+    }
+
     listEl.innerHTML = rows.map((c, idx) => {
       const id = escLocal(c.id || c.email || ('contact_' + idx));
       const label = [c.team, c.role].filter(Boolean).join(' • ') || 'Escalation contact';
       const route = (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.routeLabel === 'function')
-        ? CIEscalationContactsPreview.routeLabel(c, item || manualAlertDraftItem())
+        ? CIEscalationContactsPreview.routeLabel(c, draft)
         : 'Selected recipient';
 
       return `
@@ -10038,17 +10144,33 @@ function redrawIncidentRadius(){
     if (save) save.addEventListener('click', createManualEscalatedAlert);
     if (overlay) overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeManualAlertModal(); });
 
-    ['manualAlertCity','manualAlertCountry','manualAlertRisk','manualAlertLocation','manualAlertMatchCity','manualAlertMatchCountry','manualAlertMatchRisk'].forEach(id => {
+    let manualContactUpdateTimer = null;
+    function queueManualContactRender(){
+      clearTimeout(manualContactUpdateTimer);
+      manualContactUpdateTimer = setTimeout(()=>renderManualAlertContacts(manualAlertDraftItem()), 120);
+    }
+
+    ['manualAlertCity','manualAlertCountry','manualAlertRisk','manualAlertLocation','manualAlertMatchCity','manualAlertMatchCountry','manualAlertMatchContinent','manualAlertMatchRisk'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const update = ()=>{
-        if (id === 'manualAlertCity') { const m = document.getElementById('manualAlertMatchCity'); if (m && !m.value.trim()) m.value = el.value; }
-        if (id === 'manualAlertCountry') { const m = document.getElementById('manualAlertMatchCountry'); if (m && !m.value.trim()) m.value = el.value; }
-        if (id === 'manualAlertRisk') { const m = document.getElementById('manualAlertMatchRisk'); if (m) m.value = el.value; }
-        renderManualAlertContacts(manualAlertDraftItem());
+        if (id === 'manualAlertCity') {
+          const m = document.getElementById('manualAlertMatchCity');
+          if (m) m.value = el.value;
+        }
+        if (id === 'manualAlertCountry') {
+          const m = document.getElementById('manualAlertMatchCountry');
+          if (m) m.value = el.value;
+        }
+        if (id === 'manualAlertRisk') {
+          const m = document.getElementById('manualAlertMatchRisk');
+          if (m) m.value = el.value;
+        }
+        queueManualContactRender();
       };
       el.addEventListener('input', update);
       el.addEventListener('change', update);
+      el.addEventListener('blur', update);
     });
 
     const refresh = document.getElementById('manualAlertRefreshContacts');
@@ -10056,10 +10178,7 @@ function redrawIncidentRadius(){
     const clear = document.getElementById('manualAlertClearContacts');
 
     if (refresh) refresh.addEventListener('click', async ()=>{
-      if (window.CIEscalationContactsPreview && typeof CIEscalationContactsPreview.syncFromApi === 'function') {
-        await CIEscalationContactsPreview.syncFromApi().catch(()=>{});
-      }
-      renderManualAlertContacts(manualAlertDraftItem());
+      await populateManualAlertContacts();
     });
     if (selectAll) selectAll.addEventListener('click', ()=>{
       document.querySelectorAll('.manual-alert-contact-check').forEach(el => { el.checked = true; });
@@ -11046,17 +11165,48 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="manual-alert-contact-sub">Matched from your organisation’s Escalation Contacts by city/country and severity. Untick anyone who should not be included.</div>
             </div>
             <div class="manual-alert-contact-actions">
-              <button type="button" id="manualAlertRefreshContacts">Refresh</button>
+              <button type="button" id="manualAlertRefreshContacts">Populate recipients</button>
               <button type="button" id="manualAlertSelectAllContacts">Select all</button>
               <button type="button" id="manualAlertClearContacts">Clear</button>
             </div>
           </div>
           <div class="manual-alert-match-grid" aria-label="Escalation recipient matching filters">
-            <label>Match city
-              <input id="manualAlertMatchCity" type="text" placeholder="e.g. London">
+            <label>Match continent
+              <select id="manualAlertMatchContinent">
+                <option value="">Any continent</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Africa">Africa</option>
+                <option value="Middle East">Middle East</option>
+                <option value="Asia Pacific">Asia Pacific</option>
+              </select>
             </label>
             <label>Match country
-              <input id="manualAlertMatchCountry" type="text" placeholder="e.g. United Kingdom">
+              <select id="manualAlertMatchCountry">
+                <option value="">Any country</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="United States">United States</option>
+                <option value="France">France</option>
+                <option value="Germany">Germany</option>
+                <option value="Italy">Italy</option>
+                <option value="Spain">Spain</option>
+                <option value="Netherlands">Netherlands</option>
+                <option value="Belgium">Belgium</option>
+                <option value="Ireland">Ireland</option>
+                <option value="United Arab Emirates">United Arab Emirates</option>
+                <option value="Saudi Arabia">Saudi Arabia</option>
+                <option value="India">India</option>
+                <option value="Singapore">Singapore</option>
+                <option value="Japan">Japan</option>
+                <option value="Australia">Australia</option>
+                <option value="Canada">Canada</option>
+                <option value="Brazil">Brazil</option>
+                <option value="South Africa">South Africa</option>
+              </select>
+            </label>
+            <label>Match city / area
+              <input id="manualAlertMatchCity" type="text" placeholder="Optional e.g. London">
             </label>
             <label>Match severity
               <select id="manualAlertMatchRisk">
@@ -11249,7 +11399,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.addEventListener('load', function(){ setTimeout(resizeLiveMap, 250); setTimeout(resizeLiveMap, 900); });
   window.addEventListener('resize', function(){ setTimeout(resizeLiveMap, 150); });
-})(); 
+})();
 </script>
 </body>
 </html>
