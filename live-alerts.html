@@ -6577,7 +6577,7 @@ function openTransitionModal(item, status, handlers){
         saveTransitionPayload(item, st, payload, { draft:false, targetStatus: st });
       } catch (e) {
         console.warn('CityIntel: escalation audit save failed', e);
-        alert('Escalation was saved locally, but the Worker/D1 audit save failed. Check the Worker manual-escalations endpoint and try again.');
+        alert('Escalation was saved locally, but the Worker/D1 audit save failed. Check the Worker org/escalations endpoint and try again.');
       } finally {
         btnSave.disabled = false;
         btnSave.textContent = originalText;
@@ -10049,27 +10049,34 @@ function redrawIncidentRadius(){
       return { ok:false, skipped:true, error:'Auth helpers unavailable' };
     }
 
-    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/manual-escalations'), {
+    const sourceFlow = item && item.manual ? 'manual-alert' : 'incident-transition';
+    const safeContacts = (contacts || []).map(c => ({
+      id: c.id || '',
+      name: c.name || '',
+      role: c.role || '',
+      team: c.team || '',
+      email: c.email || '',
+      phone: c.phone || '',
+      severity: c.severity || '',
+      city: c.city || '',
+      country: c.country || ''
+    }));
+
+    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/escalations'), {
       method: 'POST',
       headers: await authHeaders(),
       body: JSON.stringify({
+        source_type: sourceFlow,
         incident: item,
-        payload: Object.assign({}, payload || {}, { sourceFlow: item && item.manual ? 'manual-alert' : 'incident-transition' }),
-        contacts: contacts.map(c => ({
-          id: c.id || '',
-          name: c.name || '',
-          role: c.role || '',
-          team: c.team || '',
-          email: c.email || '',
-          phone: c.phone || '',
-          severity: c.severity || ''
-        }))
+        payload: Object.assign({}, payload || {}, { sourceFlow }),
+        contacts: safeContacts,
+        dispatch_status: 'queued'
       })
     });
 
     const json = await res.json().catch(()=>null);
     if (!res.ok || !json || json.ok === false) {
-      throw new Error((json && (json.error || json.message)) || ('Manual escalation API failed (' + res.status + ')'));
+      throw new Error((json && (json.error || json.message)) || ('Escalation audit API failed (' + res.status + ')'));
     }
     return json;
   }
@@ -10151,7 +10158,7 @@ function redrawIncidentRadius(){
       setManualAlertApiStatus('ok', `Escalated alert saved. ${count} recipient${count === 1 ? '' : 's'} selected for the next email dispatch phase.`);
     } catch (e) {
       console.warn('CityIntel: manual escalation API save failed', e);
-      const msg = 'Saved locally, but the Worker audit save failed. Deploy the manual-escalations Worker patch below, then try again.';
+      const msg = 'Saved locally, but the Worker audit save failed. Deploy the org/escalations Worker patch, then try again.';
       setManualAlertApiStatus('warn', msg);
       alert(msg);
     } finally {
