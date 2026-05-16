@@ -6779,27 +6779,40 @@ async function resolveItemLatLon(item, exposure){
   }
 
   function matchingContacts(item){
-    const rows = Array.isArray(window.CIEscalationContacts) ? window.CIEscalationContacts : loadLocal();
-    const city = norm(item && item.city);
-    const country = norm(item && item.country);
-    const sev = incidentSeverity(item);
-    return rows
-      .filter(c => c && c.active !== false && String(c.email || '').trim())
-      .filter(c => {
-        const cc = norm(c.city), ck = norm(c.country);
-        if (cc && cc !== city) return false;
-        if (ck && ck !== country) return false;
-        if (contactSeverity(c) > sev) return false;
-        return true;
-      })
-      .sort((a,b)=>{
-        const ac = norm(a.city) === city ? 4 : (norm(a.country) === country ? 2 : 0);
-        const bc = norm(b.city) === city ? 4 : (norm(b.country) === country ? 2 : 0);
-        if (bc !== ac) return bc - ac;
-        return contactSeverity(b) - contactSeverity(a);
-      })
-      .slice(0, 6);
-  }
+  const rows = Array.isArray(window.CIEscalationContacts) ? window.CIEscalationContacts : loadLocal();
+
+  const city = norm(item && (item.city || item.City || item.location));
+  const country = norm(item && (item.country || item.Country));
+  const sev = incidentSeverity(item);
+
+  return rows
+    .filter(c => c && c.active !== false && c.active !== 0 && String(c.email || '').trim())
+    .filter(c => {
+      const cc = norm(c.city);
+      const ck = norm(c.country);
+
+      const cityMatches = cc && city && cc === city;
+      const countryMatches = ck && country && ck === country;
+      const globalContact = !cc && !ck;
+
+      if (cc && !cityMatches) return false;
+
+      // Only enforce country if the alert actually has a country
+      // and the city did not already match.
+      if (!cityMatches && ck && country && !countryMatches) return false;
+
+      if (contactSeverity(c) > sev) return false;
+
+      return cityMatches || countryMatches || globalContact;
+    })
+    .sort((a,b)=>{
+      const ac = norm(a.city) === city ? 4 : (norm(a.country) === country ? 2 : 0);
+      const bc = norm(b.city) === city ? 4 : (norm(b.country) === country ? 2 : 0);
+      if (bc !== ac) return bc - ac;
+      return contactSeverity(b) - contactSeverity(a);
+    })
+    .slice(0, 6);
+}
 
   function renderPreview(item){
     const el = document.getElementById('detailEscalationContacts');
@@ -7146,6 +7159,10 @@ detailSummaryEl.innerHTML =
   // keep last item handy for the incident drilldown handover
   window.__lastDetailItem = item;
 
+
+	if (window.CIEscalationContactsPreview) {
+  window.CIEscalationContactsPreview.renderPreview(item);
+}
   detailPanel.classList.add('open');
   document.body.classList.add('detail-open');
 
