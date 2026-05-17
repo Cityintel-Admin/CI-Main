@@ -7194,6 +7194,13 @@ function ciBuildEscalationEmailContext(item, payload){
   item = item || {}; payload = payload || {};
   const clean = (v)=>String(v ?? '').replace(/\s+/g,' ').trim();
   const limit = (s,n)=>{ s=clean(s); return s.length>n ? s.slice(0,n-1).trimEnd()+'…' : s; };
+  const stripSummaryNoise = (s)=>{
+    s = clean(s);
+    s = s.replace(/\s*Linked alert grouping:\s*\d+\s+related reports?\s+suppressed into this incident\.?.*$/i, '');
+    s = s.replace(/\s*Sources?:\s*.+$/i, '');
+    s = s.replace(/\s*Source credibility\s+Source.+$/i, '');
+    return clean(s);
+  };
   const city = clean(item.city || item.City || payload.city || '');
   const country = clean(item.country || item.Country || payload.country || '');
   const risk = clean(item.risk || item.severity || payload.risk || 'medium');
@@ -7201,6 +7208,7 @@ function ciBuildEscalationEmailContext(item, payload){
   try { const isCurrentDetail = window.__lastDetailItem && ((window.__lastDetailItem.id && window.__lastDetailItem.id === item.id) || (window.__lastDetailItem.title === item.title)); if (isCurrentDetail && typeof detailSummaryEl !== 'undefined' && detailSummaryEl) summary = detailSummaryEl.textContent || ''; } catch(_){ }
   if (!summary && typeof buildIntelSummary === 'function') { try { summary = buildIntelSummary(item, []); } catch(_){ } }
   if (!summary) summary = item.summary || item.description || payload.summary || '';
+  summary = stripSummaryNoise(summary);
   let impact = '';
   try { const isCurrentDetail = window.__lastDetailItem && ((window.__lastDetailItem.id && window.__lastDetailItem.id === item.id) || (window.__lastDetailItem.title === item.title)); if (isCurrentDetail && typeof detailImpactEl !== 'undefined' && detailImpactEl) impact = detailImpactEl.textContent || ''; } catch(_){ }
   let exposure = null;
@@ -7211,8 +7219,8 @@ function ciBuildEscalationEmailContext(item, payload){
   const travellers = (severity && Array.isArray(severity.travellers) ? severity.travellers : (exposure && Array.isArray(exposure.travellers) ? exposure.travellers : [])).slice(0,5).map(t=>({ name: clean(t.name || t.fullName || [t.firstName,t.surname].filter(Boolean).join(' ') || 'Traveller'), role: clean(t.role || t.title || ''), city: clean(t.city || ''), country: clean(t.country || ''), exposureStatus: clean(t.exposureStatus || t.status || ''), exposureDistanceKm: Number.isFinite(Number(t.exposureDistanceKm)) ? Number(t.exposureDistanceKm) : null }));
   const linked = item.__ciLinked || item.linked || {};
   const linkedCount = Number(linked.count || linked.linkedCount || item.linkedCount || 0) || 0;
-  if (!impact) { const bits = []; if (severity && severity.level) bits.push(`${severity.level} operational severity${severity.score ? ' ('+severity.score+')' : ''}.`); if (assets.length) bits.push(`${assets.length} mapped asset${assets.length === 1 ? '' : 's'} may be exposed within the assessed radius.`); if (travellers.length) bits.push(`${travellers.length} mapped traveller${travellers.length === 1 ? '' : 's'} may be exposed within the assessed radius.`); if (severity && severity.hasVip) bits.push('VIP/executive exposure is indicated.'); if (!bits.length) bits.push('Review the incident and monitor for operational disruption to people, sites and travel routes.'); impact = bits.join(' '); }
-  return { title: clean(item.title || ''), summary: limit(summary, 900), impact: limit(impact, 700), recommendedAction: clean((exposure && exposure.recommendedAction) || (severity && severity.queue === 'Critical queue' ? 'Initiate immediate stakeholder notification, review traveller/site exposure, and consider check-in or movement controls.' : 'Review the incident, notify relevant stakeholders, and monitor exposure until the situation stabilises.')), source: clean(item.src || item.source || ''), url: clean(item.url || ''), confidence: clean(item.confidence || item.location_confidence || payload.confidence || ''), operationalScore: severity && severity.score ? severity.score : '', queue: severity && severity.queue ? severity.queue : '', hasVip: !!(severity && severity.hasVip), radiusKm: exposure && exposure.radiusKm ? exposure.radiusKm : 10, assets, travellers, linkedCount, relatedItems: [] };
+  if (!impact) { const bits = []; if (severity && severity.level) bits.push(`${severity.level} operational severity${severity.score ? ' ('+severity.score+')' : ''}.`); if (assets.length) bits.push(`${assets.length} mapped asset${assets.length === 1 ? '' : 's'} within the assessed radius.`); if (travellers.length) bits.push(`${travellers.length} mapped traveller${travellers.length === 1 ? '' : 's'} within the assessed radius.`); if (severity && severity.hasVip) bits.push('VIP/executive exposure is indicated.'); if (!bits.length) bits.push('Review the incident and monitor for operational disruption to people, sites and travel routes.'); impact = bits.join(' '); }
+  return { title: clean(item.title || ''), city, country, summary: limit(summary, 650), impact: limit(impact, 700), recommendedAction: clean((exposure && exposure.recommendedAction) || (severity && severity.queue === 'Critical queue' ? 'Initiate immediate stakeholder notification, review traveller/site exposure, and consider check-in or movement controls.' : 'Review the incident, notify relevant stakeholders, and monitor exposure until the situation stabilises.')), source: clean(item.src || item.source || ''), url: clean(item.url || ''), confidence: clean(item.confidence || item.location_confidence || payload.confidence || ''), operationalScore: severity && severity.score ? severity.score : '', level: severity && severity.level ? severity.level : '', queue: severity && severity.queue ? severity.queue : '', hasVip: !!(severity && severity.hasVip), radiusKm: exposure && exposure.radiusKm ? exposure.radiusKm : 10, assets, travellers, linkedCount, relatedItems: [] };
 }
 
 async function ciPersistEscalationAudit(item, payload, contacts){
