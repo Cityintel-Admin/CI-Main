@@ -7128,6 +7128,46 @@ function collectTransitionPayload(status){
   return payload;
 }
 
+
+async function ciPersistEscalationAudit(item, payload, contacts){
+  if (typeof authHeaders !== 'function' || typeof withEmailParam !== 'function') {
+    throw new Error('Auth helpers unavailable');
+  }
+
+  const sourceFlow = item && item.manual ? 'manual-alert' : 'incident-transition';
+  const safeContacts = (contacts || []).map(c => ({
+    id: c.id || c.contact_id || '',
+    name: c.name || '',
+    role: c.role || c.title || '',
+    team: c.team || '',
+    email: c.email || '',
+    phone: c.phone || '',
+    severity: c.severity || c.minSeverity || c.min_severity || '',
+    city: c.city || '',
+    country: c.country || ''
+  })).filter(c => c.email || c.name);
+
+  const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/escalations'), {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({
+      source_type: sourceFlow,
+      incident: item || {},
+      payload: Object.assign({}, payload || {}, { sourceFlow }),
+      contacts: safeContacts,
+      dispatch_status: 'queued'
+    })
+  });
+
+  const json = await res.json().catch(()=>null);
+  if (!res.ok || !json || json.ok === false) {
+    throw new Error((json && (json.error || json.message)) || ('Escalation audit API failed (' + res.status + ')'));
+  }
+  return json;
+}
+window.ciPersistEscalationAudit = ciPersistEscalationAudit;
+window.persistManualEscalationToApi = ciPersistEscalationAudit;
+
 function openTransitionModal(item, status, handlers){
   handlers = handlers || {};
   const overlay = document.getElementById('ciTransitionOverlay');
@@ -7209,7 +7249,7 @@ function openTransitionModal(item, status, handlers){
       btnSave.textContent = 'Saving…';
 
       try {
-        const apiResult = await persistManualEscalationToApi(item, payload, selectedContacts);
+        const apiResult = await ciPersistEscalationAudit(item, payload, selectedContacts);
         payload.apiEscalationId = apiResult && apiResult.id ? apiResult.id : '';
         payload.apiStatus = 'queued';
         payload.contactCount = Number((apiResult && apiResult.contactCount) ?? selectedContacts.length);
@@ -10720,6 +10760,8 @@ function redrawIncidentRadius(){
     return json;
   }
 
+  window.persistManualEscalationToApi = persistManualEscalationToApi;
+
   async function createManualEscalatedAlert(){
     const title = (document.getElementById('manualAlertTitle')?.value || '').trim();
     const city = ((document.getElementById('manualAlertCity')?.value || document.getElementById('manualAlertMatchCity')?.value || '')).trim();
@@ -10792,12 +10834,12 @@ function redrawIncidentRadius(){
     setManualAlertApiStatus('', '');
 
     try {
-      const apiResult = await persistManualEscalationToApi(item, payload, selectedContacts);
+      const apiResult = await ciPersistEscalationAudit(item, payload, selectedContacts);
       const count = Number(apiResult.contactCount ?? selectedContacts.length);
       setManualAlertApiStatus('ok', `Escalated alert saved. ${count} recipient${count === 1 ? '' : 's'} selected for the next email dispatch phase.`);
     } catch (e) {
       console.warn('CityIntel: manual escalation API save failed', e);
-      const msg = 'Saved locally, but the Worker audit save failed. Deploy the org/escalations Worker patch, then try again.';
+      const msg = 'Saved locally, but the Worker audit save failed. Check /api/org/escalations Worker logs, then try again.';
       setManualAlertApiStatus('warn', msg);
       alert(msg);
     } finally {
