@@ -4830,15 +4830,75 @@ function publishFeedSummary(feed, events){
 }
 
 // per-feed UI cache (so cards can show stuff before network finishes)
-const FEED_UI_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days: keep cards populated immediately after refresh/return
+// Keep this deliberately small. Browser localStorage is only around 5MB and live alert
+// descriptions / linked alerts can fill it quickly, which previously blocked escalation testing.
+const FEED_UI_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const FEED_UI_CACHE_MAX_EVENTS = 12;
+const FEED_UI_CACHE_MAX_KEYS = 4;
+
+function ciCompactUiCacheEvent(ev) {
+  ev = ev || {};
+  return {
+    id: ev.id || ev.alert_id || '',
+    title: ev.title || ev.headline || '',
+    city: ev.city || ev.area || '',
+    country: ev.country || '',
+    risk: ev.risk || ev.severity || '',
+    when: ev.when || ev.when_ts || ev.published_at || ev.created_at || '',
+    src: ev.src || ev.source || '',
+    url: ev.url || '',
+    location_confidence: ev.location_confidence || ev.locationConfidence || ''
+  };
+}
+
+function ciPruneUiFeedCaches(keepKey) {
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('ci_ui_feed_')) keys.push(k);
+    }
+
+    const rows = keys.map(k => {
+      try {
+        const obj = JSON.parse(localStorage.getItem(k) || '{}') || {};
+        return { key: k, at: Number(obj.at || 0) };
+      } catch (_) {
+        return { key: k, at: 0 };
+      }
+    }).sort((a, b) => Number(b.at || 0) - Number(a.at || 0));
+
+    rows.forEach((row, idx) => {
+      if (row.key !== keepKey && idx >= FEED_UI_CACHE_MAX_KEYS) {
+        try { localStorage.removeItem(row.key); } catch (_) {}
+      }
+    });
+  } catch (_) {}
+}
 
 function saveUiCache(feedId, events) {
   if (!feedId) return;
   const key = 'ci_ui_feed_' + feedId;
-  localStorage.setItem(key, JSON.stringify({
-    at: Date.now(),
-    events: Array.isArray(events) ? events : []
-  }));
+  const compactEvents = (Array.isArray(events) ? events : [])
+    .slice(0, FEED_UI_CACHE_MAX_EVENTS)
+    .map(ciCompactUiCacheEvent);
+
+  const payload = JSON.stringify({ at: Date.now(), events: compactEvents });
+
+  try {
+    ciPruneUiFeedCaches(key);
+    localStorage.setItem(key, payload);
+  } catch (err) {
+    console.warn('CityIntel: UI feed cache full; clearing old UI feed caches', err);
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('ci_ui_feed_')) localStorage.removeItem(k);
+      }
+      localStorage.removeItem(FEED_EVENTS_KEY);
+      localStorage.setItem(key, JSON.stringify({ at: Date.now(), events: compactEvents.slice(0, 5) }));
+    } catch (_) {}
+  }
 }
 
 function loadUiCache(feedId) {
