@@ -3470,6 +3470,21 @@ padding-bottom: 12px;
   .ci-history-meta-grid{grid-template-columns:1fr;}
 }
 
+
+/* ===== CityIntel email dispatch foundation v15 ===== */
+.ci-email-dispatch-btn{
+  border-color:rgba(34,197,94,.32);
+  background:rgba(20,83,45,.18);
+  color:#bbf7d0;
+}
+.ci-email-dispatch-btn:hover{
+  border-color:rgba(34,197,94,.55);
+  background:rgba(20,83,45,.30);
+}
+.ci-dispatch-history-row{
+  border-color:rgba(34,197,94,.20);
+  background:rgba(20,83,45,.10);
+}
 </style>
 <style>
 
@@ -12265,6 +12280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const disabled = busyId === String(row.id || '') ? ' disabled' : '';
     const buttons = [];
     buttons.push(`<button type="button" class="ci-escalation-action-btn" data-escalation-history="${id}" data-id="${id}">View history</button>`);
+    buttons.push(`<button type="button" class="ci-escalation-action-btn ci-email-dispatch-btn" data-escalation-email-dispatch="${id}" data-id="${id}"${disabled}>Queue email</button>`);
     if (s !== 'dispatched' && s !== 'acknowledged' && s !== 'resolved') {
       buttons.push(`<button type="button" class="ci-escalation-action-btn" data-escalation-action="dispatch" data-id="${id}"${disabled}>Mark dispatched</button>`);
     }
@@ -12316,10 +12332,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   }
 
-  function renderHistoryBody(data, recipients, events){
+  function renderHistoryBody(data, recipients, events, dispatches){
     const row = data || {};
     const recipientRows = Array.isArray(recipients) ? recipients : [];
     const eventRows = Array.isArray(events) ? events : [];
+    const dispatchRows = Array.isArray(dispatches) ? dispatches : [];
     const status = String(row.status || 'queued').toLowerCase();
     const dispatch = String(row.dispatch_status || 'not_sent').toLowerCase();
 
@@ -12358,6 +12375,15 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
     }).join('') : '<div class="ci-history-empty">No timeline events have been recorded yet.</div>';
 
+    const dispatchHtml = dispatchRows.length ? dispatchRows.map(d=>{
+      return `<div class="ci-history-recipient ci-dispatch-history-row">
+        <strong>${esc(d.to_name || d.to_email || 'Email recipient')}</strong>
+        <div class="meta">${esc(d.to_email || 'No email')} • ${esc(pretty(d.status || 'queued'))} via ${esc(d.provider || 'foundation')}</div>
+        <div class="meta">${esc(d.subject || 'No subject')} • Requested ${esc(fmt(d.requested_at))}</div>
+        ${d.error ? `<div class="meta">Error: ${esc(d.error)}</div>` : ''}
+      </div>`;
+    }).join('') : '<div class="ci-history-empty">No email dispatch attempts have been queued yet.</div>';
+
     const recipientHtml = recipientRows.length ? recipientRows.map(r=>{
       const selected = Number(r.selected || 0) === 1 ? 'Selected' : 'Not selected';
       const delivery = pretty(r.delivery_status || 'pending');
@@ -12377,6 +12403,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <section class="ci-history-section">
         <h4>Timeline</h4>
         <div class="ci-history-timeline">${eventHtml}</div>
+      </section>
+      <section class="ci-history-section">
+        <h4>Email dispatch foundation</h4>
+        ${dispatchHtml}
       </section>
       <section class="ci-history-section">
         <h4>Recipients</h4>
@@ -12404,7 +12434,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const row = json.data || {};
       if (title) title.textContent = row.title || 'Escalation history';
       if (subtitle) subtitle.textContent = `${pretty(row.status || 'queued')} • ${fmt(row.created_at)} • ${[row.city, row.country].filter(Boolean).join(', ') || 'Location not set'}`;
-      if (body) body.innerHTML = renderHistoryBody(row, json.recipients || [], json.events || []);
+      if (body) body.innerHTML = renderHistoryBody(row, json.recipients || [], json.events || [], json.dispatches || []);
     }catch(e){
       console.warn('CityIntel: escalation history load failed', e);
       if (body) body.innerHTML = '<div class="ci-history-empty">Could not load this escalation history. Check the Worker deployment and D1 audit tables.</div>';
@@ -12445,6 +12475,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+
+  async function queueEmailDispatch(id){
+    if (!id) return;
+    const row = queueRows.find(r => String(r.id) === String(id)) || {};
+    const ok = confirm('Queue email dispatch foundation for selected recipients?\n\nThis records dispatch rows and updates delivery status, but does not send real email until a provider is connected.');
+    if (!ok) return;
+
+    const subject = prompt('Email subject:', `[CityIntel] ${(row.risk || 'Alert').toString().toUpperCase()} escalation: ${row.title || 'Incident alert'}`) || '';
+    const note = prompt('Optional dispatch note:', '') || '';
+
+    busyId = id;
+    renderQueue();
+
+    try{
+      const res = await fetch((typeof withEmailParam === 'function' ? withEmailParam(API + '/api/org/escalations/dispatch') : API + '/api/org/escalations/dispatch'), {
+        method:'POST',
+        headers: await apiHeaders(),
+        body: JSON.stringify({ id, subject, note })
+      });
+      const json = await res.json().catch(()=>null);
+      if (!res.ok || !json || json.ok === false) throw new Error((json && (json.error || json.message)) || 'Email dispatch queue failed');
+
+      alert(`Email dispatch queued for ${json.queued || 0} recipient${Number(json.queued || 0) === 1 ? '' : 's'}.`);
+      const local = queueRows.find(r => String(r.id) === String(id));
+      if (local) {
+        local.dispatch_status = json.dispatchStatus || 'queued';
+        local.updated_at = new Date().toISOString();
+      }
+      await loadQueue();
+    }catch(e){
+      console.warn('CityIntel: email dispatch queue failed', e);
+      alert('Could not queue email dispatch. Check the Worker deployment and D1 tables.');
+    }finally{
+      busyId = '';
+      renderQueue();
+    }
+  }
+
   document.addEventListener('click', function(e){
     const toggle = e.target.closest && e.target.closest('#ciEscalationQueueToggle');
     if (toggle) { e.preventDefault(); setQueueVisible(true); return; }
@@ -12460,6 +12528,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const historyBackdrop = e.target && e.target.id === 'ciEscalationHistoryModal';
     if (historyBackdrop) { e.preventDefault(); closeHistory(); return; }
+
+    const emailDispatch = e.target.closest && e.target.closest('[data-escalation-email-dispatch]');
+    if (emailDispatch) { e.preventDefault(); queueEmailDispatch(emailDispatch.dataset.id || emailDispatch.dataset.escalationEmailDispatch); return; }
 
     const history = e.target.closest && e.target.closest('[data-escalation-history]');
     if (history) { e.preventDefault(); openHistory(history.dataset.id || history.dataset.escalationHistory); return; }
@@ -12480,7 +12551,8 @@ document.addEventListener('DOMContentLoaded', () => {
     render: renderQueue,
     open: ()=>setQueueVisible(true),
     close: ()=>setQueueVisible(false),
-    history: openHistory
+    history: openHistory,
+    dispatch: queueEmailDispatch
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureTabs);
