@@ -3471,7 +3471,7 @@ padding-bottom: 12px;
 }
 
 
-/* ===== CityIntel email dispatch foundation v15 ===== */
+/* ===== CityIntel real email dispatch v16 ===== */
 .ci-email-dispatch-btn{
   border-color:rgba(34,197,94,.32);
   background:rgba(20,83,45,.18);
@@ -12280,7 +12280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const disabled = busyId === String(row.id || '') ? ' disabled' : '';
     const buttons = [];
     buttons.push(`<button type="button" class="ci-escalation-action-btn" data-escalation-history="${id}" data-id="${id}">View history</button>`);
-    buttons.push(`<button type="button" class="ci-escalation-action-btn ci-email-dispatch-btn" data-escalation-email-dispatch="${id}" data-id="${id}"${disabled}>Queue email</button>`);
+    buttons.push(`<button type="button" class="ci-escalation-action-btn ci-email-dispatch-btn" data-escalation-email-dispatch="${id}" data-id="${id}"${disabled}>Send email</button>`);
     if (s !== 'dispatched' && s !== 'acknowledged' && s !== 'resolved') {
       buttons.push(`<button type="button" class="ci-escalation-action-btn" data-escalation-action="dispatch" data-id="${id}"${disabled}>Mark dispatched</button>`);
     }
@@ -12382,7 +12382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="meta">${esc(d.subject || 'No subject')} • Requested ${esc(fmt(d.requested_at))}</div>
         ${d.error ? `<div class="meta">Error: ${esc(d.error)}</div>` : ''}
       </div>`;
-    }).join('') : '<div class="ci-history-empty">No email dispatch attempts have been queued yet.</div>';
+    }).join('') : '<div class="ci-history-empty">No email dispatch attempts have been recorded yet.</div>';
 
     const recipientHtml = recipientRows.length ? recipientRows.map(r=>{
       const selected = Number(r.selected || 0) === 1 ? 'Selected' : 'Not selected';
@@ -12405,7 +12405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="ci-history-timeline">${eventHtml}</div>
       </section>
       <section class="ci-history-section">
-        <h4>Email dispatch foundation</h4>
+        <h4>Email dispatch</h4>
         ${dispatchHtml}
       </section>
       <section class="ci-history-section">
@@ -12492,21 +12492,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch((typeof withEmailParam === 'function' ? withEmailParam(API + '/api/org/escalations/dispatch') : API + '/api/org/escalations/dispatch'), {
         method:'POST',
         headers: await apiHeaders(),
-        body: JSON.stringify({ id, subject, note })
+        body: JSON.stringify({ id, subject, note, mode: 'send' })
       });
       const json = await res.json().catch(()=>null);
-      if (!res.ok || !json || json.ok === false) throw new Error((json && (json.error || json.message)) || 'Email dispatch queue failed');
+      if (!res.ok || !json || json.ok === false) throw new Error((json && (json.error || json.message)) || 'Email dispatch failed');
 
-      alert(`Email dispatch queued for ${json.queued || 0} recipient${Number(json.queued || 0) === 1 ? '' : 's'}.`);
+      alert(`Email dispatch complete. Sent: ${json.sent || 0}. Failed: ${json.failed || 0}.`);
       const local = queueRows.find(r => String(r.id) === String(id));
       if (local) {
-        local.dispatch_status = json.dispatchStatus || 'queued';
+        local.dispatch_status = json.dispatchStatus || (json.sent ? 'dispatched' : 'failed');
+        local.status = json.status || local.status;
         local.updated_at = new Date().toISOString();
       }
       await loadQueue();
     }catch(e){
-      console.warn('CityIntel: email dispatch queue failed', e);
-      alert('Could not queue email dispatch. Check the Worker deployment and D1 tables.');
+      console.warn('CityIntel: email dispatch failed', e);
+      alert('Could not send email dispatch. Check the Worker deployment, Resend key, sender domain, and D1 logs.');
     }finally{
       busyId = '';
       renderQueue();
