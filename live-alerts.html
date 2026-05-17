@@ -7168,6 +7168,33 @@ async function ciPersistEscalationAudit(item, payload, contacts){
 window.ciPersistEscalationAudit = ciPersistEscalationAudit;
 window.persistManualEscalationToApi = ciPersistEscalationAudit;
 
+
+async function ciDispatchEscalationEmail(escalationId, item, note){
+  if (!escalationId) throw new Error('Missing escalation id for email dispatch');
+  if (typeof authHeaders !== 'function' || typeof withEmailParam !== 'function') {
+    throw new Error('Auth helpers unavailable');
+  }
+  const risk = String((item && (item.risk || item.severity)) || 'Alert').toUpperCase();
+  const title = String((item && item.title) || 'Incident alert');
+  const subject = `[CityIntel] ${risk} escalation: ${title}`.slice(0, 180);
+  const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/escalations/dispatch'), {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({
+      id: escalationId,
+      subject,
+      note: note || '',
+      mode: 'send'
+    })
+  });
+  const json = await res.json().catch(()=>null);
+  if (!res.ok || !json || json.ok === false) {
+    throw new Error((json && (json.error || json.message)) || ('Email dispatch API failed (' + res.status + ')'));
+  }
+  return json;
+}
+window.ciDispatchEscalationEmail = ciDispatchEscalationEmail;
+
 function openTransitionModal(item, status, handlers){
   handlers = handlers || {};
   const overlay = document.getElementById('ciTransitionOverlay');
@@ -7250,9 +7277,27 @@ function openTransitionModal(item, status, handlers){
 
       try {
         const apiResult = await ciPersistEscalationAudit(item, payload, selectedContacts);
-        payload.apiEscalationId = apiResult && apiResult.id ? apiResult.id : '';
+        const escalationId = apiResult && apiResult.id ? apiResult.id : '';
+        payload.apiEscalationId = escalationId;
         payload.apiStatus = 'queued';
         payload.contactCount = Number((apiResult && apiResult.contactCount) ?? selectedContacts.length);
+
+        if (escalationId && selectedContacts.length) {
+          btnSave.textContent = 'Sending email…';
+          try {
+            const dispatchResult = await ciDispatchEscalationEmail(escalationId, item, payload.note || detailDispositionNoteEl?.value || '');
+            payload.dispatchStatus = dispatchResult.dispatchStatus || (dispatchResult.sent ? 'dispatched' : 'failed');
+            payload.emailSent = Number(dispatchResult.sent || 0);
+            payload.emailFailed = Number(dispatchResult.failed || 0);
+            payload.apiStatus = payload.dispatchStatus;
+          } catch (sendErr) {
+            console.warn('CityIntel: escalation email dispatch failed', sendErr);
+            payload.dispatchStatus = 'failed';
+            payload.emailError = String(sendErr && sendErr.message || sendErr || 'Email dispatch failed');
+            alert('Escalation was saved, but the email dispatch failed. Check Resend logs, Worker secrets, sender domain, and D1 delivery rows.');
+          }
+        }
+
         saveTransitionPayload(item, st, payload, { draft:false, targetStatus: st });
       } catch (e) {
         console.warn('CityIntel: escalation audit save failed', e);
@@ -10834,9 +10879,27 @@ function redrawIncidentRadius(){
     setManualAlertApiStatus('', '');
 
     try {
-      const apiResult = await ciPersistEscalationAudit(item, payload, selectedContacts);
+      const persistFn = window.ciPersistEscalationAudit || window.persistManualEscalationToApi;
+      if (typeof persistFn !== 'function') throw new Error('Escalation audit save function is unavailable');
+      const apiResult = await persistFn(item, payload, selectedContacts);
+      const escalationId = apiResult && apiResult.id ? apiResult.id : '';
       const count = Number(apiResult.contactCount ?? selectedContacts.length);
-      setManualAlertApiStatus('ok', `Escalated alert saved. ${count} recipient${count === 1 ? '' : 's'} selected for the next email dispatch phase.`);
+
+      if (escalationId && selectedContacts.length) {
+        if (saveBtn) saveBtn.textContent = 'Sending email…';
+        try {
+          const dispatchResult = await ciDispatchEscalationEmail(escalationId, item, note || confidence);
+          const sent = Number(dispatchResult.sent || 0);
+          const failed = Number(dispatchResult.failed || 0);
+          setManualAlertApiStatus('ok', `Escalated alert saved and email dispatch complete. Sent: ${sent}. Failed: ${failed}.`);
+        } catch (sendErr) {
+          console.warn('CityIntel: manual escalation email dispatch failed', sendErr);
+          setManualAlertApiStatus('warn', 'Escalated alert saved, but email dispatch failed. Check Resend logs, Worker secrets, sender domain, and D1 delivery rows.');
+          alert('Escalated alert saved, but email dispatch failed. Check Resend logs, Worker secrets, sender domain, and D1 delivery rows.');
+        }
+      } else {
+        setManualAlertApiStatus('ok', `Escalated alert saved. ${count} recipient${count === 1 ? '' : 's'} selected.`);
+      }
     } catch (e) {
       console.warn('CityIntel: manual escalation API save failed', e);
       const msg = 'Saved locally, but the Worker audit save failed. Check /api/org/escalations Worker logs, then try again.';
@@ -10853,6 +10916,8 @@ function redrawIncidentRadius(){
     if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts();
     renderQueueList('escalated');
   }
+
+  window.createManualEscalatedAlert = createManualEscalatedAlert;
 
   (function bindManualAlertModal(){
     const btn = document.getElementById('manualAlertBtn');
@@ -10905,6 +10970,17 @@ function redrawIncidentRadius(){
     });
     if (clear) clear.addEventListener('click', ()=>{
       document.querySelectorAll('.manual-alert-contact-check').forEach(el => { el.checked = false; });
+    });
+
+    // Defensive fallback: some GitHub/browser caches have missed the direct click bind.
+    // This delegated listener makes the manual submit button reliable without double-submitting.
+    document.addEventListener('click', (e)=>{
+      const target = e.target && e.target.closest && e.target.closest('#manualAlertSave');
+      if (!target || target.dataset.ciManualSubmitting === '1') return;
+      e.preventDefault();
+      e.stopPropagation();
+      target.dataset.ciManualSubmitting = '1';
+      Promise.resolve(createManualEscalatedAlert()).finally(()=>{ target.dataset.ciManualSubmitting = '0'; });
     });
   })();
 
@@ -12589,7 +12665,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function queueEmailDispatch(id){
     if (!id) return;
     const row = queueRows.find(r => String(r.id) === String(id)) || {};
-    const ok = confirm('Queue email dispatch foundation for selected recipients?\n\nThis records dispatch rows and updates delivery status, but does not send real email until a provider is connected.');
+    const ok = confirm('Send escalation email to selected recipients?\n\nThis will use Resend and update delivery status in D1.');
     if (!ok) return;
 
     const subject = prompt('Email subject:', `[CityIntel] ${(row.risk || 'Alert').toString().toUpperCase()} escalation: ${row.title || 'Incident alert'}`) || '';
