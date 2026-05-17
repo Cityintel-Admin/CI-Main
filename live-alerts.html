@@ -5795,18 +5795,86 @@ async function syncPersistentCacheToFeeds(opts = {}){
 }
 window.syncPersistentCacheToFeeds = syncPersistentCacheToFeeds;
 
+function ciTrimStoredFeedEvent(ev) {
+  if (!ev || typeof ev !== 'object') return ev;
+  return {
+    id: ev.id || ev.key || ev.url || ev.title || '',
+    title: ev.title || ev.headline || '',
+    city: ev.city || ev.location || '',
+    country: ev.country || '',
+    risk: ev.risk || ev.severity || '',
+    when: ev.when || ev.when_ts || ev.published_at || ev.created_at || '',
+    src: ev.src || ev.source || ev.sourceCommonName || '',
+    url: ev.url || '',
+    lat: ev.lat || null,
+    lon: ev.lon || ev.lng || null,
+    location_confidence: ev.location_confidence || ev.locationConfidence || '',
+    _duplicateCount: ev._duplicateCount || 1,
+    linkedAlerts: Array.isArray(ev.linkedAlerts) ? ev.linkedAlerts.slice(0, 3).map(x => ({
+      title: x && (x.title || x.headline || ''),
+      src: x && (x.src || x.source || ''),
+      url: x && (x.url || ''),
+      when: x && (x.when || x.published_at || '')
+    })) : undefined
+  };
+}
+
 function storeFeedEvents(feedId, events) {
-  const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
-  all[feedId] = { at: Date.now(), events };
-  localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all));
+  if (!feedId) return;
+
+  const now = Date.now();
+  const TTL = 3 * 24 * 60 * 60 * 1000;
+  const MAX_EVENTS_PER_FEED = 35;
+  const MAX_FEEDS = 8;
+
+  let all = {};
+  try {
+    all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}') || {};
+  } catch (_) {
+    all = {};
+  }
+
+  // Drop old entries and keep only a small number of feed caches.
+  const entries = Object.entries(all)
+    .filter(([, entry]) => entry && entry.at && (now - Number(entry.at)) < TTL)
+    .sort((a,b) => Number(b[1].at || 0) - Number(a[1].at || 0))
+    .slice(0, MAX_FEEDS);
+
+  all = Object.fromEntries(entries);
+
+  const slimEvents = (Array.isArray(events) ? events : [])
+    .slice(0, MAX_EVENTS_PER_FEED)
+    .map(ciTrimStoredFeedEvent);
+
+  all[feedId] = { at: now, events: slimEvents };
+
+  try {
+    localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify(all));
+  } catch (err) {
+    // Browser storage is full. Clear only this cache, then retry with a tiny snapshot.
+    console.warn('CityIntel: feed event cache full; pruning local cache', err);
+    try {
+      localStorage.removeItem(FEED_EVENTS_KEY);
+      localStorage.setItem(FEED_EVENTS_KEY, JSON.stringify({
+        [feedId]: { at: now, events: slimEvents.slice(0, 15) }
+      }));
+    } catch (_) {}
+  }
 }
 
 function loadFeedEvents(feedId) {
-  const all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}');
+  let all = {};
+  try {
+    all = JSON.parse(localStorage.getItem(FEED_EVENTS_KEY) || '{}') || {};
+  } catch (_) {
+    try { localStorage.removeItem(FEED_EVENTS_KEY); } catch (__) {}
+    return null;
+  }
+
   const entry = all[feedId];
   if (!entry) return null;
-  // 7-day TTL: keep last seen alerts visible while the live refresh catches up.
-  if (Date.now() - entry.at > 7 * 24 * 60 * 60 * 1000) return null;
+  // 3-day TTL: keep last seen alerts visible while the live refresh catches up, without filling browser storage.
+  if (Date.now() - entry.at > 3 * 24 * 60 * 60 * 1000) return null;
   return entry;
 }
 
