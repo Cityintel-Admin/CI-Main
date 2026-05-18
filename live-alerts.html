@@ -12853,416 +12853,346 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-
-/**
- * CityIntel — Training Feed Shim
- * ================================
- * Drop this script block into live-alerts_incident_brief_v22.html
- * just before the closing </body> tag (after all other scripts).
- *
- * HOW IT WORKS
- * ------------
- * 1. On page load it reads `ci_admin_training_feed` from localStorage
- *    (written by training-scenario-admin.html when an admin injects a scenario).
- * 2. If active training scenarios exist it auto-registers a special
- *    "Training Feed" in the page's live feed list (or updates the existing one).
- * 3. It hooks into `fetchMockEventsForFeed` so the feed card polls the
- *    localStorage key every 5 seconds — new injections appear automatically.
- * 4. Each scenario is mapped to the same event schema used by normaliseAlertEvent,
- *    so dispositions, severity scoring, exposure, and escalation all work normally.
- * 5. Operator dispositions (escalate / monitor / clear) are written back to
- *    `ci_training_responses_v1` so the admin page sees them in real time.
- * 6. A banner is shown at the top of the page while a training session is active.
- *
- * INSTALLATION
- * ------------
- * Paste the entire block below (including the outer <script> tags) directly
- * before </body> in live-alerts_incident_brief_v22.html.
- *
- * NO other changes to the live-alerts file are needed.
- */
-
+<script>
 (function ciTrainingFeedShim() {
 
-  /* ── constants ──────────────────────────────────────────────── */
-  const TRAINING_FEED_KEY    = 'ci_admin_training_feed';
-  const RESPONSE_KEY         = 'ci_training_responses_v1';
-  const TRAINING_FEED_ID     = 'ci_training_feed_v1';
-  const POLL_MS              = 5000;   // how often we check for new scenarios
-  const BANNER_ID            = 'ciTrainingSessionBanner';
+  /* ─── constants ──────────────────────────────────────────────── */
+  var TRAINING_FEED_KEY = 'ci_admin_training_feed';
+  var RESPONSE_KEY      = 'ci_training_responses_v1';
+  var TRAINING_FEED_ID  = 'ci_training_feed_v1';
+  var POLL_MS           = 4000;
+  var BANNER_ID         = 'ciTrainingSessionBanner';
 
-  /* ── state ──────────────────────────────────────────────────── */
-  let trainingFeedRegistered = false;
-  let lastScenarioCount      = -1;
+  /* ─── state ──────────────────────────────────────────────────── */
+  var trainingFeedRegistered = false;
+  var lastScenarioHash       = '';
+  var hooksApplied           = false;
 
-  /* ── helpers ────────────────────────────────────────────────── */
+  /* ─── helpers ────────────────────────────────────────────────── */
 
   function loadScenarios() {
     try {
-      const raw = localStorage.getItem(TRAINING_FEED_KEY);
+      var raw = localStorage.getItem(TRAINING_FEED_KEY);
       if (!raw) return [];
-      const arr = JSON.parse(raw);
+      var arr = JSON.parse(raw);
       return Array.isArray(arr) ? arr : [];
-    } catch (_) {
-      return [];
-    }
+    } catch (_) { return []; }
+  }
+
+  function activeScenarios(all) {
+    return (all || []).filter(function(sc) {
+      return sc.status === 'active' || sc.status === 'auto-escalated';
+    });
+  }
+
+  function scenarioHash(list) {
+    return list.map(function(s){ return s.id + s.status; }).join('|');
   }
 
   /**
-   * Convert a training scenario object into the event schema that
-   * normaliseAlertEvent / renderEventsIntoCard expects.
+   * Convert a training scenario to a normaliseAlertEvent-compatible object.
+   *
+   * KEY FIX: location_confidence:'exact' → ciGeoValidation scores 0.95.
+   * City is embedded in title/summary so ciTextMentionsCity passes for
+   * city-specific feeds like London.
    */
   function scenarioToEvent(sc) {
-    const riskNorm = String(sc.risk || 'med').toLowerCase().replace('medium','med');
+    var riskNorm = String(sc.risk || 'med').toLowerCase().replace('medium','med');
+    var city     = sc.city || '';
+
+    // Embed city in title so city-feed text-mention check passes
+    var titleWithCity = sc.title || 'Training Scenario';
+    if (city && titleWithCity.toLowerCase().indexOf(city.toLowerCase()) === -1) {
+      titleWithCity = titleWithCity + ' — ' + city;
+    }
+    var summaryWithCity = sc.summary || sc.description || '';
+    if (city && summaryWithCity.toLowerCase().indexOf(city.toLowerCase()) === -1) {
+      summaryWithCity = city + ': ' + summaryWithCity;
+    }
+
     return {
-      // identity
-      id:            sc.id,
-      _trainingId:   sc.id,
-      _isTraining:   true,
+      id:                  sc.id,
+      _trainingId:         sc.id,
+      _isTraining:         true,
 
-      // core fields
-      title:         sc.title       || 'Training Scenario',
-      summary:       sc.summary     || sc.description || '',
-      description:   sc.summary     || sc.description || '',
-      city:          sc.city        || '',
-      country:       sc.country     || '',
-      location:      sc.location    || sc.city || '',
-      risk:          riskNorm,
-      severity:      riskNorm,
-      when:          sc.when        || sc.injectedAt || new Date().toISOString(),
-      raw_time:      sc.when        || sc.injectedAt || new Date().toISOString(),
-      published_at:  sc.when        || sc.injectedAt,
-      src:           'CityIntel Training Feed',
-      source:        'CityIntel Training Feed',
-      type:          sc.categoryId  || sc.category || 'training',
-      category:      sc.category    || 'Training',
+      title:               titleWithCity,
+      summary:             summaryWithCity,
+      description:         summaryWithCity,
 
-      // training-specific metadata
-      confidence:    sc.confidence  || 'Training scenario',
-      sourceType:    'training',
-      trainingStatus: sc.status     || 'active',
+      city:                city,
+      country:             sc.country || '',
+      location:            sc.location || city,
 
-      // feed routing
-      _feedIds:      [TRAINING_FEED_ID],
-      _feedId:       TRAINING_FEED_ID,
+      risk:                riskNorm,
+      severity:            riskNorm,
 
-      // location confidence (show as explicit so operators treat it as real)
-      location_confidence: 'training',
+      // Always "now" so 3-hour freshness filter passes
+      when:                new Date().toISOString(),
+      raw_time:            new Date().toISOString(),
+      published_at:        new Date().toISOString(),
 
-      // no URL — avoids "open source" badge confusion
-      url:           '',
+      src:                 'CityIntel Training Feed',
+      source:              'CityIntel Training Feed',
+      type:                sc.categoryId  || sc.category || 'training',
+      category:            sc.category    || 'Training',
+
+      // 'exact' → ciGeoValidation confidence 0.95, bypasses all geo gates
+      location_confidence: 'exact',
+      geo_confidence:      0.95,
+      geo_confidence_label:'high',
+      geo_validated:       true,
+      geo_suspect:         false,
+
+      confidence:          sc.confidence || 'Training scenario',
+      sourceType:          'training',
+      trainingStatus:      sc.status     || 'active',
+
+      _feedIds:            [TRAINING_FEED_ID],
+      _feedId:             TRAINING_FEED_ID,
+      url:                 '',
     };
   }
 
-  /** Return only scenarios the operator should see right now */
-  function activeScenarios(all) {
-    return (all || []).filter(sc => sc.status === 'active' || sc.status === 'auto-escalated');
+  /* ─── apply hooks ────────────────────────────────────────────── */
+
+  function applyHooks() {
+    if (hooksApplied) return;
+
+    // 1) feedRegionMatchesPlace: 'training' always matches
+    if (typeof window.feedRegionMatchesPlace === 'function' && !window.__ciTrainingPlaceHooked) {
+      var _origPlace = window.feedRegionMatchesPlace;
+      window.feedRegionMatchesPlace = function(place, city) {
+        if (String(place || '').toLowerCase() === 'training') return true;
+        return _origPlace.apply(this, arguments);
+      };
+      window.__ciTrainingPlaceHooked = true;
+    }
+
+    // 2) ciGeoValidation: _isTraining events get perfect score
+    if (typeof window.ciGeoValidation === 'function' && !window.__ciTrainingGeoHooked) {
+      var _origGeo = window.ciGeoValidation;
+      window.ciGeoValidation = function(ev, feed) {
+        if (ev && ev._isTraining) {
+          return { ok:true, confidence:0.95, level:'high', reason:'training scenario', cityMention:true, sourceHint:false, exactish:true };
+        }
+        return _origGeo.apply(this, arguments);
+      };
+      window.__ciTrainingGeoHooked = true;
+    }
+
+    // 3) eventMatchesFeed: training feed id always passes
+    if (typeof window.eventMatchesFeed === 'function' && !window.__ciTrainingMatchHooked) {
+      var _origMatch = window.eventMatchesFeed;
+      window.eventMatchesFeed = function(ev, feed) {
+        if (ev && ev._isTraining && feed && feed.id === TRAINING_FEED_ID) return true;
+        return _origMatch.apply(this, arguments);
+      };
+      window.__ciTrainingMatchHooked = true;
+    }
+
+    // 4) setDisposition: capture operator responses
+    if (typeof window.setDisposition === 'function' && !window.__ciTrainingDispositionHooked) {
+      var _origDisp = window.setDisposition;
+      window.setDisposition = function(item, status, note) {
+        var result = _origDisp.apply(this, arguments);
+        if (item && item._isTraining && item._trainingId) {
+          try {
+            var who = (window.CIAuth && typeof CIAuth.who === 'function') ? (CIAuth.who() || {}) : {};
+            var op  = who.email || localStorage.getItem('ci_user_email') || 'operator';
+            var responses = [];
+            try { responses = JSON.parse(localStorage.getItem(RESPONSE_KEY) || '[]'); } catch(_){}
+            responses.unshift({ ts:Date.now(), scenarioId:item._trainingId, title:item.title||'', action:status, note:note||'', operator:op });
+            localStorage.setItem(RESPONSE_KEY, JSON.stringify(responses.slice(0,200)));
+          } catch(_){}
+        }
+        return result;
+      };
+      window.__ciTrainingDispositionHooked = true;
+    }
+
+    hooksApplied = !!(window.__ciTrainingPlaceHooked && window.__ciTrainingGeoHooked && window.__ciTrainingMatchHooked);
   }
 
-  /* ── training banner ────────────────────────────────────────── */
+  /* ─── banner ─────────────────────────────────────────────────── */
 
   function ensureBanner() {
     if (document.getElementById(BANNER_ID)) return;
-
-    const el = document.createElement('div');
+    var el = document.createElement('div');
     el.id = BANNER_ID;
-    el.setAttribute('role', 'status');
-    el.style.cssText = [
-      'position:sticky','top:0','z-index:9998',
-      'background:linear-gradient(90deg,rgba(251,191,36,.95),rgba(217,119,6,.95))',
-      'color:#0c0a00','font-size:13px','font-weight:800',
-      'padding:8px 16px','display:flex','align-items:center',
-      'gap:10px','border-bottom:2px solid rgba(0,0,0,.18)',
-    ].join(';');
-
-    el.innerHTML = `
-      <span style="font-size:16px;">🎓</span>
-      <span id="${BANNER_ID}Text">Training session active — scenarios are live in your feed.</span>
-      <span style="margin-left:auto;font-size:11px;font-weight:600;opacity:.8;">
-        TRAINING MODE — alerts below are simulated
-      </span>
-    `;
-
+    el.setAttribute('role','status');
+    el.style.cssText = 'position:sticky;top:0;z-index:9998;background:linear-gradient(90deg,rgba(251,191,36,.96),rgba(217,119,6,.96));color:#0c0a00;font-size:13px;font-weight:800;padding:8px 16px;display:none;align-items:center;gap:10px;border-bottom:2px solid rgba(0,0,0,.18);flex-wrap:wrap;';
+    el.innerHTML = '<span style="font-size:16px;">🎓</span><span id="' + BANNER_ID + 'Text">Training session active.</span><span style="margin-left:auto;font-size:11px;font-weight:600;opacity:.75;">TRAINING MODE — some alerts are simulated</span>';
     document.body.insertBefore(el, document.body.firstChild);
   }
 
   function updateBanner(count) {
-    const el = document.getElementById(BANNER_ID);
+    var el = document.getElementById(BANNER_ID);
     if (!el) return;
-    const textEl = document.getElementById(`${BANNER_ID}Text`);
-
+    var t = document.getElementById(BANNER_ID + 'Text');
     if (count > 0) {
       el.style.display = 'flex';
-      if (textEl) {
-        textEl.textContent = `Training session active — ${count} scenario${count > 1 ? 's' : ''} live in your feed.`;
-      }
+      if (t) t.textContent = 'Training session active — ' + count + ' scenario' + (count > 1 ? 's' : '') + ' live in your feed.';
     } else {
       el.style.display = 'none';
     }
   }
 
-  /* ── feed registration ──────────────────────────────────────── */
+  /* ─── feed registration ──────────────────────────────────────── */
 
-  /**
-   * Registers the training feed in the page's live feed list if not already
-   * present. Waits for `loadFeeds` / `saveFeeds` to be available (they are
-   * defined later in the main page script).
-   */
   function ensureTrainingFeedRegistered() {
     if (typeof loadFeeds !== 'function' || typeof saveFeeds !== 'function') return false;
-
-    const feeds = loadFeeds();
-    const existing = feeds.find(f => f.id === TRAINING_FEED_ID);
-    if (existing) {
+    var feeds = loadFeeds();
+    if (feeds.find(function(f){ return f.id === TRAINING_FEED_ID; })) {
       trainingFeedRegistered = true;
       return true;
     }
-
-    const def = {
+    feeds.push({
       id:           TRAINING_FEED_ID,
       displayLabel: '🎓 Training Feed',
       rawCities:    'Training Feed',
-      places:       ['Training'],
-      risks:        ['high', 'med', 'low'],
-      mock:         false,          // not random mock — controlled by admin
+      places:       ['training'],
+      risks:        ['high','med','low'],
+      mock:         false,
       useLive:      false,
       isTraining:   true,
       keywords:     [],
-    };
-
-    feeds.push(def);
+    });
     saveFeeds(feeds);
     trainingFeedRegistered = true;
     return true;
   }
 
-  /**
-   * Removes the training feed registration when there are no active scenarios.
-   * This keeps the operator's feed list clean between sessions.
-   */
-  function removeTrainingFeedIfEmpty(scenarios) {
-    if (activeScenarios(scenarios).length > 0) return;
+  function removeTrainingFeedIfEmpty(all) {
+    if (activeScenarios(all).length > 0) return;
     if (typeof loadFeeds !== 'function' || typeof saveFeeds !== 'function') return;
-
-    const feeds = loadFeeds().filter(f => f.id !== TRAINING_FEED_ID);
+    var feeds = loadFeeds().filter(function(f){ return f.id !== TRAINING_FEED_ID; });
     saveFeeds(feeds);
     trainingFeedRegistered = false;
-
-    // Remove the card from the DOM if it's there
-    const card = document.querySelector(`.feed-card[data-id="${TRAINING_FEED_ID}"]`);
+    var card = document.querySelector('.feed-card[data-id="' + TRAINING_FEED_ID + '"]');
     if (card) card.remove();
-
-    // Remove from summary map
     if (window.ciFeedSummaries) delete window.ciFeedSummaries[TRAINING_FEED_ID];
-    if (typeof window.ciUpdateMapSidebar === 'function') {
-      window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
-    }
+    if (typeof window.ciUpdateMapSidebar === 'function') window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
   }
 
-  /* ── event injection into page store / card ─────────────────── */
+  /* ─── push events into page ──────────────────────────────────── */
 
-  function pushEventsToPage(scenarios) {
-    const events = activeScenarios(scenarios).map(scenarioToEvent);
+  function pushEventsToPage(all) {
+    var active = activeScenarios(all);
+    if (!active.length) return;
 
-    if (!events.length) return;
+    var trainingFeed = { id:TRAINING_FEED_ID, isTraining:true, places:['training'], risks:['high','med','low'] };
+    var events = active.map(scenarioToEvent);
 
-    const feed = { id: TRAINING_FEED_ID, isTraining: true };
-
-    // 1) shared in-memory alert store (feeds map + queues)
+    // Shared alert store
     if (typeof ciAlertStoreMerge === 'function') {
-      try { ciAlertStoreMerge(feed, events); } catch (_) {}
+      try { ciAlertStoreMerge(trainingFeed, events); } catch(_){}
     }
 
-    // 2) archive so getEventsForFeed returns them
+    // Training feed archive
     if (typeof archiveMerge === 'function') {
-      try { archiveMerge(TRAINING_FEED_ID, events); } catch (_) {}
+      try { archiveMerge(TRAINING_FEED_ID, events); } catch(_){}
     }
 
-    // 3) render into the feed card if it exists
-    const card = document.querySelector(`.feed-card[data-id="${TRAINING_FEED_ID}"]`);
-    if (card && typeof renderEventsIntoCard === 'function') {
-      try { renderEventsIntoCard(card, events, feed); } catch (_) {}
-    }
-
-    // 4) update the map sidebar summary
-    if (typeof publishFeedSummary === 'function') {
-      try { publishFeedSummary(feed, events); } catch (_) {}
-    }
-
-    // 5) refresh global strip + queue counts
-    if (typeof recomputeGlobalStrip === 'function') {
-      try { recomputeGlobalStrip(); } catch (_) {}
-    }
-    if (typeof window.ciUpdateQueueCounts === 'function') {
-      try { window.ciUpdateQueueCounts(); } catch (_) {}
-    }
-  }
-
-  /* ── hook fetchMockEventsForFeed ────────────────────────────── */
-
-  /**
-   * The existing page calls `fetchMockEventsForFeed(feed)` for each card
-   * refresh cycle. We wrap it so that training feed cards return events
-   * from localStorage instead of the random mock generator.
-   */
-  function hookFetchMock() {
-    if (typeof window.fetchMockEventsForFeed !== 'function') return false;
-    if (window.__ciTrainingFetchHooked) return true;
-
-    const original = window.fetchMockEventsForFeed;
-    window.fetchMockEventsForFeed = async function (feed) {
-      if (feed && feed.id === TRAINING_FEED_ID) {
-        const all = loadScenarios();
-        return activeScenarios(all).map(scenarioToEvent);
-      }
-      return original.apply(this, arguments);
-    };
-
-    window.__ciTrainingFetchHooked = true;
-    return true;
-  }
-
-  /* ── operator response interception ────────────────────────── */
-
-  /**
-   * Wrap setDisposition so that when an operator acts on a training alert,
-   * the action is written to ci_training_responses_v1 for the admin to see.
-   */
-  function hookDisposition() {
-    if (typeof window.setDisposition !== 'function') return false;
-    if (window.__ciTrainingDispositionHooked) return true;
-
-    const original = window.setDisposition;
-    window.setDisposition = function (item, status, note) {
-      // Let the original run first
-      const result = original.apply(this, arguments);
-
-      // If this is a training alert, write back to the response log
-      if (item && item._isTraining && item._trainingId) {
-        try {
-          const who = (window.CIAuth && typeof CIAuth.who === 'function')
-            ? (CIAuth.who() || {})
-            : {};
-          const operatorEmail = who.email
-            || localStorage.getItem('ci_user_email')
-            || 'operator';
-
-          const responses = (() => {
-            try { return JSON.parse(localStorage.getItem(RESPONSE_KEY) || '[]'); } catch (_) { return []; }
-          })();
-
-          responses.unshift({
-            ts:          Date.now(),
-            scenarioId:  item._trainingId,
-            title:       item.title || '',
-            action:      status,
-            note:        note || '',
-            operator:    operatorEmail,
+    // Also inject into matching existing feeds (London, EMEA, etc.)
+    if (typeof loadFeeds === 'function' && typeof archiveMerge === 'function') {
+      try {
+        loadFeeds().filter(function(f){ return f.id !== TRAINING_FEED_ID; }).forEach(function(feed) {
+          var matched = events.filter(function(ev) {
+            // Risk check
+            var risks = (feed.risks || []).map(function(r){ return String(r).toLowerCase().replace('medium','med'); });
+            if (risks.length && !risks.includes(ev.risk)) return false;
+            // City check — does city appear in any of the feed's places (incl. regions)?
+            var city = (ev.city || '').toLowerCase();
+            var places = (feed.places || []).map(function(p){ return String(p).toLowerCase(); });
+            var regionCities = { emea:['london'], eu:['london'], uk:['london'], global:true };
+            return places.some(function(p) {
+              if (p === 'global' || regionCities[p] === true) return true;
+              if (Array.isArray(regionCities[p]) && regionCities[p].some(function(rc){ return city.includes(rc) || rc.includes(city); })) return true;
+              return city.includes(p) || p.includes(city);
+            });
           });
-
-          localStorage.setItem(RESPONSE_KEY, JSON.stringify(responses.slice(0, 200)));
-        } catch (_) {}
-      }
-
-      return result;
-    };
-
-    window.__ciTrainingDispositionHooked = true;
-    return true;
-  }
-
-  /* ── badge on training alerts ───────────────────────────────── */
-
-  /**
-   * Adds a small "TRAINING" pill to alert cards that originated from the
-   * training feed so operators always know what is simulated.
-   * Runs via a MutationObserver on the feeds grid.
-   */
-  function observeTrainingCards() {
-    const grid = document.getElementById('feedsGrid');
-    if (!grid) return;
-
-    const badge = `
-      <span style="
-        display:inline-flex;align-items:center;gap:4px;
-        padding:2px 8px;border-radius:999px;
-        font-size:10px;font-weight:900;letter-spacing:.06em;
-        background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.5);
-        color:#fef3c7;margin-left:6px;vertical-align:middle;
-      ">🎓 TRAINING</span>
-    `;
-
-    const markCards = () => {
-      grid.querySelectorAll('.feed-card[data-id="' + TRAINING_FEED_ID + '"]').forEach(card => {
-        // Mark the card header
-        const hdr = card.querySelector('.feed-label, .feed-title, h3, h4');
-        if (hdr && !hdr.querySelector('.ci-training-badge')) {
-          const span = document.createElement('span');
-          span.className = 'ci-training-badge';
-          span.innerHTML = badge;
-          hdr.appendChild(span);
-        }
-        // Mark each individual alert row inside the card
-        card.querySelectorAll('.event-row, .alert-row, .ci-alert-item').forEach(row => {
-          if (!row.querySelector('.ci-training-row-badge')) {
-            const span = document.createElement('span');
-            span.className = 'ci-training-row-badge';
-            span.style.cssText = 'font-size:10px;font-weight:800;color:#fef3c7;opacity:.8;margin-left:6px;';
-            span.textContent = '🎓';
-            row.prepend(span);
+          if (!matched.length) return;
+          archiveMerge(feed.id, matched);
+          var card = document.querySelector('.feed-card[data-id="' + feed.id + '"]');
+          if (card && typeof renderEventsIntoCard === 'function') {
+            var archived = typeof loadArchive === 'function' ? loadArchive(feed.id) : matched;
+            try { renderEventsIntoCard(card, archived, feed); } catch(_){}
           }
         });
-      });
-    };
+      } catch(_){}
+    }
 
-    const mo = new MutationObserver(markCards);
-    mo.observe(grid, { childList: true, subtree: true });
-    markCards(); // initial pass
+    // Render or create the dedicated Training Feed card
+    var trainingCard = document.querySelector('.feed-card[data-id="' + TRAINING_FEED_ID + '"]');
+    if (trainingCard) {
+      if (typeof renderEventsIntoCard === 'function') {
+        try { renderEventsIntoCard(trainingCard, events, trainingFeed); } catch(_){}
+      }
+    } else if (typeof renderFeeds === 'function') {
+      try { renderFeeds(); } catch(_){}
+    }
+
+    // Summary + strip + queues
+    if (typeof publishFeedSummary === 'function') try { publishFeedSummary(trainingFeed, events); } catch(_){}
+    if (typeof recomputeGlobalStrip === 'function') try { recomputeGlobalStrip(); } catch(_){}
+    if (typeof window.ciUpdateQueueCounts === 'function') try { window.ciUpdateQueueCounts(); } catch(_){}
+    if (typeof window.ciUpdateMapSidebar === 'function') try { window.ciUpdateMapSidebar(window.ciFeedSummaries || {}); } catch(_){}
   }
 
-  /* ── main poll loop ─────────────────────────────────────────── */
+  /* ─── badge training cards ────────────────────────────────────── */
+
+  function observeTrainingCards() {
+    var grid = document.getElementById('feedsGrid');
+    if (!grid) return;
+    var css = 'display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:900;background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.5);color:#fef3c7;margin-left:6px;vertical-align:middle;white-space:nowrap;';
+    function markCards() {
+      grid.querySelectorAll('.feed-card[data-id="' + TRAINING_FEED_ID + '"]').forEach(function(card) {
+        var hdr = card.querySelector('.feed-city');
+        if (hdr && !hdr.querySelector('.ci-training-badge')) {
+          var span = document.createElement('span');
+          span.className = 'ci-training-badge';
+          span.style.cssText = css;
+          span.textContent = '🎓 TRAINING';
+          hdr.appendChild(span);
+        }
+      });
+    }
+    new MutationObserver(markCards).observe(grid, { childList:true, subtree:true });
+    markCards();
+  }
+
+  /* ─── main poll loop ─────────────────────────────────────────── */
 
   function tick() {
-    const all = loadScenarios();
-    const active = activeScenarios(all);
-    const count = active.length;
+    applyHooks();
 
-    // Update banner
+    var all    = loadScenarios();
+    var active = activeScenarios(all);
+    var count  = active.length;
+
     ensureBanner();
     updateBanner(count);
 
     if (count === 0) {
       removeTrainingFeedIfEmpty(all);
+      lastScenarioHash = '';
       return;
     }
 
-    // Register feed if needed
-    if (!trainingFeedRegistered) {
-      ensureTrainingFeedRegistered();
-    }
+    if (!trainingFeedRegistered) ensureTrainingFeedRegistered();
 
-    // Hook functions (they may not exist until DOMContentLoaded fires)
-    hookFetchMock();
-    hookDisposition();
-
-    // Only push to store / re-render when count changed (or first run)
-    if (count !== lastScenarioCount) {
-      lastScenarioCount = count;
+    var hash = scenarioHash(active);
+    if (hash !== lastScenarioHash) {
+      lastScenarioHash = hash;
       pushEventsToPage(all);
-      if (typeof window.ciRefreshMapSidebarFeeds === 'function') {
-        try { window.ciRefreshMapSidebarFeeds(); } catch (_) {}
-      }
     }
   }
 
-  /* ── init ───────────────────────────────────────────────────── */
+  /* ─── init ───────────────────────────────────────────────────── */
 
   function init() {
-    // Run immediately and start polling
     tick();
     setInterval(tick, POLL_MS);
-
-    // Start observing for training card badges
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', observeTrainingCards);
     } else {
@@ -13270,22 +13200,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Delay init slightly so the main page scripts are all parsed
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 300));
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(init, 400); });
   } else {
-    setTimeout(init, 300);
+    setTimeout(init, 400);
   }
 
-  // Expose for debugging
-  window.CITrainingFeed = {
-    loadScenarios,
-    activeScenarios: () => activeScenarios(loadScenarios()),
-    refresh: tick,
-    feedId: TRAINING_FEED_ID,
-  };
+  window.CITrainingFeed = { loadScenarios:loadScenarios, active:function(){ return activeScenarios(loadScenarios()); }, refresh:tick, feedId:TRAINING_FEED_ID };
 
 })();
+</script>
+
 
 	  
 </body>
