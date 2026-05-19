@@ -906,14 +906,37 @@
 
 <script>
 /* ====================================================
-   TRAINING SCENARIO ADMIN — CityIntel
-   Injects training alerts into the shared localStorage
-   keys that the live-alerts page reads from.
+   TRAINING SCENARIO ADMIN — CityIntel (v2 — D1 backend)
+   Primary: Cloudflare Worker API + D1
+   Fallback: localStorage (same-device / offline)
    ==================================================== */
 
-const STORAGE_KEY   = 'ci_training_scenarios_v1';
-const RESPONSE_KEY  = 'ci_training_responses_v1';
-const SESSION_KEY   = 'ci_training_session_v1';
+const API_ORIGIN  = 'https://api.cityintelapi.com';
+
+function apiHeaders() {
+  const h = { 'Content-Type': 'application/json' };
+  try {
+    const who = (window.CIAuth && typeof CIAuth.who === 'function') ? (CIAuth.who() || {}) : {};
+    const email = who.email || localStorage.getItem('ci_user_email') || '';
+    const name  = who.name  || localStorage.getItem('ci_user_name')  || '';
+    if (email) h['X-User-Email'] = email;
+    if (name)  h['X-User-Name']  = name;
+    const roleKey = who.roleKey || who.role_key || '';
+    if (roleKey) h['X-User-Role-Key'] = roleKey;
+    const token = localStorage.getItem('ci_admin_token') || '';
+    if (token) h['X-Admin-Token'] = token;
+  } catch(_) {}
+  return h;
+}
+
+async function apiFetch(path, options) {
+  const res = await fetch(API_ORIGIN + path, { ...options, headers: apiHeaders() });
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json || json.ok === false) {
+    throw new Error((json && (json.error || json.message)) || `API error ${res.status}`);
+  }
+  return json;
+}
 
 // ---- CATEGORIES ----
 const CATEGORIES = [
@@ -934,62 +957,44 @@ const CATEGORIES = [
 // ---- PRESETS ----
 const PRESETS = [
   {
-    emoji: '✊',
-    title: 'Protest outside Parliament Square',
-    city: 'London', country: 'United Kingdom',
-    risk: 'med', category: 'civil_unrest',
-    location: 'Parliament Square, Westminster',
-    confidence: 'Open source report',
+    emoji: '✊', title: 'Protest outside Parliament Square',
+    city: 'London', country: 'United Kingdom', risk: 'med', category: 'civil_unrest',
+    location: 'Parliament Square, Westminster', confidence: 'Open source report',
     summary: 'Large-scale protest estimated at 2,000–5,000 demonstrators has closed several roads around Parliament Square. Police are managing crowd flow. Nearby businesses reporting disruption. Metro exits at Westminster are congested.',
     expectedResponse: 'Check for travellers in Westminster. Monitor nearby assets. Escalate if protest turns violent.',
   },
   {
-    emoji: '💥',
-    title: 'Explosion reported near financial district',
-    city: 'Frankfurt', country: 'Germany',
-    risk: 'high', category: 'terrorism',
-    location: 'Kaiserstraße, Frankfurt am Main',
-    confidence: 'Unverified report',
+    emoji: '💥', title: 'Explosion reported near financial district',
+    city: 'Frankfurt', country: 'Germany', risk: 'high', category: 'terrorism',
+    location: 'Kaiserstraße, Frankfurt am Main', confidence: 'Unverified report',
     summary: 'Unverified reports of an explosion heard near the main financial district. Emergency services en route. Police have requested area be cleared within a 500m radius. Cause unknown at this time.',
     expectedResponse: 'Immediate escalation required. Notify duty manager. Check all travellers and assets within 2km of Frankfurt CBD. Do not clear until cause confirmed.',
   },
   {
-    emoji: '🌪',
-    title: 'Severe storm warning — coastal flooding risk',
-    city: 'Miami', country: 'United States',
-    risk: 'high', category: 'natural',
-    location: 'Miami-Dade County coastline',
-    confidence: 'Trusted source',
+    emoji: '🌪', title: 'Severe storm warning — coastal flooding risk',
+    city: 'Miami', country: 'United States', risk: 'high', category: 'natural',
+    location: 'Miami-Dade County coastline', confidence: 'Trusted source',
     summary: 'National Hurricane Center has issued a severe weather warning for Miami-Dade County. Storm surge of up to 4ft expected. Evacuation orders in place for Zone A and Zone B. Airports operating on reduced schedules.',
     expectedResponse: 'Escalate. Contact all travellers in Miami area. Check for asset exposure along coast. Advise against non-essential travel.',
   },
   {
-    emoji: '🔫',
-    title: 'Armed robbery — city centre hotel',
-    city: 'Johannesburg', country: 'South Africa',
-    risk: 'high', category: 'crime',
-    location: 'Sandton City, Johannesburg',
-    confidence: 'Operator observed',
+    emoji: '🔫', title: 'Armed robbery — city centre hotel',
+    city: 'Johannesburg', country: 'South Africa', risk: 'high', category: 'crime',
+    location: 'Sandton City, Johannesburg', confidence: 'Operator observed',
     summary: 'Reports of an armed robbery at a hotel in the Sandton City area. South African Police Service on scene. The incident occurred at approximately 22:00 local time. One guest reportedly injured. Police have secured the building.',
     expectedResponse: 'Check traveller roster for anyone staying in Sandton City hotels. Escalate if any organisation personnel are affected. Monitor for further reports.',
   },
   {
-    emoji: '⚡',
-    title: 'Major power outage — eastern grid',
-    city: 'Toronto', country: 'Canada',
-    risk: 'med', category: 'infrastructure',
-    location: 'Eastern Ontario, Toronto metro',
-    confidence: 'Trusted source',
+    emoji: '⚡', title: 'Major power outage — eastern grid',
+    city: 'Toronto', country: 'Canada', risk: 'med', category: 'infrastructure',
+    location: 'Eastern Ontario, Toronto metro', confidence: 'Trusted source',
     summary: 'Widespread power outage affecting approximately 180,000 homes and businesses in eastern Toronto and parts of Ontario. Cause under investigation. Toronto Pearson airport is operating on backup power. Estimated restoration time: unknown.',
     expectedResponse: 'Monitor. Check any assets or travellers at Toronto Pearson. Note impact on business continuity if any assets operate in affected area.',
   },
   {
-    emoji: '💻',
-    title: 'Critical infrastructure cyber attack',
-    city: 'Brussels', country: 'Belgium',
-    risk: 'high', category: 'cyber',
-    location: 'Brussels Government Quarter',
-    confidence: 'Open source report',
+    emoji: '💻', title: 'Critical infrastructure cyber attack',
+    city: 'Brussels', country: 'Belgium', risk: 'high', category: 'cyber',
+    location: 'Brussels Government Quarter', confidence: 'Open source report',
     summary: 'Multiple EU and Belgian government agencies reporting coordinated cyberattack targeting communications infrastructure. NATO Cyber Defence Centre has been placed on elevated alert. No confirmed data breach yet but systems taken offline as precaution.',
     expectedResponse: 'Escalate. Flag to leadership. Assess whether any organisation systems interface with affected Belgian infrastructure. Monitor NATO communications.',
   },
@@ -999,18 +1004,19 @@ const PRESETS = [
 let selectedRisk = 'high';
 let selectedCategory = '';
 let selectedPreset = -1;
-let scenarios = loadScenarios();
-let responses = loadResponses();
+let scenarios = [];
 let sessionStartTime = null;
 let sessionTimerInterval = null;
 let confirmCallback = null;
+let lastResponsePoll = '';
 
 // ---- INIT ----
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   buildCategories();
   buildPresets();
   setDefaultDateTime();
   setRisk('high');
+  await refreshScenariosFromApi();
   renderFeedLog();
   renderStats();
   updateStatusBar();
@@ -1068,12 +1074,10 @@ function buildPresets() {
 function applyPreset(idx) {
   const p = PRESETS[idx];
   if (!p) return;
-
   selectedPreset = idx;
   document.querySelectorAll('.scenario-item').forEach((el, i) =>
     el.classList.toggle('selected', i === idx)
   );
-
   document.getElementById('scTitle').value = p.title;
   document.getElementById('scCity').value = p.city;
   document.getElementById('scCountry').value = p.country;
@@ -1081,7 +1085,6 @@ function applyPreset(idx) {
   document.getElementById('scConfidence').value = p.confidence;
   document.getElementById('scSummary').value = p.summary;
   document.getElementById('scExpectedResponse').value = p.expectedResponse;
-
   setRisk(p.risk);
   setCategory(p.category);
   setDefaultDateTime();
@@ -1107,34 +1110,25 @@ function injectScenario() {
   if (!selectedCategory) { toast('⚠️ Please select an incident category', 'warn'); return; }
 
   const catInfo = CATEGORIES.find(c => c.id === selectedCategory);
-
   const scenario = {
     id: `training_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-    title,
-    city,
-    country,
-    location,
-    risk: selectedRisk,
+    title, city, country, location, risk: selectedRisk,
     category: catInfo ? catInfo.label : selectedCategory,
     categoryId: selectedCategory,
+    category_id: selectedCategory,
     categoryEmoji: catInfo ? catInfo.emoji : '📋',
-    confidence,
-    summary,
-    expectedResponse,
-    when,
-    injectedAt: new Date().toISOString(),
+    category_emoji: catInfo ? catInfo.emoji : '📋',
+    confidence, summary, expectedResponse,
+    expected_response: expectedResponse,
+    when, injectedAt: new Date().toISOString(),
+    injected_at: new Date().toISOString(),
     autoEscalateAfterMin: autoEscalate,
-    delaySeconds: delay,
-    src: 'CityIntel Training Feed',
-    sourceType: 'training',
-    status: 'active',
-    operatorResponse: null,
-    // Match the schema used by live-alerts.html normaliseAlertEvent
-    description: summary,
-    type: selectedCategory,
+    auto_escalate_min: autoEscalate,
+    src: 'CityIntel Training Feed', sourceType: 'training',
+    status: 'active', operatorResponse: null,
+    description: summary, type: selectedCategory,
   };
 
-  // Handle delay
   if (delay > 0) {
     toast(`⏳ Scenario will appear in ${delay}s…`, 'warn');
     setTimeout(() => doInject(scenario), delay * 1000);
@@ -1142,134 +1136,147 @@ function injectScenario() {
     doInject(scenario);
   }
 
-  // Start session timer if not already running
-  if (!sessionStartTime) {
-    sessionStartTime = Date.now();
-    startSessionTimer();
-  }
+  if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function doInject(scenario) {
-  scenarios.push(scenario);
-  saveScenarios(scenarios);
+async function doInject(scenario) {
+  // 1) POST to D1 via API
+  try {
+    const res = await apiFetch('/api/org/training-scenarios', {
+      method: 'POST',
+      body: JSON.stringify(scenario),
+    });
+    if (res.ids && res.ids[0]) scenario.id = res.ids[0];
+  } catch(e) {
+    console.warn('CityIntel training: API inject failed, falling back to localStorage', e);
+  }
 
-  // Also inject into the shared alerts store so operators see it
+  // 2) Always write to localStorage for same-device operator visibility
   pushToOperatorFeed(scenario);
 
+  // 3) Refresh from API and re-render
+  await refreshScenariosFromApi();
   renderFeedLog();
   renderStats();
   updateStatusBar();
-
   toast(`✅ Injected: "${scenario.title.slice(0, 40)}${scenario.title.length > 40 ? '…' : ''}"`, 'success');
 
-  // Auto-escalate timer
   if (scenario.autoEscalateAfterMin > 0) {
-    setTimeout(() => {
-      autoEscalateScenario(scenario.id);
-    }, scenario.autoEscalateAfterMin * 60 * 1000);
+    setTimeout(() => autoEscalateScenario(scenario.id), scenario.autoEscalateAfterMin * 60 * 1000);
   }
 }
 
 function pushToOperatorFeed(scenario) {
-  // Write to localStorage key(s) that live-alerts.html polls
-  // ci_training_scenarios_v1 is read by the operator's live feed via a shim
-  // Also write to ci_manual_alerts_v1 as a secondary injection point
-
   try {
     const adminKey = 'ci_admin_training_feed';
     let existing = [];
     try { existing = JSON.parse(localStorage.getItem(adminKey) || '[]'); } catch(_) {}
     existing.unshift(scenario);
-    // Keep max 100
-    existing = existing.slice(0, 100);
-    localStorage.setItem(adminKey, JSON.stringify(existing));
-  } catch(e) {
-    console.warn('CityIntel training: could not write to operator feed', e);
-  }
+    localStorage.setItem(adminKey, JSON.stringify(existing.slice(0, 100)));
+  } catch(e) {}
 }
 
 // ---- AUTO-ESCALATE ----
-function autoEscalateScenario(id) {
+async function autoEscalateScenario(id) {
   const sc = scenarios.find(s => s.id === id);
   if (!sc || sc.status !== 'active') return;
-  sc.status = 'auto-escalated';
-  saveScenarios(scenarios);
+  try {
+    await apiFetch('/api/org/training-scenarios', { method: 'PUT', body: JSON.stringify({ id, status: 'auto-escalated' }) });
+  } catch(e) { console.warn('autoEscalate API failed', e); }
+  await refreshScenariosFromApi();
   renderFeedLog();
-  logResponse(`⚡ Auto-escalated: "${sc.title.slice(0,40)}"`, 'resp-escalate');
-  toast(`⚡ Auto-escalated scenario: ${sc.title.slice(0,35)}…`, 'warn');
+  logResponse(`⚡ Auto-escalated: "${esc((sc.title||'').slice(0,40))}"`, 'resp-escalate');
+  toast(`⚡ Auto-escalated: ${(sc.title||'').slice(0,35)}…`, 'warn');
 }
 
 // ---- MANUAL ACTIONS ----
-function escalateScenario(id) {
+async function escalateScenario(id) {
   const sc = scenarios.find(s => s.id === id);
   if (!sc) return;
-  sc.status = 'escalated';
-  sc.operatorResponse = 'escalated';
-  saveScenarios(scenarios);
-  renderFeedLog();
-  renderStats();
-  logResponse(`🔴 Admin escalated: "${sc.title.slice(0,40)}"`, 'resp-escalate');
+  try {
+    await apiFetch('/api/org/training-scenarios', { method: 'PUT', body: JSON.stringify({ id, status: 'escalated' }) });
+  } catch(e) { console.warn('escalate API failed', e); }
+  updateLocalFeedStatus(id, 'escalated');
+  await refreshScenariosFromApi();
+  renderFeedLog(); renderStats();
+  logResponse(`🔴 Admin escalated: "${esc((sc.title||'').slice(0,40))}"`, 'resp-escalate');
   toast('Scenario marked escalated', 'success');
 }
 
-function clearScenario(id) {
+async function clearScenario(id) {
   const sc = scenarios.find(s => s.id === id);
   if (!sc) return;
-  sc.status = 'cleared';
-  saveScenarios(scenarios);
-  renderFeedLog();
-  renderStats();
-  updateStatusBar();
-  logResponse(`✅ Cleared: "${sc.title.slice(0,40)}"`, 'resp-clear');
+  try {
+    await apiFetch('/api/org/training-scenarios', { method: 'PUT', body: JSON.stringify({ id, status: 'cleared' }) });
+  } catch(e) { console.warn('clear API failed', e); }
+  updateLocalFeedStatus(id, 'cleared');
+  await refreshScenariosFromApi();
+  renderFeedLog(); renderStats(); updateStatusBar();
+  logResponse(`✅ Cleared: "${esc((sc.title||'').slice(0,40))}"`, 'resp-clear');
   toast('Scenario cleared', 'success');
 }
 
-function deleteScenario(id) {
-  scenarios = scenarios.filter(s => s.id !== id);
-  saveScenarios(scenarios);
-  renderFeedLog();
-  renderStats();
-  updateStatusBar();
+async function deleteScenario(id) {
+  try {
+    await apiFetch('/api/org/training-scenarios?id=' + encodeURIComponent(id), { method: 'DELETE' });
+  } catch(e) { console.warn('delete API failed', e); }
+  removeFromLocalFeed(id);
+  await refreshScenariosFromApi();
+  renderFeedLog(); renderStats(); updateStatusBar();
+}
+
+function updateLocalFeedStatus(id, status) {
+  try {
+    const key = 'ci_admin_training_feed';
+    let feed = JSON.parse(localStorage.getItem(key) || '[]');
+    feed = feed.map(sc => sc.id === id ? { ...sc, status } : sc);
+    localStorage.setItem(key, JSON.stringify(feed));
+  } catch(_) {}
+}
+
+function removeFromLocalFeed(id) {
+  try {
+    const key = 'ci_admin_training_feed';
+    let feed = JSON.parse(localStorage.getItem(key) || '[]');
+    localStorage.setItem(key, JSON.stringify(feed.filter(sc => sc.id !== id)));
+  } catch(_) {}
 }
 
 // ---- RENDER FEED LOG ----
 function renderFeedLog() {
   const log = document.getElementById('feedLog');
-  const empty = document.getElementById('logEmpty');
-
   if (!scenarios.length) {
-    if (empty) empty.style.display = '';
     log.innerHTML = '<div class="log-empty" id="logEmpty">No scenarios injected yet. Build one on the left and click inject.</div>';
     return;
   }
-
-  // Show active first, then rest
   const sorted = [...scenarios].sort((a,b) => {
     const ord = { active: 0, 'auto-escalated': 1, escalated: 2, pending: 3, cleared: 4 };
     return (ord[a.status] ?? 5) - (ord[b.status] ?? 5);
   });
-
   log.innerHTML = sorted.map(sc => {
     const statusCls = sc.status === 'active' ? 'log-active' : sc.status === 'cleared' ? 'log-cleared' : 'log-pending';
     const dot = sc.status === 'active' ? '<span class="status-dot active"></span>'
               : sc.status === 'cleared' ? '<span class="status-dot"></span>'
               : '<span class="status-dot pending"></span>';
-    const statusLabel = sc.status.replace('-', ' ');
+    const statusLabel = (sc.status || '').replace('-', ' ');
     const risk = sc.risk === 'high' ? '#ff5a5f' : sc.risk === 'med' ? '#f0b429' : '#33c48d';
-
+    const catEmoji = sc.categoryEmoji || sc.category_emoji || '📋';
+    const catLabel = sc.category || '';
+    const injTime  = sc.injectedAt  || sc.injected_at || '';
+    const expResp  = sc.expectedResponse || sc.expected_response || '';
     return `
       <div class="log-item ${statusCls}">
         <div class="log-head">
           <div class="log-title">${esc(sc.title)}</div>
-          <div class="log-time">${formatTime(sc.injectedAt)}</div>
+          <div class="log-time">${formatTime(injTime)}</div>
         </div>
         <div class="log-meta">
-          ${dot} <span style="color:${risk};font-weight:700;">${sc.risk.toUpperCase()}</span>
-          · ${esc(sc.categoryEmoji)} ${esc(sc.category)}
+          ${dot} <span style="color:${risk};font-weight:700;">${(sc.risk||'').toUpperCase()}</span>
+          · ${esc(catEmoji)} ${esc(catLabel)}
           · ${esc(sc.city)}
           · <span style="text-transform:capitalize;">${statusLabel}</span>
         </div>
-        ${sc.expectedResponse ? `<div class="log-meta" style="margin-top:4px;font-style:italic;opacity:.75;">Expected: ${esc(sc.expectedResponse.slice(0,80))}${sc.expectedResponse.length > 80 ? '…' : ''}</div>` : ''}
+        ${expResp ? `<div class="log-meta" style="margin-top:4px;font-style:italic;opacity:.75;">Expected: ${esc(expResp.slice(0,80))}${expResp.length > 80 ? '…' : ''}</div>` : ''}
         <div class="log-actions">
           ${sc.status !== 'escalated' && sc.status !== 'cleared' ? `<button class="log-action-btn escalate" onclick="escalateScenario('${sc.id}')">Escalate</button>` : ''}
           ${sc.status !== 'cleared' ? `<button class="log-action-btn clear" onclick="clearScenario('${sc.id}')">Clear</button>` : ''}
@@ -1282,25 +1289,23 @@ function renderFeedLog() {
 
 // ---- STATS ----
 function renderStats() {
-  const active = scenarios.filter(s => s.status === 'active').length;
-  const total = scenarios.length;
+  const active    = scenarios.filter(s => s.status === 'active').length;
+  const total     = scenarios.length;
   const responded = scenarios.filter(s => s.operatorResponse || s.status === 'escalated').length;
-  const cleared = scenarios.filter(s => s.status === 'cleared').length;
-
-  document.getElementById('statActive').textContent = active;
-  document.getElementById('statTotal').textContent = total;
+  const cleared   = scenarios.filter(s => s.status === 'cleared').length;
+  document.getElementById('statActive').textContent    = active;
+  document.getElementById('statTotal').textContent     = total;
   document.getElementById('statResponded').textContent = responded;
-  document.getElementById('statCleared').textContent = cleared;
+  document.getElementById('statCleared').textContent   = cleared;
 }
 
 // ---- STATUS BAR ----
 function updateStatusBar() {
-  const bar = document.getElementById('trainingStatusBar');
-  const active = scenarios.filter(s => s.status === 'active').length;
+  const bar     = document.getElementById('trainingStatusBar');
+  const active  = scenarios.filter(s => s.status === 'active').length;
   const titleEl = bar.querySelector('.training-status-title');
-  const subEl = bar.querySelector('.training-status-sub');
-  const iconEl = bar.querySelector('.training-status-icon');
-
+  const subEl   = bar.querySelector('.training-status-sub');
+  const iconEl  = bar.querySelector('.training-status-icon');
   if (active > 0) {
     iconEl.textContent = '🟢';
     titleEl.textContent = `Training session active — ${active} scenario${active > 1 ? 's' : ''} live`;
@@ -1345,55 +1350,68 @@ function stopSessionTimer() {
 }
 
 // ---- OPERATOR RESPONSE LISTENER ----
-// Polls localStorage for any responses operators may have made
 function listenForOperatorResponses() {
-  const respKey = 'ci_training_responses_v1';
-  let lastSeen = 0;
-
-  setInterval(() => {
+  // Poll API every 5s; fall back to localStorage if API unavailable
+  setInterval(async () => {
     try {
-      const raw = localStorage.getItem(respKey);
-      if (!raw) return;
-      const all = JSON.parse(raw);
-      const newEntries = all.filter(r => (r.ts || 0) > lastSeen);
-      if (!newEntries.length) return;
-      lastSeen = Math.max(...newEntries.map(r => r.ts || 0));
-      newEntries.forEach(entry => {
-        const sc = scenarios.find(s => s.id === entry.scenarioId);
+      const path = '/api/org/training-scenarios/responses' +
+        (lastResponsePoll ? '?since=' + encodeURIComponent(lastResponsePoll) : '');
+      const res = await apiFetch(path);
+      const entries = Array.isArray(res.data) ? res.data : [];
+      if (!entries.length) return;
+      const newest = entries.reduce((max, r) => {
+        const t = r.responded_at || r.created_at || '';
+        return t > max ? t : max;
+      }, lastResponsePoll);
+      lastResponsePoll = newest;
+      entries.forEach(entry => {
+        const sc = scenarios.find(s => s.id === (entry.scenario_id || entry.scenarioId));
         if (sc) {
           sc.operatorResponse = entry.action;
-          sc.status = entry.action === 'escalated' ? 'escalated'
-                    : entry.action === 'cleared' ? 'cleared'
-                    : sc.status;
+          if (entry.action === 'escalated') sc.status = 'escalated';
+          else if (entry.action === 'cleared') sc.status = 'cleared';
         }
         const cls = entry.action === 'escalated' ? 'resp-escalate'
-                  : entry.action === 'cleared' ? 'resp-clear'
+                  : entry.action === 'cleared'   ? 'resp-clear'
                   : entry.action === 'monitoring' ? 'resp-monitor' : 'resp-note';
-        logResponse(`👤 Operator ${esc(entry.operator || 'Unknown')} → ${entry.action} on "${esc((entry.title || '').slice(0,40))}"`, cls, entry.ts);
+        logResponse(
+          `👤 ${esc(entry.operator_name || entry.operator_email || 'Operator')} → ${entry.action} on "${esc((entry.scenario_title || entry.title || '').slice(0,40))}"`,
+          cls, entry.responded_at
+        );
       });
-      saveScenarios(scenarios);
-      renderFeedLog();
-      renderStats();
-      updateStatusBar();
-    } catch(_) {}
-  }, 2000);
+      renderFeedLog(); renderStats(); updateStatusBar();
+    } catch(_) {
+      pollLocalStorageResponses();
+    }
+  }, 5000);
 }
 
-// ---- RESPONSE LOG ----
-function logResponse(html, cls, ts) {
-  const log = document.getElementById('responseLog');
-  const placeholder = log.querySelector('div:first-child');
-  if (placeholder && placeholder.style.color) placeholder.remove();
-
-  const entry = document.createElement('div');
-  entry.className = `response-entry ${cls || ''}`;
-  entry.innerHTML = `<span class="response-time">${formatTime(ts ? new Date(ts).toISOString() : new Date().toISOString())}</span>${html}`;
-  log.insertBefore(entry, log.firstChild);
-}
-
-function clearResponseLog() {
-  document.getElementById('responseLog').innerHTML =
-    '<div style="font-size:12px;color:var(--muted);padding:8px 0;">Waiting for operator responses…</div>';
+function pollLocalStorageResponses() {
+  try {
+    const raw = localStorage.getItem('ci_training_responses_v1');
+    if (!raw) return;
+    const all = JSON.parse(raw);
+    const cutoff = lastResponsePoll ? new Date(lastResponsePoll).getTime() : 0;
+    const newEntries = all.filter(r => (r.ts || 0) > cutoff);
+    if (!newEntries.length) return;
+    lastResponsePoll = new Date(Math.max(...newEntries.map(r => r.ts || 0))).toISOString();
+    newEntries.forEach(entry => {
+      const sc = scenarios.find(s => s.id === entry.scenarioId);
+      if (sc) {
+        sc.operatorResponse = entry.action;
+        if (entry.action === 'escalated') sc.status = 'escalated';
+        else if (entry.action === 'cleared') sc.status = 'cleared';
+      }
+      const cls = entry.action === 'escalated' ? 'resp-escalate'
+                : entry.action === 'cleared'   ? 'resp-clear'
+                : entry.action === 'monitoring' ? 'resp-monitor' : 'resp-note';
+      logResponse(
+        `👤 ${esc(entry.operator || 'Operator')} → ${entry.action} on "${esc((entry.title || '').slice(0,40))}"`,
+        cls, new Date(entry.ts || Date.now()).toISOString()
+      );
+    });
+    renderFeedLog(); renderStats(); updateStatusBar();
+  } catch(_) {}
 }
 
 // ---- END SESSION ----
@@ -1401,13 +1419,15 @@ document.getElementById('btnEndSession').addEventListener('click', () => {
   showConfirm(
     'End training session?',
     'This will clear all active scenarios from the operator feed. Cleared scenarios will remain in the log.',
-    () => {
-      scenarios = scenarios.map(s => s.status === 'active' ? { ...s, status: 'cleared' } : s);
-      saveScenarios(scenarios);
-      renderFeedLog();
-      renderStats();
-      updateStatusBar();
-      stopSessionTimer();
+    async () => {
+      for (const sc of scenarios.filter(s => s.status === 'active')) {
+        try {
+          await apiFetch('/api/org/training-scenarios', { method: 'PUT', body: JSON.stringify({ id: sc.id, status: 'cleared' }) });
+          updateLocalFeedStatus(sc.id, 'cleared');
+        } catch(e) { sc.status = 'cleared'; }
+      }
+      await refreshScenariosFromApi();
+      renderFeedLog(); renderStats(); updateStatusBar(); stopSessionTimer();
       toast('Session ended — all active scenarios cleared', 'success');
     }
   );
@@ -1418,28 +1438,75 @@ document.getElementById('btnClearAll').addEventListener('click', () => {
   showConfirm(
     'Clear all scenarios?',
     'This will permanently remove all scenarios from the training log and operator feed.',
-    () => {
+    async () => {
+      for (const sc of scenarios) {
+        try { await apiFetch('/api/org/training-scenarios?id=' + encodeURIComponent(sc.id), { method: 'DELETE' }); } catch(e) {}
+      }
       scenarios = [];
-      saveScenarios(scenarios);
-      localStorage.removeItem('ci_admin_training_feed');
-      renderFeedLog();
-      renderStats();
-      updateStatusBar();
-      stopSessionTimer();
+      try { localStorage.removeItem('ci_admin_training_feed'); localStorage.removeItem('ci_training_scenarios_v1'); } catch(_) {}
+      renderFeedLog(); renderStats(); updateStatusBar(); stopSessionTimer();
       toast('All scenarios cleared', 'success');
     }
   );
 });
 
-// ---- PERSISTENCE ----
-function loadScenarios() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(_) { return []; }
+// ---- API REFRESH ----
+async function refreshScenariosFromApi() {
+  try {
+    const res = await apiFetch('/api/org/training-scenarios');
+    const apiRows = Array.isArray(res.data) ? res.data : [];
+    scenarios = apiRows.map(r => ({
+      id: r.id, title: r.title || '', city: r.city || '', country: r.country || '',
+      location: r.location || '', risk: r.risk || 'med',
+      category: r.category || '', categoryId: r.category_id || '',
+      categoryEmoji: r.category_emoji || '📋', summary: r.summary || '',
+      confidence: r.confidence || '', expectedResponse: r.expected_response || '',
+      autoEscalateAfterMin: Number(r.auto_escalate_min || 0),
+      status: r.status || 'active', operatorResponse: null,
+      injectedAt: r.injected_at || r.created_at || '',
+      src: 'CityIntel Training Feed', sourceType: 'training', description: r.summary || '',
+    }));
+    saveLocalScenarios(scenarios);
+    return scenarios;
+  } catch(e) {
+    console.warn('CityIntel training: API unavailable, using localStorage fallback', e);
+    scenarios = loadLocalScenarios();
+    return scenarios;
+  }
 }
-function saveScenarios(list) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch(_) {}
+
+function loadLocalScenarios() {
+  try { return JSON.parse(localStorage.getItem('ci_training_scenarios_v1') || '[]'); } catch(_) { return []; }
 }
+function saveLocalScenarios(list) {
+  try { localStorage.setItem('ci_training_scenarios_v1', JSON.stringify(list)); } catch(_) {}
+  try {
+    const active = list.filter(s => s.status === 'active' || s.status === 'auto-escalated');
+    localStorage.setItem('ci_admin_training_feed', JSON.stringify(active));
+  } catch(_) {}
+}
+
+// Legacy compat (kept so older shim still works if not yet updated)
+function loadScenarios() { return loadLocalScenarios(); }
+function saveScenarios(list) { saveLocalScenarios(list); }
 function loadResponses() {
-  try { return JSON.parse(localStorage.getItem(RESPONSE_KEY) || '[]'); } catch(_) { return []; }
+  try { return JSON.parse(localStorage.getItem('ci_training_responses_v1') || '[]'); } catch(_) { return []; }
+}
+
+// ---- RESPONSE LOG ----
+function logResponse(html, cls, ts) {
+  const log = document.getElementById('responseLog');
+  const placeholder = log.querySelector('div:first-child');
+  if (placeholder && !placeholder.className.includes('response-entry')) placeholder.remove();
+  const entry = document.createElement('div');
+  entry.className = `response-entry ${cls || ''}`;
+  entry.innerHTML = `<span class="response-time">${formatTime(typeof ts === 'string' ? ts : new Date(ts || Date.now()).toISOString())}</span>${html}`;
+  log.insertBefore(entry, log.firstChild);
+}
+
+function clearResponseLog() {
+  document.getElementById('responseLog').innerHTML =
+    '<div style="font-size:12px;color:var(--muted);padding:8px 0;">Waiting for operator responses…</div>';
 }
 
 // ---- MODAL ----
@@ -1483,6 +1550,7 @@ function formatTime(iso) {
 }
 
 </script>
+
 
 <script>
 // Inject user chip into topActions (matches live-alerts.html pattern)
