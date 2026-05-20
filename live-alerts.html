@@ -2681,8 +2681,9 @@ padding-bottom: 12px;
 .queue-action-row{
   display:flex;
   justify-content:flex-end;
-  gap:8px;
+  gap:6px;
   margin:0 0 10px;
+  flex-wrap:wrap;
 }
 .btn-danger-small{
   border:1px solid rgba(248,113,113,.55);
@@ -2699,6 +2700,33 @@ padding-bottom: 12px;
   border-color:rgba(248,113,113,.85);
   color:#fff;
 }
+/* Bulk action buttons — matching pill style with status colours */
+.btn-bulk-action {
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-bulk-escalate {
+  border:1px solid rgba(248,113,113,.55);
+  background:rgba(127,29,29,.28);
+  color:#fecaca;
+}
+.btn-bulk-escalate:hover { background:rgba(127,29,29,.48); border-color:rgba(248,113,113,.85); color:#fff; }
+.btn-bulk-monitor {
+  border:1px solid rgba(251,191,36,.45);
+  background:rgba(120,80,0,.25);
+  color:#fde68a;
+}
+.btn-bulk-monitor:hover { background:rgba(120,80,0,.45); border-color:rgba(251,191,36,.85); color:#fff; }
+.btn-bulk-clear {
+  border:1px solid rgba(52,211,153,.45);
+  background:rgba(6,78,59,.25);
+  color:#6ee7b7;
+}
+.btn-bulk-clear:hover { background:rgba(6,78,59,.45); border-color:rgba(52,211,153,.85); color:#fff; }
 .map-alert-delete{
   margin-left:auto;
   width:24px;
@@ -5084,25 +5112,26 @@ function ciGeoValidation(ev, feed){
   const weakFeedContext = locConf.includes('feed context') || locConf.includes('city inferred') || locConf === 'unknown';
   const regionFeed = ciFeedHasOnlyRegionPlaces(feed);
 
-  let confidence = exactish ? 0.95 : 0.35;
+  let confidence = exactish ? 0.95 : 0.42;  // raised from 0.35 — feed-context alone is enough to surface
   let reason = exactish ? 'coordinates or source-level geo supplied' : 'feed-level city context only';
 
   if (cityMention) { confidence = Math.max(confidence, 0.82); reason = 'city/location mentioned in headline, summary, or source text'; }
   else if (sourceHint) { confidence = Math.max(confidence, 0.68); reason = 'city inferred from known local source domain'; }
 
   if (weakFeedContext && !cityMention && !sourceHint && !hasCoords) {
-    confidence = Math.min(confidence, 0.28);
+    confidence = Math.min(confidence, 0.34);  // raised from 0.28 — still below pass threshold but less aggressive
     reason = 'feed city was not found in the alert text/source';
   }
 
   if (ciHeadlineLooksGenericGlobal(e) && weakFeedContext && !cityMention && !hasCoords) {
-    confidence = Math.min(confidence, 0.18);
+    confidence = Math.min(confidence, 0.22);  // raised from 0.18
     reason = 'generic/global headline with weak feed-context location';
   }
 
-  const level = confidence >= 0.75 ? 'high' : confidence >= 0.45 ? 'medium' : 'low';
-  // Region feeds can still show low-confidence rows, but explicit city feeds should not inherit weak location.
-  const ok = regionFeed ? true : confidence >= 0.45;
+  const level = confidence >= 0.75 ? 'high' : confidence >= 0.38 ? 'medium' : 'low';
+  // Lowered pass threshold from 0.45 → 0.35 so feed-context alerts surface in the queue
+  // rather than being silently dropped. Operators can still verify/dismiss them.
+  const ok = regionFeed ? true : confidence >= 0.35;
   return { ok, confidence, level, reason, cityMention, sourceHint, exactish };
 }
 function ciApplyGeoValidation(ev, feed){
@@ -5130,7 +5159,7 @@ function ciIsLowGeoConfidence(ev){
     const g = ciGeoValidation(ev, null);
     const label = String(ev?.geo_confidence_label || g.level || '').toLowerCase();
     const score = Number(ev?.geo_confidence ?? g.confidence ?? 0);
-    return ev?.geo_suspect === true || label === 'low' || score < 0.45;
+    return ev?.geo_suspect === true || label === 'low' || score < 0.35;
   } catch(_) {
     return false;
   }
@@ -6316,15 +6345,18 @@ function riskClass(r){
 
 function fmtWhen(iso) {
   try {
-    const s = new Date(iso).toLocaleString('en-GB', {
-      timeZone: 'Europe/London',
+    // Use the browser's local timezone so operators in Dubai, Singapore, New York etc.
+    // see times in their own timezone rather than always London time.
+    const d = new Date(iso);
+    const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const s = d.toLocaleString('en-GB', {
+      timeZone: userTz,
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
     });
-    // drop trailing ", 12:18 am" → or just the AM/PM part
     return s.replace(/,\s*(\d{2}:\d{2})\s*(AM|PM)$/i, ' $1')
             .replace(/\s*(AM|PM)$/i, '');
   } catch (e) {
@@ -11294,8 +11326,22 @@ function redrawIncidentRadius(){
     if (items.length && st === 'all') {
       const action = document.createElement('div');
       action.className = 'queue-action-row';
-      action.innerHTML = `<button type="button" class="btn-danger-small" id="queueDeleteAllVisible">Delete all verified</button>`;
+      action.innerHTML = `
+        <button type="button" class="btn-bulk-action btn-bulk-monitor" id="queueMonitorAllVisible" title="Move all ${items.length} visible alerts to Monitoring">
+          ⬇ Monitor all (${items.length})
+        </button>
+        <button type="button" class="btn-danger-small" id="queueDeleteAllVisible">Delete all verified</button>
+      `;
       alertsList.appendChild(action);
+      const monAll = action.querySelector('#queueMonitorAllVisible');
+      if (monAll) monAll.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm(`Move ${items.length} alert${items.length === 1 ? '' : 's'} to Monitoring?`)) return;
+        items.forEach(ev => setDisposition(ev, 'monitoring', 'Bulk action'));
+        renderQueueList('all');
+        try { renderFeeds(); } catch(_) {}
+        try { updateQueueCounts(); } catch(_) {}
+      });
       const delAll = action.querySelector('#queueDeleteAllVisible');
       if (delAll) delAll.addEventListener('click', (e)=>{
         e.stopPropagation();
@@ -11309,8 +11355,34 @@ function redrawIncidentRadius(){
     if (items.length && st === 'unverified') {
       const action = document.createElement('div');
       action.className = 'queue-action-row';
-      action.innerHTML = `<button type="button" class="btn-danger-small" id="queueDeleteAllUnverified">Delete all unverified</button>`;
+      action.innerHTML = `
+        <button type="button" class="btn-bulk-action btn-bulk-monitor" id="queueMonitorAllUnverified" title="Move all ${items.length} unverified alerts to Monitoring for follow-up">
+          ⬇ Monitor all (${items.length})
+        </button>
+        <button type="button" class="btn-bulk-action btn-bulk-clear" id="queueClearAllUnverified" title="Clear all ${items.length} unverified alerts">
+          ✓ Clear all (${items.length})
+        </button>
+        <button type="button" class="btn-danger-small" id="queueDeleteAllUnverified">Delete all unverified</button>
+      `;
       alertsList.appendChild(action);
+      const monAllUnv = action.querySelector('#queueMonitorAllUnverified');
+      if (monAllUnv) monAllUnv.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm(`Move ${items.length} unverified alert${items.length === 1 ? '' : 's'} to Monitoring?`)) return;
+        items.forEach(ev => setDisposition(ev, 'monitoring', 'Bulk action — unverified location'));
+        renderQueueList('unverified');
+        try { renderFeeds(); } catch(_) {}
+        try { updateQueueCounts(); } catch(_) {}
+      });
+      const clrAllUnv = action.querySelector('#queueClearAllUnverified');
+      if (clrAllUnv) clrAllUnv.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm(`Clear ${items.length} unverified alert${items.length === 1 ? '' : 's'}?`)) return;
+        items.forEach(ev => setDisposition(ev, 'cleared', 'Bulk clear — unverified location'));
+        renderQueueList('unverified');
+        try { renderFeeds(); } catch(_) {}
+        try { updateQueueCounts(); } catch(_) {}
+      });
       const delAllUnverified = action.querySelector('#queueDeleteAllUnverified');
       if (delAllUnverified) delAllUnverified.addEventListener('click', (e)=>{
         e.stopPropagation();
@@ -11318,6 +11390,38 @@ function redrawIncidentRadius(){
         removeAlertsEverywhere(items);
         renderQueueList('unverified');
         try { renderFeeds(); } catch(_) {}
+      });
+    }
+
+    if (items.length && st === 'monitoring') {
+      const action = document.createElement('div');
+      action.className = 'queue-action-row';
+      action.innerHTML = `
+        <button type="button" class="btn-bulk-action btn-bulk-escalate" id="queueEscalateAllMonitoring" title="Escalate all ${items.length} monitored alerts">
+          ↑ Escalate all (${items.length})
+        </button>
+        <button type="button" class="btn-bulk-action btn-bulk-clear" id="queueClearAllMonitoring" title="Clear all ${items.length} monitored alerts">
+          ✓ Clear all (${items.length})
+        </button>
+      `;
+      alertsList.appendChild(action);
+      const escAll = action.querySelector('#queueEscalateAllMonitoring');
+      if (escAll) escAll.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm(`Escalate all ${items.length} monitoring alert${items.length === 1 ? '' : 's'}?`)) return;
+        items.forEach(ev => setDisposition(ev, 'escalated', 'Bulk escalation'));
+        renderQueueList('monitoring');
+        try { renderFeeds(); } catch(_) {}
+        try { updateQueueCounts(); } catch(_) {}
+      });
+      const clrAll = action.querySelector('#queueClearAllMonitoring');
+      if (clrAll) clrAll.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (!confirm(`Clear all ${items.length} monitoring alert${items.length === 1 ? '' : 's'}?`)) return;
+        items.forEach(ev => setDisposition(ev, 'cleared', 'Bulk clear'));
+        renderQueueList('monitoring');
+        try { renderFeeds(); } catch(_) {}
+        try { updateQueueCounts(); } catch(_) {}
       });
     }
 
@@ -11703,8 +11807,9 @@ async function resolveEventLatLng(ev){
 
   function fmt(iso){
     try{
+      const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       return new Date(iso).toLocaleString('en-GB', {
-        timeZone:'Europe/London',
+        timeZone: userTz,
         day:'2-digit', month:'short',
         hour:'2-digit', minute:'2-digit',
         hour12:false
