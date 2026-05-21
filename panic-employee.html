@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CityIntel — Emergency Alarm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CI Alarm" />
+  <meta name="theme-color" content="#111214" />
+  <!-- Add to home screen prompt will show the CityIntel icon -->
+  <link rel="apple-touch-icon" href="CityintLogo__1_.jpg" />
+  <style>
+    :root {
+      --red:       #D01616;
+      --red-dark:  #9c0f0f;
+      --red-glow:  rgba(208,22,22,.35);
+      --bg:        #0c0c0c;
+      --panel:     #16171a;
+      --border:    #24272c;
+      --text:      #e9edf2;
+      --muted:     #8e97a3;
+      --ok:        #33c48d;
+      --ok-glow:   rgba(51,196,141,.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(90deg, rgba(208,22,22,.18), rgba(208,22,22,0));
+      flex-shrink: 0;
+    }
+    .hdr img { height: 38px; border-radius: 6px; background: #fff; }
+    .hdr-title { font-weight: 800; font-size: 17px; }
+    .hdr-sub { font-size: 11px; color: var(--muted); }
+
+    /* ── Screen management ──────────────────────────────── */
+    .screen { display: none; flex-direction: column; flex: 1; padding: 20px 16px 32px; }
+    .screen.active { display: flex; }
+
+    /* ── Status pill (top of each screen) ──────────────── */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      align-self: flex-start;
+    }
+    .status-pill.clear {
+      background: rgba(51,196,141,.12);
+      border: 1px solid rgba(51,196,141,.35);
+      color: var(--ok);
+    }
+    .status-pill.active {
+      background: rgba(208,22,22,.18);
+      border: 1px solid rgba(208,22,22,.55);
+      color: #fca5a5;
+      animation: pulse-border 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-border {
+      0%,100% { box-shadow: 0 0 0 0 var(--red-glow); }
+      50%      { box-shadow: 0 0 0 8px transparent; }
+    }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+    }
+    .dot.green { background: var(--ok); }
+    .dot.red   { background: var(--red); animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+    /* ── Screen: Setup ──────────────────────────────────── */
+    #screenSetup h2 {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 6px;
+      letter-spacing: -.2px;
+    }
+    #screenSetup p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+      font-size: 16px; /* prevents iOS zoom */
+      outline: none;
+    }
+    input:focus, textarea:focus {
+      border-color: rgba(208,22,22,.6);
+      box-shadow: 0 0 0 3px rgba(208,22,22,.12);
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    .inline { display: flex; gap: 8px; }
+    .inline input { flex: 1; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .help { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* ── Buttons ────────────────────────────────────────── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      border: none;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      letter-spacing: .01em;
+    }
+    .btn:active { transform: scale(.98); opacity: .88; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-proceed {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .btn-activate {
+      background: linear-gradient(135deg, #b91c1c, var(--red));
+      color: #fff;
+      font-size: 18px;
+      padding: 18px;
+      box-shadow: 0 6px 24px var(--red-glow);
+      margin-bottom: 12px;
+    }
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .btn-reset {
+      background: var(--panel);
+      border: 1px solid rgba(51,196,141,.4);
+      color: var(--ok);
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+    .btn-small {
+      width: auto;
+      padding: 9px 14px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+
+    /* ── Screen: Activate ───────────────────────────────── */
+    #screenActivate h2 {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    #screenActivate .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .alarm-icon {
+      font-size: 56px;
+      text-align: center;
+      margin: 16px 0 24px;
+      line-height: 1;
+    }
+    .who-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .who-box strong { color: var(--text); }
+
+    /* ── Screen: Confirmed ──────────────────────────────── */
+    #screenConfirmed {
+      align-items: center;
+      text-align: center;
+    }
+    .confirmed-icon {
+      font-size: 72px;
+      margin: 24px 0 16px;
+      animation: pop .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes pop {
+      from { transform: scale(.4); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+    #screenConfirmed h2 {
+      font-size: 26px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      color: #fca5a5;
+    }
+    #screenConfirmed p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 300px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+    .confirmed-details {
+      background: rgba(208,22,22,.1);
+      border: 1px solid rgba(208,22,22,.3);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 13px;
+      text-align: left;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 28px;
+    }
+    .confirmed-details .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .confirmed-details .row:last-child { border-bottom: none; }
+    .confirmed-details .lbl { color: var(--muted); }
+    .confirmed-details .val { font-weight: 700; color: var(--text); }
+
+    /* ── Screen: Already Active ─────────────────────────── */
+    #screenAlreadyActive {
+      align-items: center;
+      text-align: center;
+    }
+
+    /* ── Toast ──────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1c20;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity .2s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.ok  { border-color: rgba(51,196,141,.5); color: var(--ok); }
+    .toast.err { border-color: rgba(255,90,95,.5);  color: #fca5a5; }
+
+    /* ── Body: active state ─────────────────────────────── */
+    body.panic-live {
+      background: linear-gradient(180deg, #1a0303, #0c0c0c);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="hdr">
+    <img src="CityintLogo.jpg" alt="CityIntel">
+    <div>
+      <div class="hdr-title">CityIntel</div>
+      <div class="hdr-sub">Emergency Alarm</div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 1: Setup (name + invite code if needed) ── -->
+  <div class="screen active" id="screenSetup">
+    <div class="status-pill clear" id="setupPill">
+      <span class="dot green"></span> Ready
+    </div>
+
+    <h2>Emergency Alarm</h2>
+    <p>Confirm your details below, then press <strong>Continue</strong> to proceed to the alarm activation screen.</p>
+
+    <!-- Invite code — hidden when pre-filled from URL -->
+    <div class="field" id="inviteField">
+      <label for="inviteInput">Access code</label>
+      <input id="inviteInput" type="text" placeholder="Provided by your organisation" autocomplete="off" autocapitalize="characters" />
+      <div class="help">Your organisation provides this code. Check your invitation email or ask your security manager.</div>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="firstNameInput">First name</label>
+        <input id="firstNameInput" type="text" placeholder="First name" autocomplete="given-name" />
+      </div>
+      <div class="field">
+        <label for="surnameInput">Surname</label>
+        <input id="surnameInput" type="text" placeholder="Surname" autocomplete="family-name" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Location <span style="color:var(--muted);font-weight:400;text-transform:none">(optional)</span></label>
+      <div class="inline">
+        <input id="locationInput" type="text" placeholder="e.g. London HQ, Gate 3" autocomplete="off" />
+        <button class="btn btn-proceed btn-small" id="geoBtn" type="button" title="Use my GPS location">📍</button>
+      </div>
+      <div class="help">Helps responders locate you faster.</div>
+    </div>
+
+    <div class="field">
+      <label>Message <span style="color:var(--muted);font-weight:400;text-transform:none">(optional)</span></label>
+      <textarea id="messageInput" placeholder="e.g. I need urgent assistance. Situation: …"></textarea>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-activate" id="proceedBtn">Continue →</button>
+    <p style="text-align:center;font-size:12px;color:var(--muted)">No alarm is raised until you confirm on the next screen.</p>
+  </div>
+
+  <!-- ── SCREEN 2: Confirm & Activate ─────────────────── -->
+  <div class="screen" id="screenActivate">
+    <div class="alarm-icon">🚨</div>
+    <h2>Activate Panic Alarm?</h2>
+    <p class="sub">This will immediately alert your security team. Only activate in a genuine emergency.</p>
+
+    <div class="who-box" id="whoBox">
+      Activating as: <strong id="whoName">—</strong>
+      <span id="whoLocation"></span>
+    </div>
+
+    <button class="btn btn-activate" id="activateBtn">
+      🚨 &nbsp;ACTIVATE PANIC ALARM
+    </button>
+    <button class="btn btn-cancel" id="cancelBtn">← Back — do not activate</button>
+  </div>
+
+  <!-- ── SCREEN 3: Confirmed ───────────────────────────── -->
+  <div class="screen" id="screenConfirmed">
+    <div class="confirmed-icon">🆘</div>
+    <h2>Alarm Activated</h2>
+    <p>Your emergency alarm has been sent. Stay as safe as possible — your security team has been alerted.</p>
+
+    <div class="confirmed-details" id="confirmedDetails">
+      <div class="row"><span class="lbl">Name</span><span class="val" id="cdName">—</span></div>
+      <div class="row"><span class="lbl">Location</span><span class="val" id="cdLocation">—</span></div>
+      <div class="row"><span class="lbl">Time</span><span class="val" id="cdTime">—</span></div>
+    </div>
+
+    <button class="btn btn-reset" id="resetBtn">✓ I'm safe — cancel alarm</button>
+    <p style="font-size:12px;color:var(--muted);max-width:280px;text-align:center">
+      Only press above once you are confirmed safe or the alarm was triggered by mistake.
+    </p>
+  </div>
+
+  <!-- ── SCREEN 4: Already Active ─────────────────────── -->
+  <div class="screen" id="screenAlreadyActive">
+    <div class="status-pill active" style="align-self:center;margin-bottom:24px">
+      <span class="dot red"></span> ALARM ACTIVE
+    </div>
+    <div class="alarm-icon">⚠️</div>
+    <h2 style="text-align:center;margin-bottom:8px">Alarm currently active</h2>
+    <p style="text-align:center;color:var(--muted);margin-bottom:28px;font-size:14px">
+      Your security team has been notified. Tap below when you are safe.
+    </p>
+    <button class="btn btn-reset" id="resetBtn2">✓ I'm safe — cancel alarm</button>
+    <button class="btn btn-cancel" style="margin-top:10px" id="checkAgainBtn">Check status again</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  (function() {
+    const API = 'https://api.cityintelapi.com';
+
+    // ── State ──────────────────────────────────────────────
+    let inviteCode   = '';
+    let guestProfile = null;
+    let activatedAt  = null;
+
+    // ── URL param helpers ──────────────────────────────────
+    function readURLParams() {
+      // Support ?invite=CODE and #invite=CODE
+      try {
+        const qp = new URLSearchParams(location.search);
+        const hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+        return qp.get('invite') || hp.get('invite') || '';
+      } catch { return ''; }
+    }
+
+    function readName() {
+      try {
+        const qp = new URLSearchParams(location.search);
+        const hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+        return { first: qp.get('first') || hp.get('first') || '',
+                 last:  qp.get('last')  || hp.get('last')  || '' };
+      } catch { return { first:'', last:'' }; }
+    }
+
+    // ── Screen helpers ─────────────────────────────────────
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.body.classList.toggle('panic-live', id === 'screenConfirmed' || id === 'screenAlreadyActive');
+    }
+
+    // ── Toast ──────────────────────────────────────────────
+    function toast(msg, kind = 'ok') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + kind;
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ── Guest profile ──────────────────────────────────────
+    function buildGuestProfile(invite) {
+      const key = 'ci_guest_emp_' + invite;
+      try {
+        const ex = JSON.parse(localStorage.getItem(key) || 'null');
+        if (ex?.email) { guestProfile = ex; return ex; }
+      } catch {}
+      const rnd = Math.random().toString(36).slice(2, 9);
+      const p = {
+        email: 'guest+' + invite.toLowerCase() + '-' + rnd + '@cityintel.local',
+        name: 'Guest',
+        id:   'guest:' + rnd,
+      };
+      try { localStorage.setItem(key, JSON.stringify(p)); } catch {}
+      guestProfile = p;
+      return p;
+    }
+
+    function authHeaders() {
+      const p = guestProfile;
+      return {
+        'Content-Type': 'application/json',
+        'X-User-Email':    p ? p.email : '',
+        'X-User-Name':     p ? p.name  : '',
+        'X-Invite-Code':   inviteCode  || '',
+      };
+    }
+
+    // ── API ────────────────────────────────────────────────
+    async function fetchStatus() {
+      const res = await fetch(API + '/api/org/panic?ts=' + Date.now(), {
+        method: 'GET',
+        headers: authHeaders(),
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error('Status ' + res.status);
+      const j = await res.json().catch(() => ({}));
+      return (j && 'data' in j) ? j.data : j;
+    }
+
+    async function activateAlarm(payload) {
+      const res = await fetch(API + '/api/org/panic?ts=' + Date.now(), {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ active: true, ...payload }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        throw new Error('Activate failed (' + res.status + ') ' + t);
+      }
+      return await res.json().catch(() => ({}));
+    }
+
+    async function resetAlarm() {
+      const res = await fetch(API + '/api/org/panic?ts=' + Date.now(), {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ active: false, resetReason: 'Confirmed safe', resolved_at: new Date().toISOString() }),
+      });
+      if (!res.ok) throw new Error('Reset failed ' + res.status);
+      return await res.json().catch(() => ({}));
+    }
+
+    async function joinOrg(invite) {
+      await fetch(API + '/api/org/join', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ inviteCode: invite }),
+      });
+    }
+
+    // ── Init ───────────────────────────────────────────────
+    (function init() {
+      inviteCode = readURLParams().trim().toUpperCase();
+      const nameHints = readName();
+
+      const inviteField = document.getElementById('inviteField');
+      const inviteInput = document.getElementById('inviteInput');
+      const firstInput  = document.getElementById('firstNameInput');
+      const lastInput   = document.getElementById('surnameInput');
+
+      // Pre-fill from URL
+      if (inviteCode) {
+        inviteInput.value = inviteCode;
+        inviteField.style.display = 'none'; // hide — already set
+        buildGuestProfile(inviteCode);
+      }
+      if (nameHints.first) firstInput.value = nameHints.first;
+      if (nameHints.last)  lastInput.value  = nameHints.last;
+
+      // Check current alarm status
+      if (inviteCode) {
+        fetchStatus().then(data => {
+          const isActive = data?.active === true || data?.active === 'true' || data?.active === 1;
+          if (isActive) showScreen('screenAlreadyActive');
+        }).catch(() => {});
+      }
+    })();
+
+    // ── GPS location ───────────────────────────────────────
+    document.getElementById('geoBtn').addEventListener('click', function() {
+      if (!navigator.geolocation) { toast('Geolocation not supported', 'err'); return; }
+      this.textContent = '⏳';
+      this.disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const lat = pos.coords.latitude.toFixed(4);
+          const lon = pos.coords.longitude.toFixed(4);
+          document.getElementById('locationInput').value = lat + ', ' + lon;
+          this.textContent = '✓';
+          this.disabled = false;
+          toast('Location added', 'ok');
+        },
+        () => { this.textContent = '📍'; this.disabled = false; toast('Location access denied', 'err'); },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    });
+
+    // ── Proceed button ─────────────────────────────────────
+    document.getElementById('proceedBtn').addEventListener('click', function() {
+      const invite    = document.getElementById('inviteInput').value.trim().toUpperCase();
+      const firstName = document.getElementById('firstNameInput').value.trim();
+      const surname   = document.getElementById('surnameInput').value.trim();
+      const location  = document.getElementById('locationInput').value.trim();
+
+      if (!invite) { toast('Access code required', 'err'); return; }
+      if (!firstName && !surname) { toast('Please enter your name', 'err'); return; }
+
+      inviteCode = invite;
+      buildGuestProfile(invite);
+
+      // Update who box
+      const fullName = [firstName, surname].filter(Boolean).join(' ');
+      document.getElementById('whoName').textContent = fullName || 'Guest';
+      const whoLoc = document.getElementById('whoLocation');
+      if (location) {
+        whoLoc.innerHTML = ' &nbsp;·&nbsp; <span style="color:var(--muted)">' + location + '</span>';
+      } else {
+        whoLoc.textContent = '';
+      }
+
+      showScreen('screenActivate');
+    });
+
+    // ── Cancel button ──────────────────────────────────────
+    document.getElementById('cancelBtn').addEventListener('click', () => showScreen('screenSetup'));
+
+    // ── Activate button ────────────────────────────────────
+    document.getElementById('activateBtn').addEventListener('click', async function() {
+      this.disabled = true;
+      this.textContent = '⏳  Activating…';
+
+      const firstName = document.getElementById('firstNameInput').value.trim();
+      const surname   = document.getElementById('surnameInput').value.trim();
+      const location  = document.getElementById('locationInput').value.trim();
+      const message   = document.getElementById('messageInput').value.trim();
+
+      try {
+        // Ensure joined
+        await joinOrg(inviteCode).catch(() => {});
+
+        activatedAt = new Date().toISOString();
+        await activateAlarm({
+          firstName, surname, location, message,
+          actorName:  [firstName, surname].filter(Boolean).join(' ') || 'Guest',
+          actorEmail: guestProfile?.email || '',
+          actorId:    guestProfile?.id    || '',
+          activated_at: activatedAt,
+          source: 'employee_link',
+        });
+
+        // Populate confirmed screen
+        document.getElementById('cdName').textContent     = [firstName, surname].filter(Boolean).join(' ') || 'Guest';
+        document.getElementById('cdLocation').textContent = location || '—';
+        document.getElementById('cdTime').textContent     = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+        showScreen('screenConfirmed');
+      } catch (e) {
+        console.error(e);
+        toast('Could not send alarm — check connection', 'err');
+        this.disabled = false;
+        this.innerHTML = '🚨 &nbsp;ACTIVATE PANIC ALARM';
+      }
+    });
+
+    // ── Reset buttons ──────────────────────────────────────
+    async function doReset(btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳  Resetting…';
+      try {
+        await resetAlarm();
+        toast('Alarm cancelled — confirmed safe', 'ok');
+        setTimeout(() => {
+          document.body.classList.remove('panic-live');
+          showScreen('screenSetup');
+          btn.disabled = false;
+          btn.textContent = '✓ I\'m safe — cancel alarm';
+        }, 1400);
+      } catch (e) {
+        toast('Reset failed — try again', 'err');
+        btn.disabled = false;
+        btn.textContent = '✓ I\'m safe — cancel alarm';
+      }
+    }
+
+    document.getElementById('resetBtn').addEventListener('click',  function() { doReset(this); });
+    document.getElementById('resetBtn2').addEventListener('click', function() { doReset(this); });
+
+    document.getElementById('checkAgainBtn').addEventListener('click', async function() {
+      this.disabled = true;
+      try {
+        const data = await fetchStatus();
+        const isActive = data?.active === true || data?.active === 'true' || data?.active === 1;
+        if (!isActive) { toast('Alarm is no longer active', 'ok'); showScreen('screenSetup'); }
+        else toast('Alarm still active — stay safe', 'err');
+      } catch { toast('Could not check status', 'err'); }
+      this.disabled = false;
+    });
+
+  })();
+  </script>
+</body>
+</html>
