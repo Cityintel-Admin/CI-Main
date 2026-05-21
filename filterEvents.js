@@ -82,7 +82,7 @@
   function formatDateGB(d){
     if (!d) return '';
     return d.toLocaleString('en-GB', {
-      timeZone: 'Europe/London',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
       day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
     });
   }
