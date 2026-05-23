@@ -387,6 +387,13 @@
     <h2>Alarm Activated</h2>
     <p>Your emergency alarm has been sent. Stay as safe as possible — your security team has been alerted.</p>
 
+    <!-- Acknowledgement status — shown when SOC operator responds -->
+    <div id="ackBanner" style="display:none;background:#0a2a0a;border:1.5px solid #2a6a2a;border-radius:12px;padding:12px 16px;text-align:center;margin-bottom:14px;width:100%;box-sizing:border-box">
+      <div style="font-size:20px;margin-bottom:4px">✅</div>
+      <div style="font-weight:800;color:#6fcf6f;font-size:15px">Help is on the way</div>
+      <div id="ackByText" style="font-size:12px;color:rgba(200,255,200,.7);margin-top:4px"></div>
+    </div>
+
     <div class="confirmed-details" id="confirmedDetails">
       <div class="row"><span class="lbl">Name</span><span class="val" id="cdName">—</span></div>
       <div class="row"><span class="lbl">Email</span><span class="val" id="cdEmail">—</span></div>
@@ -665,7 +672,7 @@
         await joinOrg(inviteCode).catch(() => {});
 
         activatedAt = new Date().toISOString();
-        await activateAlarm({
+        const alarmResult = await activateAlarm({
           firstName, surname, location, message,
           email, phone,
           actorName:  [firstName, surname].filter(Boolean).join(' ') || 'Guest',
@@ -675,6 +682,9 @@
           source: 'employee_link',
         });
 
+        // Store the logId so we can poll for acknowledgement
+        const myLogId = alarmResult?.logId || null;
+
         // Populate confirmed screen
         document.getElementById('cdName').textContent     = [firstName, surname].filter(Boolean).join(' ') || 'Guest';
         document.getElementById('cdEmail').textContent    = email || '—';
@@ -683,6 +693,35 @@
         document.getElementById('cdTime').textContent     = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
         showScreen('screenConfirmed');
+
+        // Poll for acknowledgement every 10 seconds
+        let ackPollTimer = null;
+        async function pollForAck() {
+          try {
+            const res = await fetch(API + '/api/org/panic?ts=' + Date.now(), {
+              method: 'GET',
+              headers: authHeaders(),
+              cache: 'no-store',
+            });
+            const j = await res.json().catch(() => ({}));
+            const data = (j && 'data' in j) ? j.data : j;
+
+            // Check if any active alarm is acknowledged (by logId or general ack flag)
+            const activeAlarms = j.activeAlarms || [];
+            const myAlarm = myLogId ? activeAlarms.find(a => a.id === myLogId) : activeAlarms[0];
+            const isAck = myAlarm?.acknowledged_at || data?.acknowledged_at;
+
+            if (isAck) {
+              const by = myAlarm?.acknowledged_by || data?.acknowledged_by || 'your security team';
+              const banner = document.getElementById('ackBanner');
+              const ackByText = document.getElementById('ackByText');
+              if (banner) banner.style.display = 'block';
+              if (ackByText) ackByText.textContent = `Acknowledged by ${by}`;
+              clearInterval(ackPollTimer);
+            }
+          } catch(e) {}
+        }
+        ackPollTimer = setInterval(pollForAck, 10000);
       } catch (e) {
         console.error(e);
         toast('Could not send alarm — check connection', 'err');
