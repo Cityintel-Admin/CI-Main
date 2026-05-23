@@ -155,6 +155,22 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
     .toast { margin-top: 12px; font-weight: 800; display:none; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.35); }
     .toast.show { display:block; }
     .share-row { display:flex; align-items:center; gap:10px; }
+    /* Alarm log */
+    .al-card { background:#1a0a0a; border:1px solid #5a1a1a; border-radius:10px; padding:12px 14px; margin-bottom:8px; display:grid; grid-template-columns:1fr auto; gap:10px; align-items:start; }
+    .al-card.ack { border-color:#1a4a1a; background:#0a1a0a; }
+    .al-name { font-weight:800; font-size:14px; color:#e9edf2; margin-bottom:4px; }
+    .al-meta { font-size:12px; color:#8e97a3; display:flex; flex-wrap:wrap; gap:4px 12px; margin-bottom:4px; }
+    .al-msg { font-size:12px; color:rgba(255,200,180,.85); font-style:italic; margin-top:3px; }
+    .al-ack-info { font-size:11px; color:#6fcf6f; margin-top:4px; }
+    .al-ack-btn { background:#D01616; color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .al-ack-btn:hover { background:#a01010; }
+    .al-ack-btn:disabled { background:#1a4a1a; cursor:default; }
+    .al-res-btn { background:rgba(255,255,255,.06); color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:600; cursor:pointer; margin-top:5px; display:block; white-space:nowrap; }
+    .al-res-btn:hover { background:rgba(255,255,255,.12); }
+    .al-history-row { display:grid; grid-template-columns:1fr auto; gap:8px; padding:8px 0; border-bottom:1px solid #1e1e1e; font-size:12px; color:#8e97a3; align-items:center; }
+    .al-history-row:last-child { border-bottom:none; }
+    .al-history-name { font-weight:700; color:#c9d0d8; }
+    .al-resolved-badge { color:#6fcf6f; font-size:11px; font-weight:700; }
   </style>
 </head>
 
@@ -342,6 +358,30 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
             <div id="toast" class="toast" role="status" aria-live="polite"></div>
           </section>
         </div>
+
+          <!-- ── Alarm Log ─────────────────────────────────── -->
+          <section class="card" style="margin-top:18px" id="alarmLogSection">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+              <div>
+                <div style="font-weight:800;font-size:15px;color:#e9edf2">Alarm Log</div>
+                <div class="muted" style="font-size:12px;margin-top:2px">All activations for your organisation — active and resolved.</div>
+              </div>
+              <button id="refreshLogBtn" class="btn ghost" style="width:auto;padding:6px 14px;font-size:12px">Refresh log</button>
+            </div>
+
+            <!-- Active alarms sub-section -->
+            <div id="activeAlarmsSection" style="display:none;margin-bottom:18px">
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#D01616;margin-bottom:8px">&#x1F6A8; Active Alarms</div>
+              <div id="activeAlarmCards"></div>
+            </div>
+
+            <!-- History table -->
+            <div>
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#8e97a3;margin-bottom:8px">Alarm History</div>
+              <div id="alarmHistoryTable" style="font-size:13px;color:#8e97a3">Loading alarm log…</div>
+            </div>
+          </section>
+
       </div>
     </main>
   </div>
@@ -862,6 +902,143 @@ function getGeoOnce(timeoutMs = 5000){
   });
 }
 
+})();
+</script>
+
+<script>
+// ── Alarm Log & Acknowledge ─────────────────────────────────────────
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  function getProfile(){ try { return JSON.parse(localStorage.getItem('ci_profile')||'null'); } catch { return null; } }
+  function authHeaders(){
+    const p = getProfile();
+    if (!p?.email) return null;
+    return { 'X-User-Email': p.email, 'X-User-Name': p.name||'', 'Content-Type':'application/json' };
+  }
+  function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtTime(iso){
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return iso; }
+  }
+  function elapsed(iso){
+    if (!iso) return '';
+    const s = Math.floor((Date.now()-new Date(iso).getTime())/1000);
+    if (s < 60) return `${s}s`;
+    if (s < 3600) return `${Math.floor(s/60)}m`;
+    return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
+  }
+
+  async function doAcknowledge(logId, btn){
+    btn.disabled = true; btn.textContent = '…';
+    const h = authHeaders(); if (!h) return;
+    try {
+      const res = await fetch(API_BASE+'/api/org/panic/acknowledge', { method:'POST', headers:h, body: JSON.stringify({logId}) });
+      const d = await res.json().catch(()=>({}));
+      if (d.ok) {
+        btn.textContent = '✓ Responding';
+        btn.style.background = '#1a4a1a';
+        const card = btn.closest('.al-card');
+        if (card) {
+          card.classList.add('ack');
+          const inf = card.querySelector('.al-ack-info');
+          if (inf) inf.textContent = `Acknowledged by ${esc(d.acknowledgedBy)} at ${fmtTime(d.acknowledgedAt)}`;
+        }
+      } else { btn.disabled=false; btn.textContent='Acknowledge'; alert('Failed: '+(d.error||'Unknown')); }
+    } catch(e){ btn.disabled=false; btn.textContent='Acknowledge'; }
+  }
+
+  async function doResolve(logId, btn){
+    if (!confirm('Mark this alarm as resolved?')) return;
+    btn.disabled = true;
+    const h = authHeaders(); if (!h) return;
+    try {
+      await fetch(API_BASE+'/api/org/panic', { method:'PUT', headers:h, body: JSON.stringify({ active:false, logId, resetReason:'Confirmed safe — resolved by operator' }) });
+      loadLog();
+    } catch(e){ btn.disabled=false; }
+  }
+
+  function renderActiveCards(alarms){
+    const sec = document.getElementById('activeAlarmsSection');
+    const container = document.getElementById('activeAlarmCards');
+    if (!sec || !container) return;
+    if (!alarms.length) { sec.style.display='none'; return; }
+    sec.style.display='block';
+    container.innerHTML = alarms.map(a => {
+      const name = [a.first_name, a.surname].filter(Boolean).join(' ') || 'Unknown';
+      const isAck = !!a.acknowledged_at;
+      return `<div class="al-card${isAck?' ack':''}" data-log-id="${esc(a.id)}">
+        <div>
+          <div class="al-name">${esc(name)} <span style="font-size:11px;color:#aaa;font-weight:400">${elapsed(a.activated_at)} ago</span></div>
+          <div class="al-meta">
+            ${a.email?`<span>✉ ${esc(a.email)}</span>`:''}
+            ${a.phone?`<span>&#x1F4DE; ${esc(a.phone)}</span>`:''}
+            ${a.location?`<span>&#x1F4CD; ${esc(a.location)}</span>`:''}
+            <span>&#x23F0; ${fmtTime(a.activated_at)}</span>
+          </div>
+          ${a.message?`<div class="al-msg">"${esc(a.message)}"</div>`:''}
+          <div class="al-ack-info">${isAck?`✓ Acknowledged by ${esc(a.acknowledged_by)} at ${fmtTime(a.acknowledged_at)}`:''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
+          <button class="al-ack-btn" ${isAck?'disabled style="background:#1a4a1a"':''}>${isAck?'✓ Responding':'Acknowledge'}</button>
+          <button class="al-res-btn">Mark resolved</button>
+        </div>
+      </div>`;
+    }).join('');
+    container.querySelectorAll('.al-card').forEach(card => {
+      const id = card.dataset.logId;
+      card.querySelector('.al-ack-btn')?.addEventListener('click', function(){ doAcknowledge(id, this); });
+      card.querySelector('.al-res-btn')?.addEventListener('click', function(){ doResolve(id, this); });
+    });
+  }
+
+  function renderHistory(resolved){
+    const el = document.getElementById('alarmHistoryTable');
+    if (!el) return;
+    if (!resolved.length) { el.innerHTML='<div style="color:#8e97a3;font-size:12px">No resolved alarms yet.</div>'; return; }
+    el.innerHTML = resolved.slice(0,20).map(r => {
+      const name = [r.first_name, r.surname].filter(Boolean).join(' ') || 'Unknown';
+      return `<div class="al-history-row">
+        <div>
+          <div class="al-history-name">${esc(name)}</div>
+          <div class="muted" style="font-size:11px">${fmtTime(r.activated_at)}${r.location?' · '+esc(r.location):''}${r.email?' · '+esc(r.email):''}${r.phone?' · '+esc(r.phone):''}</div>
+          ${r.message?`<div style="font-size:11px;color:rgba(255,200,180,.7);font-style:italic">"${esc(r.message)}"</div>`:''}
+          ${r.acknowledged_by?`<div style="font-size:11px;color:#6fcf6f">Acknowledged by ${esc(r.acknowledged_by)}</div>`:''}
+        </div>
+        <div class="al-resolved-badge">✓ ${esc(r.reset_reason||'Resolved')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadLog(){
+    const h = authHeaders(); if (!h) return;
+    const el = document.getElementById('alarmHistoryTable');
+    if (el) el.innerHTML = 'Loading…';
+    try {
+      // Get active alarms from panic state
+      const activeRes = await fetch(API_BASE+'/api/org/panic', { headers:h });
+      const activeData = await activeRes.json().catch(()=>({}));
+      renderActiveCards(activeData.activeAlarms || []);
+
+      // Get full log
+      const logRes = await fetch(API_BASE+'/api/org/panic/log?limit=50', { headers:h });
+      const logData = await logRes.json().catch(()=>({}));
+      const resolved = (logData.log||[]).filter(r=>r.resolved_at);
+      renderHistory(resolved);
+    } catch(e){
+      if (el) el.innerHTML = '<div style="color:#8e97a3;font-size:12px">Could not load alarm log.</div>';
+    }
+  }
+
+  document.getElementById('refreshLogBtn')?.addEventListener('click', loadLog);
+  // Auto-load on page open
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadLog);
+  } else {
+    loadLog();
+  }
+  // Refresh log every 15 seconds
+  setInterval(loadLog, 15000);
 })();
 </script>
 
