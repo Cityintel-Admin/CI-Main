@@ -334,6 +334,17 @@
       </div>
     </div>
 
+    <div class="row-2">
+      <div class="field">
+        <label for="emailInput">Email <span style="color:var(--muted);font-weight:400;text-transform:none">(optional)</span></label>
+        <input id="emailInput" type="email" placeholder="your@email.com" autocomplete="email" inputmode="email" />
+      </div>
+      <div class="field">
+        <label for="phoneInput">Phone <span style="color:var(--muted);font-weight:400;text-transform:none">(optional)</span></label>
+        <input id="phoneInput" type="tel" placeholder="+44 7..." autocomplete="tel" inputmode="tel" />
+      </div>
+    </div>
+
     <div class="field">
       <label>Location <span style="color:var(--muted);font-weight:400;text-transform:none">(optional)</span></label>
       <div class="inline">
@@ -378,6 +389,8 @@
 
     <div class="confirmed-details" id="confirmedDetails">
       <div class="row"><span class="lbl">Name</span><span class="val" id="cdName">—</span></div>
+      <div class="row"><span class="lbl">Email</span><span class="val" id="cdEmail">—</span></div>
+      <div class="row"><span class="lbl">Phone</span><span class="val" id="cdPhone">—</span></div>
       <div class="row"><span class="lbl">Location</span><span class="val" id="cdLocation">—</span></div>
       <div class="row"><span class="lbl">Time</span><span class="val" id="cdTime">—</span></div>
     </div>
@@ -522,15 +535,35 @@
     // ── Init ───────────────────────────────────────────────
     (function init() {
       const LS_INVITE_KEY = 'ci_saved_invite_code';
+      const LS_EMAIL_KEY  = 'ci_saved_email';
+      const LS_PHONE_KEY  = 'ci_saved_phone';
+
       inviteCode = readURLParams().trim().toUpperCase();
 
-      // If opened via email link, save the invite code for future home-screen opens
+      // If opened via email link, save invite code and pre-filled email
       if (inviteCode) {
         try { localStorage.setItem(LS_INVITE_KEY, inviteCode); } catch {}
       } else {
-        // Opened from home screen shortcut — restore saved invite code
+        // Opened from home screen — restore saved invite code
         try { inviteCode = (localStorage.getItem(LS_INVITE_KEY) || '').trim().toUpperCase(); } catch {}
       }
+
+      // Read email hint from URL param (set by admin when sending the invite link)
+      let emailHint = '';
+      try {
+        const qp = new URLSearchParams(location.search);
+        const hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+        emailHint = qp.get('email') || hp.get('email') || '';
+        if (emailHint) {
+          try { localStorage.setItem(LS_EMAIL_KEY, emailHint); } catch {}
+        } else {
+          emailHint = localStorage.getItem(LS_EMAIL_KEY) || '';
+        }
+      } catch {}
+
+      // Restore saved phone
+      let savedPhone = '';
+      try { savedPhone = localStorage.getItem(LS_PHONE_KEY) || ''; } catch {}
 
       const nameHints = readName();
 
@@ -539,7 +572,7 @@
       const firstInput  = document.getElementById('firstNameInput');
       const lastInput   = document.getElementById('surnameInput');
 
-      // Pre-fill from URL
+      // Pre-fill from URL / localStorage
       if (inviteCode) {
         inviteInput.value = inviteCode;
         inviteField.style.display = 'none'; // hide — already set
@@ -547,6 +580,8 @@
       }
       if (nameHints.first) firstInput.value = nameHints.first;
       if (nameHints.last)  lastInput.value  = nameHints.last;
+      if (emailHint)  document.getElementById('emailInput').value = emailHint;
+      if (savedPhone) document.getElementById('phoneInput').value = savedPhone;
 
       // Check current alarm status
       if (inviteCode) {
@@ -582,12 +617,20 @@
       const firstName = document.getElementById('firstNameInput').value.trim();
       const surname   = document.getElementById('surnameInput').value.trim();
       const location  = document.getElementById('locationInput').value.trim();
+      const email     = document.getElementById('emailInput').value.trim();
+      const phone     = document.getElementById('phoneInput').value.trim();
 
       if (!invite) { toast('Access code required', 'err'); return; }
       if (!firstName && !surname) { toast('Please enter your name', 'err'); return; }
 
       inviteCode = invite;
       buildGuestProfile(invite);
+
+      // Persist phone (and email if changed) for home screen reopens
+      try {
+        if (phone) localStorage.setItem('ci_saved_phone', phone);
+        if (email) localStorage.setItem('ci_saved_email', email);
+      } catch {}
 
       // Update who box
       const fullName = [firstName, surname].filter(Boolean).join(' ');
@@ -614,6 +657,8 @@
       const surname   = document.getElementById('surnameInput').value.trim();
       const location  = document.getElementById('locationInput').value.trim();
       const message   = document.getElementById('messageInput').value.trim();
+      const email     = document.getElementById('emailInput').value.trim();
+      const phone     = document.getElementById('phoneInput').value.trim();
 
       try {
         // Ensure joined
@@ -622,8 +667,9 @@
         activatedAt = new Date().toISOString();
         await activateAlarm({
           firstName, surname, location, message,
+          email, phone,
           actorName:  [firstName, surname].filter(Boolean).join(' ') || 'Guest',
-          actorEmail: guestProfile?.email || '',
+          actorEmail: email || guestProfile?.email || '',
           actorId:    guestProfile?.id    || '',
           activated_at: activatedAt,
           source: 'employee_link',
@@ -631,6 +677,8 @@
 
         // Populate confirmed screen
         document.getElementById('cdName').textContent     = [firstName, surname].filter(Boolean).join(' ') || 'Guest';
+        document.getElementById('cdEmail').textContent    = email || '—';
+        document.getElementById('cdPhone').textContent    = phone || '—';
         document.getElementById('cdLocation').textContent = location || '—';
         document.getElementById('cdTime').textContent     = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
