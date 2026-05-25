@@ -178,6 +178,11 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
 .stage-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}
 .stage-row .field{margin:0}
 
+/* Day pills */
+.day-pill{display:inline-flex;align-items:center;justify-content:center;width:38px;height:32px;border-radius:8px;border:1px solid var(--brand-gray-500);background:var(--brand-gray-700);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;user-select:none;transition:all .15s}
+.day-pill.selected{border-color:var(--brand-red);background:rgba(208,22,22,.15);color:var(--text)}
+
+    
 /* Responsive */
 @media(max-width:900px){
   .app{grid-template-columns:1fr;grid-template-areas:"topbar""main"}
@@ -221,14 +226,7 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     </nav>
   </aside>
 
-  <!-- Topbar -->
-  <header class="topbar">
-    <strong style="font-size:15px">Check-in Manager</strong>
-    <span style="color:var(--muted);font-size:13px;margin-left:4px">— Lone worker &amp; traveller safety</span>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <a href="index.html" class="btn btn-ghost btn-sm">← Dashboard</a>
-    </div>
-  </header>
+
 
   <!-- Main -->
   <main class="main">
@@ -353,12 +351,24 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
 
     <!-- Recurring fields -->
     <div id="recurringFields" style="margin-top:12px">
-      <div class="field">
-        <label>Interval (hours)</label>
-        <input id="fInterval" type="number" value="4" min="1" max="168" placeholder="e.g. 4"/>
-        <span class="field-hint">Check-in will be sent every X hours starting now.</span>
+      <div class="form-grid">
+        <div class="field">
+          <label>Interval (hours)</label>
+          <input id="fInterval" type="number" value="4" min="1" max="168" placeholder="e.g. 4"/>
+          <span class="field-hint">Check-in sent every X hours.</span>
+        </div>
+        <div class="field">
+          <label>Start date &amp; time <span style="font-weight:400;text-transform:none">(optional)</span></label>
+          <input id="fRecurringStart" type="datetime-local"/>
+          <span class="field-hint">Leave blank to start immediately.</span>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Active days <span style="font-weight:400;text-transform:none">(optional — leave all unchecked for every day)</span></label>
+        <div id="recurringDays" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
       </div>
     </div>
+
 
     <!-- Daily fields -->
     <div id="dailyFields" style="display:none;margin-top:12px">
@@ -371,6 +381,20 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
           <label>Timezone</label>
           <select id="fTimezone"></select>
         </div>
+        <div class="field">
+          <label>Start date <span style="font-weight:400;text-transform:none">(optional)</span></label>
+          <input id="fDailyStart" type="date"/>
+          <span class="field-hint">First send date. Leave blank to start today.</span>
+        </div>
+        <div class="field">
+          <label>End date <span style="font-weight:400;text-transform:none">(optional)</span></label>
+          <input id="fDailyEnd" type="date"/>
+          <span class="field-hint">Schedule auto-pauses after this date.</span>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Active days <span style="font-weight:400;text-transform:none">(optional — leave all unchecked for every day)</span></label>
+        <div id="dailyDays" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
       </div>
     </div>
 
@@ -436,6 +460,43 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     return '<span class="badge badge-muted">—</span>';
   }
 
+
+  
+ // ── Day of week pills ──────────────────────────────────────────────
+  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const DAY_VALS  = ['1','2','3','4','5','6','0'];
+
+  function renderDayPills(containerId, selectedVals){
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = DAY_NAMES.map((name, i) => {
+      const val = DAY_VALS[i];
+      const sel = selectedVals && selectedVals.includes(val);
+      return `<span class="day-pill${sel?' selected':''}" data-val="${val}">${name}</span>`;
+    }).join('');
+    container.querySelectorAll('.day-pill').forEach(pill => {
+      pill.addEventListener('click', () => pill.classList.toggle('selected'));
+    });
+  }
+
+  function getSelectedDays(containerId){
+    const container = document.getElementById(containerId);
+    if (!container) return null;
+    const vals = [...container.querySelectorAll('.day-pill.selected')].map(p => p.dataset.val);
+    return vals.length ? vals.join(',') : null;
+  }
+
+  function setSelectedDays(containerId, csvStr){
+    const vals = csvStr ? csvStr.split(',') : [];
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.querySelectorAll('.day-pill').forEach(pill => {
+      pill.classList.toggle('selected', vals.includes(pill.dataset.val));
+    });
+  }
+
+
+  
   // ── Timezones ──────────────────────────────────────────────────────
   function populateTimezones(){
     const sel=document.getElementById('fTimezone'); if(!sel) return;
@@ -461,7 +522,7 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     });
   });
 
-  // ── Schedules tab ──────────────────────────────────────────────────
+   // ── Schedules tab ──────────────────────────────────────────────────
   async function loadSchedules(){
     const h=authHeaders(); if(!h) return;
     document.getElementById('schedulesList').innerHTML='<div style="color:var(--muted);font-size:13px">Loading…</div>';
@@ -534,7 +595,8 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     });
   }
 
-  // ── Live Board tab ─────────────────────────────────────────────────
+
+ // ── Live Board tab ─────────────────────────────────────────────────
   async function loadLiveBoard(){
     const h=authHeaders(); if(!h) return;
     document.getElementById('boardTbody').innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Loading…</td></tr>';
