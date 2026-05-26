@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script src="auth.js"></script>
+  <script src="admin-links.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="metrics.js"></script>
+  <meta charset="utf-8"/>
+  <title>CityIntel — Power Outages</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+:root{
+  --brand-red:#D01616;--brand-black:#0C0C0C;
+  --gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;
+  --gray-600:#24272c;--gray-500:#2e3238;
+  --muted:#8e97a3;--text:#e9edf2;
+  --ok:#33c48d;--warn:#f0b429;--danger:#ff5a5f;--info:#93c5fd;
+  --card-radius:14px;--shadow:0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:linear-gradient(180deg,var(--brand-black),#131416);border-right:1px solid var(--gray-600);padding:14px 12px;display:flex;flex-direction:column;gap:4px}
+.brand{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:8px}
+.brand img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#fff}
+.brand .t{font-weight:700;font-size:16px}
+nav a{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;padding:9px 12px;border-radius:10px;border:1px solid transparent;font-size:13px}
+nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+nav a.active{background:rgba(208,22,22,.15);border-color:var(--brand-red)}
+.main{padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.toprow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.page-title{font-size:22px;font-weight:800;margin:0 0 3px}
+.page-sub{color:var(--muted);font-size:13px;margin:0}
+.card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--gray-600);border-radius:var(--card-radius);box-shadow:var(--shadow);padding:16px}
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:12px;padding:14px 16px}
+.kpi-val{font-size:28px;font-weight:800;margin-bottom:2px}
+.kpi-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.kpi.red .kpi-val{color:var(--danger)}
+.kpi.orange .kpi-val{color:var(--warn)}
+.kpi.green .kpi-val{color:var(--ok)}
+/* Coverage note */
+.coverage-note{background:rgba(147,197,253,.07);border:1px solid rgba(147,197,253,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#93c5fd;display:flex;align-items:center;gap:8px}
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{background:var(--gray-700);border:1px solid var(--gray-600);color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:rgba(208,22,22,.6)}
+.filter-bar select option{background:#1c1e22}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--gray-600);background:var(--gray-700);color:var(--text);padding:7px 14px;border-radius:9px;font:600 13px system-ui;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn:hover{background:var(--gray-600)}
+.btn.primary{background:var(--brand-red);border-color:#9c0f0f;color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+/* Map */
+#outageMap{height:420px;border-radius:12px;border:1px solid var(--gray-600);background:#1a1c20}
+/* Leaflet dark override */
+.leaflet-container{background:#1a2030!important}
+/* Legend */
+.map-legend{display:flex;gap:16px;flex-wrap:wrap;padding:8px 0}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+/* Table */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--gray-600)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--gray-600);background:rgba(0,0,0,.2);white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--gray-700);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid}
+.badge-red{color:var(--danger);border-color:rgba(255,90,95,.4);background:rgba(255,90,95,.1)}
+.badge-orange{color:var(--warn);border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.1)}
+.badge-green{color:var(--ok);border-color:rgba(51,196,141,.4);background:rgba(51,196,141,.1)}
+.badge-muted{color:var(--muted);border-color:var(--gray-500);background:rgba(255,255,255,.04)}
+/* Proximity section */
+.proximity-card{background:rgba(240,180,41,.05);border:1px solid rgba(240,180,41,.25);border-radius:12px;padding:14px}
+.prox-title{font-weight:800;font-size:14px;margin-bottom:8px;color:var(--warn);display:flex;align-items:center;gap:7px}
+.prox-item{padding:8px 0;border-bottom:1px solid rgba(240,180,41,.1);font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prox-item:last-child{border-bottom:none}
+/* Loading / empty */
+.status-msg{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--brand-red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Refresh timestamp */
+.refresh-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}.sidebar{display:none}
+  .kpi-row{grid-template-columns:1fr 1fr}
+}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="CityintLogo.jpg" alt="CityIntel"/>
+      <span class="t">CityIntel</span>
+    </div>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="power-outages.html" class="active">Power Outages</a>
+      <a href="cityintel-assistant.html">CityIntel AI</a>
+      <a href="neighborhood-intel.html">Neighborhood Intel</a>
+      <a href="assets.html">Assets</a>
+      <a href="travellers.html">Travellers</a>
+      <a href="alerts.html">High Risk Events</a>
+      <a href="events.html">All Events</a>
+      <a href="live-alerts.html">Live Alerts</a>
+      <a href="brief.html">Intelligence Brief</a>
+      <a href="trends.html">Trends &amp; Forecasts</a>
+      <a href="reports.html">Reports</a>
+      <a href="panicalarm.html">Panic Alarm</a>
+      <a href="checkin.html">Check-in Manager</a>
+      <a href="settings.html">Settings</a>
+      <a href="about.html">About</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <!-- Header -->
+    <div class="toprow">
+      <div>
+        <p class="page-title">⚡ Power Outages</p>
+        <p class="page-sub">Live power cut intelligence — planned and unplanned outages. Coverage: London, South East &amp; East of England (UK Power Networks).</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="refresh-row">
+          <div class="live-dot"></div>
+          <span id="lastUpdated">Loading…</span>
+        </div>
+        <button class="btn" id="refreshBtn">↺ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Coverage note -->
+    <div class="coverage-note">
+      ℹ️ Data source: UK Power Networks Open Data Portal. Covers London, Kent, Sussex, Surrey, Essex, Suffolk, Norfolk, Cambridgeshire and surrounds. Support for other UK regional DNOs (National Grid ED, Northern Powergrid, SP Energy Networks) can be added on request.
+    </div>
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi red"><div class="kpi-val" id="kpiUnplanned">—</div><div class="kpi-lbl">Unplanned outages</div></div>
+      <div class="kpi orange"><div class="kpi-val" id="kpiPlanned">—</div><div class="kpi-lbl">Planned works</div></div>
+      <div class="kpi green"><div class="kpi-val" id="kpiRestored">—</div><div class="kpi-lbl">Recently restored</div></div>
+      <div class="kpi"><div class="kpi-val" id="kpiCustomers">—</div><div class="kpi-lbl">Customers affected</div></div>
+    </div>
+
+    <!-- Proximity alerts (shown if any outages near registered assets) -->
+    <div id="proximitySection" style="display:none">
+      <div class="proximity-card">
+        <div class="prox-title">⚠ Outages near registered assets or travellers</div>
+        <div id="proximityList"></div>
+      </div>
+    </div>
+
+    <!-- Map + Filters -->
+    <div class="card" style="padding:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div style="font-weight:700;font-size:15px">Live Map</div>
+        <div class="filter-bar">
+          <select id="typeFilter">
+            <option value="">All types</option>
+            <option value="unplanned">Unplanned only</option>
+            <option value="planned">Planned only</option>
+            <option value="restored">Restored</option>
+          </select>
+          <input id="searchFilter" placeholder="Search area / postcode…" style="width:180px"/>
+          <button class="btn" id="myLocationBtn" title="Show outages near your location">📍 Near me</button>
+        </div>
+      </div>
+      <div id="outageMap"></div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ff5a5f"></div> Unplanned outage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f0b429"></div> Planned works</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#33c48d"></div> Restored</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd;border:2px solid #3b82f6"></div> Registered asset</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--gray-600);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:700;font-size:15px">Outage List</div>
+        <div id="tableCount" style="color:var(--muted);font-size:13px"></div>
+      </div>
+      <div id="tableWrap">
+        <div class="status-msg"><div class="spinner"></div>Loading power outage data…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="shared-chip.js"></script>
+<script>
+(function(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  let allOutages = [];
+  let map = null;
+  let markers = [];
+  let assetMarkers = [];
+
+  // ── Auth helpers ────────────────────────────────────────────────────
+  function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+  function authHeaders(){
+    const p=getProfile(); if(!p?.email) return {};
+    return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+  }
+
+  // ── Utilities ────────────────────────────────────────────────────────
+  function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function fmtTime(iso){
+    if(!iso) return '—';
+    try{ return new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+    catch{ return iso; }
+  }
+  function timeAgo(iso){
+    if(!iso) return '';
+    const s=Math.floor((Date.now()-new Date(iso).getTime())/1000);
+    if(s<60) return s+'s ago';
+    if(s<3600) return Math.floor(s/60)+'m ago';
+    return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m ago';
+  }
+  function distKm(lat1,lon1,lat2,lon2){
+    const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  }
+
+  function outageType(o){
+    const t=String(o.incident_type||o.type||o.fault_type||'').toLowerCase();
+    if(t.includes('unplanned')||t.includes('fault')) return 'unplanned';
+    if(t.includes('planned')||t.includes('maintenance')||t.includes('work')) return 'planned';
+    if(t.includes('restor')) return 'restored';
+    const s=String(o.status||'').toLowerCase();
+    if(s.includes('restor')) return 'restored';
+    if(s.includes('planned')) return 'planned';
+    return 'unplanned';
+  }
+  function typeColor(t){ return t==='planned'?'#f0b429':t==='restored'?'#33c48d':'#ff5a5f'; }
+  function typeBadgeClass(t){ return t==='planned'?'badge-orange':t==='restored'?'badge-green':'badge-red'; }
+  function typeLabel(t){ return t==='planned'?'Planned':t==='restored'?'Restored':'Unplanned'; }
+
+  // ── Map init ─────────────────────────────────────────────────────────
+  function initMap(){
+    map = L.map('outageMap',{zoomControl:true}).setView([51.5074,-0.1278],9);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains:'abcd', maxZoom:19
+    }).addTo(map);
+  }
+
+  function clearMarkers(){
+    markers.forEach(m=>m.remove());
+    markers=[];
+  }
+
+  function plotOutages(outages){
+    clearMarkers();
+    outages.forEach(o=>{
+      const lat = o.lat ?? o.geopoint?.lat ?? (Array.isArray(o.geopoint)?o.geopoint[0]:null);
+      const lon = o.lon ?? o.geopoint?.lon ?? o.geopoint?.lng ?? (Array.isArray(o.geopoint)?o.geopoint[1]:null);
+      if(!lat||!lon) return;
+      const t=outageType(o);
+      const color=typeColor(t);
+      const circle=L.circleMarker([lat,lon],{
+        radius:8+Math.min(Math.sqrt(o.customers_affected||0)*0.15,10),
+        color:'#fff', weight:1.5, fillColor:color, fillOpacity:0.85
+      });
+      const affected = o.customers_affected ? `<strong>${o.customers_affected.toLocaleString()}</strong> customers` : 'Unknown customers';
+      const area = o.postcode||o.area||o.location||o.postcode_district||'';
+      circle.bindPopup(`
+        <div style="font:13px system-ui;min-width:180px;color:#e9edf2">
+          <div style="font-weight:800;margin-bottom:5px">${esc(o.description||o.title||typeLabel(t)+' outage')}</div>
+          <div style="color:#8e97a3;font-size:12px;margin-bottom:4px">${esc(area)}</div>
+          <div style="margin-bottom:3px">${affected}</div>
+          <div style="color:#8e97a3;font-size:11px">Started: ${fmtTime(o.start_time||o.created_at)}</div>
+          ${o.estimated_restoration?`<div style="color:#f0b429;font-size:11px">Est. restore: ${fmtTime(o.estimated_restoration)}</div>`:''}
+        </div>`,
+        {className:'ci-popup'}
+      );
+      circle.addTo(map);
+      markers.push(circle);
+    });
+  }
+
+  // ── Table ─────────────────────────────────────────────────────────────
+  function renderTable(outages){
+    const wrap=document.getElementById('tableWrap');
+    const count=document.getElementById('tableCount');
+    if(!outages.length){
+      wrap.innerHTML='<div class="status-msg" style="padding:32px">No outages found matching the current filters.</div>';
+      if(count) count.textContent='';
+      return;
+    }
+    if(count) count.textContent=outages.length+' outage'+(outages.length!==1?'s':'');
+    wrap.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr>
+        <th>Type</th><th>Area / Postcode</th><th>Customers</th>
+        <th>Started</th><th>Est. Restore</th><th>Status</th>
+      </tr></thead>
+      <tbody>${outages.map(o=>{
+        const t=outageType(o);
+        const area=o.postcode||o.area||o.location||o.postcode_district||'—';
+        const customers=o.customers_affected?Number(o.customers_affected).toLocaleString():'—';
+        const status=o.status||typeLabel(t);
+        return `<tr data-lat="${o.lat??o.geopoint?.lat??''}" data-lon="${o.lon??o.geopoint?.lon??''}">
+          <td><span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span></td>
+          <td>${esc(area)}</td>
+          <td>${customers}</td>
+          <td style="font-size:12px;color:var(--muted)">${fmtTime(o.start_time||o.created_at)}</td>
+          <td style="font-size:12px;color:${t==='restored'?'var(--ok)':'var(--warn)'}">${o.estimated_restoration?fmtTime(o.estimated_restoration):'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${esc(status)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+
+    // Click row to fly to on map
+    wrap.querySelectorAll('tbody tr').forEach(row=>{
+      row.addEventListener('click',()=>{
+        const lat=parseFloat(row.dataset.lat);
+        const lon=parseFloat(row.dataset.lon);
+        if(lat&&lon&&map){ map.flyTo([lat,lon],13,{duration:0.8}); }
+      });
+    });
+  }
+
+  // ── KPIs ──────────────────────────────────────────────────────────────
+  function updateKPIs(outages){
+    const unplanned=outages.filter(o=>outageType(o)==='unplanned').length;
+    const planned=outages.filter(o=>outageType(o)==='planned').length;
+    const restored=outages.filter(o=>outageType(o)==='restored').length;
+    const customers=outages.reduce((s,o)=>s+(Number(o.customers_affected)||0),0);
+    document.getElementById('kpiUnplanned').textContent=unplanned;
+    document.getElementById('kpiPlanned').textContent=planned;
+    document.getElementById('kpiRestored').textContent=restored;
+    document.getElementById('kpiCustomers').textContent=customers?customers.toLocaleString():'0';
+  }
+
+  // ── Proximity check against org assets ───────────────────────────────
+  async function checkProximity(outages){
+    try{
+      const res=await fetch(API_BASE+'/api/assets',{headers:authHeaders()});
+      if(!res.ok) return;
+      const data=await res.json().catch(()=>({}));
+      const assets=(data.assets||data.data||[]).filter(a=>a.lat&&a.lon);
+      if(!assets.length) return;
+
+      // Plot asset markers
+      assetMarkers.forEach(m=>m.remove());
+      assetMarkers=[];
+      assets.forEach(a=>{
+        const m=L.circleMarker([a.lat,a.lon],{radius:8,color:'#3b82f6',weight:2,fillColor:'#93c5fd',fillOpacity:0.7});
+        m.bindPopup(`<div style="font:13px system-ui;color:#e9edf2"><strong>${esc(a.name||'Asset')}</strong><br><span style="color:#8e97a3">${esc(a.location||a.address||'')}</span></div>`);
+        m.addTo(map);
+        assetMarkers.push(m);
+      });
+
+      // Find outages within 2km of any asset
+      const RADIUS_KM=2;
+      const nearby=[];
+      for(const o of outages){
+        const oLat=o.lat??o.geopoint?.lat;
+        const oLon=o.lon??o.geopoint?.lon;
+        if(!oLat||!oLon) continue;
+        for(const a of assets){
+          const d=distKm(a.lat,a.lon,oLat,oLon);
+          if(d<=RADIUS_KM){
+            nearby.push({outage:o,asset:a,dist:d});
+          }
+        }
+      }
+
+      if(!nearby.length){
+        document.getElementById('proximitySection').style.display='none';
+        return;
+      }
+      document.getElementById('proximitySection').style.display='block';
+      const list=document.getElementById('proximityList');
+      list.innerHTML=nearby.map(n=>{
+        const t=outageType(n.outage);
+        const area=n.outage.postcode||n.outage.area||n.outage.location||'Unknown area';
+        const customers=n.outage.customers_affected?Number(n.outage.customers_affected).toLocaleString()+'k+ customers':'';
+        return `<div class="prox-item">
+          <span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span>
+          <span><strong>${esc(n.asset.name||'Asset')}</strong> — ${esc(area)}</span>
+          <span style="color:var(--muted);font-size:12px">${n.dist.toFixed(1)}km away ${customers?'· '+customers:''}</span>
+          ${n.outage.estimated_restoration?`<span style="color:var(--warn);font-size:12px">Est. restore: ${fmtTime(n.outage.estimated_restoration)}</span>`:''}
+        </div>`;
+      }).join('');
+    }catch(e){ console.warn('Proximity check failed',e.message); }
+  }
+
+  // ── Filter & render ───────────────────────────────────────────────────
+  function applyFilters(){
+    const type=document.getElementById('typeFilter').value;
+    const search=document.getElementById('searchFilter').value.trim().toLowerCase();
+    let filtered=allOutages.filter(o=>{
+      if(type&&outageType(o)!==type) return false;
+      if(search){
+        const area=(o.postcode||o.area||o.location||o.postcode_district||o.description||'').toLowerCase();
+        if(!area.includes(search)) return false;
+      }
+      return true;
+    });
+    plotOutages(filtered);
+    renderTable(filtered);
+  }
+
+  // ── Load data ─────────────────────────────────────────────────────────
+  async function loadOutages(){
+    const tableWrap=document.getElementById('tableWrap');
+    tableWrap.innerHTML='<div class="status-msg"><div class="spinner"></div>Loading power outage data…</div>';
+    try{
+      const res=await fetch(API_BASE+'/api/power-outages',{headers:authHeaders()});
+      const data=await res.json().catch(()=>({}));
+
+      if(!res.ok||data.ok===false){
+        tableWrap.innerHTML=`<div class="status-msg">
+          ${data.error==='UKPN_API_KEY not configured'
+            ? '<strong>Setup required</strong><br>Add your UKPN_API_KEY to the Cloudflare Worker to enable live power outage data.<br><a href="https://ukpowernetworks.opendatasoft.com" target="_blank" rel="noopener" style="color:#93c5fd">Register for a free API key ↗</a>'
+            : 'Could not load outage data: '+(data.error||'Unknown error')
+          }
+        </div>`;
+        return;
+      }
+
+      allOutages=data.outages||[];
+      document.getElementById('lastUpdated').textContent='Updated '+timeAgo(data.fetched_at||new Date().toISOString());
+      updateKPIs(allOutages);
+      applyFilters();
+      checkProximity(allOutages);
+
+    }catch(e){
+      tableWrap.innerHTML=`<div class="status-msg">Network error — could not reach CityIntel API.<br><small style="color:var(--muted)">${esc(e.message)}</small></div>`;
+    }
+  }
+
+  // ── Near me ───────────────────────────────────────────────────────────
+  document.getElementById('myLocationBtn').addEventListener('click',()=>{
+    navigator.geolocation?.getCurrentPosition(pos=>{
+      const {latitude:lat,longitude:lon}=pos.coords;
+      if(map) map.flyTo([lat,lon],12,{duration:0.8});
+      // Filter to within 10km
+      const nearby=allOutages.filter(o=>{
+        const oLat=o.lat??o.geopoint?.lat;
+        const oLon=o.lon??o.geopoint?.lon;
+        if(!oLat||!oLon) return false;
+        return distKm(lat,lon,oLat,oLon)<=10;
+      });
+      plotOutages(nearby);
+      renderTable(nearby);
+      document.getElementById('tableCount').textContent=nearby.length+' outage'+(nearby.length!==1?'s':'')+' within 10km';
+    },()=>alert('Location access denied or unavailable.'));
+  });
+
+  // ── Event listeners ───────────────────────────────────────────────────
+  document.getElementById('refreshBtn').addEventListener('click',loadOutages);
+  document.getElementById('typeFilter').addEventListener('change',applyFilters);
+  document.getElementById('searchFilter').addEventListener('input',applyFilters);
+
+  // ── Nav active state ──────────────────────────────────────────────────
+  const here=location.pathname.split('/').pop()||'index.html';
+  document.querySelectorAll('nav a').forEach(a=>{
+    if(a.getAttribute('href')===here) a.classList.add('active');
+    else a.classList.remove('active');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  initMap();
+  loadOutages();
+  setInterval(loadOutages, REFRESH_INTERVAL_MS);
+
+})();
+</script>
+</body>
+</html>
