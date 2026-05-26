@@ -168,11 +168,23 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
             <option value="planned">Planned only</option>
             <option value="restored">Restored</option>
           </select>
+          <select id="sourceFilter">
+            <option value="">All sources</option>
+            <option value="ukpn">UK Power Networks</option>
+            <option value="npg">Northern Powergrid</option>
+            <option value="nged">National Grid ED</option>
+          </select>
           <select id="zoneFilter">
             <option value="">All zones</option>
             <option value="LPN">London (LPN)</option>
             <option value="SPN">South East (SPN)</option>
             <option value="EPN">East England (EPN)</option>
+            <option value="Yorkshire">Yorkshire</option>
+            <option value="North East">North East</option>
+            <option value="East Midlands">East Midlands</option>
+            <option value="West Midlands">West Midlands</option>
+            <option value="South West">South West</option>
+            <option value="South Wales">South Wales</option>
           </select>
           <input id="searchFilter" placeholder="Search postcode…" style="width:150px"/>
           <button class="btn" id="myLocationBtn" title="Show outages near your location">📍 Near me</button>
@@ -221,8 +233,12 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
   function fmtTime(iso){
     if(!iso) return '—';
-    try{ return new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
-    catch{ return iso; }
+    try{
+      const d = new Date(iso);
+      if (isNaN(d) || d.getFullYear() < 2005) return '—';
+      return d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    }
+    catch{ return '—'; }
   }
   function elapsed(iso){
     if(!iso) return '—';
@@ -253,8 +269,9 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   function outageType(o){
     // If restored_time (restoreddatetime) is present, mark as restored regardless
     if(o.restored_time) return 'restored';
-    // powercuttype confirmed values: "Planned", "Unplanned"
-    const t=String(o.incident_type||'').trim();
+    // powercuttype confirmed values: "Planned", "Unplanned", sometimes "Restored"
+    const t=String(o.incident_type||o.status||'').trim();
+    if(t.toLowerCase().includes('restor')) return 'restored';
     if(t==='Unplanned'||t.toLowerCase().includes('unplanned')) return 'unplanned';
     if(t==='Planned'||t.toLowerCase().includes('planned')) return 'planned';
     return 'unplanned'; // default
@@ -443,10 +460,12 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   // ── Filter & render ───────────────────────────────────────────────────
   function applyFilters(){
     const type=document.getElementById('typeFilter').value;
+    const source=(document.getElementById('sourceFilter')?.value || '').toLowerCase();
     const zone=document.getElementById('zoneFilter').value;
     const search=document.getElementById('searchFilter').value.trim().toLowerCase();
     let filtered=allOutages.filter(o=>{
       if(type&&outageType(o)!==type) return false;
+      if(source&&String(o._source||'').toLowerCase()!==source) return false;
       if(zone&&(o.operating_zone||'')!==zone) return false;
       if(search){
         const area=(o.postcode||o.location||o.operating_zone||o.description||o.incident_category||'').toLowerCase();
@@ -463,7 +482,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     const tableWrap=document.getElementById('tableWrap');
     tableWrap.innerHTML='<div class="status-msg"><div class="spinner"></div>Loading power outage data…</div>';
     try{
-      const res=await fetch(API_BASE+'/api/power-outages?v=3',{headers:authHeaders()});
+      const res=await fetch(API_BASE+'/api/power-outages?v=4',{headers:authHeaders()});
       const data=await res.json().catch(()=>({}));
 
       if(!res.ok||data.ok===false){
