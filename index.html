@@ -774,6 +774,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 		<a href="sources.html">Sources</a>
         <a href="panicalarm.html">Panic Alarm</a>
         <a href="checkin.html">Check-in Manager</a>
+        <a href="power-outages.html">Power Outages</a>
         <a href="settings.html">Settings</a>
         <a href="about.html">About</a>
       </nav>
@@ -1454,6 +1455,146 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <small style="color:#8e97a3">Heuristic projection uses the last 14 days’ average per continent and risk.</small>
 </section>
 
+
+      <!-- Power Outage Widget -->
+      <section style="grid-column:span 12;margin-top:0" id="powerOutageWidgetWrapper">
+<section id="powerOutageWidget" style="display:none">
+  <div style="background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid #24272c;border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.35)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-weight:800;font-size:16px">⚡ Power Outages <span style="font-size:12px;font-weight:400;color:#8e97a3">(UK Power Networks)</span></div>
+        <div style="font-size:12px;color:#8e97a3;margin-top:2px">London, South East &amp; East of England — live data</div>
+      </div>
+      <a href="power-outages.html" style="display:inline-flex;align-items:center;gap:5px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;padding:6px 12px;border-radius:9px;font:600 12px system-ui;text-decoration:none">View all →</a>
+    </div>
+
+    <!-- KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:#1c1e22;border:1px solid rgba(255,90,95,.25);border-radius:10px;padding:10px 12px">
+        <div id="pwKpiUnplanned" style="font-size:22px;font-weight:800;color:#ff5a5f">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">Unplanned</div>
+      </div>
+      <div style="background:#1c1e22;border:1px solid rgba(240,180,41,.25);border-radius:10px;padding:10px 12px">
+        <div id="pwKpiPlanned" style="font-size:22px;font-weight:800;color:#f0b429">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">Planned</div>
+      </div>
+      <div style="background:#1c1e22;border:1px solid rgba(51,196,141,.25);border-radius:10px;padding:10px 12px">
+        <div id="pwKpiCustomers" style="font-size:22px;font-weight:800;color:#e9edf2">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">Customers</div>
+      </div>
+    </div>
+
+    <!-- Top outages list (max 3) -->
+    <div id="pwOutageList" style="display:flex;flex-direction:column;gap:7px"></div>
+
+    <!-- Asset proximity alert -->
+    <div id="pwProximityAlert" style="display:none;margin-top:10px;background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.25);border-radius:10px;padding:10px 12px;font-size:12px;color:#f0b429">
+      <strong>⚠ Outages near registered assets</strong>
+      <div id="pwProximityDetail" style="color:#c9d0d8;margin-top:4px"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Power outage dashboard widget
+(async function initPowerWidget(){
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+  function authH(){
+    const p=getProfile(); if(!p?.email) return {};
+    return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+  }
+  function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function distKm(lat1,lon1,lat2,lon2){
+    const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  }
+  function outageType(o){
+    const t=String(o.incident_type||o.type||'').toLowerCase();
+    if(t.includes('plan')) return 'planned';
+    if(t.includes('restor')) return 'restored';
+    const s=String(o.status||'').toLowerCase();
+    if(s.includes('plan')) return 'planned';
+    if(s.includes('restor')) return 'restored';
+    return 'unplanned';
+  }
+
+  try {
+    const res = await fetch(API_BASE + '/api/power-outages', { headers: authH() });
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok || !data.outages) return;
+
+    const outages = data.outages;
+    const unplanned = outages.filter(o => outageType(o) === 'unplanned');
+    const planned   = outages.filter(o => outageType(o) === 'planned');
+    const customers = outages.reduce((s,o) => s + (Number(o.customers_affected)||0), 0);
+
+    document.getElementById('pwKpiUnplanned').textContent = unplanned.length;
+    document.getElementById('pwKpiPlanned').textContent   = planned.length;
+    document.getElementById('pwKpiCustomers').textContent = customers ? customers.toLocaleString() : '0';
+
+    // Show widget only if there's anything to show
+    if (outages.length > 0) {
+      document.getElementById('powerOutageWidget').style.display = 'block';
+    }
+
+    // Top 3 worst unplanned outages
+    const top3 = unplanned
+      .sort((a,b) => (Number(b.customers_affected)||0) - (Number(a.customers_affected)||0))
+      .slice(0, 3);
+
+    const list = document.getElementById('pwOutageList');
+    if (top3.length) {
+      list.innerHTML = top3.map(o => {
+        const area = o.postcode || o.area || o.location || 'Unknown area';
+        const customers = o.customers_affected ? Number(o.customers_affected).toLocaleString() + ' customers' : '';
+        const etr = o.estimated_restoration ? ' · Est. restore: ' + new Date(o.estimated_restoration).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#1c1e22;border:1px solid #24272c;border-radius:9px;font-size:12px">
+          <span style="width:8px;height:8px;border-radius:50%;background:#ff5a5f;flex-shrink:0"></span>
+          <span style="font-weight:700;color:#e9edf2">${esc(area)}</span>
+          <span style="color:#8e97a3;margin-left:auto">${esc(customers)}${esc(etr)}</span>
+        </div>`;
+      }).join('');
+    } else if (planned.length) {
+      list.innerHTML = `<div style="font-size:12px;color:#8e97a3;padding:4px 0">No unplanned outages. ${planned.length} planned maintenance work${planned.length>1?'s':''} active.</div>`;
+    } else {
+      list.innerHTML = `<div style="font-size:12px;color:#33c48d;padding:4px 0">✓ No active outages in monitored area.</div>`;
+    }
+
+    // Proximity check against assets
+    try {
+      const aRes = await fetch(API_BASE + '/api/assets', { headers: authH() });
+      if (aRes.ok) {
+        const aData = await aRes.json().catch(() => ({}));
+        const assets = (aData.assets || aData.data || []).filter(a => a.lat && a.lon);
+        const nearby = [];
+        for (const o of unplanned) {
+          const oLat = o.lat ?? o.geopoint?.lat;
+          const oLon = o.lon ?? o.geopoint?.lon;
+          if (!oLat || !oLon) continue;
+          for (const a of assets) {
+            const d = distKm(a.lat, a.lon, oLat, oLon);
+            if (d <= 2) nearby.push({ o, a, d });
+          }
+        }
+        if (nearby.length) {
+          document.getElementById('pwProximityAlert').style.display = 'block';
+          document.getElementById('pwProximityDetail').innerHTML = nearby
+            .slice(0, 3)
+            .map(n => `<div>${esc(n.a.name||'Asset')} — ${esc(n.o.postcode||'unknown area')} (${n.d.toFixed(1)}km)</div>`)
+            .join('');
+        }
+      }
+    } catch(e) {}
+
+  } catch(e) {
+    console.warn('Power outage widget error:', e.message);
+  }
+})();
+</script>
+      </section>
       </div>
     </main>
   </div>
