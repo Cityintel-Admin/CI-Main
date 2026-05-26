@@ -1,10 +1,61 @@
 <!doctype html>
 <html lang="en">
 <head>
+
+  
   <script src="auth.js"></script>
   <script src="admin-links.js"></script>
   <script src="auth-guard.js"></script>
   <script src="metrics.js"></script>
+
+<script>
+  CIAuth.requireAuth();
+  if (!CIAuth.can('canViewAlerts')) {
+    location.replace('index.html');
+  }
+</script>
+
+	
+<script>
+(function pageGuard(){
+  const NEED_LOGIN = true;          // this page requires a login
+  const NEED_SUB = false;           // set to true on pages that require an active sub
+
+  // Must be logged in?
+  if (NEED_LOGIN && (!window.CIAuth || !CIAuth.isLoggedIn())) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    location.href = 'login.html?next=' + next;
+    return;
+  }
+
+  // Must be subscribed?
+  if (NEED_SUB) {
+    const isSub = localStorage.getItem('ci_subscribed') === 'true';
+    if (!isSub) {
+      location.href = 'subscribe.html';
+      return;
+    }
+  }
+})();
+</script>
+
+	
+<script>
+(function compatProfileShim(){
+  if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+  const u = CIAuth.who();
+  if (!u) return;
+  localStorage.setItem('ci_profile', JSON.stringify({
+    name: u.name || 'CityIntel User',
+    email: u.email,
+    role: u.role || 'Admin',
+    is_admin: (u.role||'').toLowerCase()==='admin'
+  }));
+  // Do NOT auto-set ci_subscribed here anymore
+})();
+</script>
+  
   <meta charset="utf-8"/>
   <title>CityIntel — Power Outages</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -21,19 +72,42 @@
 }
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
-.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
-.sidebar{background:linear-gradient(180deg,var(--brand-black),#131416);border-right:1px solid var(--gray-600);padding:14px 12px;display:flex;flex-direction:column;gap:4px}
-.brand{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:8px}
-.brand img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#fff}
-.brand .t{font-weight:700;font-size:16px}
-nav a{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;padding:9px 12px;border-radius:10px;border:1px solid transparent;font-size:13px}
-nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
-nav a.active{background:rgba(208,22,22,.15);border-color:var(--brand-red)}
+.app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
+    .sidebar{grid-area:sidebar;background:#0c0c0c;border-right:1px solid var(--gray-600);display:flex;flex-direction:column;padding:18px 14px;gap:18px}
+    .brand{display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(208,22,22,0.1);border-radius:12px}
+    .brand img{width:34px;height:34px;background:#fff;border-radius:6px}
+    nav a{display:flex;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--text);border:1px solid transparent}
+    nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+    nav a.active{background:rgba(208,22,22,0.15);border-color:var(--brand-red)}
+    .sidebar .footnote{margin-top:auto;font-size:12px;color:#8e97a3}
+    .topbar{ grid-area: topbar;background: rgba(255,255,255,0.02);border-bottom:1px solid var(--brand-gray-600);display:flex; align-items:center; gap:12px;
+  padding:10px 16px;position:sticky; top:0; z-index:10;backdrop-filter: blur(8px);}
+
+#topActions{margin-left:auto;display:flex; align-items:center; gap:10px;min-width: fit-content;position: relative;}
+
+    .login-btn{ display:inline-block;padding:8px 12px;border-radius:999px;background:#D01616;
+  border:1px solid #9c0f0f;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap;
+}
+    .login-btn:hover{filter:brightness(1.05)}
+    .user{ display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;
+  background:#1c1e22;border:1px solid #24272c;cursor:pointer;
+}
+    .avatar{ width:28px;height:28px;background:#fff;color:#000;border-radius:50%;
+  display:grid;place-items:center;font-weight:700;
+}
+    .dropdown{ position:absolute;right:0;top:calc(100% + 6px);background:#1a1c20;border:1px solid #24272c;
+  border-radius:10px;padding:6px 0;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none;min-width:140px;z-index:50;
+}
+    .dropdown a{display:block;padding:8px 12px;color:#e9edf2;text-decoration:none;font-size:14px}
+    .dropdown a:hover{background:rgba(255,255,255,0.05)}
+
+    
 .main{padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
 .toprow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .page-title{font-size:22px;font-weight:800;margin:0 0 3px}
 .page-sub{color:var(--muted);font-size:13px;margin:0}
 .card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--gray-600);border-radius:var(--card-radius);box-shadow:var(--shadow);padding:16px}
+    
 /* KPI row */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .kpi{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:12px;padding:14px 16px}
@@ -92,15 +166,32 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 }
   </style>
 </head>
-<body>
-<div class="app">
+  
+<script>
+  // must be after the header DOM exists
+  document.addEventListener('DOMContentLoaded', function(){
+    CIAuth.injectUserChip(document.getElementById('topActions'));
+    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
 
-  <aside class="sidebar">
-    <div class="brand">
-      <img src="CityintLogo.jpg" alt="CityIntel"/>
-      <span class="t">CityIntel</span>
-    </div>
-    <nav>
+<body>
+
+  <div class="brandbar">
+    <img src="CityintLogo.jpg" alt="CityIntel Logo">
+    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
+	<div id="trial-banner" style="display:none;position:absolute;
+    left:50%; transform:translateX(-50%); background:none;
+    color:#fecaca; padding:8px 12px; text-align:center;">
+  <span id="trial-text">Your trial ends soon.</span>
+</div>	
+	  <div id="topActions" style="position:relative"></div>
+  </div>
+	
+   <div class="app">
+    <aside class="sidebar">
+      <div class="section-label"></div>
+      <nav>
       <a href="index.html">Dashboard</a>
       <a href="cityintel-assistant.html">CityIntel AI</a>
       <a href="neighborhood-intel.html">Neighborhood Intel</a>
@@ -168,7 +259,13 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
             <option value="planned">Planned only</option>
             <option value="restored">Restored</option>
           </select>
-          <input id="searchFilter" placeholder="Search area / postcode…" style="width:180px"/>
+          <select id="zoneFilter">
+            <option value="">All zones</option>
+            <option value="LPN">London (LPN)</option>
+            <option value="SPN">South East (SPN)</option>
+            <option value="EPN">East England (EPN)</option>
+          </select>
+          <input id="searchFilter" placeholder="Search postcode…" style="width:150px"/>
           <button class="btn" id="myLocationBtn" title="Show outages near your location">📍 Near me</button>
         </div>
       </div>
@@ -232,14 +329,13 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   }
 
   function outageType(o){
-    const t=String(o.incident_type||o.type||o.fault_type||'').toLowerCase();
-    if(t.includes('unplanned')||t.includes('fault')) return 'unplanned';
-    if(t.includes('planned')||t.includes('maintenance')||t.includes('work')) return 'planned';
-    if(t.includes('restor')) return 'restored';
-    const s=String(o.status||'').toLowerCase();
-    if(s.includes('restor')) return 'restored';
-    if(s.includes('planned')) return 'planned';
-    return 'unplanned';
+    // If restored_time (restoreddatetime) is present, mark as restored regardless
+    if(o.restored_time) return 'restored';
+    // powercuttype confirmed values: "Planned", "Unplanned"
+    const t=String(o.incident_type||'').trim();
+    if(t==='Unplanned'||t.toLowerCase().includes('unplanned')) return 'unplanned';
+    if(t==='Planned'||t.toLowerCase().includes('planned')) return 'planned';
+    return 'unplanned'; // default
   }
   function typeColor(t){ return t==='planned'?'#f0b429':t==='restored'?'#33c48d':'#ff5a5f'; }
   function typeBadgeClass(t){ return t==='planned'?'badge-orange':t==='restored'?'badge-green':'badge-red'; }
@@ -271,15 +367,21 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
         radius:8+Math.min(Math.sqrt(o.customers_affected||0)*0.15,10),
         color:'#fff', weight:1.5, fillColor:color, fillOpacity:0.85
       });
-      const affected = o.customers_affected ? `<strong>${o.customers_affected.toLocaleString()}</strong> customers` : 'Unknown customers';
-      const area = o.postcode||o.area||o.location||o.postcode_district||'';
+      const affected = o.customers_affected ? `<strong>${Number(o.customers_affected).toLocaleString()}</strong> customers` : 'Customers: unknown';
+      const popupArea = o.postcode || '—';
+      const popupZone = o.operating_zone ? ` <span style="font-size:10px;padding:1px 5px;background:rgba(147,197,253,.15);border-radius:4px;color:#93c5fd">${esc(o.operating_zone)}</span>` : '';
+      const popupDesc = o.description ? `<div style="color:#c9d0d8;font-size:12px;margin:3px 0">${esc(o.description.slice(0,120))}${o.description.length>120?'…':''}</div>` : '';
+      const popupEtr = o.estimated_restoration ? `<div style="color:#f0b429;font-size:11px">Est. restore: ${fmtTime(o.estimated_restoration)}</div>` : '';
+      const popupRestored = o.restored_time ? `<div style="color:#33c48d;font-size:11px">✓ Restored: ${fmtTime(o.restored_time)}</div>` : '';
       circle.bindPopup(`
-        <div style="font:13px system-ui;min-width:180px;color:#e9edf2">
-          <div style="font-weight:800;margin-bottom:5px">${esc(o.description||o.title||typeLabel(t)+' outage')}</div>
-          <div style="color:#8e97a3;font-size:12px;margin-bottom:4px">${esc(area)}</div>
+        <div style="font:13px system-ui;min-width:200px;color:#e9edf2">
+          <div style="font-weight:800;margin-bottom:4px">${typeLabel(t)} outage${popupZone}</div>
+          <div style="color:#8e97a3;font-size:12px;margin-bottom:4px">${esc(popupArea)}</div>
+          ${popupDesc}
           <div style="margin-bottom:3px">${affected}</div>
-          <div style="color:#8e97a3;font-size:11px">Started: ${fmtTime(o.start_time||o.created_at)}</div>
-          ${o.estimated_restoration?`<div style="color:#f0b429;font-size:11px">Est. restore: ${fmtTime(o.estimated_restoration)}</div>`:''}
+          <div style="color:#8e97a3;font-size:11px">Started: ${fmtTime(o.start_time||o.planned_date)}</div>
+          ${popupEtr}${popupRestored}
+          ${o.incident_reference||o.id?`<div style="color:#4a5568;font-size:10px;margin-top:4px">${esc(o.id||o.incident_reference||'')}</div>`:''}
         </div>`,
         {className:'ci-popup'}
       );
@@ -300,21 +402,26 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     if(count) count.textContent=outages.length+' outage'+(outages.length!==1?'s':'');
     wrap.innerHTML=`<div class="table-wrap"><table>
       <thead><tr>
-        <th>Type</th><th>Area / Postcode</th><th>Customers</th>
-        <th>Started</th><th>Est. Restore</th><th>Status</th>
+        <th>Type</th><th>Zone</th><th>Postcodes Affected</th><th>Customers</th>
+        <th>Started</th><th>Est. Restoration</th><th>Category</th>
       </tr></thead>
       <tbody>${outages.map(o=>{
         const t=outageType(o);
-        const area=o.postcode||o.area||o.location||o.postcode_district||'—';
+        const zone=o.operating_zone||'—';
+        const postcodes=o.postcode||'—';
         const customers=o.customers_affected?Number(o.customers_affected).toLocaleString():'—';
-        const status=o.status||typeLabel(t);
+        const category=o.incident_category||o.planned_reason||'—';
+        const startTime=o.start_time||o.planned_date||'';
+        const etr=o.estimated_restoration||'';
+        const restoredStyle=t==='restored'?'color:var(--ok)':'';
         return `<tr data-lat="${o.lat??o.geopoint?.lat??''}" data-lon="${o.lon??o.geopoint?.lon??''}">
           <td><span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span></td>
-          <td>${esc(area)}</td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(147,197,253,.1);color:#93c5fd">${esc(zone)}</span></td>
+          <td style="font-size:12px">${esc(postcodes)}</td>
           <td>${customers}</td>
-          <td style="font-size:12px;color:var(--muted)">${fmtTime(o.start_time||o.created_at)}</td>
-          <td style="font-size:12px;color:${t==='restored'?'var(--ok)':'var(--warn)'}">${o.estimated_restoration?fmtTime(o.estimated_restoration):'—'}</td>
-          <td style="font-size:12px;color:var(--muted)">${esc(status)}</td>
+          <td style="font-size:12px;color:var(--muted)">${fmtTime(startTime)}</td>
+          <td style="font-size:12px;${restoredStyle||'color:var(--warn)'}">${etr?fmtTime(etr):(t==='restored'?'✓ Restored':'—')}</td>
+          <td style="font-size:11px;color:var(--muted)">${esc(category)}</td>
         </tr>`;
       }).join('')}</tbody>
     </table></div>`;
@@ -383,8 +490,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       const list=document.getElementById('proximityList');
       list.innerHTML=nearby.map(n=>{
         const t=outageType(n.outage);
-        const area=n.outage.postcode||n.outage.area||n.outage.location||'Unknown area';
-        const customers=n.outage.customers_affected?Number(n.outage.customers_affected).toLocaleString()+'k+ customers':'';
+        const area=n.outage.postcode||n.outage.operating_zone||'Unknown area';
+        const customers=n.outage.customers_affected?Number(n.outage.customers_affected).toLocaleString()+' customers':'';
         return `<div class="prox-item">
           <span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span>
           <span><strong>${esc(n.asset.name||'Asset')}</strong> — ${esc(area)}</span>
@@ -398,11 +505,13 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   // ── Filter & render ───────────────────────────────────────────────────
   function applyFilters(){
     const type=document.getElementById('typeFilter').value;
+    const zone=document.getElementById('zoneFilter').value;
     const search=document.getElementById('searchFilter').value.trim().toLowerCase();
     let filtered=allOutages.filter(o=>{
       if(type&&outageType(o)!==type) return false;
+      if(zone&&(o.operating_zone||'')!==zone) return false;
       if(search){
-        const area=(o.postcode||o.area||o.location||o.postcode_district||o.description||'').toLowerCase();
+        const area=(o.postcode||o.location||o.operating_zone||o.description||o.incident_category||'').toLowerCase();
         if(!area.includes(search)) return false;
       }
       return true;
@@ -455,13 +564,15 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       });
       plotOutages(nearby);
       renderTable(nearby);
-      document.getElementById('tableCount').textContent=nearby.length+' outage'+(nearby.length!==1?'s':'')+' within 10km';
+      const nearCustomers=nearby.reduce((s,o)=>s+(Number(o.customers_affected)||0),0);
+      document.getElementById('tableCount').textContent=nearby.length+' outage'+(nearby.length!==1?'s':'')+' within 10km'+(nearCustomers?' · '+nearCustomers.toLocaleString()+' customers affected':'');
     },()=>alert('Location access denied or unavailable.'));
   });
 
   // ── Event listeners ───────────────────────────────────────────────────
   document.getElementById('refreshBtn').addEventListener('click',loadOutages);
   document.getElementById('typeFilter').addEventListener('change',applyFilters);
+  document.getElementById('zoneFilter').addEventListener('change',applyFilters);
   document.getElementById('searchFilter').addEventListener('input',applyFilters);
 
   // ── Nav active state ──────────────────────────────────────────────────
