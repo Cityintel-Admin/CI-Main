@@ -53,6 +53,11 @@ nav a.active{background:rgba(208,22,22,.15);border-color:var(--brand-red)}
 .btn:hover{background:var(--gray-600)}
 .btn.primary{background:var(--brand-red);border-color:#9c0f0f;color:#fff}
 .btn.primary:hover{filter:brightness(1.08)}
+.table-pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.table-pager .mini-btn{border:1px solid var(--gray-600);background:var(--gray-700);color:var(--text);border-radius:8px;padding:4px 8px;font:600 12px system-ui;cursor:pointer}
+.table-pager .mini-btn:hover{background:var(--gray-600)}
+.table-pager .mini-btn:disabled{opacity:.45;cursor:not-allowed}
+.table-pager select{background:var(--gray-700);border:1px solid var(--gray-600);color:var(--text);border-radius:8px;padding:4px 6px;font-size:12px}
 /* Map */
 #outageMap{height:420px;border-radius:12px;border:1px solid var(--gray-600);background:#1a1c20}
 /* Leaflet dark override */
@@ -221,6 +226,9 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   let map = null;
   let markers = [];
   let assetMarkers = [];
+  let tablePage = 1;
+  let tablePageSize = 50;
+  let tableViewAll = false;
 
   // ── Auth helpers ────────────────────────────────────────────────────
   function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
@@ -252,6 +260,33 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       if(h > 0) return h + 'h ' + Math.floor((ms % 3600000) / 60000) + 'm';
       return Math.floor(ms / 60000) + 'm';
     } catch { return '—'; }
+  }
+
+  function fmtDuration(o){
+    const raw =
+      o.duration_minutes ?? o.duration_mins ?? o.durationMin ??
+      o.duration ?? o.elapsed_minutes ?? o.elapsedtime ??
+      o.elapsed_time ?? o.outage_duration ?? null;
+
+    if(raw === null || raw === undefined || raw === '') return '—';
+
+    if(typeof raw === 'string'){
+      const s = raw.trim();
+      if(!s || s === '—' || s === '-') return '—';
+      if(/[a-z]/i.test(s) && !/^\d+(\.\d+)?$/.test(s)) return esc(s);
+    }
+
+    const n = Number(raw);
+    if(!Number.isFinite(n) || n < 0) return '—';
+
+    // Provider duration values are minutes. Show human-readable labels.
+    if(n < 60) return `${Math.round(n)} min`;
+    const h = Math.floor(n / 60);
+    const m = Math.round(n % 60);
+    if(h < 24) return m ? `${h}h ${m}m` : `${h}h`;
+    const d = Math.floor(h / 24);
+    const rh = h % 24;
+    return rh ? `${d}d ${rh}h` : `${d}d`;
   }
   function timeAgo(iso){
     if(!iso) return '';
@@ -333,22 +368,62 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   function renderTable(outages){
     const wrap=document.getElementById('tableWrap');
     const count=document.getElementById('tableCount');
-    if(!outages.length){
+    const total = outages.length;
+
+    if(!total){
       wrap.innerHTML='<div class="status-msg" style="padding:32px">No outages found matching the current filters.</div>';
       if(count) count.textContent='';
       return;
     }
-    if(count) count.textContent=outages.length+' outage'+(outages.length!==1?'s':'');
+
+    const pageSize = tableViewAll ? total : tablePageSize;
+    const totalPages = tableViewAll ? 1 : Math.max(1, Math.ceil(total / pageSize));
+    if(tablePage > totalPages) tablePage = totalPages;
+    if(tablePage < 1) tablePage = 1;
+
+    const startIdx = tableViewAll ? 0 : (tablePage - 1) * pageSize;
+    const endIdx = tableViewAll ? total : Math.min(startIdx + pageSize, total);
+    const pageRows = outages.slice(startIdx, endIdx);
+
+    if(count){
+      count.innerHTML = `
+        <div class="table-pager">
+          <span>Showing ${startIdx + 1}-${endIdx} of ${total}</span>
+          <button class="mini-btn" id="prevPageBtn" ${tablePage <= 1 || tableViewAll ? 'disabled' : ''}>‹ Prev</button>
+          <button class="mini-btn" id="nextPageBtn" ${tablePage >= totalPages || tableViewAll ? 'disabled' : ''}>Next ›</button>
+          <select id="pageSizeSelect" title="Rows per page">
+            <option value="25" ${tablePageSize===25&&!tableViewAll?'selected':''}>25</option>
+            <option value="50" ${tablePageSize===50&&!tableViewAll?'selected':''}>50</option>
+            <option value="100" ${tablePageSize===100&&!tableViewAll?'selected':''}>100</option>
+            <option value="all" ${tableViewAll?'selected':''}>View all</option>
+          </select>
+        </div>`;
+
+      document.getElementById('prevPageBtn')?.addEventListener('click',()=>{
+        if(tablePage > 1){ tablePage--; renderTable(outages); }
+      });
+      document.getElementById('nextPageBtn')?.addEventListener('click',()=>{
+        if(tablePage < totalPages){ tablePage++; renderTable(outages); }
+      });
+      document.getElementById('pageSizeSelect')?.addEventListener('change',(e)=>{
+        const v = e.target.value;
+        tableViewAll = v === 'all';
+        if(!tableViewAll) tablePageSize = Number(v) || 50;
+        tablePage = 1;
+        renderTable(outages);
+      });
+    }
+
     wrap.innerHTML=`<div class="table-wrap"><table>
       <thead><tr>
         <th>Type</th><th>Source / Zone</th><th>Postcodes Affected</th><th>Duration</th>
         <th>Started</th><th>Est. Restoration</th><th>Incident Type</th>
       </tr></thead>
-      <tbody>${outages.map(o=>{
+      <tbody>${pageRows.map(o=>{
         const t=outageType(o);
         const zone=o.operating_zone||'—';
         const postcodes=o.postcode||'—';
-        const customers=o.customers_affected?Number(o.customers_affected).toLocaleString():'—';
+        const duration=fmtDuration(o);
         const category=o.incident_category||o.planned_reason||'—';
         const startTime=o.start_time||o.planned_date||'';
         const etr=o.estimated_restoration||'';
@@ -357,7 +432,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
           <td><span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span></td>
           <td><span style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(147,197,253,.1);color:#93c5fd">${esc(zone)}</span></td>
           <td style="font-size:12px">${esc(postcodes)}</td>
-          <td>${customers}</td>
+          <td>${duration}</td>
           <td style="font-size:12px;color:var(--muted)">${fmtTime(startTime)}</td>
           <td style="font-size:12px;${restoredStyle||'color:var(--warn)'}">${etr?fmtTime(etr):(t==='restored'?'✓ Restored':'—')}</td>
           <td style="font-size:11px;color:var(--muted)">${esc(category)}</td>
@@ -459,6 +534,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
   // ── Filter & render ───────────────────────────────────────────────────
   function applyFilters(){
+    tablePage = 1;
     const type=document.getElementById('typeFilter').value;
     const source=(document.getElementById('sourceFilter')?.value || '').toLowerCase();
     const zone=document.getElementById('zoneFilter').value;
@@ -529,7 +605,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       plotOutages(nearby);
       renderTable(nearby);
       const nearCustomers=nearby.reduce((s,o)=>s+(Number(o.customers_affected)||0),0);
-      document.getElementById('tableCount').textContent=nearby.length+' outage'+(nearby.length!==1?'s':'')+' within 10km'+(nearCustomers?' · '+nearCustomers.toLocaleString()+' customers affected':'');
+      // Table pager now shows row count; nearby filter has already been applied above.
     },()=>alert('Location access denied or unavailable.'));
   });
 
@@ -537,6 +613,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   document.getElementById('refreshBtn').addEventListener('click',loadOutages);
   document.getElementById('typeFilter').addEventListener('change',applyFilters);
   document.getElementById('zoneFilter').addEventListener('change',applyFilters);
+  document.getElementById('sourceFilter')?.addEventListener('change',applyFilters);
   document.getElementById('searchFilter').addEventListener('input',applyFilters);
 
   // ── Nav active state ──────────────────────────────────────────────────
