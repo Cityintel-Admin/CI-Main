@@ -138,7 +138,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
     <!-- Coverage note -->
     <div class="coverage-note">
-      ℹ️ Data source: UK Power Networks Open Data Portal. Covers London, Kent, Sussex, Surrey, Essex, Suffolk, Norfolk, Cambridgeshire and surrounds. Support for other UK regional DNOs (National Grid ED, Northern Powergrid, SP Energy Networks) can be added on request.
+      ⚡ Coverage: <strong>UK Power Networks</strong> — London, South East &amp; East England &nbsp;|&nbsp; <strong id="npgStatus" style="color:var(--muted)">Northern Powergrid</strong> — Yorkshire &amp; North East &nbsp;|&nbsp; <strong id="ngedStatus" style="color:var(--muted)">National Grid ED</strong> — Midlands, SW &amp; Wales. Sources not yet active show in grey — add NPG_API_KEY and NGED_API_KEY to Cloudflare Worker to enable.
     </div>
 
     <!-- KPI row -->
@@ -146,7 +146,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       <div class="kpi red"><div class="kpi-val" id="kpiUnplanned">—</div><div class="kpi-lbl">Unplanned outages</div></div>
       <div class="kpi orange"><div class="kpi-val" id="kpiPlanned">—</div><div class="kpi-lbl">Planned works</div></div>
       <div class="kpi green"><div class="kpi-val" id="kpiRestored">—</div><div class="kpi-lbl">Recently restored</div></div>
-      <div class="kpi"><div class="kpi-val" id="kpiCustomers">—</div><div class="kpi-lbl">Customers affected</div></div>
+      <div class="kpi"><div class="kpi-val" id="kpiLongest" style="font-size:18px">—</div><div class="kpi-lbl">Longest active outage</div></div>
     </div>
 
     <!-- Proximity alerts (shown if any outages near registered assets) -->
@@ -223,6 +223,16 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     if(!iso) return '—';
     try{ return new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
     catch{ return iso; }
+  }
+  function elapsed(iso){
+    if(!iso) return '—';
+    const ms=Date.now()-new Date(iso).getTime();
+    if(ms<0) return '—';
+    const h=Math.floor(ms/3600000);
+    const d=Math.floor(h/24);
+    if(d>0) return d+'d '+(h%24)+'h';
+    if(h>0) return h+'h '+Math.floor((ms%3600000)/60000)+'m';
+    return Math.floor(ms/60000)+'m';
   }
   function timeAgo(iso){
     if(!iso) return '';
@@ -311,23 +321,29 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     if(count) count.textContent=outages.length+' outage'+(outages.length!==1?'s':'');
     wrap.innerHTML=`<div class="table-wrap"><table>
       <thead><tr>
-        <th>Type</th><th>Zone</th><th>Postcodes Affected</th><th>Customers</th>
-        <th>Started</th><th>Est. Restoration</th><th>Category</th>
+        <th>Type</th><th>Source / Zone</th><th>Postcodes Affected</th><th>Duration</th>
+        <th>Started</th><th>Est. Restoration</th><th>Incident Type</th>
       </tr></thead>
       <tbody>${outages.map(o=>{
         const t=outageType(o);
-        const zone=o.operating_zone||'—';
-        const postcodes=o.postcode||'—';
-        const customers=o.customers_affected?Number(o.customers_affected).toLocaleString():'—';
-        const category=o.incident_category||o.planned_reason||'—';
         const startTime=o.start_time||o.planned_date||'';
+        const duration = startTime ? elapsed(startTime) : '—';
+        const zone=o.operating_zone||'—';
+        const sourceLabel = {'ukpn':'UKPN','npg':'NPG','nged':'NGED'}[o._source||''] || (o._source||'').toUpperCase() || '—';
+        const sourceColor = {'ukpn':'#93c5fd','npg':'#86efac','nged':'#fca5a5'}[o._source||''] || '#8e97a3';
+        const postcodes=o.postcode||'—';
+        // Use incidenttypename (text) not the integer category code
+        const category=o.incident_category||'—';
         const etr=o.estimated_restoration||'';
         const restoredStyle=t==='restored'?'color:var(--ok)':'';
         return `<tr data-lat="${o.lat??o.geopoint?.lat??''}" data-lon="${o.lon??o.geopoint?.lon??''}">
           <td><span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span></td>
-          <td><span style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(147,197,253,.1);color:#93c5fd">${esc(zone)}</span></td>
+          <td>
+            <span style="font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.3);color:${sourceColor}">${esc(sourceLabel)}</span>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(zone)}</div>
+          </td>
           <td style="font-size:12px">${esc(postcodes)}</td>
-          <td>${customers}</td>
+          <td style="font-size:12px;color:var(--muted)">${esc(duration)}</td>
           <td style="font-size:12px;color:var(--muted)">${fmtTime(startTime)}</td>
           <td style="font-size:12px;${restoredStyle||'color:var(--warn)'}">${etr?fmtTime(etr):(t==='restored'?'✓ Restored':'—')}</td>
           <td style="font-size:11px;color:var(--muted)">${esc(category)}</td>
@@ -350,11 +366,21 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     const unplanned=outages.filter(o=>outageType(o)==='unplanned').length;
     const planned=outages.filter(o=>outageType(o)==='planned').length;
     const restored=outages.filter(o=>outageType(o)==='restored').length;
-    const customers=outages.reduce((s,o)=>s+(Number(o.customers_affected)||0),0);
+    // Longest active: oldest unresolved outage
+    const active=outages.filter(o=>outageType(o)!=='restored');
+    let longestLabel='—';
+    if(active.length){
+      const oldest=active.reduce((a,b)=>{
+        const at=new Date(a.start_time||0).getTime();
+        const bt=new Date(b.start_time||0).getTime();
+        return at<bt?a:b;
+      });
+      if(oldest.start_time) longestLabel=elapsed(oldest.start_time);
+    }
     document.getElementById('kpiUnplanned').textContent=unplanned;
     document.getElementById('kpiPlanned').textContent=planned;
     document.getElementById('kpiRestored').textContent=restored;
-    document.getElementById('kpiCustomers').textContent=customers?customers.toLocaleString():'0';
+    document.getElementById('kpiLongest').textContent=longestLabel;
   }
 
   // ── Proximity check against org assets ───────────────────────────────
@@ -450,6 +476,14 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
       allOutages=data.outages||[];
       document.getElementById('lastUpdated').textContent='Updated '+timeAgo(data.fetched_at||new Date().toISOString());
+      // Update source status badges
+      if(data.sources){
+        const s=data.sources;
+        const npgEl=document.getElementById('npgStatus');
+        const ngedEl=document.getElementById('ngedStatus');
+        if(npgEl){ if(s.npg&&s.npg.count!=null){npgEl.style.color='var(--ok)';npgEl.title=s.npg.count+' records';}else if(s.npg?.error){npgEl.style.color='var(--danger)';npgEl.title=s.npg.error;}else{npgEl.style.color='var(--muted)';npgEl.title='NPG_API_KEY not configured';} }
+        if(ngedEl){ if(s.nged&&s.nged.count!=null){ngedEl.style.color='var(--ok)';ngedEl.title=s.nged.count+' records';}else if(s.nged?.error){ngedEl.style.color='var(--danger)';ngedEl.title=s.nged.error;}else{ngedEl.style.color='var(--muted)';ngedEl.title='NGED_API_KEY not configured';} }
+      }
       updateKPIs(allOutages);
       applyFilters();
       checkProximity(allOutages);
