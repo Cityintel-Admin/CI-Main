@@ -138,7 +138,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
     <!-- Coverage note -->
     <div class="coverage-note">
-      ⚡ Coverage: <strong>UK Power Networks</strong> — London, South East &amp; East England &nbsp;|&nbsp; <strong id="npgStatus" style="color:var(--muted)">Northern Powergrid</strong> — Yorkshire &amp; North East &nbsp;|&nbsp; <strong id="ngedStatus" style="color:var(--muted)">National Grid ED</strong> — Midlands, SW &amp; Wales. Sources not yet active show in grey — add NPG_API_KEY and NGED_API_KEY to Cloudflare Worker to enable.
+      ⚡ Coverage: <strong>UK Power Networks</strong> — London, South East &amp; East England &nbsp;|&nbsp; <strong id="npgStatus" style="color:var(--muted)">Northern Powergrid</strong> — Yorkshire &amp; North East &nbsp;|&nbsp; <strong id="ngedStatus" style="color:var(--muted)">National Grid ED</strong> — Midlands, SW &amp; Wales.
     </div>
 
     <!-- KPI row -->
@@ -226,13 +226,16 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   }
   function elapsed(iso){
     if(!iso) return '—';
-    const ms=Date.now()-new Date(iso).getTime();
-    if(ms<0) return '—';
-    const h=Math.floor(ms/3600000);
-    const d=Math.floor(h/24);
-    if(d>0) return d+'d '+(h%24)+'h';
-    if(h>0) return h+'h '+Math.floor((ms%3600000)/60000)+'m';
-    return Math.floor(ms/60000)+'m';
+    try {
+      const ms = Date.now() - new Date(iso).getTime();
+      if(ms < 0) return '—';
+      if(ms > 180 * 24 * 3600000) return '>6mo'; // cap at 180 days - likely data quality issue
+      const h = Math.floor(ms / 3600000);
+      const d = Math.floor(h / 24);
+      if(d > 0) return d + 'd ' + (h % 24) + 'h';
+      if(h > 0) return h + 'h ' + Math.floor((ms % 3600000) / 60000) + 'm';
+      return Math.floor(ms / 60000) + 'm';
+    } catch { return '—'; }
   }
   function timeAgo(iso){
     if(!iso) return '';
@@ -326,24 +329,18 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       </tr></thead>
       <tbody>${outages.map(o=>{
         const t=outageType(o);
-        const startTime=o.start_time||o.planned_date||'';
-        const duration = startTime ? elapsed(startTime) : '—';
         const zone=o.operating_zone||'—';
-        const sourceLabel = {'ukpn':'UKPN','npg':'NPG','nged':'NGED'}[o._source||''] || (o._source||'').toUpperCase() || '—';
-        const sourceColor = {'ukpn':'#93c5fd','npg':'#86efac','nged':'#fca5a5'}[o._source||''] || '#8e97a3';
         const postcodes=o.postcode||'—';
-        // Use incidenttypename (text) not the integer category code
-        const category=o.incident_category||'—';
+        const customers=o.customers_affected?Number(o.customers_affected).toLocaleString():'—';
+        const category=o.incident_category||o.planned_reason||'—';
+        const startTime=o.start_time||o.planned_date||'';
         const etr=o.estimated_restoration||'';
         const restoredStyle=t==='restored'?'color:var(--ok)':'';
         return `<tr data-lat="${o.lat??o.geopoint?.lat??''}" data-lon="${o.lon??o.geopoint?.lon??''}">
           <td><span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span></td>
-          <td>
-            <span style="font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.3);color:${sourceColor}">${esc(sourceLabel)}</span>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(zone)}</div>
-          </td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(147,197,253,.1);color:#93c5fd">${esc(zone)}</span></td>
           <td style="font-size:12px">${esc(postcodes)}</td>
-          <td style="font-size:12px;color:var(--muted)">${esc(duration)}</td>
+          <td>${customers}</td>
           <td style="font-size:12px;color:var(--muted)">${fmtTime(startTime)}</td>
           <td style="font-size:12px;${restoredStyle||'color:var(--warn)'}">${etr?fmtTime(etr):(t==='restored'?'✓ Restored':'—')}</td>
           <td style="font-size:11px;color:var(--muted)">${esc(category)}</td>
@@ -366,16 +363,22 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     const unplanned=outages.filter(o=>outageType(o)==='unplanned').length;
     const planned=outages.filter(o=>outageType(o)==='planned').length;
     const restored=outages.filter(o=>outageType(o)==='restored').length;
-    // Longest active: oldest unresolved outage
-    const active=outages.filter(o=>outageType(o)!=='restored');
-    let longestLabel='—';
-    if(active.length){
-      const oldest=active.reduce((a,b)=>{
-        const at=new Date(a.start_time||0).getTime();
-        const bt=new Date(b.start_time||0).getTime();
-        return at<bt?a:b;
+    // Longest active: oldest unresolved outage — sanity check: only consider last 180 days
+    const MAX_AGE_MS = 180 * 24 * 3600000;
+    const active = outages.filter(o => {
+      if(outageType(o) === 'restored') return false;
+      if(!o.start_time) return false;
+      const age = Date.now() - new Date(o.start_time).getTime();
+      return age > 0 && age < MAX_AGE_MS; // filter out corrupt/null timestamps
+    });
+    let longestLabel = '—';
+    if(active.length) {
+      const oldest = active.reduce((a,b) => {
+        const at = new Date(a.start_time).getTime();
+        const bt = new Date(b.start_time).getTime();
+        return at < bt ? a : b;
       });
-      if(oldest.start_time) longestLabel=elapsed(oldest.start_time);
+      longestLabel = elapsed(oldest.start_time);
     }
     document.getElementById('kpiUnplanned').textContent=unplanned;
     document.getElementById('kpiPlanned').textContent=planned;
@@ -460,7 +463,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     const tableWrap=document.getElementById('tableWrap');
     tableWrap.innerHTML='<div class="status-msg"><div class="spinner"></div>Loading power outage data…</div>';
     try{
-      const res=await fetch(API_BASE+'/api/power-outages?v=2',{headers:authHeaders()});
+      const res=await fetch(API_BASE+'/api/power-outages?v=3',{headers:authHeaders()});
       const data=await res.json().catch(()=>({}));
 
       if(!res.ok||data.ok===false){
@@ -476,7 +479,6 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
       allOutages=data.outages||[];
       document.getElementById('lastUpdated').textContent='Updated '+timeAgo(data.fetched_at||new Date().toISOString());
-      // Update source status badges
       if(data.sources){
         const s=data.sources;
         const npgEl=document.getElementById('npgStatus');
@@ -515,6 +517,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   // ── Event listeners ───────────────────────────────────────────────────
   document.getElementById('refreshBtn').addEventListener('click',loadOutages);
   document.getElementById('typeFilter').addEventListener('change',applyFilters);
+  document.getElementById('sourceFilter').addEventListener('change',applyFilters);
   document.getElementById('zoneFilter').addEventListener('change',applyFilters);
   document.getElementById('searchFilter').addEventListener('input',applyFilters);
 
