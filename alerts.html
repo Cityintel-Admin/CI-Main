@@ -347,7 +347,7 @@
 <script src="alerts-data.js"></script>  <!-- 1) data first -->
 
 	<script>
-  (function renderAlerts() {
+  function renderAlerts() {
     const feed = document.getElementById('alertsFeed');
     const meta = document.getElementById('alertsFeedMeta');
     const countrySelect = document.getElementById('feedCountryFilter');
@@ -603,8 +603,88 @@
     }
 
     render();
-  })();
+  }  // end renderAlerts body - called by init below
+  window.__renderAlerts = renderAlerts;
 </script>
+
+<script>
+// ── Live protest feed merge ────────────────────────────────────────
+(async function initAlerts(){
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  const CC = {
+    'United Kingdom':'Europe','France':'Europe','Germany':'Europe','Spain':'Europe','Italy':'Europe',
+    'Netherlands':'Europe','Belgium':'Europe','Sweden':'Europe','Poland':'Europe','Greece':'Europe',
+    'Portugal':'Europe','Ireland':'Europe','Switzerland':'Europe','Austria':'Europe','Denmark':'Europe',
+    'Norway':'Europe','Finland':'Europe','Czech Republic':'Europe','Hungary':'Europe','Romania':'Europe',
+    'Israel':'Middle East','Saudi Arabia':'Middle East','UAE':'Middle East','Turkey':'Middle East',
+    'Iran':'Middle East','Iraq':'Middle East','Jordan':'Middle East','Lebanon':'Middle East',
+    'Yemen':'Middle East','Kuwait':'Middle East','Qatar':'Middle East','Bahrain':'Middle East',
+    'South Africa':'Africa','Nigeria':'Africa','Kenya':'Africa','Egypt':'Africa','Ghana':'Africa',
+    'Ethiopia':'Africa','Tanzania':'Africa','Uganda':'Africa','Zimbabwe':'Africa','Morocco':'Africa',
+    'India':'Asia','China':'Asia','Japan':'Asia','South Korea':'Asia','Pakistan':'Asia',
+    'Bangladesh':'Asia','Indonesia':'Asia','Thailand':'Asia','Philippines':'Asia','Malaysia':'Asia',
+    'Australia':'Oceania','New Zealand':'Oceania',
+    'United States':'North America','Canada':'North America','Mexico':'North America',
+    'Brazil':'South America','Argentina':'South America','Colombia':'South America',
+    'Chile':'South America','Peru':'South America','Venezuela':'South America',
+  };
+
+  function normRisk(r){
+    const s = String(r||'').toLowerCase();
+    if(s.startsWith('hi')) return 'high';
+    if(s.startsWith('me')) return 'med';
+    return 'low';
+  }
+
+  function feedPostToAlert(p){
+    const city = p.city || '';
+    const country = p.country || '';
+    return {
+      title:     p.title || 'Untitled',
+      summary:   p.body  || '',
+      risk:      normRisk(p.risk),
+      time:      p.event_at,
+      city,
+      country,
+      continent: p.continent || CC[country] || '',
+      source:    p.source_url || null,
+      _fromFeed: true,
+      _feedId:   p.id,
+    };
+  }
+
+  function authH(){
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'{}');
+      const h = {};
+      if(p.email) h['X-User-Email'] = p.email;
+      if(p.name)  h['X-User-Name']  = p.name;
+      if(p.id)    h['X-User-Id']    = p.id;
+      return h;
+    } catch { return {}; }
+  }
+
+  try {
+    const res = await fetch(API_BASE + '/api/protests', { headers: authH() });
+    if (res.ok) {
+      const data = await res.json().catch(()=>({}));
+      const posts = Array.isArray(data.posts) ? data.posts : (Array.isArray(data.data) ? data.data : []);
+      if (posts.length) {
+        const mapped = posts.map(feedPostToAlert);
+        const existing = new Set((window.alertsData||[]).map(a=>(a.title||'')+'|'+(a.time||a.datetime||a.date||a.when||'')));
+        const newPosts = mapped.filter(m => !existing.has(m.title+'|'+m.time));
+        window.alertsData = [...(window.alertsData||[]), ...newPosts];
+      }
+    }
+  } catch(e) {
+    console.warn('CityIntel: /api/protests not available, using static data only');
+  }
+
+  if (typeof window.__renderAlerts === 'function') window.__renderAlerts();
+})();
+</script>
+
 
 
 
