@@ -217,6 +217,8 @@
         <a href="reports.html">Reports</a>
         <a href="panicalarm.html">Panic Alarm</a>
         <a href="checkin.html">Check-in Manager</a>
+        <a href="power-outages.html">Power Outages</a>
+        <a href="transport-status.html">Transport Status</a>
         <a href="settings.html">Settings</a>
         <a href="about.html">About</a>
       </nav>
@@ -344,6 +346,23 @@
               <div class="suggestion-item" data-q="Summarise current UK power outages — which regions are most affected and how many customers are impacted?">UK outage summary</div>
               <div class="suggestion-item" data-q="Which unplanned power outages have been active the longest and when is restoration expected?">Longest active outages</div>
               <div class="suggestion-item" data-q="What US counties have the highest power outage impact right now based on ODIN data?">US county outage impact</div>
+            </div>
+          </div>
+
+          <!-- 🚇 Live Transport panel -->
+          <div class="ctx-card" id="transportPanelCard">
+            <div class="ctx-title"><span class="accent" style="color:#93c5fd">🚇</span> Live Transport</div>
+            <div id="transportPanelBody" style="font-size:12px;color:var(--muted)">
+              <div style="display:flex;align-items:center;gap:6px;padding:4px 0">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--brand-red);animation:dotPulse 1.4s ease-in-out infinite"></div>
+                Loading…
+              </div>
+            </div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px" id="transportQuickPrompts">
+              <div class="suggestion-item" data-q="Are there TfL or National Rail disruptions affecting London right now?">TfL &amp; National Rail status</div>
+              <div class="suggestion-item" data-q="Which transport disruptions pose the greatest risk to our registered travellers today?">Risk to registered travellers</div>
+              <div class="suggestion-item" data-q="Are any current transport disruptions linked to security incidents or protests?">Disruptions linked to security</div>
+              <div class="suggestion-item" data-q="Summarise all suspended or severely disrupted transport services right now.">Suspended services summary</div>
             </div>
           </div>
 
@@ -552,6 +571,8 @@
       'Are there current incidents linked to hotels or transport?',
       'Are there active power outages near any of our registered assets?',
       'Summarise current UK power outages — which regions are most affected?',
+      'Are there TfL or National Rail disruptions affecting London right now?',
+      'Which transport disruptions pose the greatest risk to our travellers today?',
       'Create a short client briefing from the most recent alerts.',
       'What US counties have the highest power outage impact right now?',
       'What changed in the most recent monthly review?',
@@ -583,6 +604,17 @@
         out.push('Which US states show the highest concentration of outages right now?');
       if (/outage|power.cut|electricity/.test(text))
         out.push('Open the live Power Outages map for full operational detail.');
+      // Transport disruption follow-ups
+      if (/tfl|tube|underground|overground|elizabeth.line|dlr|london.transport|london.rail/.test(text))
+        out.push('Which TfL lines are currently suspended or showing severe delays?');
+      if (/national.rail|network.rail|train|rail.disruption|rail.service|great.western|east.midlands|northern.rail|thameslink|southeastern/.test(text))
+        out.push('Which National Rail operators have active disruptions right now?');
+      if (/transport.disruption|rail.strike|tube.strike|industrial.action|transport.strike/.test(text))
+        out.push('Which registered travellers or assets are affected by this disruption?');
+      if (/transport|rail|tube|tfl|disruption/.test(text) && /security|protest|incident|police|evacuation/.test(text))
+        out.push('Is this transport disruption linked to a security incident?');
+      if (/transport|rail|tube|tfl|disruption/.test(text))
+        out.push('Open the live Transport Status map for full operational detail.');
       const generic = [
         'Create a short client briefing from these findings.',
         'What other regions show similar patterns this month?',
@@ -647,7 +679,7 @@
       card.innerHTML=`<div class="loading-stage"><div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div><span id="loadStageText">Retrieving CityIntel alerts…</span></div>`;
       turn.appendChild(card);
       scrollThread();
-      const stages=['Retrieving CityIntel alerts…','Checking report library…','Checking live power outage feed…','Analysing external context…','Applying operational filters…','Generating analyst response…'];
+      const stages=['Retrieving CityIntel alerts…','Checking report library…','Checking live power outage feed…','Checking live transport feed…','Analysing external context…','Applying operational filters…','Generating analyst response…'];
       let si=0;
       const timer=setInterval(()=>{ si=(si+1)%stages.length; const t=card.querySelector('#loadStageText'); if(t) t.textContent=stages[si]; },1800);
       return {card,timer};
@@ -857,6 +889,107 @@
       }
     }
 
+    // ── Live transport context ─────────────────────────────────────────
+    // Detects transport questions and prepends a live snapshot from
+    // /api/transport-status so the assistant has real operational data.
+
+    const TRANSPORT_KEYWORDS = /\btfl\b|tube|underground|overground|elizabeth.?line|\bdlr\b|national.?rail|network.?rail|\btrain\b|rail.disruption|rail.service|rail.strike|tube.strike|transport.disruption|transport.status|london.transport|severe.delays|part.suspended|line.suspended|service.disruption|great.western|east.midlands|northern.rail|thameslink|southeastern|south.western|avanti|cross.country|transport.for.london/i;
+
+    let cachedTransportContext = null;
+    let transportContextPromise = null;
+
+    async function fetchLiveTransportContext() {
+      if (cachedTransportContext && (Date.now() - cachedTransportContext.fetched_at) < 5 * 60 * 1000) {
+        return cachedTransportContext.text;
+      }
+      if (transportContextPromise) return transportContextPromise;
+
+      transportContextPromise = (async () => {
+        try {
+          const res = await fetch(API_BASE + '/api/transport-status', { headers: authHeaders() });
+          if (!res.ok) return null;
+          const data = await res.json().catch(() => null);
+          if (!data?.ok || !data.disruptions) return null;
+
+          const disruptions = data.disruptions || [];
+          const sources = data.sources || {};
+          if (!disruptions.length) return null;
+
+          const suspended = disruptions.filter(d => d.severity === 'suspended');
+          const severe    = disruptions.filter(d => d.severity === 'severe' || d.severity === 'major');
+          const moderate  = disruptions.filter(d => d.severity === 'moderate');
+          const planned   = disruptions.filter(d => d.is_planned);
+
+          const srcLines = [];
+          if (sources.tfl?.total_lines != null)
+            srcLines.push(`TfL: ${sources.tfl.disrupted} of ${sources.tfl.total_lines} lines disrupted · ${sources.tfl.good_service} good service`);
+          if (sources.nationalrail?.count != null)
+            srcLines.push(`National Rail: ${sources.nationalrail.count} active disruptions (${sources.nationalrail.planned} planned · ${sources.nationalrail.unplanned} unplanned)`);
+
+          // Top disruptions by severity
+          const topDisruptions = [...suspended, ...severe, ...moderate].slice(0, 6);
+          const topLines = topDisruptions.map(d => {
+            const src = d._source === 'tfl' ? 'TfL' : 'NR';
+            const reason = d.reason ? ' — ' + d.reason.slice(0, 100) : '';
+            return `  - [${src}] ${d.line}: ${d.status}${reason}`;
+          });
+
+          const contextBlock = [
+            `[LIVE TRANSPORT DATA — fetched ${new Date(data.fetched_at || Date.now()).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}]`,
+            `Total disruptions: ${disruptions.length} | Suspended/Closed: ${suspended.length} | Severe: ${severe.length} | Planned: ${planned.length}`,
+            srcLines.length ? 'Active sources:\n  ' + srcLines.join('\n  ') : '',
+            topLines.length ? `Key disruptions:\n${topLines.join('\n')}` : 'No major disruptions currently active.',
+          ].filter(Boolean).join('\n');
+
+          cachedTransportContext = { text: contextBlock, fetched_at: Date.now() };
+          return contextBlock;
+        } catch { return null; }
+        finally { transportContextPromise = null; }
+      })();
+
+      return transportContextPromise;
+    }
+
+    async function refreshTransportPanel() {
+      const el_ = document.getElementById('transportPanelBody');
+      if (!el_) return;
+      try {
+        const res  = await fetch(API_BASE + '/api/transport-status', { headers: authHeaders() });
+        if (!res.ok) { el_.innerHTML = '<div class="empty" style="font-size:12px">Could not load transport data.</div>'; return; }
+        const data = await res.json().catch(() => null);
+        if (!data?.ok) { el_.innerHTML = '<div class="empty" style="font-size:12px">Transport feed unavailable.</div>'; return; }
+
+        const disruptions = data.disruptions || [];
+        const s = data.sources || {};
+        const suspended = disruptions.filter(d => d.severity === 'suspended').length;
+        const severe    = disruptions.filter(d => d.severity === 'severe' || d.severity === 'major').length;
+        const good      = s.tfl?.good_service ?? '—';
+
+        const tflDot = s.tfl?.disrupted != null
+          ? `<span title="TfL: ${s.tfl.disrupted} disrupted · ${s.tfl.good_service} good" style="color:${s.tfl.disrupted>0?'var(--warn)':'var(--ok)'}">●</span> TfL`
+          : `<span style="color:var(--muted)">●</span> TfL`;
+        const nrDot = s.nationalrail?.count != null
+          ? `<span title="National Rail: ${s.nationalrail.count} disruptions" style="color:${s.nationalrail.count>0?'var(--warn)':'var(--ok)'}">●</span> Nat Rail`
+          : `<span style="color:var(--muted)">●</span> Nat Rail`;
+
+        el_.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+            <div style="background:rgba(255,90,95,.08);border:1px solid rgba(255,90,95,.25);border-radius:8px;padding:7px 9px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--danger)">${suspended + severe}</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Disrupted</div>
+            </div>
+            <div style="background:rgba(51,196,141,.08);border:1px solid rgba(51,196,141,.25);border-radius:8px;padding:7px 9px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--ok)">${good}</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Good service</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;gap:10px;flex-wrap:wrap">${tflDot}&nbsp;&nbsp;${nrDot}</div>
+          <a href="transport-status.html" style="display:block;text-align:center;background:rgba(147,197,253,.08);border:1px solid rgba(147,197,253,.25);border-radius:8px;color:#93c5fd;font-size:12px;font-weight:700;padding:6px;text-decoration:none;margin-bottom:2px" target="_blank">🚇 Open Transport Status map ↗</a>`;
+      } catch {
+        if (el_) el_.innerHTML = '<div class="empty" style="font-size:12px">Could not load transport data.</div>';
+      }
+    }
+
     // ── Ask ───────────────────────────────────────────────────────────
     async function ask(){
       const question=el.q.value.trim();
@@ -876,8 +1009,15 @@
         outageContext = await fetchLiveOutageContext().catch(() => null) || '';
       }
 
+      // If question is transport-related, fetch live data and prepend as context
+      let transportContext = '';
+      if (TRANSPORT_KEYWORDS.test(question)) {
+        transportContext = await fetchLiveTransportContext().catch(() => null) || '';
+      }
+
       const fullQ = [
-        outageContext ? outageContext + '\n\n' : '',
+        outageContext   ? outageContext   + '\n\n' : '',
+        transportContext ? transportContext + '\n\n' : '',
         context ? `[Previous context]\n${context}\n\n[Current question]\n` : '',
         question,
       ].join('');
@@ -989,8 +1129,16 @@
       item.addEventListener('click', () => { el.q.value = item.dataset.q; ask(); });
     });
 
+    // Wire transport quick-prompt clicks
+    document.querySelectorAll('#transportQuickPrompts [data-q]').forEach(item => {
+      item.addEventListener('click', () => { el.q.value = item.dataset.q; ask(); });
+    });
+
     // Load live outage panel (non-blocking)
     refreshOutagePanel();
+
+    // Load live transport panel (non-blocking)
+    refreshTransportPanel();
 
   })();
   </script>
