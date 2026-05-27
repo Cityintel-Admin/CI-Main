@@ -92,6 +92,9 @@ thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-tr
 tbody td{padding:10px 12px;border-bottom:1px solid var(--gray-700);vertical-align:top}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:rgba(255,255,255,.03)}
+.table-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.table-tools select{background:var(--gray-700);border:1px solid var(--gray-600);color:var(--text);border-radius:8px;padding:6px 9px;font-size:12px;font-family:inherit;outline:none}
+.page-chip{font-size:12px;color:var(--muted);padding:5px 8px;border:1px solid var(--gray-600);border-radius:999px;background:rgba(255,255,255,.03)}
 .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid}
 .badge-red{color:var(--danger);border-color:rgba(255,90,95,.4);background:rgba(255,90,95,.1)}
 .badge-orange{color:var(--warn);border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.1)}
@@ -240,9 +243,22 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
     <!-- Disruptions table -->
     <div class="card" style="padding:0">
-      <div style="padding:14px 16px;border-bottom:1px solid var(--gray-600);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div style="font-weight:700;font-size:15px">All Disruptions</div>
-        <span id="tableCount" style="font-size:12px;color:var(--muted)">—</span>
+      <div style="padding:14px 16px;border-bottom:1px solid var(--gray-600);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-weight:700;font-size:15px">All Disruptions</div>
+          <span id="tableCount" style="font-size:12px;color:var(--muted)">—</span>
+        </div>
+        <div class="table-tools">
+          <select id="pageSizeSelect" title="Rows per page">
+            <option value="25">25 rows</option>
+            <option value="50" selected>50 rows</option>
+            <option value="100">100 rows</option>
+          </select>
+          <button class="btn" id="prevPageBtn" type="button">← Prev</button>
+          <span class="page-chip" id="pageInfo">Page 1</span>
+          <button class="btn" id="nextPageBtn" type="button">Next →</button>
+          <button class="btn" id="viewAllBtn" type="button">View all</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -301,6 +317,9 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
   // ── State ─────────────────────────────────────────────────────────
   let allDisruptions = [];
+  let currentPage = 1;
+  let pageSize = 50;
+  let viewAll = false;
   let map, markers = [];
 
   // ── Map ───────────────────────────────────────────────────────────
@@ -328,7 +347,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
           <strong>${esc(d.line)}</strong><br>
           <span style="color:#${d.severity==='good'?'33c48d':'f0b429'}">${esc(d.status)}</span><br>
           ${d.reason?`<span style="font-size:12px">${esc(d.reason.slice(0,180))}</span>`:''}
-          <br><small style="color:#8e97a3">${esc(d._source==='tfl'?'TfL':'National Rail')}</small>
+          <br><small style="color:#8e97a3">${esc(sourceName(d._source))}</small>
         </div>`)
         .addTo(map);
       markers.push(m);
@@ -392,23 +411,54 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
   function timeAgo(iso){
     if(!iso) return '';
-    const s = Math.floor((Date.now()-new Date(iso).getTime())/1000);
-    if(s<60) return 'just now';
-    if(s<3600) return Math.floor(s/60)+'m ago';
-    if(s<86400) return Math.floor(s/3600)+'h ago';
-    return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+    const dt = new Date(iso);
+    if(isNaN(dt)) return '';
+    const s = Math.floor((Date.now()-dt.getTime())/1000);
+    if(s<60 && s>=0) return 'just now';
+    if(s<3600 && s>=0) return Math.floor(s/60)+'m ago';
+    if(s<86400 && s>=0) return Math.floor(s/3600)+'h ago';
+    return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
   }
+
+  function sourceName(src){
+    return ({ tfl:'TfL', nationalrail:'National Rail', mta:'MTA NYC', lta:'Singapore LTA' })[src] || src || 'Source';
+  }
+
+  function activeWindowLabel(d){
+    const start = d.start_time ? timeAgo(d.start_time) : '';
+    const endDate = d.end_time ? new Date(d.end_time) : null;
+    if(endDate && !isNaN(endDate) && endDate.getTime() > Date.now()){
+      return start ? `${start} · until ${endDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}` : `until ${endDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}`;
+    }
+    return start || 'current';
+  }
+
+  function resetPagination(){ currentPage = 1; viewAll = false; }
 
   function renderTable(){
     const list = getFiltered();
     const tbody = document.getElementById('tableBody');
-    document.getElementById('tableCount').textContent = list.length + ' disruption' + (list.length!==1?'s':'');
+    const total = list.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if(currentPage > totalPages) currentPage = totalPages;
+
+    const visible = viewAll ? list : list.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const rangeText = total
+      ? (viewAll ? `showing all ${total}` : `showing ${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, total)} of ${total}`)
+      : '0 disruptions';
+
+    document.getElementById('tableCount').textContent = `${total} disruption${total!==1?'s':''} · ${rangeText}`;
+    document.getElementById('pageInfo').textContent = viewAll ? 'All rows' : `Page ${currentPage} / ${totalPages}`;
+    document.getElementById('prevPageBtn').disabled = viewAll || currentPage <= 1;
+    document.getElementById('nextPageBtn').disabled = viewAll || currentPage >= totalPages;
+    document.getElementById('viewAllBtn').textContent = viewAll ? `Paginate ${pageSize}` : 'View all';
+
     if(!list.length){
       tbody.innerHTML = `<tr><td colspan="7" class="status-msg">No disruptions match current filters.</td></tr>`;
       plotMarkers([]);
       return;
     }
-    tbody.innerHTML = list.map(d=>{
+    tbody.innerHTML = visible.map(d=>{
       const badgeCls = SEV_BADGE[d.severity]||'badge-muted';
       const sourceLabels = { tfl:'TfL', nationalrail:'Nat Rail', mta:'MTA NYC', lta:'LTA SG' };
       const sourceColours = { tfl:'#93c5fd', nationalrail:'#86efac', mta:'#f0b429', lta:'#a3e6c9' };
@@ -421,9 +471,11 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
         <td style="min-width:130px">${esc(d.status||'—')}</td>
         <td style="max-width:360px;font-size:12px;color:#c9d0d8">${d.reason?esc(d.reason.slice(0,200))+(d.reason.length>200?'…':''):'—'}</td>
         <td><span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.3);color:${srcCol}">${srcLabel}</span></td>
-        <td style="font-size:12px;color:var(--muted);white-space:nowrap">${timeAgo(d.start_time)}</td>
+        <td style="font-size:12px;color:var(--muted);white-space:nowrap">${activeWindowLabel(d)}</td>
       </tr>`;
     }).join('');
+
+    // Map always plots the full filtered set, not only the current page.
     plotMarkers(list.filter(d=>d.lat&&d.lon));
     tbody.querySelectorAll('tr[data-id]').forEach(row=>{
       row.addEventListener('click',()=>{
@@ -476,7 +528,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── Load data ─────────────────────────────────────────────────────
   async function loadTransport(){
     try {
-      const res = await fetch(API+'/api/transport-status?v=2', {headers:authHeaders()});
+      const res = await fetch(API+'/api/transport-status?v=3', {headers:authHeaders()});
       const data = await res.json().catch(()=>({}));
       if(!res.ok||!data.ok) throw new Error(data.error||`HTTP ${res.status}`);
 
@@ -499,10 +551,29 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── Events ────────────────────────────────────────────────────────
   document.getElementById('refreshBtn').addEventListener('click', loadTransport);
   ['sevFilter','sourceFilter','modeFilter','searchFilter'].forEach(id=>{
-    document.getElementById(id).addEventListener('input', renderTable);
+    document.getElementById(id).addEventListener('input', ()=>{ resetPagination(); renderTable(); });
   });
   document.getElementById('searchFilter').addEventListener('keydown', e=>{
     if(e.key==='Escape') e.target.value='';
+    resetPagination();
+    renderTable();
+  });
+  document.getElementById('pageSizeSelect').addEventListener('change', e=>{
+    pageSize = Number(e.target.value) || 50;
+    viewAll = false;
+    currentPage = 1;
+    renderTable();
+  });
+  document.getElementById('prevPageBtn').addEventListener('click', ()=>{
+    if(currentPage > 1){ currentPage--; renderTable(); }
+  });
+  document.getElementById('nextPageBtn').addEventListener('click', ()=>{
+    currentPage++;
+    renderTable();
+  });
+  document.getElementById('viewAllBtn').addEventListener('click', ()=>{
+    viewAll = !viewAll;
+    currentPage = 1;
     renderTable();
   });
 
