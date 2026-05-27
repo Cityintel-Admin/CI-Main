@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script src="auth.js"></script>
+  <script src="admin-links.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="metrics.js"></script>
+  <meta charset="utf-8"/>
+  <title>CityIntel — Transport Status</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+:root{
+  --brand-red:#D01616;--brand-black:#0C0C0C;
+  --gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;
+  --gray-600:#24272c;--gray-500:#2e3238;
+  --muted:#8e97a3;--text:#e9edf2;
+  --ok:#33c48d;--warn:#f0b429;--danger:#ff5a5f;--info:#93c5fd;
+  --card-radius:14px;--shadow:0 8px 24px rgba(0,0,0,.35);
+  /* Transport severity colours */
+  --sev-suspended:#ff5a5f;
+  --sev-severe:#ff8c42;
+  --sev-moderate:#f0b429;
+  --sev-planned:#93c5fd;
+  --sev-minor:#a3e6c9;
+  --sev-good:#33c48d;
+}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:linear-gradient(180deg,var(--brand-black),#131416);border-right:1px solid var(--gray-600);padding:14px 12px;display:flex;flex-direction:column;gap:4px}
+.brand{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:8px}
+.brand img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#fff}
+.brand .t{font-weight:700;font-size:16px}
+nav a{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;padding:9px 12px;border-radius:10px;border:1px solid transparent;font-size:13px}
+nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+nav a.active{background:rgba(208,22,22,.15);border-color:var(--brand-red)}
+.main{padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.toprow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.page-title{font-size:22px;font-weight:800;margin:0 0 3px}
+.page-sub{color:var(--muted);font-size:13px;margin:0}
+.card{background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid var(--gray-600);border-radius:var(--card-radius);box-shadow:var(--shadow);padding:16px}
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:12px;padding:14px 16px}
+.kpi-val{font-size:28px;font-weight:800;margin-bottom:2px}
+.kpi-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.kpi.red .kpi-val{color:var(--danger)}
+.kpi.orange .kpi-val{color:var(--warn)}
+.kpi.green .kpi-val{color:var(--ok)}
+.kpi.blue .kpi-val{color:var(--info)}
+/* Coverage note */
+.coverage-note{background:rgba(147,197,253,.07);border:1px solid rgba(147,197,253,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#93c5fd;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{background:var(--gray-700);border:1px solid var(--gray-600);color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:rgba(208,22,22,.6)}
+.filter-bar select option{background:#1c1e22}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--gray-600);background:var(--gray-700);color:var(--text);padding:7px 14px;border-radius:9px;font:600 13px system-ui;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn:hover{background:var(--gray-600)}
+.btn.primary{background:var(--brand-red);border-color:#9c0f0f;color:#fff}
+/* Map */
+#transportMap{height:400px;border-radius:12px;border:1px solid var(--gray-600);background:#1a2030}
+.leaflet-container{background:#1a2030!important}
+/* Legend */
+.map-legend{display:flex;gap:16px;flex-wrap:wrap;padding:8px 0}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+/* Line status grid */
+.line-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.line-card{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s,background .15s}
+.line-card:hover{border-color:var(--brand-red);background:rgba(208,22,22,.06)}
+.line-card.disrupted{border-color:rgba(255,90,95,.35);background:rgba(255,90,95,.05)}
+.line-card.planned{border-color:rgba(147,197,253,.3);background:rgba(147,197,253,.05)}
+.line-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.line-info{flex:1;min-width:0}
+.line-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.line-status-lbl{font-size:11px;margin-top:1px}
+/* Table */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--gray-600)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--gray-600);background:rgba(0,0,0,.2);white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--gray-700);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.03)}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid}
+.badge-red{color:var(--danger);border-color:rgba(255,90,95,.4);background:rgba(255,90,95,.1)}
+.badge-orange{color:var(--warn);border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.1)}
+.badge-blue{color:var(--info);border-color:rgba(147,197,253,.4);background:rgba(147,197,253,.08)}
+.badge-green{color:var(--ok);border-color:rgba(51,196,141,.4);background:rgba(51,196,141,.1)}
+.badge-muted{color:var(--muted);border-color:var(--gray-500);background:rgba(255,255,255,.04)}
+.status-msg{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--brand-red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.refresh-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:tpulse 2s ease-in-out infinite}
+@keyframes tpulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+.detail-panel{background:rgba(240,180,41,.04);border:1px solid rgba(240,180,41,.2);border-radius:12px;padding:14px;display:none}
+.detail-title{font-weight:800;font-size:14px;color:var(--warn);margin-bottom:6px}
+.detail-reason{font-size:13px;color:#c9d0d8;line-height:1.5}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}.sidebar{display:none}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .line-grid{grid-template-columns:1fr 1fr}
+}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="CityintLogo.jpg" alt="CityIntel"/>
+      <span class="t">CityIntel</span>
+    </div>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="cityintel-assistant.html">CityIntel AI</a>
+      <a href="neighborhood-intel.html">Neighborhood Intel</a>
+      <a href="assets.html">Assets</a>
+      <a href="travellers.html">Travellers</a>
+      <a href="alerts.html">High Risk Events</a>
+      <a href="events.html">All Events</a>
+      <a href="live-alerts.html">Live Alerts</a>
+      <a href="brief.html">Intelligence Brief</a>
+      <a href="trends.html">Trends &amp; Forecasts</a>
+      <a href="reports.html">Reports</a>
+      <a href="panicalarm.html">Panic Alarm</a>
+      <a href="checkin.html">Check-in Manager</a>
+      <a href="power-outages.html">Power Outages</a>
+      <a href="transport-status.html" class="active">Transport Status</a>
+      <a href="settings.html">Settings</a>
+      <a href="about.html">About</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <!-- Header -->
+    <div class="toprow">
+      <div>
+        <p class="page-title">🚇 Transport Status</p>
+        <p class="page-sub">Live transport disruption intelligence. London: TfL Tube · Overground · Elizabeth line · DLR. National: Network Rail disruptions.</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="refresh-row">
+          <div class="live-dot"></div>
+          <span id="lastUpdated">Loading…</span>
+        </div>
+        <button class="btn" id="refreshBtn">↺ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Coverage note -->
+    <div class="coverage-note">
+      🚇 Coverage: <strong id="tflStatus" style="color:var(--muted)">TfL</strong> — Tube · Overground · Elizabeth line · DLR &nbsp;|&nbsp;
+      <strong id="nrStatus" style="color:var(--muted)">National Rail</strong> — Great Britain network disruptions.
+      &nbsp;<span style="color:var(--muted)">Cache: 5 min · No API key required</span>
+    </div>
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi red"><div class="kpi-val" id="kpiSuspended">—</div><div class="kpi-lbl">Suspended / Closed</div></div>
+      <div class="kpi orange"><div class="kpi-val" id="kpiSevere">—</div><div class="kpi-lbl">Severe delays</div></div>
+      <div class="kpi blue"><div class="kpi-val" id="kpiPlanned">—</div><div class="kpi-lbl">Planned closures</div></div>
+      <div class="kpi green"><div class="kpi-val" id="kpiGood">—</div><div class="kpi-lbl">Good service (TfL lines)</div></div>
+    </div>
+
+    <!-- Disruption detail panel (shown on row click) -->
+    <div id="detailPanel" class="detail-panel">
+      <div class="detail-title" id="detailTitle">—</div>
+      <div class="detail-reason" id="detailReason">—</div>
+    </div>
+
+    <!-- TfL line status grid -->
+    <div class="card" style="padding:14px">
+      <div style="font-weight:700;font-size:15px;margin-bottom:12px">🟢 TfL Line Status</div>
+      <div id="lineGrid" class="line-grid">
+        <div class="status-msg"><div class="spinner"></div>Loading TfL status…</div>
+      </div>
+    </div>
+
+    <!-- Map + filters -->
+    <div class="card" style="padding:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div style="font-weight:700;font-size:15px">Disruption Map</div>
+        <div class="filter-bar">
+          <select id="sevFilter">
+            <option value="">All severities</option>
+            <option value="suspended">Suspended / Closed</option>
+            <option value="severe">Severe delays</option>
+            <option value="moderate">Moderate disruption</option>
+            <option value="planned">Planned closures</option>
+            <option value="minor">Minor delays</option>
+          </select>
+          <select id="sourceFilter">
+            <option value="">All sources</option>
+            <option value="tfl">TfL (London)</option>
+            <option value="nationalrail">National Rail</option>
+          </select>
+          <select id="modeFilter">
+            <option value="">All modes</option>
+            <option value="tube">Tube</option>
+            <option value="overground">Overground</option>
+            <option value="elizabeth-line">Elizabeth line</option>
+            <option value="dlr">DLR</option>
+            <option value="national-rail">National Rail</option>
+          </select>
+          <input id="searchFilter" placeholder="Search line / operator…" style="width:180px"/>
+        </div>
+      </div>
+      <div id="transportMap"></div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sev-suspended)"></div>Suspended/Closed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sev-severe)"></div>Severe delays</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sev-moderate)"></div>Moderate disruption</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sev-planned)"></div>Planned closure</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sev-minor)"></div>Minor delays</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sev-good)"></div>Good service</div>
+      </div>
+    </div>
+
+    <!-- Disruptions table -->
+    <div class="card" style="padding:0">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--gray-600);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:700;font-size:15px">All Disruptions</div>
+        <span id="tableCount" style="font-size:12px;color:var(--muted)">—</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Mode</th>
+              <th>Line / Operator</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th>Source</th>
+              <th>Reported</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="7" class="status-msg"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  const API = 'https://api.cityintelapi.com';
+
+  // Auth headers
+  function readJson(k){try{return JSON.parse(localStorage.getItem(k)||'{}')}catch{return {}}}
+  function who(){return(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(readJson('ci_user')||readJson('ci_profile')||{})}
+  function authHeaders(){
+    const u=who(),h={'Accept':'application/json'};
+    if(u.email)h['X-User-Email']=u.email;
+    if(u.name)h['X-User-Name']=u.name;
+    if(u.id)h['X-User-Id']=u.id;
+    if(u.role)h['X-User-Role']=u.role;
+    return h;
+  }
+
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+  // Severity → colour mapping
+  const SEV_COLOR = {
+    suspended:'#ff5a5f', severe:'#ff8c42', major:'#ff8c42',
+    moderate:'#f0b429', planned:'#93c5fd', minor:'#a3e6c9', good:'#33c48d', unknown:'#8e97a3'
+  };
+  const SEV_BADGE = {
+    suspended:'badge-red', severe:'badge-red', major:'badge-red',
+    moderate:'badge-orange', planned:'badge-blue', minor:'badge-green', good:'badge-green', unknown:'badge-muted'
+  };
+  const MODE_ICON = {
+    'tube':'🚇','overground':'🚆','elizabeth-line':'🟣','dlr':'🚈','national-rail':'🚂','bus':'🚌'
+  };
+
+  // ── State ─────────────────────────────────────────────────────────
+  let allDisruptions = [];
+  let map, markers = [];
+
+  // ── Map ───────────────────────────────────────────────────────────
+  function initMap(){
+    map = L.map('transportMap',{zoomControl:true}).setView([51.509,-0.118],10);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+      attribution:'© OpenStreetMap © CARTO',maxZoom:19,subdomains:'abcd'
+    }).addTo(map);
+  }
+
+  function clearMarkers(){ markers.forEach(m=>m.remove()); markers=[]; }
+
+  function plotMarkers(list){
+    clearMarkers();
+    list.forEach(d=>{
+      if(!d.lat||!d.lon) return;
+      const col = SEV_COLOR[d.severity]||'#8e97a3';
+      const icon = L.divIcon({
+        className:'',
+        html:`<div style="width:14px;height:14px;border-radius:50%;background:${col};border:2px solid rgba(0,0,0,.5);box-shadow:0 0 6px ${col}88"></div>`,
+        iconSize:[14,14], iconAnchor:[7,7]
+      });
+      const m = L.marker([d.lat,d.lon],{icon})
+        .bindPopup(`<div style="font:13px system-ui;min-width:200px">
+          <strong>${esc(d.line)}</strong><br>
+          <span style="color:#${d.severity==='good'?'33c48d':'f0b429'}">${esc(d.status)}</span><br>
+          ${d.reason?`<span style="font-size:12px">${esc(d.reason.slice(0,180))}</span>`:''}
+          <br><small style="color:#8e97a3">${esc(d._source==='tfl'?'TfL':'National Rail')}</small>
+        </div>`)
+        .addTo(map);
+      markers.push(m);
+    });
+  }
+
+  // ── TfL line grid ─────────────────────────────────────────────────
+  function renderLineGrid(disruptions, tflSources){
+    const grid = document.getElementById('lineGrid');
+    const tflLines = allDisruptions.filter(d => d._source === 'tfl');
+    if(!tflLines.length && (!tflSources || tflSources.error)){
+      grid.innerHTML = `<div class="status-msg" style="padding:20px">TfL data unavailable${tflSources?.error?' — '+esc(tflSources.error):''}.</div>`;
+      return;
+    }
+    if(!tflLines.length){
+      grid.innerHTML = `<div style="color:var(--ok);font-size:13px;padding:8px">✅ All TfL lines showing Good Service</div>`;
+      return;
+    }
+    grid.innerHTML = tflLines.map(d=>{
+      const col = SEV_COLOR[d.severity]||'#8e97a3';
+      const cls = d.is_suspended||d.severity==='suspended'?'disrupted':d.is_planned?'planned':d.is_disrupted?'disrupted':'';
+      return `<div class="line-card ${cls}" data-id="${esc(d.id)}">
+        <div class="line-dot" style="background:${col}"></div>
+        <div class="line-info">
+          <div class="line-name">${MODE_ICON[d.mode]||'🚇'} ${esc(d.line)}</div>
+          <div class="line-status-lbl" style="color:${col}">${esc(d.status)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.line-card').forEach(card=>{
+      card.addEventListener('click',()=>{
+        const d = tflLines.find(x=>x.id===card.dataset.id);
+        if(d) showDetail(d);
+      });
+    });
+  }
+
+  // ── Detail panel ──────────────────────────────────────────────────
+  function showDetail(d){
+    const panel = document.getElementById('detailPanel');
+    document.getElementById('detailTitle').textContent = `${MODE_ICON[d.mode]||'🚇'} ${d.line} — ${d.status}`;
+    document.getElementById('detailReason').textContent = d.reason || 'No further detail available.';
+    panel.style.display = 'block';
+    panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  // ── Table ─────────────────────────────────────────────────────────
+  function getFiltered(){
+    const sev = document.getElementById('sevFilter').value;
+    const src = document.getElementById('sourceFilter').value;
+    const mode = document.getElementById('modeFilter').value;
+    const search = document.getElementById('searchFilter').value.toLowerCase().trim();
+    return allDisruptions.filter(d=>{
+      if(sev  && d.severity !== sev) return false;
+      if(src  && d._source  !== src) return false;
+      if(mode && d.mode     !== mode) return false;
+      if(search && !`${d.line} ${d.reason||''}`.toLowerCase().includes(search)) return false;
+      return true;
+    });
+  }
+
+  function timeAgo(iso){
+    if(!iso) return '';
+    const s = Math.floor((Date.now()-new Date(iso).getTime())/1000);
+    if(s<60) return 'just now';
+    if(s<3600) return Math.floor(s/60)+'m ago';
+    if(s<86400) return Math.floor(s/3600)+'h ago';
+    return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  }
+
+  function renderTable(){
+    const list = getFiltered();
+    const tbody = document.getElementById('tableBody');
+    document.getElementById('tableCount').textContent = list.length + ' disruption' + (list.length!==1?'s':'');
+    if(!list.length){
+      tbody.innerHTML = `<tr><td colspan="7" class="status-msg">No disruptions match current filters.</td></tr>`;
+      plotMarkers([]);
+      return;
+    }
+    tbody.innerHTML = list.map(d=>{
+      const badgeCls = SEV_BADGE[d.severity]||'badge-muted';
+      const srcLabel = d._source==='tfl'?'TfL':'Nat Rail';
+      const srcCol   = d._source==='tfl'?'#93c5fd':'#86efac';
+      return `<tr>
+        <td><span class="badge ${badgeCls}">${esc(d.severity||'unknown')}</span></td>
+        <td>${MODE_ICON[d.mode]||'🚂'} <span style="font-size:12px;color:var(--muted)">${esc(d.mode||'')}</span></td>
+        <td style="font-weight:600;min-width:140px">${esc(d.line||'—')}</td>
+        <td style="min-width:130px">${esc(d.status||'—')}</td>
+        <td style="max-width:360px;font-size:12px;color:#c9d0d8">${d.reason?esc(d.reason.slice(0,200))+(d.reason.length>200?'…':''):'—'}</td>
+        <td><span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.3);color:${srcCol}">${srcLabel}</span></td>
+        <td style="font-size:12px;color:var(--muted);white-space:nowrap">${timeAgo(d.start_time)}</td>
+      </tr>`;
+    }).join('');
+    plotMarkers(list.filter(d=>d.lat&&d.lon));
+  }
+
+  // ── KPIs ──────────────────────────────────────────────────────────
+  function renderKPIs(data){
+    const dis = data.disruptions || [];
+    const s = data.sources || {};
+    document.getElementById('kpiSuspended').textContent = dis.filter(d=>d.severity==='suspended').length;
+    document.getElementById('kpiSevere').textContent    = dis.filter(d=>d.severity==='severe'||d.severity==='major').length;
+    document.getElementById('kpiPlanned').textContent   = dis.filter(d=>d.is_planned).length;
+    document.getElementById('kpiGood').textContent      = (s.tfl?.good_service ?? '—');
+    // Source pills
+    const tflEl = document.getElementById('tflStatus');
+    const nrEl  = document.getElementById('nrStatus');
+    if(s.tfl?.disrupted!=null){
+      tflEl.style.color='var(--ok)';
+      tflEl.title=`${s.tfl.total_lines} lines · ${s.tfl.disrupted} disrupted · ${s.tfl.good_service} good service`;
+    } else if(s.tfl?.error){
+      tflEl.style.color='var(--danger)';tflEl.title=s.tfl.error;
+    }
+    if(s.nationalrail?.count!=null){
+      nrEl.style.color='var(--ok)';
+      nrEl.title=`${s.nationalrail.count} disruptions · ${s.nationalrail.planned} planned · ${s.nationalrail.unplanned} unplanned`;
+    } else if(s.nationalrail?.error){
+      nrEl.style.color='var(--danger)';nrEl.title=s.nationalrail.error;
+    }
+  }
+
+  // ── Load data ─────────────────────────────────────────────────────
+  async function loadTransport(){
+    try {
+      const res = await fetch(API+'/api/transport-status', {headers:authHeaders()});
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok) throw new Error(data.error||`HTTP ${res.status}`);
+
+      allDisruptions = data.disruptions || [];
+      renderKPIs(data);
+      renderLineGrid(allDisruptions, data.sources?.tfl);
+      renderTable();
+
+      const ts = data.cached
+        ? `Cached · ${new Date(data.fetched_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`
+        : `Live · ${new Date(data.fetched_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+      document.getElementById('lastUpdated').textContent = ts;
+    } catch(err){
+      document.getElementById('tableBody').innerHTML =
+        `<tr><td colspan="7" class="status-msg">⚠ Failed to load: ${esc(String(err?.message||err))}</td></tr>`;
+      document.getElementById('lastUpdated').textContent = 'Error';
+    }
+  }
+
+  // ── Events ────────────────────────────────────────────────────────
+  document.getElementById('refreshBtn').addEventListener('click', loadTransport);
+  ['sevFilter','sourceFilter','modeFilter','searchFilter'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', renderTable);
+  });
+  document.getElementById('searchFilter').addEventListener('keydown', e=>{
+    if(e.key==='Escape') e.target.value='';
+    renderTable();
+  });
+
+  // Nav active state
+  const here = location.pathname.split('/').pop()||'index.html';
+  document.querySelectorAll('nav a').forEach(a=>{
+    if(a.getAttribute('href')===here) a.classList.add('active'); else a.classList.remove('active');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────
+  initMap();
+  loadTransport();
+  // Auto-refresh every 5 minutes
+  setInterval(loadTransport, 5 * 60 * 1000);
+
+})();
+</script>
+</body>
+</html>
