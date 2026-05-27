@@ -277,6 +277,7 @@
                   <optgroup label="Americas">
                     <option value="americas">Americas</option>
                     <option value="northamerica">North America</option>
+                    <option value="us">United States</option>
                     <option value="latam">Latin America</option>
                   </optgroup>
                 </select>
@@ -328,6 +329,24 @@
             <div class="ctx-title" id="suggestionsTitle"><span class="accent">✦</span> Examples</div>
             <div id="suggestionList"></div>
           </div>
+
+          <!-- ⚡ Live Outages panel -->
+          <div class="ctx-card" id="outagePanelCard">
+            <div class="ctx-title"><span class="accent" style="color:#f0b429">⚡</span> Live Outages</div>
+            <div id="outagePanelBody" style="font-size:12px;color:var(--muted)">
+              <div style="display:flex;align-items:center;gap:6px;padding:4px 0">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--brand-red);animation:dotPulse 1.4s ease-in-out infinite"></div>
+                Loading…
+              </div>
+            </div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px" id="outageQuickPrompts">
+              <div class="suggestion-item" data-q="Are there active power outages near any of our registered assets?">Outages near registered assets?</div>
+              <div class="suggestion-item" data-q="Summarise current UK power outages — which regions are most affected and how many customers are impacted?">UK outage summary</div>
+              <div class="suggestion-item" data-q="Which unplanned power outages have been active the longest and when is restoration expected?">Longest active outages</div>
+              <div class="suggestion-item" data-q="What US counties have the highest power outage impact right now based on ODIN data?">US county outage impact</div>
+            </div>
+          </div>
+
           <div class="ctx-card">
             <div class="ctx-title"><span class="accent">◷</span> Recent questions</div>
             <div id="historyList"></div>
@@ -531,8 +550,10 @@
       'What high-risk alerts are relevant to London this week?',
       'Locate protests across EMEA for the coming month.',
       'Are there current incidents linked to hotels or transport?',
-      'Summarise the latest report and any matching external context.',
+      'Are there active power outages near any of our registered assets?',
+      'Summarise current UK power outages — which regions are most affected?',
       'Create a short client briefing from the most recent alerts.',
+      'What US counties have the highest power outage impact right now?',
       'What changed in the most recent monthly review?',
     ];
 
@@ -551,6 +572,17 @@
         out.push('Are any registered assets exposed to this threat area?');
       if (/report|brief|summary|monthly|weekly|review/.test(text))
         out.push('What changed compared to the previous period?');
+      // Power outage follow-ups
+      if (/power.outage|power.cut|blackout|brownout|electricity.outage|outage|ukpn|northern powergrid|national grid|nged|npg|odin|utility/.test(text))
+        out.push('Which of our registered assets are within 2km of these outages?');
+      if (/power.outage|power.cut|blackout|electricity/.test(text))
+        out.push('How long have these outages been active and when is restoration expected?');
+      if (/outage|power.cut|blackout/.test(text) && /london|south east|yorkshire|midlands|wales|east england/.test(text))
+        out.push('Are there any planned works that could extend the disruption?');
+      if (/outage|power.cut|blackout/.test(text) && /us|united states|county|american|odin/.test(text))
+        out.push('Which US states show the highest concentration of outages right now?');
+      if (/outage|power.cut|electricity/.test(text))
+        out.push('Open the live Power Outages map for full operational detail.');
       const generic = [
         'Create a short client briefing from these findings.',
         'What other regions show similar patterns this month?',
@@ -615,7 +647,7 @@
       card.innerHTML=`<div class="loading-stage"><div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div><span id="loadStageText">Retrieving CityIntel alerts…</span></div>`;
       turn.appendChild(card);
       scrollThread();
-      const stages=['Retrieving CityIntel alerts…','Checking report library…','Analysing external context…','Applying operational filters…','Generating analyst response…'];
+      const stages=['Retrieving CityIntel alerts…','Checking report library…','Checking live power outage feed…','Analysing external context…','Applying operational filters…','Generating analyst response…'];
       let si=0;
       const timer=setInterval(()=>{ si=(si+1)%stages.length; const t=card.querySelector('#loadStageText'); if(t) t.textContent=stages[si]; },1800);
       return {card,timer};
@@ -706,6 +738,125 @@
       el.debug.style.display='block';
     }
 
+    // ── Live power outage context ─────────────────────────────────────
+    // Detects outage-related questions and prepends a live snapshot from
+    // /api/power-outages so the assistant has real operational data to reason from.
+
+    const OUTAGE_KEYWORDS = /power\s?outage|power\s?cut|blackout|brownout|electricity\s?outage|outage|ukpn|northern\s?powergrid|national\s?grid|nged|npg\b|odin\b|utility\s?fail|grid\s?fail|no\s?power|lights\s?out/i;
+
+    let cachedOutageContext = null; // {text, fetched_at, sources}
+    let outageContextPromise = null;
+
+    async function fetchLiveOutageContext() {
+      // Return cache if < 5 min old
+      if (cachedOutageContext && (Date.now() - cachedOutageContext.fetched_at) < 5 * 60 * 1000) {
+        return cachedOutageContext.text;
+      }
+      // Deduplicate concurrent fetches
+      if (outageContextPromise) return outageContextPromise;
+
+      outageContextPromise = (async () => {
+        try {
+          const res = await fetch(API_BASE + '/api/power-outages', { headers: authHeaders() });
+          if (!res.ok) return null;
+          const data = await res.json().catch(() => null);
+          if (!data?.ok || !data.outages) return null;
+
+          const outages = data.outages || [];
+          const sources = data.sources || {};
+          const total = outages.length;
+          if (!total) return null;
+
+          const unplanned = outages.filter(o => {
+            if (o.restored_time) return false;
+            const t = String(o.incident_type || o.status || '').toLowerCase();
+            return !t.includes('restor') && !t.includes('planned');
+          });
+          const planned   = outages.filter(o => String(o.incident_type || o.status || '').toLowerCase().includes('planned') && !String(o.incident_type || o.status || '').toLowerCase().includes('unplanned'));
+          const restored  = outages.filter(o => o.restored_time || String(o.incident_type || o.status || '').toLowerCase().includes('restor'));
+
+          // Source summary
+          const srcLines = [];
+          if (sources.ukpn?.count != null)  srcLines.push(`UKPN (London/SE/East England): ${sources.ukpn.count} records`);
+          if (sources.npg?.count  != null)  srcLines.push(`Northern Powergrid (Yorkshire/NE): ${sources.npg.count} records`);
+          if (sources.nged?.count != null)  srcLines.push(`National Grid ED (Midlands/SW/Wales): ${sources.nged.count} records`);
+          if (sources.odin?.count != null)  srcLines.push(`ODIN US county-level: ${sources.odin.count} counties, ${(sources.odin.customers_affected||0).toLocaleString()} meters affected`);
+
+          // Top 5 most impactful unplanned outages
+          const topOutages = [...unplanned]
+            .sort((a, b) => (b.customers_affected || 0) - (a.customers_affected || 0))
+            .slice(0, 5);
+
+          const topLines = topOutages.map(o => {
+            const loc     = o.postcode || o.operating_zone || o.county_name || o.location || 'Unknown location';
+            const src     = { ukpn:'UKPN', npg:'NPG', nged:'NGED', odin:'ODIN' }[o._source] || (o._source||'').toUpperCase();
+            const cust    = o.customers_affected ? `${Number(o.customers_affected).toLocaleString()} customers/meters` : '';
+            const etr     = o.estimated_restoration ? `ETR: ${new Date(o.estimated_restoration).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}` : '';
+            const started = o.start_time ? `started: ${new Date(o.start_time).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}` : '';
+            const desc    = o.description ? o.description.slice(0, 80) : '';
+            return `  - [${src}] ${loc}${cust?' — '+cust:''}${started?' ('+started+')':''}${etr?' '+etr:''}${desc?' | '+desc:''}`;
+          });
+
+          const contextBlock = [
+            `[LIVE POWER OUTAGE DATA — fetched ${new Date(data.fetched_at||Date.now()).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}]`,
+            `Total outages: ${total} | Unplanned: ${unplanned.length} | Planned: ${planned.length} | Restored: ${restored.length}`,
+            srcLines.length ? 'Active sources:\n  ' + srcLines.join('\n  ') : '',
+            topLines.length ? `Top ${topLines.length} unplanned outages by customer impact:\n${topLines.join('\n')}` : 'No unplanned outages currently active.',
+            data.coverage ? `Coverage: ${data.coverage}` : '',
+          ].filter(Boolean).join('\n');
+
+          cachedOutageContext = { text: contextBlock, fetched_at: Date.now(), sources };
+          return contextBlock;
+        } catch { return null; }
+        finally { outageContextPromise = null; }
+      })();
+
+      return outageContextPromise;
+    }
+
+    // Fetch outage summary for the panel widget (non-blocking)
+    async function refreshOutagePanel() {
+      const el_ = document.getElementById('outagePanelBody');
+      if (!el_) return;
+      try {
+        const res  = await fetch(API_BASE + '/api/power-outages', { headers: authHeaders() });
+        if (!res.ok) { el_.innerHTML = '<div class="empty" style="font-size:12px">Could not load outage data.</div>'; return; }
+        const data = await res.json().catch(() => null);
+        if (!data?.ok) { el_.innerHTML = '<div class="empty" style="font-size:12px">Outage feed unavailable.</div>'; return; }
+
+        const outages = data.outages || [];
+        const unplanned = outages.filter(o => {
+          if (o.restored_time) return false;
+          const t = String(o.incident_type || o.status || '').toLowerCase();
+          return !t.includes('restor') && !t.includes('planned');
+        }).length;
+        const planned  = outages.filter(o => String(o.incident_type||o.status||'').toLowerCase().includes('planned') && !String(o.incident_type||o.status||'').toLowerCase().includes('unplanned')).length;
+        const s        = data.sources || {};
+        const srcDots  = [
+          s.ukpn  ? `<span title="UKPN: ${s.ukpn.count||0} records" style="color:${s.ukpn.count?'var(--ok)':'var(--muted)'}">●</span> UKPN` : '',
+          s.npg   ? `<span title="NPG: ${s.npg.count||0} records"  style="color:${s.npg.count?'var(--ok)':'var(--muted)'}">●</span> NPG`  : '',
+          s.nged  ? `<span title="NGED: ${s.nged.count||0} records" style="color:${s.nged.count?'var(--ok)':'var(--muted)'}">●</span> NGED` : '',
+          s.odin  ? `<span title="ODIN: ${s.odin?.count||0} counties" style="color:${s.odin?.count?'#fbbf24':'var(--muted)'}">●</span> ODIN` : '',
+        ].filter(Boolean).join('  ');
+
+        el_.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+            <div style="background:rgba(255,90,95,.08);border:1px solid rgba(255,90,95,.25);border-radius:8px;padding:7px 9px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--danger)">${unplanned}</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Unplanned</div>
+            </div>
+            <div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:7px 9px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--warn)">${planned}</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Planned</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">${srcDots}</div>
+          <a href="power-outages.html" style="display:block;text-align:center;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.3);border-radius:8px;color:#f87171;font-size:12px;font-weight:700;padding:6px;text-decoration:none;margin-bottom:2px" target="_blank">⚡ Open Power Outages map ↗</a>`;
+      } catch {
+        if (el_) el_.innerHTML = '<div class="empty" style="font-size:12px">Could not load outage data.</div>';
+      }
+    }
+
     // ── Ask ───────────────────────────────────────────────────────────
     async function ask(){
       const question=el.q.value.trim();
@@ -718,7 +869,18 @@
 
       // Build conversation context from recent turns
       const context=state.turns.slice(-CONTEXT_TURNS).map(t=>`Q: ${t.question}\nA: ${String(t.answer||'').slice(0,300)}…`).join('\n\n');
-      const fullQ=context?`[Previous context]\n${context}\n\n[Current question]\n${question}`:question;
+
+      // If question is power-outage-related, fetch live data and prepend as context
+      let outageContext = '';
+      if (OUTAGE_KEYWORDS.test(question)) {
+        outageContext = await fetchLiveOutageContext().catch(() => null) || '';
+      }
+
+      const fullQ = [
+        outageContext ? outageContext + '\n\n' : '',
+        context ? `[Previous context]\n${context}\n\n[Current question]\n` : '',
+        question,
+      ].join('');
 
       const ts=Date.now();
       try {
@@ -821,6 +983,14 @@
     // ── Init ──────────────────────────────────────────────────────────
     renderSuggestions(DEFAULT_EXAMPLES, false);
     renderHistory();
+
+    // Wire outage quick-prompt clicks
+    document.querySelectorAll('#outageQuickPrompts [data-q]').forEach(item => {
+      item.addEventListener('click', () => { el.q.value = item.dataset.q; ask(); });
+    });
+
+    // Load live outage panel (non-blocking)
+    refreshOutagePanel();
 
   })();
   </script>
