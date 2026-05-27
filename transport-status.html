@@ -152,7 +152,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     <div class="toprow">
       <div>
         <p class="page-title">🚇 Transport Status</p>
-        <p class="page-sub">Live transport disruption intelligence. London: TfL Tube · Overground · Elizabeth line · DLR. National: Network Rail disruptions.</p>
+        <p class="page-sub">Live transport disruption intelligence. UK: TfL and National Rail. Global layer: New York MTA and Singapore LTA where configured.</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <div class="refresh-row">
@@ -166,8 +166,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     <!-- Coverage note -->
     <div class="coverage-note">
       🚇 Coverage: <strong id="tflStatus" style="color:var(--muted)">TfL</strong> — Tube · Overground · Elizabeth line · DLR &nbsp;|&nbsp;
-      <strong id="nrStatus" style="color:var(--muted)">National Rail</strong> — Great Britain network disruptions.
-      &nbsp;<span style="color:var(--muted)">Cache: 5 min · No API key required</span>
+      <strong id="nrStatus" style="color:var(--muted)">National Rail</strong> — Great Britain network disruptions &nbsp;|&nbsp;
+      <strong id="mtaStatus" style="color:var(--muted)">MTA NYC</strong> — subway alerts &nbsp;|&nbsp;
+      <strong id="ltaStatus" style="color:var(--muted)">Singapore LTA</strong> — MRT/LRT alerts.
+      &nbsp;<span style="color:var(--muted)">Cache: 5 min</span>
     </div>
 
     <!-- KPI row -->
@@ -209,6 +211,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
             <option value="">All sources</option>
             <option value="tfl">TfL (London)</option>
             <option value="nationalrail">National Rail</option>
+            <option value="mta">MTA New York</option>
+            <option value="lta">Singapore LTA</option>
           </select>
           <select id="modeFilter">
             <option value="">All modes</option>
@@ -217,6 +221,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
             <option value="elizabeth-line">Elizabeth line</option>
             <option value="dlr">DLR</option>
             <option value="national-rail">National Rail</option>
+            <option value="subway">Subway</option>
+            <option value="mrt">MRT / LRT</option>
           </select>
           <input id="searchFilter" placeholder="Search line / operator…" style="width:180px"/>
         </div>
@@ -290,7 +296,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     moderate:'badge-orange', planned:'badge-blue', minor:'badge-green', good:'badge-green', unknown:'badge-muted'
   };
   const MODE_ICON = {
-    'tube':'🚇','overground':'🚆','elizabeth-line':'🟣','dlr':'🚈','national-rail':'🚂','bus':'🚌'
+    'tube':'🚇','overground':'🚆','elizabeth-line':'🟣','dlr':'🚈','national-rail':'🚂','subway':'🚇','mrt':'🚈','bus':'🚌'
   };
 
   // ── State ─────────────────────────────────────────────────────────
@@ -404,9 +410,11 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     }
     tbody.innerHTML = list.map(d=>{
       const badgeCls = SEV_BADGE[d.severity]||'badge-muted';
-      const srcLabel = d._source==='tfl'?'TfL':'Nat Rail';
-      const srcCol   = d._source==='tfl'?'#93c5fd':'#86efac';
-      return `<tr>
+      const sourceLabels = { tfl:'TfL', nationalrail:'Nat Rail', mta:'MTA NYC', lta:'LTA SG' };
+      const sourceColours = { tfl:'#93c5fd', nationalrail:'#86efac', mta:'#f0b429', lta:'#a3e6c9' };
+      const srcLabel = sourceLabels[d._source] || d._source || 'Source';
+      const srcCol   = sourceColours[d._source] || '#8e97a3';
+      return `<tr data-id="${esc(d.id||'')}">
         <td><span class="badge ${badgeCls}">${esc(d.severity||'unknown')}</span></td>
         <td>${MODE_ICON[d.mode]||'🚂'} <span style="font-size:12px;color:var(--muted)">${esc(d.mode||'')}</span></td>
         <td style="font-weight:600;min-width:140px">${esc(d.line||'—')}</td>
@@ -417,6 +425,12 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
       </tr>`;
     }).join('');
     plotMarkers(list.filter(d=>d.lat&&d.lon));
+    tbody.querySelectorAll('tr[data-id]').forEach(row=>{
+      row.addEventListener('click',()=>{
+        const item = list.find(x => String(x.id||'') === row.dataset.id);
+        if(item) showDetail(item);
+      });
+    });
   }
 
   // ── KPIs ──────────────────────────────────────────────────────────
@@ -438,16 +452,31 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     }
     if(s.nationalrail?.count!=null){
       nrEl.style.color='var(--ok)';
-      nrEl.title=`${s.nationalrail.count} disruptions · ${s.nationalrail.planned} planned · ${s.nationalrail.unplanned} unplanned`;
+      nrEl.title=`${s.nationalrail.count} disruptions · ${s.nationalrail.planned || 0} planned`;
     } else if(s.nationalrail?.error){
       nrEl.style.color='var(--danger)';nrEl.title=s.nationalrail.error;
+    } else if(s.nationalrail?.skipped){
+      nrEl.style.color='var(--muted)';nrEl.title=s.nationalrail.skipped;
+    }
+    const mtaEl = document.getElementById('mtaStatus');
+    const ltaEl = document.getElementById('ltaStatus');
+    if(mtaEl){
+      if(s.mta?.count!=null){ mtaEl.style.color='var(--ok)'; mtaEl.title=`${s.mta.count} alerts · ${s.mta.planned || 0} planned`; }
+      else if(s.mta?.error){ mtaEl.style.color='var(--danger)'; mtaEl.title=s.mta.error; }
+      else { mtaEl.style.color='var(--muted)'; mtaEl.title='MTA provider not active'; }
+    }
+    if(ltaEl){
+      if(s.lta?.count!=null){ ltaEl.style.color='var(--ok)'; ltaEl.title=`${s.lta.count} alerts · ${s.lta.planned || 0} planned`; }
+      else if(s.lta?.error){ ltaEl.style.color='var(--danger)'; ltaEl.title=s.lta.error; }
+      else if(s.lta?.skipped){ ltaEl.style.color='var(--muted)'; ltaEl.title=s.lta.skipped; }
+      else { ltaEl.style.color='var(--muted)'; ltaEl.title='Singapore LTA provider not active'; }
     }
   }
 
   // ── Load data ─────────────────────────────────────────────────────
   async function loadTransport(){
     try {
-      const res = await fetch(API+'/api/transport-status', {headers:authHeaders()});
+      const res = await fetch(API+'/api/transport-status?v=2', {headers:authHeaders()});
       const data = await res.json().catch(()=>({}));
       if(!res.ok||!data.ok) throw new Error(data.error||`HTTP ${res.status}`);
 
