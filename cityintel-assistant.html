@@ -685,16 +685,18 @@
       return {card,timer};
     }
 
-    function buildAnswerCard(turn, loadingCard, timer, answer, sources, ts){
+    function buildAnswerCard(turn, loadingCard, timer, answer, sources, ts, meta){
       clearInterval(timer);
       const alerts  = (sources?.cityintelAlerts||[]).length;
       const reports = (sources?.reports||[]).length;
       const ext     = (sources?.external||[]).length;
+      const gk      = meta?.generalKnowledge;
       const uid     = 'ans-'+ts;
       const badges  = [
         alerts  ? `<button class="src-badge alerts"  data-tab="cityintelAlerts">🔔 ${alerts} alert${alerts>1?'s':''}</button>`:'',
         reports ? `<button class="src-badge reports" data-tab="reports">📄 ${reports} report${reports>1?'s':''}</button>`:'',
         ext     ? `<button class="src-badge external" data-tab="external">🌐 ${ext} external</button>`:'',
+        gk      ? `<button class="src-badge" style="background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.4);color:#a78bfa" data-tab="generalKnowledge">🔍 Web search</button>`:'',
       ].filter(Boolean).join('');
 
       loadingCard.innerHTML=`
@@ -725,9 +727,10 @@
 
     // ── Evidence ──────────────────────────────────────────────────────
     function renderTabs(){
-      const labels={cityintelAlerts:'CityIntel alerts',reports:'Reports',external:'External context'};
-      el.tabs.innerHTML=Object.keys(labels).map(k=>
-        `<button class="tab ${state.active===k?'active':''}" data-tab="${k}">${labels[k]} <span class="hint">${(state.currentSources?.[k]||[]).length}</span></button>`
+      const labels={cityintelAlerts:'CityIntel alerts',reports:'Reports',external:'External context',generalKnowledge:'Web search'};
+      const src = state.currentSources || {};
+      el.tabs.innerHTML=Object.keys(labels).filter(k => k==='generalKnowledge' ? (src.generalKnowledge||[]).length > 0 : true).map(k=>
+        `<button class="tab ${state.active===k?'active':''}" data-tab="${k}">${labels[k]} <span class="hint">${(src[k]||[]).length}</span></button>`
       ).join('');
       el.tabs.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{ state.active=b.dataset.tab; renderEvidence(); }));
     }
@@ -1033,15 +1036,29 @@
 
         const answer=data.answer||'No answer returned.';
         const sources=data.sources||{};
+        const meta={generalKnowledge:null};
 
-        buildAnswerCard(turn, loadingCard, timer, answer, sources, ts);
+        // Surface general knowledge web-search sources as a dedicated tab
+        if (data.generalKnowledge?.sources?.length) {
+          sources.generalKnowledge = data.generalKnowledge.sources.map(s => ({
+            title:       s.title       || 'Web source',
+            url:         s.url         || null,
+            description: s.description || '',
+            source:      s.source      || (s.url ? (() => { try { return new URL(s.url).hostname.replace(/^www\./, ''); } catch { return 'Web'; } })() : 'Web'),
+            sourceType:  'General knowledge (web search)',
+            relevance:   'general',
+          }));
+          meta.generalKnowledge = data.generalKnowledge;
+        }
+
+        buildAnswerCard(turn, loadingCard, timer, answer, sources, ts, meta);
 
         // Update state
         state.turns.push({question, answer, sources, ts});
         state.currentSources=sources;
         state.currentDebug=data.debug||[];
         state.currentSearch=data.search||null;
-        state.active=(sources.cityintelAlerts||[]).length?'cityintelAlerts':((sources.reports||[]).length?'reports':'external');
+        state.active=(sources.cityintelAlerts||[]).length?'cityintelAlerts':((sources.reports||[]).length?'reports':(sources.generalKnowledge?.length?'generalKnowledge':'external'));
 
         renderEvidence();
         updateTurnCount();
