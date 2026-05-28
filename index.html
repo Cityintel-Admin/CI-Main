@@ -61,7 +61,6 @@
 .trav-meta, .trav-dates{ opacity: .85; font-size: 12px; margin-top: 2px; }
 
 
-.leaflet-container{background:#1a2030!important}
 </style>
 
   <meta charset="utf-8" />
@@ -942,10 +941,23 @@ tr:hover td{background:rgba(255,255,255,0.02)}
               </div>
             </div>
 
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:8px;font-size:13px;color:var(--muted)">
-              <input type="checkbox" id="ciFeedIncludeInProtests" style="width:15px;height:15px;cursor:pointer;accent-color:#D01616">
-              <span>Include in <strong style="color:var(--text)">Protest Feed</strong> &mdash; appears on High Risk Events &amp; All Events pages</span>
-            </label>
+            <div style="margin-top:8px;border:1px solid rgba(208,22,22,.2);border-radius:10px;padding:10px 12px;background:rgba(208,22,22,.03)">
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#D01616;margin-bottom:8px">&#128226; Protest distribution</div>
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);margin-bottom:7px">
+                <input type="radio" name="ciFeedProtestMode" id="ciFeedProtestNone" value="none" checked style="margin-top:2px;cursor:pointer;accent-color:#D01616">
+                <span><strong style="color:var(--text)">Dashboard feed only</strong> &mdash; post appears in CityIntel live feed, not sent to protest pages</span>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);margin-bottom:7px">
+                <input type="radio" name="ciFeedProtestMode" id="ciFeedIncludeInProtests" value="include" style="margin-top:2px;cursor:pointer;accent-color:#D01616">
+                <span><strong style="color:var(--text)">Include in Protest Feed</strong> &mdash; appears on dashboard feed <em>and</em> High Risk Events &amp; All Events pages</span>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--muted)">
+                <input type="radio" name="ciFeedProtestMode" id="ciFeedProtestOnly" value="only" style="margin-top:2px;cursor:pointer;accent-color:#D01616">
+                <span><strong style="color:var(--text)">Protest lists only</strong> &mdash; sent to High Risk Events &amp; All Events pages, <em>hidden from dashboard feed</em></span>
+              </label>
+            </div>
+            <!-- hidden checkbox kept for backward-compat with existing JS that reads includeProtestsInput.checked -->
+            <input type="checkbox" id="ciFeedIncludeInProtestsHidden" style="display:none">
 
             <div class="ci-feed-form-row">
               <select id="ciFeedRisk">
@@ -1993,7 +2005,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   const continentInput = document.getElementById('ciFeedContinent');
   const sourceUrlInput = document.getElementById('ciFeedSourceUrl');
   const includeProtestsInput = document.getElementById('ciFeedIncludeInProtests');
-  const protestSection = document.getElementById('ciFeedProtestSection');
+  const protestOnlyInput     = document.getElementById('ciFeedProtestOnly');
+  const protestNoneInput     = document.getElementById('ciFeedProtestNone');
+  const protestSection       = document.getElementById('ciFeedProtestSection');
+
+  // Helper: current protest mode from radio group
+  function getProtestMode() {
+    if (protestOnlyInput?.checked) return 'only';
+    if (includeProtestsInput?.checked) return 'include';
+    return 'none';
+  }
 
   // Country -> Continent lookup
   const COUNTRY_CONTINENT = {
@@ -2028,12 +2049,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     });
   }
 
-  // Show/hide protest section when checkbox changes
-  if (includeProtestsInput) {
-    includeProtestsInput.addEventListener('change', () => {
-      if (protestSection) protestSection.style.display = includeProtestsInput.checked ? 'block' : 'none';
+  // Show/hide protest detail section when radio group changes
+  document.querySelectorAll('input[name="ciFeedProtestMode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const mode = getProtestMode();
+      if (protestSection) protestSection.style.display = (mode !== 'none') ? 'block' : 'none';
     });
-  }
+  });
   let editingPostId = null;
   if (!list || !status) return;
 
@@ -2088,7 +2110,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     if (countryInput) countryInput.value = '';
     if (continentInput) continentInput.value = '';
     if (sourceUrlInput) sourceUrlInput.value = '';
+    if (protestNoneInput) protestNoneInput.checked = true;
     if (includeProtestsInput) includeProtestsInput.checked = false;
+    if (protestOnlyInput) protestOnlyInput.checked = false;
     if (protestSection) protestSection.style.display = 'none';
   }
 
@@ -2109,8 +2133,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     if (countryInput) countryInput.value = p.country || '';
     if (continentInput) continentInput.value = p.continent || '';
     if (sourceUrlInput) sourceUrlInput.value = p.source_url || '';
-    if (includeProtestsInput) includeProtestsInput.checked = !!(p.include_in_protests);
-    if (protestSection) protestSection.style.display = p.include_in_protests ? 'block' : 'none';
+    {
+      const mode = p.protests_only ? 'only' : (p.include_in_protests ? 'include' : 'none');
+      if (protestNoneInput)      protestNoneInput.checked      = (mode === 'none');
+      if (includeProtestsInput)  includeProtestsInput.checked  = (mode === 'include');
+      if (protestOnlyInput)      protestOnlyInput.checked      = (mode === 'only');
+      if (protestSection) protestSection.style.display = (mode !== 'none') ? 'block' : 'none';
+    }
     const submit = form.querySelector('button[type="submit"]');
     if (submit) submit.textContent = 'Save changes';
     form.style.display = 'grid';
@@ -2154,7 +2183,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   }
 
   function renderPosts(posts){
-    list.innerHTML = posts.map(p => {
+    // Hide posts flagged as "protests_only" from the dashboard feed
+    const visiblePosts = posts.filter(p => !p.protests_only);
+    list.innerHTML = visiblePosts.map(p => {
       const hasEvent = !!p.event_at;
       const hasLocation = !!p.location_label;
       const hasMap = feedPostHasMap(p);
@@ -2188,7 +2219,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
             <div class="ci-feed-top-actions">
               ${hasMap ? `<button class="ci-map-icon-btn ci-show-feed-map" type="button" data-post-id="${esc(p.id)}" title="Show on map" aria-label="Show this post on map">📍</button>` : ``}
               <span class="ci-risk-pill ${esc(p.risk || 'info')}">${esc(p.risk || 'info')}</span>
-              ${p.include_in_protests ? '<span style="font-size:10px;font-weight:800;background:rgba(208,22,22,.15);border:1px solid rgba(208,22,22,.35);color:#ff9999;border-radius:999px;padding:2px 7px;white-space:nowrap">&#128226; PROTEST</span>' : ''}
+              ${p.protests_only ? '<span style="font-size:10px;font-weight:800;background:rgba(120,50,200,.2);border:1px solid rgba(160,80,255,.4);color:#c9a0ff;border-radius:999px;padding:2px 7px;white-space:nowrap">&#128229; LISTS ONLY</span>' : (p.include_in_protests ? '<span style="font-size:10px;font-weight:800;background:rgba(208,22,22,.15);border:1px solid rgba(208,22,22,.35);color:#ff9999;border-radius:999px;padding:2px 7px;white-space:nowrap">&#128226; PROTEST</span>' : '')}
             </div>
           </div>
           <div class="ci-feed-body">${esc(p.body)}</div>
@@ -2266,12 +2297,14 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         lon: numberOrNull(lonInput?.value),
         expires_at: expiryToIso(expiryInput?.value),
         status: 'active',
-        include_in_protests: includeProtestsInput?.checked ? 1 : 0,
+        include_in_protests: (getProtestMode() === 'include' || getProtestMode() === 'only') ? 1 : 0,
+        protests_only: getProtestMode() === 'only' ? 1 : 0,
         city: cityInput?.value?.trim() || null,
         country: countryInput?.value?.trim() || null,
         continent: continentInput?.value?.trim() || (countryInput?.value ? COUNTRY_CONTINENT[countryInput.value] : null) || null,
         source_url: sourceUrlInput?.value?.trim() || null,
-        include_in_protests: includeProtestsInput?.checked ? 1 : 0,
+        include_in_protests: (getProtestMode() === 'include' || getProtestMode() === 'only') ? 1 : 0,
+        protests_only: getProtestMode() === 'only' ? 1 : 0,
         city: cityInput?.value?.trim() || null,
         country: countryInput?.value?.trim() || null,
         continent: (continentInput?.value?.trim() || (countryInput?.value ? COUNTRY_CONTINENT[countryInput.value] : null) || null),
@@ -2595,26 +2628,7 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
     scrollWheelZoom: true,
     worldCopyJump: true,
     boxZoom: false         // prevent grey zoom box lines
-  });
-
-  // Geolocation: zoom to user → fallback to org head-office → fallback to world view
-  const HEAD_OFFICE = { lat: 51.5074, lon: -0.1278, zoom: 11 }; // <-- set your org lat/lon here
-
-  (function tryGeolocation() {
-    if (!navigator.geolocation) {
-      map.setView([HEAD_OFFICE.lat, HEAD_OFFICE.lon], HEAD_OFFICE.zoom, { animate: false });
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        map.setView([pos.coords.latitude, pos.coords.longitude], 11, { animate: false });
-      },
-      function() {
-        map.setView([HEAD_OFFICE.lat, HEAD_OFFICE.lon], HEAD_OFFICE.zoom, { animate: false });
-      },
-      { timeout: 5000, maximumAge: 60000 }
-    );
-  })();
+  }).setView([18, 10], 2);
 
 	const assetLayer     = L.layerGroup();
     const travellerLayer = L.layerGroup();
@@ -2622,10 +2636,8 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
     const feedFocusLayer = L.layerGroup().addTo(map);
     window.ciIndexMap = map;
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap © CARTO',
-    subdomains: 'abcd',
-    maxZoom: 19
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
   }).addTo(map);
 
   // Legend (keep inside map)
@@ -3019,9 +3031,10 @@ function countPresenceForCountry(countryName){
           console.info('CityIntel map: United States shaded as', agg['united states of america'].band, agg['united states of america']);
         }
 
-        if (geoLayer) geoLayer.remove();
+        if (geoLayer) { geoLayer.remove(); geoLayer = null; }
 
-        geoLayer = L.geoJSON(geo, {
+        // Country risk shading disabled — map kept clean for readability
+        // geoLayer = L.geoJSON(geo, {
           style: f => {
   const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
   const row  = agg[countryKey(name)];
@@ -3088,7 +3101,7 @@ function countPresenceForCountry(countryName){
   });
 }
 
-        }).addTo(map);
+        // }).addTo(map); // country risk shading disabled for readability
         renderProtestMarkers();
       });
   }
