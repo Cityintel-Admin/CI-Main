@@ -992,7 +992,7 @@ async function loadOrgContext() {
     }
 
 /* Helps remove thin gaps/bands between raster tiles */
-.leaflet-container { background: #1a2030 !important; }
+.leaflet-container { background: #0d1117; } /* dark bg to match CARTO dark tiles */
 .leaflet-tile {
   outline: 1px solid transparent;           /* forces consistent compositing */
   transform: translate3d(0,0,0);
@@ -4361,7 +4361,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="gm-legend-label"><span class="gm-dot gm-cam"></span><span>JamCams</span></div>
         <button type="button" id="jamcamToggleBtn" class="layer-toggle-btn" title="Toggle official TfL JamCam cameras">Off</button>
 		<a href="assets.html" class="chip-btn admin-quick-link" data-role-action="assets">Manage Assets</a>
-		<a href="travellers.html" class="chip-btn admin-quick-link" data-role-action="travellers">Manage Travellers</a> 
+		<a href="travellers.html" class="chip-btn admin-quick-link" data-role-action="travellers">Manage Travellers</a>
+		<a href="power-outages.html" class="chip-btn admin-quick-link">⚡ Power Outages</a>
+		<a href="transport-status.html" class="chip-btn admin-quick-link">🚇 Transport Status</a>
       </div>
     </div>
 	  
@@ -9193,7 +9195,30 @@ window.ciIncidentRadiusKm = window.ciIncidentRadiusKm || 5;
 
 L.control.zoom({ position: 'topright' }).addTo(map);
 	
-  map.fitBounds(WORLD_BOUNDS);
+  // Geolocation: zoom to user → fallback to org head-office → fallback to world bounds
+  const HEAD_OFFICE = { lat: 51.5074, lon: -0.1278, zoom: 11 }; // <-- set your org lat/lon here
+
+  function zoomToLocation(lat, lon, zoom) {
+    map.setView([lat, lon], zoom, { animate: false });
+  }
+
+  function tryGeolocation() {
+    if (!navigator.geolocation) {
+      zoomToLocation(HEAD_OFFICE.lat, HEAD_OFFICE.lon, HEAD_OFFICE.zoom);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        zoomToLocation(pos.coords.latitude, pos.coords.longitude, 11);
+      },
+      function() {
+        // Browser denied or unavailable — fall back to head office
+        zoomToLocation(HEAD_OFFICE.lat, HEAD_OFFICE.lon, HEAD_OFFICE.zoom);
+      },
+      { timeout: 5000, maximumAge: 60000 }
+    );
+  }
+  tryGeolocation();
 
   // --- Basemap: CARTO Dark (consistent with Power Outages & Transport Status) ---
 const baseTiles = L.tileLayer(
@@ -9201,12 +9226,39 @@ const baseTiles = L.tileLayer(
   {
     attribution: '© OpenStreetMap © CARTO',
     subdomains: 'abcd',
-    maxZoom: 19
+    noWrap: true,
+    updateWhenIdle: false,
+    keepBuffer: 8
   }).addTo(map);
 
+	map.on('moveend zoomend', () => {
+  baseTiles.redraw();
+}); 
+	
+function fixTiles(){
+  try{
+    map.invalidateSize(true);
+    baseTiles.redraw(); // forces missing rows to repaint
+  }catch(e){}
+}
 
+// after user interaction
+map.on('moveend zoomend dragend', () => setTimeout(fixTiles, 30));
 
-  // tiles settle naturally with CARTO — no forced redraws needed
+// initial settle
+setTimeout(fixTiles, 120);
+setTimeout(fixTiles, 400);
+setTimeout(fixTiles, 900);
+
+function settleMap(){
+  try{
+    map.invalidateSize(true);
+    baseTiles.redraw();
+  }catch(e){}
+}
+setTimeout(settleMap, 0);
+setTimeout(settleMap, 150);
+setTimeout(settleMap, 600);
 
    // keep track of current incident highlight on the map
   let incidentRadiusLayer = null;
