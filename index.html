@@ -1610,6 +1610,126 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 })();
 </script>
       </section>
+
+      <!-- Transport Status Widget -->
+      <section style="grid-column:span 12;margin-top:0" id="transportWidgetWrapper">
+<section id="transportWidget" style="display:none">
+  <div style="background:linear-gradient(180deg,#1a1c20,#131417);border:1px solid #24272c;border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.35)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-weight:800;font-size:16px">🚇 Transport Status <span style="font-size:12px;font-weight:400;color:#8e97a3">(TfL · National Rail · MTA · LTA)</span></div>
+        <div style="font-size:12px;color:#8e97a3;margin-top:2px">London · Great Britain · New York · Singapore — live disruptions</div>
+      </div>
+      <a href="transport-status.html" style="display:inline-flex;align-items:center;gap:5px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;padding:6px 12px;border-radius:9px;font:600 12px system-ui;text-decoration:none">View all →</a>
+    </div>
+
+    <!-- KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:#1c1e22;border:1px solid rgba(255,90,95,.25);border-radius:10px;padding:10px 12px">
+        <div id="trKpiSuspended" style="font-size:22px;font-weight:800;color:#ff5a5f">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">Suspended</div>
+      </div>
+      <div style="background:#1c1e22;border:1px solid rgba(255,140,66,.25);border-radius:10px;padding:10px 12px">
+        <div id="trKpiSevere" style="font-size:22px;font-weight:800;color:#ff8c42">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">Severe</div>
+      </div>
+      <div style="background:#1c1e22;border:1px solid rgba(147,197,253,.2);border-radius:10px;padding:10px 12px">
+        <div id="trKpiPlanned" style="font-size:22px;font-weight:800;color:#93c5fd">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">Planned</div>
+      </div>
+      <div style="background:#1c1e22;border:1px solid rgba(51,196,141,.25);border-radius:10px;padding:10px 12px">
+        <div id="trKpiGood" style="font-size:22px;font-weight:800;color:#33c48d">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8e97a3">TfL Good</div>
+      </div>
+    </div>
+
+    <!-- Top disruptions list (max 3) -->
+    <div id="trDisruptionList" style="display:flex;flex-direction:column;gap:7px"></div>
+
+    <!-- Source coverage row -->
+    <div id="trSourceRow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:#8e97a3"></div>
+  </div>
+</section>
+
+<script>
+// Transport status dashboard widget
+(async function initTransportWidget(){
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+  function authH(){
+    const p=getProfile(); if(!p?.email) return {};
+    return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+  }
+  function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  const SEV_COLOR = { suspended:'#ff5a5f', severe:'#ff8c42', major:'#ff8c42', moderate:'#f0b429', planned:'#93c5fd', minor:'#a3e6c9' };
+  const SRC_LABEL = { tfl:'TfL', nationalrail:'Nat Rail', mta:'MTA NYC', lta:'LTA SG' };
+
+  try {
+    const res = await fetch(API_BASE + '/api/transport-status', { headers: authH() });
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) return;
+
+    const disruptions = data.disruptions || [];
+    const sources     = data.sources || {};
+    if (!disruptions.length && !Object.keys(sources).length) return;
+
+    // KPIs
+    const suspended = disruptions.filter(d => d.severity === 'suspended').length;
+    const severe    = disruptions.filter(d => d.severity === 'severe' || d.severity === 'major').length;
+    const planned   = disruptions.filter(d => d.is_planned).length;
+    const good      = sources.tfl?.good_service ?? '—';
+
+    document.getElementById('trKpiSuspended').textContent = suspended;
+    document.getElementById('trKpiSevere').textContent    = severe;
+    document.getElementById('trKpiPlanned').textContent   = planned;
+    document.getElementById('trKpiGood').textContent      = good;
+
+    // Show widget when there is data
+    if (disruptions.length > 0 || Object.values(sources).some(s => s.total_lines || s.count)) {
+      document.getElementById('transportWidget').style.display = 'block';
+    }
+
+    // Top 3 highest severity disruptions
+    const SEV_ORDER = { suspended:0, severe:1, major:1, moderate:2, planned:3, minor:4 };
+    const top3 = [...disruptions]
+      .sort((a,b) => (SEV_ORDER[a.severity]??5) - (SEV_ORDER[b.severity]??5))
+      .slice(0, 3);
+
+    const list = document.getElementById('trDisruptionList');
+    if (top3.length) {
+      list.innerHTML = top3.map(d => {
+        const col   = SEV_COLOR[d.severity] || '#8e97a3';
+        const src   = SRC_LABEL[d._source] || (d._source||'').toUpperCase();
+        const reason = d.reason ? d.reason.slice(0, 80) + (d.reason.length > 80 ? '…' : '') : d.status;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#1c1e22;border:1px solid #24272c;border-radius:9px;font-size:12px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></span>
+          <span style="font-weight:700;color:#e9edf2">${esc(d.line)}</span>
+          <span style="font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.3);color:${col}">${esc(d.severity)}</span>
+          <span style="color:#8e97a3;margin-left:auto;text-align:right;max-width:45%">${esc(reason)}</span>
+          <span style="font-size:10px;color:#8e97a3;flex-shrink:0">${esc(src)}</span>
+        </div>`;
+      }).join('');
+    } else {
+      list.innerHTML = `<div style="font-size:12px;color:#33c48d;padding:4px 0">✓ No major disruptions currently active.</div>`;
+    }
+
+    // Source coverage pills
+    const srcRow = document.getElementById('trSourceRow');
+    const pills = [];
+    if (sources.tfl?.total_lines)      pills.push(`<span style="padding:2px 8px;border-radius:999px;background:rgba(147,197,253,.1);border:1px solid rgba(147,197,253,.25);color:#93c5fd">TfL: ${sources.tfl.disrupted||0} disrupted · ${sources.tfl.good_service||0} good</span>`);
+    if (sources.nationalrail?.count!=null) pills.push(`<span style="padding:2px 8px;border-radius:999px;background:rgba(134,239,172,.08);border:1px solid rgba(134,239,172,.2);color:#86efac">Nat Rail: ${sources.nationalrail.count} disruptions</span>`);
+    if (sources.mta?.count!=null)      pills.push(`<span style="padding:2px 8px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:#fbbf24">MTA: ${sources.mta.count} alerts</span>`);
+    if (sources.lta?.count!=null)      pills.push(`<span style="padding:2px 8px;border-radius:999px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);color:#a78bfa">LTA: ${sources.lta.count > 0 ? sources.lta.count + ' alerts' : 'Normal service'}</span>`);
+    srcRow.innerHTML = pills.join('');
+
+  } catch(e) {
+    console.warn('Transport widget error:', e.message);
+  }
+})();
+</script>
+      </section>
       </div>
     </main>
   </div>
@@ -2636,8 +2756,10 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
     const feedFocusLayer = L.layerGroup().addTo(map);
     window.ciIndexMap = map;
 
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO',
+    maxZoom: 19,
+    subdomains: 'abcd'
   }).addTo(map);
 
   // Legend (keep inside map)
