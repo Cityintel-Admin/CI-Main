@@ -363,6 +363,8 @@
               <div class="suggestion-item" data-q="Which transport disruptions pose the greatest risk to our registered travellers today?">Risk to registered travellers</div>
               <div class="suggestion-item" data-q="Are any current transport disruptions linked to security incidents or protests?">Disruptions linked to security</div>
               <div class="suggestion-item" data-q="Summarise all suspended or severely disrupted transport services right now.">Suspended services summary</div>
+              <div class="suggestion-item" data-q="How do I get from Liverpool Street to Shepherd's Bush if the Central line is disrupted?">Alternative route (Central line)</div>
+              <div class="suggestion-item" data-q="What is the fastest way to get from King's Cross to Canary Wharf right now?">Journey: King's Cross → Canary Wharf</div>
             </div>
           </div>
 
@@ -615,6 +617,13 @@
         out.push('Is this transport disruption linked to a security incident?');
       if (/transport|rail|tube|tfl|disruption/.test(text))
         out.push('Open the live Transport Status map for full operational detail.');
+      // Journey planner follow-ups
+      if (/journey|route|option|minutes|arrives|walk|bus|tube|train|central line|jubilee|victoria|northern|elizabeth|overground/.test(text) && /option|fastest|alternative|disrupted|route/.test(text))
+        out.push('Are there any security incidents near stations on this route?');
+      if (/disruption.*route|disrupted.*leg|⚠/.test(text))
+        out.push('How long is the disruption expected to last on this line?');
+      if (/bus|walk|cycle/.test(text) && /instead|alternative|avoid/.test(text))
+        out.push('What is the estimated journey time by taxi or ride-share instead?');
       const generic = [
         'Create a short client briefing from these findings.',
         'What other regions show similar patterns this month?',
@@ -679,7 +688,7 @@
       card.innerHTML=`<div class="loading-stage"><div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div><span id="loadStageText">Retrieving CityIntel alerts…</span></div>`;
       turn.appendChild(card);
       scrollThread();
-      const stages=['Retrieving CityIntel alerts…','Checking report library…','Checking live power outage feed…','Checking live transport feed…','Analysing external context…','Applying operational filters…','Generating analyst response…'];
+      const stages=['Retrieving CityIntel alerts…','Checking report library…','Checking live power outage feed…','Checking live transport feed…','Planning journey routes…','Analysing external context…','Applying operational filters…','Generating analyst response…'];
       let si=0;
       const timer=setInterval(()=>{ si=(si+1)%stages.length; const t=card.querySelector('#loadStageText'); if(t) t.textContent=stages[si]; },1800);
       return {card,timer};
@@ -953,6 +962,52 @@
       return transportContextPromise;
     }
 
+    // ── Journey Planner context ───────────────────────────────────────
+    // Detects "how do I get from X to Y" questions and fetches live TfL
+    // journey options, injecting them as [LIVE JOURNEY DATA] context.
+
+    const JOURNEY_KEYWORDS = /how.+(get|travel|go|reach|journey|route|commute)|alternative.route|way.to.get|fastest.way|quickest.way|get.from.+to|travel.from.+to|journey.from|route.from|instead.of.+line|avoid.+line|bypass|alternative.to.+(tube|line|train|rail)/i;
+
+    // Simple extractor: pulls "from X to Y" or "X to Y" from the question
+    function extractJourneyPoints(question = '') {
+      const q = question.trim();
+      // Pattern: "from X to Y" or "get from X to Y" or "X to Y"
+      const m1 = q.match(/(?:from|get from|travel from|journey from|route from)\s+(.+?)\s+to\s+(.+?)(?:\s+(?:via|by|using|on|with|instead|if|when|today|now|please|\?|$))/i);
+      if (m1) return { from: m1[1].trim(), to: m1[2].trim() };
+      const m2 = q.match(/(.+?)\s+to\s+(.+?)(?:\s+(?:via|by|using|on|with|instead|if|when|today|now|please|\?|$))/i);
+      if (m2 && m2[1].length > 3 && m2[2].length > 3) return { from: m2[1].trim(), to: m2[2].trim() };
+      return null;
+    }
+
+    async function fetchJourneyContext(question) {
+      const points = extractJourneyPoints(question);
+      if (!points) return null;
+      try {
+        const params = new URLSearchParams({ from: points.from, to: points.to });
+        const res = await fetch(API_BASE + '/api/journey-planner?' + params.toString(), { headers: authHeaders() });
+        if (!res.ok) return null;
+        const data = await res.json().catch(() => null);
+        if (!data?.ok || !data.journeys?.length) return null;
+
+        const lines = [
+          `[LIVE JOURNEY DATA — ${data.from} → ${data.to}]`,
+          data.summary,
+        ];
+        data.journeys.forEach(j => {
+          const disrupted = j.disrupted ? ' ⚠ DISRUPTION ON ROUTE' : '';
+          lines.push(`Option ${j.option}: ${j.route_summary} — ${j.duration} min${j.arrival_time ? ', arrives ' + new Date(j.arrival_time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''}${j.fares ? ', ' + j.fares : ''}${disrupted}`);
+          if (j.disrupted_legs?.length) j.disrupted_legs.forEach(d => lines.push(`  ⚠ ${d}`));
+          j.legs.forEach(l => {
+            if (l.mode_id !== 'walking' || j.legs.filter(x=>x.mode_id!=='walking').length===0)
+              lines.push(`  ${l.mode_icon} ${l.line||l.mode}${l.from?' from '+l.from:''}${l.to?' to '+l.to:''}${l.duration?' ('+l.duration+' min)':''}`);
+          });
+        });
+        if (data.disrupted_lines?.length) lines.push(`Disrupted services on these routes: ${data.disrupted_lines.join('; ')}`);
+
+        return lines.join('\n');
+      } catch { return null; }
+    }
+
     async function refreshTransportPanel() {
       const el_ = document.getElementById('transportPanelBody');
       if (!el_) return;
@@ -1018,9 +1073,16 @@
         transportContext = await fetchLiveTransportContext().catch(() => null) || '';
       }
 
+      // If question asks about getting from A to B, fetch live journey options
+      let journeyContext = '';
+      if (JOURNEY_KEYWORDS.test(question)) {
+        journeyContext = await fetchJourneyContext(question).catch(() => null) || '';
+      }
+
       const fullQ = [
-        outageContext   ? outageContext   + '\n\n' : '',
+        outageContext    ? outageContext    + '\n\n' : '',
         transportContext ? transportContext + '\n\n' : '',
+        journeyContext   ? journeyContext   + '\n\n' : '',
         context ? `[Previous context]\n${context}\n\n[Current question]\n` : '',
         question,
       ].join('');
