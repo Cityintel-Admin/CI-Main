@@ -20,6 +20,243 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+
+
+  
+
+{
+  title: "Portugal National General Strike",
+  city: "Lisbon",
+  lat: 38.7223,
+  lng: -9.1393,
+  address: "Lisbon Airport / Citywide Transport Network",
+  postcode: "1700-008",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-06-03T00:00:00",
+  source: "https://www.reuters.com/business/world-at-work/portuguese-cabin-crew-union-join-june-3-national-strike-2026-05-19/",
+  summary: "Portugal's national general strike is scheduled for 3 June 2026, with cabin crew, transport workers and other sectors expected to participate. The action was called in protest against proposed labour reforms, including changes affecting dismissal rules and outsourcing. Significant disruption is expected across flights, rail, buses and public services, with Lisbon Airport likely to be heavily affected. Risk is assessed as High due to national-scale transport disruption."
+},
+{
+  title: "Academic Staff Protest Over Science Funding",
+  city: "Warsaw",
+  lat: 52.2297,
+  lng: 21.0122,
+  address: "Central Warsaw / Government District",
+  postcode: "00-001",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-27T12:00:00",
+  source: "https://notesfrompoland.com/2026/05/27/polish-academics-protest-underfunding-of-science-and-higher-education/",
+  summary: "Researchers and academic staff protested in Warsaw on 27 May 2026 against underfunding of science and higher education. The campaign called for Poland to raise science and higher education spending to 3% of GDP by 2030 and was supported by several universities, alongside an online petition with more than 25,000 signatures. Risk is assessed as Medium due to organised mobilisation in the capital but limited evidence of disorder."
+},
+{
+  title: "Justice for Yves Sakila Protest",
+  city: "Dublin",
+  lat: 53.3409,
+  lng: -6.2546,
+  address: "Leinster House, Kildare Street",
+  postcode: "D02 XR20",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-21T12:00:00",
+  source: "https://www.theguardian.com/world/video/2026/may/22/hundreds-protest-over-irelands-george-floyd-moment-after-death-of-congolese-born-man-video",
+  summary: "Hundreds of people protested outside Ireland's parliament on 21 May 2026 following the death of Yves Sakila, a Congolese-born man who became unresponsive after being restrained outside a Dublin department store on 15 May. Protesters demanded accountability and transparency in the investigation. Risk is assessed as Medium due to public anger and political sensitivity, though the protest was reported as a civic justice demonstration rather than widespread disorder."
+},
+{
+  title: "Housing Crisis Protest",
+  city: "Madrid",
+  lat: 40.4168,
+  lng: -3.7038,
+  address: "Central Madrid",
+  postcode: "28013",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-24T12:00:00",
+  source: "https://apnews.com/article/4faabcdaa459c5544cb8b7aacc6c67d0",
+  summary: "Thousands of people rallied in central Madrid on 24 May 2026 against rising housing costs and the difficulty of accessing affordable rents and homes. Protesters criticised the effect of tourism, short-term rentals and housing shortages on ordinary residents. Risk is assessed as Medium due to sizeable turnout and central disruption, but available reporting does not indicate serious disorder."
+},
+
+
+{
+  title: "May Day Labour Demonstration",
+  city: "Turin",
+  lat: 45.0703,
+  lng: 7.6869,
+  address: "Central Turin",
+  postcode: "10121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-01T12:00:00",
+  source: "https://www.anews.com.tr/europe/2026/05/01/may-day-rallies-held-across-europe",
+  summary: "Labour Day demonstrations in Turin included clashes between a group of protesters and police. Authorities reported projectiles being thrown and crowd-control measures being deployed. The incident occurred during wider May Day mobilisation across Italy. Risk is assessed as high."
+},
+  
+
+{
+  title: "May Day Labour Demonstration",
+  city: "Lyon",
+  lat: 45.7640,
+  lng: 4.8357,
+  address: "City Centre",
+  postcode: "69002",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-01T12:00:00",
+  source: "https://www.anews.com.tr/europe/2026/05/01/may-day-rallies-held-across-europe",
+  summary: "Trade unions and labour groups organised May Day demonstrations across Lyon. Authorities reported arrests and clashes involving masked protesters during parts of the march. Police deployed crowd-control measures including tear gas. Given the confirmed disorder and arrests, the risk is assessed as high."
+},
+
+{
+  title: "Biennale Activist Demonstration",
+  city: "Venice",
+  lat: 45.4408,
+  lng: 12.3155,
+  address: "Venice Biennale Areas",
+  postcode: "30100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-17T12:00:00",
+  source: "https://www.wsws.org/en/articles/2026/05/12/koli-m12.html",
+  summary: "Activist groups are expected to organise demonstrations connected to the Venice Biennale, including actions focused on international political issues and cultural participation. Protest activity is expected around Biennale venues and central public areas. Given the international visibility of the event, the risk is assessed as medium."
+},
+  
+
+{
+  title: "National Budget Protest",
+  city: "Sofia",
+  lat: 42.6977,
+  lng: 23.3219,
+  address: "National Assembly Area",
+  postcode: "1000",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-20T12:00:00",
+  source: "https://www.facebook.com/Reuters/posts/thousands-rally-in-bulgaria-against-2026-budget-clash-with-policeclick-the-link-/1404594758197919/",
+  summary: "Large demonstrations were reported in Sofia and multiple Bulgarian cities in opposition to the 2026 national budget. Protest activity included rallies near government institutions and reports of clashes with police. The demonstrations formed part of a wider national mobilisation. Given the scale and reports of disorder, the risk is assessed as high."
+},
+  
+
+{
+  title: "May Day Demonstration and Taksim Restrictions",
+  city: "Istanbul",
+  lat: 41.0082,
+  lng: 28.9784,
+  address: "Taksim Square Area",
+  postcode: "34435",
+  country: "Turkey",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-01T12:00:00",
+  source: "https://en.wikipedia.org/wiki/2026_May_Day_protests",
+  summary: "Trade unions, labour groups and activists attempted to organise May Day demonstrations around Taksim Square in Istanbul. Authorities imposed restrictions around the area and police operations resulted in multiple arrests and crowd-control measures. Given the historic sensitivity of Taksim Square and the scale of security operations, the risk is assessed as high."
+},
+  
+
+{
+  title: "Fuel Price and Cost of Living Protest Activity",
+  city: "Dublin",
+  lat: 53.3498,
+  lng: -6.2603,
+  address: "O'Connell Street / City Centre",
+  postcode: "D01",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-16T12:00:00",
+  source: "https://en.wikipedia.org/wiki/2026_Irish_fuel_protests",
+  summary: "Demonstrators are expected to continue protest activity linked to the nationwide fuel and cost-of-living movement. Previous actions involved vehicle convoys, road blockades and disruption across Dublin and other major cities. Protest organisers have indicated continued mobilisation around economic pressures and fuel costs. Given the history of transport disruption and large participation levels, the risk is assessed as high."
+},
+  
+  
+
+{
+  title: "Eurovision-Related Demonstrations",
+  city: "Vienna",
+  lat: 48.2082,
+  lng: 16.3738,
+  address: "Eurovision Event Areas / City Centre",
+  postcode: "1010",
+  country: "Austria",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-16T12:00:00",
+  source: "https://www.lemonde.fr/en/international/article/2026/05/16/eurovision-2026-israel-s-participation-sparks-controversy_6753502_4.html",
+  summary: "Multiple demonstrations and counter-events were organised in Vienna during Eurovision 2026 amid controversy surrounding Israel's participation. Protest activity was concentrated around Eurovision-related venues and central areas. Security measures were heightened due to expectations of large gatherings and politically sensitive demonstrations. Risk is assessed as high."
+},
+  
+
+{
+  title: "Unite the Kingdom Rally and Pro-Palestine Counter-Demonstrations",
+  city: "London",
+  lat: 51.5074,
+  lng: -0.1278,
+  address: "Central London",
+  postcode: "WC2N",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-16T12:00:00",
+  source: "https://www.reuters.com/world/uk/tens-thousands-march-london-separate-immigration-propalestinian-protests-2026-05-16/",
+  summary: "Large simultaneous demonstrations took place across central London involving anti-immigration protesters participating in the Unite the Kingdom rally and separate pro-Palestine demonstrations. Police deployed approximately 4,000 officers and described the operation as one of the largest public-order responses in recent years. The demonstrations attracted very large crowds and carried significant public-order concerns due to opposing groups operating in the city simultaneously. Risk is assessed as high."
+},
+  
+
+  {
+  title: "National General Strike and Union Demonstration",
+  city: "Brussels",
+  lat: 50.8503,
+  lng: 4.3517,
+  address: "Central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-12T10:00:00",
+  source: "https://www.euronews.com/my-europe/2026/05/12/general-strike-in-belgium-against-government-reforms-draws-tens-of-thousands-to-the-capita",
+  summary: "A nationwide strike organised by major Belgian trade unions brought tens of thousands of demonstrators into central Brussels to protest pension reforms, wage issues, and government fiscal policies. Transport disruption affected rail, airport, and public services across Belgium. Due to the national scale and infrastructure impact, the risk is assessed as high."
+},
+
+
+{
+  title: "March for Dignity Anti-Government Demonstration",
+  city: "Madrid",
+  lat: 40.4168,
+  lng: -3.7038,
+  address: "Plaza de Colón to Moncloa Area",
+  postcode: "28004",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-23T12:00:00",
+  source: "https://www.reuters.com/world/tens-thousands-march-madrid-demand-spanish-prime-minister-resigns-2026-05-23/",
+  summary: "Tens of thousands of protesters participated in the 'March for Dignity' demonstration in Madrid demanding the resignation of Prime Minister Pedro Sánchez amid corruption allegations involving political figures linked to his administration. Large crowds moved through central Madrid and a small group attempted to breach security barriers near the prime minister's residence. Police reported arrests and injuries. Given the size of the mobilisation and political tensions, the risk is assessed as high."
+},
+
+
+{
+  title: "Student-Led Anti-Government Mass Protest",
+  city: "Belgrade",
+  lat: 44.8125,
+  lng: 20.4612,
+  address: "Slavija Square",
+  postcode: "11000",
+  country: "Serbia",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-23T18:00:00",
+  source: "https://www.reuters.com/world/police-protesters-clash-serbia-crowds-demand-presidents-exit-2026-05-23/",
+  summary: "Tens of thousands of demonstrators gathered at Slavija Square in Belgrade as part of a student-led anti-corruption movement demanding early parliamentary elections and the resignation of President Aleksandar Vucic. Following the main rally, clashes were reported between protesters and riot police near government areas. Authorities reported arrests and injuries. Given the scale, political significance, and confirmed disorder, the risk is assessed as high."
+},
+  
   {
   "title": "Animal Rights March UK 2026",
   "city": "London",
