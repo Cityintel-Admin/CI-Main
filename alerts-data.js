@@ -20,6 +20,113 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+
+
+  {
+    title: "Balochistan Rights Protest — Scottish Parliament, Edinburgh",
+    city: "Edinburgh",
+    lat: 55.952064,
+    lng: -3.174589,
+    address: "Scottish Parliament, Edinburgh",
+    postcode: "EH99 1SP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-28T11:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 28 May 2026, between 1100hrs and 1400hrs, a Balochistan rights protest is scheduled to take place outside the Scottish Parliament, Edinburgh. Organised by the 'Free Balochistan Movement', calling for solidarity with Balochistan following nuclear weapons testing by Pakistan in 1998 which allegedly resulted in health and environmental concerns. This protest is one of four taking place across Europe simultaneously, with others at London, Berlin, and The Hague. Based on previous demonstrations by the group, the protest is likely to be peaceful and number in the single digits to low tens (1–10). Risk is assessed as low. Note: the NICC map folder places this event under 31 May 2026 — the correct date per notification content is 28 May 2026."
+  },
+
+    {
+    title: "Anti-Iranian Government March — Stage of Freedom, London",
+    city: "London",
+    lat: 51.50351697,
+    lng: -0.1274780207,
+    address: "Muster: 10 Downing Street — route: Trafalgar Square > Cockspur Street > Regent Street St James > Piccadilly > Knightsbridge > Iranian Embassy",
+    postcode: "SW1A 2AA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-05-30T13:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 30 May 2026, from 1300hrs, an anti-Iranian government protest march is due to muster outside 10 Downing Street before marching to the Iranian Embassy via Trafalgar Square, Cockspur Street, Regent Street, Piccadilly, and Knightsbridge. Organised by 'Stage of Freedom' to protest against the Iranian government and call for regime change, in favour of political figure Pahlavi. Attendance in the low-to-mid hundreds (100–500). Activists are likely to remain largely peaceful but vocal. Localised noise and traffic disruption is likely. The use of Israeli and US flags by the group is likely to create tensions with members of the public, with the realistic possibility of resulting in verbal and physical confrontations. March. Risk is assessed as medium."
+  },
+
+  {
+    title: "Eid on the Square — Trafalgar Square, London",
+    city: "London",
+    lat: 51.508039,
+    lng: -0.128069,
+    address: "Trafalgar Square, London",
+    postcode: "WC2N 5DS",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-30T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 30 May 2026, between 1200hrs and 1800hrs, the annual Eid on the Square festival is scheduled to take place at Trafalgar Square, London. A free event organised by the Mayor of London celebrating Eid al-Adha. Based on previous events, attendance will likely be in the high hundreds to low thousands (500–1,000). Static. Cultural event. Risk is assessed as low but note significant crowd volumes at Trafalgar Square throughout the afternoon."
+  },
+
+  {
+    title: "Trans-Rights Protest — EHRC Guidance, Cheltenham",
+    city: "Cheltenham",
+    lat: 51.90006237,
+    lng: -2.071439203,
+    address: "Cheltenham High Street — mustering outside John Lewis",
+    postcode: "GL50 1DQ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-30T13:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 30 May 2026, from 1300hrs, an LGBTQ+ rights protest in solidarity with transgender individuals is due to take place on Cheltenham High Street, mustering outside John Lewis. Organised by an LGBTQ+ rights organisation in opposition to EHRC Guidance on equality. Attendance likely in the single digits to low tens (1–10). Peaceful. Static. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Immigration Protest — Raise the Flags Shrewsbury",
+    city: "Shrewsbury",
+    lat: 52.70628756,
+    lng: -2.76150585,
+    address: "Top of the Quarry, Shrewsbury",
+    postcode: "SY1 1JA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-30T11:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 30 May 2026, from 1130hrs, a protest is due to muster at the top of the Quarry, Shrewsbury. Organised by 'Raise the Flags Shrewsbury' to protest against illegal migration to the UK. Attendance in the single digits to low tens (1–10). Activists are likely to hang flags in the vicinity. Static. Risk is assessed as low."
+  },
+
+  {
+    title: "Pro-Palestine Protest — Barclays Bank, Edinburgh",
+    city: "Edinburgh",
+    lat: 55.95344357,
+    lng: -3.190365593,
+    address: "Barclays, 10–15 Princes Street, Edinburgh",
+    postcode: "EH2 2AN",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-30T10:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 30 May 2026, from 1030hrs–1230hrs, a protest is due to muster outside Barclays, 10–15 Princes Street, Edinburgh. Organised by 'Palestine Solidarity Campaign' to protest against Barclays for alleged financial ties to Israeli entities amid the Israel-Hamas conflict. Attendance in the single digits to low tens (1–10). Activists are likely to remain static and largely peaceful. Risk is assessed as low."
+  },
+
+   {
+    title: "Anti-Trump Protest — Turnberry Beach, Girvan",
+    city: "Girvan",
+    lat: 55.31412977,
+    lng: -4.837724085,
+    address: "Turnberry Beach, Girvan, South Ayrshire",
+    postcode: "KA26 9LS",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-30T11:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 30 May 2026, from 1100hrs, an anti-Trump protest is due to muster at Turnberry Beach, Girvan. Organised by various groups including 'GGEC BDS Glasgow' to protest against Trump amid the US's involvement in Middle East conflicts. Attendance in the low-to-mid tens (10–50). Activists are likely to remain static and peaceful. Organisers have stated this demonstration will be a 'family fun day', indicating the protest will likely be non-disruptive. International Issues type, Israel-Hamas Conflict sub-type. Note: NICC map folder places this under 31 May 2026 — notification content states 30 May 2026. Risk is assessed as low."
+  },
+
   
 {
     title: "Anti-Police Protest — White Vanguard, Southampton",
