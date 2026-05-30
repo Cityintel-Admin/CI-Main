@@ -22,7 +22,483 @@ window.alertsData =[
 
 
 
+ {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "Washington D.C.",
+    lat: 38.8899,
+    lng: -77.0091,
+    address: "National Mall — march from Arlington Memorial Circle across Memorial Bridge to Washington Monument",
+    postcode: "20024",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "Major No Kings mobilisation on 4 July 2026 — 250th anniversary of American independence. Planned since November 2025 by 50501 Movement, Indivisible and allied groups. The date is framed around the Declaration of Independence's anti-monarchical language. Thousands of simultaneous events expected nationwide and internationally. Trump has signalled hostility to July 4th counter-events. Prior No Kings waves saw vehicular attacks, a fatal shooting, tear gas use in multiple cities, and law enforcement violent dispersals. Risk assessed as high — extreme political sensitivity, historic date, large expected turnout, counter-mobilisation potential. Britannica confirms No Kings movement has now drawn 5M, 7M and 8M successively."
+  },
 
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "Los Angeles",
+    lat: 34.0537,
+    lng: -118.2428,
+    address: "Grand Park, 200 N Grand Ave",
+    postcode: "90012",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "Large-scale No Kings July 4th demonstrations in Los Angeles coinciding with Independence Day celebrations. City remains sensitised following 2025 ICE protests and National Guard/Marine deployments. Police used tear gas and batons at prior No Kings events here. Convergence of Independence Day crowds with protest mobilisation raises disorder risk. Risk assessed as high."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "New York City",
+    lat: 40.7127,
+    lng: -74.0059,
+    address: "Foley Square / Lower Manhattan",
+    postcode: "10007",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "No Kings July 4th solidarity events across New York City. Concurrent with Independence Day celebrations — elevated crowd density and mixing with national celebrations. Risk assessed as medium."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "Chicago",
+    lat: 41.8827,
+    lng: -87.6233,
+    address: "Federal Plaza, 219 S Dearborn St",
+    postcode: "60604",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "No Kings July 4th demonstrations in Chicago. Federal Plaza has been the anchor for prior No Kings events in the city. Risk assessed as medium."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "Philadelphia",
+    lat: 39.9526,
+    lng: -75.1652,
+    address: "Philadelphia City Hall — march down Benjamin Franklin Parkway",
+    postcode: "19107",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-07-04T12:00:00",
+    source: "https://whyy.org/articles/philadelphia-no-kings-protest-2026-trump/",
+    summary: "Philadelphia was the flagship No Kings event for the March 2026 wave, drawing approximately 100,000 protesters. As the city of the Declaration of Independence, Philadelphia carries particular symbolic weight for the July 4th 2026 mobilisation — the 250th anniversary. Events expected to begin at Philadelphia City Hall and march down the Benjamin Franklin Parkway. Risk assessed as medium."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "San Francisco",
+    lat: 37.7749,
+    lng: -122.4194,
+    address: "Embarcadero Plaza, San Francisco",
+    postcode: "94105",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-07-04T10:00:00",
+    source: "https://www.aol.com/news/no-kings-2026-full-list-165822632.html",
+    summary: "San Francisco's Embarcadero Plaza confirmed as a major No Kings event location from the March 2026 wave. 320 events were confirmed across California for that mobilisation. July 4th events are expected to be significantly larger. Risk assessed as medium."
+  },
+
+
+  {
+    title: "Pride in London — Parade",
+    city: "London",
+    lat: 51.5028,
+    lng: -0.1538,
+    address: "Hyde Park Corner → Piccadilly Circus → Regent Street → Trafalgar Square → Whitehall",
+    postcode: "W1J 7NT",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-07-04T12:00:00",
+    source: "https://prideinlondon.org/",
+    summary: "Pride in London 2026 confirmed for Saturday 4 July. Parade steps off at noon from Hyde Park Corner proceeding via Piccadilly Circus, Regent Street, Oxford Street, Trafalgar Square and ending at Whitehall. 30,000+ marchers representing 600+ communities, up to 1.5 million spectators expected. Free event. Six performance stages across central London. Pride weekend runs 2–6 July. Note: date coincides with No Kings Day July 4th in the US — UK solidarity events may also occur in central London on the same day. Note: Manchester Village Pride also returns this year (28–31 August) as a community-led event after previous organisers entered liquidation. Risk assessed as low though major road closures across central London are certain."
+  },
+
+  {
+    title: "London Trans+ Pride — March",
+    city: "London",
+    lat: 51.5081,
+    lng: -0.1281,
+    address: "Assemble: Trafalgar Square from 1pm — march via Cockspur Street, Pall Mall, Piccadilly Circus to Wellington Arch",
+    postcode: "WC2N 5DN",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-07-25T13:00:00",
+    source: "https://www.timeout.com/london/things-to-do/london-trans-pride",
+    summary: "London Trans+ Pride 2026 confirmed for Saturday 25 July — the event's 8th year. Participants assemble at Trafalgar Square from 1pm, march departs at 2pm. Route: Trafalgar Square → Cockspur Street → Pall Mall → Piccadilly Circus → Wellington Arch. Runs until approximately 5:30pm. The march is explicitly a protest against transphobic legislation and for trans healthcare reform. Attendance has grown significantly year-on-year, exceeding 100,000 in recent years. Counter-protest presence has increased alongside the public debate on trans rights in the UK. Risk assessed as low."
+  },
+
+  {
+    title: "Northern Pride",
+    city: "Newcastle upon Tyne",
+    lat: 54.9778,
+    lng: -1.6178,
+    address: "Newcastle city centre",
+    postcode: "NE1 7PF",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-07-18T12:00:00",
+    source: "https://localpage.uk/blog/pride-events-across-the-uk-2026",
+    summary: "Northern Pride 2026 confirmed for 18–19 July, Newcastle upon Tyne. One of the most accessible Pride events in the country and the primary LGBTQ+ hub for the North East. Peaceful demonstration and festival. Risk assessed as low."
+  },
+
+  {
+    title: "National March for Palestine — London",
+    city: "London",
+    lat: 51.5074,
+    lng: -0.1278,
+    address: "Assemble Russell Square — march to Whitehall (standard PSC route)",
+    postcode: "WC1B 5EH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-07-11T12:00:00",
+    source: "https://palestinecampaign.org/events/",
+    summary: "The Palestine Solidarity Campaign's monthly national demonstration programme continues into July 2026. The PSC has maintained a near-monthly schedule of national marches since October 2023. Following the Tommy Robinson 'Unite the Kingdom' rally of 16 May 2026 (110,000–150,000 attendees) and the Nakba Day march of the same weekend which required a 4,000-officer police operation, tensions between opposing groups remain elevated. July march expected to continue the established Russell Square to Whitehall format. Risk assessed as medium."
+  },
+
+
+
+  {
+    title: "Brighton Pride — Community Parade 'Ravishing Rage'",
+    city: "Brighton",
+    lat: 50.8225,
+    lng: -0.1372,
+    address: "Brighton city centre — parade to Preston Park; Street Party on Marine Parade and New Steine Gardens",
+    postcode: "BN1 1UG",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-01T12:00:00",
+    source: "https://en.wikipedia.org/wiki/Brighton_Pride",
+    summary: "Brighton Pride 2026 confirmed for 1–2 August. The Community Parade 'Ravishing Rage' takes place on Saturday 1 August, with the Street Party on Marine Parade and New Steine Gardens running Saturday 2 and Sunday 3 August. One of the UK's largest outdoor events with 500,000+ expected. Festival and parade. Risk assessed as low. Note: Brighton Pride has increased its 'protest' framing in 2026 amid UK trans rights legislative debate."
+  },
+
+  {
+    title: "Manchester Village Pride — Parade",
+    city: "Manchester",
+    lat: 53.4772,
+    lng: -2.2342,
+    address: "Canal Street Gay Village — four-day festival culminating in a candlelit vigil at Sackville Gardens on Monday 31 August",
+    postcode: "M1 1JJ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-28T12:00:00",
+    source: "https://www.skiddle.com/news/all/Manchester-Village-Pride-returns-for-2026/61250/",
+    summary: "Manchester Village Pride 2026 confirmed for 28–31 August (August Bank Holiday weekend), relaunched as a community-led event after the previous Manchester Pride Events Ltd entered voluntary liquidation in October 2025. Manchester City Council passed a unanimous motion to support the return of Pride under a new community-led structure. Parade on Saturday 29 August. Closes with a candlelit vigil on Monday 31 August at Sackville Gardens. 150,000+ expected. Risk assessed as low."
+  },
+
+  {
+    title: "National March for Palestine — London",
+    city: "London",
+    lat: 51.5074,
+    lng: -0.1278,
+    address: "Assemble Russell Square — march to Whitehall (standard PSC route)",
+    postcode: "WC1B 5EH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-08T12:00:00",
+    source: "https://palestinecampaign.org/events/",
+    summary: "Continuation of the PSC monthly national demonstration programme into August 2026. Date estimated based on the established first/second Saturday of each month pattern — confirm on palestinecampaign.org closer to the date. The PSC has held national marches in London nearly every month since October 2023. Risk assessed as medium given the ongoing elevated tensions in the city between pro-Palestine and counter-demonstration groups."
+  },
+
+
+  {
+    title: "Bastille Day Demonstrations — Labour / Anti-War",
+    city: "Paris",
+    lat: 48.8534,
+    lng: 2.3488,
+    address: "Place de la Bastille — march through central Paris",
+    postcode: "75011",
+    country: "France",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-07-14T12:00:00",
+    source: "https://www.pbs.org/newshour/economy/what-to-know-about-may-day-as-workers-face-rising-costs-due-to-iran-war",
+    summary: "Bastille Day (14 July) regularly sees politically themed demonstrations in Paris alongside official military commemorations. CGT, FSU, Solidaires and allied unions have maintained a programme of regular marches throughout 2026 under the banner of 'bread, peace and freedom', linking domestic cost-of-living concerns to the Iran War and global fuel crisis. Further mobilisation around the national holiday is anticipated. Left-wing and labour groups are expected to use the date for their ongoing campaign around workers' rights and the Iran war's economic impact. Risk assessed as medium."
+  },
+
+
+  {
+    title: "Dublin Pride — Parade",
+    city: "Dublin",
+    lat: 53.3498,
+    lng: -6.2603,
+    address: "Dublin city centre — parade through O'Connell Street",
+    postcode: "D01",
+    country: "Ireland",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-27T12:00:00",
+    source: "https://www.misterbandb.com/gay-events/united-kingdom/gay-pride",
+    summary: "Dublin Gay Pride 2026 confirmed for 24–28 June, with the main parade on Saturday 27 June. Ireland's largest Pride event. Peaceful. Risk assessed as low."
+  },
+
+ 
+  {
+    title: "Glasgow Pride — Parade",
+    city: "Glasgow",
+    lat: 55.8642,
+    lng: -4.2518,
+    address: "Glasgow city centre",
+    postcode: "G1 1DT",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-07-18T12:00:00",
+    source: "https://www.misterbandb.com/gay-events/united-kingdom/gay-pride",
+    summary: "Glasgow Pride 2026 confirmed for Saturday 18 July. Scotland's largest Pride parade. Peaceful. Risk assessed as low."
+  },
+
+
+  {
+    title: "Gen Z Anti-Government Protest — 2nd Anniversary",
+    city: "Nairobi",
+    lat: -1.2921,
+    lng: 36.8219,
+    address: "Nairobi CBD — countrywide across all 47 counties",
+    postcode: "",
+    country: "Kenya",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-25T10:00:00",
+    source: "https://www.hrw.org/news/2025/06/26/kenya-hold-authorities-accountable-for-protesters-deaths",
+    summary: "25 June 2026 marks the 2nd anniversary of Kenya's Gen Z Finance Bill protests in which 60+ were killed by security forces in 2024. The 1st anniversary (25 June 2025) also turned violent with tear gas, running battles in Nairobi CBD, and clashes in Kitengela and on the Thika Superhighway. Parliament was ringfenced with razor wire and armoured vehicles deployed. The annual pattern is now established. Social media mobilisation for nationwide marches across all 47 counties expected. Grievances have expanded to police brutality, unemployment, and corruption. Business closures expected in Nairobi CBD. Risk assessed as high."
+  },
+
+
+  {
+    title: "March and March Anti-Immigration Protest / Nationwide Shutdown",
+    city: "Durban",
+    lat: -29.8587,
+    lng: 31.0218,
+    address: "Durban city-wide — refugees sheltering at Durban Home Affairs Refugee Reception Centre, Che Guevara Road",
+    postcode: "4001",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-30T10:00:00",
+    source: "https://www.dailymaverick.co.za/article/2026-05-24-xenophobia-crisis-who-is-funding-the-june-30-fear-mongering/",
+    summary: "Anti-illegal immigration group 'March and March' has set a 30 June 2026 deadline for the South African government to deal with undocumented immigrants, threatening nationwide protests. Weeks of xenophobic violence in Durban have displaced hundreds of foreign nationals from DRC, Rwanda, and Somalia. Ghana and Nigeria have initiated emergency evacuation flights for their citizens. SA Justice, Defence and Crime ministers held an urgent meeting on 25 May. March and March leader Ngobese-Zuma stated 'our people want to take to the streets on 30 June if issues are not addressed.' HRW and the African Union have been engaged. Analysts draw parallels with 2008 xenophobic violence (62 killed). Risk assessed as high. Social media: @MarchandMarchSA confirmed June 30 action; trending on South African X."
+  },
+
+  {
+    title: "March and March Anti-Immigration Protest",
+    city: "Johannesburg",
+    lat: -26.2041,
+    lng: 28.0473,
+    address: "Johannesburg CBD",
+    postcode: "2001",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-30T10:00:00",
+    source: "https://www.france24.com/en/live-news/20260525-s-africa-government-holds-urgent-talks-over-anti-migrant-tensions",
+    summary: "March and March has already held anti-immigration demonstrations in Johannesburg as part of its campaign. Further protest activity in Johannesburg expected on 30 June as part of the national mobilisation. Hundreds of foreign nationals from multiple African countries report threats and displacement. ActionSA has joined March and March protests. Risk assessed as high."
+  },
+
+  {
+    title: "March and March Anti-Immigration Protest",
+    city: "Pretoria",
+    lat: -25.7479,
+    lng: 28.2293,
+    address: "Pretoria CBD",
+    postcode: "0001",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-30T10:00:00",
+    source: "https://www.enca.com/news/five-things-know-about-anti-migrant-protests",
+    summary: "Pretoria confirmed as a prior March and March demonstration location, with hundreds marching through the CBD and a street vendor attacked during one protest. June 30 national mobilisation expected to include Pretoria. Risk assessed as high."
+  },
+
+
+  {
+    title: "Anti-Government Protests — Capital Siege (Ongoing, spilling into July)",
+    city: "La Paz",
+    lat: -16.5000,
+    lng: -68.1500,
+    address: "Presidential Palace area / El Alto road blockades",
+    postcode: "",
+    country: "Bolivia",
+    continent: "South America",
+    risk: "High",
+    time: "2026-07-01T08:00:00",
+    source: "https://www.npr.org/2026/05/20/nx-s1-5828203/bolivia-capital-protests-crisis",
+    summary: "Bolivia's mass protest and road blockade crisis, which began in May 2026 led by the COB (Bolivian Workers' Central), miners, teachers, and farmers demanding President Paz's resignation, is expected to persist into July if unresolved. As of 28 May 2026, the capital remains under effective siege with ongoing road blockades, fuel shortages, and depleted hospital oxygen reserves. 4 dead, 90 arrested. The Iran war-linked global fuel and inflation crisis is cited as an aggravating factor. Daily economic damage exceeds $50M. Verify current status before travel — the crisis may have resolved or escalated by the time of this entry. Risk assessed as high."
+  },
+
+
+  {
+    title: "Hiroshima Peace Memorial Ceremony and Anti-War Protests",
+    city: "Hiroshima",
+    lat: 34.3955,
+    lng: 132.4536,
+    address: "Hiroshima Peace Memorial Park, Naka Ward",
+    postcode: "730-0811",
+    country: "Japan",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-08-06T08:15:00",
+    source: "https://en.japantravel.com/hiroshima/peace-memorial-ceremony/1977",
+    summary: "The annual Hiroshima Peace Memorial Ceremony takes place at 0815hrs on 6 August 2026 — the 81st anniversary of the atomic bombing, with a theme of 'Remembrance, Responsibility, and Resilience'. The ceremony begins with the ringing of the Peace Bell and a citywide minute of silence at 0815hrs (the exact time of the bomb drop in 1945). Free and open to the public, with reserved seating for hibakusha survivors and general public seating on a first-come basis. Following the formal ceremony, anti-nuclear and anti-war protest marches typically proceed through the city streets — historically including groups opposing nuclear weapons, and in 2026 the ongoing 'We Want Our Future' anti-constitutional revision movement is expected to use the date for significant mobilisation given the Iran War context. Note: political messages and protest banners are not permitted inside the park during the ceremony itself. Evening lantern festival on the Motoyasu River with approximately 10,000 lanterns. Risk assessed as low."
+  },
+
+  {
+    title: "Nagasaki Peace Memorial Ceremony and Anti-War Protests",
+    city: "Nagasaki",
+    lat: 32.7448,
+    lng: 129.8734,
+    address: "Nagasaki Peace Park, Matsuyamachi",
+    postcode: "852-8117",
+    country: "Japan",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-08-09T11:02:00",
+    source: "https://nationaltoday.com/hiroshima-day/",
+    summary: "The annual Nagasaki Peace Memorial Ceremony takes place at 1102hrs on 9 August 2026 — the 81st anniversary of the second atomic bombing. The ceremony marks the exact time the plutonium bomb was dropped on Nagasaki. Anti-nuclear and anti-war protest activity is expected around the ceremony, amplified in 2026 by the ongoing Iran War and Japan's internal debate over constitutional revision and nuclear principles under PM Takaichi. International delegations from the Mayors for Peace network typically attend. Risk assessed as low."
+  },
+
+  {
+    title: "Anti-War / Anti-Constitutional Revision Rally — National Diet (Ongoing monthly)",
+    city: "Tokyo",
+    lat: 35.6762,
+    lng: 139.6503,
+    address: "National Diet Building, Nagatacho, Chiyoda City",
+    postcode: "100-0014",
+    country: "Japan",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-07-01T18:00:00",
+    source: "https://www.wsws.org/en/articles/2026/05/06/weui-m06.html",
+    summary: "Japan's 'We Want Our Future' protest movement has been growing rapidly: 3,600 (Feb) → 24,000 (Mar) → 30,000 (Apr) → 50,000 (3 May, Constitution Memorial Day). Simultaneous actions at 137 locations nationwide. Opposition to PM Takaichi's constitutional revision drive and to the US-led Iran War (82% of voters oppose the strikes per polling). The movement is the most significant in Japan since 2015 and is expected to continue generating major monthly rallies in July and August 2026, with August being particularly significant given the Hiroshima/Nagasaki anniversaries. Risk assessed as low — protests have remained peaceful; Japan has a strong tradition of orderly civic demonstration."
+  },
+
+
+  {
+    title: "Nationwide Protests — MGNREGA Abolition / Labour Codes",
+    city: "Delhi",
+    lat: 28.6139,
+    lng: 77.2090,
+    address: "Jantar Mantar / Parliament Street, New Delhi",
+    postcode: "110001",
+    country: "India",
+    continent: "Asia",
+    risk: "Medium",
+    time: "2026-07-01T10:00:00",
+    source: "https://cpim.org/central-committee-communique-31/",
+    summary: "The CPI(M) Central Committee communiqué (22–24 May 2026) confirms the VBGRAMG Act takes effect 1 July 2026, abolishing MGNREGA and ceasing employment guarantees. Workers are already protesting in multiple states against the new Act. The Joint Platform of Central Trade Unions and Samyukt Kisan Morcha (which organised the 12 February 2026 Bharat Bandh drawing 300 million participants across 600+ districts) have warned of escalating action if government fails to meet demands. New Delhi's Jantar Mantar and Parliament Street are the primary protest focal points nationally. Social media: @cpimspeak, @CPIMKerala confirmed ongoing mobilisation. Risk assessed as medium — police have previously detained union leaders and invoked Section 144 in some states."
+  },
+
+  {
+    title: "Nationwide Protests — MGNREGA Abolition / Labour Codes",
+    city: "Kolkata",
+    lat: 22.5726,
+    lng: 88.3639,
+    address: "Brigade Parade Ground / Kolkata city centre",
+    postcode: "700001",
+    country: "India",
+    continent: "Asia",
+    risk: "Medium",
+    time: "2026-07-01T10:00:00",
+    source: "https://www.ituc-ap.org/news-and-updates/india-historic-nationwide-strike-sees-millions-of-workers-and-farmers-mobilise-for-decent-work-and-social-justice",
+    summary: "West Bengal and Kolkata were among the most heavily mobilised states in the February 2026 Bharat Bandh (300M+ participants). The CITU and affiliated unions are among the primary organisers. MGNREGA worker protests are ongoing, with the 1 July abolition trigger expected to prompt fresh mobilisations. Risk assessed as medium."
+  },
+
+  {
+    title: "21 July Martyrs Day Rally — Trinamool Congress",
+    city: "Kolkata",
+    lat: 22.5726,
+    lng: 88.3639,
+    address: "Brigade Parade Ground, Kolkata",
+    postcode: "700021",
+    country: "India",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-07-21T12:00:00",
+    source: "https://en.wikipedia.org/wiki/21_July_Martyr%27s_Day_Rally",
+    summary: "The annual 21 July Martyrs Day Rally organised by All India Trinamool Congress (AITC), commemorating the deaths of 13 activists in a 1993 police firing at the Writers' Building. Held every 21 July, led by Chief Minister Mamata Banerjee at Brigade Parade Ground. One of India's largest annual political rallies — regularly draws hundreds of thousands to millions of supporters. Political in character, generally peaceful and well-managed. Risk assessed as low."
+  },
+
+
+  {
+    title: "Labour / Pro-Palestine Protests — Istanbul (Recurring Monthly)",
+    city: "Istanbul",
+    lat: 41.0369,
+    lng: 28.9850,
+    address: "Taksim Square / Beşiktaş district",
+    postcode: "34433",
+    country: "Turkey",
+    continent: "Middle East",
+    risk: "Medium",
+    time: "2026-07-01T12:00:00",
+    source: "https://www.france24.com/en/culture/20260501-workers-across-the-world-march-for-peace-and-better-pay-in-may-day-rallies",
+    summary: "Istanbul maintains a persistent monthly protest pattern. Taksim Square access is regularly banned by Turkish authorities, consistently prompting confrontations. Monthly anti-government, labour, and pro-Palestine demonstrations expected throughout July and August 2026. The ongoing Turkish protest movement rooted in the March 2025 arrest of Istanbul Mayor İmamoğlu continues. Risk assessed as medium — Taksim police confrontations are near-routine."
+  },
+
+
+  {
+    title: "March for Australia — Anti-Immigration Demonstration",
+    city: "Sydney",
+    lat: -33.8688,
+    lng: 151.2093,
+    address: "Central Sydney — location TBC",
+    postcode: "2000",
+    country: "Australia",
+    continent: "Asia Pacific",
+    risk: "Medium",
+    time: "2026-08-31T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_for_Australia",
+    summary: "The 'March for Australia' anti-immigration movement has held annual protests on or around 31 August 2025 (50,000+ across Australia), 19 October 2025, and 26 January 2026. The August 2025 rally was the largest, with counter-protesters also present. ABC News Verify reported that March for Australia organisers had previously shared pro-Nazi content. The August 2026 event is expected to follow the same annual pattern. Risk assessed as medium — counter-protests have been organised at prior events; the August date is the movement's primary annual mobilisation. Note: This assessment is based on the established pattern; the 2026 event has not yet been formally confirmed at time of writing."
+  },
+
+  {
+    title: "March for Australia Counter-Protest — Anti-Racism",
+    city: "Sydney",
+    lat: -33.8688,
+    lng: 151.2093,
+    address: "Central Sydney — likely near the March for Australia rally location",
+    postcode: "2000",
+    country: "Australia",
+    continent: "Asia Pacific",
+    risk: "Medium",
+    time: "2026-08-31T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_for_Australia",
+    summary: "Anti-racism groups and progressive organisations have organised counter-protests at all prior March for Australia events. Counter-protests are expected alongside the August 2026 March for Australia demonstration. Police estimated 50,000+ combined protesters and counter-protesters at the August 2025 events across Australia. Risk assessed as medium — proximity of opposing groups creates tension, though prior events have been managed without major disorder."
+  },
+
+  {
+    title: "March for Australia — Anti-Immigration Demonstration",
+    city: "Melbourne",
+    lat: -37.8136,
+    lng: 144.9631,
+    address: "Central Melbourne — location TBC",
+    postcode: "3000",
+    country: "Australia",
+    continent: "Asia Pacific",
+    risk: "Medium",
+    time: "2026-08-31T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_for_Australia",
+    summary: "Melbourne among the Australian cities with confirmed March for Australia events in August 2025 (the primary annual mobilisation date). August 2026 event expected to follow the same pattern. Counter-protests expected simultaneously. Risk assessed as medium."
+  },
 
   {
     title: "NoG7 Counter-Summit Demonstration",
