@@ -20,8 +20,820 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+{
+    title: "Animal Rights Protest — Dunstall Park Greyhound Stadium, Wolverhampton",
+    city: "Wolverhampton",
+    lat: 52.6029013,
+    lng: -2.143079,
+    address: "Dunstall Park Greyhound Stadium, Wolverhampton",
+    postcode: "WV6 0PE",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-27T17:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 27 June 2026, from 1700hrs–1830hrs, an animal rights protest is due to take place outside Dunstall Park Greyhound Stadium, Wolverhampton. Organised by 'Shutdown Wolverhampton Tracks' to protest against dog racing. Attendance likely in the single digits, with a realistic possibility of reaching the low tens (1–10). Protest is likely to remain static outside the race course. Risk is assessed as low."
+  },
+  
+{
+    title: "Pro-Palestine Court Support Protest — Old Bailey, London",
+    city: "London",
+    lat: 51.51543847,
+    lng: -0.1021307894,
+    address: "Central Criminal Court (Old Bailey), London",
+    postcode: "EC4M 7EH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-22T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "From 22–27 June 2026, from an unspecified time each day, a pro-Palestinian protest is due to muster outside the Central Criminal Court, Old Bailey, London. Called by the pro-Palestinian group 'Defend SOAS' in support of activists due to appear in court on these dates. Turnout likely in the mid-tens (10–50). Activists likely to use banners, placards and speeches. Protest is likely to remain static at that location. Expected to be a peaceful but vocal demonstration. Risk is assessed as low."
+  },
+
+{
+    title: "Environmental Protest — DESNZ / Rosebank Oil Field, London",
+    city: "London",
+    lat: 51.5058669,
+    lng: -0.1259579,
+    address: "Department of Energy Security and Net Zero (DESNZ), 3 Whitehall Place, London",
+    postcode: "SW1A 2AW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-23T12:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 23 June 2026, from 1230hrs–1330hrs, an environmental protest is set to take place at the Department of Energy Security and Net Zero (DESNZ), 3 Whitehall Place. Advertised by disruptive environmental group 'Cut The Ties', though specified as a non-disruptive action on this occasion — intended as a weekly protest calling on the UK government to abandon the proposed Rosebank oil field development. Organisers have stated weekly demonstrations will continue every Tuesday outside DESNZ until the government announces a decision on the oil field. Turnout likely in the low tens (10–50). Tactics include signs, placards, and musical drummers. Risk is assessed as low."
+  },
+  
+
+  {
+    title: "Animal Rights Week of Action — Anti-Fur / Milan Fashion Week (London)",
+    city: "London",
+    lat: 51.51009581,
+    lng: -0.1350037764,
+    address: "Central London — targets likely include Ray Ban, Porsche, Acqua Fuiggi, EssilorLuxottica. Location pin illustrative.",
+    postcode: "W1J 9HP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-19T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "From 19–23 June 2026, an animal rights week of action against Milan Fashion Week is due to take place globally, with activists targeting companies linked to Milan Fashion Week in their home cities. Organised by 'Caft USA', 'Animal Defence League Italia', 'AFW Network' and 'Animalactivismcollective' to protest against the alleged showcasing of animal fur products. UK targets likely include Ray Ban, Porsche, Acqua Fuiggi and EssilorLuxottica. Actions in London are likely. Attendance in the low-mid tens (10–50). Attendees likely to gather outside targeted premises with banners and speakerphones, chalk slogans on pavements, and theatrical dress. Based on previous protests, attempts to enter premises to disrupt operations are likely. Location pin is illustrative at present. Risk is assessed as low but note potential for business disruption."
+  },
+  
+
+{
+    title: "Oxford Pride 2026",
+    city: "Oxford",
+    lat: 51.75044611,
+    lng: -1.262390292,
+    address: "Muster: Paradise Square — marching to Radcliffe Camera; main events at Castle Quarter, Leiden Square, Paradise Square and County Hall",
+    postcode: "OX1 1BE",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-06T13:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 06 June 2026, from 1300hrs, Oxford Pride is due to take place. The parade musters in Paradise Square before marching to Radcliffe Camera. Main events take place across Castle Quarter, Leiden Square, Paradise Square and County Hall. The 2025 event saw approximately 12,000 attendees, with a similar number likely this year. March. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Immigration Protest — Queens Hotel, Perth",
+    city: "Perth",
+    lat: 56.3928416,
+    lng: -3.437409599,
+    address: "Queens Hotel, Perth, Scotland",
+    postcode: "PH2 8HB",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-06T11:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 06 June 2026, from 1100hrs, a protest is due to muster outside the Queens Hotel in Perth, Scotland. Organised by 'unite The Clans Scotland' to protest against the alleged use of the hotel to house asylum seekers. Attendance in the low-to-mid tens likely. Activists are likely to remain static and largely peaceful. A counter-protest has a realistic possibility of being organised. Risk is assessed as low."
+  },
+
+  {
+    title: "Animal Rights Protest — Greyhound Derby Final, Towcester Racecourse",
+    city: "Towcester",
+    lat: 52.1235394,
+    lng: -0.9736848,
+    address: "Towcester Racecourse, Towcester",
+    postcode: "NN12 6LB",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-06T14:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 06 June 2026, from 1430hrs, an animal rights protest is due to take place at Towcester Racecourse. Organised by 'League Against Cruel Sports' to protest against the Greyhound Derby Final. Attendance likely in the low-to-mid tens (10–50). Protest will likely remain static outside the racecourse. There is a realistic possibility that protesters will attempt to engage with spectators entering and exiting the venue. Risk is assessed as low."
+  },
+  
+
+  {
+    title: "Animal Rights Protest — Boots Oxford Street, London",
+    city: "London",
+    lat: 51.5140398,
+    lng: -0.1574215,
+    address: "Boots, 508-502 Oxford Street, London",
+    postcode: "W1C 1NB",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-05T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 05 June 2026, from 1200hrs, an animal rights protest is due to take place outside Boots, 508–502 Oxford Street, London. Advertised by 'The Alliance for Cruelty Free Science', originally due on 27 March 2026 as part of a national month of actions calling for a ban on animal testing in the UK. Attendance likely in the single digits (1–10). Attendees likely to gather outside the store with banners and placards and attempt to engage members of the public. Advertising indicates protest will remain outside — unlikely protesters will attempt to enter the store. Disruption to the immediate vicinity of the store is likely. Risk is assessed as low."
+  },
+
+  {
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-05T07:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 05 June 2026, from 0700hrs–0900hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static protest. Risk is assessed as low but note potential for site access disruption."
+  },
+
+  {
+    title: "Pro-Palestine Protest — MoD Aberporth, Cardigan",
+    city: "Cardigan",
+    lat: 52.13519882,
+    lng: -4.561036276,
+    address: "MoD Aberporth, Cardigan",
+    postcode: "SA43 2BU",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-05T15:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 05 June 2026, from 1500hrs–1600hrs, a pro-Palestine protest is due to take place at MoD Aberporth. Organised by 'West Wales Against Arms' due to QinetiQ's alleged ties to the Israel-Hamas conflict. Attendance likely in the single figures to low tens (10–50), expected to be peaceful. There is a realistic possibility of protestors using banners and megaphones, or attempting to blockade the site — a tactic frequently employed by pro-Palestine protestors at defence sites. Risk is assessed as low but note potential for access disruption."
+  },
+
+  
+{
+    title: "Anti-Immigration Protest March — Britain First, Birmingham",
+    city: "Birmingham",
+    lat: 52.478122,
+    lng: -1.899075,
+    address: "Birmingham New Street Station — marching on unannounced route through central Birmingham",
+    postcode: "B2 4BW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-06-20T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1200hrs, an anti-immigration protest march organised by Britain First is set to muster at Birmingham New Street Station before marching on an unannounced route through central Birmingham. Attendance is likely to range in the mid-hundreds, with a realistic possibility of reaching the high hundreds to low thousands (500–1000) based on previous similar Britain First-organised marches. Police will almost certainly be in attendance. A counter-protest has been organised, increasing overall turnout levels. The protest march is highly likely to feature isolated incidents of physical confrontation between activists and police officers and almost certain to feature several incidents of verbal confrontation. Pedestrian and vehicle disruption is highly likely within close proximity of the march route. Risk is assessed as high."
+  },
+
+  {
+    title: "Anti-Racism Counter-Protest — Stand Up to Racism, Birmingham",
+    city: "Birmingham",
+    lat: 52.478643,
+    lng: -1.899178,
+    address: "Central Birmingham — location unannounced at time of recording",
+    postcode: "B2 4BW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-20T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, at a currently unannounced time, an anti-racism protest is due to take place at a currently unannounced location in central Birmingham. Organised by 'Stand Up to Racism' as a counter-protest to the Britain First anti-immigration march planned on this day. Unknown whether it will remain static or march through the city centre. Attendance is likely to be in the low-to-mid hundreds (100–500). A police presence is almost certain. Isolated incidents of physical confrontation between opposing groups are likely and incidents of verbal confrontation are almost certain. Risk is assessed as medium."
+  },
+
+  {
+    title: "Animal Rights Protest — Monmore Green Dogs, Wolverhampton",
+    city: "Wolverhampton",
+    lat: 52.577172,
+    lng: -2.101901,
+    address: "Monmore Green Dogs, Wolverhampton",
+    postcode: "WV2 2JJ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-20T17:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1700hrs–1830hrs, an animal rights protest is due to take place outside Monmore Green Dogs, Wolverhampton. Organised by 'Shutdown Wolverhampton Tracks' to protest against a greyhound racing event taking place at the venue. Attendance is likely to be in the single digits, with a realistic possibility of reaching the low tens (1–10). This protest will likely be static. Protesters may attempt to engage with spectators entering and exiting the venue. Risk is assessed as low."
+  },
+
+  {
+    title: "Animal Rights Protest — University of Liverpool",
+    city: "Liverpool",
+    lat: 53.4059048,
+    lng: -2.9667155,
+    address: "Reilly Building, University of Liverpool",
+    postcode: "L3 5RF",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-20T10:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1030hrs–1230hrs, an animal rights protest is due to take place outside the Reilly Building at the University of Liverpool. Organised by 'Vivisection Exposed' to protest against the University of Liverpool allegedly using live animals for scientific experiments. Based on previous protests at universities regarding this issue, attendance is likely to be in the single digits to low tens (1–10). This protest will likely be static and involve activists attempting to engage with members of the public. Risk is assessed as low."
+  },
+
+  {
+    title: "International Conference Against War — Stop the War Coalition, London",
+    city: "London",
+    lat: 51.50012485,
+    lng: -0.1301227795,
+    address: "Central Hall Westminster, Storey's Gate, London",
+    postcode: "SW1H 9NH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-20T13:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1300hrs–1700hrs, the 'International Conference Against War' is due to take place at Central Hall Westminster, Storey's Gate, London. Organised by the 'Stop the War Coalition', intended to denounce arms manufacturers and international conflict. As the conference is due to take place inside a venue and is not explicitly targeting a specific company or person, the event is likely to be contained and cause minimal disruption. This is likely to be a peaceful, informative internal conference rather than a disruptive protest action. Attendance in the low tens (10–50) is likely. Risk is assessed as low."
+  },
+
+  
+{
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-08T14:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 08 June 2026, from 1430hrs–1630hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance is likely to be in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static protest. Risk is assessed as low but note potential for site access disruption."
+  },
+  
+
+{
+    title: "National Animal Rights Day — General (Nationwide)",
+    city: "London",
+    lat: 51.51330257,
+    lng: -0.1588936959,
+    address: "Nationwide — location pin illustrative, individual protests entered separately",
+    postcode: "W2 2UH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, National Animal Rights Day is due to take place. This is an annual day for animal rights, with organisers stating it aims to commemorate animals who have died, celebrate progress made for animal rights, including an end to animal testing and promoting a vegan lifestyle. Events are likely to take place nationwide, involving speeches, a march through the locality, and a memorial ceremony. Attendance will likely vary by location, ranging from the low-mid tens to mid-high tens in larger cities. Protests are likely to remain peaceful with localised noise and traffic disruption likely as organised marches take place. Location pin is illustrative — individual protests entered separately. Risk is assessed as low."
+  },
+
+  {
+    title: "National Animal Rights Day March, Birmingham",
+    city: "Birmingham",
+    lat: 52.4789556,
+    lng: -1.905376,
+    address: "Victoria Square, Birmingham — circular march through city centre",
+    postcode: "B1 1BD",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, from 1200hrs, an animal rights march is due to gather at Victoria Square, Birmingham, and march through the city centre. Organised by 'NARD Birmingham' and animal rights activists to mark National Animal Rights Day. The protest gathers at 1200hrs, commences a circular march round central Birmingham from 1230hrs. From 1400hrs, multiple events are due at Victoria Square with multiple guest speakers. Attendance expected in the mid-to-high tens (50–100). Attendees likely to have banners and placards. Localised noise and traffic disruption likely whilst the protest marches. Risk is assessed as low."
+  },
+
+  {
+    title: "National Animal Rights Day March, Cambridge",
+    city: "Cambridge",
+    lat: 52.2061144,
+    lng: 0.1227029,
+    address: "Christ's Pieces — circular march through city centre",
+    postcode: "CB1 1JW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, from 1200hrs, an animal rights march is due to gather at Christ's Pieces and march through the city centre. Organised by 'Vegan Actions: Cambridge UK' and animal rights activists to mark National Animal Rights Day. The protest gathers at 1200hrs, shortly after commences a circular march round central Cambridge. Upon conclusion, a celebration with multiple guest speakers is due to take place. Attendance expected in the mid-tens (50–100). Attendees likely to have banners and placards. Localised noise and traffic disruption likely whilst the protest marches. Risk is assessed as low."
+  },
+
+  {
+    title: "National Animal Rights Day March, Bournemouth",
+    city: "Bournemouth",
+    lat: 50.715837,
+    lng: -1.8764765,
+    address: "Bournemouth Pier Approach (outside Oceanarium) — route: Lower Gardens > The Square > Commercial Road > The Triangle",
+    postcode: "BH2 5AA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T10:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, from 1000hrs, an animal rights march is due to gather at Bournemouth Pier and march through to The Triangle. Organised by 'Bournemouth Animal Rights Day' and animal rights activists to mark National Animal Rights Day. Gathers from 1000hrs, march commences at 1100hrs following the route: Bournemouth Pier Approach (outside Oceanarium) > Lower Gardens > The Square > Commercial Road > The Triangle. Upon conclusion, speeches and performances with multiple guest speakers. Attendance in the mid-to-high tens (50–100). Localised noise and traffic disruption likely whilst marching. Risk is assessed as low."
+  },
+
+  
+ {
+    title: "Anti-Immigration Protest March — Britain First, Birmingham",
+    city: "Birmingham",
+    lat: 52.478122,
+    lng: -1.899075,
+    address: "Birmingham New Street Station — marching on unannounced route through central Birmingham",
+    postcode: "B2 4BW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-06-20T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1200hrs, an anti-immigration protest march organised by Britain First is set to muster at Birmingham New Street Station before marching on an unannounced route through central Birmingham. Attendance is likely to range in the mid-hundreds, with a realistic possibility of reaching the high hundreds to low thousands (500–1000) based on previous similar Britain First-organised marches. Police will almost certainly be in attendance. A counter-protest has been organised, increasing overall turnout levels. The protest march is highly likely to feature isolated incidents of physical confrontation between activists and police officers and almost certain to feature several incidents of verbal confrontation. Pedestrian and vehicle disruption is highly likely within close proximity of the march route. Risk is assessed as high."
+  },
+
+  {
+    title: "Anti-Racism Counter-Protest — Stand Up to Racism, Birmingham",
+    city: "Birmingham",
+    lat: 52.478643,
+    lng: -1.899178,
+    address: "Central Birmingham — location unannounced at time of recording",
+    postcode: "B2 4BW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-20T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, at a currently unannounced time, an anti-racism protest is due to take place at a currently unannounced location in central Birmingham. Organised by 'Stand Up to Racism' as a counter-protest to the Britain First anti-immigration march planned on this day. Unknown whether it will remain static or march through the city centre. Attendance is likely to be in the low-to-mid hundreds (100–500). A police presence is almost certain. Isolated incidents of physical confrontation between opposing groups are likely and incidents of verbal confrontation are almost certain. Risk is assessed as medium."
+  },
+
+  {
+    title: "Animal Rights Protest — Monmore Green Dogs, Wolverhampton",
+    city: "Wolverhampton",
+    lat: 52.577172,
+    lng: -2.101901,
+    address: "Monmore Green Dogs, Wolverhampton",
+    postcode: "WV2 2JJ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-20T17:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1700hrs–1830hrs, an animal rights protest is due to take place outside Monmore Green Dogs, Wolverhampton. Organised by 'Shutdown Wolverhampton Tracks' to protest against a greyhound racing event taking place at the venue. Attendance is likely to be in the single digits, with a realistic possibility of reaching the low tens (1–10). This protest will likely be static. Protesters may attempt to engage with spectators entering and exiting the venue. Risk is assessed as low."
+  },
+
+  {
+    title: "Animal Rights Protest — University of Liverpool",
+    city: "Liverpool",
+    lat: 53.4059048,
+    lng: -2.9667155,
+    address: "Reilly Building, University of Liverpool",
+    postcode: "L3 5RF",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-20T10:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1030hrs–1230hrs, an animal rights protest is due to take place outside the Reilly Building at the University of Liverpool. Organised by 'Vivisection Exposed' to protest against the University of Liverpool allegedly using live animals for scientific experiments. Based on previous protests at universities regarding this issue, attendance is likely to be in the single digits to low tens (1–10). This protest will likely be static and involve activists attempting to engage with members of the public. Risk is assessed as low."
+  },
+
+  {
+    title: "International Conference Against War — Stop the War Coalition, London",
+    city: "London",
+    lat: 51.50012485,
+    lng: -0.1301227795,
+    address: "Central Hall Westminster, Storey's Gate, London",
+    postcode: "SW1H 9NH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-20T13:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 20 June 2026, from 1300hrs–1700hrs, the 'International Conference Against War' is due to take place at Central Hall Westminster, Storey's Gate, London. Organised by the 'Stop the War Coalition', intended to denounce arms manufacturers and international conflict. As the conference is due to take place inside a venue and is not explicitly targeting a specific company or person, the event is likely to be contained and cause minimal disruption. This is likely to be a peaceful, informative internal conference rather than a disruptive protest action. Attendance in the low tens (10–50) is likely. Risk is assessed as low."
+  },
+  
+
+{
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-08T14:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 08 June 2026, from 1430hrs–1630hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance is likely to be in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static protest. Risk is assessed as low but note potential for site access disruption."
+  },
 
 
+  
+{
+    title: "National Animal Rights Day — General (Nationwide)",
+    city: "London",
+    lat: 51.51330257,
+    lng: -0.1588936959,
+    address: "Nationwide — location pin illustrative, individual protests entered separately",
+    postcode: "W2 2UH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, National Animal Rights Day is due to take place. This is an annual day for animal rights, with organisers stating it aims to commemorate animals who have died, celebrate progress made for animal rights, including an end to animal testing and promoting a vegan lifestyle. Events are likely to take place nationwide, involving speeches, a march through the locality, and a memorial ceremony. Attendance will likely vary by location, ranging from the low-mid tens to mid-high tens in larger cities. Protests are likely to remain peaceful with localised noise and traffic disruption likely as organised marches take place. Location pin is illustrative — individual protests entered separately. Risk is assessed as low."
+  },
+
+  {
+    title: "National Animal Rights Day March, Birmingham",
+    city: "Birmingham",
+    lat: 52.4789556,
+    lng: -1.905376,
+    address: "Victoria Square, Birmingham — circular march through city centre",
+    postcode: "B1 1BD",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, from 1200hrs, an animal rights march is due to gather at Victoria Square, Birmingham, and march through the city centre. Organised by 'NARD Birmingham' and animal rights activists to mark National Animal Rights Day. The protest gathers at 1200hrs, commences a circular march round central Birmingham from 1230hrs. From 1400hrs, multiple events are due at Victoria Square with multiple guest speakers. Attendance expected in the mid-to-high tens (50–100). Attendees likely to have banners and placards. Localised noise and traffic disruption likely whilst the protest marches. Risk is assessed as low."
+  },
+
+  {
+    title: "National Animal Rights Day March, Cambridge",
+    city: "Cambridge",
+    lat: 52.2061144,
+    lng: 0.1227029,
+    address: "Christ's Pieces — circular march through city centre",
+    postcode: "CB1 1JW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, from 1200hrs, an animal rights march is due to gather at Christ's Pieces and march through the city centre. Organised by 'Vegan Actions: Cambridge UK' and animal rights activists to mark National Animal Rights Day. The protest gathers at 1200hrs, shortly after commences a circular march round central Cambridge. Upon conclusion, a celebration with multiple guest speakers is due to take place. Attendance expected in the mid-tens (50–100). Attendees likely to have banners and placards. Localised noise and traffic disruption likely whilst the protest marches. Risk is assessed as low."
+  },
+
+  {
+    title: "National Animal Rights Day March, Bournemouth",
+    city: "Bournemouth",
+    lat: 50.715837,
+    lng: -1.8764765,
+    address: "Bournemouth Pier Approach (outside Oceanarium) — route: Lower Gardens > The Square > Commercial Road > The Triangle",
+    postcode: "BH2 5AA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-07T10:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 07 June 2026, from 1000hrs, an animal rights march is due to gather at Bournemouth Pier and march through to The Triangle. Organised by 'Bournemouth Animal Rights Day' and animal rights activists to mark National Animal Rights Day. Gathers from 1000hrs, march commences at 1100hrs following the route: Bournemouth Pier Approach (outside Oceanarium) > Lower Gardens > The Square > Commercial Road > The Triangle. Upon conclusion, speeches and performances with multiple guest speakers. Attendance in the mid-to-high tens (50–100). Localised noise and traffic disruption likely whilst marching. Risk is assessed as low."
+  },
+
+  
+
+{
+    title: "National March for Palestine — London",
+    city: "London",
+    lat: 51.5231,
+    lng: -0.1235,
+    address: "Assemble: Russell Square, march to Whitehall",
+    postcode: "WC1B 5EH",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-07-11T12:00:00",
+    source: "https://palestinecampaign.org/events/national-march-for-palestine-stop-starving-gaza/",
+    summary: "Continuing the PSC's monthly national demonstration programme. The 19 July 2025 equivalent march drew hundreds despite torrential rain, with simultaneous 'Lift the Ban' protests for Palestine Action taking place across the country. July 2026 falls during a period of continued legal challenges over Palestine Action's proscription. Route: Russell Square assembly, march to Whitehall. Risk is assessed as medium."
+  },
+
+  {
+    title: "Pride in London 2026 — Parade",
+    city: "London",
+    lat: 51.5028,
+    lng: -0.1538,
+    address: "Hyde Park Corner to Whitehall via Piccadilly Circus and Trafalgar Square",
+    postcode: "W1J 7NT",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-07-04T12:00:00",
+    source: "https://prideinlondon.org/",
+    summary: "Pride in London 2026 is confirmed for Saturday 4 July, with the parade stepping off at noon from Hyde Park Corner, proceeding via Piccadilly Circus, Haymarket, and Trafalgar Square, finishing at Whitehall. Approximately 35,000 marchers, 300 floats, and up to 1.5 million spectators are expected. A significant police operation is standard; risk is typically low. Given the coincidence with No Kings Day 4 July activity in the US, UK solidarity events may also occur. Risk is assessed as low but note the high crowd volumes along the route between noon and 6pm."
+  },
+
+  {
+    title: "London Trans+ Pride 2026 — March",
+    city: "London",
+    lat: 51.5081,
+    lng: -0.1281,
+    address: "Assemble: Langham Place at 13:00, march to Wellington Arch via Trafalgar Square",
+    postcode: "W1B 3DE",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-07-25T13:00:00",
+    source: "https://www.timeout.com/london/things-to-do/london-trans-pride",
+    summary: "London Trans+ Pride 2026 takes place on Saturday 25 July — the event's 8th year. Participants assemble at Langham Place from 1pm, with the march departing at 2pm through central London. Attendance has grown significantly year-on-year, exceeding 100,000 in recent years. The march is explicitly a protest against transphobic legislation and for trans healthcare reform, in addition to a celebration. Risk is assessed as low, though counter-protest presence has increased in recent years alongside heightened public debate on trans rights."
+  },
+
+  {
+    title: "No Kings Day — July 4th, Washington D.C. (Flagship)",
+    city: "Washington D.C.",
+    lat: 38.8899,
+    lng: -77.0091,
+    address: "National Mall, Washington D.C.",
+    postcode: "20024",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "Anti-Trump protest organisers — 50501, Indivisible, and allied groups — have been publicly planning a major No Kings mobilisation on 4 July 2026, the 250th anniversary of American independence. The date is being deliberately framed around the Declaration of Independence's anti-monarchical language. Thousands of simultaneous events are expected nationwide. Trump has signalled hostility to July 4th counter-events. Risk is assessed as high given extreme political sensitivity, large anticipated turnout, and potential for counter-mobilisation and law enforcement confrontation."
+  },
+
+  {
+    title: "No Kings Day — July 4th, Los Angeles",
+    city: "Los Angeles",
+    lat: 34.0537,
+    lng: -118.2428,
+    address: "Grand Park, 200 N Grand Ave",
+    postcode: "90012",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "Los Angeles is expected to host large-scale No Kings July 4th demonstrations coinciding with Independence Day celebrations. The city remains politically sensitised following the 2025 ICE protests and National Guard deployments. Grand Park and City Hall have been central to recent mobilisations. The convergence of major Independence Day crowds with protest activity raises the risk of significant disorder. Risk is assessed as high."
+  },
+
+  {
+    title: "50501 National Day of Action — Minneapolis (Flagship)",
+    city: "Minneapolis",
+    lat: 44.9778,
+    lng: -93.2650,
+    address: "Minnesota State Capitol, 75 Rev Dr Martin Luther King Jr Blvd",
+    postcode: "55155",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-07-17T12:00:00",
+    source: "https://www.fiftyfifty.one/",
+    summary: "The 50501 Movement's website lists 17 July as a scheduled national day of action, consistent with the movement's prior cadence of recurring national protest dates. The Twin Cities have been confirmed as the flagship location. Simultaneous events are expected across all 50 US states. Demonstrations have generally remained peaceful outside specific local flash points. Risk is assessed as medium."
+  },
+
+  {
+    title: "Bastille Day Demonstrations — Paris",
+    city: "Paris",
+    lat: 48.8534,
+    lng: 2.3488,
+    address: "Place de la Bastille",
+    postcode: "75011",
+    country: "France",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-07-14T12:00:00",
+    source: "https://www.pbs.org/newshour/economy/what-to-know-about-may-day-as-workers-face-rising-costs-due-to-iran-war",
+    summary: "Bastille Day (14 July) regularly sees politically themed demonstrations in Paris alongside official commemorations. Following the G7 counter-summit mobilisations in June and ongoing French trade union activity around cost-of-living concerns and the Iran War's economic impact, further mobilisation around the national holiday is anticipated. Left-wing and labour groups are expected to use the date. Risk is assessed as medium."
+  },
+  
+
+{
+    title: "NoG7 Counter-Summit Demonstration — Geneva",
+    city: "Geneva",
+    lat: 46.2044,
+    lng: 6.1432,
+    address: "Central Geneva — route TBC pending authorisation",
+    postcode: "1201",
+    country: "Switzerland",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-06-14T12:00:00",
+    source: "https://www.bluewin.ch/en/news/call-for-demonstrations-in-geneva-against-g7-summit-in-evian-3210490.html",
+    summary: "The international NoG7 coalition — comprising trade unions, feminist groups (Grève féministe), BDS, NPA-L'Anticapitaliste, and CADTM — has called a major demonstration in Geneva on 14 June, timed to precede the G7 Summit in Évian-les-Bains (15–17 June). Organisers have declared it will proceed with or without official authorisation. Geneva's cantonal parliament has voted to seek a ban on all demonstrations between 11–19 June. Switzerland is deploying up to 5,000 army personnel and reinforced cantonal police. The 2003 G8 summit at Évian saw violent clashes in Geneva including Molotov cocktail attacks, arson, and looting; radical groups including Black Bloc elements are expected again. Risk is assessed as high."
+  },
+
+  {
+    title: "G7 Summit — Évian-les-Bains (Security Event)",
+    city: "Évian-les-Bains",
+    lat: 46.4003,
+    lng: 6.5872,
+    address: "Évian-les-Bains, Haute-Savoie",
+    postcode: "74500",
+    country: "France",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-15T08:00:00",
+    source: "https://www.swissinfo.ch/eng/various/switzerland-to-introduce-checks-at-french-border-due-to-g7-summit/91373215",
+    summary: "The 52nd G7 Summit takes place 15–17 June 2026 in Évian-les-Bains, attended by leaders of Canada, France, Germany, Italy, Japan, the UK, and the US. The French government has banned all demonstrations on French territory in the summit zone. Border controls between France and Switzerland are being reintroduced. Up to 5,000 Swiss army personnel are being deployed for the security operation. Risk for the French side is assessed as medium, with primary protest activity concentrated across the border in Geneva (see separate entry)."
+  },
+
+  {
+    title: "No Kings Day — Washington D.C. (Flagship)",
+    city: "Washington D.C.",
+    lat: 38.8899,
+    lng: -77.0091,
+    address: "National Mall / Washington Monument",
+    postcode: "20024",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-06-14T10:00:00",
+    source: "https://time.com/7299015/anti-trump-administration-protests-united-states-july-4-independence-day/",
+    summary: "The fourth national No Kings Day mobilisation is planned for 14 June 2026 — Trump's 80th birthday and Flag Day — consistent with the pattern of prior waves (5 million Jun 2025; 7 million Oct 2025; 8 million Mar 2026). Organised by the 50501 Movement, Indivisible, MoveOn, and allied groups. The flagship D.C. event is expected to march from Arlington Memorial Circle across Memorial Bridge to the Washington Monument. Trump has publicly threatened protesters would be 'met with big force.' A vehicular attack occurred at a prior No Kings event in Virginia. Risk is assessed as high."
+  },
+
+  {
+    title: "No Kings Day — Los Angeles",
+    city: "Los Angeles",
+    lat: 34.0537,
+    lng: -118.2428,
+    address: "City Hall, 200 N Spring St",
+    postcode: "90012",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-06-14T12:00:00",
+    source: "https://time.com/7299015/anti-trump-administration-protests-united-states-july-4-independence-day/",
+    summary: "Los Angeles carries elevated risk for the No Kings Day 14 June 2026 demonstrations given the city's history of serious civil unrest linked to ICE operations — protests in June 2025 escalated significantly and prompted National Guard and Marine deployments. City Hall and Grand Park have been central to recent demonstrations. Counter-protest activity and large police deployment are anticipated. Risk is assessed as high."
+  },
+
+  {
+    title: "No Kings Day — Chicago",
+    city: "Chicago",
+    lat: 41.8827,
+    lng: -87.6233,
+    address: "Federal Plaza, 219 S Dearborn St",
+    postcode: "60604",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-06-14T12:00:00",
+    source: "https://time.com/7299015/anti-trump-administration-protests-united-states-july-4-independence-day/",
+    summary: "Chicago's Federal Plaza has served as the anchor for No Kings Day events across all prior iterations of the campaign. Large turnout expected with linked marches through the Loop. Risk is assessed as medium."
+  },
+  
+
+  {
+  title: "Rail Strike and Transport Demonstration",
+  city: "Berlin",
+  lat: 52.5200,
+  lng: 13.4050,
+  address: "Berlin Hauptbahnhof",
+  postcode: "10557",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-30T12:00:00",
+  source: "https://www.dw.com/",
+  summary: "Rail workers and transport union members organised demonstrations near Berlin Hauptbahnhof during a wider rail strike linked to pay disputes and staffing conditions. Disruption affected regional and long-distance services across Germany. Given the infrastructure impact and commuter disruption, the risk is assessed as High."
+},
+{
+  title: "Anti-Immigration Demonstration",
+  city: "Warsaw",
+  lat: 52.2297,
+  lng: 21.0122,
+  address: "Castle Square",
+  postcode: "00-277",
+  country: "Poland",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-31T13:00:00",
+  source: "https://www.reuters.com/world/europe/",
+  summary: "Nationalist groups and anti-immigration activists gathered in Warsaw for demonstrations focused on border security and asylum policy. Counter-demonstrators were also present in nearby areas. Police deployed significant resources around Castle Square due to concerns over clashes and disorder. Risk is assessed as High."
+},
+{
+  title: "Public Sector General Strike",
+  city: "Athens",
+  lat: 37.9838,
+  lng: 23.7275,
+  address: "Syntagma Square",
+  postcode: "105 63",
+  country: "Greece",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-28T12:00:00",
+  source: "https://www.ekathimerini.com/",
+  summary: "Public sector unions organised strike demonstrations in Athens against austerity measures and wage conditions. Protesters gathered in Syntagma Square and marched toward parliament buildings. Public transport and municipal services experienced disruption during the mobilisation. Risk is assessed as High."
+},
+{
+  title: "Housing and Tourism Protest",
+  city: "Lisbon",
+  lat: 38.7223,
+  lng: -9.1393,
+  address: "Rossio Square",
+  postcode: "1100-200",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-06-01T12:00:00",
+  source: "https://www.publico.pt/",
+  summary: "Housing activists and local campaign groups gathered in central Lisbon to protest rising rents, short-term tourism rentals and affordability pressures. Demonstrators assembled in Rossio Square before moving through nearby central areas. Moderate disruption to pedestrian movement and traffic was reported. Risk is assessed as Medium."
+},
+{
+  title: "Anti-Corruption Demonstration",
+  city: "Prague",
+  lat: 50.0755,
+  lng: 14.4378,
+  address: "Wenceslas Square",
+  postcode: "110 00",
+  country: "Czech Republic",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-06-03T18:00:00",
+  source: "https://www.reuters.com/world/europe/",
+  summary: "Anti-corruption campaign groups organised demonstrations in Prague calling for greater government transparency and judicial accountability. Protesters gathered in Wenceslas Square for speeches and rallies before marching through parts of the city centre. The event remained peaceful but politically significant. Risk is assessed as Medium."
+},
+{
+  title: "Port and Logistics Workers Protest",
+  city: "Hamburg",
+  lat: 53.5511,
+  lng: 9.9937,
+  address: "Port of Hamburg",
+  postcode: "20457",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-06-04T12:00:00",
+  source: "https://www.dw.com/",
+  summary: "Port and logistics workers gathered near the Port of Hamburg during demonstrations linked to wage negotiations and shipping-sector labour conditions. Protest organisers warned of possible escalation into wider industrial action. Given the importance of Hamburg to European logistics, the risk is assessed as High."
+},
+  
+
+{
+  title: "Anti-Tourism Demonstration",
+  city: "Barcelona",
+  lat: 41.3874,
+  lng: 2.1686,
+  address: "La Rambla / City Centre",
+  postcode: "08002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-05-25T12:00:00",
+  source: "https://www.reuters.com/world/europe/",
+  summary: "Activist groups organised demonstrations in central Barcelona protesting overtourism, rising rents and pressure on local infrastructure. Protesters gathered around major tourist areas including La Rambla and called for stronger housing protections and tourism regulation. Moderate disruption to pedestrian movement and traffic was reported. Risk is assessed as Medium."
+},
+{
+  title: "Anti-Government Protest",
+  city: "Bratislava",
+  lat: 48.1486,
+  lng: 17.1077,
+  address: "Freedom Square",
+  postcode: "811 06",
+  country: "Slovakia",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-29T18:00:00",
+  source: "https://www.reuters.com/world/europe/",
+  summary: "Large anti-government demonstrations took place in Bratislava following political tensions surrounding corruption allegations and judicial reforms. Protesters gathered at Freedom Square before marching toward government buildings. Police maintained a large presence due to the scale of mobilisation and the possibility of confrontation. Risk is assessed as High."
+},
+{
+  title: "Port Workers Demonstration",
+  city: "Rotterdam",
+  lat: 51.9244,
+  lng: 4.4777,
+  address: "Port of Rotterdam",
+  postcode: "3011",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-28T12:00:00",
+  source: "https://www.dutchnews.nl/",
+  summary: "Port workers and union members gathered at the Port of Rotterdam to protest labour conditions and contract negotiations. Demonstrators warned of wider strike action if negotiations failed. Due to the importance of Rotterdam to European logistics and shipping, disruption risks were considered significant. Risk is assessed as High."
+},
+{
+  title: "Immigration Protest and Counter-Demonstration",
+  city: "Malmö",
+  lat: 55.6050,
+  lng: 13.0038,
+  address: "Stortorget",
+  postcode: "211 22",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-05-31T14:00:00",
+  source: "https://www.svt.se/",
+  summary: "Anti-immigration protesters and counter-demonstrators gathered in Malmö following online mobilisation linked to migration policies and asylum issues. Police maintained separation zones around Stortorget and monitored the situation closely due to concerns over clashes between opposing groups. Risk is assessed as High."
+},
+{
+  title: "Climate Demonstration",
+  city: "Copenhagen",
+  lat: 55.6761,
+  lng: 12.5683,
+  address: "City Hall Square",
+  postcode: "1599",
+  country: "Denmark",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-06-01T12:00:00",
+  source: "https://www.dr.dk/",
+  summary: "Climate activists gathered at City Hall Square in Copenhagen to call for stronger environmental policies and emissions reductions. Demonstrators organised speeches and marches through central areas of the city. The protest remained peaceful but caused temporary traffic disruption. Risk is assessed as Medium."
+},
+{
+  title: "Farmers Protest Over EU Agricultural Policies",
+  city: "Brussels",
+  lat: 50.8503,
+  lng: 4.3517,
+  address: "European Quarter",
+  postcode: "1040",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-06-02T12:00:00",
+  source: "https://www.politico.eu/",
+  summary: "Farmers from multiple European countries gathered in Brussels to protest EU agricultural policies, fuel costs and environmental regulations. Tractors and agricultural vehicles caused significant disruption near EU institutions in the European Quarter. Given the scale and infrastructure impact, the risk is assessed as High."
+},
   
 
 {
