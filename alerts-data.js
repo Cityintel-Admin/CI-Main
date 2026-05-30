@@ -22,6 +22,564 @@ window.alertsData =[
 
 
 
+
+
+  {
+    title: "NoG7 Counter-Summit Demonstration",
+    city: "Geneva",
+    lat: 46.2200,
+    lng: 6.1500,
+    address: "Depart: Parc Mon Repos — route via Avenue de France, Avenue Giuseppe-Motta (rive droite only, per cantonal authority)",
+    postcode: "1202",
+    country: "Switzerland",
+    continent: "Europe",
+    risk: "High",
+    time: "2026-06-14T16:00:00",
+    source: "https://www.entrepriseromande.ch/web/er/w/manifestation-nog7-%C3%A0-gen%C3%A8ve-un-parcours-impos%C3%A9-sous-haute-tension-1",
+    summary: "On 14 June 2026 from 1600hrs, the international NoG7 coalition — 60+ organisations including Feminist Strike, BDS, NPA-L'Anticapitaliste, trade unions, and CADTM — stages a major demonstration in Geneva the day before the G7 opens in Évian-les-Bains. Organisers expect 10,000+ participants. Canton Geneva authorised the march on the rive droite only, starting at Parc Mon Repos via Avenue de France and Avenue Giuseppe-Motta, after refusing the requested lakeside route via Pont du Mont-Blanc on security grounds. The coalition rejected the route and is consulting 60+ member organisations. The 2003 G8 at Évian saw 50,000–100,000 demonstrators with serious violence in Geneva including arson, looting and Molotov attacks. Switzerland has deployed 2,000+ soldiers plus reinforced cantonal police. Black Bloc and radical autonomous elements expected. Downtown Geneva retailers report significant fear based on 2003 precedent. Risk is assessed as high."
+  },
+
+  {
+    title: "G7 Summit — Security Operation",
+    city: "Évian-les-Bains",
+    lat: 46.4003,
+    lng: 6.5872,
+    address: "Évian-les-Bains, Haute-Savoie",
+    postcode: "74500",
+    country: "France",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-15T08:00:00",
+    source: "https://en.wikipedia.org/wiki/52nd_G7_summit",
+    summary: "The 52nd G7 Summit 15–17 June 2026 in Évian-les-Bains. Leaders: Carney (Canada), Macron (France), Merz (Germany), Meloni (Italy), Takaichi (Japan), Starmer (UK), Trump (US). France has banned all demonstrations in the summit zone on French territory. Border controls between France and Switzerland reintroduced. 2,000+ Swiss army personnel deployed. Risk assessed as medium on French side; primary protest activity concentrated in Geneva."
+  },
+
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Barcelona",
+    lat: 41.4036,
+    lng: 2.1744,
+    address: "Jardinets de Gràcia, Gràcia district — march through city centre including Sagrada Família area",
+    postcode: "08007",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.catalannews.com/society-science/item/anti-tourism-demonstration-planned-in-barcelona-for-june-15",
+    summary: "Annual anti-overtourism demonstration as part of the Southern European Network Against Touristisation (SET) coordinated day of action. 2025 Barcelona event featured water pistols at tourists, smoke grenades, hotel blockades, and confrontations outside a hostel. Tactics for 2026 expected to be similar or escalated. Activists target 'touristification' and demand government limits on tourist numbers. Police deployed along march route. Risk is assessed as medium."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Palma de Mallorca",
+    lat: 39.5696,
+    lng: 2.6502,
+    address: "Palma city centre",
+    postcode: "07001",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration. Led by Menys Turisme, Més Vida with 60+ groups. The 2025 Palma event drew 15,000–20,000 — largest single event of the June 2025 southern European wave. Similar or higher turnout expected in 2026. Peaceful. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "San Sebastián",
+    lat: 43.3183,
+    lng: -1.9812,
+    address: "City centre, San Sebastián (Donostia)",
+    postcode: "20003",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in San Sebastián. Local activist groups addressing housing costs and tourism saturation. Peaceful demonstration expected. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Ibiza",
+    lat: 38.9067,
+    lng: 1.4200,
+    address: "Ibiza Town centre",
+    postcode: "07800",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in Ibiza. Local activist groups addressing tourism's environmental and social impact. Peaceful. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Valencia",
+    lat: 39.4699,
+    lng: -0.3763,
+    address: "Valencia city centre",
+    postcode: "46001",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in Valencia. Local groups demanding sustainable tourism practices and local rights. Peaceful. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Bilbao",
+    lat: 43.2630,
+    lng: -2.9350,
+    address: "Bilbao city centre",
+    postcode: "48001",
+    country: "Spain",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in Bilbao. Focuses on sustainable tourism and local community rights. Peaceful. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Venice",
+    lat: 45.4408,
+    lng: 12.3155,
+    address: "Venice city centre — specific route TBC",
+    postcode: "30100",
+    country: "Italy",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in Venice. Venice has introduced day-tripper entry fees but activists argue tourist pressure remains unsustainable. Peaceful. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Overtourism Demonstration",
+    city: "Naples",
+    lat: 40.8518,
+    lng: 14.2681,
+    address: "Naples city centre",
+    postcode: "80100",
+    country: "Italy",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in Naples as part of the coordinated southern European day of action. Peaceful. Risk is assessed as low."
+  },
+
+    {
+    title: "Anti-Overtourism Demonstration",
+    city: "Lisbon",
+    lat: 38.7223,
+    lng: -9.1393,
+    address: "Lisbon city centre",
+    postcode: "1100",
+    country: "Portugal",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-15T12:00:00",
+    source: "https://www.afar.com/magazine/anti-tourism-protests-to-take-place-in-europe-june-15",
+    summary: "SET coordinated anti-overtourism demonstration in Lisbon. Growing anti-tourist sentiment driven by housing shortages and rising rents. Peaceful. Risk is assessed as low."
+  },
+
+   {
+    title: "Iranian Resistance / NCRI Annual Rally",
+    city: "Paris",
+    lat: 48.8566,
+    lng: 2.3522,
+    address: "Paris — venue TBC (large NCRI rallies historically held at Le Bourget exhibition centre)",
+    postcode: "75001",
+    country: "France",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-20T12:00:00",
+    source: "https://www.ncr-iran.org/en/news/iran-news-in-brief-news/iran-news-in-brief-may-3-2026/",
+    summary: "On 20 June 2026, a major Iranian diaspora rally in Paris marks the 45th anniversary of the nationwide resistance against the Iranian clerical regime (Day of Martyrs and Political Prisoners). Organisers (NCRI/MEK supporters) expect 100,000+ participants. Lawmakers, former senior officials, and policy experts from across Europe and North America confirmed to attend. The rally calls for urgent international action against the Iranian regime's political execution surge. Part of the ongoing global diaspora protest movement active since January 2026 across 30+ countries and 73 cities. Risk assessed as medium — large crowd, VIP attendance, and the event has historically attracted disruption attempts by pro-regime actors. Social media verification: NCRI X account (@iran_policy) confirmed date and Paris location, multiple MEK supporter accounts promoting attendance."
+  },
+
+   {
+    title: "No Kings / Global Day of Defiance — Democrats Abroad",
+    city: "Berlin",
+    lat: 52.5200,
+    lng: 13.4050,
+    address: "Central Berlin — location TBC",
+    postcode: "10117",
+    country: "Germany",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-14T12:00:00",
+    source: "https://www.democratsabroad.org/de_no_kings",
+    summary: "On 14 June 2026, Democrats Abroad Germany organises solidarity events across Germany as part of the global 'No Kings / Day of Defiance'. Democrats Abroad Hamburg and Northern Germany previously organised a No Kings event on June 14 2025. Berlin chapter confirmed for 2026 via the Democrats Abroad Germany national page. Largely American expatriates and local supporters. Modest attendance. Risk is assessed as low."
+  },
+
+  {
+    title: "No Kings Day — Washington D.C. (Flagship)",
+    city: "Washington D.C.",
+    lat: 38.8899,
+    lng: -77.0091,
+    address: "March: Arlington Memorial Circle → Memorial Bridge → National Mall / Washington Monument. 'Rise Up Sing Out' concert simultaneously.",
+    postcode: "20024",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-06-14T10:00:00",
+    source: "https://dystopeka.com/no-kings-protest-june-14-2026/",
+    summary: "The fourth national No Kings Day on 14 June 2026 — Trump's 80th birthday, Flag Day. Prior waves: 5M (Jun 2025), 7M (Oct 2025), 8M (Mar 2026). Organised by 50501 Movement, Indivisible, MoveOn. A 'Rise Up Sing Out' First Amendment concert (Jane Fonda, Bette Midler, Patti Smith, Rufus Wainwright) runs simultaneously. International solidarity confirmed in Germany, France, Spain, Italy, Australia, Canada, Japan, Kenya. Trump warned protesters would be 'met with big force'. Prior No Kings events: vehicular attack (Northern Virginia), fatal shooting (Salt Lake City), tear gas (Los Angeles, Seattle). Risk assessed as high. Social media: @IndivisibleTeam, @50501Movement, @MoveOn all confirmed June 14 mobilisation."
+  },
+
+  {
+    title: "No Kings Day",
+    city: "Los Angeles",
+    lat: 34.0537,
+    lng: -118.2428,
+    address: "City Hall / Grand Park, 200 N Spring St",
+    postcode: "90012",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-06-14T12:00:00",
+    source: "https://dystopeka.com/no-kings-protest-june-14-2026/",
+    summary: "LA carries elevated risk — National Guard and Marine deployments followed June 2025 ICE-related protests; police used tear gas and batons at prior No Kings events here. City Hall and Grand Park are the focal points. Counter-protest activity and heavy police deployment anticipated. Risk assessed as high."
+  },
+
+  {
+    title: "No Kings Day",
+    city: "New York City",
+    lat: 40.7127,
+    lng: -74.0059,
+    address: "Foley Square / Lower Manhattan",
+    postcode: "10007",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-06-14T12:00:00",
+    source: "https://dystopeka.com/no-kings-protest-june-14-2026/",
+    summary: "Simultaneous No Kings Day demonstrations across New York City. Foley Square and City Hall Park used in prior waves. Large turnout expected. Risk is assessed as medium."
+  },
+
+  {
+    title: "No Kings Day",
+    city: "Chicago",
+    lat: 41.8827,
+    lng: -87.6233,
+    address: "Federal Plaza, 219 S Dearborn St",
+    postcode: "60604",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-06-14T12:00:00",
+    source: "https://dystopeka.com/no-kings-protest-june-14-2026/",
+    summary: "Chicago's Federal Plaza has anchored No Kings Day across all prior iterations of the campaign. Large turnout with linked marches through the Loop expected. Risk is assessed as medium."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "Washington D.C.",
+    lat: 38.8899,
+    lng: -77.0091,
+    address: "National Mall, Washington D.C.",
+    postcode: "20024",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "Major No Kings mobilisation planned for 4 July 2026 — 250th anniversary of American independence — framed around the Declaration of Independence's anti-monarchical language. Planned since November 2025 by 50501 Movement, Indivisible and allied groups. Thousands of simultaneous events expected nationwide. Trump has signalled hostility to July 4th counter-events. Risk assessed as high — extreme political sensitivity, historic date, large turnout, counter-mobilisation potential."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "Los Angeles",
+    lat: 34.0537,
+    lng: -118.2428,
+    address: "Grand Park, 200 N Grand Ave",
+    postcode: "90012",
+    country: "United States",
+    continent: "North America",
+    risk: "High",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "Large-scale No Kings July 4th demonstrations in Los Angeles. City remains sensitised following 2025 ICE protests and National Guard deployments. Convergence of major Independence Day crowds with protest activity raises disorder risk. Risk assessed as high."
+  },
+
+  {
+    title: "No Kings Day — July 4th Independence Day",
+    city: "New York City",
+    lat: 40.7127,
+    lng: -74.0059,
+    address: "Foley Square / Lower Manhattan",
+    postcode: "10007",
+    country: "United States",
+    continent: "North America",
+    risk: "Medium",
+    time: "2026-07-04T10:00:00",
+    source: "https://prospect.org/2025/11/24/planning-no-kings-demonstrations-july-4-2026/",
+    summary: "No Kings July 4th solidarity events across New York City. Concurrent with Independence Day celebrations — elevated density and crowd mixing. Risk assessed as medium."
+  },
+
+   {
+    title: "No Kings / No Tyrants Solidarity Demonstration",
+    city: "Toronto",
+    lat: 43.6532,
+    lng: -79.3832,
+    address: "Central Toronto — location TBC",
+    postcode: "M5H 2N2",
+    country: "Canada",
+    continent: "North America",
+    risk: "Low",
+    time: "2026-06-14T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_2026_No_Kings_protests",
+    summary: "Canada confirmed among countries with No Kings / No Tyrants solidarity events in the March 2026 wave (8 million globally). Toronto also hosted a 350,000-person Iranian diaspora rally in February 2026. Canadian June 14 events expected to use 'No Tyrants' branding given Canada's constitutional monarchy. Primarily American expatriates and local progressive groups. Risk assessed as low."
+  },
+
+  {
+    title: "No Kings / No Tyrants Solidarity Demonstration",
+    city: "Vancouver",
+    lat: 49.2827,
+    lng: -123.1207,
+    address: "Central Vancouver — location TBC",
+    postcode: "V6B 1S5",
+    country: "Canada",
+    continent: "North America",
+    risk: "Low",
+    time: "2026-06-14T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_2026_No_Kings_protests",
+    summary: "Vancouver among Canadian cities with No Kings solidarity participation in the March 2026 wave. June 14 2026 events expected following the same pattern. Risk assessed as low."
+  },
+
+   {
+    title: "Anti-Government Protests — Capital Siege (Ongoing)",
+    city: "La Paz",
+    lat: -16.5000,
+    lng: -68.1500,
+    address: "Presidential Palace area / El Alto road blockades — key entry arteries into La Paz",
+    postcode: "",
+    country: "Bolivia",
+    continent: "South America",
+    risk: "High",
+    time: "2026-06-01T08:00:00",
+    source: "https://www.npr.org/2026/05/20/nx-s1-5828203/bolivia-capital-protests-crisis",
+    summary: "Bolivia has been in a state of ongoing mass protest since May 2026. Miners, teachers, farmers and transport workers organised through the COB (Bolivian Workers' Central) have blockaded roads into La Paz, placing the capital under effective siege. 4 dead, 90 arrested as of 21 May. President Rodrigo Paz annulled the triggering land mortgage law on 13 May but protests escalated, expanding to demands for his resignation and broader labour reform. Protesters detonated explosives and clashed with police near the presidential palace. Fuel shortages and hospital oxygen depletion reported. Ongoing blockades are costing Bolivia $50M+/day and have stranded 5,000+ vehicles. The Iran war-linked global fuel and inflation crisis is cited as an aggravating factor. Crisis expected to persist into June. Risk assessed as high — active ongoing situation; verify status before travel."
+  },
+
+  {
+    title: "Gen Z Anti-Government Protest — 2nd Anniversary",
+    city: "Nairobi",
+    lat: -1.2921,
+    lng: 36.8219,
+    address: "Nairobi CBD — nationwide across all 47 counties simultaneously",
+    postcode: "",
+    country: "Kenya",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-25T10:00:00",
+    source: "https://www.hrw.org/news/2025/06/26/kenya-hold-authorities-accountable-for-protesters-deaths",
+    summary: "25 June 2026 marks the 2nd anniversary of the June 2024 Kenyan Gen Z Finance Bill protests (60+ killed). The annual protest date is now firmly established. Social media is mobilising nationwide marches across all 47 counties from 1000hrs, plus CBD vigils from 24 June. Grievances have expanded beyond the Finance Bill to police brutality, youth unemployment, cost of living, and government corruption. In 2025, parliament was ringfenced with razor wire, armoured vehicles deployed; running battles in the CBD, Kitengela, and Thika Superhighway. Business closures in Nairobi CBD are expected again. Risk assessed as high — police confrontation, tear gas, and road blockades near-certain based on the 2024 and 2025 anniversary pattern. Social media: #GenZKenya and #June25 hashtags trending; US Embassy Nairobi has issued demonstration alerts for this date in both prior years."
+  },
+
+    {
+    title: "March and March Anti-Immigration Protest / Nationwide Shutdown",
+    city: "Durban",
+    lat: -29.8587,
+    lng: 31.0218,
+    address: "Durban — city-wide mobilisation. Refugees sheltering at Durban Home Affairs centre, Che Guevara Road.",
+    postcode: "4001",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-30T10:00:00",
+    source: "https://www.dailymaverick.co.za/article/2026-05-24-xenophobia-crisis-who-is-funding-the-june-30-fear-mongering/",
+    summary: "Anti-illegal immigration group 'March and March' has issued a 30 June 2026 deadline to the South African government to deal with undocumented immigrants, threatening nationwide protests if demands are unmet. Weeks of xenophobic violence in Durban have left hundreds of foreign nationals sheltering at the Home Affairs Refugee Reception Centre and Durban Central Police Station. Ghana and Nigeria have initiated emergency evacuations of their citizens. The South African government convened an urgent justice, defence and crime ministers meeting on 25 May. HRW has called on SA authorities to 'intensify efforts to ensure the safety of foreign nationals'. March and March has held successful demonstrations in Pretoria, Johannesburg, and Durban; the group has stated 'our people want to take to the streets on 30 June if issues are not addressed.' Analysts draw comparison with the 2008 xenophobic violence in which 62 people were killed. Risk assessed as high — real possibility of large-scale xenophobic violence on and around 30 June. Social media: @MarchandMarchSA confirmed June 30 action; #MarchandMarch trending on South African X/Twitter."
+  },
+
+  {
+    title: "March and March Anti-Immigration Protest",
+    city: "Johannesburg",
+    lat: -26.2041,
+    lng: 28.0473,
+    address: "Johannesburg city centre / CBD",
+    postcode: "2001",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-30T10:00:00",
+    source: "https://www.france24.com/en/live-news/20260525-s-africa-government-holds-urgent-talks-over-anti-migrant-tensions",
+    summary: "March and March has already held successful anti-immigration demonstrations in Johannesburg as part of its nationwide campaign ahead of the June 30 deadline. Further protest activity in Johannesburg on 30 June is expected as part of the national mobilisation. Hundreds of foreign nationals from DRC, Rwanda and Somalia have reported threats and violence in affected areas. ActionSA has joined March and March protests. Risk assessed as high for the June 30 date."
+  },
+
+  {
+    title: "March and March Anti-Immigration Protest",
+    city: "Pretoria",
+    lat: -25.7479,
+    lng: 28.2293,
+    address: "Pretoria CBD",
+    postcode: "0001",
+    country: "South Africa",
+    continent: "Africa",
+    risk: "High",
+    time: "2026-06-30T10:00:00",
+    source: "https://www.enca.com/news/five-things-know-about-anti-migrant-protests",
+    summary: "Pretoria has been a confirmed location for prior March and March demonstrations, with hundreds marching through the CBD. A street vendor was attacked during one protest. The June 30 national mobilisation is expected to include Pretoria. Risk assessed as high."
+  },
+
+   {
+    title: "Labour / Pro-Palestine Protests (Recurring Monthly)",
+    city: "Istanbul",
+    lat: 41.0369,
+    lng: 28.9850,
+    address: "Taksim Square / Beşiktaş — police regularly restrict Taksim access causing confrontations",
+    postcode: "34433",
+    country: "Turkey",
+    continent: "Middle East",
+    risk: "Medium",
+    time: "2026-06-01T12:00:00",
+    source: "https://www.france24.com/en/culture/20260501-workers-across-the-world-march-for-peace-and-better-pay-in-may-day-rallies",
+    summary: "Istanbul maintains a persistent pattern of monthly protest activity. At May Day 2026, union members clashed with police attempting to march to Taksim Square. Istanbul hosted a 500,000-person pro-Palestine rally on 1 January 2026 at Galata Bridge. Monthly anti-government, labour, and pro-Palestine demonstrations are expected throughout June and July 2026, continuing from the 2025–2026 Turkish protest movement rooted in the arrest of Istanbul Mayor İmamoğlu. Taksim Square police confrontations are a near-regular occurrence. Risk assessed as medium."
+  },
+
+   {
+    title: "Anti-War / Anti-Constitutional Revision Rally — National Diet",
+    city: "Tokyo",
+    lat: 35.6762,
+    lng: 139.6503,
+    address: "National Diet Building, Nagatacho, Chiyoda City",
+    postcode: "100-0014",
+    country: "Japan",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-06-01T18:00:00",
+    source: "https://www.wsws.org/en/articles/2026/05/06/weui-m06.html",
+    summary: "Japan's 'We Want Our Future' protest movement has been growing rapidly since early 2026, driven by opposition to Prime Minister Takaichi's drive to revise Article 9 of Japan's pacifist constitution, and overwhelming public opposition (82% polling) to the US-led war on Iran. Protests at the National Diet in Tokyo swelled from 3,600 in late February to 30,000 in April and 50,000 on Constitution Memorial Day (3 May). Simultaneous actions were held in 137 locations nationwide on 8 April. The protests are described as the most significant Japanese civic movement since 2015. The movement is expected to continue generating major monthly rallies in June and July 2026 outside the National Diet. Risk assessed as low — protests have remained peaceful; Japan has strong traditions of orderly civic demonstration."
+  },
+
+  {
+    title: "Anti-War / Anti-Constitutional Revision Rally — Nationwide (137 cities)",
+    city: "Osaka",
+    lat: 34.6937,
+    lng: 135.5023,
+    address: "Osaka city centre — location TBC",
+    postcode: "530-0001",
+    country: "Japan",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-06-01T12:00:00",
+    source: "https://groundswellnews.com/anti-war-protest-in-japan-draws-in-thousands-as-constitutional-revision-gains-momentum/",
+    summary: "Simultaneous with the Tokyo National Diet rallies, the 'We Want Our Future' movement has been holding events across 137+ cities in Japan. Osaka is among the largest satellite locations. Rallies oppose constitutional revision and the Iran war. Peaceful. Risk assessed as low."
+  },
+
+   {
+    title: "Anti-US Embassy / Labour Protest (Recurring Monthly)",
+    city: "Manila",
+    lat: 14.5995,
+    lng: 120.9842,
+    address: "US Embassy, 1201 Roxas Blvd; also España Boulevard, Mendiola, Liwasang Bonifacio",
+    postcode: "1000",
+    country: "Philippines",
+    continent: "Asia",
+    risk: "Medium",
+    time: "2026-06-01T10:00:00",
+    source: "https://ph.usembassy.gov/demonstration-alert-protest-activity-in-the-philippines/",
+    summary: "The Philippines maintains a pattern of regular protest activity in Metro Manila, particularly at the US Embassy on Roxas Boulevard. At May Day 2026, Kilusang Mayo Uno protesters attempted to storm the Embassy, clashing with police and injuring 7 officers. Grievances: Iran war, rising fuel and commodity prices, domestic labour issues. Effigies of Trump, Netanyahu and President Marcos regularly burned. US Embassy issued a standing alert following US-Israeli operations in Iran. Monthly demonstrations expected in June and July 2026. Risk assessed as medium — Embassy vicinity is a consistent flashpoint for confrontation with police. Social media: @kilusangmayouno confirmed ongoing mobilisation programme."
+  },
+
+   {
+    title: "Labour / Anti-Iran War Rally — KCTU (Recurring Monthly)",
+    city: "Seoul",
+    lat: 37.5665,
+    lng: 126.9780,
+    address: "Gwanghwamun Square, central Seoul",
+    postcode: "03171",
+    country: "South Korea",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-06-01T12:00:00",
+    source: "https://www.foxnews.com/world/may-day-protests-across-europe-asia-turn-anti-american-anti-israel-political-battlegrounds",
+    summary: "South Korea's Korea Confederation of Trade Unions (KCTU) organises regular major rallies at Gwanghwamun Square. At May Day 2026, thousands gathered for labour rallies incorporating anti-Iran war geopolitical messaging; KCTU chairman called on demonstrators to 'unite with Iranian and Palestinian workers'. Monthly demonstrations expected throughout June and July 2026. Generally peaceful. Risk assessed as low."
+  },
+
+   {
+    title: "No Kings / Anti-Trump Solidarity Protest",
+    city: "Sydney",
+    lat: -33.8688,
+    lng: 151.2093,
+    address: "Central Sydney — location TBC",
+    postcode: "2000",
+    country: "Australia",
+    continent: "Asia Pacific",
+    risk: "Low",
+    time: "2026-06-14T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_2026_No_Kings_protests",
+    summary: "Australia confirmed among countries with No Kings solidarity events during the March 2026 wave. At that event, a Sydney participant held a sign reading 'We can't stand him either'. June 14 2026 solidarity events expected from Australian anti-Trump groups and American expatriates. Modest attendance. Risk assessed as low."
+  },
+
+  {
+    title: "No Kings / Anti-Trump Solidarity Protest",
+    city: "Melbourne",
+    lat: -37.8136,
+    lng: 144.9631,
+    address: "Central Melbourne — location TBC",
+    postcode: "3000",
+    country: "Australia",
+    continent: "Asia Pacific",
+    risk: "Low",
+    time: "2026-06-14T12:00:00",
+    source: "https://en.wikipedia.org/wiki/March_2026_No_Kings_protests",
+    summary: "Melbourne among Australian cities with No Kings solidarity participation in the March 2026 wave. June 14 2026 events expected. Modest attendance. Risk assessed as low."
+  },
+
+   {
+    title: "Joint Trade Union Protest Day — MGNREGA / Labour Codes (Nationwide)",
+    city: "Delhi",
+    lat: 28.6139,
+    lng: 77.2090,
+    address: "Jantar Mantar / Parliament Street — central Delhi protest focal point",
+    postcode: "110001",
+    country: "India",
+    continent: "Asia",
+    risk: "Medium",
+    time: "2026-07-01T10:00:00",
+    source: "https://cpim.org/central-committee-communique-31/",
+    summary: "India's Joint Platform of Central Trade Unions and Samyukt Kisan Morcha have established a pattern of regular national protest days throughout 2026. The 12 February 2026 Bharat Bandh saw 300 million participants across 600+ districts — one of the largest coordinated strikes in Indian history. The CPI(M) Central Committee communiqué (22–24 May 2026) confirms the MGNREGA cessation from 1 July 2026 is triggering fresh worker protests in multiple states. Unions warned that failure to meet demands will lead to 'stronger popular peoples' protests'. New Delhi has been a consistent focal point for these demonstrations, with Jantar Mantar and Parliament Street as key assembly points. Risk assessed as medium — police have previously detained trade union leaders and used Section 144 to restrict rallies in some states. Social media: @cpimspeak, @CPIMKerala, @CPIM_WESTBENGAL all confirmed ongoing mobilisation; @the_hindu reported MGNREGA protests January 2026."
+  },
+
+  {
+    title: "Joint Trade Union Protest Day — MGNREGA / Labour Codes",
+    city: "Kolkata",
+    lat: 22.5726,
+    lng: 88.3639,
+    address: "Brigade Parade Ground / Kolkata city centre",
+    postcode: "700001",
+    country: "India",
+    continent: "Asia",
+    risk: "Medium",
+    time: "2026-07-01T10:00:00",
+    source: "https://www.ituc-ap.org/news-and-updates/india-historic-nationwide-strike-sees-millions-of-workers-and-farmers-mobilise-for-decent-work-and-social-justice",
+    summary: "West Bengal and Kolkata were among the most heavily mobilised states in the February 2026 Bharat Bandh, with major marches and work stoppages across the state. The CITU (Centre of Indian Trade Unions) and affiliated unions are among the primary organisers. Ongoing MGNREGA-related protests expected from July 2026 when the new VBGRAMG Act takes effect. Risk assessed as medium."
+  },
+
+  {
+    title: "21 July Martyrs Day Rally — Trinamool Congress",
+    city: "Kolkata",
+    lat: 22.5726,
+    lng: 88.3639,
+    address: "Brigade Parade Ground, Kolkata",
+    postcode: "700021",
+    country: "India",
+    continent: "Asia",
+    risk: "Low",
+    time: "2026-07-21T12:00:00",
+    source: "https://en.wikipedia.org/wiki/21_July_Martyr%27s_Day_Rally",
+    summary: "The 21 July Martyrs Day Rally is an annual mass rally held by the All India Trinamool Congress (AITC) in Kolkata, commemorating the deaths of 13 activists in a 1993 police firing. The rally is held every year on 21 July and is led by Chief Minister Mamata Banerjee. It is one of the largest annual political rallies in India, regularly drawing hundreds of thousands of supporters to Brigade Parade Ground. The event is political in character but generally peaceful and well-managed. Risk assessed as low."
+  },
+
   {
     title: "Balochistan Rights Protest — Scottish Parliament, Edinburgh",
     city: "Edinburgh",
