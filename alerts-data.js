@@ -20,6 +20,373 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  
+{
+    title: "Anti-Police Protest — White Vanguard, Southampton",
+    city: "Southampton",
+    lat: 50.925663,
+    lng: -1.390003,
+    address: "Portswood Police Station, St Denys Road, Southampton",
+    postcode: "SO17 2GN",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-05-31T18:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 31 May 2026, from 1800hrs, a protest is due to take place outside Portswood Police Station, St Denys Road, Southampton. Organised by far-right group 'White Vanguard' in response to an ongoing trial for the murder of Henry Nowak, an 18-year-old university student allegedly murdered by Vikrum Digwa on 3 December 2025. Digwa, a Sikh man, was charged on 8 December 2025 with murder and possession of a bladed article, namely a kirpan. Activists are protesting to demand 'answers', 'accountability' and 'justice' following allegations of an officer handcuffing the victim before realising the fatal injury, which is currently unproven. Attendance is likely in the low-to-mid tens (10–50). A counter-protest has been organised by Stand Up to Racism, mustering at a Waitrose on Portswood High Street. Both protests are almost certain to be highly vocal with extremely tense atmospherics. Low-level disorder is a realistic possibility, though local police are highly likely to deploy a plan to keep protesters apart. Static. Risk is assessed as medium."
+  },
+
+  {
+    title: "Anti-Racism Counter-Protest — Stand Up to Racism, Southampton",
+    city: "Southampton",
+    lat: 50.92416148,
+    lng: -1.394440911,
+    address: "Waitrose, Portswood High Street, Southampton",
+    postcode: "SO17 2FX",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-05-31T11:45:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 31 May 2026, from 1145hrs, an anti-racism protest is due to assemble at Waitrose, Portswood High Street, Southampton. Organised by 'Stand Up to Racism' as a counter-protest to a planned demonstration by far-right group 'White Vanguard' due to take place in the city in response to an ongoing trial for the murder of Henry Nowak. Stand Up to Racism claims that White Vanguard are trying to use the murder trial to sow division in the community and further their own agenda and plan to protest their presence in Southampton. Attendance in the low-to-mid hundreds (100–500). Attendees are likely to be vocal with banners and placards. Protests will likely remain peaceful overall; police are highly likely to be in attendance to keep the two protests separate, with verbal confrontations likely. Localised noise and traffic disruption is almost certain. Risk is assessed as medium."
+  },
+
+  {
+    title: "Pro-Kurdish Protest — Kurdish Assembly UK, London",
+    city: "London",
+    lat: 51.50806668,
+    lng: -0.1280113636,
+    address: "Trafalgar Square, London",
+    postcode: "WC2N 5DS",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-31T16:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 31 May 2026, from 1600hrs, a pro-Kurdish protest is set to take place in Trafalgar Square, London. Organised by the advocacy group 'Kurdish Assembly UK' to demonstrate in support of the Women's Protection Units (YPJ), an all-female militia which has allegedly been fighting against ISIS in Syria. Attendance can range from the high tens to the low hundreds, with a realistic possibility of mid hundreds (100–500). Protests in support of the Kurds have seen attendance in the hundreds. Unknown at present whether the protest will be static or march. Likely to be peaceful; however, verbal confrontations with opposers remain a realistic possibility as has been observed in previous protests of this nature. Risk is assessed as low."
+  },
+
+  {
+    title: "Anti-Immigration Protest — Unite The Right UK, Thetford",
+    city: "Thetford",
+    lat: 52.57054885,
+    lng: 0.8574734173,
+    address: "Opposite Spar, Watton, Thetford",
+    postcode: "IP25 6XU",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-31T13:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 31 May 2026, from 1300hrs, a protest is due to muster opposite Spar, Watton, Thetford. Organised by 'Unite The Right UK' to protest against illegal migration to the UK. Attendance in the low-to-mid tens (10–50) likely. Activists are likely to remain static and largely peaceful. Static. Risk is assessed as low."
+  },
+
+  {
+    title: "Arsenal Premier League Victory Parade — Islington, London",
+    city: "London",
+    lat: 51.53120718,
+    lng: -0.1152822648,
+    address: "Islington, London — previous route: Emirates Stadium > Highbury Grove > Drayton Park > Aubert Park > St Paul's Road > Upper Street > back to Emirates Stadium (subject to change)",
+    postcode: "N1 9JE",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-05-31T14:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 31 May 2026, from approximately 1400hrs, a football parade to celebrate Arsenal's victory in the Premier League is due to take place in Islington, London. Specific route and itinerary is yet to be announced but disruption to travel and road closures has been confirmed by Islington Council. Previous plans saw the parade starting at Emirates Stadium and proceeding via Highbury Grove, Drayton Park, Aubert Park, St Paul's Road, Upper Street and back to Emirates Stadium — this route could change. Attendance is likely in the mid-to-high tens of thousands (10,000+). Disruptions to transport networks are highly likely throughout the day. Bus diversions and queuing systems have been planned for tube stations Arsenal, Holloway Road, Highbury and Islington. Location pin is illustrative. Cultural event. Risk is assessed as low."
+  },
+
+  {
+    title: "Pro-Palestine Court Support Protest — Birmingham Crown Court",
+    city: "Birmingham",
+    lat: 52.48285844,
+    lng: -1.892578329,
+    address: "Birmingham Crown Court, Birmingham",
+    postcode: "B4 7NA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-04T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 04 June 2026, at a currently unknown time, a pro-Palestine court support protest is due to take place outside Birmingham Crown Court. Organised by activist group 'Da'm Support' in support of four activists facing charges for a previous direct action they took against the Moog Aircraft Group. Activists are likely to muster outside the court and remain static at this location. Attendance is likely to number in the low tens, with a realistic possibility of reaching the mid tens (10–50). Demonstrations are likely to remain peaceful but vocal. Static. Risk is assessed as low."
+  },
+
+   {
+    title: "Environmental Protest — DESNZ / Rosebank Oil Field, London",
+    city: "London",
+    lat: 51.505867,
+    lng: -0.125958,
+    address: "Department of Energy Security and Net Zero (DESNZ), 3 Whitehall Place, London",
+    postcode: "SW1A 2AW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-09T12:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 09 June 2026, from 1230hrs–1330hrs, an environmental protest is set to take place at DESNZ, 3 Whitehall Place. Advertised by disruptive environmental group 'Cut The Ties', though specified as a non-disruptive action — part of a weekly Tuesday protest series calling on the UK government to abandon the proposed Rosebank oil field development. Weekly demonstrations continue every Tuesday outside DESNZ until the government announces a decision on the oil field. Turnout likely in the low tens (10–50). Tactics include signs, placards, and musical drummers. Static. Risk is assessed as low."
+  },
+
+
+
+  {
+    title: "Anti-Palantir Protest — NHS ConfedExpo, Manchester",
+    city: "Manchester",
+    lat: 53.4766609,
+    lng: -2.2489162,
+    address: "Manchester Central Convention Complex, Windmill Street, Manchester",
+    postcode: "M2 3GX",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-11T08:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 11 June 2026, from 0800hrs, an anti-Palantir protest is due to take place gathering at the Manchester Central Convention Complex, Windmill Street, Manchester. Organised by 'Pull the Plug AI' and 'No Palantir in our NHS Manchester' in opposition to Palantir's handling of NHS data and Palantir's alleged links to Israel amid the Israel-Hamas conflict. Attendance in the low-to-mid tens (10–50) is likely, with the realistic possibility of groups attempting to enter the site. Static. Type: Anti-Israel, Sub-type: Israel-Hamas Conflict. Risk is assessed as medium given the realistic possibility of site access disruption."
+  },
+
+{
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-02T07:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 02 June 2026, from 0700hrs–0900hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static. This is the first recorded instance of what has become a recurring weekly action at this site throughout June 2026. Risk is assessed as low."
+  },
+
+  {
+    title: "Environmental Protest — DESNZ / Rosebank Oil Field, London",
+    city: "London",
+    lat: 51.505867,
+    lng: -0.125958,
+    address: "Department of Energy Security and Net Zero (DESNZ), 3 Whitehall Place, London",
+    postcode: "SW1A 2AW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-02T12:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 02 June 2026, from 1230hrs–1330hrs, an environmental protest is set to take place at DESNZ, 3 Whitehall Place. Advertised by disruptive environmental group 'Cut The Ties', though specified as a non-disruptive action — part of a weekly Tuesday protest series calling on the UK government to abandon the proposed Rosebank oil field development. Organisers have stated weekly demonstrations will continue every Tuesday outside DESNZ until the government announces a decision on the oil field. Turnout likely in the low tens (10–50). Tactics include signs, placards, and musical drummers. Static. Risk is assessed as low."
+  },
+
+
+  {
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-10T07:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 10 June 2026, from 0700hrs–0900hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static. Recurring weekly action — also recorded on 02, 05, 08, 16, 19, 22 and 25 June. Risk is assessed as low."
+  },
+
+  {
+    title: "Boycott Bloody Insurance — Activist Walking Tour, London",
+    city: "London",
+    lat: 51.513445,
+    lng: -0.087066,
+    address: "Central London — EC3V 3LL (City of London insurance district)",
+    postcode: "EC3V 3LL",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-10T18:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 10 June 2026, from 1800hrs–2000hrs, an activist walking tour targeting the insurance industry is due to take place in the City of London. Environmental type, sub-type walking tour. Attendance in the low-to-mid tens (10–50). March. Note: this entry was recorded on the NICC map with the prefix 'AWAITING COMPLETION' indicating the full notification content had not been finalised at the time of map publication (27/05/2026). Details may be subject to update. Risk is assessed as low."
+  },
+
+  {
+    title: "Animal Rights Days of Action — RAGE Activism, London",
+    city: "London",
+    lat: 51.5107842,
+    lng: -0.1452842,
+    address: "Sloane Street and Bond Street areas, London — location pin illustrative",
+    postcode: "W1S 2RB",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-13T12:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "From 12–17 June 2026, a series of animal rights days of action have been advertised to take place at unknown locations in London. Advertised by 'RAGE Activism' as a 'weekend of talks and protests in London alongside some amazing organisations'. Advertising specifically highlights 13–14 June as primary protest action days, with protests still a realistic possibility on other dates but at lower volume. Previous protests by this group have focused on luxury retailers to protest against brands' alleged use of fur. Protests are likely to focus around Sloane Street and Bond Street areas. Attendance in the low-mid tens (10–50). Activists likely to have banners, be vocal, and gather outside targeted stores. RAGE protests have remained peaceful; however, where other activist groups have attended, store incursions and sit-ins have taken place — such disruptive tactics are likely should other groups join. Location pin is illustrative. Risk is assessed as low."
+  },
+
+   {
+    title: "World Naked Bike Ride (WNBR) — London",
+    city: "London",
+    lat: 51.50989526,
+    lng: -0.07754514492,
+    address: "Multiple start points across London — routes converging on central London. Pin location illustrative (EC3N 4DJ).",
+    postcode: "EC3N 4DJ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-14T09:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 14 June 2026, from 0900hrs, the World Naked Bike Ride (WNBR) London will be taking place. Multiple start points with staggered departure times: Clapham Junction (1400hrs), Croydon Church Road (1045hrs), Deptford Piehouse Coop (1200hrs), Hackney Wick Thingy Cade (0900hrs), Kew Bridge — North end of Kew Bridge (1245hrs), Regents Park — Outer Circle (1405hrs), Tower Hill Trinity Square Gardens (1315hrs), Wellington Arch Hyde Park Corner (1345hrs), SE1 7QG (1500hrs). Held to protest against 'car culture' and 'oil dependence'. Routes not yet identified but highly likely to focus on central London roads. Prior demonstrations have seen attendance in the low-mid thousands (1,000–5,000); similar attendance likely this year. Vehicular traffic disruption throughout central London is almost certain. Several activist groups have criticised the event citing risks to children and exposure — the possibility of demonstrations against the ride cannot be ruled out but will likely be peaceful. Pin location is illustrative. Annual event. Risk is assessed as low."
+  },
+
+
+  {
+    title: "Protest Against Animal Testing — MBR Acres, Huntingdon",
+    city: "Huntingdon",
+    lat: 52.3610122,
+    lng: -0.1392808,
+    address: "MBR Acres, Huntingdon",
+    postcode: "PE28 2DT",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-21T11:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "From 1100hrs on 21 June 2026, a protest against animal testing is due to gather at MBR Acres, Huntingdon. Organised by 'Boycott Animal Testing' to protest against MBR Acres for their animal testing practices. Attendance likely in the mid-tens (10–50). Attendees likely to gather outside the site with banners, placards and be vocal. Blockades of the site entrance are a realistic possibility. Attendees will likely remain peaceful; however, verbal confrontation with site employees or police, should they attend, cannot be ruled out. Static. Risk is assessed as low."
+  },
+
+   {
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-25T07:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 25 June 2026, from 0700hrs–0900hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static. Recurring weekly action — the final recorded instance in the June 2026 series. Risk is assessed as low."
+  },
+  
+
+  {
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-19T07:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 19 June 2026, from 0700hrs–0900hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static protest. Risk is assessed as low but note potential for site access disruption."
+  },
+
+  {
+    title: "Animal Rights Protest — University of Liverpool",
+    city: "Liverpool",
+    lat: 53.4059048,
+    lng: -2.9667155,
+    address: "Reilly Building, University of Liverpool",
+    postcode: "L3 5RF",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-19T10:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 19 June 2026, from 1030hrs–1230hrs, an animal rights protest is due to take place outside the Reilly Building at the University of Liverpool. Organised by 'Vivisection Exposed' to protest against the University of Liverpool allegedly using live animals for scientific experiments. Attendance likely in the single digits to low tens (1–10). Protest will likely be static and involve activists attempting to engage with members of the public. Risk is assessed as low."
+  },
+
+  {
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-22T07:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 22 June 2026, from 0700hrs–0900hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static protest. Note: This is a recurring weekly protest at this site — also recorded on 05, 08, 16, and 19 June. Risk is assessed as low."
+  },
+
+  {
+    title: "Animal Rights Protest — University of Edinburgh",
+    city: "Edinburgh",
+    lat: 55.9239661,
+    lng: -3.1817439,
+    address: "College of Science and Engineering, University of Edinburgh",
+    postcode: "EH9 3BF",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-22T11:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 22 June 2026, from 1100hrs–1300hrs, an animal rights protest is due to take place outside the College of Science and Engineering at the University of Edinburgh. Organised by 'Vivisection Exposed' to protest against the University of Edinburgh allegedly using live animals to conduct scientific experiments. Attendance likely in the single digits, with a realistic possibility of reaching the low tens (1–10). Protest will likely be static and involve protesters attempting to engage with members of the public. Risk is assessed as low."
+  },
+
+
+  {
+    title: "Pro-Palestine Protest — UAV Engines Ltd, Shenstone",
+    city: "Shenstone",
+    lat: 52.6394217,
+    lng: -1.8477923,
+    address: "UAV Engines Ltd, Shenstone",
+    postcode: "WS14 0EA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-16T14:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 16 June 2026, from 1430hrs–1630hrs, a pro-Palestine protest is due to take place at UAV Engines Ltd, Shenstone. Organised by 'Staffordshire for Palestine' to protest against the company's alleged links to the Israel-Hamas conflict. Attendance likely in the single digits to low tens (1–10). There is a realistic possibility that protestors seek to disrupt the site through the use of blockades or banners across the entrance or exit. Static protest. Risk is assessed as low but note potential for site access disruption."
+  },
+
+  {
+    title: "Environmental Protest — DESNZ / Rosebank Oil Field, London",
+    city: "London",
+    lat: 51.505867,
+    lng: -0.125958,
+    address: "Department of Energy Security and Net Zero (DESNZ), 3 Whitehall Place, London",
+    postcode: "SW1A 2AW",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-16T12:30:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 16 June 2026, from 1230hrs–1330hrs, an environmental protest is set to take place at the Department of Energy Security and Net Zero (DESNZ), 3 Whitehall Place. Advertised by disruptive environmental group 'Cut The Ties', though specified as a non-disruptive action on this occasion — part of a weekly protest series calling on the UK government to abandon the proposed Rosebank oil field development. Organisers have stated weekly demonstrations will continue every Tuesday outside DESNZ until the government announces a decision on the oil field. Turnout likely in the low tens (10–50). Tactics include signs, placards, and musical drummers. Static. Risk is assessed as low."
+  },
+
+{
+    title: "Cardiff Pride 2026",
+    city: "Cardiff",
+    lat: 51.47949333,
+    lng: -3.180714762,
+    address: "Muster: Westgate Street — parade through city centre; main events at Coopers Field and Bute Park",
+    postcode: "CF10 1JA",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-06-13T09:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "Cardiff Gay Pride is due to take place 12–14 June 2026. The parade musters on Westgate Street on 13 June at 0900hrs before marching through the city centre on an unknown route, commencing at 1100hrs. Main events take place at Coopers Field and Bute Park. Usual attendance is in the mid tens of thousands (10,000+), with similar numbers likely this year. March. Risk is assessed as low."
+  },
+
+  {
+    title: "Pro-Palestine Court Support Protest — Woolwich Crown Court, London",
+    city: "London",
+    lat: 51.4965288,
+    lng: 0.0874856,
+    address: "Woolwich Crown Court, London",
+    postcode: "SE28 0EY",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-06-12T09:00:00",
+    source: "https://google.com/maps/d/u/0/viewer?mid=1Eiaw_Gyo2hanZDPhByvhNG-RjHLQ5XeR",
+    summary: "On 12 June 2026, from 0900hrs, a pro-Palestine court support protest is due to take place outside Woolwich Crown Court. The start time has not been officially released; however, based on previous court support protests, the protest is likely to gather from 0900hrs. Organised by multiple activist groups including 'CAGE International', in support of four pro-Palestine activists due to be sentenced after being convicted of offences in connection with a direct action targeting Elbit Systems in 2024. Based on the visibility of this case and its importance to the pro-Palestine activist community in the UK, attendance is likely to be higher than at previous court support protests — likely in the low hundreds (100–500). This protest will likely be vocal and remain static outside Woolwich Crown Court. Risk is assessed as medium."
+  },
+  
 {
     title: "Animal Rights Protest — Dunstall Park Greyhound Stadium, Wolverhampton",
     city: "Wolverhampton",
