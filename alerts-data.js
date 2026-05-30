@@ -20,7 +20,94 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  
 
+{
+  title: "National Trade Union Mobilisation",
+  city: "Seoul",
+  lat: 37.5665,
+  lng: 126.9780,
+  address: "Gwanghwamun Square",
+  postcode: "03172",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-12T14:00:00",
+  source: "https://www.kctu.org/",
+  summary: "The Korean Confederation of Trade Unions (KCTU) is expected to organise large-scale labour demonstrations in Seoul during September 2026 focusing on employment protections, wages and labour reform issues. Protest activity is expected around Gwanghwamun Square and central government districts. Previous KCTU mobilisations have attracted significant turnout and large police deployments. Risk is assessed as High."
+},
+{
+  title: "Constitution and Peace Rally",
+  city: "Tokyo",
+  lat: 35.6895,
+  lng: 139.6917,
+  address: "National Diet Building Area",
+  postcode: "100-0014",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://english.kyodonews.net/",
+  summary: "Peace and constitutional activist groups are expected to organise rallies near the National Diet Building in Tokyo during September 2026. Demonstrations are expected to focus on constitutional reform, defence policy and regional security issues. The events are expected to remain peaceful but may attract large crowds in central Tokyo. Risk is assessed as Medium."
+},
+{
+  title: "Student and Youth Protest Mobilisation",
+  city: "Manila",
+  lat: 14.5995,
+  lng: 120.9842,
+  address: "Mendiola / University Belt",
+  postcode: "1000",
+  country: "Philippines",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-21T12:00:00",
+  source: "https://www.bulatlat.com/",
+  summary: "Student organisations and activist coalitions are expected to organise demonstrations in Manila during September linked to education funding, labour rights and governance issues. Protest activity is expected around Mendiola and university districts. Demonstrations in these areas frequently involve large police deployments due to their political sensitivity. Risk is assessed as High."
+},
+{
+  title: "Farmers and Labour Protest Activity",
+  city: "New Delhi",
+  lat: 28.6139,
+  lng: 77.2090,
+  address: "Jantar Mantar",
+  postcode: "110001",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-10T12:00:00",
+  source: "https://www.thehindu.com/",
+  summary: "Farmers unions and labour organisations are expected to continue mobilisation efforts in New Delhi during September 2026 over agricultural pricing, privatisation and labour conditions. Protest activity is expected around Jantar Mantar and other established demonstration zones. Large crowds and traffic disruption are possible. Risk is assessed as High."
+},
+{
+  title: "Public Sector and Labour Demonstration",
+  city: "Istanbul",
+  lat: 41.0082,
+  lng: 28.9784,
+  address: "Kadıköy / Central Istanbul",
+  postcode: "34710",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-15T12:00:00",
+  source: "https://www.reuters.com/world/middle-east/",
+  summary: "Labour groups and public sector unions are expected to organise demonstrations in Istanbul during September 2026 over wages, inflation and labour protections. Protest activity is expected in Kadıköy and surrounding central districts. Given Turkey's recent history of political tension and heavy police deployment at demonstrations, the risk is assessed as High."
+},
+{
+  title: "Climate and Student Demonstration",
+  city: "Jakarta",
+  lat: -6.2088,
+  lng: 106.8456,
+  address: "National Monument (Monas)",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-25T12:00:00",
+  source: "https://www.thejakartapost.com/",
+  summary: "Environmental and student activist groups are expected to organise demonstrations in Jakarta during global climate mobilisation week in September 2026. Protesters are expected to gather near Monas before conducting marches through central areas. Moderate disruption is possible in surrounding districts. Risk is assessed as Medium."
+},
+
+  
   {
   title: "UN General Assembly High-Level Week Protest Window",
   city: "New York City",
