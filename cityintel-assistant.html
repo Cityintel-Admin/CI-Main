@@ -1726,9 +1726,37 @@ async function ask(){
     }
 
 
+    function formatIntelAutomationRun(r = {}) {
+      const cityCount = (() => {
+        try {
+          const cities = typeof r.cities === 'string' ? JSON.parse(r.cities || '[]') : r.cities;
+          return Array.isArray(cities) ? cities.length : 0;
+        } catch { return 0; }
+      })();
+
+      return [
+        `${r.started_at || ''}`,
+        `${r.status || ''}`,
+        `trigger ${r.trigger_source || 'unknown'}`,
+        `checked ${r.checked || 0}`,
+        `stored ${r.stored || 0}`,
+        `scored ${r.scored || 0}`,
+        `translated ${r.translated || 0}`,
+        `index ${r.synced_total || 0}`,
+        cityCount ? `cities ${cityCount}` : '',
+        r.error ? `error: ${r.error}` : ''
+      ].filter(Boolean).join(' · ');
+    }
+
+    function formatIntelDate(value) {
+      if (!value) return '—';
+      try { return new Date(value).toLocaleString(); }
+      catch { return String(value); }
+    }
+
     async function runIntelAutomationFromModal(){
       if (!el.intelStatus) return;
-      if (!confirm('Run automated protest scan now? This may take a short moment.')) return;
+      if (!confirm('Run automated protest scan now?')) return;
 
       el.intelStatus.textContent = 'Running automated protest scan…';
 
@@ -1739,6 +1767,17 @@ async function ask(){
       });
 
       const data = await res.json().catch(()=>({}));
+
+      if (res.status === 409 || data.status === 'running') {
+        const active = data.active_run || {};
+        el.intelStatus.textContent = `Automation already running · started ${formatIntelDate(active.started_at)}`;
+        el.intelExport.value = [
+          'INTEL AUTOMATION RUNNING',
+          active.id ? JSON.stringify(active, null, 2) : 'Another automation run is currently active.'
+        ].join('\n');
+        return data;
+      }
+
       if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
 
       el.intelStatus.textContent =
@@ -1747,6 +1786,9 @@ async function ask(){
       el.intelExport.value = [
         'INTEL AUTOMATION RUN',
         `Run ID: ${data.run_id || ''}`,
+        `Status: ${data.status || ''}`,
+        `Started: ${formatIntelDate(data.started_at)}`,
+        `Finished: ${formatIntelDate(data.finished_at)}`,
         `Checked: ${data.checked || 0}`,
         `Stored: ${data.stored || 0}`,
         `Scored: ${data.scored || 0}`,
@@ -1754,7 +1796,7 @@ async function ask(){
         `Index total: ${data.synced_total || 0}`,
         '',
         'Cities searched:',
-        ...(Array.isArray(data.cities) ? data.cities.map(c => `- ${c.city}, ${c.country} (${c.indexed_30d || 0} indexed in 30d)`) : [])
+        ...(Array.isArray(data.cities) ? data.cities.map(c => `- ${c.city}, ${c.country} (${c.indexed_30d || 0} indexed in 30d, ${c.upcoming || 0} upcoming)`) : [])
       ].join('\n');
 
       await loadIntelReviewQueue();
@@ -1773,23 +1815,31 @@ async function ask(){
       if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
 
       const last = data.last_run || {};
+      const active = data.active_run || {};
       el.intelStatus.textContent =
-        `Automation: ${data.enabled ? 'enabled' : 'disabled'} · pending ${data.pending_candidates || 0} · index ${data.index_total || 0}`;
+        `Automation: ${data.enabled ? 'enabled' : 'disabled'} · ${data.running ? 'running' : (data.due_now ? 'due now' : 'waiting')} · pending ${data.pending_candidates || 0} · index ${data.index_total || 0}`;
 
       el.intelExport.value = [
         'INTEL AUTOMATION STATUS',
         `Enabled: ${data.enabled ? 'yes' : 'no'}`,
+        `Running: ${data.running ? 'yes' : 'no'}`,
+        `Due now: ${data.due_now ? 'yes' : 'no'}`,
+        `Cron interval: every ${data.min_minutes || 90} minutes`,
+        `Next due: ${formatIntelDate(data.next_due_at)}`,
+        `Failed runs in 24h: ${data.failed_runs_24h || 0}`,
         `Pending candidates: ${data.pending_candidates || 0}`,
         `Index total: ${data.index_total || 0}`,
         `Upcoming indexed: ${data.index_upcoming || 0}`,
+        `Config: ${JSON.stringify(data.config || {}, null, 2)}`,
+        '',
+        'Active run:',
+        active.id ? JSON.stringify(active, null, 2) : 'No active run.',
         '',
         'Last run:',
         last.id ? JSON.stringify(last, null, 2) : 'No automation run recorded yet.',
         '',
         'Recent runs:',
-        ...(Array.isArray(data.recent_runs) ? data.recent_runs.map(r =>
-          `- ${r.started_at || ''} · ${r.status || ''} · stored ${r.stored || 0} · scored ${r.scored || 0} · translated ${r.translated || 0} · index ${r.synced_total || 0}`
-        ) : [])
+        ...(Array.isArray(data.recent_runs) ? data.recent_runs.map(formatIntelAutomationRun) : [])
       ].join('\n');
 
       return data;
