@@ -492,6 +492,8 @@
           <button class="btn" id="intelReviewScore" type="button">Score Queue</button>
           <button class="btn" id="intelReviewSyncIndex" type="button">Sync Protest Index</button>
           <button class="btn" id="intelReviewIndexStats" type="button">Index Stats</button>
+          <button class="btn" id="intelReviewAutoRun" type="button">Run Auto Scan</button>
+          <button class="btn" id="intelReviewAutoStatus" type="button">Automation Status</button>
           <input class="intel-index-search-input" id="intelReviewIndexQuery" type="search" placeholder="Search protest index…" />
           <button class="btn" id="intelReviewIndexSearch" type="button">Search Index</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
@@ -562,6 +564,8 @@
       intelScore:     document.getElementById('intelReviewScore'),
       intelSyncIndex: document.getElementById('intelReviewSyncIndex'),
       intelIndexStats: document.getElementById('intelReviewIndexStats'),
+      intelAutoRun:   document.getElementById('intelReviewAutoRun'),
+      intelAutoStatus: document.getElementById('intelReviewAutoStatus'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -1721,6 +1725,77 @@ async function ask(){
       }
     }
 
+
+    async function runIntelAutomationFromModal(){
+      if (!el.intelStatus) return;
+      if (!confirm('Run automated protest scan now? This may take a short moment.')) return;
+
+      el.intelStatus.textContent = 'Running automated protest scan…';
+
+      const res = await fetch(intelReviewUrl('/api/intel-review/automation/run'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ city_limit: 10, limit: 35, timespan: '3d' })
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+      el.intelStatus.textContent =
+        `Automation complete: ${data.stored || 0} stored, ${data.scored || 0} scored, ${data.translated || 0} translated, index ${data.synced_total || 0}.`;
+
+      el.intelExport.value = [
+        'INTEL AUTOMATION RUN',
+        `Run ID: ${data.run_id || ''}`,
+        `Checked: ${data.checked || 0}`,
+        `Stored: ${data.stored || 0}`,
+        `Scored: ${data.scored || 0}`,
+        `Translated: ${data.translated || 0}`,
+        `Index total: ${data.synced_total || 0}`,
+        '',
+        'Cities searched:',
+        ...(Array.isArray(data.cities) ? data.cities.map(c => `- ${c.city}, ${c.country} (${c.indexed_30d || 0} indexed in 30d)`) : [])
+      ].join('\n');
+
+      await loadIntelReviewQueue();
+      return data;
+    }
+
+    async function showIntelAutomationStatus(){
+      if (!el.intelStatus) return;
+      el.intelStatus.textContent = 'Loading automation status…';
+
+      const res = await fetch(intelReviewUrl('/api/intel-review/automation/status'), {
+        headers: authHeaders()
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+      const last = data.last_run || {};
+      el.intelStatus.textContent =
+        `Automation: ${data.enabled ? 'enabled' : 'disabled'} · pending ${data.pending_candidates || 0} · index ${data.index_total || 0}`;
+
+      el.intelExport.value = [
+        'INTEL AUTOMATION STATUS',
+        `Enabled: ${data.enabled ? 'yes' : 'no'}`,
+        `Pending candidates: ${data.pending_candidates || 0}`,
+        `Index total: ${data.index_total || 0}`,
+        `Upcoming indexed: ${data.index_upcoming || 0}`,
+        '',
+        'Last run:',
+        last.id ? JSON.stringify(last, null, 2) : 'No automation run recorded yet.',
+        '',
+        'Recent runs:',
+        ...(Array.isArray(data.recent_runs) ? data.recent_runs.map(r =>
+          `- ${r.started_at || ''} · ${r.status || ''} · stored ${r.stored || 0} · scored ${r.scored || 0} · translated ${r.translated || 0} · index ${r.synced_total || 0}`
+        ) : [])
+      ].join('\n');
+
+      return data;
+    }
+
+
     // ── Events ────────────────────────────────────────────────────────
     el.ask.addEventListener('click', ask);
     el.q.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') ask(); });
@@ -1754,6 +1829,14 @@ async function ask(){
     if (el.intelIndexSearch) el.intelIndexSearch.addEventListener('click', async () => {
       try { await searchProtestIndexFromModal(); }
       catch (err) { el.intelStatus.textContent = `Index search failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelAutoRun) el.intelAutoRun.addEventListener('click', async () => {
+      try { await runIntelAutomationFromModal(); }
+      catch (err) { el.intelStatus.textContent = `Automation failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelAutoStatus) el.intelAutoStatus.addEventListener('click', async () => {
+      try { await showIntelAutomationStatus(); }
+      catch (err) { el.intelStatus.textContent = `Automation status failed: ${String(err.message || err)}`; }
     });
     if (el.intelIndexQuery) el.intelIndexQuery.addEventListener('keydown', async (e) => {
       if (e.key === 'Enter') {
