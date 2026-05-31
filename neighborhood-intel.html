@@ -2582,6 +2582,26 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
             </div>
           </div>
 
+          <div class="ni-row">
+            <div>
+              <div class="ni-label">Status</div>
+              <select class="ni-select" id="filterStatus">
+                <option value="">All statuses</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="resolved">Resolved</option>
+                <option value="police">Handed to police</option>
+                <option value="nfa">No further action</option>
+              </select>
+            </div>
+            <div>
+              <div class="ni-label">Show</div>
+              <select class="ni-select" id="filterBolo">
+                <option value="">All posts</option>
+                <option value="bolo">BOLO only</option>
+              </select>
+            </div>
+          </div>
+
           <div class="ni-row one">
             <button class="ni-btn" id="btnRefresh">Refresh</button>
           </div>
@@ -2870,6 +2890,8 @@ async function loadOrgHQ() {
     severity: document.getElementById('severity'),
     category: document.getElementById('category'),
     btnRefresh: document.getElementById('btnRefresh'),
+    filterStatus: document.getElementById('filterStatus'),
+    filterBolo: document.getElementById('filterBolo'),
     filterCard: document.getElementById('filterCard'),
     filterBody: document.getElementById('filterBody'),
     btnToggleFilter: document.getElementById('btnToggleFilter'),
@@ -2964,8 +2986,18 @@ async function loadOrgHQ() {
     });
     // If user edits title/geo label, we can re-suggest only when empty.
     ['input','change'].forEach(ev => {
-      els.newGeoLabel?.addEventListener(ev, () => { if (!els.newCaseTag.value.trim()) { /* keep empty */ } });
-      els.newTitle?.addEventListener(ev, () => { if (!els.newCaseTag.value.trim()) { /* keep empty */ } });
+      // Auto-suggest case tag from geo label when case tag is empty
+      els.newGeoLabel?.addEventListener(ev, () => {
+        if (!els.newCaseTag.value.trim()) {
+          els.newCaseTag.value = suggestCaseTag();
+        }
+      });
+      // Auto-suggest case tag from title when geo label is empty and case tag is empty
+      els.newTitle?.addEventListener(ev, () => {
+        if (!els.newCaseTag.value.trim() && !(els.newGeoLabel?.value || '').trim()) {
+          els.newCaseTag.value = suggestCaseTag();
+        }
+      });
     });
   }
 
@@ -3545,7 +3577,7 @@ async function loadOrgHQ() {
           if (Array.isArray(tmp) && tmp.length) { data = tmp; break; }
         } catch(_) {}
       }
-      if (!data || !data.length) { alert('Location not found. Try a more specific address or place.'); return; }
+      if (!data || !data.length) { toast('Location not found', 'Try a more specific address or place name.'); return; }
       const r = data[0];
       const lat = Number(r.lat), lon = Number(r.lon ?? r.lng);
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
@@ -3560,7 +3592,7 @@ async function loadOrgHQ() {
       searchMarker.openPopup();
     } catch(err) {
       console.error('Neighbourhood map search failed', err);
-      alert('Map search failed. Please try again.');
+      toast('Map search failed', 'Please try again.');
     } finally {
       if (input) input.value = old;
     }
@@ -4497,7 +4529,6 @@ function renderSubjectsStructured(subjectLines){
   // API calls (with local fallback if Worker missing)
   function makeQuery() {
     const q = new URLSearchParams();
-    // If a pin is set, apply radius filtering. If not, fetch "recent posts" globally.
     if (pinLatLng) {
       q.set('lat', String(pinLatLng.lat));
       q.set('lng', String(pinLatLng.lng));
@@ -4506,6 +4537,8 @@ function renderSubjectsStructured(subjectLines){
     q.set('sinceHours', els.sinceHours.value);
     if (els.severity.value) q.set('severity', els.severity.value);
     if (els.category.value) q.set('category', els.category.value);
+    if (els.filterStatus?.value) q.set('post_status', els.filterStatus.value);
+    if (els.filterBolo?.value === 'bolo') q.set('bolo', '1');
     return q.toString();
   }
 
@@ -4621,12 +4654,16 @@ function localCommentKey() { return 'ci_neighbor_comments_v1'; }
       allPosts = localRead('ni_posts_cache') || [];
     }
 
-    // Safety net filtering (in case backend returns more than requested)
+    // Safety net filtering
+    const statusFilter = els.filterStatus?.value || '';
+    const boloFilter   = els.filterBolo?.value === 'bolo';
     allPosts = (allPosts || []).filter(p => {
       const t = Date.parse(p.observed_at || p.created_at || '');
       if (Number.isFinite(t) && t < cutoff) return false;
       if (sev !== 'all' && String(p.severity || '').toLowerCase() !== sev) return false;
       if (cat !== 'all' && String(p.category || '').toLowerCase() !== cat) return false;
+      if (statusFilter && String(p.post_status || 'ongoing').toLowerCase() !== statusFilter) return false;
+      if (boloFilter && !p.bolo) return false;
       return true;
     });
 
@@ -4637,7 +4674,7 @@ function localCommentKey() { return 'ci_neighbor_comments_v1'; }
   }
 
 els.btnRefresh.addEventListener('click', refresh);
-  for (const el of [els.radiusKm, els.sinceHours, els.severity, els.category]) {
+  for (const el of [els.radiusKm, els.sinceHours, els.severity, els.category, els.filterStatus, els.filterBolo].filter(Boolean)) {
     el.addEventListener('change', refresh);
   }
   if (els.btnToggleEvents) {
