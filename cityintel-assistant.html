@@ -186,7 +186,27 @@
 
 
 
-    /* ── MasterAdmin Intel Review Queue ────────────────────────────── */
+    
+    .intel-edit-field, .intel-edit-area {
+      width:100%;
+      background:#111214;
+      border:1px solid #2e3238;
+      color:#e9edf2;
+      border-radius:8px;
+      padding:6px 8px;
+      font-size:12px;
+      margin-bottom:6px;
+    }
+
+    .intel-edit-title {
+      font-weight:700;
+    }
+
+    .intel-edit-area {
+      min-height:72px;
+      resize:vertical;
+    }
+/* ── MasterAdmin Intel Review Queue ────────────────────────────── */
     .intel-review-modal { position:fixed; inset:0; background:rgba(0,0,0,.72); display:none; align-items:center; justify-content:center; z-index:12000; padding:18px; }
     .intel-review-modal.open { display:flex; }
     .intel-review-shell { width:min(1180px,96vw); max-height:92vh; overflow:hidden; display:flex; flex-direction:column; background:#16171a; border:1px solid var(--gray-600); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,.75); }
@@ -1349,37 +1369,109 @@
         el.intelExport.value = '';
         return;
       }
+
       el.intelWrap.innerHTML = `
         <table class="intel-review-table">
-          <thead><tr><th>Candidate</th><th>Location / Time</th><th>Risk</th><th>Source</th><th>Actions</th></tr></thead>
-          <tbody>${rows.map((c,i)=>`
-            <tr data-id="${esc(c.id)}">
-              <td><div class="intel-review-title">${esc(c.title || 'Untitled')}</div><div class="intel-review-summary">${esc(c.summary || c.description || '')}</div></td>
-              <td>${esc([c.city, c.country].filter(Boolean).join(', ') || '—')}<br><span class="intel-review-muted">${esc(dateLabel(c.event_time || c.when_ts || c.when || c.created_at) || c.event_time || c.when_ts || '')}</span></td>
-              <td><span class="pill ${riskClass(c.risk)}">${esc(c.risk || 'Medium')}</span></td>
-              <td><div>${esc(c.source || c.src || '')}</div>${(c.source || c.url) ? `<a href="${esc(c.source || c.url)}" target="_blank" rel="noopener" style="color:#93c5fd">Open</a>` : ''}</td>
-              <td><div class="intel-review-actions">
-                <button class="intel-review-mini approve" data-action="approve" data-idx="${i}">Approve</button>
-                <button class="intel-review-mini reject" data-action="reject" data-idx="${i}">Reject</button>
-                <button class="intel-review-mini" data-action="duplicate" data-idx="${i}">Duplicate</button>
-                <button class="intel-review-mini" data-action="needs-research" data-idx="${i}">Needs Research</button>
-                <button class="intel-review-mini" data-action="copy" data-idx="${i}">Copy JS</button>
-              </div></td>
-            </tr>`).join('')}</tbody>
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th>Location / Time</th>
+              <th>Risk</th>
+              <th>Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((c,i)=>`
+              <tr data-id="${esc(c.id)}">
+                <td>
+                  <input class="intel-edit-field intel-edit-title" data-field="title" data-idx="${i}" value="${esc(c.title || 'Untitled')}">
+                  <textarea class="intel-edit-area" data-field="summary" data-idx="${i}">${esc(c.summary || c.description || '')}</textarea>
+                </td>
+
+                <td>
+                  <input class="intel-edit-field" data-field="city" data-idx="${i}" value="${esc(c.city || '')}" placeholder="City">
+                  <input class="intel-edit-field" data-field="country" data-idx="${i}" value="${esc(c.country || '')}" placeholder="Country">
+                  <input class="intel-edit-field" data-field="event_time" data-idx="${i}" value="${esc(c.event_time || c.when_ts || c.when || '')}" placeholder="Event time">
+                </td>
+
+                <td>
+                  <select class="intel-edit-field" data-field="risk" data-idx="${i}">
+                    <option value="Low" ${(c.risk||'')==='Low'?'selected':''}>Low</option>
+                    <option value="Medium" ${(c.risk||'')==='Medium'?'selected':''}>Medium</option>
+                    <option value="High" ${(c.risk||'')==='High'?'selected':''}>High</option>
+                  </select>
+                </td>
+
+                <td>
+                  <div>${esc(c.source || c.src || '')}</div>
+                  ${(c.source || c.url) ? `<a href="${esc(c.source || c.url)}" target="_blank" rel="noopener" style="color:#93c5fd">Open</a>` : ''}
+                </td>
+
+                <td>
+                  <div class="intel-review-actions">
+                    <button class="intel-review-mini approve" data-action="approve" data-idx="${i}">Approve</button>
+                    <button class="intel-review-mini reject" data-action="reject" data-idx="${i}">Reject</button>
+                    <button class="intel-review-mini" data-action="duplicate" data-idx="${i}">Duplicate</button>
+                    <button class="intel-review-mini" data-action="needs-research" data-idx="${i}">Needs Research</button>
+                    <button class="intel-review-mini" data-action="translate" data-idx="${i}">Translate</button>
+                    <button class="intel-review-mini" data-action="copy" data-idx="${i}">Copy JS</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
         </table>`;
+
+      el.intelWrap.querySelectorAll('[data-field]').forEach(input => {
+        input.addEventListener('input', () => {
+          const idx = Number(input.dataset.idx);
+          const field = input.dataset.field;
+          if (!rows[idx]) return;
+          rows[idx][field] = input.value;
+        });
+      });
+
       el.intelWrap.querySelectorAll('[data-action]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const c = rows[Number(btn.dataset.idx)];
           const action = btn.dataset.action;
+
           if (!c) return;
+
+          if (action === 'translate') {
+            try {
+              const translated = await translateCandidate(c);
+              Object.assign(c, translated);
+              renderIntelReviewRows(rows);
+              el.intelStatus.textContent = 'Translation complete.';
+            } catch (err) {
+              el.intelStatus.textContent = 'Translation failed.';
+            }
+            return;
+          }
+
           if (action === 'copy') {
             el.intelExport.value = candidateToJs(c) + ',';
             try { await navigator.clipboard.writeText(el.intelExport.value); } catch {}
             return;
           }
+
           await reviewIntelCandidate(c, action);
         });
       });
+    }
+
+    async function translateCandidate(candidate){
+      const q = encodeURIComponent(candidate.title || '');
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${q}&langpair=auto|en`);
+      const data = await res.json().catch(()=>({}));
+      const translatedTitle = data?.responseData?.translatedText || candidate.title;
+
+      return {
+        ...candidate,
+        title: translatedTitle
+      };
     }
     async function reviewIntelCandidate(c, action){
       const note = action === 'approve' ? '' : (prompt(`Optional note for ${action}:`) || '');
