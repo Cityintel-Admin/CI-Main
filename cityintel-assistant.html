@@ -227,6 +227,35 @@
     .intel-review-mini.reject { background:rgba(255,90,95,.10); border-color:rgba(255,90,95,.35); color:#ff9ca0; }
     .intel-review-json { width:100%; min-height:130px; background:#0d0f12; color:#e9edf2; border:1px solid var(--gray-600); border-radius:10px; padding:10px; font:12px ui-monospace,SFMono-Regular,Menlo,monospace; margin-top:10px; }
     .intel-review-muted { color:var(--muted); font-size:12px; }
+    .intel-review-shell { position:relative; }
+    .intel-review-table tbody tr { cursor:pointer; }
+    .intel-review-table tbody tr.selected td { background:rgba(208,22,22,.08); }
+    .intel-review-row-title { font-weight:800; color:#fff; margin-bottom:5px; line-height:1.3; }
+    .intel-review-row-summary { color:#aeb8c6; max-width:330px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .intel-review-chipline { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+    .intel-review-chip { display:inline-flex; align-items:center; border:1px solid var(--gray-600); border-radius:999px; padding:2px 7px; color:#cbd5e1; background:rgba(255,255,255,.03); font-size:11px; font-weight:700; white-space:nowrap; }
+    .intel-review-chip.warn { color:#f0b429; border-color:rgba(240,180,41,.45); background:rgba(240,180,41,.08); }
+    .intel-review-chip.ok { color:#86efac; border-color:rgba(134,239,172,.35); background:rgba(134,239,172,.07); }
+    .intel-review-chip.danger { color:#ff9ca0; border-color:rgba(255,156,160,.35); background:rgba(255,90,95,.08); }
+    .intel-candidate-drawer { position:absolute; top:0; right:0; width:min(460px,94vw); height:100%; background:#17191d; border-left:1px solid var(--gray-600); box-shadow:-24px 0 60px rgba(0,0,0,.65); transform:translateX(105%); transition:transform .22s ease; z-index:5; display:flex; flex-direction:column; }
+    .intel-candidate-drawer.open { transform:translateX(0); }
+    .intel-candidate-drawer-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid var(--gray-600); background:#111214; }
+    .intel-candidate-drawer-title { margin:0; font-size:15px; font-weight:850; color:#fff; line-height:1.35; }
+    .intel-candidate-drawer-meta { color:var(--muted); font-size:12px; margin-top:4px; line-height:1.4; }
+    .intel-candidate-drawer-body { padding:14px 16px; overflow:auto; flex:1; }
+    .intel-candidate-section { border:1px solid var(--gray-600); background:rgba(0,0,0,.14); border-radius:13px; padding:12px; margin-bottom:11px; }
+    .intel-candidate-section h3 { margin:0 0 8px; font-size:12px; color:#fff; text-transform:uppercase; letter-spacing:.04em; }
+    .intel-candidate-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .intel-candidate-field { display:flex; flex-direction:column; gap:4px; }
+    .intel-candidate-field label { color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+    .intel-candidate-input, .intel-candidate-textarea, .intel-candidate-select { width:100%; background:#101114; border:1px solid #2e3238; color:#e9edf2; border-radius:9px; padding:8px 9px; font:12px/1.4 system-ui,Segoe UI,Roboto,sans-serif; }
+    .intel-candidate-textarea { min-height:92px; resize:vertical; }
+    .intel-candidate-textarea.tall { min-height:140px; }
+    .intel-candidate-source { color:#93c5fd; overflow-wrap:anywhere; }
+    .intel-candidate-warning { color:#f0b429; font-size:12px; font-weight:750; line-height:1.45; }
+    .intel-candidate-actions { display:flex; gap:7px; flex-wrap:wrap; padding:12px 16px; border-top:1px solid var(--gray-600); background:#111214; }
+    .intel-drawer-empty { color:var(--muted); padding:20px; font-size:13px; }
+    @media(max-width:760px) { .intel-candidate-drawer { width:100%; } .intel-review-table th:nth-child(4), .intel-review-table td:nth-child(4) { display:none; } }
 
     @media(min-width:1100px) { body.assistant-detail-open .main { margin-right:390px; transition:margin-right 220ms ease; } }
     @media(max-width:980px) {
@@ -500,6 +529,9 @@
           <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
         </div>
         <div id="intelReviewTableWrap"><div class="empty">Open or refresh the queue to load candidates.</div></div>
+        <aside id="intelCandidateDrawer" class="intel-candidate-drawer" aria-hidden="true">
+          <div class="intel-drawer-empty">Select a candidate row to review full details.</div>
+        </aside>
         <textarea id="intelReviewExport" class="intel-review-json" readonly placeholder="Selected / copied candidate JS will appear here"></textarea>
       </div>
     </div>
@@ -571,6 +603,7 @@
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
       intelStatus:    document.getElementById('intelReviewStatus'),
       intelWrap:      document.getElementById('intelReviewTableWrap'),
+      intelDrawer:    document.getElementById('intelCandidateDrawer'),
       intelExport:    document.getElementById('intelReviewExport'),
     };
 
@@ -1447,6 +1480,7 @@ async function ask(){
       if (!el.intelModal) return;
       el.intelModal.classList.toggle('open', !!open);
       el.intelModal.setAttribute('aria-hidden', open ? 'false' : 'true');
+      if (!open && typeof setIntelDrawerOpen === 'function') setIntelDrawerOpen(false);
     }
     function candidateEntry(c){
       const a = c.alertsData || {};
@@ -1480,6 +1514,199 @@ async function ask(){
 
     function candidateToJs(c){
       return JSON.stringify(candidateEntry(c), null, 2);
+    }
+
+
+    const intelReviewState = {
+      rows: [],
+      selectedIdx: -1,
+    };
+
+    function compactText(value = '', max = 170) {
+      const raw = String(value || '').replace(/\s+/g, ' ').trim();
+      return raw.length > max ? `${raw.slice(0, max - 1)}…` : raw;
+    }
+
+    function riskChipClass(value = '') {
+      const v = String(value || '').toLowerCase();
+      if (v.startsWith('h')) return 'danger';
+      if (v.startsWith('m')) return 'warn';
+      return 'ok';
+    }
+
+    function setIntelDrawerOpen(open) {
+      if (!el.intelDrawer) return;
+      el.intelDrawer.classList.toggle('open', !!open);
+      el.intelDrawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+      if (!open) {
+        intelReviewState.selectedIdx = -1;
+        el.intelWrap?.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('selected'));
+      }
+    }
+
+    function refreshIntelDrawerSelection() {
+      el.intelWrap?.querySelectorAll('tbody tr').forEach(tr => {
+        tr.classList.toggle('selected', Number(tr.dataset.idx) === intelReviewState.selectedIdx);
+      });
+    }
+
+    function openIntelCandidateDrawer(idx) {
+      const c = intelReviewState.rows[idx];
+      if (!c || !el.intelDrawer) return;
+      intelReviewState.selectedIdx = idx;
+      renderIntelCandidateDrawer(c, idx);
+      refreshIntelDrawerSelection();
+      setIntelDrawerOpen(true);
+    }
+
+    function renderIntelCandidateDrawer(c, idx) {
+      if (!el.intelDrawer) return;
+      const source = c.source || c.url || c.src || '';
+      const suggested = c.suggested_risk
+        ? `${esc(c.suggested_risk)}${c.confidence_score ? ` · ${Math.round(Number(c.confidence_score) * 100)}% confidence` : ''}`
+        : 'Not scored yet';
+      const eventTime = c.event_time || c.when_ts || c.when || '';
+
+      el.intelDrawer.innerHTML = `
+        <div class="intel-candidate-drawer-head">
+          <div>
+            <h2 class="intel-candidate-drawer-title">${esc(c.title || 'Untitled candidate')}</h2>
+            <div class="intel-candidate-drawer-meta">${esc(c.city || 'Unknown city')} · ${esc(c.country || 'Unknown country')} · ${esc(formatIntelDate(eventTime))}</div>
+          </div>
+          <button class="btn" type="button" data-drawer-close>Close ✕</button>
+        </div>
+        <div class="intel-candidate-drawer-body">
+          <div class="intel-candidate-section">
+            <h3>Editable review fields</h3>
+            <div class="intel-candidate-field">
+              <label>Title</label>
+              <input class="intel-candidate-input" data-drawer-field="title" value="${esc(c.title || '')}">
+            </div>
+            <div class="intel-candidate-field" style="margin-top:8px">
+              <label>Summary</label>
+              <textarea class="intel-candidate-textarea tall" data-drawer-field="summary">${esc(c.summary || c.description || '')}</textarea>
+            </div>
+            <div class="intel-candidate-grid" style="margin-top:8px">
+              <div class="intel-candidate-field">
+                <label>City</label>
+                <input class="intel-candidate-input" data-drawer-field="city" value="${esc(c.city || '')}">
+              </div>
+              <div class="intel-candidate-field">
+                <label>Country</label>
+                <input class="intel-candidate-input" data-drawer-field="country" value="${esc(c.country || '')}">
+              </div>
+              <div class="intel-candidate-field">
+                <label>Event time</label>
+                <input class="intel-candidate-input" data-drawer-field="event_time" value="${esc(eventTime)}">
+              </div>
+              <div class="intel-candidate-field">
+                <label>Risk</label>
+                <select class="intel-candidate-select" data-drawer-field="risk">
+                  <option value="Low" ${(c.risk||'')==='Low'?'selected':''}>Low</option>
+                  <option value="Medium" ${(c.risk||'')==='Medium'?'selected':''}>Medium</option>
+                  <option value="High" ${(c.risk||'')==='High'?'selected':''}>High</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="intel-candidate-section">
+            <h3>Assessment</h3>
+            <div class="intel-review-chipline">
+              <span class="intel-review-chip ${riskChipClass(c.risk)}">Current: ${esc(c.risk || 'Medium')}</span>
+              <span class="intel-review-chip ${riskChipClass(c.suggested_risk)}">Suggested: ${suggested}</span>
+              ${c.duplicate_warning ? '<span class="intel-review-chip warn">Duplicate warning</span>' : ''}
+              ${c.detected_language ? `<span class="intel-review-chip">Lang: ${esc(c.detected_language)}</span>` : ''}
+            </div>
+            ${c.risk_reason ? `<div class="intel-review-muted" style="margin-top:10px;line-height:1.45">${esc(c.risk_reason)}</div>` : ''}
+            ${c.duplicate_warning ? `<div class="intel-candidate-warning" style="margin-top:10px">⚠ ${esc(c.duplicate_warning)}</div>` : ''}
+            ${c.duplicate_candidate_id ? `<div class="intel-review-muted" style="margin-top:6px">Duplicate candidate ID: ${esc(c.duplicate_candidate_id)}</div>` : ''}
+          </div>
+
+          <div class="intel-candidate-section">
+            <h3>Source</h3>
+            <div class="intel-candidate-source">${esc(source || 'No source URL provided')}</div>
+            ${source ? `<div style="margin-top:8px"><a href="${esc(source)}" target="_blank" rel="noopener" style="color:#93c5fd;font-weight:800">Open source ↗</a></div>` : ''}
+          </div>
+
+          ${(c.original_title || c.original_summary) ? `
+            <div class="intel-candidate-section">
+              <h3>Original / translation</h3>
+              ${c.original_title ? `<div class="intel-review-muted"><strong>Original title:</strong><br>${esc(c.original_title)}</div>` : ''}
+              ${c.original_summary ? `<div class="intel-review-muted" style="margin-top:8px"><strong>Original summary:</strong><br>${esc(c.original_summary)}</div>` : ''}
+              ${c.translated_at ? `<div class="intel-review-muted" style="margin-top:8px">Translated: ${esc(formatIntelDate(c.translated_at))}</div>` : ''}
+            </div>` : ''}
+
+          <div class="intel-candidate-section">
+            <h3>Debug / copied JS</h3>
+            <textarea class="intel-candidate-textarea" readonly>${esc(candidateToJs(c))}</textarea>
+          </div>
+        </div>
+        <div class="intel-candidate-actions">
+          <button class="intel-review-mini approve" data-drawer-action="approve">Approve</button>
+          <button class="intel-review-mini reject" data-drawer-action="reject">Reject</button>
+          <button class="intel-review-mini" data-drawer-action="duplicate">Duplicate</button>
+          <button class="intel-review-mini" data-drawer-action="needs-research">Needs Research</button>
+          <button class="intel-review-mini" data-drawer-action="translate">Translate</button>
+          <button class="intel-review-mini" data-drawer-action="score">Score</button>
+          <button class="intel-review-mini" data-drawer-action="copy">Copy JS</button>
+        </div>`;
+
+      el.intelDrawer.querySelector('[data-drawer-close]')?.addEventListener('click', () => setIntelDrawerOpen(false));
+      el.intelDrawer.querySelectorAll('[data-drawer-field]').forEach(input => {
+        input.addEventListener('input', () => {
+          const field = input.dataset.drawerField;
+          if (!field) return;
+          c[field] = input.value;
+          const rowField = el.intelWrap?.querySelector(`[data-row-field="${field}"][data-idx="${idx}"]`);
+          if (rowField) rowField.textContent = field === 'summary' ? compactText(input.value, 150) : input.value;
+        });
+      });
+      el.intelDrawer.querySelectorAll('[data-drawer-action]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await handleIntelCandidateAction(btn.dataset.drawerAction, c, intelReviewState.rows);
+        });
+      });
+    }
+
+    async function handleIntelCandidateAction(action, c, rows) {
+      if (!c) return;
+      if (action === 'score') {
+        try {
+          el.intelStatus.textContent = 'Scoring candidate…';
+          await scoreSingleIntelCandidate(c, rows);
+          const idx = intelReviewState.rows.findIndex(x => x.id === c.id);
+          if (idx >= 0) openIntelCandidateDrawer(idx);
+        } catch (err) {
+          el.intelStatus.textContent = `Scoring failed: ${String(err.message || err)}`;
+        }
+        return;
+      }
+
+      if (action === 'translate') {
+        try {
+          el.intelStatus.textContent = 'Translating candidate…';
+          const translated = await translateCandidate(c);
+          Object.assign(c, translated);
+          renderIntelReviewRows(rows);
+          const idx = rows.findIndex(x => x.id === c.id);
+          if (idx >= 0) openIntelCandidateDrawer(idx);
+          el.intelStatus.textContent = 'Translation complete.';
+        } catch (err) {
+          el.intelStatus.textContent = 'Translation failed.';
+        }
+        return;
+      }
+
+      if (action === 'copy') {
+        el.intelExport.value = candidateToJs(c) + ',';
+        try { await navigator.clipboard.writeText(el.intelExport.value); } catch {}
+        el.intelStatus.textContent = 'Candidate JS copied.';
+        return;
+      }
+
+      await reviewIntelCandidate(c, action);
+      setIntelDrawerOpen(false);
     }
 
     async function collectIntelReviewCandidates(){
@@ -1568,11 +1795,18 @@ async function ask(){
       }
     }
     function renderIntelReviewRows(rows){
+      intelReviewState.rows = rows;
       if (!rows.length) {
         el.intelWrap.innerHTML = '<div class="empty">No protest candidates waiting for review.</div>';
         el.intelExport.value = '';
+        setIntelDrawerOpen(false);
         return;
       }
+
+      const sourceHost = (value = '') => {
+        try { return new URL(String(value)).hostname.replace(/^www\./, ''); }
+        catch { return compactText(value, 55); }
+      };
 
       el.intelWrap.innerHTML = `
         <table class="intel-review-table">
@@ -1582,104 +1816,77 @@ async function ask(){
               <th>Location / Time</th>
               <th>Risk</th>
               <th>Source</th>
-              <th>Actions</th>
+              <th>Quick actions</th>
             </tr>
           </thead>
           <tbody>
-            ${rows.map((c,i)=>`
-              <tr data-id="${esc(c.id)}">
+            ${rows.map((c,i)=>{
+              const source = c.source || c.url || c.src || '';
+              const summary = c.summary || c.description || '';
+              const duplicate = !!c.duplicate_warning;
+              const suggested = c.suggested_risk ? `${c.suggested_risk}${c.confidence_score ? ` · ${Math.round(Number(c.confidence_score)*100)}%` : ''}` : 'Not scored';
+              const when = c.event_time || c.when_ts || c.when || '';
+              return `
+              <tr data-id="${esc(c.id || '')}" data-idx="${i}" tabindex="0" aria-label="Open candidate details">
                 <td>
-                  <input class="intel-edit-field intel-edit-title" data-field="title" data-idx="${i}" value="${esc(c.title || 'Untitled')}">
-                  ${(c.original_title && c.original_title !== c.title) ? `<div class="intel-review-muted" style="margin:4px 0 6px">Original: ${esc(c.original_title)}</div>` : ''}
-                  <textarea class="intel-edit-area" data-field="summary" data-idx="${i}">${esc(c.summary || c.description || '')}</textarea>
-                  ${(c.detected_language) ? `<div class="intel-review-muted" style="margin-top:4px">Language: ${esc(c.detected_language)}</div>` : ''}
-                </td>
-
-                <td>
-                  <input class="intel-edit-field" data-field="city" data-idx="${i}" value="${esc(c.city || '')}" placeholder="City">
-                  <input class="intel-edit-field" data-field="country" data-idx="${i}" value="${esc(c.country || '')}" placeholder="Country">
-                  <input class="intel-edit-field" data-field="event_time" data-idx="${i}" value="${esc(c.event_time || c.when_ts || c.when || '')}" placeholder="Event time">
-                </td>
-
-                <td>
-                  <select class="intel-edit-field" data-field="risk" data-idx="${i}">
-                    <option value="Low" ${(c.risk||'')==='Low'?'selected':''}>Low</option>
-                    <option value="Medium" ${(c.risk||'')==='Medium'?'selected':''}>Medium</option>
-                    <option value="High" ${(c.risk||'')==='High'?'selected':''}>High</option>
-                  </select>
-                  ${c.suggested_risk ? `<div class="intel-review-muted" style="margin-top:6px"><strong>Suggested:</strong> ${esc(c.suggested_risk)}${c.confidence_score ? ` · ${Math.round(Number(c.confidence_score)*100)}%` : ''}</div>` : '<div class="intel-review-muted" style="margin-top:6px">Not scored yet.</div>'}
-                  ${c.risk_reason ? `<div class="intel-review-muted" style="margin-top:4px;max-width:190px">${esc(c.risk_reason)}</div>` : ''}
-                  ${c.duplicate_warning ? `<div style="margin-top:6px;color:#f0b429;font-size:12px;font-weight:700">⚠ ${esc(c.duplicate_warning)}</div>` : ''}
-                </td>
-
-                <td>
-                  <div>${esc(c.source || c.src || '')}</div>
-                  ${(c.source || c.url) ? `<a href="${esc(c.source || c.url)}" target="_blank" rel="noopener" style="color:#93c5fd">Open</a>` : ''}
-                </td>
-
-                <td>
-                  <div class="intel-review-actions">
-                    <button class="intel-review-mini approve" data-action="approve" data-idx="${i}">Approve</button>
-                    <button class="intel-review-mini reject" data-action="reject" data-idx="${i}">Reject</button>
-                    <button class="intel-review-mini" data-action="duplicate" data-idx="${i}">Duplicate</button>
-                    <button class="intel-review-mini" data-action="needs-research" data-idx="${i}">Needs Research</button>
-                    <button class="intel-review-mini" data-action="translate" data-idx="${i}">Translate</button>
-                    <button class="intel-review-mini" data-action="score" data-idx="${i}">Score</button>
-                    <button class="intel-review-mini" data-action="copy" data-idx="${i}">Copy JS</button>
+                  <div class="intel-review-row-title" data-row-field="title" data-idx="${i}">${esc(c.title || 'Untitled')}</div>
+                  <div class="intel-review-row-summary" data-row-field="summary" data-idx="${i}">${esc(compactText(summary, 150))}</div>
+                  <div class="intel-review-chipline">
+                    ${c.detected_language ? `<span class="intel-review-chip">${esc(c.detected_language)}</span>` : ''}
+                    ${duplicate ? '<span class="intel-review-chip warn">Possible duplicate</span>' : ''}
+                    ${(c.status || '') === 'needs_review' ? '<span class="intel-review-chip warn">Needs research</span>' : ''}
                   </div>
                 </td>
-              </tr>
-            `).join('')}
+                <td>
+                  <div><strong data-row-field="city" data-idx="${i}">${esc(c.city || '—')}</strong></div>
+                  <div class="intel-review-muted" data-row-field="country" data-idx="${i}">${esc(c.country || '—')}</div>
+                  <div class="intel-review-muted" data-row-field="event_time" data-idx="${i}">${esc(formatIntelDate(when))}</div>
+                </td>
+                <td>
+                  <div class="intel-review-chip ${riskChipClass(c.risk)}" data-row-field="risk" data-idx="${i}">${esc(c.risk || 'Medium')}</div>
+                  <div class="intel-review-muted" style="margin-top:7px">Suggested: ${esc(suggested)}</div>
+                </td>
+                <td>
+                  <div>${esc(sourceHost(source))}</div>
+                  ${source ? `<a href="${esc(source)}" target="_blank" rel="noopener" style="color:#93c5fd" onclick="event.stopPropagation()">Open</a>` : ''}
+                </td>
+                <td>
+                  <div class="intel-review-actions">
+                    <button class="intel-review-mini" data-action="view" data-idx="${i}">View</button>
+                    <button class="intel-review-mini approve" data-action="approve" data-idx="${i}">Approve</button>
+                    <button class="intel-review-mini reject" data-action="reject" data-idx="${i}">Reject</button>
+                    <button class="intel-review-mini" data-action="needs-research" data-idx="${i}">Needs Research</button>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>`;
 
-      el.intelWrap.querySelectorAll('[data-field]').forEach(input => {
-        input.addEventListener('input', () => {
-          const idx = Number(input.dataset.idx);
-          const field = input.dataset.field;
-          if (!rows[idx]) return;
-          rows[idx][field] = input.value;
+      el.intelWrap.querySelectorAll('tbody tr').forEach(tr => {
+        tr.addEventListener('click', () => openIntelCandidateDrawer(Number(tr.dataset.idx)));
+        tr.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openIntelCandidateDrawer(Number(tr.dataset.idx));
+          }
         });
       });
 
       el.intelWrap.querySelectorAll('[data-action]').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async e => {
+          e.stopPropagation();
           const c = rows[Number(btn.dataset.idx)];
           const action = btn.dataset.action;
-
-          if (!c) return;
-
-          if (action === 'score') {
-            try {
-              el.intelStatus.textContent = 'Scoring candidate…';
-              await scoreSingleIntelCandidate(c, rows);
-            } catch (err) {
-              el.intelStatus.textContent = `Scoring failed: ${String(err.message || err)}`;
-            }
+          if (action === 'view') {
+            openIntelCandidateDrawer(Number(btn.dataset.idx));
             return;
           }
-
-          if (action === 'translate') {
-            try {
-              const translated = await translateCandidate(c);
-              Object.assign(c, translated);
-              renderIntelReviewRows(rows);
-              el.intelStatus.textContent = 'Translation complete.';
-            } catch (err) {
-              el.intelStatus.textContent = 'Translation failed.';
-            }
-            return;
-          }
-
-          if (action === 'copy') {
-            el.intelExport.value = candidateToJs(c) + ',';
-            try { await navigator.clipboard.writeText(el.intelExport.value); } catch {}
-            return;
-          }
-
-          await reviewIntelCandidate(c, action);
+          await handleIntelCandidateAction(action, c, rows);
         });
       });
+
+      refreshIntelDrawerSelection();
     }
 
     async function translateCandidate(candidate){
@@ -1901,7 +2108,7 @@ async function ask(){
       el.intelExport.value=txt;
       try{ await navigator.clipboard.writeText(txt); }catch{}
     });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') { setPanelOpen(false); setIntelModal(false); } });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') { setPanelOpen(false); if (el.intelDrawer?.classList.contains('open')) setIntelDrawerOpen(false); else setIntelModal(false); } });
 
     // Nav active state
     const here = location.pathname.split('/').pop()||'index.html';
