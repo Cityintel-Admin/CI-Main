@@ -236,6 +236,18 @@
       .context-panel { display:none; }
       .filter-grid { grid-template-columns:1fr 1fr; }
     }
+  
+    .intel-index-search-input {
+      min-width:210px;
+      max-width:280px;
+      background:#111214;
+      border:1px solid #2e3238;
+      color:#e9edf2;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:13px;
+    }
+
   </style>
 </head>
 <body>
@@ -480,6 +492,8 @@
           <button class="btn" id="intelReviewScore" type="button">Score Queue</button>
           <button class="btn" id="intelReviewSyncIndex" type="button">Sync Protest Index</button>
           <button class="btn" id="intelReviewIndexStats" type="button">Index Stats</button>
+          <input class="intel-index-search-input" id="intelReviewIndexQuery" type="search" placeholder="Search protest index…" />
+          <button class="btn" id="intelReviewIndexSearch" type="button">Search Index</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
           <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
         </div>
@@ -548,6 +562,8 @@
       intelScore:     document.getElementById('intelReviewScore'),
       intelSyncIndex: document.getElementById('intelReviewSyncIndex'),
       intelIndexStats: document.getElementById('intelReviewIndexStats'),
+      intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
+      intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
       intelStatus:    document.getElementById('intelReviewStatus'),
       intelWrap:      document.getElementById('intelReviewTableWrap'),
@@ -1155,10 +1171,24 @@
     
     const PROTEST_KEYWORDS = /protest|demonstration|rally|march|strike|walkout|civil\s?unrest|unrest|sit-?in|upcoming\s+event|public\s+gathering/i;
 
+    function looksUpcomingQuestion(question = '') {
+      return /upcoming|future|next|scheduled|tomorrow|week|month/i.test(question);
+    }
+
+    function formatProtestIndexItems(items = []) {
+      if (!items.length) return 'No matching indexed protest records found.';
+      return items.slice(0, 25).map((p, i) => {
+        const when = p.event_time || p.event_at || '';
+        const loc = [p.city, p.country].filter(Boolean).join(', ') || 'Unknown location';
+        const src = p.source_url ? ` Source: ${p.source_url}` : '';
+        return `${i+1}. ${p.title || 'Untitled'}\n   ${loc} · ${when} · Risk: ${p.risk || 'Unknown'}\n   ${p.summary || ''}${src}`.slice(0, 1100);
+      }).join('\n\n');
+    }
+
     async function fetchProtestIndexContext(question){
       const params = new URLSearchParams({
         q: question,
-        upcoming: /upcoming|future|next|scheduled|tomorrow|week|month/i.test(question) ? 'true' : '',
+        upcoming: looksUpcomingQuestion(question) ? 'true' : '',
         days: '180',
         limit: '25'
       });
@@ -1171,17 +1201,45 @@
       if (!res.ok || !data.ok) return '';
 
       const items = Array.isArray(data.items) ? data.items : [];
+      const meta = data.meta || {};
       if (!items.length) {
-        return '[Unified Protest Index]\nNo matching indexed protest records found.';
+        return `[Unified Protest Index]\nNo matching indexed protest records found. Search meta: ${JSON.stringify(meta)}`;
       }
 
-      const lines = items.slice(0, 20).map((p, i) => {
-        const when = p.event_time || p.event_at || '';
-        const loc = [p.city, p.country].filter(Boolean).join(', ') || 'Unknown location';
-        return `${i+1}. ${p.title || 'Untitled'} — ${loc} — ${when} — Risk: ${p.risk || 'Unknown'} — ${p.summary || ''}`.slice(0, 900);
+      return `[Unified Protest Index]\nSearch meta: ${JSON.stringify(meta)}\n\n${formatProtestIndexItems(items)}`;
+    }
+
+    async function searchProtestIndexFromModal(){
+      if (!el.intelStatus) return;
+      const q = (el.intelIndexQuery?.value || '').trim() || 'upcoming protests';
+      el.intelStatus.textContent = 'Searching protest index…';
+
+      const params = new URLSearchParams({
+        q,
+        upcoming: looksUpcomingQuestion(q) ? 'true' : '',
+        days: '180',
+        limit: '50'
       });
 
-      return `[Unified Protest Index]\n${lines.join('\n')}`;
+      const res = await fetch(intelReviewUrl('/api/protest-index/search') + '&' + params.toString(), {
+        headers: authHeaders()
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+
+      const items = Array.isArray(data.items) ? data.items : [];
+      const meta = data.meta || {};
+      el.intelStatus.textContent = `Index search: ${items.length} result(s) for "${q}"`;
+      el.intelExport.value = [
+        `PROTEST INDEX SEARCH`,
+        `Query: ${q}`,
+        `Matched: ${items.length}`,
+        `Meta: ${JSON.stringify(meta)}`,
+        '',
+        formatProtestIndexItems(items)
+      ].join('\n');
+      return data;
     }
 
     async function syncProtestIndex(){
@@ -1213,8 +1271,18 @@
       if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
 
       const riskLine = (data.by_risk || []).map(r => `${r.risk || 'Unknown'}: ${r.n}`).join(' · ');
+      const countryLine = (data.by_country || []).slice(0,10).map(c => `${c.country || 'Unknown'}: ${c.n}`).join(' · ');
       el.intelStatus.textContent = `Index: ${data.total || 0} total · ${data.upcoming || 0} upcoming${riskLine ? ' · ' + riskLine : ''}`;
-      el.intelExport.value = JSON.stringify(data, null, 2);
+      el.intelExport.value = [
+        'PROTEST INDEX STATS',
+        `Total records: ${data.total || 0}`,
+        `Upcoming records: ${data.upcoming || 0}`,
+        '',
+        `By risk: ${riskLine || 'No risk data yet'}`,
+        `Top countries: ${countryLine || 'No country data yet'}`,
+        '',
+        'Note: this panel searches the unified protest index, not the current review queue.'
+      ].join('\n');
       return data;
     }
 
@@ -1682,6 +1750,17 @@ async function ask(){
     if (el.intelIndexStats) el.intelIndexStats.addEventListener('click', async () => {
       try { await showProtestIndexStats(); }
       catch (err) { el.intelStatus.textContent = `Index stats failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelIndexSearch) el.intelIndexSearch.addEventListener('click', async () => {
+      try { await searchProtestIndexFromModal(); }
+      catch (err) { el.intelStatus.textContent = `Index search failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelIndexQuery) el.intelIndexQuery.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        try { await searchProtestIndexFromModal(); }
+        catch (err) { el.intelStatus.textContent = `Index search failed: ${String(err.message || err)}`; }
+      }
     });
     if (el.intelCopyAll) el.intelCopyAll.addEventListener('click',async()=>{
       const rows=[...document.querySelectorAll('.intel-review-table tbody tr')];
