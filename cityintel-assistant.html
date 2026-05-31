@@ -1508,6 +1508,7 @@ async function ask(){
         duplicate_warning: c.duplicate_warning || '',
         duplicate_score: c.duplicate_score ?? null,
         duplicate_candidate_id: c.duplicate_candidate_id || '',
+        location_confidence: c.location_confidence || '',
         scored_at: c.scored_at || ''
       };
     }
@@ -1596,6 +1597,22 @@ async function ask(){
                 <input class="intel-candidate-input" data-drawer-field="country" value="${esc(c.country || '')}">
               </div>
               <div class="intel-candidate-field">
+                <label>Latitude</label>
+                <input class="intel-candidate-input" data-drawer-field="lat" placeholder="e.g. 51.5072" value="${esc(c.lat ?? '')}">
+              </div>
+              <div class="intel-candidate-field">
+                <label>Longitude</label>
+                <input class="intel-candidate-input" data-drawer-field="lng" placeholder="e.g. -0.1276" value="${esc(c.lng ?? c.lon ?? '')}">
+              </div>
+              <div class="intel-candidate-field">
+                <label>Address / area</label>
+                <input class="intel-candidate-input" data-drawer-field="address" placeholder="Optional exact area, road, venue" value="${esc(c.address || '')}">
+              </div>
+              <div class="intel-candidate-field">
+                <label>Postcode</label>
+                <input class="intel-candidate-input" data-drawer-field="postcode" placeholder="Optional" value="${esc(c.postcode || '')}">
+              </div>
+              <div class="intel-candidate-field">
                 <label>Event time</label>
                 <input class="intel-candidate-input" data-drawer-field="event_time" value="${esc(eventTime)}">
               </div>
@@ -1607,6 +1624,18 @@ async function ask(){
                   <option value="High" ${(c.risk||'')==='High'?'selected':''}>High</option>
                 </select>
               </div>
+            </div>
+          </div>
+
+          <div class="intel-candidate-section">
+            <h3>Map location</h3>
+            <div class="intel-review-chipline">
+              <span class="intel-review-chip ${c.lat !== null && c.lat !== undefined && c.lat !== '' ? 'ok' : 'warn'}">Lat: ${esc(c.lat ?? 'missing')}</span>
+              <span class="intel-review-chip ${c.lng !== null && c.lng !== undefined && c.lng !== '' ? 'ok' : 'warn'}">Lng: ${esc(c.lng ?? c.lon ?? 'missing')}</span>
+              <span class="intel-review-chip">Confidence: ${esc(c.location_confidence || 'manual / unknown')}</span>
+            </div>
+            <div class="intel-review-muted" style="margin-top:8px;line-height:1.45">
+              Use <strong>Locate</strong> for a city-level fallback, or manually enter exact event coordinates before approving if the article gives a specific venue or route.
             </div>
           </div>
 
@@ -1647,6 +1676,7 @@ async function ask(){
           <button class="intel-review-mini reject" data-drawer-action="reject">Reject</button>
           <button class="intel-review-mini" data-drawer-action="duplicate">Duplicate</button>
           <button class="intel-review-mini" data-drawer-action="needs-research">Needs Research</button>
+          <button class="intel-review-mini" data-drawer-action="locate">Locate</button>
           <button class="intel-review-mini" data-drawer-action="translate">Translate</button>
           <button class="intel-review-mini" data-drawer-action="score">Score</button>
           <button class="intel-review-mini" data-drawer-action="copy">Copy JS</button>
@@ -1694,6 +1724,23 @@ async function ask(){
           el.intelStatus.textContent = 'Translation complete.';
         } catch (err) {
           el.intelStatus.textContent = 'Translation failed.';
+        }
+        return;
+      }
+
+      if (action === 'locate') {
+        try {
+          el.intelStatus.textContent = 'Locating candidate…';
+          const located = await locateIntelCandidate(c);
+          Object.assign(c, located);
+          const idx = intelReviewState.rows.findIndex(x => x.id === c.id);
+          renderIntelReviewRows(rows);
+          if (idx >= 0) openIntelCandidateDrawer(idx);
+          el.intelStatus.textContent = located.lat != null && located.lng != null
+            ? `Location set: ${located.lat}, ${located.lng} (${located.location_confidence || 'geocoded'})`
+            : 'No location coordinates found.';
+        } catch (err) {
+          el.intelStatus.textContent = `Location lookup failed: ${String(err.message || err)}`;
         }
         return;
       }
@@ -1835,6 +1882,7 @@ async function ask(){
                     ${c.detected_language ? `<span class="intel-review-chip">${esc(c.detected_language)}</span>` : ''}
                     ${duplicate ? '<span class="intel-review-chip warn">Possible duplicate</span>' : ''}
                     ${(c.status || '') === 'needs_review' ? '<span class="intel-review-chip warn">Needs research</span>' : ''}
+                    ${(c.lat != null && c.lng != null) ? '<span class="intel-review-chip ok">Map ready</span>' : '<span class="intel-review-chip warn">No coords</span>'}
                   </div>
                 </td>
                 <td>
@@ -1912,6 +1960,29 @@ async function ask(){
         translated_at: data.translated_at || new Date().toISOString()
       };
     }
+    async function locateIntelCandidate(candidate){
+      const res = await fetch(intelReviewUrl('/api/intel-review/geocode'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: candidate.id,
+          city: candidate.city || '',
+          country: candidate.country || '',
+          address: candidate.address || '',
+          postcode: candidate.postcode || ''
+        })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+
+      return {
+        ...candidate,
+        lat: data.lat ?? candidate.lat ?? null,
+        lng: data.lng ?? candidate.lng ?? candidate.lon ?? null,
+        location_confidence: data.location_confidence || candidate.location_confidence || 'geocoded'
+      };
+    }
+
     async function reviewIntelCandidate(c, action){
       const note = action === 'approve' ? '' : (prompt(`Optional note for ${action}:`) || '');
       const endpoint = action === 'needs-research' ? 'needs-research' : action;
