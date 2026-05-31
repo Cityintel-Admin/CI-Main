@@ -477,6 +477,7 @@
         <div class="intel-review-toolbar">
           <button class="btn primary" id="intelReviewRefresh" type="button">Refresh Candidates</button>
           <button class="btn" id="intelReviewCollect" type="button">Search Candidates</button>
+          <button class="btn" id="intelReviewScore" type="button">Score Queue</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
           <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
         </div>
@@ -542,6 +543,7 @@
       intelClose:     document.getElementById('intelReviewClose'),
       intelRefresh:   document.getElementById('intelReviewRefresh'),
       intelCollect:   document.getElementById('intelReviewCollect'),
+      intelScore:     document.getElementById('intelReviewScore'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
       intelStatus:    document.getElementById('intelReviewStatus'),
       intelWrap:      document.getElementById('intelReviewTableWrap'),
@@ -1317,7 +1319,13 @@
         original_summary: c.original_summary || '',
         detected_language: c.detected_language || '',
         confidence_score: c.confidence_score ?? null,
-        quality_score: c.quality_score ?? null
+        quality_score: c.quality_score ?? null,
+        suggested_risk: c.suggested_risk || '',
+        risk_reason: c.risk_reason || '',
+        duplicate_warning: c.duplicate_warning || '',
+        duplicate_score: c.duplicate_score ?? null,
+        duplicate_candidate_id: c.duplicate_candidate_id || '',
+        scored_at: c.scored_at || ''
       };
     }
 
@@ -1352,6 +1360,44 @@
         el.intelStatus.textContent = 'Search failed.';
         el.intelWrap.innerHTML = `<div class="empty" style="color:var(--danger)">Search failed: ${esc(String(err.message || err))}</div>`;
       }
+    }
+
+    async function scoreIntelReviewQueue(){
+      if (!el.intelWrap) return;
+      if (!confirm('Score all pending candidates for suggested risk and duplicates?')) return;
+
+      el.intelStatus.textContent = 'Scoring candidates…';
+      try {
+        const res = await fetch(intelReviewUrl('/api/intel-review/score'), {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ all: true })
+        });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+        const rows = Array.isArray(data.items) ? data.items : [];
+        el.intelStatus.textContent = `Scored ${data.scored_count || 0} candidate(s).`;
+        renderIntelReviewRows(rows);
+      } catch (err) {
+        el.intelStatus.textContent = `Scoring failed: ${String(err.message || err)}`;
+      }
+    }
+
+    async function scoreSingleIntelCandidate(candidate, rows){
+      const res = await fetch(intelReviewUrl('/api/intel-review/score'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ id: candidate.id })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+      const latest = Array.isArray(data.items)
+        ? data.items.find(x => x.id === candidate.id)
+        : null;
+      if (latest) Object.assign(candidate, latest);
+      else if (Array.isArray(data.scored) && data.scored[0]) Object.assign(candidate, data.scored[0]);
+      renderIntelReviewRows(rows);
+      el.intelStatus.textContent = 'Candidate scored.';
     }
 
     async function loadIntelReviewQueue(){
@@ -1412,6 +1458,9 @@
                     <option value="Medium" ${(c.risk||'')==='Medium'?'selected':''}>Medium</option>
                     <option value="High" ${(c.risk||'')==='High'?'selected':''}>High</option>
                   </select>
+                  ${c.suggested_risk ? `<div class="intel-review-muted" style="margin-top:6px"><strong>Suggested:</strong> ${esc(c.suggested_risk)}${c.confidence_score ? ` · ${Math.round(Number(c.confidence_score)*100)}%` : ''}</div>` : '<div class="intel-review-muted" style="margin-top:6px">Not scored yet.</div>'}
+                  ${c.risk_reason ? `<div class="intel-review-muted" style="margin-top:4px;max-width:190px">${esc(c.risk_reason)}</div>` : ''}
+                  ${c.duplicate_warning ? `<div style="margin-top:6px;color:#f0b429;font-size:12px;font-weight:700">⚠ ${esc(c.duplicate_warning)}</div>` : ''}
                 </td>
 
                 <td>
@@ -1426,6 +1475,7 @@
                     <button class="intel-review-mini" data-action="duplicate" data-idx="${i}">Duplicate</button>
                     <button class="intel-review-mini" data-action="needs-research" data-idx="${i}">Needs Research</button>
                     <button class="intel-review-mini" data-action="translate" data-idx="${i}">Translate</button>
+                    <button class="intel-review-mini" data-action="score" data-idx="${i}">Score</button>
                     <button class="intel-review-mini" data-action="copy" data-idx="${i}">Copy JS</button>
                   </div>
                 </td>
@@ -1449,6 +1499,16 @@
           const action = btn.dataset.action;
 
           if (!c) return;
+
+          if (action === 'score') {
+            try {
+              el.intelStatus.textContent = 'Scoring candidate…';
+              await scoreSingleIntelCandidate(c, rows);
+            } catch (err) {
+              el.intelStatus.textContent = `Scoring failed: ${String(err.message || err)}`;
+            }
+            return;
+          }
 
           if (action === 'translate') {
             try {
@@ -1537,6 +1597,7 @@
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',loadIntelReviewQueue);
     if (el.intelCollect) el.intelCollect.addEventListener('click',collectIntelReviewCandidates);
+    if (el.intelScore) el.intelScore.addEventListener('click',scoreIntelReviewQueue);
     if (el.intelCopyAll) el.intelCopyAll.addEventListener('click',async()=>{
       const rows=[...document.querySelectorAll('.intel-review-table tbody tr')];
       const txt=rows.map(tr=>tr.innerText).join('\n---\n');
