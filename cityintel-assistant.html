@@ -478,6 +478,8 @@
           <button class="btn primary" id="intelReviewRefresh" type="button">Refresh Candidates</button>
           <button class="btn" id="intelReviewCollect" type="button">Search Candidates</button>
           <button class="btn" id="intelReviewScore" type="button">Score Queue</button>
+          <button class="btn" id="intelReviewSyncIndex" type="button">Sync Protest Index</button>
+          <button class="btn" id="intelReviewIndexStats" type="button">Index Stats</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
           <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
         </div>
@@ -544,6 +546,8 @@
       intelRefresh:   document.getElementById('intelReviewRefresh'),
       intelCollect:   document.getElementById('intelReviewCollect'),
       intelScore:     document.getElementById('intelReviewScore'),
+      intelSyncIndex: document.getElementById('intelReviewSyncIndex'),
+      intelIndexStats: document.getElementById('intelReviewIndexStats'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
       intelStatus:    document.getElementById('intelReviewStatus'),
       intelWrap:      document.getElementById('intelReviewTableWrap'),
@@ -1148,7 +1152,73 @@
     }
 
     // ── Ask ───────────────────────────────────────────────────────────
-    async function ask(){
+    
+    const PROTEST_KEYWORDS = /protest|demonstration|rally|march|strike|walkout|civil\s?unrest|unrest|sit-?in|upcoming\s+event|public\s+gathering/i;
+
+    async function fetchProtestIndexContext(question){
+      const params = new URLSearchParams({
+        q: question,
+        upcoming: /upcoming|future|next|scheduled|tomorrow|week|month/i.test(question) ? 'true' : '',
+        days: '180',
+        limit: '25'
+      });
+
+      const res = await fetch(API_BASE + '/api/protest-index/search?' + params.toString(), {
+        headers: authHeaders()
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) return '';
+
+      const items = Array.isArray(data.items) ? data.items : [];
+      if (!items.length) {
+        return '[Unified Protest Index]\nNo matching indexed protest records found.';
+      }
+
+      const lines = items.slice(0, 20).map((p, i) => {
+        const when = p.event_time || p.event_at || '';
+        const loc = [p.city, p.country].filter(Boolean).join(', ') || 'Unknown location';
+        return `${i+1}. ${p.title || 'Untitled'} — ${loc} — ${when} — Risk: ${p.risk || 'Unknown'} — ${p.summary || ''}`.slice(0, 900);
+      });
+
+      return `[Unified Protest Index]\n${lines.join('\n')}`;
+    }
+
+    async function syncProtestIndex(){
+      if (!el.intelStatus) return;
+      el.intelStatus.textContent = 'Syncing protest index…';
+
+      const res = await fetch(intelReviewUrl('/api/protest-index/sync'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({})
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+
+      el.intelStatus.textContent = `Index synced: ${data.total || 0} total records (${data.approved_candidates || 0} approved candidates, ${data.feed_posts || 0} feed posts).`;
+      return data;
+    }
+
+    async function showProtestIndexStats(){
+      if (!el.intelStatus) return;
+      el.intelStatus.textContent = 'Loading index stats…';
+
+      const res = await fetch(intelReviewUrl('/api/protest-index/stats'), {
+        headers: authHeaders()
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+
+      const riskLine = (data.by_risk || []).map(r => `${r.risk || 'Unknown'}: ${r.n}`).join(' · ');
+      el.intelStatus.textContent = `Index: ${data.total || 0} total · ${data.upcoming || 0} upcoming${riskLine ? ' · ' + riskLine : ''}`;
+      el.intelExport.value = JSON.stringify(data, null, 2);
+      return data;
+    }
+
+async function ask(){
       const question=el.q.value.trim();
       if (!question){ el.q.focus(); return; }
       el.ask.disabled=true;
@@ -1178,10 +1248,17 @@
         journeyContext = await fetchJourneyContext(question).catch(() => null) || '';
       }
 
+      // If question is protest / demonstration related, inject the unified protest index.
+      let protestContext = '';
+      if (PROTEST_KEYWORDS.test(question)) {
+        protestContext = await fetchProtestIndexContext(question).catch(() => null) || '';
+      }
+
       const fullQ = [
         outageContext    ? outageContext    + '\n\n' : '',
         transportContext ? transportContext + '\n\n' : '',
         journeyContext   ? journeyContext   + '\n\n' : '',
+        protestContext   ? protestContext   + '\n\n' : '',
         context ? `[Previous context]\n${context}\n\n[Current question]\n` : '',
         question,
       ].join('');
@@ -1598,6 +1675,14 @@
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',loadIntelReviewQueue);
     if (el.intelCollect) el.intelCollect.addEventListener('click',collectIntelReviewCandidates);
     if (el.intelScore) el.intelScore.addEventListener('click',scoreIntelReviewQueue);
+    if (el.intelSyncIndex) el.intelSyncIndex.addEventListener('click', async () => {
+      try { await syncProtestIndex(); }
+      catch (err) { el.intelStatus.textContent = `Index sync failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelIndexStats) el.intelIndexStats.addEventListener('click', async () => {
+      try { await showProtestIndexStats(); }
+      catch (err) { el.intelStatus.textContent = `Index stats failed: ${String(err.message || err)}`; }
+    });
     if (el.intelCopyAll) el.intelCopyAll.addEventListener('click',async()=>{
       const rows=[...document.querySelectorAll('.intel-review-table tbody tr')];
       const txt=rows.map(tr=>tr.innerText).join('\n---\n');
