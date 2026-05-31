@@ -1509,7 +1509,13 @@ async function ask(){
         duplicate_score: c.duplicate_score ?? null,
         duplicate_candidate_id: c.duplicate_candidate_id || '',
         location_confidence: c.location_confidence || '',
-        scored_at: c.scored_at || ''
+        scored_at: c.scored_at || '',
+        research_attempts: Number(c.research_attempts || 0),
+        research_status: c.research_status || '',
+        research_note: c.research_note || c.review_note || '',
+        research_summary: c.research_summary || '',
+        research_source: c.research_source || '',
+        last_researched_at: c.last_researched_at || ''
       };
     }
 
@@ -1666,6 +1672,22 @@ async function ask(){
               ${c.translated_at ? `<div class="intel-review-muted" style="margin-top:8px">Translated: ${esc(formatIntelDate(c.translated_at))}</div>` : ''}
             </div>` : ''}
 
+
+          <div class="intel-candidate-section">
+            <h3>Needs research</h3>
+            <div class="intel-candidate-field">
+              <label>Research note</label>
+              <textarea class="intel-candidate-textarea" data-drawer-field="research_note" placeholder="Why does this need more checking? What should automation look for?">${esc(c.research_note || c.review_note || '')}</textarea>
+            </div>
+            <div class="intel-review-chipline" style="margin-top:8px">
+              <span class="intel-review-chip">Status: ${esc(c.research_status || ((c.status || '') === 'needs_review' ? 'queued' : 'not queued'))}</span>
+              <span class="intel-review-chip">Attempts: ${esc(c.research_attempts ?? 0)}</span>
+              ${c.last_researched_at ? `<span class="intel-review-chip">Last: ${esc(formatIntelDate(c.last_researched_at))}</span>` : ''}
+            </div>
+            ${c.research_summary ? `<div class="intel-review-muted" style="margin-top:10px;line-height:1.45">${esc(c.research_summary)}</div>` : ''}
+            ${c.research_source ? `<div style="margin-top:8px"><a href="${esc(c.research_source)}" target="_blank" rel="noopener" style="color:#93c5fd;font-weight:800">Open research source ↗</a></div>` : ''}
+          </div>
+
           <div class="intel-candidate-section">
             <h3>Debug / copied JS</h3>
             <textarea class="intel-candidate-textarea" readonly>${esc(candidateToJs(c))}</textarea>
@@ -1676,6 +1698,7 @@ async function ask(){
           <button class="intel-review-mini reject" data-drawer-action="reject">Reject</button>
           <button class="intel-review-mini" data-drawer-action="duplicate">Duplicate</button>
           <button class="intel-review-mini" data-drawer-action="needs-research">Needs Research</button>
+          <button class="intel-review-mini" data-drawer-action="research-now">Research Now</button>
           <button class="intel-review-mini" data-drawer-action="locate">Locate</button>
           <button class="intel-review-mini" data-drawer-action="translate">Translate</button>
           <button class="intel-review-mini" data-drawer-action="score">Score</button>
@@ -1741,6 +1764,23 @@ async function ask(){
             : 'No location coordinates found.';
         } catch (err) {
           el.intelStatus.textContent = `Location lookup failed: ${String(err.message || err)}`;
+        }
+        return;
+      }
+
+      if (action === 'research-now') {
+        try {
+          el.intelStatus.textContent = 'Researching candidate…';
+          const researched = await researchIntelCandidateNow(c);
+          Object.assign(c, researched);
+          const idx = intelReviewState.rows.findIndex(x => x.id === c.id);
+          renderIntelReviewRows(rows);
+          if (idx >= 0) openIntelCandidateDrawer(idx);
+          el.intelStatus.textContent = researched.research_status
+            ? `Research updated: ${researched.research_status}`
+            : 'Research updated.';
+        } catch (err) {
+          el.intelStatus.textContent = `Research failed: ${String(err.message || err)}`;
         }
         return;
       }
@@ -1881,7 +1921,7 @@ async function ask(){
                   <div class="intel-review-chipline">
                     ${c.detected_language ? `<span class="intel-review-chip">${esc(c.detected_language)}</span>` : ''}
                     ${duplicate ? '<span class="intel-review-chip warn">Possible duplicate</span>' : ''}
-                    ${(c.status || '') === 'needs_review' ? '<span class="intel-review-chip warn">Needs research</span>' : ''}
+                    ${(c.status || '') === 'needs_review' ? `<span class="intel-review-chip warn">Needs research${c.research_attempts ? ` · ${esc(c.research_attempts)}x` : ''}</span>` : ''}
                     ${(c.lat != null && c.lng != null) ? '<span class="intel-review-chip ok">Map ready</span>' : '<span class="intel-review-chip warn">No coords</span>'}
                   </div>
                 </td>
@@ -1983,8 +2023,32 @@ async function ask(){
       };
     }
 
+    async function researchIntelCandidateNow(candidate){
+      const res = await fetch(intelReviewUrl('/api/intel-review/research'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: candidate.id,
+          note: candidate.research_note || candidate.review_note || ''
+        })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+      return data.item || {
+        ...candidate,
+        research_status: data.research_status || candidate.research_status || '',
+        research_summary: data.research_summary || candidate.research_summary || '',
+        research_source: data.research_source || candidate.research_source || '',
+        last_researched_at: data.last_researched_at || candidate.last_researched_at || new Date().toISOString()
+      };
+    }
+
     async function reviewIntelCandidate(c, action){
-      const note = action === 'approve' ? '' : (prompt(`Optional note for ${action}:`) || '');
+      const note = action === 'approve'
+        ? ''
+        : (action === 'needs-research'
+            ? (c.research_note || prompt('Research note / what should automation check next?') || '')
+            : (prompt(`Optional note for ${action}:`) || ''));
       const endpoint = action === 'needs-research' ? 'needs-research' : action;
       if (action === 'approve' && !confirm('Approve this candidate to Alerts + Events?')) return;
       try {
@@ -2020,6 +2084,7 @@ async function ask(){
         `stored ${r.stored || 0}`,
         `scored ${r.scored || 0}`,
         `translated ${r.translated || 0}`,
+        `researched ${r.researched || 0}`,
         `index ${r.synced_total || 0}`,
         cityCount ? `cities ${cityCount}` : '',
         r.error ? `error: ${r.error}` : ''
