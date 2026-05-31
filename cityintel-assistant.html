@@ -534,8 +534,8 @@
       if(u.email) h['X-User-Email']=u.email;
       if(u.name)  h['X-User-Name']=u.name;
       if(u.id)    h['X-User-Id']=u.id;
-      if(u.role)  h['X-User-Role']=u.role;
-      if(u.role_key) h['X-User-Role-Key']=u.role_key;
+      if(u.role)  { h['X-User-Role']=u.role; h['X-CI-Role']=u.role; }
+      if(u.role_key) { h['X-User-Role-Key']=u.role_key; h['X-CI-Role-Key']=u.role_key; }
       return h;
     }
 
@@ -1237,11 +1237,19 @@
     // ── MasterAdmin Intel Review Queue ────────────────────────────────
     function currentRole(){
       const u = who();
-      return String(u.role_key || u.role || '').toLowerCase().replace(/_/g,'-');
+      return String(u.role_key || u.role || '')
+        .toLowerCase()
+        .replace(/_/g,'-')
+        .trim();
     }
     function isMasterAdminOnly(){
       const r = currentRole();
-      return r === 'master-admin' || r === 'masteradmin';
+      const compact = r.replace(/[^a-z0-9]/g, '');
+      return (
+        compact === 'masteradmin' ||
+        compact === 'cityintelmasteradmin' ||
+        window.CIAuth?.isMasterAdmin?.() === true
+      );
     }
     function setIntelModal(open){
       if (!el.intelModal) return;
@@ -1254,15 +1262,15 @@
         title: a.title || c.title || 'Untitled',
         city: a.city || c.city || '',
         lat: a.lat ?? c.lat ?? null,
-        lng: a.lng ?? c.lon ?? null,
-        address: a.address || c.city || '',
-        postcode: a.postcode || '',
-        country: a.country || '',
-        continent: a.continent || '',
+        lng: a.lng ?? c.lng ?? c.lon ?? null,
+        address: a.address || c.address || c.city || '',
+        postcode: a.postcode || c.postcode || '',
+        country: a.country || c.country || '',
+        continent: a.continent || c.continent || '',
         risk: a.risk || c.risk || 'Medium',
-        time: a.time || c.when_ts || c.when || '',
-        source: a.source || c.url || c.src || '',
-        summary: a.summary || c.description || ''
+        time: a.time || c.event_time || c.when_ts || c.when || '',
+        source: a.source || c.source || c.url || c.src || '',
+        summary: a.summary || c.summary || c.description || ''
       };
       return JSON.stringify(obj, null, 2);
     }
@@ -1274,7 +1282,9 @@
         const res = await fetch(API_BASE + '/api/intel-review/list?limit=100', { headers: authHeaders() });
         const data = await res.json().catch(()=>({}));
         if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
-        const rows = Array.isArray(data.candidates) ? data.candidates : [];
+        const rows = Array.isArray(data.candidates)
+          ? data.candidates
+          : (Array.isArray(data.items) ? data.items : []);
         el.intelStatus.textContent = `${rows.length} candidate${rows.length===1?'':'s'} loaded`;
         renderIntelReviewRows(rows);
       } catch (err) {
@@ -1293,10 +1303,10 @@
           <thead><tr><th>Candidate</th><th>Location / Time</th><th>Risk</th><th>Source</th><th>Actions</th></tr></thead>
           <tbody>${rows.map((c,i)=>`
             <tr data-id="${esc(c.id)}">
-              <td><div class="intel-review-title">${esc(c.title)}</div><div class="intel-review-summary">${esc(c.description || '')}</div></td>
-              <td>${esc(c.city || '—')}<br><span class="intel-review-muted">${esc(dateLabel(c.when_ts || c.when || c.created_at) || c.when_ts || '')}</span></td>
-              <td><span class="pill ${riskClass(c.risk)}">${esc(c.risk || 'low')}</span></td>
-              <td><div>${esc(c.src || '')}</div>${c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:#93c5fd">Open</a>` : ''}</td>
+              <td><div class="intel-review-title">${esc(c.title || 'Untitled')}</div><div class="intel-review-summary">${esc(c.summary || c.description || '')}</div></td>
+              <td>${esc([c.city, c.country].filter(Boolean).join(', ') || '—')}<br><span class="intel-review-muted">${esc(dateLabel(c.event_time || c.when_ts || c.when || c.created_at) || c.event_time || c.when_ts || '')}</span></td>
+              <td><span class="pill ${riskClass(c.risk)}">${esc(c.risk || 'Medium')}</span></td>
+              <td><div>${esc(c.source || c.src || '')}</div>${(c.source || c.url) ? `<a href="${esc(c.source || c.url)}" target="_blank" rel="noopener" style="color:#93c5fd">Open</a>` : ''}</td>
               <td><div class="intel-review-actions">
                 <button class="intel-review-mini approve" data-action="approve" data-idx="${i}">Approve</button>
                 <button class="intel-review-mini reject" data-action="reject" data-idx="${i}">Reject</button>
@@ -1327,7 +1337,7 @@
       try {
         el.intelStatus.textContent = `${action}…`;
         const payload = { id: c.id, note };
-        if (action === 'approve') payload.entry = c.alertsData || {};
+        if (action === 'approve') payload.entry = c.alertsData || candidateToJs(c);
         const res = await fetch(API_BASE + `/api/intel-review/${endpoint}`, {
           method: 'POST', headers: authHeaders(), body: JSON.stringify(payload)
         });
@@ -1375,7 +1385,7 @@
     // ── Init ──────────────────────────────────────────────────────────
     renderSuggestions(DEFAULT_EXAMPLES, false);
     renderHistory();
-    if (el.intelBtn && isMasterAdminOnly()) el.intelBtn.style.display = '';
+    if (el.intelBtn && isMasterAdminOnly()) el.intelBtn.style.display = 'inline-flex';
 
     // Wire outage quick-prompt clicks
     document.querySelectorAll('#outageQuickPrompts [data-q]').forEach(item => {
