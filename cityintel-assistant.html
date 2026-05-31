@@ -184,6 +184,30 @@
     .dropdown a { display:block; padding:8px 12px; color:#e9edf2; text-decoration:none; font-size:14px; }
     .dropdown a:hover { background:rgba(255,255,255,.05); }
 
+
+
+    /* ── MasterAdmin Intel Review Queue ────────────────────────────── */
+    .intel-review-modal { position:fixed; inset:0; background:rgba(0,0,0,.72); display:none; align-items:center; justify-content:center; z-index:12000; padding:18px; }
+    .intel-review-modal.open { display:flex; }
+    .intel-review-shell { width:min(1180px,96vw); max-height:92vh; overflow:hidden; display:flex; flex-direction:column; background:#16171a; border:1px solid var(--gray-600); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,.75); }
+    .intel-review-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid var(--gray-600); background:#111214; }
+    .intel-review-head h2 { margin:0; font-size:16px; }
+    .intel-review-body { padding:14px; overflow:auto; }
+    .intel-review-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .intel-review-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .intel-review-table th { text-align:left; color:var(--muted); background:#1c1e22; padding:8px; border-bottom:1px solid var(--gray-600); position:sticky; top:0; }
+    .intel-review-table td { padding:8px; border-bottom:1px solid var(--gray-600); vertical-align:top; }
+    .intel-review-table tr:hover td { background:rgba(255,255,255,.025); }
+    .intel-review-title { font-weight:800; color:#fff; margin-bottom:3px; }
+    .intel-review-summary { color:#cbd5e1; max-width:360px; line-height:1.35; }
+    .intel-review-actions { display:flex; flex-wrap:wrap; gap:5px; min-width:220px; }
+    .intel-review-mini { border:1px solid var(--gray-600); background:#111214; color:#e9edf2; border-radius:8px; padding:5px 8px; font-size:11px; font-weight:700; cursor:pointer; }
+    .intel-review-mini:hover { border-color:var(--brand-red); }
+    .intel-review-mini.approve { background:rgba(51,196,141,.12); border-color:rgba(51,196,141,.35); color:#86efac; }
+    .intel-review-mini.reject { background:rgba(255,90,95,.10); border-color:rgba(255,90,95,.35); color:#ff9ca0; }
+    .intel-review-json { width:100%; min-height:130px; background:#0d0f12; color:#e9edf2; border:1px solid var(--gray-600); border-radius:10px; padding:10px; font:12px ui-monospace,SFMono-Regular,Menlo,monospace; margin-top:10px; }
+    .intel-review-muted { color:var(--muted); font-size:12px; }
+
     @media(min-width:1100px) { body.assistant-detail-open .main { margin-right:390px; transition:margin-right 220ms ease; } }
     @media(max-width:980px) {
       .app { grid-template-columns:1fr; }
@@ -320,6 +344,7 @@
             <div class="btn-row">
               <button class="btn primary" id="askBtn">Ask CityIntel</button>
               <button class="btn" id="clearBtn">Clear thread</button>
+              <button class="btn" id="intelReviewBtn" style="display:none">Intel Review Queue</button>
               <span class="hint-text" id="turnCount" style="display:none"></span>
             </div>
           </div>
@@ -418,6 +443,29 @@
     </div>
   </aside>
 
+  <!-- MasterAdmin Intel Review Queue -->
+  <div id="intelReviewModal" class="intel-review-modal" aria-hidden="true">
+    <div class="intel-review-shell" role="dialog" aria-modal="true" aria-labelledby="intelReviewTitle">
+      <div class="intel-review-head">
+        <div>
+          <h2 id="intelReviewTitle">Intel Review Queue</h2>
+          <div class="intel-review-muted">MasterAdmin-only candidate review. Approved items publish to Alerts + Events only.</div>
+        </div>
+        <button class="btn" id="intelReviewClose" type="button">Close ✕</button>
+      </div>
+      <div class="intel-review-body">
+        <div class="intel-review-toolbar">
+          <button class="btn primary" id="intelReviewRefresh" type="button">Refresh Candidates</button>
+          <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
+          <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
+        </div>
+        <div id="intelReviewTableWrap"><div class="empty">Open or refresh the queue to load candidates.</div></div>
+        <textarea id="intelReviewExport" class="intel-review-json" readonly placeholder="Selected / copied candidate JS will appear here"></textarea>
+      </div>
+    </div>
+  </div>
+
+
   <script src="shared-chip.js"></script>
   <script>
   (function(){
@@ -468,6 +516,14 @@
       panelSource:   document.getElementById('assistantDetailSource'),
       panelNext:     document.getElementById('assistantDetailNext'),
       panelOpenSource: document.getElementById('assistantDetailOpenSource'),
+      intelBtn:       document.getElementById('intelReviewBtn'),
+      intelModal:     document.getElementById('intelReviewModal'),
+      intelClose:     document.getElementById('intelReviewClose'),
+      intelRefresh:   document.getElementById('intelReviewRefresh'),
+      intelCopyAll:   document.getElementById('intelReviewCopyAll'),
+      intelStatus:    document.getElementById('intelReviewStatus'),
+      intelWrap:      document.getElementById('intelReviewTableWrap'),
+      intelExport:    document.getElementById('intelReviewExport'),
     };
 
     // ── Auth ──────────────────────────────────────────────────────────
@@ -1176,6 +1232,114 @@
       }
     }
 
+
+
+    // ── MasterAdmin Intel Review Queue ────────────────────────────────
+    function currentRole(){
+      const u = who();
+      return String(u.role_key || u.role || '').toLowerCase().replace(/_/g,'-');
+    }
+    function isMasterAdminOnly(){
+      const r = currentRole();
+      return r === 'master-admin' || r === 'masteradmin';
+    }
+    function setIntelModal(open){
+      if (!el.intelModal) return;
+      el.intelModal.classList.toggle('open', !!open);
+      el.intelModal.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+    function candidateToJs(c){
+      const a = c.alertsData || {};
+      const obj = {
+        title: a.title || c.title || 'Untitled',
+        city: a.city || c.city || '',
+        lat: a.lat ?? c.lat ?? null,
+        lng: a.lng ?? c.lon ?? null,
+        address: a.address || c.city || '',
+        postcode: a.postcode || '',
+        country: a.country || '',
+        continent: a.continent || '',
+        risk: a.risk || c.risk || 'Medium',
+        time: a.time || c.when_ts || c.when || '',
+        source: a.source || c.url || c.src || '',
+        summary: a.summary || c.description || ''
+      };
+      return JSON.stringify(obj, null, 2);
+    }
+    async function loadIntelReviewQueue(){
+      if (!el.intelWrap) return;
+      el.intelStatus.textContent = 'Loading candidates…';
+      el.intelWrap.innerHTML = '<div class="empty">Loading…</div>';
+      try {
+        const res = await fetch(API_BASE + '/api/intel-review/list?limit=100', { headers: authHeaders() });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+        const rows = Array.isArray(data.candidates) ? data.candidates : [];
+        el.intelStatus.textContent = `${rows.length} candidate${rows.length===1?'':'s'} loaded`;
+        renderIntelReviewRows(rows);
+      } catch (err) {
+        el.intelStatus.textContent = 'Could not load queue.';
+        el.intelWrap.innerHTML = `<div class="empty" style="color:var(--danger)">Queue failed: ${esc(String(err.message || err))}</div>`;
+      }
+    }
+    function renderIntelReviewRows(rows){
+      if (!rows.length) {
+        el.intelWrap.innerHTML = '<div class="empty">No protest candidates waiting for review.</div>';
+        el.intelExport.value = '';
+        return;
+      }
+      el.intelWrap.innerHTML = `
+        <table class="intel-review-table">
+          <thead><tr><th>Candidate</th><th>Location / Time</th><th>Risk</th><th>Source</th><th>Actions</th></tr></thead>
+          <tbody>${rows.map((c,i)=>`
+            <tr data-id="${esc(c.id)}">
+              <td><div class="intel-review-title">${esc(c.title)}</div><div class="intel-review-summary">${esc(c.description || '')}</div></td>
+              <td>${esc(c.city || '—')}<br><span class="intel-review-muted">${esc(dateLabel(c.when_ts || c.when || c.created_at) || c.when_ts || '')}</span></td>
+              <td><span class="pill ${riskClass(c.risk)}">${esc(c.risk || 'low')}</span></td>
+              <td><div>${esc(c.src || '')}</div>${c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:#93c5fd">Open</a>` : ''}</td>
+              <td><div class="intel-review-actions">
+                <button class="intel-review-mini approve" data-action="approve" data-idx="${i}">Approve</button>
+                <button class="intel-review-mini reject" data-action="reject" data-idx="${i}">Reject</button>
+                <button class="intel-review-mini" data-action="duplicate" data-idx="${i}">Duplicate</button>
+                <button class="intel-review-mini" data-action="needs-research" data-idx="${i}">Needs Research</button>
+                <button class="intel-review-mini" data-action="copy" data-idx="${i}">Copy JS</button>
+              </div></td>
+            </tr>`).join('')}</tbody>
+        </table>`;
+      el.intelWrap.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const c = rows[Number(btn.dataset.idx)];
+          const action = btn.dataset.action;
+          if (!c) return;
+          if (action === 'copy') {
+            el.intelExport.value = candidateToJs(c) + ',';
+            try { await navigator.clipboard.writeText(el.intelExport.value); } catch {}
+            return;
+          }
+          await reviewIntelCandidate(c, action);
+        });
+      });
+    }
+    async function reviewIntelCandidate(c, action){
+      const note = action === 'approve' ? '' : (prompt(`Optional note for ${action}:`) || '');
+      const endpoint = action === 'needs-research' ? 'needs-research' : action;
+      if (action === 'approve' && !confirm('Approve this candidate to Alerts + Events?')) return;
+      try {
+        el.intelStatus.textContent = `${action}…`;
+        const payload = { id: c.id, note };
+        if (action === 'approve') payload.entry = c.alertsData || {};
+        const res = await fetch(API_BASE + `/api/intel-review/${endpoint}`, {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+        el.intelStatus.textContent = action === 'approve' ? 'Approved to Alerts + Events.' : `Marked ${action}.`;
+        await loadIntelReviewQueue();
+      } catch (err) {
+        el.intelStatus.textContent = `Action failed: ${String(err.message || err)}`;
+      }
+    }
+
     // ── Events ────────────────────────────────────────────────────────
     el.ask.addEventListener('click', ask);
     el.q.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') ask(); });
@@ -1193,7 +1357,16 @@
     });
     el.debugToggle.addEventListener('change', renderDebug);
     el.panelClose.addEventListener('click',()=>setPanelOpen(false));
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') setPanelOpen(false); });
+    if (el.intelBtn) el.intelBtn.addEventListener('click',()=>{ setIntelModal(true); loadIntelReviewQueue(); });
+    if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
+    if (el.intelRefresh) el.intelRefresh.addEventListener('click',loadIntelReviewQueue);
+    if (el.intelCopyAll) el.intelCopyAll.addEventListener('click',async()=>{
+      const rows=[...document.querySelectorAll('.intel-review-table tbody tr')];
+      const txt=rows.map(tr=>tr.innerText).join('\n---\n');
+      el.intelExport.value=txt;
+      try{ await navigator.clipboard.writeText(txt); }catch{}
+    });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') { setPanelOpen(false); setIntelModal(false); } });
 
     // Nav active state
     const here = location.pathname.split('/').pop()||'index.html';
@@ -1202,6 +1375,7 @@
     // ── Init ──────────────────────────────────────────────────────────
     renderSuggestions(DEFAULT_EXAMPLES, false);
     renderHistory();
+    if (el.intelBtn && isMasterAdminOnly()) el.intelBtn.style.display = '';
 
     // Wire outage quick-prompt clicks
     document.querySelectorAll('#outageQuickPrompts [data-q]').forEach(item => {
