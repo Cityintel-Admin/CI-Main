@@ -303,7 +303,7 @@
       <div class="section-label"></div>
       <nav>
         <a href="index.html">Dashboard</a>
-		<a href="neighborhood-intel.html">neighborhood-intel</a> 
+		<a href="neighborhood-intel.html">Neighbourhood Intel</a> 
 		<a href="assets.html">Assets</a>
 		<a href="travellers.html">Travellers</a>
         <a href="alerts.html">High Risk Events</a>
@@ -325,11 +325,6 @@
 
     <h1>Intelligence Brief</h1>
     <div class="date-sub" id="briefDate"></div>
-
-<div id="trial-banner" style="display:none;background:#3b0a0a;color:#fecaca;padding:8px 12px;text-align:center;">
-  <span id="trial-text">Your trial ends soon.</span>
-</div>	
-
 
     <section class="card brief-priority-card" id="section-priority-brief">
       <div class="brief-priority-head">
@@ -455,20 +450,29 @@
         </div>
       </section>
 
-      <!-- Analyst Notes (now also shows brief pad summary) -->
+      <!-- Analyst Notes — persisted notepad -->
       <section class="card span-12" id="section-analyst-notes">
-        <h2>Analyst Notes</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div>
+            <h2 style="margin:0 0 2px">Analyst Notes</h2>
+            <div class="muted" style="font-size:12px">Notes are saved automatically to this browser.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="muted" id="analystNotesSaved" style="font-size:12px"></span>
+            <button type="button" class="brief-chip-btn" id="clearAnalystNotesBtn">Clear notes</button>
+          </div>
+        </div>
+        <textarea id="analystNotesArea"
+          placeholder="Type analyst notes here — they are saved automatically…"
+          style="width:100%;min-height:120px;background:rgba(255,255,255,0.03);border:1px solid var(--gray-600);border-radius:10px;color:var(--text);font:14px/1.6 system-ui,sans-serif;padding:12px;resize:vertical;outline:none;transition:border-color .15s"
+          onfocus="this.style.borderColor='rgba(208,22,22,.55)'"
+          onblur="this.style.borderColor='var(--gray-600)'"
+        ></textarea>
 
-        <!-- NEW: live summary of the cross-incident briefing pad -->
-        <div class="muted" id="brief-draft-preview" style="margin-bottom:8px"></div>
+        <!-- Brief pad summary carried from incident pages -->
+        <div class="muted" id="brief-draft-preview" style="margin-top:8px;font-size:12px"></div>
 
-        <ul class="clean">
-          <li>Education-sector actions clustering across West Africa; monitor spillover routes.</li>
-          <li>Transport unions signalling synchronized actions in major Latin American hubs.</li>
-          <li>Online mobilization spikes precede on-street activity by ~48–72h in several metros.</li>
-        </ul>
-
-        <div class="footer-links">
+        <div class="footer-links" style="margin-top:14px">
           <a class="btn-link" href="index.html">← Back to Dashboard</a>
           <a class="btn-link" href="alerts.html">View All Alerts</a>
           <a class="btn-link" href="events.html">Browse Events</a>
@@ -477,6 +481,18 @@
     </div>
 
 
+<script>
+// Shared theme detection — used by both renderBrief and auto-themes section
+function detectTheme(a) {
+  const s = `${a.title || ''} ${a.summary || ''}`.toLowerCase();
+  if (s.match(/labour|labor|union|wage|strike|cosatu|workers/)) return 'Labour & wage disputes';
+  if (s.match(/cost[- ]?of[- ]?living|price|inflation/)) return 'Cost-of-living pressures';
+  if (s.match(/governance|anti[- ]?government|corruption|security appointment/)) return 'Governance & legitimacy';
+  if (s.match(/fuel|shortage|queue|supply/)) return 'Resource & supply stress';
+  if (s.match(/campus|university|student|education/)) return 'Education sector mobilisation';
+  return 'Civic mobilisation';
+}
+</script>
   <script>
     // ----- helpers -----
     const DATA = Array.isArray(window.alertsData) ? window.alertsData : [];
@@ -527,6 +543,20 @@
       const now = new Date();
       document.getElementById('briefDate').textContent =
         now.toLocaleString('en-GB',{weekday:'long', day:'2-digit', month:'short', year:'numeric'});
+
+      // Empty-state guard — show notice if no alert data loaded
+      const prioritySection = document.getElementById('section-priority-brief');
+      if (!DATA.length && prioritySection) {
+        const existing = prioritySection.querySelector('#brief-no-data-msg');
+        if (!existing) {
+          const msg = document.createElement('div');
+          msg.id = 'brief-no-data-msg';
+          msg.className = 'muted';
+          msg.style.cssText = 'padding:12px 0;font-size:13px';
+          msg.textContent = 'No alert data loaded — KPIs and tiles will populate once alerts-data.js is available.';
+          prioritySection.appendChild(msg);
+        }
+      }
 
       // KPIs
       const k24   = document.getElementById('kpi24');
@@ -740,16 +770,11 @@
       if (incidentNoteEl) incidentNoteEl.textContent = topIncident ? `${(topIncident.city || topIncident.country || 'Location pending')} • ${topIncident._dt ? topIncident._dt.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}` : 'No upcoming high-risk incident selected.';
       if (incidentTile && topIncident && topIncident.title) incidentTile.dataset.incidentTitle = topIncident.title;
 
+      // Shared theme detection (detectTheme defined at page level below)
       const themeCounts = {};
       const recent30 = DATA.map(a => ({...a, _dt: parse(a.time||a.datetime||a.date||a.when)})).filter(a => a._dt && a._dt >= prev7 && a._dt <= next7);
       recent30.forEach(a => {
-        const s = `${a.title || ''} ${a.summary || ''}`.toLowerCase();
-        let t = 'Civic mobilisation';
-        if (s.match(/labour|labor|union|wage|strike|cosatu|workers/)) t='Labour & wage disputes';
-        else if (s.match(/cost[- ]?of[- ]?living|price|inflation/)) t='Cost-of-living pressures';
-        else if (s.match(/governance|anti[- ]?government|corruption|security appointment/)) t='Governance & legitimacy';
-        else if (s.match(/fuel|shortage|queue|supply/)) t='Resource & supply stress';
-        else if (s.match(/campus|university|student|education/)) t='Education sector mobilisation';
+        const t = (typeof detectTheme === 'function') ? detectTheme(a) : 'Civic mobilisation';
         themeCounts[t] = (themeCounts[t]||0)+1;
       });
       const topTheme = Object.entries(themeCounts).sort((a,b)=>b[1]-a[1])[0];
@@ -1042,7 +1067,7 @@
     });
   });
 
-  // 2. Briefing pad summary (shared with incident.html)
+  // 2. Briefing pad summary (incident pages carry-over)
   const draftEl = document.getElementById('brief-draft-preview');
   const briefDraftMeta = document.getElementById('briefDraftMeta');
   const briefDraftPreviewLine = document.getElementById('briefDraftPreviewLine');
@@ -1050,23 +1075,16 @@
 
   function renderDraftCard(){
     const raw = (localStorage.getItem('ci_brief_pad') || '').trim();
-
     if (draftEl) {
       if (!raw) {
-        draftEl.textContent =
-          'Draft briefing: no notes yet. Use “Add this incident” from any incident view.';
+        draftEl.textContent = 'Draft briefing: no notes yet. Use "Add this incident" from any incident view.';
       } else {
         const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
         const firstLine = lines[0].trim();
-        const preview =
-          firstLine.length > 80 ? firstLine.slice(0, 77).trimEnd() + '…' : firstLine;
-
-        draftEl.textContent =
-          `Draft briefing: ${lines.length} line${lines.length !== 1 ? 's' : ''} in pad — ` +
-          `first line: “${preview}”`;
+        const preview = firstLine.length > 80 ? firstLine.slice(0, 77).trimEnd() + '…' : firstLine;
+        draftEl.textContent = `Draft briefing: ${lines.length} line${lines.length !== 1 ? 's' : ''} in pad — first line: "${preview}"`;
       }
     }
-
     if (briefDraftMeta && briefDraftPreviewLine) {
       if (!raw) {
         briefDraftMeta.textContent = 'No draft activity yet.';
@@ -1080,9 +1098,7 @@
       }
     }
   }
-
   renderDraftCard();
-
   if (clearBriefDraftBtn) {
     clearBriefDraftBtn.addEventListener('click', () => {
       localStorage.removeItem('ci_brief_pad');
@@ -1090,59 +1106,60 @@
     });
   }
 
-  // 3. Auto-detected themes (last 30 days, global) – mirrors risk-detail.html
+  // 3. Analyst notepad — persists to localStorage
+  const notesArea    = document.getElementById('analystNotesArea');
+  const notesSaved   = document.getElementById('analystNotesSaved');
+  const clearNotesBtn = document.getElementById('clearAnalystNotesBtn');
+  const NOTES_KEY    = 'ci_analyst_notes';
+  let saveTimer;
+
+  if (notesArea) {
+    notesArea.value = localStorage.getItem(NOTES_KEY) || '';
+    notesArea.addEventListener('input', () => {
+      clearTimeout(saveTimer);
+      if (notesSaved) notesSaved.textContent = 'Saving…';
+      saveTimer = setTimeout(() => {
+        localStorage.setItem(NOTES_KEY, notesArea.value);
+        if (notesSaved) {
+          notesSaved.textContent = 'Saved';
+          setTimeout(() => { notesSaved.textContent = ''; }, 2000);
+        }
+      }, 600);
+    });
+  }
+  if (clearNotesBtn) {
+    clearNotesBtn.addEventListener('click', () => {
+      if (!confirm('Clear all analyst notes?')) return;
+      localStorage.removeItem(NOTES_KEY);
+      if (notesArea) notesArea.value = '';
+      if (notesSaved) notesSaved.textContent = '';
+    });
+  }
+
+  // 4. Auto-detected themes (last 30 days) — uses page-level detectTheme()
   try {
     const data = Array.isArray(window.alertsData) ? window.alertsData : [];
     if (!data.length) return;
-
     const now = new Date();
     const from = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
-
     const rows = data
-      .map(a => ({
-        ...a,
-        _dt: (a.time || a.datetime || a.date || a.when) ? new Date(a.time || a.datetime || a.date || a.when) : null
-      }))
+      .map(a => ({ ...a, _dt: (a.time||a.datetime||a.date||a.when) ? new Date(a.time||a.datetime||a.date||a.when) : null }))
       .filter(a => a._dt && a._dt >= from && a._dt <= now);
-
     if (!rows.length) return;
-
-    const themeDetect = (a => {
-      const s = `${a.title || ''} ${a.summary || ''}`.toLowerCase();
-      if (s.match(/labour|labor|union|wage|strike|cosatu|workers/)) return 'Labour & wage disputes';
-      if (s.match(/cost[- ]?of[- ]?living|price|inflation/)) return 'Cost-of-living pressures';
-      if (s.match(/governance|anti[- ]?government|corruption|security appointment/)) return 'Governance & legitimacy';
-      if (s.match(/fuel|shortage|queue|supply/)) return 'Resource & supply stress';
-      if (s.match(/campus|university|student|education/)) return 'Education sector mobilisation';
-      return 'Civic mobilisation';
-    });
-
     const counts = {};
-    rows.forEach(a => {
-      const t = themeDetect(a);
-      counts[t] = (counts[t] || 0) + 1;
-    });
-
-    const top = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4);
-
+    rows.forEach(a => { const t = detectTheme(a); counts[t] = (counts[t] || 0) + 1; });
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
     if (!top.length) return;
-
     const section = document.getElementById('section-analyst-notes');
     if (!section) return;
-
     const autoHeader = document.createElement('div');
     autoHeader.className = 'muted';
-    autoHeader.style.margin = '10px 0 4px';
+    autoHeader.style.cssText = 'margin:12px 0 4px;font-size:12px';
     autoHeader.textContent = 'Automated themes (last 30 days):';
-
     const ul = document.createElement('ul');
     ul.className = 'clean';
-    ul.innerHTML = top
-      .map(([t, c]) => `<li>${t} — ${c} event${c !== 1 ? 's' : ''}</li>`)
-      .join('');
-
+    ul.style.fontSize = '13px';
+    ul.innerHTML = top.map(([t, c]) => `<li>${t} — ${c} event${c !== 1 ? 's' : ''}</li>`).join('');
     section.appendChild(autoHeader);
     section.appendChild(ul);
   } catch (e) {
