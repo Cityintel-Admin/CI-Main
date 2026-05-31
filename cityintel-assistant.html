@@ -1297,9 +1297,9 @@
       el.intelModal.classList.toggle('open', !!open);
       el.intelModal.setAttribute('aria-hidden', open ? 'false' : 'true');
     }
-    function candidateToJs(c){
+    function candidateEntry(c){
       const a = c.alertsData || {};
-      const obj = {
+      return {
         title: a.title || c.title || 'Untitled',
         city: a.city || c.city || '',
         lat: a.lat ?? c.lat ?? null,
@@ -1310,10 +1310,19 @@
         continent: a.continent || c.continent || '',
         risk: a.risk || c.risk || 'Medium',
         time: a.time || c.event_time || c.when_ts || c.when || '',
+        event_time: a.time || c.event_time || c.when_ts || c.when || '',
         source: a.source || c.source || c.url || c.src || '',
-        summary: a.summary || c.summary || c.description || ''
+        summary: a.summary || c.summary || c.description || '',
+        original_title: c.original_title || '',
+        original_summary: c.original_summary || '',
+        detected_language: c.detected_language || '',
+        confidence_score: c.confidence_score ?? null,
+        quality_score: c.quality_score ?? null
       };
-      return JSON.stringify(obj, null, 2);
+    }
+
+    function candidateToJs(c){
+      return JSON.stringify(candidateEntry(c), null, 2);
     }
 
     async function collectIntelReviewCandidates(){
@@ -1386,7 +1395,9 @@
               <tr data-id="${esc(c.id)}">
                 <td>
                   <input class="intel-edit-field intel-edit-title" data-field="title" data-idx="${i}" value="${esc(c.title || 'Untitled')}">
+                  ${(c.original_title && c.original_title !== c.title) ? `<div class="intel-review-muted" style="margin:4px 0 6px">Original: ${esc(c.original_title)}</div>` : ''}
                   <textarea class="intel-edit-area" data-field="summary" data-idx="${i}">${esc(c.summary || c.description || '')}</textarea>
+                  ${(c.detected_language) ? `<div class="intel-review-muted" style="margin-top:4px">Language: ${esc(c.detected_language)}</div>` : ''}
                 </td>
 
                 <td>
@@ -1463,14 +1474,26 @@
     }
 
     async function translateCandidate(candidate){
-      const q = encodeURIComponent(candidate.title || '');
-      const res = await fetch(`https://api.mymemory.translated.net/get?q=${q}&langpair=auto|en`);
+      const res = await fetch(intelReviewUrl('/api/intel-review/translate'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: candidate.id,
+          title: candidate.title || '',
+          summary: candidate.summary || candidate.description || ''
+        })
+      });
       const data = await res.json().catch(()=>({}));
-      const translatedTitle = data?.responseData?.translatedText || candidate.title;
+      if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
 
       return {
         ...candidate,
-        title: translatedTitle
+        title: data.title || candidate.title,
+        summary: data.summary || candidate.summary || candidate.description || '',
+        original_title: data.original_title || candidate.original_title || candidate.title,
+        original_summary: data.original_summary || candidate.original_summary || candidate.summary || '',
+        detected_language: data.detected_language || candidate.detected_language || 'auto',
+        translated_at: data.translated_at || new Date().toISOString()
       };
     }
     async function reviewIntelCandidate(c, action){
@@ -1480,7 +1503,7 @@
       try {
         el.intelStatus.textContent = `${action}…`;
         const payload = { id: c.id, note };
-        if (action === 'approve') payload.entry = c.alertsData || candidateToJs(c);
+        if (action === 'approve') payload.entry = candidateEntry(c);
         const res = await fetch(intelReviewUrl(`/api/intel-review/${endpoint}`), {
           method: 'POST', headers: authHeaders(), body: JSON.stringify(payload)
         });
