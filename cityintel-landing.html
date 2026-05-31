@@ -247,11 +247,20 @@
   }
 
   .ticker-scroll {
-    display: flex;
+    display: inline-flex;
+    align-items: center;
     gap: 48px;
-    animation: scrollticker 24s linear infinite;
     white-space: nowrap;
+    will-change: transform;
+    animation: tickerLinear var(--ticker-duration, 110s) linear infinite;
+    animation-play-state: running;
   }
+  .ticker-scroll:hover { animation-play-state: paused; }
+  @keyframes tickerLinear {
+    from { transform: translateX(0); }
+    to   { transform: translateX(calc(-1 * var(--loop-distance, 1000px))); }
+  }
+  @media (prefers-reduced-motion: reduce) { .ticker-scroll { animation: none !important; } }
 
   .ticker-item {
     font-size: 13px;
@@ -274,10 +283,7 @@
   .badge-low { background: rgba(99,185,34,0.15); color: #79c428; }
   .badge-high { background: rgba(214,58,58,0.2); color: var(--red-bright); }
 
-  @keyframes scrollticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
+
 
   /* SECTION */
   section {
@@ -658,6 +664,7 @@
     footer { flex-direction: column; gap: 20px; text-align: center; }
   }
 </style>
+<script src="alerts-data.js"></script>
 </head>
 <body>
 
@@ -671,26 +678,84 @@
   </div>
 </div>
 
-<!-- TICKER -->
-<div class="ticker-wrap" style="margin-top: 80px;">
+<!-- TICKER — driven by alerts-data.js (same source as dashboard) -->
+<div class="ticker-wrap" style="margin-top: 80px;" id="ci-landing-banner">
   <div class="ticker-label">
     <div class="pulse-dot"></div>
-    Live alerts
+    Today's protests
   </div>
-  <div class="ticker-scroll">
-    <span class="ticker-item"><span class="badge badge-medium">Medium</span> Berlin — Anti-Government Protest — 28 May 12:00</span>
-    <span class="ticker-item"><span class="badge badge-low">Low</span> Paris — Labour Union March — 28 May 14:30</span>
-    <span class="ticker-item"><span class="badge badge-high">High</span> Istanbul — Political Rally — 29 May 10:00</span>
-    <span class="ticker-item"><span class="badge badge-medium">Medium</span> London — Climate Demonstration — 30 May 11:00</span>
-    <span class="ticker-item"><span class="badge badge-low">Low</span> Madrid — Student Protest — 31 May 09:00</span>
-    <!-- repeat for seamless loop -->
-    <span class="ticker-item"><span class="badge badge-medium">Medium</span> Berlin — Anti-Government Protest — 28 May 12:00</span>
-    <span class="ticker-item"><span class="badge badge-low">Low</span> Paris — Labour Union March — 28 May 14:30</span>
-    <span class="ticker-item"><span class="badge badge-high">High</span> Istanbul — Political Rally — 29 May 10:00</span>
-    <span class="ticker-item"><span class="badge badge-medium">Medium</span> London — Climate Demonstration — 30 May 11:00</span>
-    <span class="ticker-item"><span class="badge badge-low">Low</span> Madrid — Student Protest — 31 May 09:00</span>
+  <div class="ticker-outer" style="flex:1;overflow:hidden;position:relative;">
+    <div class="ticker-scroll" id="landingTickerTrack">
+      <!-- populated by JS below -->
+    </div>
   </div>
 </div>
+
+<script>
+(function mountLandingTicker() {
+  // Run after DOM + alerts-data.js have both loaded
+  function init() {
+    const track = document.getElementById('landingTickerTrack');
+    const wrap  = track?.parentElement;
+    if (!track || !wrap) return;
+
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+
+    const parseDate = v => { try { return v ? new Date(v) : null; } catch(_){ return null; } };
+    const today = new Date();
+    const sameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth()    === b.getMonth()    &&
+      a.getDate()     === b.getDate();
+
+    const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const fmt = d => `${String(d.getDate()).padStart(2,'0')} ${MONTHS[d.getMonth()]} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+    const riskChip = r => {
+      const s = String(r || '').toLowerCase();
+      if (s.startsWith('hi')) return '<span class="badge badge-high">High</span>';
+      if (s.startsWith('me')) return '<span class="badge badge-medium">Medium</span>';
+      return '<span class="badge badge-low">Low</span>';
+    };
+
+    const todaysItems = data
+      .map(a => ({ ...a, _dt: parseDate(a.time ?? a.datetime ?? a.date ?? a.when) }))
+      .filter(a => a._dt && sameDay(a._dt, today))
+      .sort((a, b) => a._dt - b._dt);
+
+    const bits = todaysItems.length
+      ? todaysItems.map(a =>
+          `<span class="ticker-item">${riskChip(a.risk)} ${a.city || a.country || ''} — ${a.title || ''} — ${fmt(a._dt)}</span>`
+        )
+      : ['<span class="ticker-item" style="color:var(--muted);">No events scheduled for today</span>'];
+
+    // Build one block, clone for seamless loop
+    const block = document.createElement('span');
+    block.style.cssText = 'display:inline-flex;align-items:center;gap:48px;';
+    block.innerHTML = bits.join('<span style="opacity:.3;padding:0 8px;">|</span>');
+
+    track.innerHTML = '';
+    track.appendChild(block);
+
+    requestAnimationFrame(() => {
+      const blockW = Math.max(10, block.getBoundingClientRect().width);
+      const wrapW  = wrap.clientWidth || window.innerWidth;
+      while (track.scrollWidth < wrapW * 3) {
+        track.appendChild(block.cloneNode(true));
+      }
+      track.style.setProperty('--loop-distance', blockW + 'px');
+      track.style.animationPlayState = 'running';
+    });
+  }
+
+  // Fire after page load so alerts-data.js has definitely executed
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 
 <!-- HERO -->
 <div class="hero">
@@ -706,7 +771,58 @@
   </div>
 </div>
 
+<!-- LIVE STATS BAR — populated from alertsData -->
+<div class="stats-bar" id="landingStatsBar">
+  <div class="stat">
+    <div class="stat-num" id="stat-today">—</div>
+    <div class="stat-label">Events today</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="stat-hightoday">—</div>
+    <div class="stat-label">High risk today</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="stat-week">—</div>
+    <div class="stat-label">This week's events</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="stat-countries">—</div>
+    <div class="stat-label">Countries covered</div>
+  </div>
+</div>
 
+<script>
+(function populateLandingStats() {
+  function run() {
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    if (!data.length) return;
+
+    const parseDate = v => { try { return v ? new Date(v) : null; } catch(_){ return null; } };
+    const now   = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const in7d  = new Date(today.getTime() + 7 * 86400000);
+
+    const parsed = data.map(a => ({ ...a, _dt: parseDate(a.time ?? a.datetime ?? a.date ?? a.when) })).filter(a => a._dt);
+
+    const todayEvents  = parsed.filter(a => a._dt >= today && a._dt < new Date(today.getTime() + 86400000));
+    const highToday    = todayEvents.filter(a => String(a.risk||'').toLowerCase().startsWith('hi'));
+    const weekEvents   = parsed.filter(a => a._dt >= today && a._dt < in7d);
+    const countries    = new Set(parsed.map(a => a.country || a.Country || '').filter(Boolean));
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('stat-today',    todayEvents.length  || '0');
+    set('stat-hightoday', highToday.length   || '0');
+    set('stat-week',     weekEvents.length   > 999 ? '1,000+' : weekEvents.length || '0');
+    set('stat-countries', countries.size > 99 ? '100+' : countries.size || '0');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+})();
+</script>
 
 <!-- FEATURES -->
 <section id="features">
@@ -778,32 +894,66 @@
         <span class="demo-ui-title">⚡ Live feed — EMEA</span>
         <span class="badge badge-medium demo-ui-badge">57 alerts</span>
       </div>
-      <div class="demo-ui-body">
-        <div class="demo-alert">
-          <div class="alert-dot alert-dot-amber"></div>
-          <div>
-            <div class="alert-city">Berlin — Anti-Government Protest</div>
-            <div class="alert-meta">28 May 12:00 &nbsp;·&nbsp; <span style="color: var(--amber);">Medium risk</span> &nbsp;·&nbsp; Verified</div>
-          </div>
-        </div>
-        <div class="demo-alert">
-          <div class="alert-dot alert-dot-red"></div>
-          <div>
-            <div class="alert-city">Istanbul — Political Rally</div>
-            <div class="alert-meta">29 May 10:00 &nbsp;·&nbsp; <span style="color: var(--red-bright);">High risk</span> &nbsp;·&nbsp; Monitoring</div>
-          </div>
-        </div>
-        <div class="demo-alert">
-          <div class="alert-dot alert-dot-green"></div>
-          <div>
-            <div class="alert-city">Paris — Labour Union March</div>
-            <div class="alert-meta">28 May 14:30 &nbsp;·&nbsp; <span style="color: #79c428;">Low risk</span> &nbsp;·&nbsp; Verified</div>
-          </div>
-        </div>
-        <div style="text-align: center; padding-top: 8px;">
-          <span style="font-size: 12px; color: var(--muted);">+ 54 more in queue</span>
-        </div>
+      <div class="demo-ui-body" id="landingDemoBody">
+        <!-- populated by JS -->
+        <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:13px;">Loading live events…</div>
       </div>
+
+      <script>
+      (function populateDemoAlerts() {
+        function run() {
+          const body = document.getElementById('landingDemoBody');
+          if (!body) return;
+          const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+          if (!data.length) {
+            body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No events loaded.</div>';
+            return;
+          }
+
+          const parseDate = v => { try { return v ? new Date(v) : null; } catch(_){ return null; } };
+          const now = new Date();
+
+          // Get up to 3 upcoming events, highest risk first
+          const riskOrder = r => { const s=String(r||'').toLowerCase(); return s.startsWith('hi')?0:s.startsWith('me')?1:2; };
+          const upcoming = data
+            .map(a => ({ ...a, _dt: parseDate(a.time ?? a.datetime ?? a.date ?? a.when) }))
+            .filter(a => a._dt && a._dt >= now)
+            .sort((a,b) => riskOrder(a.risk) - riskOrder(b.risk) || a._dt - b._dt)
+            .slice(0, 3);
+
+          const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+          const fmt = d => `${d.getDate()} ${MONTHS[d.getMonth()]} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+          const dotCls  = r => { const s=String(r||'').toLowerCase(); return s.startsWith('hi')?'alert-dot-red':s.startsWith('me')?'alert-dot-amber':'alert-dot-green'; };
+          const riskCol = r => { const s=String(r||'').toLowerCase(); return s.startsWith('hi')?'var(--red-bright)':s.startsWith('me')?'var(--amber)':'#79c428'; };
+          const riskLbl = r => { const s=String(r||'').toLowerCase(); return s.startsWith('hi')?'High risk':s.startsWith('me')?'Medium risk':'Low risk'; };
+
+          const totalUpcoming = data.filter(a => { const d=parseDate(a.time??a.datetime??a.date??a.when); return d&&d>=now; }).length;
+          const remaining = Math.max(0, totalUpcoming - upcoming.length);
+
+          const cards = upcoming.length
+            ? upcoming.map(a => `
+              <div class="demo-alert">
+                <div class="alert-dot ${dotCls(a.risk)}"></div>
+                <div>
+                  <div class="alert-city">${a.city||a.country||'Unknown'} — ${a.title||''}</div>
+                  <div class="alert-meta">${fmt(a._dt)} &nbsp;·&nbsp; <span style="color:${riskCol(a.risk)};">${riskLbl(a.risk)}</span></div>
+                </div>
+              </div>`).join('')
+            : '<div class="demo-alert"><div style="font-size:13px;color:var(--muted);">No upcoming events found.</div></div>';
+
+          body.innerHTML = cards + (remaining > 0
+            ? `<div style="text-align:center;padding-top:8px;"><span style="font-size:12px;color:var(--muted);">+ ${remaining} more in feed</span></div>`
+            : '');
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', run);
+        } else {
+          run();
+        }
+      })();
+      </script>
     </div>
   </div>
 </div>
