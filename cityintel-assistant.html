@@ -456,6 +456,7 @@
       <div class="intel-review-body">
         <div class="intel-review-toolbar">
           <button class="btn primary" id="intelReviewRefresh" type="button">Refresh Candidates</button>
+          <button class="btn" id="intelReviewCollect" type="button">Search Candidates</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
           <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
         </div>
@@ -520,6 +521,7 @@
       intelModal:     document.getElementById('intelReviewModal'),
       intelClose:     document.getElementById('intelReviewClose'),
       intelRefresh:   document.getElementById('intelReviewRefresh'),
+      intelCollect:   document.getElementById('intelReviewCollect'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
       intelStatus:    document.getElementById('intelReviewStatus'),
       intelWrap:      document.getElementById('intelReviewTableWrap'),
@@ -1293,6 +1295,36 @@
       };
       return JSON.stringify(obj, null, 2);
     }
+
+    async function collectIntelReviewCandidates(){
+      if (!el.intelWrap) return;
+      if (!confirm('Run protest candidate search now? This may take around 20–40 seconds.')) return;
+
+      el.intelStatus.textContent = 'Searching live sources for protest candidates…';
+      el.intelWrap.innerHTML = '<div class="empty">Searching GDELT / live open-source data for protest, rally, march, demonstration and strike candidates…</div>';
+
+      try {
+        const res = await fetch(intelReviewUrl('/api/intel-review/collect'), {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            limit: 40,
+            timespan: '7d'
+          })
+        });
+
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok || !data.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+
+        const rows = Array.isArray(data.items) ? data.items : [];
+        el.intelStatus.textContent = `Search complete: ${data.stored || 0} new candidate(s), ${rows.length} pending total`;
+        renderIntelReviewRows(rows);
+      } catch (err) {
+        el.intelStatus.textContent = 'Search failed.';
+        el.intelWrap.innerHTML = `<div class="empty" style="color:var(--danger)">Search failed: ${esc(String(err.message || err))}</div>`;
+      }
+    }
+
     async function loadIntelReviewQueue(){
       if (!el.intelWrap) return;
       el.intelStatus.textContent = 'Loading candidates…';
@@ -1389,6 +1421,7 @@
     if (el.intelBtn) el.intelBtn.addEventListener('click',()=>{ setIntelModal(true); loadIntelReviewQueue(); });
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',loadIntelReviewQueue);
+    if (el.intelCollect) el.intelCollect.addEventListener('click',collectIntelReviewCandidates);
     if (el.intelCopyAll) el.intelCopyAll.addEventListener('click',async()=>{
       const rows=[...document.querySelectorAll('.intel-review-table tbody tr')];
       const txt=rows.map(tr=>tr.innerText).join('\n---\n');
