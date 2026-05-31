@@ -1076,6 +1076,66 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <script src="filterEvents.js"></script>
 <script src="alerts-data.js"></script>
+<script>
+// Load approved Intel Review Queue items into the same alertsData layer used by KPIs/map.
+// These records come from /api/protests and are tagged include_in_protests=1 by the approval workflow.
+window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboard(){
+  const API_BASE = window.API_BASE || 'https://api.cityintelapi.com';
+  function authH(){
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || '{}');
+      const h = {};
+      if (p.email) h['X-User-Email'] = p.email;
+      if (p.name)  h['X-User-Name']  = p.name;
+      if (p.id)    h['X-User-Id']    = p.id;
+      if (p.role)  h['X-User-Role']  = p.role;
+      if (p.role_key) h['X-User-Role-Key'] = p.role_key;
+      return h;
+    } catch { return {}; }
+  }
+  function normRisk(r){
+    const s = String(r || '').toLowerCase();
+    if (s.startsWith('hi')) return 'High';
+    if (s.startsWith('me') || s === 'med') return 'Medium';
+    return 'Low';
+  }
+  function feedPostToAlert(p){
+    return {
+      id: p.id,
+      title: p.title || 'Untitled',
+      summary: p.body || '',
+      risk: normRisk(p.risk),
+      time: p.event_at,
+      city: p.city || p.location_label || '',
+      country: p.country || '',
+      continent: p.continent || '',
+      lat: p.lat ?? null,
+      lng: p.lon ?? null,
+      address: p.location_label || p.city || '',
+      source: p.source_url || null,
+      _fromApprovedIntel: true,
+      _feedId: p.id
+    };
+  }
+  try {
+    const res = await fetch(API_BASE + '/api/protests', { headers: authH() });
+    if (!res.ok) return [];
+    const data = await res.json().catch(() => ({}));
+    const posts = Array.isArray(data.posts) ? data.posts : (Array.isArray(data.data) ? data.data : []);
+    const mapped = posts.map(feedPostToAlert);
+    const existing = new Set((window.alertsData || []).map(a => (a.id ? `id|${a.id}` : `${a.title || ''}|${a.time || a.datetime || a.date || a.when || ''}`)));
+    const fresh = mapped.filter(m => !existing.has(m.id ? `id|${m.id}` : `${m.title}|${m.time}`));
+    if (fresh.length) {
+      window.alertsData = [ ...(window.alertsData || []), ...fresh ];
+      window.dispatchEvent(new CustomEvent('ci:alerts-data-updated', { detail: { added: fresh.length } }));
+    }
+    return fresh;
+  } catch (e) {
+    console.warn('CityIntel: approved protest KPI loader unavailable', e);
+    return [];
+  }
+})();
+</script>
 <script src="metrics.js"></script>
 <script>
 (function compatProfileShim(){
@@ -1996,6 +2056,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
   // Initial render + refresh every 600s
   render();
+  window.addEventListener('ci:alerts-data-updated', render);
+  if (window.CIApprovedProtestsReady) window.CIApprovedProtestsReady.then(render).catch(()=>{});
   setInterval(render, 600000);
 })();
 </script>
@@ -2053,6 +2115,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
   // Initial + refresh every 600s
   render();
+  window.addEventListener('ci:alerts-data-updated', render);
+  if (window.CIApprovedProtestsReady) window.CIApprovedProtestsReady.then(render).catch(()=>{});
   setInterval(render, 600000);
 })();
 </script>
@@ -2091,6 +2155,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   }
 
   render();
+  window.addEventListener('ci:alerts-data-updated', render);
+  if (window.CIApprovedProtestsReady) window.CIApprovedProtestsReady.then(render).catch(()=>{});
   setInterval(render, 600000);
 })();
 </script>
