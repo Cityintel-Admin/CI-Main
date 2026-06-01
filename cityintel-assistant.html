@@ -277,6 +277,55 @@
       font-size:13px;
     }
 
+/* ── Protest Intelligence Search ───────────────────────────── */
+.protest-search-results{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+
+.protest-result-card{
+  border:1px solid var(--gray-600);
+  background:rgba(255,255,255,.03);
+  border-radius:12px;
+  padding:12px;
+}
+
+.protest-result-card h4{
+  margin:0 0 6px;
+  font-size:14px;
+  color:#fff;
+}
+
+.protest-result-meta{
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:8px;
+}
+
+.protest-result-summary{
+  color:#d5dbe3;
+  font-size:13px;
+  line-height:1.45;
+}
+
+.protest-result-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.protest-tag{
+  border:1px solid var(--gray-500);
+  border-radius:999px;
+  padding:3px 8px;
+  font-size:11px;
+  color:#cbd5e1;
+  background:rgba(255,255,255,.03);
+}
+
+    
   </style>
 </head>
 <body>
@@ -529,6 +578,7 @@
           <span class="intel-review-muted" id="intelReviewStatus">Not loaded.</span>
         </div>
         <div id="intelReviewTableWrap"><div class="empty">Open or refresh the queue to load candidates.</div></div>
+        <div id="protestSearchResults" class="protest-search-results" style="display:none"></div>
         <aside id="intelCandidateDrawer" class="intel-candidate-drawer" aria-hidden="true">
           <div class="intel-drawer-empty">Select a candidate row to review full details.</div>
         </aside>
@@ -605,6 +655,7 @@
       intelWrap:      document.getElementById('intelReviewTableWrap'),
       intelDrawer:    document.getElementById('intelCandidateDrawer'),
       intelExport:    document.getElementById('intelReviewExport'),
+      protestSearchResults: document.getElementById('protestSearchResults'),
     };
 
     // ── Auth ──────────────────────────────────────────────────────────
@@ -931,6 +982,51 @@
       renderDebug();
     }
 
+
+function renderProtestSearchResults(results = []) {
+  if (!el.protestSearchResults) return;
+
+  if (!results.length) {
+    el.protestSearchResults.style.display = 'none';
+    el.protestSearchResults.innerHTML = '';
+    return;
+  }
+
+  el.protestSearchResults.style.display = 'grid';
+
+  el.protestSearchResults.innerHTML = results.map(item => {
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+
+    return `
+      <div class="protest-result-card">
+        <h4>${esc(item.title || 'Untitled')}</h4>
+
+        <div class="protest-result-meta">
+          ${(item.country || 'Unknown location')}
+          ${item.city ? ' · ' + esc(item.city) : ''}
+          ${item.date ? ' · ' + esc(item.date) : ''}
+        </div>
+
+        <div class="protest-result-summary">
+          ${esc(item.summary || item.description || 'No summary available')}
+        </div>
+
+        ${
+          tags.length
+            ? `
+              <div class="protest-result-tags">
+                ${tags.map(t => `<span class="protest-tag">${esc(t)}</span>`).join('')}
+              </div>
+            `
+            : ''
+        }
+      </div>
+    `;
+  }).join('');
+}
+
+
+    
     function renderDebug(){
       if (!el.debugToggle.checked||!state.currentDebug?.length){ el.debug.style.display='none'; return; }
       const sl=state.currentSearch?'Search parameters: '+JSON.stringify(state.currentSearch,null,2)+'\n\n':'';
@@ -2358,6 +2454,58 @@ async function ask(){
         catch (err) { el.intelStatus.textContent = `Index search failed: ${String(err.message || err)}`; }
       }
     });
+
+
+el.intelReviewIndexSearch.addEventListener('click', async ()=>{
+
+  const q = (el.intelIndexQuery?.value || '').trim();
+
+  if (!q) {
+    alert('Enter a protest index search query.');
+    return;
+  }
+
+  try {
+
+    el.intelStatus.textContent = 'Searching protest index...';
+    renderProtestSearchResults([]);
+
+    const res = await fetch(
+      intelReviewUrl('/api/intel/protest-index/search?q=' + encodeURIComponent(q)),
+      {
+        headers: authHeaders()
+      }
+    );
+
+    const data = await res.json().catch(()=>null);
+
+    if (!res.ok || !data?.ok) {
+      throw new Error(data?.error || 'Search failed');
+    }
+
+    const results = Array.isArray(data.results)
+      ? data.results
+      : [];
+
+    renderProtestSearchResults(results);
+
+    el.intelStatus.textContent =
+      `Found ${results.length} protest intelligence matches`;
+
+  } catch(err) {
+
+    console.error(err);
+
+    el.intelStatus.textContent =
+      'Protest index search failed';
+
+    renderProtestSearchResults([]);
+
+    alert(err.message || 'Search failed');
+  }
+});
+    
+    
     if (el.intelCopyAll) el.intelCopyAll.addEventListener('click',async()=>{
       const rows=[...document.querySelectorAll('.intel-review-table tbody tr')];
       const txt=rows.map(tr=>tr.innerText).join('\n---\n');
