@@ -1515,7 +1515,14 @@ async function ask(){
         research_note: c.research_note || c.review_note || '',
         research_summary: c.research_summary || '',
         research_source: c.research_source || '',
-        last_researched_at: c.last_researched_at || ''
+        last_researched_at: c.last_researched_at || '',
+        analyst_note: c.analyst_note || c.review_note || '',
+        source_reliability: c.source_reliability || '',
+        source_reliability_score: c.source_reliability_score ?? null,
+        source_reliability_reason: c.source_reliability_reason || '',
+        age_status: c.age_status || '',
+        age_hours: c.age_hours ?? null,
+        why_flagged: c.why_flagged || ''
       };
     }
 
@@ -1539,6 +1546,54 @@ async function ask(){
       if (v.startsWith('h')) return 'danger';
       if (v.startsWith('m')) return 'warn';
       return 'ok';
+    }
+
+
+    function sourceReliabilityClass(value = '') {
+      const v = String(value || '').toLowerCase();
+      if (v === 'high') return 'ok';
+      if (v === 'medium' || v === 'unknown') return 'warn';
+      return 'danger';
+    }
+
+    function ageChipClass(value = '') {
+      const v = String(value || '').toLowerCase();
+      if (v === 'fresh' || v === 'upcoming' || v === 'due soon') return 'ok';
+      if (v === 'aging') return 'warn';
+      if (v === 'stale' || v === 'old') return 'danger';
+      return '';
+    }
+
+    function localAgeStatus(c = {}) {
+      if (c.age_status) return { label: c.age_status, hours: c.age_hours };
+      const raw = c.event_time || c.when_ts || c.when || c.created_at || '';
+      const t = Date.parse(raw);
+      if (!Number.isFinite(t)) return { label: 'Unknown age', hours: null };
+      const hours = (Date.now() - t) / 36e5;
+      const rounded = Math.round(hours * 10) / 10;
+      if (hours < -24) return { label: 'Upcoming', hours: rounded };
+      if (hours < 0) return { label: 'Due soon', hours: rounded };
+      if (hours <= 24) return { label: 'Fresh', hours: rounded };
+      if (hours <= 72) return { label: 'Aging', hours: rounded };
+      if (hours <= 168) return { label: 'Stale', hours: rounded };
+      return { label: 'Old', hours: rounded };
+    }
+
+    function localSourceReliability(c = {}) {
+      if (c.source_reliability) return {
+        label: c.source_reliability,
+        score: c.source_reliability_score,
+        reason: c.source_reliability_reason || ''
+      };
+      const source = c.source || c.url || c.src || c.research_source || '';
+      let host = '';
+      try { host = new URL(String(source)).hostname.replace(/^www\./,'').toLowerCase(); }
+      catch { host = String(source || '').toLowerCase().replace(/^www\./,'').split('/')[0]; }
+      if (!host) return { label: 'Unverified', score: 0.35, reason: 'No source URL or publisher domain available.' };
+      if (/reuters|apnews|bbc|guardian|nytimes|washingtonpost|france24|dw\.com|euronews|cnn|cbsnews|nbcnews|rte\.ie/.test(host)) return { label: 'High', score: 0.9, reason: `Known major news/public-interest source: ${host}.` };
+      if (/gov|police|europa|un\.org|reliefweb|independent|bloomberg|cbc|ctvnews/.test(host)) return { label: 'Medium', score: 0.7, reason: `Recognised official, regional or specialist source: ${host}.` };
+      if (/blog|substack|wordpress|medium\.com|facebook|twitter|x\.com|tiktok|youtube|reddit/.test(host)) return { label: 'Low', score: 0.45, reason: `Social/user-generated or lightly edited source: ${host}.` };
+      return { label: 'Unknown', score: 0.55, reason: `Source has not yet been classified: ${host}.` };
     }
 
     function setIntelDrawerOpen(open) {
@@ -1573,6 +1628,15 @@ async function ask(){
         ? `${esc(c.suggested_risk)}${c.confidence_score ? ` · ${Math.round(Number(c.confidence_score) * 100)}% confidence` : ''}`
         : 'Not scored yet';
       const eventTime = c.event_time || c.when_ts || c.when || '';
+      const sourceReliability = localSourceReliability(c);
+      const ageSignal = localAgeStatus(c);
+      const whyFlagged = c.why_flagged || [
+        c.risk_reason || '',
+        sourceReliability.reason ? `Source: ${sourceReliability.reason}` : '',
+        ageSignal.label ? `Age status: ${ageSignal.label}.` : '',
+        c.duplicate_warning ? `Duplicate: ${c.duplicate_warning}` : '',
+        (c.status || '') === 'needs_review' ? `Needs research active${c.research_attempts ? ` after ${c.research_attempts} attempt(s).` : '.'}` : ''
+      ].filter(Boolean).join(' ');
 
       el.intelDrawer.innerHTML = `
         <div class="intel-candidate-drawer-head">
@@ -1634,6 +1698,17 @@ async function ask(){
           </div>
 
           <div class="intel-candidate-section">
+            <h3>Analyst notes</h3>
+            <div class="intel-candidate-field">
+              <label>Internal analyst note</label>
+              <textarea class="intel-candidate-textarea" data-drawer-field="analyst_note" placeholder="Add judgement, caveats, source concerns, client relevance, or next review action.">${esc(c.analyst_note || c.review_note || '')}</textarea>
+            </div>
+            <div class="intel-review-muted" style="margin-top:8px;line-height:1.45">
+              Notes stay with the candidate and are included when approving, rejecting, or sending the item back for research.
+            </div>
+          </div>
+
+          <div class="intel-candidate-section">
             <h3>Map location</h3>
             <div class="intel-review-chipline">
               <span class="intel-review-chip ${c.lat !== null && c.lat !== undefined && c.lat !== '' ? 'ok' : 'warn'}">Lat: ${esc(c.lat ?? 'missing')}</span>
@@ -1652,7 +1727,11 @@ async function ask(){
               <span class="intel-review-chip ${riskChipClass(c.suggested_risk)}">Suggested: ${suggested}</span>
               ${c.duplicate_warning ? '<span class="intel-review-chip warn">Duplicate warning</span>' : ''}
               ${c.detected_language ? `<span class="intel-review-chip">Lang: ${esc(c.detected_language)}</span>` : ''}
+              <span class="intel-review-chip ${sourceReliabilityClass(sourceReliability.label)}">Source: ${esc(sourceReliability.label)}${sourceReliability.score != null ? ` · ${Math.round(Number(sourceReliability.score) * 100)}%` : ''}</span>
+              <span class="intel-review-chip ${ageChipClass(ageSignal.label)}">${esc(ageSignal.label)}${ageSignal.hours != null ? ` · ${esc(Math.abs(Number(ageSignal.hours)).toFixed(1))}h` : ''}</span>
             </div>
+            ${whyFlagged ? `<div class="intel-review-muted" style="margin-top:10px;line-height:1.45"><strong>Why flagged:</strong><br>${esc(whyFlagged)}</div>` : ''}
+            ${sourceReliability.reason ? `<div class="intel-review-muted" style="margin-top:8px;line-height:1.45"><strong>Source reliability:</strong><br>${esc(sourceReliability.reason)}</div>` : ''}
             ${c.risk_reason ? `<div class="intel-review-muted" style="margin-top:10px;line-height:1.45">${esc(c.risk_reason)}</div>` : ''}
             ${c.duplicate_warning ? `<div class="intel-candidate-warning" style="margin-top:10px">⚠ ${esc(c.duplicate_warning)}</div>` : ''}
             ${c.duplicate_candidate_id ? `<div class="intel-review-muted" style="margin-top:6px">Duplicate candidate ID: ${esc(c.duplicate_candidate_id)}</div>` : ''}
@@ -1698,6 +1777,7 @@ async function ask(){
           <button class="intel-review-mini reject" data-drawer-action="reject">Reject</button>
           <button class="intel-review-mini" data-drawer-action="duplicate">Duplicate</button>
           <button class="intel-review-mini" data-drawer-action="needs-research">Needs Research</button>
+          <button class="intel-review-mini" data-drawer-action="save-note">Save Note</button>
           <button class="intel-review-mini" data-drawer-action="research-now">Research Now</button>
           <button class="intel-review-mini" data-drawer-action="locate">Locate</button>
           <button class="intel-review-mini" data-drawer-action="translate">Translate</button>
@@ -1764,6 +1844,21 @@ async function ask(){
             : 'No location coordinates found.';
         } catch (err) {
           el.intelStatus.textContent = `Location lookup failed: ${String(err.message || err)}`;
+        }
+        return;
+      }
+
+      if (action === 'save-note') {
+        try {
+          el.intelStatus.textContent = 'Saving analyst note…';
+          const saved = await saveIntelAnalystNote(c);
+          Object.assign(c, saved);
+          const idx = intelReviewState.rows.findIndex(x => x.id === c.id);
+          if (idx >= 0) openIntelCandidateDrawer(idx);
+          renderIntelReviewRows(intelReviewState.rows);
+          el.intelStatus.textContent = 'Analyst note saved.';
+        } catch (err) {
+          el.intelStatus.textContent = `Save failed: ${String(err.message || err)}`;
         }
         return;
       }
@@ -1923,6 +2018,8 @@ async function ask(){
                     ${duplicate ? '<span class="intel-review-chip warn">Possible duplicate</span>' : ''}
                     ${(c.status || '') === 'needs_review' ? `<span class="intel-review-chip warn">Needs research${c.research_attempts ? ` · ${esc(c.research_attempts)}x` : ''}</span>` : ''}
                     ${(c.lat != null && c.lng != null) ? '<span class="intel-review-chip ok">Map ready</span>' : '<span class="intel-review-chip warn">No coords</span>'}
+                    ${(()=>{ const sr = localSourceReliability(c); return `<span class="intel-review-chip ${sourceReliabilityClass(sr.label)}">Src ${esc(sr.label)}</span>`; })()}
+                    ${(()=>{ const ag = localAgeStatus(c); return `<span class="intel-review-chip ${ageChipClass(ag.label)}">${esc(ag.label)}</span>`; })()}
                   </div>
                 </td>
                 <td>
@@ -2021,6 +2118,21 @@ async function ask(){
         lng: data.lng ?? candidate.lng ?? candidate.lon ?? null,
         location_confidence: data.location_confidence || candidate.location_confidence || 'geocoded'
       };
+    }
+
+    async function saveIntelAnalystNote(candidate){
+      const res = await fetch(intelReviewUrl('/api/intel-review/note'), {
+        method:'POST',
+        headers: intelReviewHeaders(),
+        body: JSON.stringify({
+          id: candidate.id,
+          analyst_note: candidate.analyst_note || candidate.review_note || '',
+          source_reliability: candidate.source_reliability || ''
+        })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+      return data.item || candidate;
     }
 
     async function researchIntelCandidateNow(candidate){
