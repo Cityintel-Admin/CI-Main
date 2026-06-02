@@ -574,6 +574,7 @@
           <button class="btn" id="intelReviewAutoRun" type="button">Run Auto Scan</button>
           <button class="btn" id="intelReviewAutoStatus" type="button">Automation Status</button>
           <button class="btn" id="intelReviewWorkflowStatus" type="button">Workflow Status</button>
+          <button class="btn" id="intelReviewWorkflowTriage" type="button">Workflow Triage</button>
           <button class="btn" id="intelReviewHealthStatus" type="button">Health Check</button>
           <input class="intel-index-search-input" id="intelReviewIndexQuery" type="search" placeholder="Search protest index…" />
           <button class="btn" id="intelReviewIndexSearch" type="button">Search Index</button>
@@ -652,6 +653,7 @@
       intelAutoRun:   document.getElementById('intelReviewAutoRun'),
       intelAutoStatus: document.getElementById('intelReviewAutoStatus'),
       intelWorkflowStatus: document.getElementById('intelReviewWorkflowStatus'),
+      intelWorkflowTriage: document.getElementById('intelReviewWorkflowTriage'),
       intelHealthStatus: document.getElementById('intelReviewHealthStatus'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
@@ -2032,6 +2034,7 @@ async function ask(){
           <button class="intel-review-mini" data-drawer-action="locate">Locate</button>
           <button class="intel-review-mini" data-drawer-action="translate">Translate</button>
           <button class="intel-review-mini" data-drawer-action="score">Score</button>
+          <button class="intel-review-mini" data-drawer-action="timeline">Timeline</button>
           <button class="intel-review-mini" data-drawer-action="copy">Copy JS</button>
         </div>`;
 
@@ -2143,6 +2146,16 @@ async function ask(){
           el.intelStatus.textContent = `Action saved: ${label}.`;
         } catch (err) {
           el.intelStatus.textContent = `Action failed: ${String(err.message || err)}`;
+        }
+        return;
+      }
+
+      if (action === 'timeline') {
+        try {
+          el.intelStatus.textContent = 'Loading candidate timeline…';
+          await showIntelWorkflowTimeline(c);
+        } catch (err) {
+          el.intelStatus.textContent = `Timeline failed: ${String(err.message || err)}`;
         }
         return;
       }
@@ -2604,6 +2617,84 @@ async function ask(){
       ].filter(Boolean).join(' · ');
     }
 
+
+    function formatIntelLifecycleCount(row = {}) {
+      return `${row.state || 'unknown'}: ${row.count || 0}`;
+    }
+
+    function formatIntelTimelineItem(a = {}) {
+      return [
+        `${formatIntelDate(a.created_at)}`,
+        `${a.action || 'action'}`,
+        a.disposition ? `disposition ${a.disposition}` : '',
+        a.note ? `note: ${compactText(a.note, 120)}` : '',
+        a.actor_email ? `by ${a.actor_email}` : ''
+      ].filter(Boolean).join(' · ');
+    }
+
+    async function runIntelWorkflowTriage(){
+      if (!el.intelStatus) return;
+      setIntelReviewStatus('Running advisory workflow triage…');
+
+      const res = await fetch(intelReviewUrl('/api/intel-review/workflow/triage'), {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ limit: 250, write_logs: false })
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+      setIntelReviewStatus(`Workflow triage: evaluated ${data.evaluated || 0} · advisory mode`, 'ok');
+      el.intelExport.value = [
+        'INTEL WORKFLOW TRIAGE',
+        `Mode: ${data.mode || 'advisory_admin_approved'}`,
+        `Evaluated: ${data.evaluated || 0}`,
+        `Checked: ${formatIntelDate(data.checked_at)}`,
+        '',
+        'Workflow state counts:',
+        ...Object.entries(data.counts || {}).map(([k,v]) => `${k}: ${v}`),
+        '',
+        'Top recommendations:',
+        ...(Array.isArray(data.recommendations) ? data.recommendations.map(r => `${r.workflow_state} · ${r.title || ''} · ${r.city || ''}${r.country ? ', ' + r.country : ''} · score ${Math.round(Number(r.score || 0) * 100)}% · ${r.reason || ''}`) : [])
+      ].join('\n');
+
+      await loadIntelReviewQueue();
+      return data;
+    }
+
+    async function showIntelWorkflowTimeline(candidate = {}){
+      if (!candidate.id) throw new Error('Missing candidate id');
+
+      const res = await fetch(intelReviewUrl('/api/intel-review/workflow/timeline') + '&candidate_id=' + encodeURIComponent(candidate.id), {
+        headers: authHeaders()
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+      const workflow = data.workflow || {};
+      const lifecycle = data.lifecycle || {};
+      el.intelExport.value = [
+        'INTEL CANDIDATE WORKFLOW TIMELINE',
+        `Candidate: ${candidate.title || candidate.id}`,
+        `Workflow state: ${workflow.workflow_state || 'triage'}`,
+        `Next step: ${workflow.next_step || 'analyst_review'}`,
+        `Workflow score: ${Math.round(Number(workflow.workflow_score || 0) * 100)}%`,
+        `Reason: ${workflow.workflow_reason || ''}`,
+        '',
+        `Lifecycle: ${lifecycle.lifecycle_status || candidate.lifecycle_status || 'active'}`,
+        `Lifecycle reason: ${lifecycle.lifecycle_reason || candidate.lifecycle_reason || ''}`,
+        `Adjusted confidence: ${Math.round(Number(lifecycle.confidence_adjusted || candidate.confidence_adjusted || 0) * 100)}%`,
+        `Expires/review by: ${formatIntelDate(lifecycle.expires_at || candidate.expires_at || '')}`,
+        '',
+        'Timeline:',
+        ...(Array.isArray(data.timeline) && data.timeline.length ? data.timeline.map(formatIntelTimelineItem) : ['No analyst workflow actions logged yet.'])
+      ].join('\n');
+
+      setIntelReviewStatus(`Timeline loaded: ${workflow.workflow_state || 'triage'}`, 'ok');
+      return data;
+    }
+
     async function showIntelWorkflowStatus(){
       if (!el.intelStatus) return;
       el.intelStatus.textContent = 'Loading workflow status…';
@@ -2628,6 +2719,14 @@ async function ask(){
         `Rejections in 14d: ${data.rejections_14d || 0}`,
         `Briefing queue: ${data.briefing_queue || 0}`,
         `Escalation queue: ${data.escalation_queue || 0}`,
+        `Active candidates: ${data.active_candidates || 0}`,
+        `Research queue: ${data.research_queue || 0}`,
+        `Escalation flags: ${data.escalation_flags || 0}`,
+        `Briefing flags: ${data.briefing_flags || 0}`,
+        `Oldest active: ${formatIntelDate(data.oldest_active_at)}`,
+        '',
+        'Lifecycle counts:',
+        ...(Array.isArray(data.lifecycle_counts) ? data.lifecycle_counts.map(formatIntelLifecycleCount) : []),
         '',
         'Recent workflow actions:',
         ...(Array.isArray(data.recent_actions) ? data.recent_actions.map(formatIntelWorkflowAction) : [])
@@ -2723,6 +2822,10 @@ async function ask(){
     if (el.intelWorkflowStatus) el.intelWorkflowStatus.addEventListener('click', async () => {
       try { await runIntelToolbarTask(el.intelWorkflowStatus, 'Checking…', showIntelWorkflowStatus); }
       catch (err) { el.intelStatus.textContent = `Workflow status failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelWorkflowTriage) el.intelWorkflowTriage.addEventListener('click', async () => {
+      try { await runIntelToolbarTask(el.intelWorkflowTriage, 'Triaging…', runIntelWorkflowTriage); }
+      catch (err) { el.intelStatus.textContent = `Workflow triage failed: ${String(err.message || err)}`; }
     });
     if (el.intelHealthStatus) el.intelHealthStatus.addEventListener('click', async () => {
       try { await runIntelToolbarTask(el.intelHealthStatus, 'Checking…', showIntelHealthStatus); }
