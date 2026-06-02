@@ -4,6 +4,33 @@
   <script src="auth.js"></script>
   <script src="admin-links.js"></script>
   <script src="auth-guard.js"></script>
+
+  <!-- CityIntel MasterAdmin AI Operations Dashboard -->
+  <div id="aiOpsDashboardModal" class="intel-review-modal" aria-hidden="true">
+    <div class="intel-review-shell" role="dialog" aria-modal="true" aria-labelledby="aiOpsDashboardTitle">
+      <div class="intel-review-head">
+        <div>
+          <h2 id="aiOpsDashboardTitle">AI Operations Dashboard</h2>
+          <div class="small">CityIntel admin-only lifecycle, queue and automation monitoring.</div>
+        </div>
+        <button class="btn" id="aiOpsDashboardClose" type="button">Close</button>
+      </div>
+      <div class="intel-review-body">
+        <div id="aiOpsDashboardMetrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px;"></div>
+
+        <div class="intel-candidate-section">
+          <h3>Automation health</h3>
+          <div id="aiOpsDashboardHealth" class="small">Loading…</div>
+        </div>
+
+        <div class="intel-candidate-section">
+          <h3>Recent lifecycle activity</h3>
+          <div id="aiOpsDashboardActivity" class="small">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     CIAuth.requireAuth();
     if (!(CIAuth.can?.('canViewAlerts') || CIAuth.isMasterAdmin?.() || CIAuth.isOrgAdmin?.() || CIAuth.isOperator?.())) {
@@ -456,6 +483,7 @@
               <button class="btn primary" id="askBtn">Ask CityIntel</button>
               <button class="btn" id="clearBtn">Clear thread</button>
               <button class="btn" id="intelReviewBtn" style="display:none">Intel Review Queue</button>
+              <button class="btn" id="aiOpsDashboardBtn" style="display:none">AI Ops Dashboard</button>
               <span class="hint-text" id="turnCount" style="display:none"></span>
             </div>
           </div>
@@ -655,6 +683,12 @@
       intelWorkflowStatus: document.getElementById('intelReviewWorkflowStatus'),
       intelWorkflowTriage: document.getElementById('intelReviewWorkflowTriage'),
       intelHealthStatus: document.getElementById('intelReviewHealthStatus'),
+      aiOpsBtn:      document.getElementById('aiOpsDashboardBtn'),
+      aiOpsModal:    document.getElementById('aiOpsDashboardModal'),
+      aiOpsClose:    document.getElementById('aiOpsDashboardClose'),
+      aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
+      aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
+      aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -721,6 +755,91 @@
       finally { setIntelButtonBusy(btn, false); }
     }
 
+
+
+    // ── CityIntel MasterAdmin AI Operations Dashboard ──────────────────
+    function setAiOpsDashboard(open){
+      if (!el.aiOpsModal) return;
+      el.aiOpsModal.classList.toggle('open', !!open);
+      el.aiOpsModal.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+
+    function renderAiOpsMetric(label, value){
+      return `
+        <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:14px;">
+          <div style="font-size:11px;color:#8e97a3;text-transform:uppercase;margin-bottom:6px;">${esc(label)}</div>
+          <div style="font-size:24px;font-weight:800;color:#fff;">${Number(value || 0)}</div>
+        </div>`;
+    }
+
+    function renderAiOpsActivity(items = []){
+      if (!items.length) return '<div class="small">No recent lifecycle activity found.</div>';
+      return items.map(item => {
+        const place = [item.city, item.country].filter(Boolean).join(', ');
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid #2e3238;">
+            <strong>${esc(item.title || item.candidate_id || 'Untitled candidate')}</strong><br>
+            <span>${esc(item.event_type || item.action || 'event')}${item.lifecycle_state ? ` · ${esc(item.lifecycle_state)}` : ''}</span><br>
+            ${place ? `<span>${esc(place)}</span><br>` : ''}
+            <span>${esc(item.actor_email || 'system')} · ${esc(dateLabel(item.created_at) || item.created_at || '')}</span>
+          </div>`;
+      }).join('');
+    }
+
+    async function loadAiOpsDashboard(){
+      if (!isMasterAdminOnly()) {
+        alert('CityIntel admin access required.');
+        return;
+      }
+
+      setAiOpsDashboard(true);
+      if (el.aiOpsMetrics) el.aiOpsMetrics.innerHTML = '<div class="small">Loading metrics…</div>';
+      if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Loading…';
+      if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
+
+      try {
+        const res = await fetch(intelReviewUrl('/api/intel-review/ops-dashboard'), {
+          headers: authHeaders()
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) throw new Error(data.error || `Dashboard request failed (${res.status})`);
+
+        const m = data.metrics || {};
+        if (el.aiOpsMetrics) {
+          el.aiOpsMetrics.innerHTML = [
+            renderAiOpsMetric('Candidates', m.total_candidates),
+            renderAiOpsMetric('Active Review', m.active_review),
+            renderAiOpsMetric('Briefing Queue', m.briefing_queue),
+            renderAiOpsMetric('Escalations', m.escalation_queue),
+            renderAiOpsMetric('Lifecycle Events', m.lifecycle_events),
+            renderAiOpsMetric('Approved', m.approved),
+            renderAiOpsMetric('Rejected', m.rejected),
+            renderAiOpsMetric('Watchlist', m.watchlist),
+            renderAiOpsMetric('Needs Research', m.needs_research)
+          ].join('');
+        }
+
+        const h = data.automation_health || {};
+        if (el.aiOpsHealth) {
+          el.aiOpsHealth.innerHTML = `
+            <strong>Status:</strong> ${esc(h.status || 'unknown')}<br>
+            <strong>Queues online:</strong> ${h.queues_online ? 'Yes' : 'No'}<br>
+            <strong>Lifecycle online:</strong> ${h.lifecycle_online ? 'Yes' : 'No'}<br>
+            <strong>Automation ready:</strong> ${h.automation_ready ? 'Yes' : 'No'}<br>
+            <strong>Last updated:</strong> ${esc(dateLabel(h.timestamp) || h.timestamp || '')}`;
+        }
+
+        if (el.aiOpsActivity) {
+          el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
+        }
+      } catch (err) {
+        if (el.aiOpsMetrics) {
+          el.aiOpsMetrics.innerHTML = `<div class="small">Dashboard failed: ${esc(err.message || err)}</div>`;
+        }
+        if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Unavailable';
+        if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
+      }
+    }
 
     // ── Utilities ─────────────────────────────────────────────────────
     function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -2854,6 +2973,8 @@ async function ask(){
     el.debugToggle.addEventListener('change', renderDebug);
     el.panelClose.addEventListener('click',()=>setPanelOpen(false));
     if (el.intelBtn) el.intelBtn.addEventListener('click',()=>{ setIntelModal(true); loadIntelReviewQueue(); });
+    if (el.aiOpsBtn) el.aiOpsBtn.addEventListener('click', loadAiOpsDashboard);
+    if (el.aiOpsClose) el.aiOpsClose.addEventListener('click',()=>setAiOpsDashboard(false));
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
@@ -2914,7 +3035,10 @@ async function ask(){
     // ── Init ──────────────────────────────────────────────────────────
     renderSuggestions(DEFAULT_EXAMPLES, false);
     renderHistory();
-    if (el.intelBtn && isMasterAdminOnly()) el.intelBtn.style.display = 'inline-flex';
+    if (isMasterAdminOnly()) {
+      if (el.intelBtn) el.intelBtn.style.display = 'inline-flex';
+      if (el.aiOpsBtn) el.aiOpsBtn.style.display = 'inline-flex';
+    }
 
     // Wire outage quick-prompt clicks
     document.querySelectorAll('#outageQuickPrompts [data-q]').forEach(item => {
