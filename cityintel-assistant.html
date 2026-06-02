@@ -14,6 +14,7 @@
   <meta charset="utf-8" />
   <title>CityIntel — Ask CityIntel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:," />
   <style>
     :root {
       --brand-red:#D01616; --brand-black:#0C0C0C;
@@ -573,6 +574,7 @@
           <button class="btn" id="intelReviewAutoRun" type="button">Run Auto Scan</button>
           <button class="btn" id="intelReviewAutoStatus" type="button">Automation Status</button>
           <button class="btn" id="intelReviewWorkflowStatus" type="button">Workflow Status</button>
+          <button class="btn" id="intelReviewHealthStatus" type="button">Health Check</button>
           <input class="intel-index-search-input" id="intelReviewIndexQuery" type="search" placeholder="Search protest index…" />
           <button class="btn" id="intelReviewIndexSearch" type="button">Search Index</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
@@ -650,6 +652,7 @@
       intelAutoRun:   document.getElementById('intelReviewAutoRun'),
       intelAutoStatus: document.getElementById('intelReviewAutoStatus'),
       intelWorkflowStatus: document.getElementById('intelReviewWorkflowStatus'),
+      intelHealthStatus: document.getElementById('intelReviewHealthStatus'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -691,6 +694,31 @@
       const sep = String(path).includes('?') ? '&' : '?';
       return API_BASE + path + sep + 'admin_hint=cityintel_masteradmin';
     }
+
+    function setIntelReviewStatus(message, level = 'info'){
+      if (!el.intelStatus) return;
+      el.intelStatus.textContent = String(message || '');
+      el.intelStatus.dataset.level = level;
+    }
+
+    function setIntelButtonBusy(btn, busy, label){
+      if (!btn) return;
+      if (busy) {
+        btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+        btn.disabled = true;
+        if (label) btn.textContent = label;
+      } else {
+        btn.disabled = false;
+        if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+      }
+    }
+
+    async function runIntelToolbarTask(btn, label, task){
+      setIntelButtonBusy(btn, true, label);
+      try { return await task(); }
+      finally { setIntelButtonBusy(btn, false); }
+    }
+
 
     // ── Utilities ─────────────────────────────────────────────────────
     function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -2609,6 +2637,47 @@ async function ask(){
     }
 
 
+
+
+    async function showIntelHealthStatus(){
+      if (!el.intelStatus) return;
+      setIntelReviewStatus('Running Intel Review health check…');
+
+      const res = await fetch(intelReviewUrl('/api/intel-review/health'), {
+        headers: authHeaders()
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+      setIntelReviewStatus(
+        `Health: ${data.status || 'ok'} · pending ${data.pending_candidates || 0} · actions ${data.workflow_actions_14d || 0} · last run ${data.last_run_status || 'none'}`,
+        data.status === 'ok' ? 'ok' : 'warn'
+      );
+
+      el.intelExport.value = [
+        'INTEL REVIEW HEALTH CHECK',
+        `Status: ${data.status || 'ok'}`,
+        `Checked at: ${formatIntelDate(data.checked_at)}`,
+        `Pending candidates: ${data.pending_candidates || 0}`,
+        `Needs research: ${data.needs_research || 0}`,
+        `Map-ready candidates: ${data.map_ready || 0}`,
+        `Protest index total: ${data.index_total || 0}`,
+        `Geo clusters: ${data.geo_clusters || 0}`,
+        `Workflow actions in 14d: ${data.workflow_actions_14d || 0}`,
+        `Briefing queue: ${data.briefing_queue || 0}`,
+        `Escalation queue: ${data.escalation_queue || 0}`,
+        `Last automation run: ${data.last_run_status || 'none'}`,
+        `Last automation finished: ${formatIntelDate(data.last_run_finished_at)}`,
+        '',
+        'Schema:',
+        JSON.stringify(data.schema || {}, null, 2)
+      ].join('\n');
+
+      return data;
+    }
+
+
     // ── Events ────────────────────────────────────────────────────────
     el.ask.addEventListener('click', ask);
     el.q.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') ask(); });
@@ -2628,9 +2697,9 @@ async function ask(){
     el.panelClose.addEventListener('click',()=>setPanelOpen(false));
     if (el.intelBtn) el.intelBtn.addEventListener('click',()=>{ setIntelModal(true); loadIntelReviewQueue(); });
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
-    if (el.intelRefresh) el.intelRefresh.addEventListener('click',loadIntelReviewQueue);
-    if (el.intelCollect) el.intelCollect.addEventListener('click',collectIntelReviewCandidates);
-    if (el.intelScore) el.intelScore.addEventListener('click',scoreIntelReviewQueue);
+    if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
+    if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
+    if (el.intelScore) el.intelScore.addEventListener('click',()=>runIntelToolbarTask(el.intelScore, 'Scoring…', scoreIntelReviewQueue));
     if (el.intelSyncIndex) el.intelSyncIndex.addEventListener('click', async () => {
       try { await syncProtestIndex(); }
       catch (err) { el.intelStatus.textContent = `Index sync failed: ${String(err.message || err)}`; }
@@ -2652,8 +2721,12 @@ async function ask(){
       catch (err) { el.intelStatus.textContent = `Automation status failed: ${String(err.message || err)}`; }
     });
     if (el.intelWorkflowStatus) el.intelWorkflowStatus.addEventListener('click', async () => {
-      try { await showIntelWorkflowStatus(); }
+      try { await runIntelToolbarTask(el.intelWorkflowStatus, 'Checking…', showIntelWorkflowStatus); }
       catch (err) { el.intelStatus.textContent = `Workflow status failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelHealthStatus) el.intelHealthStatus.addEventListener('click', async () => {
+      try { await runIntelToolbarTask(el.intelHealthStatus, 'Checking…', showIntelHealthStatus); }
+      catch (err) { el.intelStatus.textContent = `Health check failed: ${String(err.message || err)}`; }
     });
     if (el.intelIndexQuery) el.intelIndexQuery.addEventListener('keydown', async (e) => {
       if (e.key === 'Enter') {
