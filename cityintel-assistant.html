@@ -1618,7 +1618,13 @@ async function ask(){
         source_reliability_reason: c.source_reliability_reason || '',
         age_status: c.age_status || '',
         age_hours: c.age_hours ?? null,
-        why_flagged: c.why_flagged || ''
+        why_flagged: c.why_flagged || '',
+        priority_score: c.priority_score ?? null,
+        priority_tier: c.priority_tier || '',
+        priority_reason: c.priority_reason || '',
+        priority_rank: c.priority_rank ?? null,
+        priority_flags: c.priority_flags || '',
+        last_prioritised_at: c.last_prioritised_at || ''
       };
     }
 
@@ -1658,6 +1664,30 @@ async function ask(){
       if (v === 'aging') return 'warn';
       if (v === 'stale' || v === 'old') return 'danger';
       return '';
+    }
+
+    function priorityChipClass(value = '') {
+      const v = String(value || '').toLowerCase();
+      if (v.includes('top')) return 'danger';
+      if (v === 'priority') return 'warn';
+      if (v === 'standard' || v === 'watch') return 'ok';
+      return '';
+    }
+
+    function localPrioritySignal(c = {}) {
+      const score = c.priority_score ?? c.confidence_adjusted ?? c.confidence_score ?? null;
+      let tier = c.priority_tier || '';
+      if (!tier) {
+        const n = Number(score || 0);
+        tier = n >= 0.78 ? 'Top priority' : n >= 0.62 ? 'Priority' : n >= 0.44 ? 'Standard' : 'Low priority';
+      }
+      return {
+        score: score == null ? null : Number(score),
+        tier,
+        reason: c.priority_reason || c.lifecycle_reason || '',
+        rank: c.priority_rank ?? null,
+        flags: c.priority_flags || ''
+      };
     }
 
     function localAgeStatus(c = {}) {
@@ -1733,6 +1763,7 @@ async function ask(){
         c.duplicate_warning ? `Duplicate: ${c.duplicate_warning}` : '',
         (c.status || '') === 'needs_review' ? `Needs research active${c.research_attempts ? ` after ${c.research_attempts} attempt(s).` : '.'}` : ''
       ].filter(Boolean).join(' ');
+      const prioritySignal = localPrioritySignal(c);
 
       el.intelDrawer.innerHTML = `
         <div class="intel-candidate-drawer-head">
@@ -1827,6 +1858,12 @@ async function ask(){
               <span class="intel-review-chip ${ageChipClass(ageSignal.label)}">${esc(ageSignal.label)}${ageSignal.hours != null ? ` · ${esc(Math.abs(Number(ageSignal.hours)).toFixed(1))}h` : ''}</span>
             </div>
             ${whyFlagged ? `<div class="intel-review-muted" style="margin-top:10px;line-height:1.45"><strong>Why flagged:</strong><br>${esc(whyFlagged)}</div>` : ''}
+            <div class="intel-review-muted" style="margin-top:10px;line-height:1.45">
+              <strong>Queue priority:</strong><br>
+              Tier: ${esc(prioritySignal.tier || 'Standard')} ${prioritySignal.score != null ? `· ${Math.round(Number(prioritySignal.score) * 100)}%` : ''}${prioritySignal.rank ? ` · Rank #${esc(prioritySignal.rank)}` : ''}<br>
+              ${prioritySignal.reason ? esc(prioritySignal.reason) : 'Priority is weighted from risk, confidence, freshness, source trust, duplicates and actionability.'}
+              ${prioritySignal.flags ? `<br>Flags: ${esc(prioritySignal.flags)}` : ''}
+            </div>
             ${c.lifecycle_status || c.lifecycle_reason || c.decay_score ? `
             <div class="intel-review-muted" style="margin-top:10px;line-height:1.45">
             <strong>Automation intelligence:</strong><br>
@@ -2124,6 +2161,7 @@ async function ask(){
                     ${(c.lat != null && c.lng != null) ? '<span class="intel-review-chip ok">Map ready</span>' : '<span class="intel-review-chip warn">No coords</span>'}
                     ${(()=>{ const sr = localSourceReliability(c); return `<span class="intel-review-chip ${sourceReliabilityClass(sr.label)}">Src ${esc(sr.label)}</span>`; })()}
                     ${(()=>{ const ag = localAgeStatus(c); return `<span class="intel-review-chip ${ageChipClass(ag.label)}">${esc(ag.label)}</span>`; })()}
+                    ${(()=>{ const pr = localPrioritySignal(c); return `<span class="intel-review-chip ${priorityChipClass(pr.tier)}">${esc(pr.tier)}${pr.score != null ? ` · ${Math.round(Number(pr.score)*100)}%` : ''}</span>`; })()}
                   </div>
                 </td>
                 <td>
