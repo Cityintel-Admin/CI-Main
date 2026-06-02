@@ -572,6 +572,7 @@
           <button class="btn" id="intelReviewIndexStats" type="button">Index Stats</button>
           <button class="btn" id="intelReviewAutoRun" type="button">Run Auto Scan</button>
           <button class="btn" id="intelReviewAutoStatus" type="button">Automation Status</button>
+          <button class="btn" id="intelReviewWorkflowStatus" type="button">Workflow Status</button>
           <input class="intel-index-search-input" id="intelReviewIndexQuery" type="search" placeholder="Search protest index…" />
           <button class="btn" id="intelReviewIndexSearch" type="button">Search Index</button>
           <button class="btn" id="intelReviewCopyAll" type="button">Copy Visible JS</button>
@@ -648,6 +649,7 @@
       intelIndexStats: document.getElementById('intelReviewIndexStats'),
       intelAutoRun:   document.getElementById('intelReviewAutoRun'),
       intelAutoStatus: document.getElementById('intelReviewAutoStatus'),
+      intelWorkflowStatus: document.getElementById('intelReviewWorkflowStatus'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -2562,6 +2564,51 @@ async function ask(){
     }
 
 
+
+    function formatIntelWorkflowAction(a = {}) {
+      return [
+        `${formatIntelDate(a.created_at)}`,
+        `${a.action || 'action'}`,
+        a.disposition ? `disposition ${a.disposition}` : '',
+        a.title ? `${a.title}` : '',
+        a.city ? `${a.city}${a.country ? ', ' + a.country : ''}` : '',
+        a.actor_email ? `by ${a.actor_email}` : ''
+      ].filter(Boolean).join(' · ');
+    }
+
+    async function showIntelWorkflowStatus(){
+      if (!el.intelStatus) return;
+      el.intelStatus.textContent = 'Loading workflow status…';
+
+      const res = await fetch(intelReviewUrl('/api/intel-review/workflow/status'), {
+        headers: authHeaders()
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+      el.intelStatus.textContent =
+        `Workflow: actions ${data.actions_14d || 0} · briefing queue ${data.briefing_queue || 0} · escalation queue ${data.escalation_queue || 0}`;
+
+      el.intelExport.value = [
+        'INTEL WORKFLOW STATUS',
+        `Actions in 14d: ${data.actions_14d || 0}`,
+        `Escalations in 14d: ${data.escalations_14d || 0}`,
+        `Watchlist in 14d: ${data.watchlist_14d || 0}`,
+        `Briefing actions in 14d: ${data.briefing_14d || 0}`,
+        `Approvals in 14d: ${data.approvals_14d || 0}`,
+        `Rejections in 14d: ${data.rejections_14d || 0}`,
+        `Briefing queue: ${data.briefing_queue || 0}`,
+        `Escalation queue: ${data.escalation_queue || 0}`,
+        '',
+        'Recent workflow actions:',
+        ...(Array.isArray(data.recent_actions) ? data.recent_actions.map(formatIntelWorkflowAction) : [])
+      ].join('\n');
+
+      return data;
+    }
+
+
     // ── Events ────────────────────────────────────────────────────────
     el.ask.addEventListener('click', ask);
     el.q.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') ask(); });
@@ -2603,6 +2650,10 @@ async function ask(){
     if (el.intelAutoStatus) el.intelAutoStatus.addEventListener('click', async () => {
       try { await showIntelAutomationStatus(); }
       catch (err) { el.intelStatus.textContent = `Automation status failed: ${String(err.message || err)}`; }
+    });
+    if (el.intelWorkflowStatus) el.intelWorkflowStatus.addEventListener('click', async () => {
+      try { await showIntelWorkflowStatus(); }
+      catch (err) { el.intelStatus.textContent = `Workflow status failed: ${String(err.message || err)}`; }
     });
     if (el.intelIndexQuery) el.intelIndexQuery.addEventListener('keydown', async (e) => {
       if (e.key === 'Enter') {
