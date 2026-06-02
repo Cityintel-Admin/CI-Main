@@ -19,6 +19,19 @@
         <div id="aiOpsDashboardMetrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px;"></div>
 
         <div class="intel-candidate-section">
+          <h3>Dashboard controls</h3>
+          <div class="intel-review-toolbar" style="margin-top:8px;">
+            <button class="btn primary" id="aiOpsRefresh" type="button">Refresh Dashboard</button>
+            <button class="btn" id="aiOpsOpenReview" type="button">Open Review Queue</button>
+            <button class="btn" id="aiOpsHealthCheck" type="button">Health Check</button>
+            <button class="btn" id="aiOpsAutomationStatus" type="button">Automation Status</button>
+            <button class="btn" id="aiOpsRunAutoScan" type="button">Run Auto Scan</button>
+            <button class="btn" id="aiOpsWorkflowTriage" type="button">Workflow Triage</button>
+          </div>
+          <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
+        </div>
+
+        <div class="intel-candidate-section">
           <h3>Automation health</h3>
           <div id="aiOpsDashboardHealth" class="small">Loading…</div>
         </div>
@@ -686,6 +699,13 @@
       aiOpsBtn:      document.getElementById('aiOpsDashboardBtn'),
       aiOpsModal:    document.getElementById('aiOpsDashboardModal'),
       aiOpsClose:    document.getElementById('aiOpsDashboardClose'),
+      aiOpsRefresh:  document.getElementById('aiOpsRefresh'),
+      aiOpsOpenReview: document.getElementById('aiOpsOpenReview'),
+      aiOpsHealthCheck: document.getElementById('aiOpsHealthCheck'),
+      aiOpsAutomationStatus: document.getElementById('aiOpsAutomationStatus'),
+      aiOpsRunAutoScan: document.getElementById('aiOpsRunAutoScan'),
+      aiOpsWorkflowTriage: document.getElementById('aiOpsWorkflowTriage'),
+      aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
@@ -786,16 +806,18 @@
       }).join('');
     }
 
-    async function loadAiOpsDashboard(){
+    async function loadAiOpsDashboard(options = {}){
       if (!isMasterAdminOnly()) {
         alert('CityIntel admin access required.');
         return;
       }
 
       setAiOpsDashboard(true);
-      if (el.aiOpsMetrics) el.aiOpsMetrics.innerHTML = '<div class="small">Loading metrics…</div>';
-      if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Loading…';
-      if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
+      if (!options.silent) {
+        if (el.aiOpsMetrics) el.aiOpsMetrics.innerHTML = '<div class="small">Loading metrics…</div>';
+        if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Loading…';
+        if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
+      }
 
       try {
         const res = await fetch(intelReviewUrl('/api/intel-review/ops-dashboard'), {
@@ -839,6 +861,60 @@
         if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Unavailable';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
       }
+    }
+
+
+    function summariseAiOpsControlResult(action, data = {}){
+      if (action === 'health') {
+        return `Health: ${esc(data.status || 'ok')} · pending ${Number(data.pending_candidates || 0)} · actions ${Number(data.workflow_actions_14d || 0)} · lifecycle ${Number(data.lifecycle_events_14d || 0)}`;
+      }
+      if (action === 'automation_status') {
+        return `Automation: ${esc(data.status || data.state || 'unknown')} · pending ${Number(data.pending_candidates || data.pending || 0)} · index ${Number(data.index_total || data.index || 0)} · actions ${Number(data.actions_14d || data.workflow_actions_14d || 0)}`;
+      }
+      if (action === 'auto_scan') {
+        return `Auto scan: ${esc(data.status || (data.ok ? 'complete' : 'submitted'))} · collected ${Number(data.collected || data.inserted || data.candidates_added || 0)} · pending ${Number(data.pending_candidates || data.pending || 0)}`;
+      }
+      if (action === 'workflow_triage') {
+        return `Workflow triage: evaluated ${Number(data.evaluated || 0)} · updated ${Number(data.updated || data.actions || 0)} · mode ${data.write_logs ? 'write logs' : 'advisory'}`;
+      }
+      return data.ok ? 'Action complete.' : 'Action returned.';
+    }
+
+    function setAiOpsControlOutput(message, level = 'info'){
+      if (!el.aiOpsControlOutput) return;
+      const colour = level === 'ok' ? '#33c48d' : level === 'warn' ? '#f0b429' : level === 'error' ? '#ff5a5f' : '#8e97a3';
+      el.aiOpsControlOutput.style.color = colour;
+      el.aiOpsControlOutput.textContent = message || '';
+    }
+
+    async function runAiOpsControl(btn, label, action, task){
+      if (!isMasterAdminOnly()) {
+        alert('CityIntel admin access required.');
+        return null;
+      }
+      setIntelButtonBusy(btn, true, label);
+      setAiOpsControlOutput(`${label.replace('…','')}…`);
+      try {
+        const data = await task();
+        setAiOpsControlOutput(summariseAiOpsControlResult(action, data), 'ok');
+        await loadAiOpsDashboard({ silent: true });
+        return data;
+      } catch (err) {
+        setAiOpsControlOutput(`${label.replace('…','')} failed: ${String(err.message || err)}`, 'error');
+        return null;
+      } finally {
+        setIntelButtonBusy(btn, false);
+      }
+    }
+
+    async function fetchAiOpsJson(path, options = {}){
+      const res = await fetch(intelReviewUrl(path), {
+        ...options,
+        headers: { ...authHeaders(), ...(options.headers || {}) }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+      return data;
     }
 
     // ── Utilities ─────────────────────────────────────────────────────
@@ -2975,6 +3051,15 @@ async function ask(){
     if (el.intelBtn) el.intelBtn.addEventListener('click',()=>{ setIntelModal(true); loadIntelReviewQueue(); });
     if (el.aiOpsBtn) el.aiOpsBtn.addEventListener('click', loadAiOpsDashboard);
     if (el.aiOpsClose) el.aiOpsClose.addEventListener('click',()=>setAiOpsDashboard(false));
+    if (el.aiOpsRefresh) el.aiOpsRefresh.addEventListener('click',()=>runAiOpsControl(el.aiOpsRefresh, 'Refreshing…', 'refresh', async()=>{ await loadAiOpsDashboard({ silent: true }); return { ok:true }; }));
+    if (el.aiOpsOpenReview) el.aiOpsOpenReview.addEventListener('click',()=>{ setAiOpsDashboard(false); setIntelModal(true); loadIntelReviewQueue(); });
+    if (el.aiOpsHealthCheck) el.aiOpsHealthCheck.addEventListener('click',()=>runAiOpsControl(el.aiOpsHealthCheck, 'Checking…', 'health', ()=>fetchAiOpsJson('/api/intel-review/health')));
+    if (el.aiOpsAutomationStatus) el.aiOpsAutomationStatus.addEventListener('click',()=>runAiOpsControl(el.aiOpsAutomationStatus, 'Checking…', 'automation_status', ()=>fetchAiOpsJson('/api/intel-review/automation/status')));
+    if (el.aiOpsRunAutoScan) el.aiOpsRunAutoScan.addEventListener('click',()=>{
+      if (!confirm('Run automated protest scan now?')) return;
+      return runAiOpsControl(el.aiOpsRunAutoScan, 'Running scan…', 'auto_scan', ()=>fetchAiOpsJson('/api/intel-review/automation/run', { method:'POST', body: JSON.stringify({ city_limit: 10, limit: 35, timespan: '3d' }) }));
+    });
+    if (el.aiOpsWorkflowTriage) el.aiOpsWorkflowTriage.addEventListener('click',()=>runAiOpsControl(el.aiOpsWorkflowTriage, 'Triaging…', 'workflow_triage', ()=>fetchAiOpsJson('/api/intel-review/workflow/triage', { method:'POST', body: JSON.stringify({ limit: 250, write_logs: false }) })));
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
