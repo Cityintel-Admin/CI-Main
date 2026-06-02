@@ -2623,13 +2623,59 @@ async function ask(){
     }
 
     function formatIntelTimelineItem(a = {}) {
+      const action = a.action || a.event_type || a.lifecycle_state || 'event';
       return [
         `${formatIntelDate(a.created_at)}`,
-        `${a.action || 'action'}`,
+        `${action}`,
+        a.lifecycle_state ? `state ${a.lifecycle_state}` : '',
+        a.previous_state || a.next_state ? `${a.previous_state || '—'} → ${a.next_state || a.lifecycle_state || '—'}` : '',
         a.disposition ? `disposition ${a.disposition}` : '',
         a.note ? `note: ${compactText(a.note, 120)}` : '',
         a.actor_email ? `by ${a.actor_email}` : ''
       ].filter(Boolean).join(' · ');
+    }
+
+    function intelTimelineSortDesc(a = {}, b = {}) {
+      return (Date.parse(b.created_at || '') || 0) - (Date.parse(a.created_at || '') || 0);
+    }
+
+    function formatIntelTimelineCard(a = {}) {
+      const title = a.event_type || a.action || a.lifecycle_state || 'Timeline event';
+      const state = a.lifecycle_state || a.next_state || a.disposition || '';
+      const note = a.note || a.lifecycle_reason || '';
+      return `
+        <div class="intel-review-muted" style="padding:8px 0;border-bottom:1px solid var(--gray-600);line-height:1.45">
+          <strong>${esc(title)}</strong>${state ? ` · ${esc(state)}` : ''}<br>
+          <span>${esc(formatIntelDate(a.created_at))}${a.actor_email ? ` · ${esc(a.actor_email)}` : ''}</span>
+          ${a.previous_state || a.next_state ? `<br><span>${esc(a.previous_state || '—')} → ${esc(a.next_state || a.lifecycle_state || '—')}</span>` : ''}
+          ${note ? `<br><span>${esc(compactText(note, 180))}</span>` : ''}
+        </div>`;
+    }
+
+    function renderIntelTimelinePanel(data = {}, candidate = {}) {
+      const workflow = data.workflow || {};
+      const lifecycle = data.lifecycle || {};
+      const events = [
+        ...(Array.isArray(data.lifecycle_events) ? data.lifecycle_events : []),
+        ...(Array.isArray(data.timeline) ? data.timeline : [])
+      ].sort(intelTimelineSortDesc);
+
+      return `
+        <div class="intel-candidate-section" data-intel-timeline-panel>
+          <h3>Workflow timeline</h3>
+          <div class="intel-review-chipline">
+            <span class="intel-review-chip">Workflow: ${esc(workflow.workflow_state || 'triage')}</span>
+            <span class="intel-review-chip">Next: ${esc(workflow.next_step || 'analyst_review')}</span>
+            <span class="intel-review-chip">Events: ${esc(events.length)}</span>
+            <span class="intel-review-chip">Lifecycle: ${esc(lifecycle.lifecycle_status || candidate.lifecycle_status || 'active')}</span>
+          </div>
+          <div class="intel-review-muted" style="margin-top:10px;line-height:1.45">
+            ${workflow.workflow_reason ? esc(workflow.workflow_reason) : 'Timeline loaded from lifecycle and analyst action history.'}
+          </div>
+          <div style="margin-top:10px">
+            ${events.length ? events.slice(0, 12).map(formatIntelTimelineCard).join('') : '<div class="intel-review-muted">No lifecycle or analyst workflow events logged yet.</div>'}
+          </div>
+        </div>`;
     }
 
     async function runIntelWorkflowTriage(){
@@ -2674,6 +2720,11 @@ async function ask(){
 
       const workflow = data.workflow || {};
       const lifecycle = data.lifecycle || {};
+      const combinedTimeline = [
+        ...(Array.isArray(data.lifecycle_events) ? data.lifecycle_events : []),
+        ...(Array.isArray(data.timeline) ? data.timeline : [])
+      ].sort(intelTimelineSortDesc);
+
       el.intelExport.value = [
         'INTEL CANDIDATE WORKFLOW TIMELINE',
         `Candidate: ${candidate.title || candidate.id}`,
@@ -2688,10 +2739,17 @@ async function ask(){
         `Expires/review by: ${formatIntelDate(lifecycle.expires_at || candidate.expires_at || '')}`,
         '',
         'Timeline:',
-        ...(Array.isArray(data.timeline) && data.timeline.length ? data.timeline.map(formatIntelTimelineItem) : ['No analyst workflow actions logged yet.'])
+        ...(combinedTimeline.length ? combinedTimeline.map(formatIntelTimelineItem) : ['No lifecycle or analyst workflow events logged yet.'])
       ].join('\n');
 
-      setIntelReviewStatus(`Timeline loaded: ${workflow.workflow_state || 'triage'}`, 'ok');
+      const drawerBody = el.intelDrawer?.querySelector('.intel-candidate-drawer-body');
+      if (drawerBody) {
+        drawerBody.querySelector('[data-intel-timeline-panel]')?.remove();
+        drawerBody.insertAdjacentHTML('afterbegin', renderIntelTimelinePanel(data, candidate));
+        drawerBody.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      setIntelReviewStatus(`Timeline loaded: ${workflow.workflow_state || 'triage'} · events ${combinedTimeline.length}`, 'ok');
       return data;
     }
 
