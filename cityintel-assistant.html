@@ -37,6 +37,14 @@
         </div>
 
         <div class="intel-candidate-section">
+          <h3>Queue detail actions</h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">Review live briefing, escalation and research queues without leaving the admin dashboard.</div>
+          <div id="aiOpsQueueDetails" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+            <div class="small">Loading queue previews…</div>
+          </div>
+        </div>
+
+        <div class="intel-candidate-section">
           <h3>Recent lifecycle activity</h3>
           <div id="aiOpsDashboardActivity" class="small">Loading…</div>
         </div>
@@ -708,6 +716,7 @@
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
+      aiOpsQueues:   document.getElementById('aiOpsQueueDetails'),
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
@@ -806,6 +815,46 @@
       }).join('');
     }
 
+    function renderAiOpsQueueCard(title, items = [], queueKey = ''){
+      const body = items.length ? items.map(item => {
+        const id = item.candidate_id || item.id || '';
+        const place = [item.city, item.country].filter(Boolean).join(', ');
+        const status = item.briefing_status || item.escalation_status || item.research_status || item.status || 'queued';
+        const when = item.requested_at || item.created_at || item.updated_at || '';
+        const score = item.priority_score != null ? ` · ${Math.round(Number(item.priority_score) * 100)}%` : '';
+        const buttons = queueKey === 'briefing'
+          ? `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-aiops-queue="briefing" data-aiops-id="${esc(id)}" data-aiops-action="ready">Mark Ready</button><button class="intel-review-mini" data-aiops-queue="briefing" data-aiops-id="${esc(id)}" data-aiops-action="complete">Complete</button>`
+          : queueKey === 'escalation'
+            ? `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-aiops-queue="escalation" data-aiops-id="${esc(id)}" data-aiops-action="assigned">Assign</button><button class="intel-review-mini" data-aiops-queue="escalation" data-aiops-id="${esc(id)}" data-aiops-action="monitoring">Monitor</button><button class="intel-review-mini" data-aiops-queue="escalation" data-aiops-id="${esc(id)}" data-aiops-action="resolved">Resolve</button>`
+            : `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-aiops-research="${esc(id)}">Research Now</button>`;
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid #2e3238;">
+            <strong>${esc(item.title || id || 'Untitled')}</strong><br>
+            ${place ? `<span>${esc(place)}</span><br>` : ''}
+            <span>${esc(item.risk || 'Risk unknown')} · ${esc(status)}${score}</span><br>
+            ${when ? `<span>${esc(dateLabel(when) || when)}</span><br>` : ''}
+            <div class="intel-review-toolbar" style="margin-top:8px;gap:6px;">${buttons}</div>
+          </div>`;
+      }).join('') : '<div class="small">No items in this queue.</div>';
+      return `
+        <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:12px;">
+          <h4 style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#fff;">${esc(title)}</h4>
+          <div class="small">${body}</div>
+        </div>`;
+    }
+
+    function renderAiOpsQueues(previews = {}){
+      if (!el.aiOpsQueues) return;
+      el.aiOpsQueues.innerHTML = [
+        renderAiOpsQueueCard('Briefing queue', previews.briefing || [], 'briefing'),
+        renderAiOpsQueueCard('Escalation queue', previews.escalation || [], 'escalation'),
+        renderAiOpsQueueCard('Needs research', previews.needs_research || [], 'needs_research')
+      ].join('');
+      el.aiOpsQueues.querySelectorAll('[data-aiops-open]').forEach(btn => btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen)));
+      el.aiOpsQueues.querySelectorAll('[data-aiops-research]').forEach(btn => btn.addEventListener('click', () => runAiOpsCandidateResearch(btn.dataset.aiopsResearch)));
+      el.aiOpsQueues.querySelectorAll('[data-aiops-queue]').forEach(btn => btn.addEventListener('click', () => runAiOpsQueueAction(btn, btn.dataset.aiopsQueue, btn.dataset.aiopsId, btn.dataset.aiopsAction)));
+    }
+
     async function loadAiOpsDashboard(options = {}){
       if (!isMasterAdminOnly()) {
         alert('CityIntel admin access required.');
@@ -816,6 +865,7 @@
       if (!options.silent) {
         if (el.aiOpsMetrics) el.aiOpsMetrics.innerHTML = '<div class="small">Loading metrics…</div>';
         if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Loading…';
+        if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '<div class="small">Loading queue previews…</div>';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
       }
 
@@ -851,6 +901,8 @@
             <strong>Last updated:</strong> ${esc(dateLabel(h.timestamp) || h.timestamp || '')}`;
         }
 
+        renderAiOpsQueues(data.queue_previews || {});
+
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
         }
@@ -859,6 +911,7 @@
           el.aiOpsMetrics.innerHTML = `<div class="small">Dashboard failed: ${esc(err.message || err)}</div>`;
         }
         if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Unavailable';
+        if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
       }
     }
@@ -915,6 +968,55 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.ok === false) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
       return data;
+    }
+
+    async function openAiOpsCandidate(candidateId){
+      if (!candidateId) return;
+      setAiOpsControlOutput('Opening candidate in review queue…');
+      setAiOpsDashboard(false);
+      setIntelModal(true);
+      await loadIntelReviewQueue();
+      const idx = intelReviewState.rows.findIndex(x => String(x.id || x.candidate_id || '') === String(candidateId));
+      if (idx >= 0) {
+        openIntelCandidateDrawer(idx);
+        el.intelStatus.textContent = 'Opened from AI Ops dashboard.';
+      } else {
+        el.intelStatus.textContent = `Candidate ${candidateId} is not in the current review list. Refresh or search the index.`;
+      }
+    }
+
+    async function runAiOpsCandidateResearch(candidateId){
+      if (!candidateId) return;
+      try {
+        setAiOpsControlOutput('Running research action…');
+        await fetchAiOpsJson('/api/intel-review/research', {
+          method: 'POST',
+          body: JSON.stringify({ id: candidateId, note: 'Triggered from AI Ops Dashboard.' })
+        });
+        setAiOpsControlOutput('Research action saved.', 'ok');
+        await loadAiOpsDashboard({ silent: true });
+      } catch (err) {
+        setAiOpsControlOutput(`Research failed: ${String(err.message || err)}`, 'error');
+      }
+    }
+
+    async function runAiOpsQueueAction(btn, queue, candidateId, action){
+      if (!candidateId || !queue || !action) return;
+      const note = ['complete','resolved'].includes(action) ? (prompt(`Optional note for ${action}:`) || '') : '';
+      try {
+        setIntelButtonBusy(btn, true, 'Saving…');
+        setAiOpsControlOutput(`Saving ${queue} status: ${action}…`);
+        await fetchAiOpsJson('/api/intel-review/ops-queue-action', {
+          method: 'POST',
+          body: JSON.stringify({ queue, candidate_id: candidateId, action, note })
+        });
+        setAiOpsControlOutput(`Queue updated: ${queue} → ${action}.`, 'ok');
+        await loadAiOpsDashboard({ silent: true });
+      } catch (err) {
+        setAiOpsControlOutput(`Queue update failed: ${String(err.message || err)}`, 'error');
+      } finally {
+        setIntelButtonBusy(btn, false);
+      }
     }
 
     // ── Utilities ─────────────────────────────────────────────────────
