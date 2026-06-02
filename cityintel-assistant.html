@@ -1690,6 +1690,40 @@ async function ask(){
       };
     }
 
+    function localGeoSignal(c = {}) {
+      const score = c.geo_hotspot_score ?? null;
+      const tier = c.geo_hotspot_tier || '';
+      const clusterSize = Number(c.geo_cluster_size || 0);
+      const velocity24 = Number(c.geo_velocity_24h || 0);
+      const velocity7 = Number(c.geo_velocity_7d || 0);
+      let label = tier;
+      if (!label) {
+        if (velocity24 >= 3 || clusterSize >= 4) label = 'Hotspot';
+        else if (clusterSize >= 3 || velocity7 >= 4) label = 'Watch area';
+        else if (clusterSize >= 2) label = 'Emerging';
+        else label = 'Normal';
+      }
+      return {
+        tier: label,
+        score: score == null ? null : Number(score),
+        cluster_size: clusterSize,
+        velocity_24h: velocity24,
+        velocity_7d: velocity7,
+        region_total: Number(c.geo_region_total || 0),
+        region_rank: c.geo_region_rank ?? null,
+        reason: c.geo_hotspot_reason || '',
+        flags: c.geo_flags || ''
+      };
+    }
+
+    function geoChipClass(tier = '') {
+      const v = String(tier || '').toLowerCase();
+      if (v === 'hotspot') return 'danger';
+      if (v === 'watch area' || v === 'emerging') return 'warn';
+      return '';
+    }
+
+
     function localAgeStatus(c = {}) {
       if (c.age_status) return { label: c.age_status, hours: c.age_hours };
       const raw = c.event_time || c.when_ts || c.when || c.created_at || '';
@@ -1864,6 +1898,15 @@ async function ask(){
               ${prioritySignal.reason ? esc(prioritySignal.reason) : 'Priority is weighted from risk, confidence, freshness, source trust, duplicates and actionability.'}
               ${prioritySignal.flags ? `<br>Flags: ${esc(prioritySignal.flags)}` : ''}
             </div>
+            ${(()=>{ const geo = localGeoSignal(c); return `
+            <div class="intel-review-muted" style="margin-top:10px;line-height:1.45">
+              <strong>Geographic intelligence:</strong><br>
+              Tier: ${esc(geo.tier || 'Normal')}${geo.score != null ? ` · ${Math.round(Number(geo.score) * 100)}%` : ''}<br>
+              Cluster size: ${esc(geo.cluster_size || 0)} · 24h velocity: ${esc(geo.velocity_24h || 0)} · 7d velocity: ${esc(geo.velocity_7d || 0)}<br>
+              Region total: ${esc(geo.region_total || 0)}${geo.region_rank ? ` · Region rank #${esc(geo.region_rank)}` : ''}<br>
+              ${geo.reason ? esc(geo.reason) : 'No geographic cluster signal yet.'}
+              ${geo.flags ? `<br>Flags: ${esc(geo.flags)}` : ''}
+            </div>`; })()}
             ${c.lifecycle_status || c.lifecycle_reason || c.decay_score ? `
             <div class="intel-review-muted" style="margin-top:10px;line-height:1.45">
             <strong>Automation intelligence:</strong><br>
@@ -2162,6 +2205,7 @@ async function ask(){
                     ${(()=>{ const sr = localSourceReliability(c); return `<span class="intel-review-chip ${sourceReliabilityClass(sr.label)}">Src ${esc(sr.label)}</span>`; })()}
                     ${(()=>{ const ag = localAgeStatus(c); return `<span class="intel-review-chip ${ageChipClass(ag.label)}">${esc(ag.label)}</span>`; })()}
                     ${(()=>{ const pr = localPrioritySignal(c); return `<span class="intel-review-chip ${priorityChipClass(pr.tier)}">${esc(pr.tier)}${pr.score != null ? ` · ${Math.round(Number(pr.score)*100)}%` : ''}</span>`; })()}
+                    ${(()=>{ const geo = localGeoSignal(c); return geo.tier && geo.tier !== 'Normal' ? `<span class="intel-review-chip ${geoChipClass(geo.tier)}">Geo ${esc(geo.tier)}${geo.score != null ? ` · ${Math.round(Number(geo.score)*100)}%` : ''}</span>` : ''; })()}
                   </div>
                 </td>
                 <td>
@@ -2414,7 +2458,7 @@ async function ask(){
       const last = data.last_run || {};
       const active = data.active_run || {};
       el.intelStatus.textContent =
-        `Automation: ${data.enabled ? 'enabled' : 'disabled'} · ${data.running ? 'running' : (data.due_now ? 'due now' : 'waiting')} · pending ${data.pending_candidates || 0} · index ${data.index_total || 0}`;
+        `Automation: ${data.enabled ? 'enabled' : 'disabled'} · ${data.running ? 'running' : (data.due_now ? 'due now' : 'waiting')} · pending ${data.pending_candidates || 0} · index ${data.index_total || 0} · geo clusters ${data.geo_clusters || 0}`;
 
       el.intelExport.value = [
         'INTEL AUTOMATION STATUS',
@@ -2427,6 +2471,9 @@ async function ask(){
         `Pending candidates: ${data.pending_candidates || 0}`,
         `Index total: ${data.index_total || 0}`,
         `Upcoming indexed: ${data.index_upcoming || 0}`,
+        `Geo clusters: ${data.geo_clusters || 0}`,
+        `Geo hotspots: ${data.geo_hotspots || 0}`,
+        `Geo watch areas: ${data.geo_watch_areas || 0}`,
         `Config: ${JSON.stringify(data.config || {}, null, 2)}`,
         '',
         'Active run:',
