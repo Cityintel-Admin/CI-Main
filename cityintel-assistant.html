@@ -27,6 +27,7 @@
             <button class="btn" id="aiOpsAutomationStatus" type="button">Automation Status</button>
             <button class="btn" id="aiOpsRunAutoScan" type="button">Run Auto Scan</button>
             <button class="btn" id="aiOpsWorkflowTriage" type="button">Workflow Triage</button>
+            <button class="btn" id="aiOpsEvaluatePolicy" type="button">Evaluate Policy</button>
           </div>
           <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
         </div>
@@ -34,6 +35,16 @@
         <div class="intel-candidate-section">
           <h3>Automation health</h3>
           <div id="aiOpsDashboardHealth" class="small">Loading…</div>
+        </div>
+
+        <div class="intel-candidate-section">
+          <h3>Automation policy</h3>
+          <div id="aiOpsPolicyPanel" class="small">Loading policy…</div>
+        </div>
+
+        <div class="intel-candidate-section">
+          <h3>Policy recommendations</h3>
+          <div id="aiOpsPolicyRecommendations" class="small">No policy recommendations loaded yet.</div>
         </div>
 
         <div class="intel-candidate-section">
@@ -713,9 +724,12 @@
       aiOpsAutomationStatus: document.getElementById('aiOpsAutomationStatus'),
       aiOpsRunAutoScan: document.getElementById('aiOpsRunAutoScan'),
       aiOpsWorkflowTriage: document.getElementById('aiOpsWorkflowTriage'),
+      aiOpsEvaluatePolicy: document.getElementById('aiOpsEvaluatePolicy'),
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
+      aiOpsPolicy:   document.getElementById('aiOpsPolicyPanel'),
+      aiOpsPolicyRecommendations: document.getElementById('aiOpsPolicyRecommendations'),
       aiOpsQueues:   document.getElementById('aiOpsQueueDetails'),
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
@@ -887,7 +901,8 @@
             renderAiOpsMetric('Approved', m.approved),
             renderAiOpsMetric('Rejected', m.rejected),
             renderAiOpsMetric('Watchlist', m.watchlist),
-            renderAiOpsMetric('Needs Research', m.needs_research)
+            renderAiOpsMetric('Needs Research', m.needs_research),
+            renderAiOpsMetric('Policy Recs', m.policy_recommended)
           ].join('');
         }
 
@@ -901,6 +916,9 @@
             <strong>Last updated:</strong> ${esc(dateLabel(h.timestamp) || h.timestamp || '')}`;
         }
 
+        renderAiOpsPolicy(data.policy || {});
+        renderAiOpsPolicyRecommendations(data.policy_recommendations || []);
+
         renderAiOpsQueues(data.queue_previews || {});
 
         if (el.aiOpsActivity) {
@@ -911,6 +929,8 @@
           el.aiOpsMetrics.innerHTML = `<div class="small">Dashboard failed: ${esc(err.message || err)}</div>`;
         }
         if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Unavailable';
+        if (el.aiOpsPolicy) el.aiOpsPolicy.textContent = 'Unavailable';
+        if (el.aiOpsPolicyRecommendations) el.aiOpsPolicyRecommendations.innerHTML = '';
         if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
       }
@@ -930,6 +950,10 @@
       if (action === 'workflow_triage') {
         return `Workflow triage: evaluated ${Number(data.evaluated || 0)} · updated ${Number(data.updated || data.actions || 0)} · mode ${data.write_logs ? 'write logs' : 'advisory'}`;
       }
+      if (action === 'policy_evaluate') {
+        const c = data.counts || {};
+        return `Policy: evaluated ${Number(data.evaluated || 0)} · escalation ${Number(c.recommend_escalation || 0)} · briefing ${Number(c.recommend_briefing || 0)} · research ${Number(c.recommend_research || 0)} · watchlist ${Number(c.recommend_watchlist || 0)}`;
+      }
       return data.ok ? 'Action complete.' : 'Action returned.';
     }
 
@@ -938,6 +962,63 @@
       const colour = level === 'ok' ? '#33c48d' : level === 'warn' ? '#f0b429' : level === 'error' ? '#ff5a5f' : '#8e97a3';
       el.aiOpsControlOutput.style.color = colour;
       el.aiOpsControlOutput.textContent = message || '';
+    }
+
+
+    function renderAiOpsPolicy(policy = {}){
+      if (!el.aiOpsPolicy) return;
+      const t = policy.thresholds || {};
+      el.aiOpsPolicy.innerHTML = `
+        <strong>Version:</strong> ${esc(policy.version || 'unknown')}<br>
+        <strong>Mode:</strong> ${esc(policy.mode || 'advisory')}<br>
+        <strong>Silent approval:</strong> ${policy.allow_silent_approval ? 'Enabled' : 'Disabled'}<br>
+        <strong>Silent publish:</strong> ${policy.allow_silent_publish ? 'Enabled' : 'Disabled'}<br>
+        <strong>Escalation:</strong> priority ≥ ${Number(t.escalation_priority || 0)}, hotspot ≥ ${Number(t.escalation_hotspot || 0)}<br>
+        <strong>Briefing:</strong> priority ≥ ${Number(t.briefing_priority || 0)}, confidence ≥ ${Number(t.briefing_confidence || 0)}<br>
+        <strong>Research:</strong> confidence below ${Number(t.research_confidence_below || 0)}, source below ${Number(t.low_source_reliability_below || 0)}<br>
+        <strong>Watchlist:</strong> priority ≥ ${Number(t.watchlist_priority || 0)}, duplicate score ≥ ${Number(t.duplicate_watch_score || 0)}
+      `;
+    }
+
+    function renderAiOpsPolicyRecommendations(items = []){
+      if (!el.aiOpsPolicyRecommendations) return;
+      if (!items.length) {
+        el.aiOpsPolicyRecommendations.innerHTML = '<div class="small">No automation policy recommendations yet. Run Evaluate Policy.</div>';
+        return;
+      }
+      el.aiOpsPolicyRecommendations.innerHTML = items.map(item => `
+        <div style="border:1px solid #2e3238;border-radius:10px;padding:10px;margin-bottom:8px;background:#111214;">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+            <strong>${esc(item.title || 'Untitled')}</strong>
+            <span class="pill ${riskClass(item.risk)}">${esc(item.risk || 'Risk')}</span>
+          </div>
+          <div class="small" style="margin-top:4px;">
+            ${esc(item.city || '')}${item.country ? ', ' + esc(item.country) : ''}
+          </div>
+          <div class="small" style="margin-top:6px;">
+            <strong>${esc(item.automation_decision || 'monitor')}</strong>
+            · route ${esc(item.automation_route || 'review_queue')}
+            · confidence ${Math.round(Number(item.automation_confidence || 0) * 100)}%
+          </div>
+          <div class="small" style="margin-top:4px;color:#8e97a3;">
+            ${esc(item.automation_reason || '')}
+          </div>
+          <div class="intel-review-toolbar" style="margin-top:8px;">
+            <button class="btn" type="button" data-aiops-open="${esc(item.candidate_id || '')}">Open</button>
+            <button class="btn" type="button" data-aiops-policy-one="${esc(item.candidate_id || '')}">Re-evaluate</button>
+          </div>
+        </div>
+      `).join('');
+
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-open]').forEach(btn => {
+        btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen));
+      });
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-policy-one]').forEach(btn => {
+        btn.addEventListener('click', () => runAiOpsControl(btn, 'Evaluating…', 'policy_evaluate', () => fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', {
+          method: 'POST',
+          body: JSON.stringify({ id: btn.dataset.aiopsPolicyOne, write: true })
+        })));
+      });
     }
 
     async function runAiOpsControl(btn, label, action, task){
@@ -3162,6 +3243,7 @@ async function ask(){
       return runAiOpsControl(el.aiOpsRunAutoScan, 'Running scan…', 'auto_scan', ()=>fetchAiOpsJson('/api/intel-review/automation/run', { method:'POST', body: JSON.stringify({ city_limit: 10, limit: 35, timespan: '3d' }) }));
     });
     if (el.aiOpsWorkflowTriage) el.aiOpsWorkflowTriage.addEventListener('click',()=>runAiOpsControl(el.aiOpsWorkflowTriage, 'Triaging…', 'workflow_triage', ()=>fetchAiOpsJson('/api/intel-review/workflow/triage', { method:'POST', body: JSON.stringify({ limit: 250, write_logs: false }) })));
+    if (el.aiOpsEvaluatePolicy) el.aiOpsEvaluatePolicy.addEventListener('click',()=>runAiOpsControl(el.aiOpsEvaluatePolicy, 'Evaluating…', 'policy_evaluate', ()=>fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', { method:'POST', body: JSON.stringify({ limit: 150, write: true }) })));
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
