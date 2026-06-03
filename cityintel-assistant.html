@@ -29,6 +29,7 @@
             <button class="btn" id="aiOpsWorkflowTriage" type="button">Workflow Triage</button>
             <button class="btn" id="aiOpsEvaluatePolicy" type="button">Evaluate Policy</button>
             <button class="btn" id="aiOpsRunCorrelation" type="button">Run Incident Correlation</button>
+            <button class="btn" id="aiOpsLinkClusters" type="button">Link Related Clusters</button>
           </div>
           <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
         </div>
@@ -63,6 +64,14 @@
             <div class="small">No incident clusters loaded yet.</div>
           </div>
           <div id="aiOpsIncidentClusterDetail" class="small" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="intel-candidate-section">
+          <h3>Related cluster signals</h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">Cross-cluster links show possible multi-location, recurring, or related incident chains. Advisory only until admin review.</div>
+          <div id="aiOpsRelatedClusters" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+            <div class="small">No related cluster signals loaded yet.</div>
+          </div>
         </div>
 
         <div class="intel-candidate-section">
@@ -736,6 +745,7 @@
       aiOpsWorkflowTriage: document.getElementById('aiOpsWorkflowTriage'),
       aiOpsEvaluatePolicy: document.getElementById('aiOpsEvaluatePolicy'),
       aiOpsRunCorrelation: document.getElementById('aiOpsRunCorrelation'),
+      aiOpsLinkClusters: document.getElementById('aiOpsLinkClusters'),
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
@@ -745,6 +755,7 @@
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
       aiOpsIncidentClusters: document.getElementById('aiOpsIncidentClusters'),
       aiOpsIncidentClusterDetail: document.getElementById('aiOpsIncidentClusterDetail'),
+      aiOpsRelatedClusters: document.getElementById('aiOpsRelatedClusters'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -868,6 +879,50 @@
           <h4 style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#fff;">${esc(title)}</h4>
           <div class="small">${body}</div>
         </div>`;
+    }
+
+    function renderAiOpsRelatedClusters(items = []){
+      if (!el.aiOpsRelatedClusters) return;
+      if (!items.length) {
+        el.aiOpsRelatedClusters.innerHTML = '<div class="small">No cross-cluster links yet. Use Link Related Clusters after incident correlation has produced multiple active clusters.</div>';
+        return;
+      }
+
+      el.aiOpsRelatedClusters.innerHTML = items.map(link => {
+        const score = Math.round(Number(link.link_score || 0) * 100);
+        const strong = score >= 78;
+        const sourceTitle = link.source_title || link.source_cluster_id || 'Source cluster';
+        const targetTitle = link.target_title || link.target_cluster_id || 'Related cluster';
+        const sourceLoc = [link.source_city, link.source_country].filter(Boolean).join(', ');
+        const targetLoc = [link.target_city, link.target_country].filter(Boolean).join(', ');
+        return `
+          <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+              <strong>${esc(strong ? 'Strong cluster link' : 'Related cluster signal')}</strong>
+              <span class="pill ${strong ? 'high' : 'medium'}">${score}%</span>
+            </div>
+            <div style="margin-top:8px;color:#cbd5e1;">
+              <strong>${esc(sourceTitle)}</strong><br>
+              <span style="color:#8e97a3;">${esc(sourceLoc || 'Location unknown')}</span>
+            </div>
+            <div style="margin-top:8px;color:#cbd5e1;">
+              <strong>${esc(targetTitle)}</strong><br>
+              <span style="color:#8e97a3;">${esc(targetLoc || 'Location unknown')}</span>
+            </div>
+            <div class="small" style="margin-top:8px;color:#8e97a3;">
+              ${esc(link.relationship_type || 'related_cluster')} · ${esc(link.reason || '')}
+            </div>
+            ${link.shared_terms ? `<div class="small" style="margin-top:5px;color:#8e97a3;"><strong>Shared terms:</strong> ${esc(link.shared_terms)}</div>` : ''}
+            <div class="intel-review-toolbar" style="margin-top:10px;gap:6px;">
+              <button class="intel-review-mini" data-related-cluster-view="${esc(link.source_cluster_id || '')}">View Source</button>
+              <button class="intel-review-mini" data-related-cluster-view="${esc(link.target_cluster_id || '')}">View Related</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      el.aiOpsRelatedClusters.querySelectorAll('[data-related-cluster-view]').forEach(btn => {
+        btn.addEventListener('click', () => loadAiOpsIncidentClusterDetail(btn.dataset.relatedClusterView));
+      });
     }
 
     function renderAiOpsIncidentClusters(items = []){
@@ -1037,6 +1092,19 @@
               </div>
             `).join('') : '<div class="small">No cluster timeline yet.</div>'}
 
+            <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Related cluster signals</h4>
+            ${(data.related_clusters || []).length ? (data.related_clusters || []).slice(0, 10).map(link => `
+              <div style="padding:7px 0;border-top:1px solid #2e3238;">
+                <strong>${esc(link.relationship_type || 'related_cluster')} · ${Math.round(Number(link.link_score || 0) * 100)}%</strong><br>
+                <span>${esc(link.source_cluster_id === cluster.id ? (link.target_title || link.target_cluster_id || '') : (link.source_title || link.source_cluster_id || ''))}</span><br>
+                <span style="color:#8e97a3;">${esc(link.reason || '')}</span>
+                ${link.shared_terms ? `<div style="color:#8e97a3;margin-top:3px;">Shared terms: ${esc(link.shared_terms)}</div>` : ''}
+                <div class="intel-review-toolbar" style="margin-top:6px;gap:6px;">
+                  <button class="intel-review-mini" data-related-cluster-view="${esc(link.source_cluster_id === cluster.id ? link.target_cluster_id : link.source_cluster_id)}">Open Related Cluster</button>
+                </div>
+              </div>
+            `).join('') : '<div class="small">No related cluster links found yet.</div>'}
+
             <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Lifecycle history</h4>
             ${lifecycle.length ? lifecycle.slice(0, 12).map(ev => `
               <div style="padding:7px 0;border-top:1px solid #2e3238;">
@@ -1053,6 +1121,9 @@
         });
         el.aiOpsIncidentClusterDetail.querySelectorAll('[data-incident-detail-action]').forEach(btn => {
           btn.addEventListener('click', () => runAiOpsIncidentClusterAction(btn, btn.dataset.incidentId, btn.dataset.incidentDetailAction));
+        });
+        el.aiOpsIncidentClusterDetail.querySelectorAll('[data-related-cluster-view]').forEach(btn => {
+          btn.addEventListener('click', () => loadAiOpsIncidentClusterDetail(btn.dataset.relatedClusterView));
         });
       } catch (err) {
         el.aiOpsIncidentClusterDetail.innerHTML = `<div class="small">Cluster detail failed: ${esc(String(err.message || err))}</div>`;
@@ -1151,6 +1222,7 @@
 
         renderAiOpsQueues(data.queue_previews || {});
         renderAiOpsIncidentClusters(data.incident_clusters || []);
+        renderAiOpsRelatedClusters(data.related_cluster_links || []);
 
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
@@ -1163,6 +1235,7 @@
         if (el.aiOpsPolicy) el.aiOpsPolicy.textContent = 'Unavailable';
         if (el.aiOpsPolicyRecommendations) el.aiOpsPolicyRecommendations.innerHTML = '';
         if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '';
+        if (el.aiOpsRelatedClusters) el.aiOpsRelatedClusters.innerHTML = '';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
         if (el.aiOpsIncidentClusters) el.aiOpsIncidentClusters.innerHTML = '';
       }
@@ -1184,6 +1257,9 @@
       }
       if (action === 'incident_correlation') {
         return `Incident correlation: evaluated ${Number(data.evaluated || 0)} · clusters ${Number(data.clusters_created_or_updated || 0)} · linked ${Number(data.linked_candidates || 0)}`;
+      }
+      if (action === 'cluster_linking') {
+        return `Cluster linking: evaluated ${Number(data.evaluated_clusters || 0)} clusters · compared ${Number(data.compared_pairs || 0)} pairs · links ${Number(data.links_created_or_updated || 0)}`;
       }
       if (action === 'policy_evaluate') {
         const c = data.counts || {};
@@ -3577,6 +3653,7 @@ async function ask(){
     if (el.aiOpsWorkflowTriage) el.aiOpsWorkflowTriage.addEventListener('click',()=>runAiOpsControl(el.aiOpsWorkflowTriage, 'Triaging…', 'workflow_triage', ()=>fetchAiOpsJson('/api/intel-review/workflow/triage', { method:'POST', body: JSON.stringify({ limit: 250, write_logs: false }) })));
     if (el.aiOpsEvaluatePolicy) el.aiOpsEvaluatePolicy.addEventListener('click',()=>runAiOpsControl(el.aiOpsEvaluatePolicy, 'Evaluating…', 'policy_evaluate', ()=>fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', { method:'POST', body: JSON.stringify({ limit: 150, write: true }) })));
     if (el.aiOpsRunCorrelation) el.aiOpsRunCorrelation.addEventListener('click',()=>runAiOpsControl(el.aiOpsRunCorrelation, 'Correlating…', 'incident_correlation', ()=>fetchAiOpsJson('/api/intel-review/incidents/correlate', { method:'POST', body: JSON.stringify({ limit: 250, min_cluster_size: 2 }) })));
+    if (el.aiOpsLinkClusters) el.aiOpsLinkClusters.addEventListener('click',()=>runAiOpsControl(el.aiOpsLinkClusters, 'Linking clusters…', 'cluster_linking', ()=>fetchAiOpsJson('/api/intel-review/incidents/link-clusters', { method:'POST', body: JSON.stringify({ limit: 120, min_score: 0.42 }) })));
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
