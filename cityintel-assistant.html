@@ -1003,9 +1003,13 @@
           <div class="small" style="margin-top:4px;color:#8e97a3;">
             ${esc(item.automation_reason || '')}
           </div>
+          ${(item.policy_action_status || item.analyst_override) ? `<div class="small" style="margin-top:4px;color:#8e97a3;">Policy action: ${esc(item.policy_action_status || 'reviewed')}${item.analyst_override ? ` · Override: ${esc(item.analyst_override)}` : ''}</div>` : ''}
           <div class="intel-review-toolbar" style="margin-top:8px;">
             <button class="btn" type="button" data-aiops-open="${esc(item.candidate_id || '')}">Open</button>
             <button class="btn" type="button" data-aiops-policy-one="${esc(item.candidate_id || '')}">Re-evaluate</button>
+            <button class="btn" type="button" data-aiops-policy-action="apply" data-aiops-policy-id="${esc(item.candidate_id || '')}">Apply</button>
+            <button class="btn" type="button" data-aiops-policy-action="override" data-aiops-policy-id="${esc(item.candidate_id || '')}">Override</button>
+            <button class="btn" type="button" data-aiops-policy-action="reviewed" data-aiops-policy-id="${esc(item.candidate_id || '')}">Mark Reviewed</button>
           </div>
         </div>
       `).join('');
@@ -1019,6 +1023,40 @@
           body: JSON.stringify({ id: btn.dataset.aiopsPolicyOne, write: true })
         })));
       });
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-policy-action]').forEach(btn => {
+        btn.addEventListener('click', () => runAiOpsPolicyAction(btn, btn.dataset.aiopsPolicyId, btn.dataset.aiopsPolicyAction));
+      });
+    }
+
+
+    async function runAiOpsPolicyAction(btn, candidateId, action){
+      if (!candidateId || !action) return;
+      let note = '';
+      let override = '';
+      if (action === 'apply') {
+        note = prompt('Optional note for applying this policy recommendation:') || '';
+      } else if (action === 'override') {
+        override = prompt('Override reason / admin decision:') || '';
+        if (!override) return;
+        note = override;
+      } else if (action === 'reviewed') {
+        note = prompt('Optional review note:') || '';
+      }
+
+      try {
+        setIntelButtonBusy(btn, true, 'Saving…');
+        setAiOpsControlOutput(`Saving policy action: ${action}…`);
+        await fetchAiOpsJson('/api/intel-review/automation-policy/action', {
+          method: 'POST',
+          body: JSON.stringify({ candidate_id: candidateId, action, note, override })
+        });
+        setAiOpsControlOutput(`Policy action saved: ${action}.`, 'ok');
+        await loadAiOpsDashboard({ silent: true });
+      } catch (err) {
+        setAiOpsControlOutput(`Policy action failed: ${String(err.message || err)}`, 'error');
+      } finally {
+        setIntelButtonBusy(btn, false);
+      }
     }
 
     async function runAiOpsControl(btn, label, action, task){
@@ -2366,6 +2404,7 @@ async function ask(){
               Confidence: ${c.automation_confidence != null && c.automation_confidence !== '' ? `${Math.round(Number(c.automation_confidence) * 100)}%` : 'pending'}<br>
               ${c.automation_reason ? `Reason: ${esc(c.automation_reason)}<br>` : 'Reason: Run Evaluate Policy or Workflow Triage to generate a stored recommendation.<br>'}
               ${c.automation_policy_evaluated_at ? `Evaluated: ${esc(formatIntelDate(c.automation_policy_evaluated_at))}<br>` : ''}
+              ${c.policy_action_status ? `Policy action: ${esc(c.policy_action_status)}${c.policy_action_at ? ` · ${esc(formatIntelDate(c.policy_action_at))}` : ''}<br>` : ''}
               Silent approval: disabled · Silent publish: disabled
               ${c.analyst_override ? `<br>Analyst override: ${esc(c.analyst_override)}${c.analyst_override_at ? ` · ${esc(formatIntelDate(c.analyst_override_at))}` : ''}` : ''}
             </div>
@@ -2423,6 +2462,9 @@ async function ask(){
           <button class="intel-review-mini" data-drawer-action="locate">Locate</button>
           <button class="intel-review-mini" data-drawer-action="translate">Translate</button>
           <button class="intel-review-mini" data-drawer-action="score">Score</button>
+          <button class="intel-review-mini" data-drawer-action="policy-apply">Apply Policy</button>
+          <button class="intel-review-mini" data-drawer-action="policy-override">Override Policy</button>
+          <button class="intel-review-mini" data-drawer-action="policy-reviewed">Policy Reviewed</button>
           <button class="intel-review-mini" data-drawer-action="timeline">Timeline</button>
           <button class="intel-review-mini" data-drawer-action="copy">Copy JS</button>
         </div>`;
@@ -2501,6 +2543,34 @@ async function ask(){
           el.intelStatus.textContent = 'Analyst note saved.';
         } catch (err) {
           el.intelStatus.textContent = `Save failed: ${String(err.message || err)}`;
+        }
+        return;
+      }
+
+
+      if (['policy-apply','policy-override','policy-reviewed'].includes(action)) {
+        try {
+          const policyAction = action === 'policy-apply' ? 'apply' : action === 'policy-override' ? 'override' : 'reviewed';
+          let note = '';
+          let override = '';
+          if (policyAction === 'apply') {
+            note = prompt('Optional note for applying this policy recommendation:') || '';
+          } else if (policyAction === 'override') {
+            override = prompt('Override reason / admin decision:') || '';
+            if (!override) return;
+            note = override;
+          } else {
+            note = prompt('Optional review note:') || '';
+          }
+          el.intelStatus.textContent = `Saving policy action: ${policyAction}…`;
+          const saved = await saveIntelPolicyAction(c, policyAction, note, override);
+          Object.assign(c, saved);
+          const idx = intelReviewState.rows.findIndex(x => x.id === c.id);
+          renderIntelReviewRows(rows);
+          if (idx >= 0) openIntelCandidateDrawer(idx);
+          el.intelStatus.textContent = `Policy action saved: ${policyAction}.`;
+        } catch (err) {
+          el.intelStatus.textContent = `Policy action failed: ${String(err.message || err)}`;
         }
         return;
       }
@@ -2815,6 +2885,22 @@ async function ask(){
           id: candidate.id,
           action,
           note
+        })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+      return data.item || candidate;
+    }
+
+    async function saveIntelPolicyAction(candidate, action, note = '', override = ''){
+      const res = await fetch(intelReviewUrl('/api/intel-review/automation-policy/action'), {
+        method:'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: candidate.id,
+          action,
+          note,
+          override
         })
       });
       const data = await res.json().catch(()=>({}));
