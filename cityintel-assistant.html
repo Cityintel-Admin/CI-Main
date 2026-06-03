@@ -877,44 +877,69 @@
         if (el.aiOpsIncidentClusterDetail) el.aiOpsIncidentClusterDetail.innerHTML = '';
         return;
       }
-      el.aiOpsIncidentClusters.innerHTML = items.map(item => `
+
+      el.aiOpsIncidentClusters.innerHTML = items.map(item => {
+        const workflow = item.workflow || {};
+        const health = item.health || item.recommendation?.health || {};
+        const recommendation = item.recommendation || {};
+        const review = workflow.review_status || item.review_status || 'unreviewed';
+        const status = workflow.status || item.status || 'active';
+        const severity = Math.round(Number(item.severity_score || 0));
+        const count = Number(item.event_count || 0);
+        const healthLabel = health.label || (severity >= 82 ? 'Critical' : severity >= 65 ? 'Elevated' : 'Active');
+        const healthScore = Number(health.score || severity || 0);
+
+        return `
         <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:12px;">
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
             <strong>${esc(item.title || 'Incident cluster')}</strong>
             <span class="pill ${riskClass(item.risk)}">${esc(item.risk || 'Risk')}</span>
           </div>
+
           <div class="small" style="margin-top:5px;color:#cbd5e1;">
             ${esc([item.city, item.country].filter(Boolean).join(', ') || 'Location unknown')}
           </div>
-          <div class="small" style="margin-top:6px;">
-            <strong>${Number(item.event_count || 0)}</strong> linked candidate(s)
-            · severity ${Math.round(Number(item.severity_score || 0))}
+
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;">
+            <div style="border:1px solid #2e3238;border-radius:10px;padding:8px;background:#0f1114;">
+              <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Linked</div>
+              <strong>${count}</strong>
+            </div>
+            <div style="border:1px solid #2e3238;border-radius:10px;padding:8px;background:#0f1114;">
+              <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Severity</div>
+              <strong>${severity}</strong>
+            </div>
+            <div style="border:1px solid #2e3238;border-radius:10px;padding:8px;background:#0f1114;">
+              <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Health</div>
+              <strong>${esc(healthLabel)} ${healthScore ? `(${Math.round(healthScore)})` : ''}</strong>
+            </div>
+            <div style="border:1px solid #2e3238;border-radius:10px;padding:8px;background:#0f1114;">
+              <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Review</div>
+              <strong>${esc(review)}</strong>
+            </div>
+          </div>
+
+          <div class="small" style="margin-top:8px;color:#8e97a3;">
+            Status: ${esc(status)} · Route: ${esc(workflow.route || item.workflow_target || 'cluster_review')}
           </div>
           <div class="small" style="margin-top:4px;color:#8e97a3;">
-            Review: ${esc(item.workflow?.review_status || item.review_status || 'unreviewed')}
-            ${item.workflow?.route || item.workflow_target ? ` · ${esc(item.workflow?.route || item.workflow_target)}` : ''}
+            Last activity: ${esc(dateLabel(health.last_activity_at || item.last_event_at || item.updated_at) || item.last_event_at || '')}
           </div>
-          <div class="small" style="margin-top:4px;color:#8e97a3;">
-            Next: ${esc(item.workflow?.next_action || 'review')} · ${esc(item.workflow?.urgency || 'normal')} priority
+          <div class="small" style="margin-top:7px;color:#cbd5e1;">
+            <strong>Recommendation:</strong> ${esc(recommendation.label || workflow.recommendation || 'Review cluster and linked candidates')}
           </div>
-          <div class="small" style="margin-top:4px;color:#8e97a3;">
-            Last activity: ${esc(dateLabel(item.last_event_at || item.updated_at) || item.last_event_at || '')}
-          </div>
-          ${item.workflow?.recommendation ? `<div class="small" style="margin-top:7px;color:#cbd5e1;"><strong>Workflow:</strong> ${esc(item.workflow.recommendation)}</div>` : ''}
           ${item.summary ? `<div class="small" style="margin-top:7px;color:#8e97a3;">${esc(item.summary)}</div>` : ''}
+
           <div class="intel-review-toolbar" style="margin-top:10px;gap:6px;">
-            <button class="intel-review-mini" data-incident-view="${esc(item.id || '')}">Review</button>
-            <button class="intel-review-mini" data-incident-action="confirm" data-incident-id="${esc(item.id || '')}">Confirm</button>
+            <button class="intel-review-mini" data-incident-view="${esc(item.id || '')}">View Timeline</button>
             <button class="intel-review-mini" data-incident-action="monitor" data-incident-id="${esc(item.id || '')}">Monitor</button>
-            <button class="intel-review-mini" data-incident-action="research" data-incident-id="${esc(item.id || '')}">Research</button>
             <button class="intel-review-mini" data-incident-action="briefing" data-incident-id="${esc(item.id || '')}">Briefing</button>
             <button class="intel-review-mini" data-incident-action="escalate" data-incident-id="${esc(item.id || '')}">Escalate</button>
-            <button class="intel-review-mini" data-incident-action="watchlist" data-incident-id="${esc(item.id || '')}">Watchlist</button>
             <button class="intel-review-mini" data-incident-action="resolve" data-incident-id="${esc(item.id || '')}">Resolve</button>
             <button class="intel-review-mini" data-incident-action="dismiss" data-incident-id="${esc(item.id || '')}">Dismiss</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
 
       el.aiOpsIncidentClusters.querySelectorAll('[data-incident-view]').forEach(btn => {
         btn.addEventListener('click', () => loadAiOpsIncidentClusterDetail(btn.dataset.incidentView));
@@ -926,13 +951,19 @@
 
     async function loadAiOpsIncidentClusterDetail(clusterId){
       if (!clusterId || !el.aiOpsIncidentClusterDetail) return;
-      el.aiOpsIncidentClusterDetail.innerHTML = '<div class="small">Loading incident cluster detail…</div>';
+      el.aiOpsIncidentClusterDetail.innerHTML = '<div class="small">Loading incident cluster investigation view…</div>';
       try {
         const data = await fetchAiOpsJson(`/api/intel-review/incidents/detail?id=${encodeURIComponent(clusterId)}`);
         const cluster = data.cluster || {};
         const relationships = data.relationships || [];
         const timeline = data.timeline || [];
+        const lifecycle = data.lifecycle || [];
         const workflow = data.workflow || {};
+        const health = data.health || {};
+        const recommendation = data.recommendation || {};
+        const severity = Math.round(Number(cluster.severity_score || 0));
+        const linkedCount = Number(cluster.event_count || relationships.length || 0);
+
         el.aiOpsIncidentClusterDetail.innerHTML = `
           <div style="background:#0f1114;border:1px solid #2e3238;border-radius:12px;padding:12px;">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
@@ -940,48 +971,83 @@
                 <strong>${esc(cluster.title || 'Incident cluster')}</strong>
                 <div class="small" style="color:#8e97a3;margin-top:4px;">
                   ${esc([cluster.city, cluster.country].filter(Boolean).join(', ') || 'Location unknown')}
-                  · ${Number(cluster.event_count || relationships.length || 0)} linked
-                  · severity ${Math.round(Number(cluster.severity_score || 0))}
+                  · ${linkedCount} linked
+                  · severity ${severity}
                 </div>
               </div>
               <span class="pill ${riskClass(cluster.risk)}">${esc(cluster.risk || 'Risk')}</span>
             </div>
+
             ${cluster.summary ? `<div class="small" style="margin-top:8px;color:#cbd5e1;">${esc(cluster.summary)}</div>` : ''}
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px;">
+              <div style="border:1px solid #2e3238;border-radius:10px;padding:9px;background:#111214;">
+                <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Health</div>
+                <strong>${esc(health.label || 'Active')} ${health.score ? `(${Math.round(Number(health.score))})` : ''}</strong>
+              </div>
+              <div style="border:1px solid #2e3238;border-radius:10px;padding:9px;background:#111214;">
+                <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Status</div>
+                <strong>${esc(cluster.status || workflow.status || 'active')}</strong>
+              </div>
+              <div style="border:1px solid #2e3238;border-radius:10px;padding:9px;background:#111214;">
+                <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Review</div>
+                <strong>${esc(cluster.review_status || workflow.review_status || 'unreviewed')}</strong>
+              </div>
+              <div style="border:1px solid #2e3238;border-radius:10px;padding:9px;background:#111214;">
+                <div style="font-size:10px;text-transform:uppercase;color:#8e97a3;">Last Activity</div>
+                <strong>${esc(dateLabel(health.last_activity_at || cluster.last_event_at || cluster.updated_at) || cluster.last_event_at || '')}</strong>
+              </div>
+            </div>
+
             <div style="margin-top:10px;padding:10px;border:1px solid #2e3238;border-radius:10px;background:#111214;">
-              <strong>Workflow review</strong><br>
-              <span>Recommendation: ${esc(workflow.recommendation || 'Review cluster and linked candidates')}</span><br>
-              <span>Next action: ${esc(workflow.next_action || 'review')} · Route: ${esc(workflow.route || workflow.workflow_target || 'cluster_review')} · Urgency: ${esc(workflow.urgency || 'normal')}</span><br>
-              <span>Status: ${esc(workflow.status || cluster.status || 'active')} · Review: ${esc(workflow.review_status || cluster.review_status || 'unreviewed')}</span>
+              <strong>Investigation recommendation</strong><br>
+              <span>${esc(recommendation.label || workflow.recommendation || 'Review cluster and linked candidates')}</span><br>
+              <span>Next action: ${esc(workflow.next_action || recommendation.action || 'review')} · Route: ${esc(workflow.route || recommendation.route || workflow.workflow_target || 'cluster_review')} · Urgency: ${esc(workflow.urgency || recommendation.urgency || 'normal')}</span><br>
+              <span>Admin-only: these controls route/review the cluster; they do not auto-publish public alerts.</span>
               <div class="intel-review-toolbar" style="margin-top:8px;gap:6px;">
-                <button class="intel-review-mini" data-incident-detail-action="confirm" data-incident-id="${esc(cluster.id || '')}">Confirm</button>
                 <button class="intel-review-mini" data-incident-detail-action="monitor" data-incident-id="${esc(cluster.id || '')}">Monitor</button>
-                <button class="intel-review-mini" data-incident-detail-action="research" data-incident-id="${esc(cluster.id || '')}">Research</button>
-                <button class="intel-review-mini" data-incident-detail-action="briefing" data-incident-id="${esc(cluster.id || '')}">Briefing</button>
+                <button class="intel-review-mini" data-incident-detail-action="research" data-incident-id="${esc(cluster.id || '')}">More Research</button>
+                <button class="intel-review-mini" data-incident-detail-action="briefing" data-incident-id="${esc(cluster.id || '')}">Send Briefing</button>
                 <button class="intel-review-mini" data-incident-detail-action="escalate" data-incident-id="${esc(cluster.id || '')}">Escalate</button>
                 <button class="intel-review-mini" data-incident-detail-action="watchlist" data-incident-id="${esc(cluster.id || '')}">Watchlist</button>
                 <button class="intel-review-mini" data-incident-detail-action="resolve" data-incident-id="${esc(cluster.id || '')}">Resolve</button>
+                <button class="intel-review-mini" data-incident-detail-action="dismiss" data-incident-id="${esc(cluster.id || '')}">Dismiss</button>
               </div>
             </div>
+
             <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Linked candidates</h4>
             ${relationships.length ? relationships.map(rel => `
               <div style="padding:8px 0;border-top:1px solid #2e3238;">
                 <strong>${esc(rel.title || rel.candidate_id || 'Candidate')}</strong><br>
                 <span>${esc([rel.city, rel.country].filter(Boolean).join(', ') || '')}</span><br>
-                <span>${esc(rel.risk || 'Risk unknown')} · correlation ${Math.round(Number(rel.correlation_score || 0) * 100)}%</span>
+                <span>${esc(rel.risk || 'Risk unknown')} · ${esc(rel.status || 'candidate')} · correlation ${Math.round(Number(rel.correlation_score || 0) * 100)}%</span>
+                ${rel.candidate_summary ? `<div style="color:#8e97a3;margin-top:4px;">${esc(rel.candidate_summary)}</div>` : ''}
                 <div class="intel-review-toolbar" style="margin-top:6px;gap:6px;">
                   <button class="intel-review-mini" data-aiops-open="${esc(rel.candidate_id || '')}">Open Candidate</button>
                 </div>
               </div>
             `).join('') : '<div class="small">No linked candidates returned.</div>'}
+
             <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Cluster timeline</h4>
-            ${timeline.length ? timeline.map(t => `
+            ${timeline.length ? timeline.slice(0, 12).map(t => `
               <div style="padding:7px 0;border-top:1px solid #2e3238;">
                 <strong>${esc(t.event_type || 'timeline_event')}</strong><br>
                 <span>${esc(t.note || t.title || '')}</span><br>
                 <span style="color:#8e97a3;">${esc(dateLabel(t.created_at) || t.created_at || '')}</span>
               </div>
             `).join('') : '<div class="small">No cluster timeline yet.</div>'}
+
+            <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Lifecycle history</h4>
+            ${lifecycle.length ? lifecycle.slice(0, 12).map(ev => `
+              <div style="padding:7px 0;border-top:1px solid #2e3238;">
+                <strong>${esc(ev.event_type || ev.action || 'lifecycle_event')}</strong>
+                <span style="color:#8e97a3;"> · ${esc(dateLabel(ev.created_at) || ev.created_at || '')}</span><br>
+                <span>${esc(ev.lifecycle_state || ev.disposition || '')}</span>
+                ${ev.note ? `<div style="color:#8e97a3;margin-top:3px;">${esc(ev.note)}</div>` : ''}
+              </div>
+            `).join('') : '<div class="small">No lifecycle events found for this cluster yet.</div>'}
           </div>`;
+
         el.aiOpsIncidentClusterDetail.querySelectorAll('[data-aiops-open]').forEach(btn => {
           btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen));
         });
@@ -1061,7 +1127,12 @@
             renderAiOpsMetric('Watchlist', m.watchlist),
             renderAiOpsMetric('Needs Research', m.needs_research),
             renderAiOpsMetric('Policy Recs', m.policy_recommended),
-            renderAiOpsMetric('Incident Clusters', m.active_incident_clusters)
+            renderAiOpsMetric('Incident Clusters', m.active_incident_clusters),
+            renderAiOpsMetric('High-Risk Clusters', m.high_risk_incident_clusters),
+            renderAiOpsMetric('Awaiting Review', m.clusters_awaiting_review),
+            renderAiOpsMetric('Resolved Clusters', m.resolved_incident_clusters),
+            renderAiOpsMetric('Avg Severity', m.avg_cluster_severity),
+            renderAiOpsMetric('Largest Cluster', m.largest_cluster_size)
           ].join('');
         }
 
