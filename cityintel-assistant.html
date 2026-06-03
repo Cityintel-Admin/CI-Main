@@ -62,6 +62,7 @@
           <div id="aiOpsIncidentClusters" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
             <div class="small">No incident clusters loaded yet.</div>
           </div>
+          <div id="aiOpsIncidentClusterDetail" class="small" style="margin-top:12px;"></div>
         </div>
 
         <div class="intel-candidate-section">
@@ -743,6 +744,7 @@
       aiOpsQueues:   document.getElementById('aiOpsQueueDetails'),
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
       aiOpsIncidentClusters: document.getElementById('aiOpsIncidentClusters'),
+      aiOpsIncidentClusterDetail: document.getElementById('aiOpsIncidentClusterDetail'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -872,6 +874,7 @@
       if (!el.aiOpsIncidentClusters) return;
       if (!items.length) {
         el.aiOpsIncidentClusters.innerHTML = '<div class="small">No active incident clusters yet. Run Incident Correlation after candidates are refreshed/scored.</div>';
+        if (el.aiOpsIncidentClusterDetail) el.aiOpsIncidentClusterDetail.innerHTML = '';
         return;
       }
       el.aiOpsIncidentClusters.innerHTML = items.map(item => `
@@ -888,11 +891,101 @@
             · severity ${Math.round(Number(item.severity_score || 0))}
           </div>
           <div class="small" style="margin-top:4px;color:#8e97a3;">
+            Review: ${esc(item.review_status || 'unreviewed')}
+            ${item.workflow_target ? ` · ${esc(item.workflow_target)}` : ''}
+          </div>
+          <div class="small" style="margin-top:4px;color:#8e97a3;">
             Last activity: ${esc(dateLabel(item.last_event_at || item.updated_at) || item.last_event_at || '')}
           </div>
           ${item.summary ? `<div class="small" style="margin-top:7px;color:#8e97a3;">${esc(item.summary)}</div>` : ''}
+          <div class="intel-review-toolbar" style="margin-top:10px;gap:6px;">
+            <button class="intel-review-mini" data-incident-view="${esc(item.id || '')}">View</button>
+            <button class="intel-review-mini" data-incident-action="confirm" data-incident-id="${esc(item.id || '')}">Confirm</button>
+            <button class="intel-review-mini" data-incident-action="briefing" data-incident-id="${esc(item.id || '')}">Briefing</button>
+            <button class="intel-review-mini" data-incident-action="escalate" data-incident-id="${esc(item.id || '')}">Escalate</button>
+            <button class="intel-review-mini" data-incident-action="watchlist" data-incident-id="${esc(item.id || '')}">Watchlist</button>
+            <button class="intel-review-mini" data-incident-action="dismiss" data-incident-id="${esc(item.id || '')}">Dismiss</button>
+          </div>
         </div>
       `).join('');
+
+      el.aiOpsIncidentClusters.querySelectorAll('[data-incident-view]').forEach(btn => {
+        btn.addEventListener('click', () => loadAiOpsIncidentClusterDetail(btn.dataset.incidentView));
+      });
+      el.aiOpsIncidentClusters.querySelectorAll('[data-incident-action]').forEach(btn => {
+        btn.addEventListener('click', () => runAiOpsIncidentClusterAction(btn, btn.dataset.incidentId, btn.dataset.incidentAction));
+      });
+    }
+
+    async function loadAiOpsIncidentClusterDetail(clusterId){
+      if (!clusterId || !el.aiOpsIncidentClusterDetail) return;
+      el.aiOpsIncidentClusterDetail.innerHTML = '<div class="small">Loading incident cluster detail…</div>';
+      try {
+        const data = await fetchAiOpsJson(`/api/intel-review/incidents/detail?id=${encodeURIComponent(clusterId)}`);
+        const cluster = data.cluster || {};
+        const relationships = data.relationships || [];
+        const timeline = data.timeline || [];
+        el.aiOpsIncidentClusterDetail.innerHTML = `
+          <div style="background:#0f1114;border:1px solid #2e3238;border-radius:12px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+              <div>
+                <strong>${esc(cluster.title || 'Incident cluster')}</strong>
+                <div class="small" style="color:#8e97a3;margin-top:4px;">
+                  ${esc([cluster.city, cluster.country].filter(Boolean).join(', ') || 'Location unknown')}
+                  · ${Number(cluster.event_count || relationships.length || 0)} linked
+                  · severity ${Math.round(Number(cluster.severity_score || 0))}
+                </div>
+              </div>
+              <span class="pill ${riskClass(cluster.risk)}">${esc(cluster.risk || 'Risk')}</span>
+            </div>
+            ${cluster.summary ? `<div class="small" style="margin-top:8px;color:#cbd5e1;">${esc(cluster.summary)}</div>` : ''}
+            <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Linked candidates</h4>
+            ${relationships.length ? relationships.map(rel => `
+              <div style="padding:8px 0;border-top:1px solid #2e3238;">
+                <strong>${esc(rel.title || rel.candidate_id || 'Candidate')}</strong><br>
+                <span>${esc([rel.city, rel.country].filter(Boolean).join(', ') || '')}</span><br>
+                <span>${esc(rel.risk || 'Risk unknown')} · correlation ${Math.round(Number(rel.correlation_score || 0) * 100)}%</span>
+                <div class="intel-review-toolbar" style="margin-top:6px;gap:6px;">
+                  <button class="intel-review-mini" data-aiops-open="${esc(rel.candidate_id || '')}">Open Candidate</button>
+                </div>
+              </div>
+            `).join('') : '<div class="small">No linked candidates returned.</div>'}
+            <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Cluster timeline</h4>
+            ${timeline.length ? timeline.map(t => `
+              <div style="padding:7px 0;border-top:1px solid #2e3238;">
+                <strong>${esc(t.event_type || 'timeline_event')}</strong><br>
+                <span>${esc(t.note || t.title || '')}</span><br>
+                <span style="color:#8e97a3;">${esc(dateLabel(t.created_at) || t.created_at || '')}</span>
+              </div>
+            `).join('') : '<div class="small">No cluster timeline yet.</div>'}
+          </div>`;
+        el.aiOpsIncidentClusterDetail.querySelectorAll('[data-aiops-open]').forEach(btn => {
+          btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen));
+        });
+      } catch (err) {
+        el.aiOpsIncidentClusterDetail.innerHTML = `<div class="small">Cluster detail failed: ${esc(String(err.message || err))}</div>`;
+      }
+    }
+
+    async function runAiOpsIncidentClusterAction(btn, clusterId, action){
+      if (!clusterId || !action) return;
+      const needsNote = ['dismiss','escalate','briefing','watchlist'].includes(action);
+      const note = needsNote ? (prompt(`Optional note for cluster ${action}:`) || '') : '';
+      try {
+        setIntelButtonBusy(btn, true, 'Saving…');
+        setAiOpsControlOutput(`Saving incident cluster action: ${action}…`);
+        const data = await fetchAiOpsJson('/api/intel-review/incidents/action', {
+          method: 'POST',
+          body: JSON.stringify({ cluster_id: clusterId, action, note })
+        });
+        setAiOpsControlOutput(`Incident cluster action saved: ${data.status || action}.`, 'ok');
+        await loadAiOpsDashboard({ silent: true });
+        await loadAiOpsIncidentClusterDetail(clusterId);
+      } catch (err) {
+        setAiOpsControlOutput(`Incident cluster action failed: ${String(err.message || err)}`, 'error');
+      } finally {
+        setIntelButtonBusy(btn, false);
+      }
     }
 
     function renderAiOpsQueues(previews = {}){
