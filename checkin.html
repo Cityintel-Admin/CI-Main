@@ -211,7 +211,7 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
       <a href="index.html">Dashboard</a>
       <a href="checkin.html" class="active">Check-in Manager</a>
       <a href="cityintel-assistant.html">CityIntel AI</a>
-      <a href="neighborhood-intel.html">Neighborhood-Intel</a> 
+      <a href="neighborhood-intel.html">Neighbourhood Intel</a> 
       <a href="assets.html">Assets</a>
       <a href="travellers.html">Travellers</a>
       <a href="alerts.html">High Risk Events</a>
@@ -691,9 +691,14 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     document.getElementById('fPhone').value='';
     document.getElementById('fEscalate').value='60';
     document.getElementById('fInterval').value='4';
+    document.getElementById('fRecurringStart').value='';
     document.getElementById('fDailyTime').value='09:00';
+    document.getElementById('fDailyStart').value='';
+    document.getElementById('fDailyEnd').value='';
     document.getElementById('fMessage').value='';
     stages=[{id:'depart',label:'Depart',description:'',expected_at:'',skippable:false},{id:'arrive',label:'Arrive',description:'',expected_at:'',skippable:false}];
+    renderDayPills('recurringDays', []);
+    renderDayPills('dailyDays', []);
     updateTypeFields();
     document.getElementById('modalStatus').textContent='';
     document.getElementById('schedModal').classList.add('open');
@@ -713,11 +718,19 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     document.getElementById('fPhone').value=s.employee_phone||'';
     document.getElementById('fEscalate').value=s.escalate_after_minutes||60;
     document.getElementById('fInterval').value=s.interval_minutes?Math.round(s.interval_minutes/60):4;
+    document.getElementById('fRecurringStart').value=s.recurring_start?s.recurring_start.slice(0,16):'';
     document.getElementById('fDailyTime').value=s.daily_time||'09:00';
+    document.getElementById('fDailyStart').value=s.daily_start||'';
+    document.getElementById('fDailyEnd').value=s.daily_end||'';
     document.getElementById('fMessage').value=s.message||'';
     if(s.timezone){const sel=document.getElementById('fTimezone');for(let o of sel.options){if(o.value===s.timezone){o.selected=true;break;}}}
     try{stages=JSON.parse(s.trip_stages||'[]');}catch{stages=[];}
     updateTypeFields();
+    // Restore active days after pills are rendered
+    if(s.active_days){
+      if(s.type==='recurring') setSelectedDays('recurringDays', s.active_days);
+      if(s.type==='daily') setSelectedDays('dailyDays', s.active_days);
+    }
     document.getElementById('modalStatus').textContent='';
     document.getElementById('schedModal').classList.add('open');
   }
@@ -786,7 +799,11 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
       label, employee_name:document.getElementById('fName').value.trim(),
       employee_email:email, employee_phone:document.getElementById('fPhone').value.trim(),
       type, interval_minutes:type==='recurring'?Number(document.getElementById('fInterval').value)*60:null,
+      recurring_start:type==='recurring'?(document.getElementById('fRecurringStart').value?new Date(document.getElementById('fRecurringStart').value).toISOString():null):null,
+      active_days:type==='recurring'?getSelectedDays('recurringDays'):(type==='daily'?getSelectedDays('dailyDays'):null),
       daily_time:type==='daily'?document.getElementById('fDailyTime').value:null,
+      daily_start:type==='daily'?(document.getElementById('fDailyStart').value||null):null,
+      daily_end:type==='daily'?(document.getElementById('fDailyEnd').value||null):null,
       timezone:tz, trip_stages:type==='trip'?JSON.stringify(stages):null,
       escalate_after_minutes:Number(document.getElementById('fEscalate').value)||60,
       message:document.getElementById('fMessage').value.trim()||null,
@@ -815,10 +832,77 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
     if(document.getElementById('tab-liveboard').classList.contains('active')) loadLiveBoard();
   },30000);
 
+  // ── Traveller prefill ──────────────────────────────────────────────
+  // Reads ci_checkin_prefill written by travellers.html when operator
+  // clicks "Add to check-in schedule". Pre-populates the modal and opens it.
+  function applyTravellerPrefill(){
+    const PREFILL_KEY = 'ci_checkin_prefill';
+    let prefill = null;
+    try { prefill = JSON.parse(localStorage.getItem(PREFILL_KEY) || 'null'); } catch {}
+    if (!prefill || prefill.source !== 'travellers') return;
+
+    // Show banner at top of schedules tab
+    const schedPanel = document.getElementById('tab-schedules');
+    const banner = document.createElement('div');
+    banner.id = 'prefillBanner';
+    banner.style.cssText = 'margin-bottom:14px;padding:12px 16px;border-radius:10px;background:rgba(51,196,141,.1);border:1px solid rgba(51,196,141,.3);color:#33c48d;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap';
+    banner.innerHTML = `
+      <span>✓ Pre-filled from Travellers — <strong>${esc(prefill.name || 'traveller')}</strong>. Review details below and save when ready.</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="travellers.html" class="btn btn-ghost btn-sm" style="text-decoration:none">← Back to Travellers</a>
+        <button class="btn btn-ghost btn-sm" id="dismissPrefillBanner">Dismiss</button>
+      </div>`;
+    schedPanel.insertBefore(banner, schedPanel.firstChild);
+    document.getElementById('dismissPrefillBanner')?.addEventListener('click', () => {
+      banner.remove();
+      localStorage.removeItem(PREFILL_KEY);
+    });
+
+    // Auto-generate a sensible label
+    const labelParts = [prefill.name];
+    if (prefill.city) labelParts.push(prefill.city);
+    if (prefill.from && prefill.to) labelParts.push(`${prefill.from} → ${prefill.to}`);
+    const autoLabel = labelParts.filter(Boolean).join(' — ');
+
+    // Open modal with pre-filled values
+    openNewModal();
+    document.getElementById('fLabel').value = autoLabel;
+    document.getElementById('fName').value = prefill.name || '';
+    document.getElementById('fEmail').value = prefill.email || '';
+    document.getElementById('fPhone').value = prefill.phone || '';
+    // Default to Trip type if flight data present, otherwise recurring
+    if (prefill.flightIn || prefill.flightOut || prefill.from) {
+      document.getElementById('fType').value = 'trip';
+      updateTypeFields();
+      // Build default trip stages from known data
+      stages = [];
+      if (prefill.flightIn) stages.push({ id:'depart', label: `Depart (${prefill.flightIn})`, description:'', expected_at:'', skippable:false });
+      if (prefill.from) stages.push({ id:'arrive_dest', label:`Arrive ${prefill.city||'destination'}`, description:'', expected_at: prefill.from ? new Date(prefill.from+'T12:00').toISOString() : '', skippable:false });
+      if (prefill.hotel) stages.push({ id:'hotel', label:`Hotel check-in: ${prefill.hotel}`, description:'', expected_at:'', skippable:false });
+      if (prefill.to) stages.push({ id:'depart_return', label:`Depart return`, description:'', expected_at: prefill.to ? new Date(prefill.to+'T10:00').toISOString() : '', skippable:false });
+      if (prefill.flightOut) stages.push({ id:'arrive_home', label:`Arrive home (${prefill.flightOut})`, description:'', expected_at:'', skippable:false });
+      if (!stages.length) stages = [{id:'depart',label:'Depart',description:'',expected_at:'',skippable:false},{id:'arrive',label:'Arrive',description:'',expected_at:'',skippable:false}];
+      renderStages();
+    }
+
+    // Pre-fill custom message with hotel / transport info if available
+    const msgParts = [];
+    if (prefill.hotel) msgParts.push(`Hotel: ${prefill.hotel}`);
+    if (prefill.address) msgParts.push(`Address: ${prefill.address}`);
+    if (prefill.transportProvider) msgParts.push(`Transport: ${prefill.transportProvider}`);
+    if (msgParts.length) document.getElementById('fMessage').value = msgParts.join('\n');
+
+    // Clear prefill so it doesn't re-apply on next page load
+    localStorage.removeItem(PREFILL_KEY);
+  }
+
   // ── Init ───────────────────────────────────────────────────────────
   populateTimezones();
+  renderDayPills('recurringDays', []);
+  renderDayPills('dailyDays', []);
   checkRole();
   loadSchedules();
+  applyTravellerPrefill();
 
   // Highlight current nav
   const here=location.pathname.split('/').pop()||'index.html';
