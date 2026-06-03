@@ -28,6 +28,7 @@
             <button class="btn" id="aiOpsRunAutoScan" type="button">Run Auto Scan</button>
             <button class="btn" id="aiOpsWorkflowTriage" type="button">Workflow Triage</button>
             <button class="btn" id="aiOpsEvaluatePolicy" type="button">Evaluate Policy</button>
+            <button class="btn" id="aiOpsRunCorrelation" type="button">Run Incident Correlation</button>
           </div>
           <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
         </div>
@@ -52,6 +53,14 @@
           <div class="small" style="margin-bottom:10px;color:#8e97a3;">Review live briefing, escalation and research queues without leaving the admin dashboard.</div>
           <div id="aiOpsQueueDetails" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
             <div class="small">Loading queue previews…</div>
+          </div>
+        </div>
+
+        <div class="intel-candidate-section">
+          <h3>Active incident clusters</h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">Persistent incident memory generated from linked candidates. Advisory only until admin review.</div>
+          <div id="aiOpsIncidentClusters" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+            <div class="small">No incident clusters loaded yet.</div>
           </div>
         </div>
 
@@ -725,6 +734,7 @@
       aiOpsRunAutoScan: document.getElementById('aiOpsRunAutoScan'),
       aiOpsWorkflowTriage: document.getElementById('aiOpsWorkflowTriage'),
       aiOpsEvaluatePolicy: document.getElementById('aiOpsEvaluatePolicy'),
+      aiOpsRunCorrelation: document.getElementById('aiOpsRunCorrelation'),
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
@@ -732,6 +742,7 @@
       aiOpsPolicyRecommendations: document.getElementById('aiOpsPolicyRecommendations'),
       aiOpsQueues:   document.getElementById('aiOpsQueueDetails'),
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
+      aiOpsIncidentClusters: document.getElementById('aiOpsIncidentClusters'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -857,6 +868,33 @@
         </div>`;
     }
 
+    function renderAiOpsIncidentClusters(items = []){
+      if (!el.aiOpsIncidentClusters) return;
+      if (!items.length) {
+        el.aiOpsIncidentClusters.innerHTML = '<div class="small">No active incident clusters yet. Run Incident Correlation after candidates are refreshed/scored.</div>';
+        return;
+      }
+      el.aiOpsIncidentClusters.innerHTML = items.map(item => `
+        <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:12px;">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+            <strong>${esc(item.title || 'Incident cluster')}</strong>
+            <span class="pill ${riskClass(item.risk)}">${esc(item.risk || 'Risk')}</span>
+          </div>
+          <div class="small" style="margin-top:5px;color:#cbd5e1;">
+            ${esc([item.city, item.country].filter(Boolean).join(', ') || 'Location unknown')}
+          </div>
+          <div class="small" style="margin-top:6px;">
+            <strong>${Number(item.event_count || 0)}</strong> linked candidate(s)
+            · severity ${Math.round(Number(item.severity_score || 0))}
+          </div>
+          <div class="small" style="margin-top:4px;color:#8e97a3;">
+            Last activity: ${esc(dateLabel(item.last_event_at || item.updated_at) || item.last_event_at || '')}
+          </div>
+          ${item.summary ? `<div class="small" style="margin-top:7px;color:#8e97a3;">${esc(item.summary)}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
     function renderAiOpsQueues(previews = {}){
       if (!el.aiOpsQueues) return;
       el.aiOpsQueues.innerHTML = [
@@ -881,6 +919,7 @@
         if (el.aiOpsHealth) el.aiOpsHealth.textContent = 'Loading…';
         if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '<div class="small">Loading queue previews…</div>';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
+        if (el.aiOpsIncidentClusters) el.aiOpsIncidentClusters.innerHTML = '<div class="small">Loading incident clusters…</div>';
       }
 
       try {
@@ -902,7 +941,8 @@
             renderAiOpsMetric('Rejected', m.rejected),
             renderAiOpsMetric('Watchlist', m.watchlist),
             renderAiOpsMetric('Needs Research', m.needs_research),
-            renderAiOpsMetric('Policy Recs', m.policy_recommended)
+            renderAiOpsMetric('Policy Recs', m.policy_recommended),
+            renderAiOpsMetric('Incident Clusters', m.active_incident_clusters)
           ].join('');
         }
 
@@ -920,6 +960,7 @@
         renderAiOpsPolicyRecommendations(data.policy_recommendations || []);
 
         renderAiOpsQueues(data.queue_previews || {});
+        renderAiOpsIncidentClusters(data.incident_clusters || []);
 
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
@@ -933,6 +974,7 @@
         if (el.aiOpsPolicyRecommendations) el.aiOpsPolicyRecommendations.innerHTML = '';
         if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
+        if (el.aiOpsIncidentClusters) el.aiOpsIncidentClusters.innerHTML = '';
       }
     }
 
@@ -949,6 +991,9 @@
       }
       if (action === 'workflow_triage') {
         return `Workflow triage: evaluated ${Number(data.evaluated || 0)} · updated ${Number(data.updated || data.actions || 0)} · mode ${data.write_logs ? 'write logs' : 'advisory'}`;
+      }
+      if (action === 'incident_correlation') {
+        return `Incident correlation: evaluated ${Number(data.evaluated || 0)} · clusters ${Number(data.clusters_created_or_updated || 0)} · linked ${Number(data.linked_candidates || 0)}`;
       }
       if (action === 'policy_evaluate') {
         const c = data.counts || {};
@@ -3341,6 +3386,7 @@ async function ask(){
     });
     if (el.aiOpsWorkflowTriage) el.aiOpsWorkflowTriage.addEventListener('click',()=>runAiOpsControl(el.aiOpsWorkflowTriage, 'Triaging…', 'workflow_triage', ()=>fetchAiOpsJson('/api/intel-review/workflow/triage', { method:'POST', body: JSON.stringify({ limit: 250, write_logs: false }) })));
     if (el.aiOpsEvaluatePolicy) el.aiOpsEvaluatePolicy.addEventListener('click',()=>runAiOpsControl(el.aiOpsEvaluatePolicy, 'Evaluating…', 'policy_evaluate', ()=>fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', { method:'POST', body: JSON.stringify({ limit: 150, write: true }) })));
+    if (el.aiOpsRunCorrelation) el.aiOpsRunCorrelation.addEventListener('click',()=>runAiOpsControl(el.aiOpsRunCorrelation, 'Correlating…', 'incident_correlation', ()=>fetchAiOpsJson('/api/intel-review/incidents/correlate', { method:'POST', body: JSON.stringify({ limit: 250, min_cluster_size: 2 }) })));
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
