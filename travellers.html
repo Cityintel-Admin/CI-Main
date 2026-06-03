@@ -179,7 +179,7 @@
   .travellers-card{grid-column:span 12;max-width:100%;}
   .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .card-head h3{margin-bottom:4px}
-  .toolbar{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:12px 0 12px;align-items:end;max-width:680px}
+  .toolbar{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;margin:12px 0 12px;align-items:end;max-width:860px}
   .filter-field{display:flex;flex-direction:column;gap:4px}
   .filter-field label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
   .filter-field select{width:100%;background:var(--brand-gray-800);color:var(--text);border:1px solid var(--brand-gray-600);border-radius:10px;padding:8px 10px;outline:none}
@@ -259,7 +259,7 @@
       <div class="section-label"></div>
       <nav>
         <a href="index.html">Dashboard</a>
-		<a href="neighborhood-intel.html">neighborhood-intel</a> 
+		<a href="neighborhood-intel.html">Neighbourhood Intel</a> 
 		<a href="assets.html">Assets</a>
 		<a href="travellers.html">Travellers</a>
         <a href="alerts.html">High Risk Events</a>
@@ -300,6 +300,17 @@
 
           <div class="toolbar" aria-label="Traveller table filters">
             <div class="filter-field">
+              <label for="travStatusFilter">Travel status</label>
+              <select id="travStatusFilter">
+                <option value="">All statuses</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="In country">In country</option>
+                <option value="Delayed">Delayed</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="filter-field">
               <label for="travCountryFilter">Country</label>
               <select id="travCountryFilter"><option value="">All countries</option></select>
             </div>
@@ -339,7 +350,8 @@
                   <th>City</th>
                   <th>From</th>
                   <th>To</th>
-                  <th style="width:80px">Actions</th>
+                  <th>Flight</th>
+                  <th style="width:120px">Actions</th>
                 </tr>
               </thead>
               <tbody id="travellersBody"></tbody>
@@ -435,6 +447,10 @@
                 <label for="travPassportCountry">Passport country</label>
                 <input id="travPassportCountry" placeholder="e.g. United Kingdom">
               </div>
+              <div class="field full">
+                <label for="travVisaNotes">Visa / entry status</label>
+                <input id="travVisaNotes" placeholder="e.g. Business visa valid to 30 Jun, single entry only">
+              </div>
               <div class="field">
                 <label for="travFlightIn">Inbound / arrival flight</label>
                 <input id="travFlightIn" placeholder="e.g. BA123, 12 May 18:40">
@@ -442,6 +458,11 @@
               <div class="field">
                 <label for="travFlightOut">Outbound / departure flight</label>
                 <input id="travFlightOut" placeholder="e.g. BA124, 28 May 12:10">
+              </div>
+              <div class="field full">
+                <label for="travFlightNumber">Active flight number <span style="color:var(--muted);font-weight:400">(monitored on Flight Status page)</span></label>
+                <input id="travFlightNumber" placeholder="e.g. BA117" maxlength="8" autocapitalize="characters" style="text-transform:uppercase">
+                <div class="pill-hint">Enter the IATA flight number currently in progress or next to depart. This populates the Monitored Flights panel on the Flight Status page.</div>
               </div>
               <div class="field">
                 <label for="travManagerName">Manager</label>
@@ -508,15 +529,18 @@
     </main>
   </div>
 
-  <div class="traveller-drawer-backdrop" id="travellerDrawerBackdrop"></div>
   <aside class="traveller-drawer" id="travellerDrawer" aria-label="Traveller details drawer">
     <div class="drawer-head">
       <div>
         <h2 class="drawer-title" id="travDrawerTitle">Traveller</h2>
         <div class="drawer-sub" id="travDrawerSub">—</div>
       </div>
-      <button type="button" class="btn" id="travDrawerClose">Close</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+        <button type="button" class="btn" id="travDrawerCheckinBtn" title="Pre-fill this traveller on the Check-in Schedule page">📋 Add to check-in schedule</button>
+        <button type="button" class="btn" id="travDrawerClose">Close</button>
+      </div>
     </div>
+    <div id="travDrawerCheckinBanner" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:10px;background:rgba(51,196,141,.1);border:1px solid rgba(51,196,141,.3);color:#33c48d;font-size:13px"></div>
     <div class="drawer-grid" id="travDrawerGrid"></div>
   </aside>
 
@@ -760,6 +784,8 @@ const hotelInput   = document.getElementById('travHotel');
     const medicalNotesInput = document.getElementById('travMedicalNotes');
     const transportProviderInput = document.getElementById('travTransportProvider');
     const extractionNotesInput = document.getElementById('travExtractionNotes');
+    const flightNumberInput = document.getElementById('travFlightNumber');
+    const visaNotesInput = document.getElementById('travVisaNotes');
     const resetBtn     = document.getElementById('travResetBtn');
     const closeFormBtn = document.getElementById('travCloseFormBtn');
     const deleteBtn    = document.getElementById('travDeleteBtn');
@@ -769,6 +795,7 @@ const hotelInput   = document.getElementById('travHotel');
     const countryFilter= document.getElementById('travCountryFilter');
     const cityFilter   = document.getElementById('travCityFilter');
     const roleFilter   = document.getElementById('travRoleFilter');
+    const statusFilter = document.getElementById('travStatusFilter');
     const filterReset  = document.getElementById('travFilterReset');
     const tableMeta    = document.getElementById('travellersMeta');
     const bulkStatus = document.getElementById('travBulkStatus');
@@ -831,11 +858,13 @@ function filteredTravellers(){
   const ctry = String(countryFilter?.value || '').trim().toLowerCase();
   const city = String(cityFilter?.value || '').trim().toLowerCase();
   const role = String(roleFilter?.value || '').trim().toLowerCase();
+  const status = String(statusFilter?.value || '').trim().toLowerCase();
   return travellers
     .map((t, idx) => ({t, idx}))
     .filter(({t}) => !ctry || String(t?.country || '').trim().toLowerCase() === ctry)
     .filter(({t}) => !city || String(t?.city || '').trim().toLowerCase() === city)
-    .filter(({t}) => !role || String(t?.role || '').trim().toLowerCase() === role);
+    .filter(({t}) => !role || String(t?.role || '').trim().toLowerCase() === role)
+    .filter(({t}) => !status || String(t?.travelStatus || '').trim().toLowerCase() === status);
 }
 
 function renderTable(){
@@ -889,7 +918,8 @@ function renderTable(){
       t?.country ?? '',
       t?.city ?? '',
       t?.from ?? '',
-      t?.to ?? ''
+      t?.to ?? '',
+      t?.flight_number || t?.flightNumber || '—'
     ];
 
     for (const v of cells){
@@ -908,6 +938,15 @@ function renderTable(){
     view.style.marginRight = '6px';
     view.addEventListener('click', () => openTravellerDrawer(t));
     actionsTd.appendChild(view);
+
+    const schedBtn = document.createElement('button');
+    schedBtn.className = 'mini';
+    schedBtn.type = 'button';
+    schedBtn.textContent = '📋';
+    schedBtn.title = 'Add to check-in schedule';
+    schedBtn.style.marginRight = '6px';
+    schedBtn.addEventListener('click', () => sendToCheckinSchedule(t));
+    actionsTd.appendChild(schedBtn);
 
     const edit = document.createElement('button');
     edit.className = 'mini';
@@ -938,7 +977,7 @@ function renderTable(){
       toInput.value = '';
       latInput.value = '';
       lonInput.value = '';
-      [nationalityInput, passportCountryInput, flightInInput, flightOutInput, managerNameInput, managerPhoneInput, managerEmailInput, emergencyNameInput, emergencyPhoneInput, medicalNotesInput, transportProviderInput, extractionNotesInput].forEach(el => { if (el) el.value = ''; });
+      [nationalityInput, passportCountryInput, flightInInput, flightOutInput, flightNumberInput, visaNotesInput, managerNameInput, managerPhoneInput, managerEmailInput, emergencyNameInput, emergencyPhoneInput, medicalNotesInput, transportProviderInput, extractionNotesInput].forEach(el => { if (el) el.value = ''; });
       deleteBtn.style.display = 'none';
     }
 
@@ -970,7 +1009,8 @@ function renderTable(){
       if (emergencyPhoneInput) emergencyPhoneInput.value = t.emergencyPhone || '';
       if (medicalNotesInput) medicalNotesInput.value = t.medicalNotes || '';
       if (transportProviderInput) transportProviderInput.value = t.transportProvider || '';
-      if (extractionNotesInput) extractionNotesInput.value = t.extractionNotes || '';
+      if (flightNumberInput) flightNumberInput.value = t.flight_number || t.flightNumber || '';
+      if (visaNotesInput) visaNotesInput.value = t.visaNotes || t.visa_notes || '';
       deleteBtn.style.display = 'inline-block';
       showForm(true);
     }
@@ -1001,7 +1041,7 @@ function renderTable(){
       });
     }
 
-    [countryFilter, cityFilter, roleFilter].forEach(el => {
+    [countryFilter, cityFilter, roleFilter, statusFilter].forEach(el => {
       if (el) el.addEventListener('change', renderTable);
     });
 
@@ -1017,6 +1057,7 @@ function renderTable(){
         if (countryFilter) countryFilter.value = '';
         if (cityFilter) cityFilter.value = '';
         if (roleFilter) roleFilter.value = '';
+        if (statusFilter) statusFilter.value = '';
         renderTable();
       });
     }
@@ -1106,7 +1147,9 @@ function renderTable(){
   emergencyPhone: emergencyPhoneInput ? emergencyPhoneInput.value.trim() : '',
   medicalNotes: medicalNotesInput ? medicalNotesInput.value.trim() : '',
   transportProvider: transportProviderInput ? transportProviderInput.value.trim() : '',
-  extractionNotes: extractionNotesInput ? extractionNotesInput.value.trim() : ''
+  extractionNotes: extractionNotesInput ? extractionNotesInput.value.trim() : '',
+  flight_number: flightNumberInput ? flightNumberInput.value.trim().toUpperCase() : '',
+  visaNotes: visaNotesInput ? visaNotesInput.value.trim() : ''
 };
 
         const lat = parseFloat(latInput.value);
@@ -1159,7 +1202,8 @@ function renderTable(){
 
     const TRAV_CSV_FIELDS = [
       'name','role','riskStatus','travelStatus','phone','email','hotel','address','postcode','city','country','from','to','lat','lon',
-      'nationality','passportCountry','flightIn','flightOut','managerName','managerPhone','managerEmail','emergencyName','emergencyPhone',
+      'nationality','passportCountry','visaNotes','flightIn','flightOut','flight_number',
+      'managerName','managerPhone','managerEmail','emergencyName','emergencyPhone',
       'medicalNotes','transportProvider','extractionNotes'
     ];
 
@@ -1250,23 +1294,100 @@ function renderTable(){
       if (importPreviewBody) importPreviewBody.innerHTML='';
       if (importPreviewMeta) importPreviewMeta.textContent='';
     }
+    // ── Check-in schedule handoff ──────────────────────────────────────
+    // Writes a prefill payload to localStorage under 'ci_checkin_prefill'.
+    // The check-in schedule page reads this on load, pre-populates fields,
+    // and lets the operator review/refine before submitting.
+    const CHECKIN_PREFILL_KEY = 'ci_checkin_prefill';
+
+    function sendToCheckinSchedule(t, fromDrawer = false){
+      const payload = {
+        source: 'travellers',
+        prefilled_at: new Date().toISOString(),
+        traveller_id: t.id || '',
+        name: t.name || '',
+        role: t.role || '',
+        phone: t.phone || '',
+        email: t.email || '',
+        country: t.country || '',
+        city: t.city || '',
+        hotel: t.hotel || '',
+        address: [t.address, t.postcode].filter(Boolean).join(', '),
+        from: t.from || '',
+        to: t.to || '',
+        flight_number: t.flight_number || t.flightNumber || '',
+        flightIn: t.flightIn || '',
+        flightOut: t.flightOut || '',
+        managerName: t.managerName || '',
+        managerPhone: t.managerPhone || '',
+        managerEmail: t.managerEmail || '',
+        emergencyName: t.emergencyName || '',
+        emergencyPhone: t.emergencyPhone || '',
+        transportProvider: t.transportProvider || '',
+        extractionNotes: t.extractionNotes || '',
+        lat: t.lat ?? '',
+        lon: t.lon ?? '',
+      };
+      try {
+        localStorage.setItem(CHECKIN_PREFILL_KEY, JSON.stringify(payload));
+      } catch(e) {
+        console.warn('Could not write checkin prefill', e);
+      }
+
+      // Show banner in drawer if opened from there
+      const banner = document.getElementById('travDrawerCheckinBanner');
+      if (fromDrawer && banner) {
+        banner.textContent = `✓ ${t.name || 'Traveller'} pre-filled on the Check-in Schedule page. Open Check-in Manager to review and submit.`;
+        banner.style.display = 'block';
+        banner.innerHTML += ` <a href="checkin.html" style="color:#33c48d;font-weight:700;text-decoration:underline;margin-left:8px">Go to Check-in Manager →</a>`;
+      } else {
+        // From table row — brief toast-style feedback via bulkStatus
+        if (bulkStatus) {
+          bulkStatus.textContent = `📋 ${t.name || 'Traveller'} sent to check-in schedule.`;
+          setTimeout(() => { if (bulkStatus) bulkStatus.textContent = ''; }, 3500);
+        }
+        // Also open checkin page in same tab if user holds Shift
+      }
+    }
+
+    // Track traveller currently shown in drawer for the check-in button
+    let drawerCurrentTraveller = null;
+
     function openTravellerDrawer(t){
       if (!drawer || !drawerGrid) return;
+      drawerCurrentTraveller = t;
       drawerTitle.textContent = t.name || 'Traveller';
       drawerSub.textContent = [t.role, t.city, t.country].filter(Boolean).join(' • ') || 'Traveller details';
+
+      // Reset banner
+      const banner = document.getElementById('travDrawerCheckinBanner');
+      if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
+
       const items = [
         ['Risk status', t.riskStatus || t.status || 'Normal'], ['Travel status', t.travelStatus || 'Scheduled'],
         ['Phone', t.phone], ['Email', t.email], ['Hotel', t.hotel], ['Address', [t.address,t.postcode].filter(Boolean).join(', ')],
         ['City / Country', [t.city,t.country].filter(Boolean).join(', ')], ['Trip window', [t.from,t.to].filter(Boolean).join(' → ')],
-        ['Nationality', t.nationality], ['Passport country', t.passportCountry], ['Arrival flight', t.flightIn], ['Departure flight', t.flightOut],
+        ['Nationality', t.nationality], ['Passport country', t.passportCountry],
+        ['Visa / entry status', t.visaNotes || t.visa_notes],
+        ['Active flight (monitored)', t.flight_number || t.flightNumber],
+        ['Arrival flight', t.flightIn], ['Departure flight', t.flightOut],
         ['Manager', t.managerName], ['Manager phone', t.managerPhone], ['Manager email', t.managerEmail],
         ['Emergency contact', t.emergencyName], ['Emergency phone', t.emergencyPhone], ['Secure transport', t.transportProvider],
-        ['Medical / welfare notes', t.medicalNotes, true], ['Extraction / response notes', t.extractionNotes, true], ['Coordinates', [t.lat,t.lon].filter(v=>v!==undefined && v!=='').join(', ')]
+        ['Medical / welfare notes', t.medicalNotes, true], ['Extraction / response notes', t.extractionNotes, true],
+        ['Coordinates', [t.lat,t.lon].filter(v=>v!==undefined && v!=='').join(', ')]
       ];
       drawerGrid.innerHTML = items.map(([label,value,full]) => `<div class="drawer-item ${full?'full':''}"><div class="drawer-label">${escapeHtml(label)}</div><div class="drawer-value">${escapeHtml(value || '—')}</div></div>`).join('');
       drawerBackdrop?.classList.add('open'); drawer.classList.add('open');
     }
-    function closeTravellerDrawer(){ drawerBackdrop?.classList.remove('open'); drawer?.classList.remove('open'); }
+    function closeTravellerDrawer(){ drawerBackdrop?.classList.remove('open'); drawer?.classList.remove('open'); drawerCurrentTraveller = null; }
+
+    // Drawer check-in button
+    const drawerCheckinBtn = document.getElementById('travDrawerCheckinBtn');
+    if (drawerCheckinBtn) {
+      drawerCheckinBtn.addEventListener('click', () => {
+        if (drawerCurrentTraveller) sendToCheckinSchedule(drawerCurrentTraveller, true);
+      });
+    }
 
     downloadTemplateBtn?.addEventListener('click', () => {
       downloadCsv(`cityintel-travellers-template-${new Date().toISOString().slice(0,10)}.csv`, [TRAV_CSV_FIELDS]);
