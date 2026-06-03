@@ -891,19 +891,26 @@
             · severity ${Math.round(Number(item.severity_score || 0))}
           </div>
           <div class="small" style="margin-top:4px;color:#8e97a3;">
-            Review: ${esc(item.review_status || 'unreviewed')}
-            ${item.workflow_target ? ` · ${esc(item.workflow_target)}` : ''}
+            Review: ${esc(item.workflow?.review_status || item.review_status || 'unreviewed')}
+            ${item.workflow?.route || item.workflow_target ? ` · ${esc(item.workflow?.route || item.workflow_target)}` : ''}
+          </div>
+          <div class="small" style="margin-top:4px;color:#8e97a3;">
+            Next: ${esc(item.workflow?.next_action || 'review')} · ${esc(item.workflow?.urgency || 'normal')} priority
           </div>
           <div class="small" style="margin-top:4px;color:#8e97a3;">
             Last activity: ${esc(dateLabel(item.last_event_at || item.updated_at) || item.last_event_at || '')}
           </div>
+          ${item.workflow?.recommendation ? `<div class="small" style="margin-top:7px;color:#cbd5e1;"><strong>Workflow:</strong> ${esc(item.workflow.recommendation)}</div>` : ''}
           ${item.summary ? `<div class="small" style="margin-top:7px;color:#8e97a3;">${esc(item.summary)}</div>` : ''}
           <div class="intel-review-toolbar" style="margin-top:10px;gap:6px;">
-            <button class="intel-review-mini" data-incident-view="${esc(item.id || '')}">View</button>
+            <button class="intel-review-mini" data-incident-view="${esc(item.id || '')}">Review</button>
             <button class="intel-review-mini" data-incident-action="confirm" data-incident-id="${esc(item.id || '')}">Confirm</button>
+            <button class="intel-review-mini" data-incident-action="monitor" data-incident-id="${esc(item.id || '')}">Monitor</button>
+            <button class="intel-review-mini" data-incident-action="research" data-incident-id="${esc(item.id || '')}">Research</button>
             <button class="intel-review-mini" data-incident-action="briefing" data-incident-id="${esc(item.id || '')}">Briefing</button>
             <button class="intel-review-mini" data-incident-action="escalate" data-incident-id="${esc(item.id || '')}">Escalate</button>
             <button class="intel-review-mini" data-incident-action="watchlist" data-incident-id="${esc(item.id || '')}">Watchlist</button>
+            <button class="intel-review-mini" data-incident-action="resolve" data-incident-id="${esc(item.id || '')}">Resolve</button>
             <button class="intel-review-mini" data-incident-action="dismiss" data-incident-id="${esc(item.id || '')}">Dismiss</button>
           </div>
         </div>
@@ -925,6 +932,7 @@
         const cluster = data.cluster || {};
         const relationships = data.relationships || [];
         const timeline = data.timeline || [];
+        const workflow = data.workflow || {};
         el.aiOpsIncidentClusterDetail.innerHTML = `
           <div style="background:#0f1114;border:1px solid #2e3238;border-radius:12px;padding:12px;">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
@@ -939,6 +947,21 @@
               <span class="pill ${riskClass(cluster.risk)}">${esc(cluster.risk || 'Risk')}</span>
             </div>
             ${cluster.summary ? `<div class="small" style="margin-top:8px;color:#cbd5e1;">${esc(cluster.summary)}</div>` : ''}
+            <div style="margin-top:10px;padding:10px;border:1px solid #2e3238;border-radius:10px;background:#111214;">
+              <strong>Workflow review</strong><br>
+              <span>Recommendation: ${esc(workflow.recommendation || 'Review cluster and linked candidates')}</span><br>
+              <span>Next action: ${esc(workflow.next_action || 'review')} · Route: ${esc(workflow.route || workflow.workflow_target || 'cluster_review')} · Urgency: ${esc(workflow.urgency || 'normal')}</span><br>
+              <span>Status: ${esc(workflow.status || cluster.status || 'active')} · Review: ${esc(workflow.review_status || cluster.review_status || 'unreviewed')}</span>
+              <div class="intel-review-toolbar" style="margin-top:8px;gap:6px;">
+                <button class="intel-review-mini" data-incident-detail-action="confirm" data-incident-id="${esc(cluster.id || '')}">Confirm</button>
+                <button class="intel-review-mini" data-incident-detail-action="monitor" data-incident-id="${esc(cluster.id || '')}">Monitor</button>
+                <button class="intel-review-mini" data-incident-detail-action="research" data-incident-id="${esc(cluster.id || '')}">Research</button>
+                <button class="intel-review-mini" data-incident-detail-action="briefing" data-incident-id="${esc(cluster.id || '')}">Briefing</button>
+                <button class="intel-review-mini" data-incident-detail-action="escalate" data-incident-id="${esc(cluster.id || '')}">Escalate</button>
+                <button class="intel-review-mini" data-incident-detail-action="watchlist" data-incident-id="${esc(cluster.id || '')}">Watchlist</button>
+                <button class="intel-review-mini" data-incident-detail-action="resolve" data-incident-id="${esc(cluster.id || '')}">Resolve</button>
+              </div>
+            </div>
             <h4 style="margin:12px 0 6px;font-size:12px;color:#fff;">Linked candidates</h4>
             ${relationships.length ? relationships.map(rel => `
               <div style="padding:8px 0;border-top:1px solid #2e3238;">
@@ -962,6 +985,9 @@
         el.aiOpsIncidentClusterDetail.querySelectorAll('[data-aiops-open]').forEach(btn => {
           btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen));
         });
+        el.aiOpsIncidentClusterDetail.querySelectorAll('[data-incident-detail-action]').forEach(btn => {
+          btn.addEventListener('click', () => runAiOpsIncidentClusterAction(btn, btn.dataset.incidentId, btn.dataset.incidentDetailAction));
+        });
       } catch (err) {
         el.aiOpsIncidentClusterDetail.innerHTML = `<div class="small">Cluster detail failed: ${esc(String(err.message || err))}</div>`;
       }
@@ -969,7 +995,7 @@
 
     async function runAiOpsIncidentClusterAction(btn, clusterId, action){
       if (!clusterId || !action) return;
-      const needsNote = ['dismiss','escalate','briefing','watchlist'].includes(action);
+      const needsNote = ['dismiss','escalate','briefing','watchlist','research','resolve','monitor'].includes(action);
       const note = needsNote ? (prompt(`Optional note for cluster ${action}:`) || '') : '';
       try {
         setIntelButtonBusy(btn, true, 'Saving…');
