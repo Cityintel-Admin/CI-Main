@@ -138,7 +138,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     <nav>
       <a href="index.html">Dashboard</a>
       <a href="cityintel-assistant.html">CityIntel AI</a>
-      <a href="neighborhood-intel.html">Neighborhood Intel</a>
+      <a href="neighborhood-intel.html">Neighbourhood Intel</a>
       <a href="assets.html">Assets</a>
       <a href="travellers.html">Travellers</a>
       <a href="alerts.html">High Risk Events</a>
@@ -171,6 +171,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
         <button class="btn" id="refreshBtn">↺ Refresh</button>
         <a href="live-alerts.html" class="quick-link-pill">🚨 Live Alerts</a>
         <a href="transport-status.html" class="quick-link-pill">🚇 Transport Status</a>
+        <a href="flight-status.html" class="quick-link-pill">✈ Flight Status</a>
       </div>
     </div>
 
@@ -190,9 +191,23 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     <!-- Proximity alerts (shown if any outages near registered assets) -->
     <div id="proximitySection" style="display:none">
       <div class="proximity-card">
-        <div class="prox-title">⚠ Outages near registered assets or travellers</div>
+        <div class="prox-title">⚠ Outages near registered assets or active travellers</div>
         <div id="proximityList"></div>
       </div>
+    </div>
+
+    <!-- Region preference -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+      <span style="font-size:12px;color:var(--muted)">📍 Default map region:</span>
+      <select id="regionPref" style="background:var(--gray-700);border:1px solid var(--gray-600);color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none">
+        <option value="london">London / South East</option>
+        <option value="uk_north">Yorkshire / North East</option>
+        <option value="uk_midlands">Midlands / South West</option>
+        <option value="us_east">US East Coast</option>
+        <option value="us_west">US West Coast</option>
+        <option value="us_midwest">US Midwest</option>
+      </select>
+      <span style="font-size:11px;color:var(--muted)">Saved to your browser</span>
     </div>
 
     <!-- Map + Filters -->
@@ -349,6 +364,31 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   function typeBadgeClass(t){ return t==='planned'?'badge-orange':t==='restored'?'badge-green':'badge-red'; }
   function typeLabel(t){ return t==='planned'?'Planned':t==='restored'?'Restored':'Unplanned'; }
 
+  // ── Region preference ─────────────────────────────────────────────
+  const REGION_CENTRES_PWR = {
+    london:      [51.507, -0.127, 9],
+    uk_north:    [54.0,   -1.5,   8],
+    uk_midlands: [52.5,   -1.9,   8],
+    us_east:     [40.7,   -74.0,  6],
+    us_west:     [37.7,   -122.0, 6],
+    us_midwest:  [41.9,   -87.6,  6],
+  };
+  const REGION_PREF_KEY = 'ci_power_region_pref';
+  function loadRegionPref(){
+    const saved = localStorage.getItem(REGION_PREF_KEY) || 'london';
+    const sel = document.getElementById('regionPref');
+    if(sel) sel.value = saved;
+    return saved;
+  }
+  function applyRegionToMap(region){
+    const c = REGION_CENTRES_PWR[region] || REGION_CENTRES_PWR.london;
+    if(map) map.setView([c[0], c[1]], c[2]);
+  }
+  document.getElementById('regionPref')?.addEventListener('change', e => {
+    localStorage.setItem(REGION_PREF_KEY, e.target.value);
+    applyRegionToMap(e.target.value);
+  });
+
   // ── Map init ─────────────────────────────────────────────────────────
   function initMap(){
     map = L.map('outageMap',{zoomControl:true}).setView([51.5074,-0.1278],9);
@@ -450,7 +490,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
     wrap.innerHTML=`<div class="table-wrap"><table>
       <thead><tr>
-        <th>Type</th><th>Source / Zone</th><th>Postcodes Affected</th><th>Duration</th>
+        <th>Type</th><th>Source / Zone</th><th>Postcodes Affected</th><th>Customers</th><th>Duration</th>
         <th>Started</th><th>Est. Restoration</th><th>Incident Type</th>
       </tr></thead>
       <tbody>${pageRows.map(o=>{
@@ -468,6 +508,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
             ${(()=>{const sl={'ukpn':'UKPN','npg':'NPG','nged':'NGED','odin':'ODIN'}[o._source||'']||(o._source||'').toUpperCase()||'?';const sc={'ukpn':'#93c5fd','npg':'#86efac','nged':'#fca5a5','odin':'#fbbf24'}[o._source||'']||'#8e97a3';return '<span style="font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.3);color:'+sc+'">'+(sl)+'</span><div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(zone)+'</div>';})()}
           </td>
           <td style="font-size:12px">${esc(postcodes)}</td>
+          <td style="font-size:12px;font-weight:${o.customers_affected>100?'700':'400'};color:${o.customers_affected>1000?'var(--warn)':o.customers_affected>0?'var(--text)':'var(--muted)'}">${o.customers_affected ? Number(o.customers_affected).toLocaleString() : '—'}</td>
           <td>${duration}</td>
           <td style="font-size:12px;color:var(--muted)">${fmtTime(startTime)}</td>
           <td style="font-size:12px;${restoredStyle||'color:var(--warn)'}">${etr?fmtTime(etr):(t==='restored'?'✓ Restored':'—')}</td>
@@ -517,11 +558,27 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   // ── Proximity check against org assets ───────────────────────────────
   async function checkProximity(outages){
     try{
-      const res=await fetch(API_BASE+'/api/assets',{headers:authHeaders()});
-      if(!res.ok) return; // silently skip — no assets registered yet, or endpoint not available
-      const data=await res.json().catch(()=>({}));
-      const assets=(data.assets||data.data||[]).filter(a=>a.lat&&a.lon);
-      if(!assets.length) return;
+      const headers = authHeaders();
+      const [assetRes, travRes] = await Promise.allSettled([
+        fetch(API_BASE+'/api/org/assets', {headers}).then(r=>r.json()).catch(()=>({})),
+        fetch(API_BASE+'/api/org/travellers', {headers}).then(r=>r.json()).catch(()=>({})),
+      ]);
+
+      const assets = (assetRes.status==='fulfilled'
+        ? (assetRes.value?.data || assetRes.value?.assets || [])
+        : []).filter(a=>a.lat&&a.lon);
+
+      const today = new Date().toISOString().slice(0,10);
+      const travellers = (travRes.status==='fulfilled'
+        ? (travRes.value?.data || travRes.value?.travellers || travRes.value || [])
+        : []).filter(t=>t.lat&&t.lon&&t.from<=today&&t.to>=today);
+
+      const points = [
+        ...assets.map(a=>({name:a.name||'Asset', type:'asset', lat:a.lat, lon:a.lon})),
+        ...travellers.map(t=>({name:t.name||'Traveller', type:'traveller', lat:t.lat, lon:t.lon})),
+      ];
+
+      if(!points.length) return;
 
       // Plot asset markers
       assetMarkers.forEach(m=>m.remove());
@@ -532,19 +589,23 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
         m.addTo(map);
         assetMarkers.push(m);
       });
+      travellers.forEach(t=>{
+        if(!t.lat||!t.lon) return;
+        const m=L.circleMarker([t.lat,t.lon],{radius:7,color:'#f59e0b',weight:2,fillColor:'#fcd34d',fillOpacity:0.75});
+        m.bindPopup(`<div style="font:13px system-ui;color:#e9edf2">🧳 <strong>${esc(t.name||'Traveller')}</strong><br><span style="color:#8e97a3">${esc(t.city||'')}${t.country?', '+esc(t.country):''}</span><br><span style="color:#8e97a3;font-size:11px">${esc(t.from)} → ${esc(t.to)}</span></div>`);
+        m.addTo(map);
+        assetMarkers.push(m);
+      });
 
-      // Find outages within 2km of any asset
       const RADIUS_KM=2;
       const nearby=[];
       for(const o of outages){
         const oLat=o.lat??o.geopoint?.lat;
         const oLon=o.lon??o.geopoint?.lon;
         if(!oLat||!oLon) continue;
-        for(const a of assets){
-          const d=distKm(a.lat,a.lon,oLat,oLon);
-          if(d<=RADIUS_KM){
-            nearby.push({outage:o,asset:a,dist:d});
-          }
+        for(const p of points){
+          const d=distKm(p.lat,p.lon,oLat,oLon);
+          if(d<=RADIUS_KM) nearby.push({outage:o,asset:{...p},dist:d});
         }
       }
 
@@ -558,9 +619,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
         const t=outageType(n.outage);
         const area=n.outage.postcode||n.outage.operating_zone||'Unknown area';
         const customers=n.outage.customers_affected?Number(n.outage.customers_affected).toLocaleString()+' customers':'';
+        const icon = n.asset.type==='traveller' ? '🧳' : '🏢';
         return `<div class="prox-item">
           <span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span>
-          <span><strong>${esc(n.asset.name||'Asset')}</strong> — ${esc(area)}</span>
+          <span>${icon} <strong>${esc(n.asset.name||'Asset')}</strong> — ${esc(area)}</span>
           <span style="color:var(--muted);font-size:12px">${n.dist.toFixed(1)}km away ${customers?'· '+customers:''}</span>
           ${n.outage.estimated_restoration?`<span style="color:var(--warn);font-size:12px">Est. restore: ${fmtTime(n.outage.estimated_restoration)}</span>`:''}
         </div>`;
@@ -663,6 +725,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
   // ── Init ──────────────────────────────────────────────────────────────
   initMap();
+  const savedRegion = loadRegionPref();
+  applyRegionToMap(savedRegion);
   loadOutages();
   setInterval(loadOutages, REFRESH_INTERVAL_MS);
 
