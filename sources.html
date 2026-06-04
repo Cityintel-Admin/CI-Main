@@ -219,7 +219,7 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
     return h;
   }
   function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-  function fmtTime(iso){if(!iso)return'—';try{return new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}catch{return iso}}
+  function fmtTime(iso){if(!iso)return'—';try{return new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}catch{return String(iso).slice(0,16)}}
 
   let allResults = [];
 
@@ -257,37 +257,92 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
       const s = d.sources || {};
       const cards = [];
 
+      // TfL: schema-debug returns {ok, total_lines, sample_keys} — no disrupted/good_service counts
       const tfl = s.tfl;
-      if(tfl?.disrupted!=null){ cards.push(sourceCard('TfL (London)','ok',`${tfl.total_lines} lines · ${tfl.disrupted} disrupted · ${tfl.good_service} good service`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(tfl?.error){ cards.push(sourceCard('TfL (London)','error',tfl.error,'TFL_APP_KEY required')); pushResult('error'); }
-      else{ cards.push(sourceCard('TfL (London)','warn','Key not configured','Add TFL_APP_KEY to Worker secrets')); pushResult('warn'); }
+      if(tfl?.ok && tfl?.total_lines!=null){
+        cards.push(sourceCard('TfL (London)','ok',`${tfl.total_lines} lines · API responding`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(tfl?.ok===false && tfl?.error){
+        cards.push(sourceCard('TfL (London)','error',tfl.error,'Add TFL_APP_KEY to Worker secrets'));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('TfL (London)','warn','Key not configured or no response','Add TFL_APP_KEY to Worker secrets'));
+        pushResult('warn');
+      }
 
+      // National Rail: schema-debug returns {ok, host, nrcc_messages, train_services_sample, sample_keys} or {ok:false, error/skipped}
       const nr = s.nationalrail;
-      if(nr?.count!=null){ cards.push(sourceCard('National Rail','ok',`${nr.count} disruptions · ${nr.planned||0} planned`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(nr?.error){ cards.push(sourceCard('National Rail','error',nr.error,'NATIONALRAIL_API_KEY required')); pushResult('error'); }
-      else if(nr?.skipped){ cards.push(sourceCard('National Rail','warn',nr.skipped,'Add NATIONALRAIL_API_KEY')); pushResult('warn'); }
-      else{ cards.push(sourceCard('National Rail','warn','Key not configured','Add NATIONALRAIL_API_KEY')); pushResult('warn'); }
+      if(nr?.ok && nr?.host){
+        cards.push(sourceCard('National Rail','ok',`Huxley2 proxy responding · ${nr.nrcc_messages||0} NRCC messages · ${nr.train_services_sample||0} services sampled`,`Host: ${nr.host}`));
+        pushResult('ok');
+      } else if(nr?.ok===false && nr?.error){
+        cards.push(sourceCard('National Rail','error',nr.error, nr.hint||'NATIONALRAIL_API_KEY required'));
+        pushResult('error');
+      } else if(nr?.ok===false && nr?.skipped){
+        cards.push(sourceCard('National Rail','warn',nr.skipped,'Register free at realtime.nationalrail.co.uk/OpenLDBWSRegistration'));
+        pushResult('warn');
+      } else {
+        cards.push(sourceCard('National Rail','warn','Key not configured','Add NATIONALRAIL_API_KEY'));
+        pushResult('warn');
+      }
 
+      // MTA: returns {ok, count, sample_keys}
       const mta = s.mta;
-      if(mta?.count!=null){ cards.push(sourceCard('MTA New York','ok',`${mta.count} alerts · ${mta.planned||0} planned`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(mta?.error){ cards.push(sourceCard('MTA New York','error',mta.error,'')); pushResult('error'); }
-      else{ cards.push(sourceCard('MTA New York','warn','Not active','Free public feed — check worker config')); pushResult('warn'); }
+      if(mta?.ok && mta?.count!=null){
+        cards.push(sourceCard('MTA New York','ok',`${mta.count} alerts`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(mta?.ok===false && mta?.error){
+        cards.push(sourceCard('MTA New York','error',mta.error,''));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('MTA New York','warn','Not responding','Free public GTFS-RT feed'));
+        pushResult('warn');
+      }
 
+      // Singapore LTA: returns {ok, count} or {ok:false, error/skipped}
       const lta = s.lta;
-      if(lta?.count!=null){ cards.push(sourceCard('Singapore LTA','ok',`${lta.count} alerts`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(lta?.error){ cards.push(sourceCard('Singapore LTA','error',lta.error,'')); pushResult('error'); }
-      else if(lta?.skipped){ cards.push(sourceCard('Singapore LTA','warn',lta.skipped,'')); pushResult('warn'); }
-      else{ cards.push(sourceCard('Singapore LTA','warn','Not active','')); pushResult('warn'); }
+      if(lta?.ok && lta?.count!=null){
+        cards.push(sourceCard('Singapore LTA','ok',`${lta.count} alerts`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(lta?.ok===false && lta?.error){
+        cards.push(sourceCard('Singapore LTA','error',lta.error, lta.hint||''));
+        pushResult('error');
+      } else if(lta?.ok===false && lta?.skipped){
+        cards.push(sourceCard('Singapore LTA','warn',lta.skipped,'Add LTA_ACCOUNT_KEY — register at datamall.lta.gov.sg'));
+        pushResult('warn');
+      } else {
+        cards.push(sourceCard('Singapore LTA','warn','Not active','Add LTA_ACCOUNT_KEY'));
+        pushResult('warn');
+      }
 
+      // Tokyo: returns {ok, count, note} or {ok:false, error/skipped}
       const tokyo = s.tokyo;
-      if(tokyo?.count!=null){ cards.push(sourceCard('Tokyo Metro / Toei','ok',tokyo.count>0?`${tokyo.count} disruptions`:(tokyo.note||'Normal service'),`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(tokyo?.error){ cards.push(sourceCard('Tokyo Metro / Toei','error',tokyo.error,'')); pushResult('error'); }
-      else{ cards.push(sourceCard('Tokyo Metro / Toei','warn','Not active','')); pushResult('warn'); }
+      if(tokyo?.ok && tokyo?.count!=null){
+        cards.push(sourceCard('Tokyo Metro / Toei','ok', tokyo.count>0?`${tokyo.count} disruptions`:(tokyo.note||'Normal service'),`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(tokyo?.ok===false && tokyo?.error){
+        cards.push(sourceCard('Tokyo Metro / Toei','error',tokyo.error, tokyo.hint||''));
+        pushResult('error');
+      } else if(tokyo?.ok===false && tokyo?.skipped){
+        cards.push(sourceCard('Tokyo Metro / Toei','warn',tokyo.skipped,'Add TOKYO_API_KEY — register free at developer.odpt.org'));
+        pushResult('warn');
+      } else {
+        cards.push(sourceCard('Tokyo Metro / Toei','warn','Not active','Add TOKYO_API_KEY'));
+        pushResult('warn');
+      }
 
+      // HK MTR: no key required — returns {ok, count, note} or {ok:false, error}
       const hkmtr = s.hkmtr;
-      if(hkmtr?.count!=null){ cards.push(sourceCard('Hong Kong MTR','ok',hkmtr.count>0?`${hkmtr.count} disruptions`:(hkmtr.note||'Normal service'),`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(hkmtr?.error){ cards.push(sourceCard('Hong Kong MTR','error',hkmtr.error,'')); pushResult('error'); }
-      else{ cards.push(sourceCard('Hong Kong MTR','warn','Not active','')); pushResult('warn'); }
+      if(hkmtr?.ok && hkmtr?.count!=null){
+        cards.push(sourceCard('Hong Kong MTR','ok', hkmtr.count>0?`${hkmtr.count} disruptions`:(hkmtr.note||'Normal service'), hkmtr.hint||'No API key required'));
+        pushResult('ok');
+      } else if(hkmtr?.ok===false && hkmtr?.error){
+        cards.push(sourceCard('Hong Kong MTR','error',hkmtr.error,'Open data feed — no key required · https://rt.data.gov.hk'));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('Hong Kong MTR','warn','Not responding','Open data feed — no key required'));
+        pushResult('warn');
+      }
 
       grid.innerHTML = cards.join('');
     }catch(e){
@@ -304,25 +359,67 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
       const s = d.sources || {};
       const cards = [];
 
+      // Power schema-debug returns {ok, count_sampled, keys, samples} or {ok:false, error/skipped/status}
       const ukpn = s.ukpn;
-      if(ukpn?.count!=null){ cards.push(sourceCard('UK Power Networks','ok',`${ukpn.count} records`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(ukpn?.error){ cards.push(sourceCard('UK Power Networks','error',ukpn.error,'UKPN_API_KEY required')); pushResult('error'); }
-      else{ cards.push(sourceCard('UK Power Networks','warn','Key not configured','Add UKPN_API_KEY to Worker secrets')); pushResult('warn'); }
+      if(ukpn?.ok && ukpn?.count_sampled!=null){
+        cards.push(sourceCard('UK Power Networks','ok',`API responding · ${ukpn.count_sampled} sample records · ${(ukpn.keys||[]).length} fields`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(ukpn?.ok===false && ukpn?.skipped){
+        cards.push(sourceCard('UK Power Networks','warn',ukpn.skipped,'Add UKPN_API_KEY to Worker secrets'));
+        pushResult('warn');
+      } else if(ukpn?.ok===false && ukpn?.error){
+        cards.push(sourceCard('UK Power Networks','error',`HTTP ${ukpn.status||''} · ${ukpn.error}`,'Check UKPN_API_KEY'));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('UK Power Networks','warn','Key not configured','Add UKPN_API_KEY to Worker secrets'));
+        pushResult('warn');
+      }
 
       const npg = s.npg;
-      if(npg?.count!=null){ cards.push(sourceCard('Northern Powergrid','ok',`${npg.count} records`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(npg?.error){ cards.push(sourceCard('Northern Powergrid','error',npg.error,'NPG_API_KEY required')); pushResult('error'); }
-      else{ cards.push(sourceCard('Northern Powergrid','warn','Key not configured','Add NPG_API_KEY')); pushResult('warn'); }
+      if(npg?.ok && npg?.count_sampled!=null){
+        cards.push(sourceCard('Northern Powergrid','ok',`API responding · ${npg.count_sampled} sample records`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(npg?.ok===false && npg?.skipped){
+        cards.push(sourceCard('Northern Powergrid','warn',npg.skipped,'Add NPG_API_KEY'));
+        pushResult('warn');
+      } else if(npg?.ok===false && npg?.error){
+        cards.push(sourceCard('Northern Powergrid','error',`HTTP ${npg.status||''} · ${npg.error}`,'Check NPG_API_KEY'));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('Northern Powergrid','warn','Key not configured','Add NPG_API_KEY'));
+        pushResult('warn');
+      }
 
+      // NGED returns {ok, type:'csv', keys:[...]} on success
       const nged = s.nged;
-      if(nged?.count!=null){ cards.push(sourceCard('National Grid ED','ok',`${nged.count} records`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(nged?.error){ cards.push(sourceCard('National Grid ED','error',nged.error,'NGED_API_KEY required')); pushResult('error'); }
-      else{ cards.push(sourceCard('National Grid ED','warn','Key not configured','Add NGED_API_KEY')); pushResult('warn'); }
+      if(nged?.ok && nged?.type){
+        cards.push(sourceCard('National Grid ED','ok',`CSV feed responding · ${(nged.keys||[]).length} fields detected`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(nged?.ok===false && nged?.skipped){
+        cards.push(sourceCard('National Grid ED','warn',nged.skipped,'Add NGED_API_KEY'));
+        pushResult('warn');
+      } else if(nged?.ok===false && nged?.error){
+        cards.push(sourceCard('National Grid ED','error',`HTTP ${nged.status||''} · ${nged.error}`,'Check NGED_API_KEY'));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('National Grid ED','warn','Key not configured','Add NGED_API_KEY'));
+        pushResult('warn');
+      }
 
       const odin = s.odin;
-      if(odin?.count!=null){ cards.push(sourceCard('ODIN (US)','ok',`${odin.count} counties · ${(odin.customers_affected||0).toLocaleString()} meters`,`Cache: ${fmtTime(d.fetched_at)}`)); pushResult('ok'); }
-      else if(odin?.error){ cards.push(sourceCard('ODIN (US)','error',odin.error,'ODIN_API_KEY required')); pushResult('error'); }
-      else{ cards.push(sourceCard('ODIN (US)','warn','Key not configured','Register at openenergyhub.ornl.gov · add ODIN_API_KEY')); pushResult('warn'); }
+      if(odin?.ok && odin?.count_sampled!=null){
+        cards.push(sourceCard('ODIN (US)','ok',`API responding · ${odin.count_sampled} sample records`,`Generated: ${fmtTime(d.generated_at)}`));
+        pushResult('ok');
+      } else if(odin?.ok===false && odin?.skipped){
+        cards.push(sourceCard('ODIN (US)','warn',odin.skipped,'Register at openenergyhub.ornl.gov · add ODIN_API_KEY'));
+        pushResult('warn');
+      } else if(odin?.ok===false && odin?.error){
+        cards.push(sourceCard('ODIN (US)','error',`HTTP ${odin.status||''} · ${odin.error}`,'Check ODIN_API_KEY'));
+        pushResult('error');
+      } else {
+        cards.push(sourceCard('ODIN (US)','warn','Key not configured','Register at openenergyhub.ornl.gov · add ODIN_API_KEY'));
+        pushResult('warn');
+      }
 
       grid.innerHTML = cards.join('');
     }catch(e){
@@ -338,8 +435,12 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
       const d = await res.json().catch(()=>({}));
       const cards = [];
 
+      // Flight returns {ok, has_opensky_creds, has_aviationstack, airports_supported, recent_keys:[{cache_key, fetched_at}]}
       if(d.has_opensky_creds){
-        cards.push(sourceCard('OpenSky Network','ok',`${d.airports_supported||78} airports supported · OAuth2 authenticated`,`Cache entries: ${d.recent_keys?.length||0}`));
+        const lastFetch = d.recent_keys?.[0]?.fetched_at;
+        cards.push(sourceCard('OpenSky Network','ok',
+          `${d.airports_supported||78} airports supported · OAuth2 authenticated · ${d.recent_keys?.length||0} cache entries`,
+          lastFetch ? `Last cached: ${fmtTime(lastFetch)}` : 'Cache warming via cron'));
         pushResult('ok');
       } else {
         cards.push(sourceCard('OpenSky Network','warn','Credentials not configured','Add OPENSKY_CLIENT_ID + OPENSKY_CLIENT_SECRET · free account at opensky-network.org'));
@@ -347,7 +448,7 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
       }
 
       if(d.has_aviationstack){
-        cards.push(sourceCard('AviationStack','ok','Configured — delay, gate & schedule data active',''));
+        cards.push(sourceCard('AviationStack','ok','Configured — delay, gate & schedule data active','Optional enrichment layer'));
         pushResult('ok');
       } else {
         cards.push(sourceCard('AviationStack','warn','Key not configured','Add AVIATIONSTACK_API_KEY for delay minutes and gate data · optional'));
@@ -363,28 +464,41 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
 
   async function checkNews(){
     const grid = document.getElementById('newsGrid');
-    // News keys are checked via a dedicated status endpoint; fall back to heuristic
+    // News API keys can't be directly verified from the frontend — Worker secrets are not exposed.
+    // We ping /api/live-alerts/cache to check if the pipeline is producing data,
+    // and display each key's configured status based on whether alerts are flowing.
     const newsKeys = [
       {name:'MediaStack', secret:'MEDIASTACK_KEY', desc:'Global news aggregation for live alerts and event detection'},
       {name:'NewsAPI', secret:'NEWSAPI_KEY', desc:'Breaking news feed for high-risk event monitoring'},
       {name:'NewsData.io (primary)', secret:'NEWSDATA_KEY', desc:'Primary news data feed for protest and disruption events'},
       {name:'NewsData.io (secondary)', secret:'NEWSDATA_KEY2', desc:'Secondary NewsData key for rate-limit failover'},
     ];
-    // We can't directly check if secrets exist from the frontend, so we ping a lightweight endpoint
     try{
-      const res = await fetch(API+'/api/live-alerts?limit=1', {headers:authH()});
+      const res = await fetch(API+'/api/live-alerts/cache?limit=5', {headers:authH()});
       const d = await res.json().catch(()=>({}));
+      const hasData = d.ok && Array.isArray(d.events) && d.events.length > 0;
+      const newest = hasData ? d.events[0] : null;
+      const newestTime = newest?.when_ts || newest?.published_at || newest?.created_at || null;
+
       const cards = newsKeys.map(k => {
-        // If live alerts are returning data, news feeds are working
-        const hasData = d.ok && Array.isArray(d.alerts) && d.alerts.length > 0;
-        pushResult(hasData ? 'ok' : 'warn');
-        return sourceCard(k.name, hasData?'ok':'warn',
-          hasData ? 'Live alerts pipeline active' : 'Unable to verify — check Worker secrets',
-          k.desc + ` · Secret: ${k.secret}`);
+        if(hasData){
+          pushResult('ok');
+          return sourceCard(k.name,'ok',
+            `Live alerts pipeline active · ${d.events.length} recent events` + (newestTime ? ` · Latest: ${fmtTime(newestTime)}` : ''),
+            k.desc + ` · Secret key: ${k.secret}`);
+        } else {
+          pushResult('warn');
+          return sourceCard(k.name,'warn',
+            d.ok ? 'No recent alerts — pipeline may be idle or keys unconfigured' : 'Could not verify — check Worker secrets',
+            k.desc + ` · Secret key: ${k.secret}`);
+        }
       });
       grid.innerHTML = cards.join('');
     }catch(e){
-      grid.innerHTML = newsKeys.map(k => {pushResult('warn'); return sourceCard(k.name,'warn','Could not verify',k.desc);}).join('');
+      grid.innerHTML = newsKeys.map(k => {
+        pushResult('warn');
+        return sourceCard(k.name,'warn','Could not verify — check Worker secrets',k.desc);
+      }).join('');
     }
   }
 
