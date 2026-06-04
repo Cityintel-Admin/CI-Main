@@ -30,6 +30,7 @@
             <button class="btn" id="aiOpsEvaluatePolicy" type="button">Evaluate Policy</button>
             <button class="btn" id="aiOpsRunCorrelation" type="button">Run Incident Correlation</button>
             <button class="btn" id="aiOpsLinkClusters" type="button">Link Related Clusters</button>
+            <button class="btn" id="aiOpsLinkLiveAlerts" type="button">Link Live Alerts</button>
           </div>
           <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
         </div>
@@ -71,6 +72,14 @@
           <div class="small" style="margin-bottom:10px;color:#8e97a3;">Cross-cluster links show possible multi-location, recurring, or related incident chains. Advisory only until admin review.</div>
           <div id="aiOpsRelatedClusters" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
             <div class="small">No related cluster signals loaded yet.</div>
+          </div>
+        </div>
+
+        <div class="intel-candidate-section">
+          <h3>Live alert memory</h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">Links current live alerts into persistent incident clusters. Advisory only until admin review.</div>
+          <div id="aiOpsLiveAlertMemory" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+            <div class="small">No live alert memory links loaded yet.</div>
           </div>
         </div>
 
@@ -746,6 +755,7 @@
       aiOpsEvaluatePolicy: document.getElementById('aiOpsEvaluatePolicy'),
       aiOpsRunCorrelation: document.getElementById('aiOpsRunCorrelation'),
       aiOpsLinkClusters: document.getElementById('aiOpsLinkClusters'),
+      aiOpsLinkLiveAlerts: document.getElementById('aiOpsLinkLiveAlerts'),
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
@@ -756,6 +766,7 @@
       aiOpsIncidentClusters: document.getElementById('aiOpsIncidentClusters'),
       aiOpsIncidentClusterDetail: document.getElementById('aiOpsIncidentClusterDetail'),
       aiOpsRelatedClusters: document.getElementById('aiOpsRelatedClusters'),
+      aiOpsLiveAlertMemory: document.getElementById('aiOpsLiveAlertMemory'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -922,6 +933,50 @@
 
       el.aiOpsRelatedClusters.querySelectorAll('[data-related-cluster-view]').forEach(btn => {
         btn.addEventListener('click', () => loadAiOpsIncidentClusterDetail(btn.dataset.relatedClusterView));
+      });
+    }
+
+
+    function renderAiOpsLiveAlertMemory(items = []){
+      if (!el.aiOpsLiveAlertMemory) return;
+      if (!items.length) {
+        el.aiOpsLiveAlertMemory.innerHTML = '<div class="small">No live alert memory links yet. Use Link Live Alerts after live alerts and incident clusters exist.</div>';
+        return;
+      }
+
+      el.aiOpsLiveAlertMemory.innerHTML = items.map(item => {
+        const score = Math.round(Number(item.correlation_score || 0) * 100);
+        const srcScore = Math.round(Number(item.source_confidence_score || 0) * 100);
+        const title = item.live_title || item.live_alert_id || 'Live alert';
+        const cluster = item.cluster_title || item.cluster_id || 'Incident cluster';
+        const age = item.source_age_hours === null || item.source_age_hours === undefined ? 'unknown age' : `${Math.round(Number(item.source_age_hours || 0))}h old`;
+        const loc = [item.live_city, item.cluster_city].filter(Boolean).join(' → ');
+        return `
+          <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+              <strong>${esc(item.relationship_type || 'Live memory link')}</strong>
+              <span class="pill ${score >= 78 ? 'high' : score >= 58 ? 'medium' : 'low'}">${score}%</span>
+            </div>
+            <div style="margin-top:8px;color:#cbd5e1;">
+              <strong>${esc(title)}</strong><br>
+              <span style="color:#8e97a3;">${esc(item.live_source || 'Live source')} · ${esc(age)}</span>
+            </div>
+            <div style="margin-top:8px;color:#cbd5e1;">
+              <strong>${esc(cluster)}</strong><br>
+              <span style="color:#8e97a3;">${esc(loc || 'Location signal unavailable')}</span>
+            </div>
+            <div class="small" style="margin-top:8px;color:#8e97a3;">
+              Source confidence ${srcScore}% · ${esc(item.temporal_signal || 'temporal signal unknown')} · ${esc(item.location_signal || 'location signal unknown')}
+            </div>
+            <div class="small" style="margin-top:5px;color:#8e97a3;">${esc(item.reason || '')}</div>
+            <div class="intel-review-toolbar" style="margin-top:10px;gap:6px;">
+              <button class="intel-review-mini" data-live-memory-cluster="${esc(item.cluster_id || '')}">View Cluster</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      el.aiOpsLiveAlertMemory.querySelectorAll('[data-live-memory-cluster]').forEach(btn => {
+        btn.addEventListener('click', () => loadAiOpsIncidentClusterDetail(btn.dataset.liveMemoryCluster));
       });
     }
 
@@ -1176,6 +1231,7 @@
         if (el.aiOpsQueues) el.aiOpsQueues.innerHTML = '<div class="small">Loading queue previews…</div>';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
         if (el.aiOpsIncidentClusters) el.aiOpsIncidentClusters.innerHTML = '<div class="small">Loading incident clusters…</div>';
+        if (el.aiOpsLiveAlertMemory) el.aiOpsLiveAlertMemory.innerHTML = '<div class="small">Loading live alert memory…</div>';
       }
 
       try {
@@ -1203,7 +1259,10 @@
             renderAiOpsMetric('Awaiting Review', m.clusters_awaiting_review),
             renderAiOpsMetric('Resolved Clusters', m.resolved_incident_clusters),
             renderAiOpsMetric('Avg Severity', m.avg_cluster_severity),
-            renderAiOpsMetric('Largest Cluster', m.largest_cluster_size)
+            renderAiOpsMetric('Largest Cluster', m.largest_cluster_size),
+            renderAiOpsMetric('Live Memory', m.live_alert_memory_links),
+            renderAiOpsMetric('Strong Live Links', m.strong_live_alert_matches),
+            renderAiOpsMetric('Live Source Conf.', m.avg_live_source_confidence ? `${m.avg_live_source_confidence}%` : 0)
           ].join('');
         }
 
@@ -1223,6 +1282,7 @@
         renderAiOpsQueues(data.queue_previews || {});
         renderAiOpsIncidentClusters(data.incident_clusters || []);
         renderAiOpsRelatedClusters(data.related_cluster_links || []);
+        renderAiOpsLiveAlertMemory(data.live_alert_memory || []);
 
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
@@ -3654,6 +3714,7 @@ async function ask(){
     if (el.aiOpsEvaluatePolicy) el.aiOpsEvaluatePolicy.addEventListener('click',()=>runAiOpsControl(el.aiOpsEvaluatePolicy, 'Evaluating…', 'policy_evaluate', ()=>fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', { method:'POST', body: JSON.stringify({ limit: 150, write: true }) })));
     if (el.aiOpsRunCorrelation) el.aiOpsRunCorrelation.addEventListener('click',()=>runAiOpsControl(el.aiOpsRunCorrelation, 'Correlating…', 'incident_correlation', ()=>fetchAiOpsJson('/api/intel-review/incidents/correlate', { method:'POST', body: JSON.stringify({ limit: 250, min_cluster_size: 2 }) })));
     if (el.aiOpsLinkClusters) el.aiOpsLinkClusters.addEventListener('click',()=>runAiOpsControl(el.aiOpsLinkClusters, 'Linking clusters…', 'cluster_linking', ()=>fetchAiOpsJson('/api/intel-review/incidents/link-clusters', { method:'POST', body: JSON.stringify({ limit: 120, min_score: 0.42 }) })));
+    if (el.aiOpsLinkLiveAlerts) el.aiOpsLinkLiveAlerts.addEventListener('click',()=>runAiOpsControl(el.aiOpsLinkLiveAlerts, 'Linking live alerts…', 'live_alert_memory', ()=>fetchAiOpsJson('/api/intel-review/incidents/link-live-alerts', { method:'POST', body: JSON.stringify({ limit: 150, min_score: 0.42 }) })));
     if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
