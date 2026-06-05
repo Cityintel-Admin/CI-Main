@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script src="auth.js"></script>
+<script>
+(function(){
+  if (!window.CIAuth || !CIAuth.isLoggedIn()) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const next = encodeURIComponent(here + location.search + location.hash);
+    location.href = 'login.html?next=' + next;
+  }
+})();
+</script>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
@@ -760,14 +770,14 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <nav>
         <a href="index.html" class="active">Dashboard</a>
 		<a href="cityintel-assistant.html">CityIntel AI</a>
-		<a href="neighborhood-intel.html">neighborhood-intel</a> 
-		<a href="profile.html">Profile Page</a>
+		<a href="neighborhood-intel.html">Neighbourhood Intel</a> 
+		<a href="profile.html">Profile</a>
 		<a href="assets.html">Assets</a>
 		<a href="travellers.html">Travellers</a>
         <a href="alerts.html">High Risk Events</a>
         <a href="events.html">All Events</a>
 		<a href="live-alerts.html">Live Alerts</a>  
-		<a href="training-scenario-admin.html">Training-Scenario</a>
+		<a href="training-scenario-admin.html">Training Scenarios</a>
 	    <a href="brief.html">Intelligence Brief</a>
 	    <a href="trends.html">Trends & Forecasts</a>
         <a href="reports.html">Reports</a>
@@ -775,9 +785,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <a href="panicalarm.html">Panic Alarm</a>
         <a href="checkin.html">Check-in Manager</a>
         <a href="power-outages.html">Power Outages</a>
-		<a href="transport-status.html">Transport-Status</a>
+		<a href="transport-status.html">Transport Status</a>
 		<a href="flight-status.html">Flight-Status</a> 
-		<a href="cityintel-landing.html">CityIntel-Landings</a>
+		<a href="cityintel-landing.html">CityIntel Landing</a>
         <a href="settings.html">Settings</a>
         <a href="about.html">About</a>
       </nav>
@@ -833,10 +843,15 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <span class="kpi-open">Open global monthly view →</span>
 </section>
 
-        <section class="card" style="grid-column: span 3;">
-          <h3>Data Freshness</h3>
-          <div class="metric"><div class="value">96%</div><div class="delta up">+4%</div></div>
-          <small style="color:var(--muted)">Last ingest: 10 mins ago</small>
+        <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiEscalationsCard"
+          data-href="live-alerts.html" tabindex="0" role="link" aria-label="Open Live Alerts escalation queue">
+          <h3>Open Escalations</h3>
+          <div class="metric">
+            <div class="value" id="kpi-escalations">—</div>
+            <div class="delta" id="kpi-escalations-delta" style="display:none"></div>
+          </div>
+          <small style="color:var(--muted)" id="kpi-escalations-sub">Active in escalation queue</small>
+          <span class="kpi-open">Open Live Alerts →</span>
         </section>
 
 
@@ -1515,21 +1530,6 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 
         </section>
 
-        <section class="card" style="grid-column: span 7;">
-          <h3>Notes / Analyst Scratchpad</h3>
-          <p style="color:var(--muted);margin-top:6px">Use this space to capture hypotheses, route changes, risk factors, or requests from stakeholders.</p>
-          <ul style="margin-top:4px">
-            <li>Watch coach bookings for Edinburgh (threshold > 40 per hour).</li>
-            <li>Check Leeds venue permits; verify separation plan for counter-protests.</li>
-            <li>Flag any WhatsApp flyer variants for authenticity review.</li>
-          </ul>
-        </section>
-
-<section class="card" style="grid-column: span 7;">
-  <h3>Projections (next 14 days)</h3>
-  <div id="proj14d" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
-  <small style="color:#8e97a3">Heuristic projection uses the last 14 days’ average per continent and risk.</small>
-</section>
 
 
       <!-- Power Outage Widget -->
@@ -2162,6 +2162,78 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 })();
 </script>
 
+<!-- Open Escalations KPI — polls /api/org/escalations for live count -->
+<script>
+(function mountEscalationsKpi(){
+  const el     = document.getElementById('kpi-escalations');
+  const elSub  = document.getElementById('kpi-escalations-sub');
+  const elDelta= document.getElementById('kpi-escalations-delta');
+  if (!el) return;
+
+  async function fetch_count(){
+    try{
+      const headers = (typeof authHeaders === 'function') ? await authHeaders() : {};
+      const url = (typeof withEmailParam === 'function')
+        ? withEmailParam('https://api.cityintelapi.com/api/org/escalations')
+        : 'https://api.cityintelapi.com/api/org/escalations';
+      const res = await fetch(url, { headers });
+      const json = await res.json().catch(()=>null);
+      if (!json || !json.ok) return;
+
+      const rows = Array.isArray(json.data) ? json.data : (Array.isArray(json.escalations) ? json.escalations : []);
+      const open = rows.filter(r => {
+        const st = String(r.status || r.dispatch_status || '').toLowerCase();
+        return st === 'queued' || st === 'pending' || st === 'acknowledged';
+      });
+      const dispatched = rows.filter(r => {
+        const st = String(r.status || r.dispatch_status || '').toLowerCase();
+        return st === 'dispatched' || st === 'sent';
+      });
+
+      el.textContent = open.length;
+      el.style.color = open.length > 0 ? 'var(--danger)' : 'var(--ok)';
+
+      if (elSub) {
+        if (!rows.length) {
+          elSub.textContent = 'No escalations on record';
+        } else if (open.length === 0) {
+          elSub.textContent = `All clear — ${dispatched.length} dispatched`;
+          el.style.color = 'var(--ok)';
+        } else {
+          elSub.textContent = `${open.length} awaiting action · ${dispatched.length} dispatched`;
+        }
+      }
+
+      if (elDelta) {
+        if (open.length > 0) {
+          elDelta.textContent = 'Action needed';
+          elDelta.className = 'delta down';
+          elDelta.style.display = '';
+        } else {
+          elDelta.style.display = 'none';
+        }
+      }
+    } catch(e){
+      if (el) el.textContent = '—';
+    }
+  }
+
+  // Only run for roles that can see escalations
+  function canView(){
+    try{ return !!(window.CIAuth && (CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin() || CIAuth.isOperator())); }
+    catch(_){ return false; }
+  }
+
+  if (canView()){
+    fetch_count();
+    setInterval(fetch_count, 60000); // refresh every minute
+  } else {
+    // Retry once auth has loaded
+    setTimeout(() => { if (canView()) { fetch_count(); setInterval(fetch_count, 60000); } }, 1500);
+  }
+})();
+</script>
+
 <script src="auth.js"></script>
 
 <script>
@@ -2667,72 +2739,6 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 <script src="admin-links.js"></script>
 
 
-<script>
-(function projections14d(){
-  const host = document.getElementById('proj14d');
-  if (!host || !window.alertsData) return;
-
-  const TZ = 'Europe/London';
-  const parseTime = v => {
-    const d = new Date(v);
-    return isNaN(d) ? null : d;
-  };
-
-  const now = new Date();
-  const start = new Date(+now - 14*864e5);
-
-  // Aggregate by continent + risk for last 14 days
-  const agg = {}; // { [continent]: { low:n, medium:n, high:n, total:n } }
-  (alertsData||[]).forEach(a=>{
-    const dt = parseTime(a.time);
-    if (!dt || dt < start || dt > now) return;
-    const cont = (a.continent || a.Continent || 'Unknown').trim();
-    const r = String(a.risk||'').toLowerCase().startsWith('hi') ? 'high'
-            : String(a.risk||'').toLowerCase().startsWith('me') ? 'medium'
-            : 'low';
-    if (!agg[cont]) agg[cont] = {low:0, medium:0, high:0, total:0};
-    agg[cont][r]++; agg[cont].total++;
-  });
-
-  // Projection = average per day * 14, per continent/risk
-  const out = Object.entries(agg).map(([cont, row])=>{
-    const factor = 14 / 14; // trivial, kept for future weighting
-    return {
-      continent: cont,
-      low: Math.round((row.low/14)*14*factor),
-      medium: Math.round((row.medium/14)*14*factor),
-      high: Math.round((row.high/14)*14*factor),
-      total: Math.round((row.total/14)*14*factor)
-    };
-  }).sort((a,b)=> b.total - a.total);
-
-  // Render
-  host.innerHTML = '';
-  out.forEach(x=>{
-    const card = document.createElement('div');
-    card.style.border = '1px solid var(--brand-gray-600)';
-    card.style.borderRadius = '12px';
-    card.style.padding = '10px 12px';
-    card.style.background = 'linear-gradient(180deg,#1a1c20,#131417)';
-
-    card.innerHTML = `
-      <div style="font-weight:800;margin-bottom:6px">${x.continent}</div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(255,90,95,.15);color:#ff5a5f;border:1px solid rgba(255,90,95,.35);font-weight:700">High ${x.high}</span>
-        <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(240,180,41,.15);color:#f0b429;border:1px solid rgba(240,180,41,.35);font-weight:700">Med ${x.medium}</span>
-        <span style="display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(51,196,141,.15);color:#33c48d;border:1px solid rgba(51,196,141,.35);font-weight:700">Low ${x.low}</span>
-        <span style="margin-left:auto;color:#cfd6e1">Total <b>${x.total}</b></span>
-      </div>
-    `;
-    host.appendChild(card);
-  });
-
-  if (!out.length){
-    host.innerHTML = `<div style="color:#8e97a3">Insufficient recent data to project.</div>`;
-  }
-})();
-</script>
-
 
 
 
@@ -3222,75 +3228,49 @@ function countPresenceForCountry(countryName){
 
         if (geoLayer) { geoLayer.remove(); geoLayer = null; }
 
-        // Country risk shading disabled — map kept clean for readability
-        // geoLayer = L.geoJSON(geo, {
-          // style: f => {
-  // const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-  // const row  = agg[countryKey(name)];
-
-//   // if (!row || row.band === 'none') {
-    // return { fillColor: palette.none, fillOpacity:.25, color:'#111', weight:.6 };
-  // }
-
-//   // const col = palette[row.band] || palette.low;
-
-//   // return {
-    // fillColor: col,
-    // fillOpacity: .85,
-    // color: row.mixFuture ? '#ffffff' : '#111',
-    // dashArray: row.mixFuture ? '6 3' : null,
-    // weight: row.mixFuture ? 1.2 : .6
-  // };
-// },
-
-// 			
-//           // onEachFeature: (f, layer) => {
-  // const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
-  // const row  = agg[countryKey(name)];
-
-//   // if (!row) {
-    // const presence = countPresenceForCountry(name);
-    // layer.bindPopup(` <b>${name}</b><br> No protest data<br>  Assets in country: <b>${presence.assetMatches.length}</b><br>
-      // Travellers in country (current): <b>${presence.travellerMatches.length}</b> `);
-    // return;
-  // }
-
-//   // const h = row.hist;
-  // const fwd = row.fut;
-  // const histTotal = h.low + h.medium + h.high;
-  // const futTotal  = fwd.low + fwd.medium + fwd.high;
-
-//   // const histLine = histTotal
-    // ? `Last 6 months: `
-      // + `<span class="chip" style="background:${palette.high}"></span>${h.high} `
-      // + `<span class="chip" style="background:${palette.medium}"></span>${h.medium} `
-      // + `<span class="chip" style="background:${palette.low}"></span>${h.low}`
-    // : `Last 6 months: no data`;
-
-//   // const win = mapWindowRange();
-  // const futLine = futTotal
-    // ? `${win.label}: `
-      // + `<span class="chip" style="background:${palette.high}"></span>${fwd.high} `
-      // + `<span class="chip" style="background:${palette.medium}"></span>${fwd.medium} `
-      // + `<span class="chip" style="background:${palette.low}"></span>${fwd.low}`
-    // : `${win.label}: no scheduled events`;
-
-//   // const presence = countPresenceForCountry(name);
-
-//   // layer.bindPopup(` <b>${name}</b><br> Overall band: <b>${row.band.toUpperCase()}</b><br>
-    // ${histLine}<br> ${futLine}<br><br> Assets in country: <b>${presence.assetMatches.length}</b><br>
-    // Travellers in country (current): <b>${presence.travellerMatches.length}</b>
-  // `);
-
-//   // layer.on('click', () => {
-    // const items = row.items
-      // ? row.items.slice().sort((a,b)=>parseTime(a.time)-parseTime(b.time))
-      // : [];
-    // emitCountrySelected(name, items);
-  // });
-// }
-
-        // }).addTo(map); // country risk shading disabled for readability
+        // Country risk shading — low opacity so protest markers and labels remain readable
+        geoLayer = L.geoJSON(geo, {
+          style: f => {
+            const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+            const row  = agg[countryKey(name)];
+            if (!row || row.band === 'none') {
+              return { fillColor: palette.none, fillOpacity: 0.18, color: '#1a1c22', weight: 0.5 };
+            }
+            const col = palette[row.band] || palette.low;
+            return {
+              fillColor: col,
+              fillOpacity: row.band === 'high' ? 0.32 : row.band === 'medium' ? 0.24 : 0.16,
+              color: row.mixFuture ? 'rgba(255,255,255,0.35)' : '#1a1c22',
+              dashArray: row.mixFuture ? '5 4' : null,
+              weight: row.mixFuture ? 0.8 : 0.5
+            };
+          },
+          onEachFeature: (f, layer) => {
+            const name = (f.properties.ADMIN || f.properties.NAME || '').trim();
+            const row  = agg[countryKey(name)];
+            const presence = countPresenceForCountry(name);
+            if (!row) {
+              if (presence.assetMatches.length || presence.travellerMatches.length) {
+                layer.bindPopup(`<b>${name}</b><br>No protest data<br>Assets: <b>${presence.assetMatches.length}</b> · Travellers: <b>${presence.travellerMatches.length}</b>`);
+              }
+              return;
+            }
+            const win = mapWindowRange();
+            const fwd = row.fut;
+            const futTotal = fwd.low + fwd.medium + fwd.high;
+            const futLine = futTotal
+              ? `${win.label}: <b>${fwd.high}</b> high · <b>${fwd.medium}</b> med · <b>${fwd.low}</b> low`
+              : `${win.label}: no scheduled events`;
+            const presenceLine = (presence.assetMatches.length || presence.travellerMatches.length)
+              ? `<br>Assets: <b>${presence.assetMatches.length}</b> · Travellers: <b>${presence.travellerMatches.length}</b>`
+              : '';
+            layer.bindPopup(`<b>${name}</b><br>Risk band: <b>${row.band.toUpperCase()}</b><br>${futLine}${presenceLine}`);
+            layer.on('click', () => {
+              const items = row.items ? row.items.slice().sort((a,b)=>parseTime(a.time)-parseTime(b.time)) : [];
+              emitCountrySelected(name, items);
+            });
+          }
+        }).addTo(map);
         renderProtestMarkers();
       });
   }
