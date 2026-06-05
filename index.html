@@ -855,6 +855,48 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         </section>
 
 
+        <!-- Second KPI row: Org presence + system status (all roles) -->
+        <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiActiveTravCard"
+          data-href="travellers.html" tabindex="0" role="link" aria-label="View active travellers">
+          <h3>Active Travellers</h3>
+          <div class="metric">
+            <div class="value" id="kpi-active-trav">—</div>
+            <div class="delta" id="kpi-active-trav-delta" style="display:none"></div>
+          </div>
+          <small style="color:var(--muted)" id="kpi-active-trav-sub">Currently in-country</small>
+          <span class="kpi-open">Manage travellers →</span>
+        </section>
+
+        <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiHighRiskTravCard"
+          data-href="travellers.html" tabindex="0" role="link" aria-label="View travellers in high-risk countries">
+          <h3>In High-Risk Countries</h3>
+          <div class="metric">
+            <div class="value" id="kpi-highrisk-trav">—</div>
+          </div>
+          <small style="color:var(--muted)" id="kpi-highrisk-trav-sub">Active travellers, high-risk location</small>
+          <span class="kpi-open">View travellers →</span>
+        </section>
+
+        <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiTrav24hCard"
+          data-href="travellers.html" tabindex="0" role="link" aria-label="View travellers arriving in next 24h">
+          <h3>Arriving in 24h</h3>
+          <div class="metric">
+            <div class="value" id="kpi-trav-24h">—</div>
+          </div>
+          <small style="color:var(--muted)">Travellers starting trips today</small>
+          <span class="kpi-open">View travellers →</span>
+        </section>
+
+        <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiPanicCard"
+          data-href="panicalarm.html" tabindex="0" role="link" aria-label="Panic alarm system status">
+          <h3>Panic System</h3>
+          <div class="metric">
+            <div class="value" id="kpi-panic-status" style="font-size:20px">—</div>
+          </div>
+          <small style="color:var(--muted)" id="kpi-panic-sub">Checking status…</small>
+          <span class="kpi-open">Open Panic Alarm →</span>
+        </section>
+
         <section class="card ci-feed-card" style="grid-column: span 12;">
           <div class="ci-feed-header">
             <div>
@@ -1032,6 +1074,20 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <div id="trendSignals" class="signal-grid"></div>
         </section>
 
+
+        <!-- Latest Intelligence Report snippet -->
+        <section class="card" style="grid-column: span 12;" id="latestReportCard">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+            <div>
+              <h3>Latest Intelligence Report</h3>
+              <p style="color:var(--muted);margin:4px 0 0;font-size:13px">Most recently published report from the CityIntel library.</p>
+            </div>
+            <a href="reports.html" style="display:inline-flex;align-items:center;gap:5px;border:1px solid var(--brand-gray-600);background:var(--brand-gray-700);color:var(--text);padding:6px 12px;border-radius:9px;font:600 12px system-ui;text-decoration:none;white-space:nowrap;flex-shrink:0">All Reports →</a>
+          </div>
+          <div id="latestReportBody">
+            <div style="color:var(--muted);font-size:13px">Loading latest report…</div>
+          </div>
+        </section>
 
         <!-- Left: Real-Time Alerts (now data-driven) -->
         <section class="card" style="grid-column: span 5;">
@@ -1957,7 +2013,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
       uniq.push(it);
     }
 
-   const rows = CIFilter.upcoming(window.alertsData).slice(0,3);
+   const rows = CIFilter.upcoming(window.alertsData).slice(0,6);
     tbody.innerHTML = '';
 
     if (!rows.length) {
@@ -2231,6 +2287,264 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     // Retry once auth has loaded
     setTimeout(() => { if (canView()) { fetch_count(); setInterval(fetch_count, 60000); } }, 1500);
   }
+})();
+</script>
+
+<!-- ── Traveller KPIs (Active, High-Risk, Arriving 24h) ─────────────────── -->
+<script>
+(function mountTravellerKpis(){
+  const elActive   = document.getElementById('kpi-active-trav');
+  const elActiveSub= document.getElementById('kpi-active-trav-sub');
+  const elActiveDelta = document.getElementById('kpi-active-trav-delta');
+  const elHighRisk = document.getElementById('kpi-highrisk-trav');
+  const elHighSub  = document.getElementById('kpi-highrisk-trav-sub');
+  const el24h      = document.getElementById('kpi-trav-24h');
+  if (!elActive && !elHighRisk && !el24h) return;
+
+  // Uses the high-risk country list from the map palette logic
+  const HIGH_RISK_COUNTRIES = new Set();
+
+  function isActive(t){
+    const nowMs = Date.now();
+    const fromMs = t.from ? new Date(t.from).getTime() : null;
+    const toMs   = t.to   ? new Date(t.to).getTime()   : null;
+    if (fromMs && nowMs < fromMs) return false;
+    if (toMs   && nowMs > (toMs + 86400000 - 1)) return false;
+    return true;
+  }
+
+  function isArrivingToday(t){
+    const nowMs = Date.now();
+    const fromMs = t.from ? new Date(t.from).getTime() : null;
+    if (!fromMs) return false;
+    // within the next 24h from now
+    return fromMs >= nowMs && fromMs <= nowMs + 86400000;
+  }
+
+  function getHighRiskCountriesFromAlerts(){
+    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const now = new Date();
+    const next7 = new Date(now.getTime() + 7 * 86400000);
+    const high = new Set();
+    data.forEach(a => {
+      const dt = a._dt || (a.time ? new Date(a.time) : null);
+      const risk = String(a.risk || '').toLowerCase();
+      if (dt && dt >= now && dt <= next7 && risk.startsWith('hi')) {
+        const c = String(a.country || a.Country || '').trim();
+        if (c) high.add(c.toLowerCase());
+      }
+    });
+    return high;
+  }
+
+  function render(){
+    const travellers = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+    const active = travellers.filter(isActive);
+    const arriving24h = travellers.filter(isArrivingToday);
+
+    // Build high-risk country set from current alertsData
+    const highRiskCountries = getHighRiskCountriesFromAlerts();
+    const inHighRisk = active.filter(t => {
+      const c = String(t.country || '').trim().toLowerCase();
+      return highRiskCountries.has(c);
+    });
+
+    if (elActive){
+      elActive.textContent = active.length;
+      elActive.style.color = active.length > 0 ? 'var(--text)' : 'var(--muted)';
+    }
+    if (elActiveSub){
+      elActiveSub.textContent = active.length === 1
+        ? `1 traveller currently in-country`
+        : `${active.length} travellers currently in-country`;
+    }
+    if (elActiveDelta && active.length > 0){
+      elActiveDelta.textContent = arriving24h.length > 0 ? `+${arriving24h.length} arriving today` : '';
+      elActiveDelta.className = 'delta up';
+      elActiveDelta.style.display = arriving24h.length > 0 ? '' : 'none';
+    }
+
+    if (elHighRisk){
+      elHighRisk.textContent = inHighRisk.length;
+      elHighRisk.style.color = inHighRisk.length > 0 ? 'var(--danger)' : 'var(--ok)';
+    }
+    if (elHighSub){
+      elHighSub.textContent = inHighRisk.length > 0
+        ? `${inHighRisk.length} in high-risk location${inHighRisk.length > 1 ? 's' : ''}`
+        : 'No active travellers in high-risk areas';
+    }
+
+    if (el24h){
+      el24h.textContent = arriving24h.length;
+      el24h.style.color = arriving24h.length > 0 ? 'var(--warn)' : 'var(--muted)';
+    }
+  }
+
+  // Render immediately and re-render when org data updates
+  render();
+  window.addEventListener('ci:alerts-data-updated', render);
+  // Also hook into the presence sync callback
+  const _orig = window.ciOnPresenceChanged;
+  window.ciOnPresenceChanged = function(){
+    try { if (_orig) _orig(); } catch(_){}
+    try { render(); } catch(_){}
+  };
+  setInterval(render, 30000);
+})();
+</script>
+
+<!-- ── Panic System KPI ──────────────────────────────────────────────────── -->
+<script>
+(function mountPanicKpi(){
+  const elVal = document.getElementById('kpi-panic-status');
+  const elSub = document.getElementById('kpi-panic-sub');
+  if (!elVal) return;
+
+  const API = 'https://api.cityintelapi.com';
+
+  function authH(){
+    try{
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
+      if (!p?.email) return null;
+      return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+    }catch{return null;}
+  }
+
+  async function tick(){
+    const h = authH();
+    if (!h){ elVal.textContent='—'; if(elSub) elSub.textContent='Sign in to check status'; return; }
+    try{
+      const res = await fetch(API+'/api/org/panic', { headers:h });
+      const json = await res.json().catch(()=>null);
+      if (!json || !json.ok){ elVal.textContent='—'; if(elSub) elSub.textContent='Status unavailable'; return; }
+
+      const alarms = json.activeAlarms || (json.data && json.data.active ? [json.data] : []);
+      const card = document.getElementById('kpiPanicCard');
+
+      if (alarms.length > 0){
+        elVal.textContent = '🚨 ACTIVE';
+        elVal.style.color = 'var(--danger)';
+        elVal.style.fontSize = '16px';
+        if (elSub) elSub.textContent = `${alarms.length} active alarm${alarms.length>1?'s':''} — immediate action required`;
+        if (card) card.style.borderColor = 'rgba(255,90,95,.6)';
+        if (card) card.style.background = 'rgba(255,90,95,.06)';
+      } else {
+        elVal.textContent = '✓ Online';
+        elVal.style.color = 'var(--ok)';
+        elVal.style.fontSize = '20px';
+        if (elSub) elSub.textContent = 'No active alarms · System live';
+        if (card) card.style.borderColor = '';
+        if (card) card.style.background = '';
+      }
+    }catch(e){
+      elVal.textContent = '—';
+      if(elSub) elSub.textContent = 'Could not reach panic endpoint';
+    }
+  }
+
+  tick();
+  setInterval(tick, 15000);
+})();
+</script>
+
+<!-- ── Latest Intelligence Report widget ────────────────────────────────── -->
+<script>
+(function mountLatestReportWidget(){
+  const host = document.getElementById('latestReportBody');
+  const card = document.getElementById('latestReportCard');
+  if (!host) return;
+
+  const API_BASE = 'https://api.cityintelapi.com';
+
+  function authHeaders(){
+    try{
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
+      if (!p?.email) return {};
+      return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+    }catch{return {};}
+  }
+
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const riskColour = {
+    high:'rgba(255,90,95,.15)', medium:'rgba(240,180,41,.15)', low:'rgba(51,196,141,.15)',
+    critical:'rgba(255,90,95,.2)'
+  };
+  const riskText = {
+    high:'#ff5a5f', medium:'#f0b429', low:'#33c48d', critical:'#ff5a5f'
+  };
+
+  function titleFor(r){
+    if (r.title) return r.title;
+    if (r.titlePrefix && r.periodLabel) return `${r.titlePrefix}: ${r.periodLabel}`;
+    return r.titlePrefix || r.type || 'Untitled Report';
+  }
+
+  async function load(){
+    try{
+      const [masterRes, orgRes] = await Promise.all([
+        fetch(`${API_BASE}/api/reports/master`, { headers: authHeaders() }).catch(()=>null),
+        fetch(`${API_BASE}/api/reports/org`,    { headers: authHeaders() }).catch(()=>null)
+      ]);
+
+      const master = masterRes && masterRes.ok ? ((await masterRes.json().catch(()=>({}))).data || []) : [];
+      const org    = orgRes    && orgRes.ok    ? ((await orgRes.json().catch(()=>({}))).data    || []) : [];
+
+      const all = [...master, ...org]
+        .filter(r => !r.deleted && /published/i.test(String(r.status||'')));
+
+      if (!all.length){
+        // Try draft if no published
+        const drafts = [...master, ...org].filter(r => !r.deleted);
+        if (!drafts.length){
+          if (card) card.style.display = 'none';
+          return;
+        }
+        all.push(...drafts);
+      }
+
+      // Sort by updated_at or created_at descending, pick most recent
+      all.sort((a,b) => {
+        const da = new Date(a.updated_at || a.created_at || 0);
+        const db = new Date(b.updated_at || b.created_at || 0);
+        return db - da;
+      });
+
+      const r = all[0];
+      const title = titleFor(r);
+      const rk = String(r.risk||'medium').toLowerCase();
+      const rCol = riskColour[rk] || riskColour.medium;
+      const rTxt = riskText[rk]   || riskText.medium;
+      const status = String(r.status||'Draft');
+      const period = r.periodLabel || r.monthKey || '';
+      const type   = r.type || '';
+      const notes  = r.notes ? String(r.notes).substring(0, 200) : '';
+      const scope  = String(r.scope||'').toLowerCase() === 'master' ? 'CityIntel Master' : 'Your Organisation';
+
+      host.innerHTML = `
+        <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+              <span style="font-size:17px;font-weight:800;color:#e2e8f0">${esc(title)}</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;font-size:12px">
+              ${type ? `<span style="padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#cbd5e1">${esc(type)}</span>` : ''}
+              ${period ? `<span style="padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#94a3b8">${esc(period)}</span>` : ''}
+              <span style="padding:2px 8px;border-radius:999px;background:${rCol};border:1px solid ${rTxt}33;color:${rTxt};font-weight:700">${esc(r.risk||'Medium')} Risk</span>
+              <span style="padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#64748b">${esc(scope)}</span>
+              <span style="padding:2px 8px;border-radius:999px;background:rgba(51,196,141,.1);border:1px solid rgba(51,196,141,.25);color:#86efac">${esc(status)}</span>
+            </div>
+            ${notes ? `<div style="font-size:13px;color:#94a3b8;line-height:1.55">${esc(notes)}${r.notes && r.notes.length > 200 ? '…' : ''}</div>` : ''}
+          </div>
+          <a href="reports.html" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:9px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.35);color:#fca5a5;font:700 13px system-ui;text-decoration:none;white-space:nowrap;flex-shrink:0">Open Report →</a>
+        </div>
+      `;
+    }catch(e){
+      host.innerHTML = `<div style="color:var(--muted);font-size:13px">Could not load latest report.</div>`;
+    }
+  }
+
+  load();
 })();
 </script>
 
