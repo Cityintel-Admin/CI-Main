@@ -897,6 +897,46 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <span class="kpi-open">Open Panic Alarm →</span>
         </section>
 
+        <!-- Quick Actions strip -->
+        <section style="grid-column: span 12; display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:4px 0;">
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:4px">Quick Actions</span>
+          <a href="live-alerts.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.35);color:#fca5a5;font:700 12px system-ui;text-decoration:none">🔴 Escalation Queue</a>
+          <a href="live-alerts.html#workflow" id="qaRunWorkflow" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font:700 12px system-ui;text-decoration:none">🤖 Run AI Workflow</a>
+          <a href="travellers.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font:700 12px system-ui;text-decoration:none">✈ Add Traveller</a>
+          <a href="checkin.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font:700 12px system-ui;text-decoration:none">📋 Check-in Manager</a>
+          <a href="panicalarm.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font:700 12px system-ui;text-decoration:none">🚨 Panic Alarm</a>
+          <a href="brief.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font:700 12px system-ui;text-decoration:none">📄 Intelligence Brief</a>
+          <span id="qaTrainCount" style="display:none;margin-left:auto;font-size:12px;color:#94a3b8"></span>
+        </section>
+
+        <!-- Flight Status widget — compact summary, links to full page -->
+        <section class="card" style="grid-column: span 12;" id="flightStatusWidget" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:800;font-size:16px">✈ Flight Status</div>
+              <div style="font-size:12px;color:#8e97a3;margin-top:2px" id="flightWidgetMeta">Monitored traveller flights · Airport activity</div>
+            </div>
+            <a href="flight-status.html" style="display:inline-flex;align-items:center;gap:5px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;padding:6px 12px;border-radius:9px;font:600 12px system-ui;text-decoration:none">Full view →</a>
+          </div>
+          <div id="flightWidgetBody" style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="color:var(--muted);font-size:13px">Loading flight data…</div>
+          </div>
+        </section>
+
+        <!-- Operations Log summary — Master Admin only -->
+        <section class="card" style="grid-column: span 12;display:none" id="opsLogWidget">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:800;font-size:16px">📋 Recent Activity</div>
+              <div style="font-size:12px;color:#8e97a3;margin-top:2px">Latest escalations, check-ins and events across your org.</div>
+            </div>
+            <a href="operationslog.html" style="display:inline-flex;align-items:center;gap:5px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;padding:6px 12px;border-radius:9px;font:600 12px system-ui;text-decoration:none">Full log →</a>
+          </div>
+          <div id="opsLogWidgetBody">
+            <div style="color:var(--muted);font-size:13px">Loading…</div>
+          </div>
+        </section>
+
         <section class="card ci-feed-card" style="grid-column: span 12;">
           <div class="ci-feed-header">
             <div>
@@ -4240,6 +4280,193 @@ function CI_updatePanicMapOverlayIndex(st){
 })();
 </script>
 
+
+<!-- ── Flight Status dashboard widget ──────────────────────────────── -->
+<script>
+(function mountFlightWidget(){
+  const widget  = document.getElementById('flightStatusWidget');
+  const body    = document.getElementById('flightWidgetBody');
+  const meta    = document.getElementById('flightWidgetMeta');
+  if (!widget || !body) return;
+
+  const API = 'https://api.cityintelapi.com';
+  function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+  function authH(){
+    const p=getProfile(); if(!p?.email) return {};
+    return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+  }
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const SEV_COLOR = { active:'#ff5a5f', moderate:'#f0b429', low:'#a3e6c9', quiet:'#475569', unknown:'#475569' };
+  const STATUS_COLOR = { airborne:'#33c48d', on_ground:'#94a3b8', active:'#33c48d', landed:'#94a3b8', cancelled:'#ff5a5f', unknown:'#475569', error:'#ff5a5f' };
+
+  async function load(){
+    try{
+      // Load airports and monitored flights in parallel
+      const [airRes, travRes] = await Promise.allSettled([
+        fetch(`${API}/api/flight-status?mode=airports`, { headers:authH() }).then(r=>r.json()).catch(()=>({})),
+        fetch(`${API}/api/org/travellers`, { headers:authH() }).then(r=>r.json()).catch(()=>({})),
+      ]);
+
+      const airData = airRes.status==='fulfilled' ? airRes.value : {};
+      const travData = travRes.status==='fulfilled' ? travRes.value : {};
+
+      const airports = (airData.ok && Array.isArray(airData.airports)) ? airData.airports : [];
+      const travellers = Array.isArray(travData.data) ? travData.data : [];
+      const withFlights = travellers.filter(t => t.flight_number || t.flight || t.flightNumber);
+
+      if (!airports.length && !withFlights.length) return; // no data, keep widget hidden
+
+      widget.style.display = '';
+
+      let html = '';
+
+      // Airport summary pills (top 4 by activity)
+      if (airports.length){
+        const sorted = [...airports].sort((a,b)=>{
+          const lvl = {active:3,moderate:2,low:1,quiet:0,unknown:-1};
+          return (lvl[b.disruption?.level]??-1) - (lvl[a.disruption?.level]??-1);
+        }).slice(0,4);
+        html += `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">`;
+        sorted.forEach(ap=>{
+          const col = SEV_COLOR[ap.disruption?.level] || SEV_COLOR.unknown;
+          html += `<a href="flight-status.html" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);text-decoration:none">
+            <span style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></span>
+            <span style="font-weight:700;color:#e9edf2;font-size:13px">${esc(ap.iata)}</span>
+            <span style="font-size:11px;color:#64748b">${esc(ap.disruption?.label||'—')}</span>
+          </a>`;
+        });
+        html += `</div>`;
+        if(meta) meta.textContent = `${airports.length} airports monitored · ${airData.cached ? 'cached' : 'live'} data`;
+      }
+
+      // Monitored traveller flights
+      if (withFlights.length){
+        const flightNums = [...new Set(withFlights.map(t=>(t.flight_number||t.flight||t.flightNumber||'').trim().toUpperCase()).filter(Boolean))].slice(0,5);
+        if (flightNums.length){
+          try{
+            const fRes = await fetch(`${API}/api/flight-status?mode=flights&q=${encodeURIComponent(flightNums.join(','))}`, { headers:authH() });
+            const fData = await fRes.json().catch(()=>({}));
+            const flights = fData.ok && Array.isArray(fData.flights) ? fData.flights : [];
+            if(flights.length){
+              html += `<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">`;
+              flights.forEach(f=>{
+                const trav = withFlights.find(t=>(t.flight_number||t.flight||t.flightNumber||'').trim().toUpperCase()===f.flight_number);
+                const name = trav ? (trav.name||trav.travellerName||'').split(' ')[0] : '';
+                const col = STATUS_COLOR[f.status] || STATUS_COLOR.unknown;
+                const icon = f.live && !f.live.on_ground ? '✈' : '🛬';
+                const route = (f.schedule?.departure_iata && f.schedule?.arrival_iata)
+                  ? `${f.schedule.departure_iata} → ${f.schedule.arrival_iata}`
+                  : f.flight_number;
+                html += `<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)">
+                  <span style="font-size:14px">${icon}</span>
+                  <span style="font-weight:700;color:#e9edf2">${esc(f.flight_number)}</span>
+                  <span style="color:#64748b">${esc(route)}</span>
+                  <span style="padding:2px 7px;border-radius:999px;background:${col}22;border:1px solid ${col}44;color:${col};font-size:11px;font-weight:700">${esc(f.status||'—')}</span>
+                  ${name ? `<span style="color:#64748b;margin-left:auto">👤 ${esc(name)}</span>` : ''}
+                  ${f.schedule?.departure_delay>0 ? `<span style="color:var(--warn);font-size:11px">+${f.schedule.departure_delay}m delay</span>` : ''}
+                </div>`;
+              });
+              html += `</div>`;
+            }
+          } catch{}
+        }
+      }
+
+      body.innerHTML = html || '<div style="color:var(--muted);font-size:13px">No flight data available.</div>';
+    } catch(e){
+      // Silently hide widget on error
+    }
+  }
+
+  load();
+})();
+</script>
+
+<!-- ── Ops Log widget (Master Admin) + Training count ───────────────── -->
+<script>
+(function mountOpsAndTraining(){
+  const API = 'https://api.cityintelapi.com';
+  function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+  function authH(){
+    const p=getProfile(); if(!p?.email) return {};
+    return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+  }
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function isMaster(){
+    try{ return !!(window.CIAuth && CIAuth.isMasterAdmin && CIAuth.isMasterAdmin()); }catch{ return false; }
+  }
+  function canView(){
+    try{ return !!(window.CIAuth && (CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin() || CIAuth.isOperator())); }catch{ return false; }
+  }
+
+  const TYPE_ICON = { escalation:'🔴', panic:'🚨', checkin:'📋', feed_post:'📢' };
+  const RISK_COL  = { high:'#ff5a5f', medium:'#f0b429', med:'#f0b429', low:'#33c48d', info:'#94a3b8' };
+
+  async function loadOpsLog(){
+    const widget = document.getElementById('opsLogWidget');
+    const body   = document.getElementById('opsLogWidgetBody');
+    if(!widget || !body) return;
+    if(!isMaster()) return; // ops log widget is Master Admin only
+
+    widget.style.display = '';
+
+    try{
+      const res = await fetch(`${API}/api/org/ops-log?limit=6`, { headers:authH() });
+      const json = await res.json().catch(()=>({}));
+      if(!json.ok || !json.entries?.length){
+        body.innerHTML = '<div style="color:var(--muted);font-size:13px">No activity recorded yet.</div>';
+        return;
+      }
+
+      body.innerHTML = json.entries.slice(0,6).map(e => {
+        const ts = e.ts ? new Date(e.ts).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+        const icon = TYPE_ICON[e.type] || '⚙';
+        const rCol = RISK_COL[String(e.risk||'').toLowerCase()] || '#94a3b8';
+        const cityLine = [e.city, e.country].filter(Boolean).join(', ');
+        const linkHtml = e.link ? `<a href="${esc(e.link)}" style="font-size:11px;color:#67e8f9;text-decoration:underline">open →</a>` : '';
+        return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+          <span style="font-size:15px;flex-shrink:0;margin-top:2px">${icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.title||'—')}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">${esc(ts)}${cityLine?' · '+esc(cityLine):''}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+            <span style="padding:1px 6px;border-radius:999px;font-size:10px;font-weight:700;background:${rCol}22;border:1px solid ${rCol}44;color:${rCol}">${esc(e.risk||'—')}</span>
+            ${linkHtml}
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e){
+      body.innerHTML = '<div style="color:var(--muted);font-size:13px">Could not load activity log.</div>';
+    }
+  }
+
+  async function loadTrainingCount(){
+    const el = document.getElementById('qaTrainCount');
+    if(!el) return;
+    if(!canView()) return;
+    try{
+      const res = await fetch(`${API}/api/org/training-scenarios?status=active`, { headers:authH() });
+      const json = await res.json().catch(()=>({}));
+      const count = Array.isArray(json.data) ? json.data.length : (Array.isArray(json.scenarios) ? json.scenarios.length : 0);
+      if(count > 0){
+        el.textContent = `${count} active training scenario${count>1?'s':''}`;
+        el.style.display = '';
+      }
+    } catch{}
+  }
+
+  // Retry after auth loads
+  function tryMount(){
+    loadOpsLog();
+    loadTrainingCount();
+  }
+
+  setTimeout(tryMount, 600);
+})();
+</script>
 
 </body>
 </html>
