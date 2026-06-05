@@ -341,10 +341,12 @@
   <div class="drawer-body">
     <h3>Summary</h3>
     <div class="kv">
-      <div class="k">Action</div><div id="dw-action">—</div>
+      <div class="k">Type</div><div id="dw-action">—</div>
       <div class="k">Timestamp</div><div id="dw-ts">—</div>
       <div class="k">Risk</div><div id="dw-risk">—</div>
-      <div class="k">Source</div><div id="dw-src">—</div>
+      <div class="k">Actor</div><div id="dw-actor">—</div>
+      <div class="k">Note</div><div id="dw-note">—</div>
+      <div class="k">Link</div><div id="dw-src">—</div>
     </div>
 
     <h3>Processing Timeline</h3>
@@ -475,6 +477,7 @@ function buildOpsFromAlerts(alerts){
 
     // ---------- Render ----------
     const PAGE_SIZE = 20;
+    const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     let OPS_ALL = [];
     let OPS_FILT = [];
     let page = 1;
@@ -493,16 +496,20 @@ function buildOpsFromAlerts(alerts){
 
   // 1) render rows
   slice.forEach(row=>{
-    const item = [row.title, row.city].filter(Boolean).join(' — ');
+    const item = [row.title, row.city, row.country].filter(Boolean).join(' — ');
+    const actorHtml = row.actor ? `<span class="rowmeta" style="color:#94a3b8">by ${esc(row.actor)}</span>` : '';
+    const subtypeHtml = row.subtype ? `<span class="rowmeta">${esc(row.subtype)}</span>` : (row.msg ? `<span class="rowmeta">${esc(row.msg)}</span>` : '');
+    const linkHtml = row.link
+      ? `<a class="src-link" href="${esc(row.link)}" rel="noopener">open →</a>`
+      : (row.src ? `<a class="src-link" href="${esc(row.src)}" target="_blank" rel="noopener">source</a>` : '<span class="muted">n/a</span>');
+    const typeDisplay = TYPE_LABELS ? (TYPE_LABELS[row.type] || row.type) : row.type;
     body.insertAdjacentHTML('beforeend', `
       <tr>
         <td class="mono">${fmt(row.ts)}</td>
-        <td><strong>${row.type}</strong><div class="rowmeta">${row.msg}</div></td>
-        <td>${item || '<span class="muted">—</span>'}</td>
+        <td><strong>${esc(typeDisplay)}</strong>${subtypeHtml}${actorHtml}</td>
+        <td>${item ? esc(item) : '<span class="muted">—</span>'}</td>
         <td>${riskTag(row.risk)}</td>
-        <td class="mono">
-          ${row.src ? `<a class="src-link" href="${row.src}" target="_blank" rel="noopener">source</a>` : '<span class="muted">n/a</span>'}
-        </td>
+        <td class="mono">${linkHtml}</td>
       </tr>
     `);
   });
@@ -546,9 +553,15 @@ function openDrawer(row){
 
   // Summary
   tsEl.textContent  = new Date(row.ts).toLocaleString('en-GB');
-  actEl.textContent = row.type;
-  srcEl.innerHTML   = row.src ? `<a href="${row.src}" target="_blank" rel="noopener">${row.src}</a>` : 'n/a';
+  actEl.textContent = (TYPE_LABELS && TYPE_LABELS[row.type]) ? TYPE_LABELS[row.type] : row.type;
+  const linkTarget = row.link || row.src || '';
+  srcEl.innerHTML   = linkTarget ? `<a href="${esc(linkTarget)}" rel="noopener">${esc(linkTarget)}</a>` : 'n/a';
   riskEl.innerHTML  = `<span class="pill-risk ${row.risk}">${row.risk[0].toUpperCase()+row.risk.slice(1)}</span>`;
+  // Actor + note — inject after risk if elements exist
+  const actorEl = document.getElementById('dw-actor');
+  const noteEl  = document.getElementById('dw-note');
+  if(actorEl) actorEl.textContent = row.actor || '—';
+  if(noteEl)  noteEl.textContent  = row.note  || '—';
 
   // Timeline (synthetic around this alert id)
   tlEl.innerHTML = '';
@@ -661,31 +674,86 @@ window.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeDrawer(); })
       if (page < maxPage){ page++; renderTable(); }
     });
 
+    // ---------- API helpers ----------
+    const API_BASE = 'https://api.cityintelapi.com';
+
+    function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+    function apiHeaders(){
+      const p=getProfile(); if(!p?.email) return {};
+      return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||''};
+    }
+
+    const TYPE_LABELS = {
+      escalation: '🔴 Escalation',
+      panic:      '🚨 Panic Alarm',
+      checkin:    '📋 Check-in',
+      feed_post:  '📢 Feed Post',
+      ingest:     '⚙ Ingest',
+      normalize:  '⚙ Normalize',
+      dedupe:     '⚙ Dedupe',
+      kpi:        '⚙ KPI',
+      banner:     '⚙ Banner',
+      map:        '⚙ Map',
+    };
+
+    function typeLabel(t){ return TYPE_LABELS[t] || t; }
+
     // ---------- Bootstrap ----------
-    (function init(){
-      // If you later provide window.opsLog from backend, prefer that:
-      const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
+    (async function init(){
+      const body = document.getElementById('logBody');
+      if(body) body.innerHTML = `<tr><td colspan="5" style="color:var(--muted);padding:14px">Loading live operations log…</td></tr>`;
 
-      OPS_ALL = (window.opsLog && Array.isArray(window.opsLog) ? window.opsLog : buildOpsFromAlerts(alerts));
-      // Normalize/ensure fields
+      let apiEntries = null;
+      try{
+        const res = await fetch(`${API_BASE}/api/org/ops-log?limit=200`, { headers: apiHeaders() });
+        const json = await res.json().catch(()=>({}));
+        if(json.ok && Array.isArray(json.entries)) apiEntries = json.entries;
+      } catch(e) {}
 
-OPS_ALL = OPS_ALL.map(r=>{
-  const ts  = r.ts ? new Date(r.ts) : new Date();
-  const id  = r.id || `${(r.title||'').slice(0,40)}|${ts.toISOString()}`;
-  return {
-    // keep everything we need for the drawer
-    id,
-    _raw: r._raw || r,               // keep original payload
-    ts,
-    type: (r.type||'').toLowerCase(),
-    title: r.title || '',
-    city: r.city || '',
-    risk: normRisk(r.risk),
-    src: r.src || r.source || '',
-    msg: r.msg || ''
-  };
-}).sort((a,b)=> b.ts - a.ts);
-
+      if(apiEntries && apiEntries.length > 0){
+        // Real data from backend
+        OPS_ALL = apiEntries.map(r => {
+          const ts = r.ts ? new Date(r.ts) : new Date();
+          return {
+            id: r.id || `${(r.title||'').slice(0,40)}|${ts.toISOString()}`,
+            _raw: r,
+            ts,
+            type: (r.type||'').toLowerCase(),
+            subtype: r.subtype || '',
+            title: r.title || '',
+            city: r.city || '',
+            country: r.country || '',
+            risk: normRisk(r.risk),
+            actor: r.actor || '',
+            note: r.note || '',
+            link: r.link || '',
+            src: r.link ? r.link : '',
+            msg: r.note || r.subtype || '',
+          };
+        }).sort((a,b)=> b.ts - a.ts);
+      } else {
+        // Fallback to synthetic from alertsData
+        const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
+        OPS_ALL = buildOpsFromAlerts(alerts).map(r=>{
+          const ts = r.ts ? new Date(r.ts) : new Date();
+          return {
+            id: r.id || `${(r.title||'').slice(0,40)}|${ts.toISOString()}`,
+            _raw: r._raw || r,
+            ts,
+            type: (r.type||'').toLowerCase(),
+            subtype: '',
+            title: r.title || '',
+            city: r.city || '',
+            country: '',
+            risk: normRisk(r.risk),
+            actor: '',
+            note: r.msg || '',
+            link: '',
+            src: r.src || r.source || '',
+            msg: r.msg || '',
+          };
+        }).sort((a,b)=> b.ts - a.ts);
+      }
 
       OPS_FILT = OPS_ALL.slice();
       renderTable();
