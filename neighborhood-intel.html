@@ -2052,6 +2052,14 @@
     .map-legend .swatch.med{background:#f0b429}
     .map-legend .swatch.low{background:#33c48d}
     .map-legend .swatch.trail{background:#111827;border:2px solid #cbd5e1;box-sizing:border-box}
+    .map-legend .swatch.bolo-swatch{background:rgba(255,60,60,.25);border:2px solid #ff3c3c;box-sizing:border-box;border-radius:50%}
+    @keyframes bolo-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,60,60,.7)}50%{box-shadow:0 0 0 7px rgba(255,60,60,0)}}
+    .bolo-marker-dot{
+      width:14px;height:14px;border-radius:50%;
+      background:rgba(255,60,60,.3);border:2.5px solid #ff3c3c;
+      animation:bolo-pulse 1.6s ease-in-out infinite;
+      box-sizing:border-box;
+    }
     @media (max-width: 1180px){
       .map-legend{grid-template-columns:repeat(2,max-content);gap:10px 16px}
     }
@@ -2395,6 +2403,48 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
   .escalate-select:focus{ border-color:rgba(208,22,22,.7); }
 
   /* ── Wanted-for pill on cards ── */
+  /* ── Attachment image strip ── */
+  .att-strip{
+    display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;
+  }
+  .att-thumb{
+    width:80px;height:60px;object-fit:cover;border-radius:8px;
+    border:1px solid rgba(255,255,255,.14);cursor:pointer;
+    transition:transform .15s,border-color .15s;
+    background:#0a0c0f;
+  }
+  .att-thumb:hover{ transform:scale(1.05);border-color:rgba(255,255,255,.4); }
+  .att-count-badge{
+    font-size:11px;padding:2px 7px;border-radius:999px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+    color:#94a3b8;
+  }
+  /* Lightbox */
+  .att-lightbox-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+    z-index:9999;align-items:center;justify-content:center;
+    backdrop-filter:blur(4px);
+  }
+  .att-lightbox-overlay.open{ display:flex; }
+  .att-lightbox-img{
+    max-width:90vw;max-height:85vh;border-radius:12px;
+    border:1px solid rgba(255,255,255,.15);
+    object-fit:contain;
+  }
+  .att-lightbox-close{
+    position:absolute;top:18px;right:22px;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+    color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:14px;
+  }
+  .att-lightbox-close:hover{ background:rgba(208,22,22,.35); }
+  .att-lightbox-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:18px;
+  }
+  .att-lightbox-nav:hover{ background:rgba(255,255,255,.18); }
+  #attLightboxPrev{ left:18px; }
+  #attLightboxNext{ right:70px; }
   .wanted-for-pill{
     display:inline-flex;align-items:center;gap:4px;
     font-size:11px;padding:2px 8px;border-radius:999px;
@@ -2602,8 +2652,14 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
             </div>
           </div>
 
-          <div class="ni-row one">
-            <button class="ni-btn" id="btnRefresh">Refresh</button>
+          <div class="ni-row">
+            <div>
+              <div class="ni-label">Case tag</div>
+              <input class="ni-select" id="filterCaseTag" type="text" placeholder="e.g. CASE-001…" autocomplete="off" style="font-size:13px">
+            </div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="ni-btn" id="btnRefresh">Refresh</button>
+            </div>
           </div>
 
           <div class="ni-note">
@@ -2624,6 +2680,7 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
           <span class="item"><span class="swatch med"></span>Medium-risk event</span>
           <span class="item"><span class="swatch low"></span>Low-risk event</span>
           <span class="item"><span class="swatch trail"></span>Linked sightings trail</span>
+          <span class="item"><span class="swatch bolo-swatch"></span>BOLO post</span>
         </div>
         <div class="bd" style="padding: 12px;">
           <div id="map" class="ni-map"></div>
@@ -2637,6 +2694,14 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
         <div class="bd" id="detailBody" style="display:none;"></div>
       </div>
     </div>
+  </div>
+
+  <!-- Attachment Lightbox -->
+  <div class="att-lightbox-overlay" id="attLightbox">
+    <button class="att-lightbox-close" id="attLightboxClose">✕ Close</button>
+    <button class="att-lightbox-nav" id="attLightboxPrev">‹</button>
+    <img class="att-lightbox-img" id="attLightboxImg" src="" alt="Attachment">
+    <button class="att-lightbox-nav" id="attLightboxNext">›</button>
   </div>
 
   <!-- New Post Modal -->
@@ -2892,6 +2957,7 @@ async function loadOrgHQ() {
     btnRefresh: document.getElementById('btnRefresh'),
     filterStatus: document.getElementById('filterStatus'),
     filterBolo: document.getElementById('filterBolo'),
+    filterCaseTag: document.getElementById('filterCaseTag'),
     filterCard: document.getElementById('filterCard'),
     filterBody: document.getElementById('filterBody'),
     btnToggleFilter: document.getElementById('btnToggleFilter'),
@@ -3370,7 +3436,9 @@ async function loadOrgHQ() {
 
   // Map setup (pin drop)
   const map = L.map('map', { zoomControl: true }).setView([51.5074, -0.1278], 11);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
     maxZoom: 19
   }).addTo(map);
 
@@ -3957,6 +4025,7 @@ function drawPostTrail(post, comments) {
             <span>${escapeHtml(p.geo_label || 'Approx. pin')}</span>
           </div>
           <div class="excerpt">${escapeHtml((p.body||'').slice(0, 160))}${(p.body||'').length>160?'…':''}</div>
+          ${Array.isArray(p.attachments) && p.attachments.length ? `<div style="margin-top:6px"><span class="att-count-badge">📎 ${p.attachments.length} image${p.attachments.length>1?'s':''}</span></div>` : ''}
         `;
         div.addEventListener('click', () => selectPost(p));
         els.postList.appendChild(div);
@@ -3967,12 +4036,27 @@ function drawPostTrail(post, comments) {
     for (const p of (allItems || [])) {
       if (typeof p.lat !== 'number' || typeof p.lng !== 'number') continue;
       const isVisible = visibleIds.has(p.id);
-      const mk = L.circleMarker([p.lat, p.lng], {
-        radius: isVisible ? 7 : 5,
-        weight: 2,
-        opacity: isVisible ? 0.9 : 0.35,
-        fillOpacity: isVisible ? 0.35 : 0.12
-      }).addTo(map);
+      let mk;
+      if (p.bolo && p.post_status !== 'resolved' && p.post_status !== 'nfa') {
+        // BOLO posts: pulsing divIcon marker
+        mk = L.marker([p.lat, p.lng], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div class="bolo-marker-dot" style="opacity:${isVisible ? 1 : 0.35}"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+          }),
+          zIndexOffset: 200
+        }).addTo(map);
+        mk.bindTooltip(`⚠ BOLO: ${escapeHtml(p.title || 'Untitled')}`, { direction: 'top' });
+      } else {
+        mk = L.circleMarker([p.lat, p.lng], {
+          radius: isVisible ? 7 : 5,
+          weight: 2,
+          opacity: isVisible ? 0.9 : 0.35,
+          fillOpacity: isVisible ? 0.35 : 0.12
+        }).addTo(map);
+      }
       mk.on('click', () => selectPost(p));
       postMarkers.push(mk);
     }
@@ -4090,6 +4174,14 @@ comments = (function dedupe(list){
           return `<div class="vehicle-detail-block"><div class="vehicle-detail-title">🚗 Vehicle</div><div style="font-size:13px;color:rgba(255,255,255,.8)">${escapeHtml(bodyVeh)}</div></div>`;
         })()}
 
+        ${atts.length ? `
+        <div style="margin-top:14px;">
+          <div class="ni-label">Images (${atts.length})</div>
+          <div class="att-strip" id="attStrip">
+            ${atts.map((url,i) => `<img class="att-thumb" src="${escapeHtml(url)}" alt="Attachment ${i+1}" data-att-index="${i}" loading="lazy" onerror="this.style.display='none'">`).join('')}
+          </div>
+        </div>` : ''}
+
         <div style="margin-top:14px;">
           <div class="ni-label">Related sightings</div>
           <div class="related-list">${relatedPostsFor(p).length ? relatedPostsFor(p).map(r => `
@@ -4149,6 +4241,18 @@ comments = (function dedupe(list){
 
       wireCommentUI(p);
       drawPostTrail(p, comments);
+
+      // Wire lightbox for attachment thumbnails
+      const attStrip = document.getElementById('attStrip');
+      if (attStrip) {
+        const thumbs = attStrip.querySelectorAll('.att-thumb');
+        thumbs.forEach(img => {
+          img.addEventListener('click', () => {
+            const idx = Number(img.getAttribute('data-att-index'));
+            openLightbox(atts, idx);
+          });
+        });
+      }
       document.querySelectorAll('[data-related-post]').forEach(el => {
         el.addEventListener('click', () => {
           const id = el.getAttribute('data-related-post');
@@ -4664,6 +4768,11 @@ function localCommentKey() { return 'ci_neighbor_comments_v1'; }
       if (cat !== 'all' && String(p.category || '').toLowerCase() !== cat) return false;
       if (statusFilter && String(p.post_status || 'ongoing').toLowerCase() !== statusFilter) return false;
       if (boloFilter && !p.bolo) return false;
+      const caseTagFilter = (els.filterCaseTag?.value || '').trim().toLowerCase();
+      if (caseTagFilter) {
+        const pCaseTag = String(extractMetaFromBody(p.body || '').caseTag || '').trim().toLowerCase();
+        if (!pCaseTag.includes(caseTagFilter)) return false;
+      }
       return true;
     });
 
@@ -4674,7 +4783,7 @@ function localCommentKey() { return 'ci_neighbor_comments_v1'; }
   }
 
 els.btnRefresh.addEventListener('click', refresh);
-  for (const el of [els.radiusKm, els.sinceHours, els.severity, els.category, els.filterStatus, els.filterBolo].filter(Boolean)) {
+  for (const el of [els.radiusKm, els.sinceHours, els.severity, els.category, els.filterStatus, els.filterBolo, els.filterCaseTag].filter(Boolean)) {
     el.addEventListener('change', refresh);
   }
   if (els.btnToggleEvents) {
@@ -5047,5 +5156,51 @@ btnSubmitPost.addEventListener('click', async () => {
 })();
 </script>
 	  
+<script>
+// ── Attachment lightbox ───────────────────────────────────────────────────
+(function(){
+  const overlay  = document.getElementById('attLightbox');
+  const img      = document.getElementById('attLightboxImg');
+  const closeBtn = document.getElementById('attLightboxClose');
+  const prevBtn  = document.getElementById('attLightboxPrev');
+  const nextBtn  = document.getElementById('attLightboxNext');
+  if (!overlay || !img) return;
+
+  let currentUrls = [];
+  let currentIdx  = 0;
+
+  window.openLightbox = function(urls, idx) {
+    currentUrls = urls || [];
+    currentIdx  = idx || 0;
+    showSlide(currentIdx);
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function showSlide(i) {
+    currentIdx = Math.max(0, Math.min(i, currentUrls.length - 1));
+    img.src = currentUrls[currentIdx] || '';
+    prevBtn.style.display = currentUrls.length > 1 ? '' : 'none';
+    nextBtn.style.display = currentUrls.length > 1 ? '' : 'none';
+  }
+
+  function closeLightbox() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    img.src = '';
+  }
+
+  closeBtn.addEventListener('click', closeLightbox);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeLightbox(); });
+  prevBtn.addEventListener('click', () => showSlide(currentIdx - 1));
+  nextBtn.addEventListener('click', () => showSlide(currentIdx + 1));
+  document.addEventListener('keydown', e => {
+    if (!overlay.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') showSlide(currentIdx - 1);
+    if (e.key === 'ArrowRight') showSlide(currentIdx + 1);
+  });
+})();
+</script>
 </body>
 </html>
