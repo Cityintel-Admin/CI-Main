@@ -14986,7 +14986,8 @@ Generate 3-5 structured steps that will guide the operator through assessing and
 
   let currentChannel = 'sky';
   let isOpen = false;
-  let streamIds = {};  // populated from API — { sky: 'abc123', bbc: '', ... }
+  let streamIds = {};      // populated from API — { sky: 'abc123', bbc: '', ... }
+  let hiddenChannels = {}; // { sky: true, bbc: true } — set by Master Admin in Settings
 
   function authH() {
     try {
@@ -15003,6 +15004,8 @@ Generate 3-5 structured steps that will guide the operator through assessing and
       const json = await res.json().catch(() => ({}));
       if (json.ok && json.streams) {
         streamIds = json.streams;
+        // Store hidden state
+        hiddenChannels = json.hidden || {};
         // Rebuild CHANNELS to include any custom sources
         CHANNELS = { ...DEFAULT_CHANNELS };
         Object.keys(json.streams).forEach(k => {
@@ -15018,20 +15021,59 @@ Generate 3-5 structured steps that will guide the operator through assessing and
     }
   }
 
-  // Rebuild the tab bar to include custom channels
+  // Check if current user is master admin
+  function isMasterAdmin() {
+    try { return !!(window.CIAuth && CIAuth.isMasterAdmin && CIAuth.isMasterAdmin()); }
+    catch { return false; }
+  }
+
+  // Rebuild the tab bar — respects hidden flags, adds custom channels
   function rebuildTabs() {
     const tabBar = document.getElementById('ciNewsTabs');
     if (!tabBar) return;
-    // Remove any previously added custom tabs (keep the 8 default ones)
+    const masterAdmin = isMasterAdmin();
+
+    // Reset all standard tabs visibility
+    tabBar.querySelectorAll('.ci-news-tab[data-channel]').forEach(btn => {
+      const k = btn.getAttribute('data-channel');
+      if (!k || k.startsWith('custom_')) return;
+      const isHidden = !!(hiddenChannels[k]);
+      if (isHidden) {
+        if (masterAdmin) {
+          // Master admin sees greyed-out tab with hidden indicator
+          btn.style.opacity = '0.4';
+          btn.style.borderStyle = 'dashed';
+          btn.title = `${CHANNELS[k]?.name || k} — Hidden from operators (you can see this as Master Admin)`;
+        } else {
+          // Regular operators: tab completely hidden
+          btn.style.display = 'none';
+        }
+      } else {
+        btn.style.opacity = '';
+        btn.style.borderStyle = '';
+        btn.style.display = '';
+        btn.title = '';
+      }
+    });
+
+    // Remove any previously added custom tabs then re-add
     tabBar.querySelectorAll('[data-custom]').forEach(t => t.remove());
     Object.keys(CHANNELS).forEach(k => {
       if (k.startsWith('custom_') && streamIds[k]) {
+        const isHidden = !!(hiddenChannels[k]);
+        // Hide custom sources that are hidden (even from master admin — custom sources are operator-managed)
+        if (isHidden && !masterAdmin) return;
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'ci-news-tab';
         btn.setAttribute('data-channel', k);
         btn.setAttribute('data-custom', '1');
         btn.textContent = CHANNELS[k].name;
+        if (isHidden && masterAdmin) {
+          btn.style.opacity = '0.4';
+          btn.style.borderStyle = 'dashed';
+          btn.title = `${CHANNELS[k].name} — Hidden from operators`;
+        }
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           renderChannel(k);
@@ -15049,6 +15091,8 @@ Generate 3-5 structured steps that will guide the operator through assessing and
     currentChannel = key;
     const ch = CHANNELS[key];
     if (!ch) return;
+    // Don't render hidden channels for regular operators
+    if (hiddenChannels[key] && !isMasterAdmin()) return;
 
     // Update tab active state
     tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-channel') === key));
