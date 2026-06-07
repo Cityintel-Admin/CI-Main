@@ -47,8 +47,33 @@
           <div id="aiOpsPolicyPanel" class="small">Loading policy…</div>
         </div>
 
+        <!-- Phase 10A — Analyst Assist Recommendations -->
         <div class="intel-candidate-section">
-          <h3>Policy recommendations</h3>
+          <h3>
+            Analyst assist
+            <span id="aiOpsRecHighConfBadge" style="display:none;margin-left:8px;font-size:11px;font-weight:600;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);border-radius:5px;padding:2px 7px;color:#fbbf24;"></span>
+          </h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">AI recommendations from the automation policy. Review and apply individually, or use <strong>Apply High-Confidence</strong> to one-click apply all items scoring ≥75%. All actions require your confirmation and are fully logged.</div>
+          <div id="aiOpsRecStats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+            <select id="aiOpsRecFilter" style="background:#1c1e22;border:1px solid #2e3238;color:#e9edf2;border-radius:7px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;">
+              <option value="">All types</option>
+              <option value="recommend_escalation">Escalation</option>
+              <option value="recommend_briefing">Briefing</option>
+              <option value="recommend_watchlist">Watchlist</option>
+              <option value="recommend_research">Research</option>
+            </select>
+            <select id="aiOpsRecConfFilter" style="background:#1c1e22;border:1px solid #2e3238;color:#e9edf2;border-radius:7px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;">
+              <option value="0">Any confidence</option>
+              <option value="0.5">≥ 50%</option>
+              <option value="0.65">≥ 65%</option>
+              <option value="0.75">≥ 75%</option>
+              <option value="0.85">≥ 85%</option>
+            </select>
+            <button class="btn" id="aiOpsRecRefresh" type="button" style="font-size:11px;padding:4px 10px;">↻ Refresh</button>
+            <button class="btn" id="aiOpsRecApplyHighConf" type="button" style="font-size:11px;padding:4px 10px;border-color:rgba(251,191,36,.4);color:#fbbf24;">⚡ Apply High-Confidence</button>
+            <button class="btn" id="aiOpsRecDryRun" type="button" style="font-size:11px;padding:4px 10px;">Preview Bulk</button>
+          </div>
           <div id="aiOpsPolicyRecommendations" class="small">No policy recommendations loaded yet.</div>
         </div>
 
@@ -859,6 +884,13 @@
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
       aiOpsPolicy:   document.getElementById('aiOpsPolicyPanel'),
       aiOpsPolicyRecommendations: document.getElementById('aiOpsPolicyRecommendations'),
+      aiOpsRecStats:         document.getElementById('aiOpsRecStats'),
+      aiOpsRecHighConfBadge: document.getElementById('aiOpsRecHighConfBadge'),
+      aiOpsRecFilter:        document.getElementById('aiOpsRecFilter'),
+      aiOpsRecConfFilter:    document.getElementById('aiOpsRecConfFilter'),
+      aiOpsRecRefresh:       document.getElementById('aiOpsRecRefresh'),
+      aiOpsRecApplyHighConf: document.getElementById('aiOpsRecApplyHighConf'),
+      aiOpsRecDryRun:        document.getElementById('aiOpsRecDryRun'),
       aiOpsQueues:   document.getElementById('aiOpsQueueDetails'),
       aiOpsActivity: document.getElementById('aiOpsDashboardActivity'),
       aiOpsIncidentClusters: document.getElementById('aiOpsIncidentClusters'),
@@ -1797,6 +1829,9 @@
             renderAiOpsMetric('Waves Detected', m.waves_detected),
             renderAiOpsMetric('Peak Pattern Sev.', m.max_pattern_severity),
             renderAiOpsMetric('Agent Events (24h)', m.agent_activity_24h),
+            renderAiOpsMetric('Recommendations', m.recommendations_total),
+            renderAiOpsMetric('High-Conf Pending', m.rec_high_conf_pending),
+            renderAiOpsMetric('Rec. Actioned', m.rec_actioned),
           ].join('');
         }
 
@@ -1811,7 +1846,8 @@
         }
 
         renderAiOpsPolicy(data.policy || {});
-        renderAiOpsPolicyRecommendations(data.policy_recommendations || []);
+        renderAiOpsPolicyRecommendations(data.policy_recommendations || [], data.recommendation_stats || {});
+        renderRecStats(data.recommendation_stats || {});
 
         renderAiOpsQueues(data.queue_previews || {});
         renderAiOpsIncidentClusters(data.incident_clusters || []);
@@ -1830,6 +1866,9 @@
         // Phase 9
         renderBriefDraftStats(data.briefing_draft_stats || {});
         loadBriefingQueueList();
+
+        // Phase 10A — load fresh recommendations from dedicated endpoint
+        loadAnalystAssistRecommendations();
 
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
@@ -1910,52 +1949,201 @@
       `;
     }
 
-    function renderAiOpsPolicyRecommendations(items = []){
+    // ── Phase 10A: Analyst Assist ─────────────────────────────────────────
+
+    const REC_CONFIG = {
+      recommend_escalation: { icon:'🚨', label:'Escalate',  colour:'rgba(239,68,68,.35)',  badge:'high',   pill:'#f87171' },
+      recommend_briefing:   { icon:'📋', label:'Brief',     colour:'rgba(251,191,36,.35)', badge:'medium', pill:'#fbbf24' },
+      recommend_watchlist:  { icon:'👁',  label:'Watchlist', colour:'rgba(99,102,241,.35)', badge:'low',    pill:'#a78bfa' },
+      recommend_research:   { icon:'🔍', label:'Research',  colour:'rgba(96,165,250,.35)', badge:'low',    pill:'#60a5fa' },
+    };
+
+    function confBar(conf = 0) {
+      const pct = Math.round(Number(conf) * 100);
+      const col = pct >= 80 ? '#34d399' : pct >= 65 ? '#fbbf24' : '#94a3b8';
+      return `<div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+        <div style="flex:1;height:4px;background:#1e2328;border-radius:2px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${col};border-radius:2px;"></div>
+        </div>
+        <span style="font-size:10px;color:${col};font-weight:700;min-width:28px;text-align:right;">${pct}%</span>
+      </div>`;
+    }
+
+    function renderRecStats(stats = {}, highConfPending = 0) {
+      if (!el.aiOpsRecStats) return;
+      const s = stats;
+      el.aiOpsRecStats.innerHTML = [
+        { label:'Total', val: Number(s.total||0), col:'#8e97a3' },
+        { label:'Escalation', val: Number(s.escalation||0), col:'#f87171' },
+        { label:'Briefing',   val: Number(s.briefing||0),   col:'#fbbf24' },
+        { label:'Watchlist',  val: Number(s.watchlist||0),  col:'#a78bfa' },
+        { label:'Research',   val: Number(s.research||0),   col:'#60a5fa' },
+        { label:'Actioned',   val: Number(s.actioned||0),   col:'#34d399' },
+      ].map(x => `<span style="font-size:11px;background:#111214;border:1px solid #2e3238;border-radius:6px;padding:3px 8px;color:${x.col};"><strong>${x.val}</strong> ${esc(x.label)}</span>`).join('');
+
+      // High-confidence badge in header
+      if (el.aiOpsRecHighConfBadge) {
+        const hcp = Number(s.high_conf_pending || highConfPending || 0);
+        if (hcp > 0) {
+          el.aiOpsRecHighConfBadge.textContent = `${hcp} high-confidence pending`;
+          el.aiOpsRecHighConfBadge.style.display = 'inline';
+        } else {
+          el.aiOpsRecHighConfBadge.style.display = 'none';
+        }
+      }
+    }
+
+    function renderAiOpsPolicyRecommendations(items = [], stats = {}) {
       if (!el.aiOpsPolicyRecommendations) return;
+      renderRecStats(stats);
+
       if (!items.length) {
-        el.aiOpsPolicyRecommendations.innerHTML = '<div class="small">No automation policy recommendations yet. Run Evaluate Policy.</div>';
+        el.aiOpsPolicyRecommendations.innerHTML = '<div class="small" style="color:#8e97a3;">No pending recommendations. Run <strong>Evaluate Policy</strong> to generate recommendations from current candidates.</div>';
         return;
       }
-      el.aiOpsPolicyRecommendations.innerHTML = items.map(item => `
-        <div style="border:1px solid #2e3238;border-radius:10px;padding:10px;margin-bottom:8px;background:#111214;">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
-            <strong>${esc(item.title || 'Untitled')}</strong>
-            <span class="pill ${riskClass(item.risk)}">${esc(item.risk || 'Risk')}</span>
-          </div>
-          <div class="small" style="margin-top:4px;">
-            ${esc(item.city || '')}${item.country ? ', ' + esc(item.country) : ''}
-          </div>
-          <div class="small" style="margin-top:6px;">
-            <strong>${esc(item.automation_decision || 'monitor')}</strong>
-            · route ${esc(item.automation_route || 'review_queue')}
-            · confidence ${Math.round(Number(item.automation_confidence || 0) * 100)}%
-          </div>
-          <div class="small" style="margin-top:4px;color:#8e97a3;">
-            ${esc(item.automation_reason || '')}
-          </div>
-          ${(item.policy_action_status || item.analyst_override) ? `<div class="small" style="margin-top:4px;color:#8e97a3;">Policy action: ${esc(item.policy_action_status || 'reviewed')}${item.analyst_override ? ` · Override: ${esc(item.analyst_override)}` : ''}</div>` : ''}
-          <div class="intel-review-toolbar" style="margin-top:8px;">
-            <button class="btn" type="button" data-aiops-open="${esc(item.candidate_id || '')}">Open</button>
-            <button class="btn" type="button" data-aiops-policy-one="${esc(item.candidate_id || '')}">Re-evaluate</button>
-            <button class="btn" type="button" data-aiops-policy-action="apply" data-aiops-policy-id="${esc(item.candidate_id || '')}">Apply</button>
-            <button class="btn" type="button" data-aiops-policy-action="override" data-aiops-policy-id="${esc(item.candidate_id || '')}">Override</button>
-            <button class="btn" type="button" data-aiops-policy-action="reviewed" data-aiops-policy-id="${esc(item.candidate_id || '')}">Mark Reviewed</button>
-          </div>
-        </div>
-      `).join('');
 
-      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-open]').forEach(btn => {
-        btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen));
-      });
-      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-policy-one]').forEach(btn => {
-        btn.addEventListener('click', () => runAiOpsControl(btn, 'Evaluating…', 'policy_evaluate', () => fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', {
+      el.aiOpsPolicyRecommendations.innerHTML = items.map(item => {
+        const cfg = REC_CONFIG[item.automation_decision] || { icon:'●', label:'Monitor', colour:'#2e3238', badge:'low', pill:'#8e97a3' };
+        const conf = Number(item.automation_confidence || 0);
+        const confPct = Math.round(conf * 100);
+        const priority = Math.round(Number(item.priority_score || 0));
+        const hotspot  = Math.round(Number(item.geo_hotspot_score || 0));
+        const place = [item.city, item.country].filter(Boolean).join(', ');
+        const isActioned = !!(item.policy_action_status && item.policy_action_status !== 'pending');
+        const actionedLabel = isActioned ? item.policy_action_status.replace(/_/g,' ') : '';
+
+        // Reason tags
+        const reasons = String(item.automation_reason || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, 4);
+
+        return `
+          <div style="border:1px solid ${cfg.colour};border-radius:10px;padding:12px;margin-bottom:8px;background:#0d0f12;${isActioned ? 'opacity:0.6;' : ''}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                <span style="font-size:18px;flex-shrink:0;">${cfg.icon}</span>
+                <div style="min-width:0;">
+                  <div style="font-size:12px;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title||'Untitled')}</div>
+                  <div class="small" style="color:#64748b;margin-top:1px;">${esc(place)}${item.risk ? ' · '+esc(item.risk) : ''}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+                <span class="pill ${cfg.badge}" style="font-size:10px;">${cfg.label}</span>
+                ${isActioned ? `<span style="font-size:10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:4px;padding:1px 6px;color:#34d399;">${esc(actionedLabel)}</span>` : ''}
+              </div>
+            </div>
+
+            ${confBar(conf)}
+
+            <div style="display:flex;gap:14px;margin-top:7px;flex-wrap:wrap;">
+              ${priority ? `<span class="small" style="color:#8e97a3;">Priority <strong style="color:#cbd5e1;">${priority}</strong></span>` : ''}
+              ${hotspot  ? `<span class="small" style="color:#8e97a3;">Hotspot <strong style="color:#cbd5e1;">${hotspot}</strong></span>` : ''}
+              ${item.automation_policy_version ? `<span class="small" style="color:#475569;">Policy ${esc(item.automation_policy_version)}</span>` : ''}
+              ${item.last_actioned_at ? `<span class="small" style="color:#475569;">${esc(dateLabel(item.last_actioned_at)||item.last_actioned_at)}</span>` : ''}
+            </div>
+
+            ${reasons.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:7px;">${reasons.map(r => `<span style="font-size:10px;background:rgba(255,255,255,.04);border:1px solid #2e3238;border-radius:4px;padding:1px 5px;color:#64748b;">${esc(r.replace(/_/g,' '))}</span>`).join('')}</div>` : ''}
+
+            ${!isActioned ? `
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+              <button class="intel-review-mini approve" data-rec-apply="${esc(item.candidate_id||'')}">✓ Apply</button>
+              <button class="intel-review-mini" data-rec-override="${esc(item.candidate_id||'')}">Override</button>
+              <button class="intel-review-mini" data-rec-reviewed="${esc(item.candidate_id||'')}">Mark Reviewed</button>
+              <button class="intel-review-mini" data-aiops-open="${esc(item.candidate_id||'')}">Open</button>
+            </div>` : `
+            <div style="display:flex;gap:6px;margin-top:10px;">
+              <button class="intel-review-mini" data-rec-re-eval="${esc(item.candidate_id||'')}">Re-evaluate</button>
+              <button class="intel-review-mini" data-aiops-open="${esc(item.candidate_id||'')}">Open</button>
+            </div>`}
+          </div>`;
+      }).join('');
+
+      // Wire buttons
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-open]').forEach(btn =>
+        btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen)));
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-rec-apply]').forEach(btn =>
+        btn.addEventListener('click', () => runAiOpsPolicyAction(btn, btn.dataset.recApply, 'apply')));
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-rec-override]').forEach(btn =>
+        btn.addEventListener('click', () => runAiOpsPolicyAction(btn, btn.dataset.recOverride, 'override')));
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-rec-reviewed]').forEach(btn =>
+        btn.addEventListener('click', () => runAiOpsPolicyAction(btn, btn.dataset.recReviewed, 'reviewed')));
+      el.aiOpsPolicyRecommendations.querySelectorAll('[data-rec-re-eval]').forEach(btn =>
+        btn.addEventListener('click', () => runAiOpsControl(btn, 'Re-evaluating…', 'policy_evaluate', () =>
+          fetchAiOpsJson('/api/intel-review/automation-policy/evaluate', {
+            method: 'POST',
+            body: JSON.stringify({ id: btn.dataset.recReEval, write: true })
+          })
+        )));
+    }
+
+    async function loadAnalystAssistRecommendations() {
+      if (!el.aiOpsPolicyRecommendations) return;
+      el.aiOpsPolicyRecommendations.innerHTML = '<div class="small" style="color:#8e97a3;">Loading recommendations…</div>';
+      try {
+        const decision = el.aiOpsRecFilter?.value || '';
+        const minConf  = el.aiOpsRecConfFilter?.value || '0';
+        const url = intelReviewUrl('/api/intel-review/recommendations')
+          + `&limit=30&pending_only=true`
+          + (decision ? `&decision=${encodeURIComponent(decision)}` : '')
+          + (Number(minConf) > 0 ? `&min_confidence=${minConf}` : '');
+        const res = await fetch(url, { headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        renderAiOpsPolicyRecommendations(data.items || [], data.stats || {});
+      } catch (err) {
+        if (el.aiOpsPolicyRecommendations) {
+          el.aiOpsPolicyRecommendations.innerHTML = `<div class="small" style="color:#f87171;">Failed to load recommendations: ${esc(String(err.message||err))}</div>`;
+        }
+      }
+    }
+
+    async function bulkApplyRecommendations(dryRun = false) {
+      const minConf = 0.75;
+      const decision = el.aiOpsRecFilter?.value || '';
+      const label = dryRun ? 'Preview bulk apply' : 'Apply high-confidence recommendations';
+
+      if (!dryRun) {
+        const confirmed = confirm(
+          `Apply all AI recommendations with confidence ≥ 75%${decision ? ` (${decision.replace('recommend_','')})` : ''}?\n\nEach item will be actioned according to its recommendation (escalate / brief / watchlist / research). All actions are fully logged with your name.\n\nYou can review results in the lifecycle events feed.`
+        );
+        if (!confirmed) return;
+      }
+
+      const btn = dryRun ? el.aiOpsRecDryRun : el.aiOpsRecApplyHighConf;
+      setIntelButtonBusy(btn, true, dryRun ? 'Previewing…' : 'Applying…');
+      setAiOpsControlOutput(`${label}…`);
+
+      try {
+        const body = { min_confidence: minConf, dry_run: dryRun, limit: 50, note: 'Applied via Analyst Assist bulk action' };
+        if (decision) body.decision = decision;
+
+        const res = await fetch(intelReviewUrl('/api/intel-review/automation-policy/bulk-apply'), {
           method: 'POST',
-          body: JSON.stringify({ id: btn.dataset.aiopsPolicyOne, write: true })
-        })));
-      });
-      el.aiOpsPolicyRecommendations.querySelectorAll('[data-aiops-policy-action]').forEach(btn => {
-        btn.addEventListener('click', () => runAiOpsPolicyAction(btn, btn.dataset.aiopsPolicyId, btn.dataset.aiopsPolicyAction));
-      });
+          headers: authHeaders(),
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+
+        if (dryRun) {
+          const preview = data.preview || [];
+          const msg = preview.length
+            ? `Preview: would apply ${data.would_apply} recommendation(s):\n\n` + preview.slice(0,10).map(p =>
+                `• [${Math.round(Number(p.automation_confidence||0)*100)}%] ${p.automation_decision?.replace('recommend_','').toUpperCase()} — ${p.title||p.candidate_id} (${[p.city,p.country].filter(Boolean).join(', ')||'?'})`
+              ).join('\n')
+            : 'No candidates match the criteria.';
+          alert(msg);
+          setAiOpsControlOutput(`Preview: ${data.would_apply || 0} candidates would be actioned.`, 'ok');
+        } else {
+          const counts = data.decision_counts || {};
+          const parts = Object.entries(counts).filter(([,v])=>v>0).map(([k,v])=>`${v} ${k.replace('recommend_','')}`).join(', ');
+          setAiOpsControlOutput(`Bulk apply complete: ${data.succeeded} succeeded · ${data.failed} failed${parts ? ' · ' + parts : ''}.`, data.failed > 0 ? 'warn' : 'ok');
+          await loadAiOpsDashboard({ silent: true });
+          await loadAnalystAssistRecommendations();
+        }
+      } catch (err) {
+        setAiOpsControlOutput(`${label} failed: ${String(err.message||err)}`, 'error');
+      } finally {
+        setIntelButtonBusy(btn, false);
+      }
     }
 
 
@@ -4315,6 +4503,13 @@ async function ask(){
     if (el.aiOpsBriefApproveBtn) el.aiOpsBriefApproveBtn.addEventListener('click', approveBrief);
     if (el.aiOpsBriefRejectBtn)  el.aiOpsBriefRejectBtn.addEventListener('click', rejectBrief);
     if (el.aiOpsBriefDispatchBtn) el.aiOpsBriefDispatchBtn.addEventListener('click', () => dispatchBrief(_currentBriefCandidateId));
+
+    // Phase 10A — Analyst Assist listeners
+    if (el.aiOpsRecRefresh)       el.aiOpsRecRefresh.addEventListener('click', loadAnalystAssistRecommendations);
+    if (el.aiOpsRecFilter)        el.aiOpsRecFilter.addEventListener('change', loadAnalystAssistRecommendations);
+    if (el.aiOpsRecConfFilter)    el.aiOpsRecConfFilter.addEventListener('change', loadAnalystAssistRecommendations);
+    if (el.aiOpsRecApplyHighConf) el.aiOpsRecApplyHighConf.addEventListener('click', () => bulkApplyRecommendations(false));
+    if (el.aiOpsRecDryRun)        el.aiOpsRecDryRun.addEventListener('click', () => bulkApplyRecommendations(true));
     if (el.aiOpsBriefDraftClose) el.aiOpsBriefDraftClose.addEventListener('click', () => {
       if (el.aiOpsBriefDraftPanel) el.aiOpsBriefDraftPanel.style.display = 'none';
       _currentBriefCandidateId = null;
