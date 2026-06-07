@@ -4450,8 +4450,10 @@ padding-bottom: 12px;
 }
 /* Player area */
 .ci-news-player-wrap{
-  position:relative;width:100%;
+  position:relative;
+  width:100%;max-width:560px;
   aspect-ratio:16/9;
+  max-height:280px;
   border-radius:10px;overflow:hidden;
   background:#000;
 }
@@ -14956,17 +14958,19 @@ Generate 3-5 structured steps that will guide the operator through assessing and
 (function(){
   const API = 'https://api.cityintelapi.com';
 
-  // Channel metadata — names, YouTube live page URLs for fallback
-  const CHANNELS = {
-    sky:       { name: 'Sky News',    liveUrl: 'https://www.youtube.com/@SkyNews/live' },
-    bbc:       { name: 'BBC News',    liveUrl: 'https://www.youtube.com/@BBCNews/live' },
-    cnn:       { name: 'CNN',         liveUrl: 'https://www.youtube.com/@CNN/live' },
-    bloomberg: { name: 'Bloomberg',   liveUrl: 'https://www.youtube.com/@Bloomberg/live' },
-    euronews:  { name: 'Euronews',    liveUrl: 'https://www.youtube.com/@euronews/live' },
-    aljazeera: { name: 'Al Jazeera',  liveUrl: 'https://www.youtube.com/@aljazeeraenglish/live' },
-    france24:  { name: 'France 24',   liveUrl: 'https://www.youtube.com/@FRANCE24/live' },
-    dw:        { name: 'DW News',     liveUrl: 'https://www.youtube.com/@dwnews/live' },
+  // Static channel metadata for the 8 default channels
+  const DEFAULT_CHANNELS = {
+    sky:       { name: 'Sky News'   },
+    bbc:       { name: 'BBC News'   },
+    cnn:       { name: 'CNN'        },
+    bloomberg: { name: 'Bloomberg'  },
+    euronews:  { name: 'Euronews'   },
+    aljazeera: { name: 'Al Jazeera' },
+    france24:  { name: 'France 24'  },
+    dw:        { name: 'DW News'    },
   };
+  // CHANNELS is built dynamically after loadStreamIds() — includes custom sources
+  let CHANNELS = { ...DEFAULT_CHANNELS };
 
   const panel       = document.getElementById('ciNewsPanel');
   const header      = document.getElementById('ciNewsHeader');
@@ -14992,17 +14996,49 @@ Generate 3-5 structured steps that will guide the operator through assessing and
     } catch { return {}; }
   }
 
-  // Load active stream IDs from settings API
+  // Load active stream IDs + custom channels from settings API, then rebuild tabs
   async function loadStreamIds() {
     try {
       const res = await fetch(API + '/api/org/settings/news-streams', { headers: authH() });
       const json = await res.json().catch(() => ({}));
       if (json.ok && json.streams) {
         streamIds = json.streams;
+        // Rebuild CHANNELS to include any custom sources
+        CHANNELS = { ...DEFAULT_CHANNELS };
+        Object.keys(json.streams).forEach(k => {
+          if (k.startsWith('custom_') && json.streams[k]) {
+            const meta = json.customMeta || {};
+            CHANNELS[k] = { name: meta[k] || 'Custom Source' };
+          }
+        });
+        rebuildTabs();
       }
     } catch (e) {
       // API unavailable — streamIds stays empty, fallback mode
     }
+  }
+
+  // Rebuild the tab bar to include custom channels
+  function rebuildTabs() {
+    const tabBar = document.getElementById('ciNewsTabs');
+    if (!tabBar) return;
+    // Remove any previously added custom tabs (keep the 8 default ones)
+    tabBar.querySelectorAll('[data-custom]').forEach(t => t.remove());
+    Object.keys(CHANNELS).forEach(k => {
+      if (k.startsWith('custom_') && streamIds[k]) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ci-news-tab';
+        btn.setAttribute('data-channel', k);
+        btn.setAttribute('data-custom', '1');
+        btn.textContent = CHANNELS[k].name;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          renderChannel(k);
+        });
+        tabBar.appendChild(btn);
+      }
+    });
   }
 
   function buildSrc(videoId) {
