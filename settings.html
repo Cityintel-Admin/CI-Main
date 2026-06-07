@@ -1078,38 +1078,108 @@
     setTimeout(() => { statusEl.textContent = ''; }, 5000);
   }
 
-  function buildGrid(streams) {
+  function buildGrid(streams, customMeta) {
     grid.innerHTML = '';
+    // Standard channels
     CHANNELS.forEach(ch => {
       const currentId = (streams[ch.key] || '').trim();
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:12px';
+      wrap.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:12px;position:relative';
       wrap.innerHTML = `
-        <div style="font-size:12px;font-weight:700;color:#e2e8f0;margin-bottom:6px">${ch.name}</div>
-        <input
-          type="text"
-          data-channel="${ch.key}"
-          value="${currentId}"
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:12px;font-weight:700;color:#e2e8f0">${ch.name}</div>
+          ${currentId ? `<button type="button" data-clear="${ch.key}"
+            style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid rgba(239,68,68,.3);
+              background:rgba(239,68,68,.08);color:#f87171;cursor:pointer;"
+            title="Remove stream ID for ${ch.name}">✕ Clear</button>` : ''}
+        </div>
+        <input type="text" data-channel="${ch.key}" value="${currentId}"
           placeholder="YouTube video ID (e.g. dQw4w9WgXcQ)"
           style="width:100%;box-sizing:border-box;background:#0b0e14;border:1px solid rgba(255,255,255,.1);
-            color:#e2e8f0;border-radius:7px;padding:6px 10px;font-size:12px;font-family:monospace;outline:none"
-        >
+            color:#e2e8f0;border-radius:7px;padding:6px 10px;font-size:12px;font-family:monospace;outline:none">
         ${currentId
           ? `<div style="margin-top:5px;font-size:11px;color:#22c55e">✓ Active — <a href="https://www.youtube.com/watch?v=${currentId}" target="_blank" rel="noopener" style="color:#67e8f9">verify ↗</a></div>`
           : `<div style="margin-top:5px;font-size:11px;color:#64748b">Not set — player hidden for this channel</div>`
         }
       `;
+      // Wire clear button
+      const clearBtn = wrap.querySelector(`[data-clear="${ch.key}"]`);
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          const inp = wrap.querySelector(`input[data-channel="${ch.key}"]`);
+          if (inp) { inp.value = ''; }
+          clearBtn.remove();
+          wrap.querySelector('div:last-child').textContent = 'Not set — player hidden for this channel';
+          wrap.querySelector('div:last-child').style.color = '#64748b';
+        });
+      }
       grid.appendChild(wrap);
     });
+
+    // Custom sources section
+    const customSection = document.createElement('div');
+    customSection.style.cssText = 'grid-column:1/-1;margin-top:6px';
+    customSection.innerHTML = `
+      <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:8px;padding-top:8px;
+        border-top:1px solid rgba(255,255,255,.07)">
+        Custom Sources
+        <span style="font-size:11px;font-weight:400;color:#64748b;margin-left:6px">
+          Add independent news sources or local reporters active during an incident
+        </span>
+      </div>
+      <div id="customSourcesList"></div>
+      <button type="button" id="addCustomSourceBtn"
+        style="margin-top:8px;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;
+          background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#94a3b8;cursor:pointer;">
+        + Add custom source
+      </button>
+    `;
+    grid.appendChild(customSection);
+
+    // Populate existing custom sources
+    const customList = customSection.querySelector('#customSourcesList');
+    const customKeys = Object.keys(streams).filter(k => k.startsWith('custom_') && streams[k]);
+    customKeys.forEach(k => {
+      addCustomRow(customList, k.replace('custom_', ''), streams[k], (customMeta || {})[k] || '');
+    });
+
+    // Add custom source button
+    customSection.querySelector('#addCustomSourceBtn').addEventListener('click', () => {
+      const idx = Date.now();
+      addCustomRow(customList, idx, '', '');
+    });
+  }
+
+  function addCustomRow(container, idx, videoId, name) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+    row.setAttribute('data-custom-idx', idx);
+    row.innerHTML = `
+      <input type="text" data-custom-name="${idx}" value="${name}"
+        placeholder="Source name (e.g. LocalReporterLDN)"
+        style="background:#0b0e14;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;
+          border-radius:7px;padding:6px 10px;font-size:12px;outline:none;width:100%;box-sizing:border-box">
+      <input type="text" data-custom-id="${idx}" value="${videoId}"
+        placeholder="YouTube video ID"
+        style="background:#0b0e14;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;
+          border-radius:7px;padding:6px 10px;font-size:12px;font-family:monospace;outline:none;width:100%;box-sizing:border-box">
+      <button type="button" data-remove-custom="${idx}"
+        style="padding:5px 10px;border-radius:6px;border:1px solid rgba(239,68,68,.3);
+          background:rgba(239,68,68,.08);color:#f87171;cursor:pointer;font-size:12px;white-space:nowrap">
+        ✕ Remove
+      </button>
+    `;
+    row.querySelector(`[data-remove-custom="${idx}"]`).addEventListener('click', () => row.remove());
+    container.appendChild(row);
   }
 
   async function loadStreams() {
     try {
       const res = await fetch(API + '/api/org/settings/news-streams', { headers: authH() });
       const json = await res.json().catch(() => ({}));
-      buildGrid(json.ok && json.streams ? json.streams : {});
+      buildGrid(json.ok && json.streams ? json.streams : {}, json.customMeta || {});
     } catch {
-      buildGrid({});
+      buildGrid({}, {});
     }
   }
 
@@ -1119,9 +1189,27 @@
     inputs.forEach(inp => {
       const key = inp.getAttribute('data-channel');
       const val = inp.value.trim();
-      // Strip full YouTube URLs down to ID if pasted
       const match = val.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
       streams[key] = match ? match[1] : val;
+    });
+
+    // Collect custom sources
+    const customMeta = {};
+    const customRows = grid.querySelectorAll('[data-custom-idx]');
+    let customIdx = 1;
+    customRows.forEach(row => {
+      const idx = row.getAttribute('data-custom-idx');
+      const nameInp = row.querySelector(`[data-custom-name="${idx}"]`);
+      const idInp   = row.querySelector(`[data-custom-id="${idx}"]`);
+      const name    = (nameInp?.value || '').trim();
+      const videoId = (idInp?.value || '').trim();
+      if (name && videoId) {
+        const match = videoId.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+        const cleanId = match ? match[1] : videoId;
+        const key = `custom_${customIdx++}`;
+        streams[key] = cleanId;
+        customMeta[key] = name;
+      }
     });
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving…';
@@ -1129,7 +1217,7 @@
       const res = await fetch(API + '/api/org/settings/news-streams', {
         method: 'POST',
         headers: authH(),
-        body: JSON.stringify({ streams })
+        body: JSON.stringify({ streams, customMeta })
       });
       const json = await res.json().catch(() => ({}));
       if (json.ok) {
