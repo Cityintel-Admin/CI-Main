@@ -131,6 +131,7 @@
             <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;" id="aiOpsBriefDraftActions">
               <button class="btn primary" id="aiOpsBriefApproveBtn" type="button">✓ Approve Brief</button>
               <button class="btn" id="aiOpsBriefRejectBtn" type="button" style="border-color:rgba(239,68,68,.4);color:#f87171;">✗ Reject / Revise</button>
+              <button class="btn" id="aiOpsBriefDispatchBtn" type="button" style="display:none;border-color:rgba(52,211,153,.4);color:#34d399;">✉ Dispatch Brief</button>
               <input id="aiOpsBriefApprovalNote" type="text" placeholder="Optional note…" style="flex:1;min-width:120px;background:#1c1e22;border:1px solid #2e3238;color:#e9edf2;border-radius:7px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;">
             </div>
             <div id="aiOpsBriefDraftStatus" class="small" style="margin-top:8px;color:#8e97a3;"></div>
@@ -849,6 +850,7 @@
       aiOpsBriefDraftContent:document.getElementById('aiOpsBriefDraftContent'),
       aiOpsBriefApproveBtn: document.getElementById('aiOpsBriefApproveBtn'),
       aiOpsBriefRejectBtn:  document.getElementById('aiOpsBriefRejectBtn'),
+      aiOpsBriefDispatchBtn:document.getElementById('aiOpsBriefDispatchBtn'),
       aiOpsBriefApprovalNote:document.getElementById('aiOpsBriefApprovalNote'),
       aiOpsBriefDraftStatus:document.getElementById('aiOpsBriefDraftStatus'),
       aiOpsBriefDraftClose: document.getElementById('aiOpsBriefDraftClose'),
@@ -974,7 +976,7 @@
         const when = item.requested_at || item.created_at || item.updated_at || '';
         const score = item.priority_score != null ? ` · ${Math.round(Number(item.priority_score) * 100)}%` : '';
         const buttons = queueKey === 'briefing'
-          ? `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-aiops-queue="briefing" data-aiops-id="${esc(id)}" data-aiops-action="ready">Mark Ready</button><button class="intel-review-mini" data-aiops-queue="briefing" data-aiops-id="${esc(id)}" data-aiops-action="complete">Complete</button>`
+          ? `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-brief-generate-from-card="${esc(id)}">Generate Draft</button><button class="intel-review-mini" data-brief-view-from-card="${esc(id)}">Review Draft</button>`
           : queueKey === 'escalation'
             ? `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-aiops-queue="escalation" data-aiops-id="${esc(id)}" data-aiops-action="assigned">Assign</button><button class="intel-review-mini" data-aiops-queue="escalation" data-aiops-id="${esc(id)}" data-aiops-action="monitoring">Monitor</button><button class="intel-review-mini" data-aiops-queue="escalation" data-aiops-id="${esc(id)}" data-aiops-action="resolved">Resolve</button>`
             : `<button class="intel-review-mini" data-aiops-open="${esc(id)}">Open</button><button class="intel-review-mini" data-aiops-research="${esc(id)}">Research Now</button>`;
@@ -1310,9 +1312,11 @@
       el.aiOpsBriefingQueue.innerHTML = items.map(item => {
         const sc = briefStatusColour(item.briefing_status || '');
         const place = [item.city, item.country].filter(Boolean).join(', ');
-        const hasDraft = !!(item.has_draft || (item.draft_content && !item.draft_content.startsWith('[Draft')));
-        const briefType = BRIEF_TYPE_LABELS[item.brief_type] || (item.brief_type || 'SITREP');
+        const hasDraft = !!(item.has_draft);
+        const briefType = BRIEF_TYPE_LABELS[item.brief_type] || (item.brief_type ? item.brief_type.toUpperCase() : 'SITREP');
         const when = item.requested_at ? `· ${esc(dateLabel(item.requested_at)||item.requested_at)}` : '';
+        const isReady = item.briefing_status === 'ready';
+        const isComplete = item.briefing_status === 'completed';
         return `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #16171a;gap:10px;flex-wrap:wrap;">
             <div style="flex:1;min-width:0;">
@@ -1322,9 +1326,14 @@
             <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
               <span style="font-size:10px;background:rgba(255,255,255,.05);border:1px solid ${sc.border};border-radius:5px;padding:2px 7px;color:${sc.badge};">${esc(sc.label)}</span>
               ${hasDraft ? `<span style="font-size:10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:5px;padding:2px 7px;color:#fbbf24;">${esc(briefType)}</span>` : ''}
-              ${hasDraft
-                ? `<button class="intel-review-mini" data-brief-view="${esc(item.candidate_id||'')}">Review Draft</button>`
-                : `<button class="intel-review-mini" data-brief-generate="${esc(item.candidate_id||'')}">Generate</button>`
+              ${isReady
+                ? `<button class="intel-review-mini" data-brief-dispatch="${esc(item.candidate_id||'')}" style="background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);color:#34d399;">Dispatch</button>
+                   <button class="intel-review-mini" data-brief-view="${esc(item.candidate_id||'')}">Review</button>`
+                : isComplete
+                  ? `<button class="intel-review-mini" data-brief-view="${esc(item.candidate_id||'')}">View</button>`
+                  : hasDraft
+                    ? `<button class="intel-review-mini" data-brief-view="${esc(item.candidate_id||'')}">Review Draft</button>`
+                    : `<button class="intel-review-mini" data-brief-generate="${esc(item.candidate_id||'')}">Generate</button>`
               }
             </div>
           </div>`;
@@ -1335,6 +1344,9 @@
       });
       el.aiOpsBriefingQueue.querySelectorAll('[data-brief-generate]').forEach(btn => {
         btn.addEventListener('click', () => generateSingleBrief(btn.dataset.briefGenerate));
+      });
+      el.aiOpsBriefingQueue.querySelectorAll('[data-brief-dispatch]').forEach(btn => {
+        btn.addEventListener('click', () => dispatchBrief(btn.dataset.briefDispatch));
       });
     }
 
@@ -1376,12 +1388,22 @@
         `;
         if (el.aiOpsBriefDraftContent) el.aiOpsBriefDraftContent.textContent = item.draft_content || '(No draft content)';
 
-        // Show/hide approve/reject based on status
+        // Show/hide approve/reject/dispatch based on status
         const isApprovable = item.briefing_status === 'drafting' || (item.draft_content && item.briefing_status === 'queued');
-        const isAlreadyReady = item.briefing_status === 'ready' || item.briefing_status === 'completed';
-        if (el.aiOpsBriefApproveBtn) el.aiOpsBriefApproveBtn.style.display = isAlreadyReady ? 'none' : '';
-        if (el.aiOpsBriefRejectBtn) el.aiOpsBriefRejectBtn.style.display = isAlreadyReady ? 'none' : '';
-        if (isAlreadyReady && el.aiOpsBriefDraftStatus) el.aiOpsBriefDraftStatus.textContent = `This brief has been approved and is ${item.briefing_status === 'completed' ? 'complete' : 'ready for dispatch'}.`;
+        const isAlreadyReady = item.briefing_status === 'ready';
+        const isComplete = item.briefing_status === 'completed';
+        if (el.aiOpsBriefApproveBtn) el.aiOpsBriefApproveBtn.style.display = (isAlreadyReady || isComplete) ? 'none' : '';
+        if (el.aiOpsBriefRejectBtn)  el.aiOpsBriefRejectBtn.style.display  = (isAlreadyReady || isComplete) ? 'none' : '';
+        if (el.aiOpsBriefDispatchBtn) {
+          el.aiOpsBriefDispatchBtn.style.display = isAlreadyReady ? '' : 'none';
+          el.aiOpsBriefDispatchBtn.onclick = () => dispatchBrief(_currentBriefCandidateId);
+        }
+        if ((isAlreadyReady || isComplete) && el.aiOpsBriefDraftStatus) {
+          el.aiOpsBriefDraftStatus.style.color = isAlreadyReady ? '#34d399' : '#818cf8';
+          el.aiOpsBriefDraftStatus.textContent = isComplete
+            ? `This brief has been approved and dispatched.${item.dispatched_at ? ` Dispatched: ${dateLabel(item.dispatched_at)||item.dispatched_at}` : ''}`
+            : 'This brief is approved and ready for dispatch. Click ✉ Dispatch Brief to send.';
+        }
       } catch (err) {
         if (el.aiOpsBriefDraftContent) el.aiOpsBriefDraftContent.textContent = `Error loading draft: ${String(err.message||err)}`;
       }
@@ -1446,6 +1468,42 @@
         await loadBriefingQueueList();
       } catch (err) {
         if (el.aiOpsBriefDraftStatus) { el.aiOpsBriefDraftStatus.style.color = '#f87171'; el.aiOpsBriefDraftStatus.textContent = `Rejection failed: ${String(err.message||err)}`; }
+      }
+    }
+
+    async function dispatchBrief(candidateId) {
+      if (!candidateId) return;
+      const recipientInput = prompt('Enter recipient email address(es) to dispatch this brief to.\nSeparate multiple with commas:');
+      if (!recipientInput || !recipientInput.trim()) return;
+      const recipients = recipientInput.split(',').map(r => r.trim()).filter(r => r.includes('@'));
+      if (!recipients.length) { setAiOpsControlOutput('No valid email addresses entered.', 'warn'); return; }
+      const note = prompt('Optional dispatch note (or leave blank):') || '';
+
+      setAiOpsControlOutput(`Dispatching brief to ${recipients.length} recipient(s)…`);
+      try {
+        const res = await fetch(intelReviewUrl('/api/intel-review/briefing/dispatch'), {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ candidate_id: candidateId, recipients, note })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data.ok && !data.dispatched?.length) throw new Error(data.error || 'Dispatch failed');
+        const dispatchedCount = (data.dispatched || []).length;
+        const failedCount = (data.failed || []).length;
+        setAiOpsControlOutput(
+          `Brief dispatched to ${dispatchedCount} recipient(s)${failedCount ? ` · ${failedCount} failed` : ''}.`,
+          failedCount && !dispatchedCount ? 'error' : 'ok'
+        );
+        // Update review panel if open
+        if (_currentBriefCandidateId === candidateId && el.aiOpsBriefDraftStatus) {
+          el.aiOpsBriefDraftStatus.style.color = '#34d399';
+          el.aiOpsBriefDraftStatus.textContent = `✓ Dispatched to: ${(data.dispatched||[]).join(', ')}`;
+          if (el.aiOpsBriefApproveBtn) el.aiOpsBriefApproveBtn.style.display = 'none';
+          if (el.aiOpsBriefRejectBtn) el.aiOpsBriefRejectBtn.style.display = 'none';
+        }
+        await loadBriefingQueueList();
+      } catch (err) {
+        setAiOpsControlOutput(`Dispatch failed: ${String(err.message||err)}`, 'error');
       }
     }
       if (!el.aiOpsIncidentClusters) return;
@@ -1683,6 +1741,8 @@
       el.aiOpsQueues.querySelectorAll('[data-aiops-open]').forEach(btn => btn.addEventListener('click', () => openAiOpsCandidate(btn.dataset.aiopsOpen)));
       el.aiOpsQueues.querySelectorAll('[data-aiops-research]').forEach(btn => btn.addEventListener('click', () => runAiOpsCandidateResearch(btn.dataset.aiopsResearch)));
       el.aiOpsQueues.querySelectorAll('[data-aiops-queue]').forEach(btn => btn.addEventListener('click', () => runAiOpsQueueAction(btn, btn.dataset.aiopsQueue, btn.dataset.aiopsId, btn.dataset.aiopsAction)));
+      el.aiOpsQueues.querySelectorAll('[data-brief-generate-from-card]').forEach(btn => btn.addEventListener('click', () => generateSingleBrief(btn.dataset.briefGenerateFromCard)));
+      el.aiOpsQueues.querySelectorAll('[data-brief-view-from-card]').forEach(btn => btn.addEventListener('click', () => openBriefDraftPanel(btn.dataset.briefViewFromCard)));
     }
 
     async function loadAiOpsDashboard(options = {}){
@@ -3473,6 +3533,15 @@ async function ask(){
           renderIntelReviewRows(rows);
           if (idx >= 0) openIntelCandidateDrawer(idx);
           el.intelStatus.textContent = `Action saved: ${label}.`;
+          // Phase 9 — offer to generate a brief draft after queueing
+          if (action === 'briefing') {
+            const autoGen = confirm(`"${c.title || c.id}" added to briefing queue.\n\nGenerate an AI draft brief now? (You can also do this later from the AI Ops Dashboard.)`) ;
+            if (autoGen) {
+              setIntelModal(false);
+              setAiOpsDashboard(true);
+              await generateSingleBrief(c.id);
+            }
+          }
         } catch (err) {
           el.intelStatus.textContent = `Action failed: ${String(err.message || err)}`;
         }
@@ -4245,6 +4314,7 @@ async function ask(){
     });
     if (el.aiOpsBriefApproveBtn) el.aiOpsBriefApproveBtn.addEventListener('click', approveBrief);
     if (el.aiOpsBriefRejectBtn)  el.aiOpsBriefRejectBtn.addEventListener('click', rejectBrief);
+    if (el.aiOpsBriefDispatchBtn) el.aiOpsBriefDispatchBtn.addEventListener('click', () => dispatchBrief(_currentBriefCandidateId));
     if (el.aiOpsBriefDraftClose) el.aiOpsBriefDraftClose.addEventListener('click', () => {
       if (el.aiOpsBriefDraftPanel) el.aiOpsBriefDraftPanel.style.display = 'none';
       _currentBriefCandidateId = null;
