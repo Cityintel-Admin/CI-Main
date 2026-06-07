@@ -364,6 +364,31 @@
         </div>
       </section>
 
+
+<!-- ================================================================ -->
+<!-- LIVE NEWS STREAMS — Master Admin only                             -->
+<!-- ================================================================ -->
+<section class="card" id="newsStreamsCard" style="display:none">
+  <h2>Live News Streams</h2>
+  <p style="color:var(--muted);font-size:13px;margin:4px 0 14px">
+    Paste a YouTube video ID for each channel to activate the embedded player on Live Alerts.
+    Leave blank to hide that channel's player (operators will still see the tab).
+    Get the ID from the YouTube URL: <code style="background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;font-size:12px">youtube.com/watch?v=<strong>THIS_PART</strong></code>
+  </p>
+
+  <div id="newsStreamsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:14px">
+    <!-- Populated by JS -->
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <button type="button" id="newsStreamsSaveBtn"
+      style="padding:7px 16px;border-radius:8px;background:var(--brand-red);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer">
+      Save Stream IDs
+    </button>
+    <span id="newsStreamsStatus" style="font-size:12px;color:var(--muted)"></span>
+  </div>
+</section>
+
 <div id="billing-card" class="billing-card">
   <div class="billing-header">
     <h3>Billing</h3>
@@ -1007,6 +1032,131 @@
   }
 })();
 </script>	
+
+
+<script>
+// ── Live News Streams — Master Admin only ─────────────────────────────────
+(function(){
+  const API = 'https://api.cityintelapi.com';
+
+  const CHANNELS = [
+    { key: 'sky',       name: 'Sky News'    },
+    { key: 'bbc',       name: 'BBC News'    },
+    { key: 'cnn',       name: 'CNN'         },
+    { key: 'bloomberg', name: 'Bloomberg'   },
+    { key: 'euronews',  name: 'Euronews'    },
+    { key: 'aljazeera', name: 'Al Jazeera'  },
+    { key: 'france24',  name: 'France 24'   },
+    { key: 'dw',        name: 'DW News'     },
+  ];
+
+  const card      = document.getElementById('newsStreamsCard');
+  const grid      = document.getElementById('newsStreamsGrid');
+  const saveBtn   = document.getElementById('newsStreamsSaveBtn');
+  const statusEl  = document.getElementById('newsStreamsStatus');
+  if (!card || !grid) return;
+
+  // Only show for Master Admin
+  function isMaster() {
+    try { return !!(window.CIAuth && CIAuth.isMasterAdmin && CIAuth.isMasterAdmin()); }
+    catch { return false; }
+  }
+
+  function authH() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || 'null');
+      if (!p?.email) return {};
+      return { 'X-User-Email': p.email, 'X-User-Name': p.name || '', 'X-User-Id': p.id || '',
+               'Content-Type': 'application/json' };
+    } catch { return { 'Content-Type': 'application/json' }; }
+  }
+
+  function showStatus(msg, ok) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color = ok ? '#22c55e' : '#f87171';
+    setTimeout(() => { statusEl.textContent = ''; }, 5000);
+  }
+
+  function buildGrid(streams) {
+    grid.innerHTML = '';
+    CHANNELS.forEach(ch => {
+      const currentId = (streams[ch.key] || '').trim();
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:12px';
+      wrap.innerHTML = `
+        <div style="font-size:12px;font-weight:700;color:#e2e8f0;margin-bottom:6px">${ch.name}</div>
+        <input
+          type="text"
+          data-channel="${ch.key}"
+          value="${currentId}"
+          placeholder="YouTube video ID (e.g. dQw4w9WgXcQ)"
+          style="width:100%;box-sizing:border-box;background:#0b0e14;border:1px solid rgba(255,255,255,.1);
+            color:#e2e8f0;border-radius:7px;padding:6px 10px;font-size:12px;font-family:monospace;outline:none"
+        >
+        ${currentId
+          ? `<div style="margin-top:5px;font-size:11px;color:#22c55e">✓ Active — <a href="https://www.youtube.com/watch?v=${currentId}" target="_blank" rel="noopener" style="color:#67e8f9">verify ↗</a></div>`
+          : `<div style="margin-top:5px;font-size:11px;color:#64748b">Not set — player hidden for this channel</div>`
+        }
+      `;
+      grid.appendChild(wrap);
+    });
+  }
+
+  async function loadStreams() {
+    try {
+      const res = await fetch(API + '/api/org/settings/news-streams', { headers: authH() });
+      const json = await res.json().catch(() => ({}));
+      buildGrid(json.ok && json.streams ? json.streams : {});
+    } catch {
+      buildGrid({});
+    }
+  }
+
+  saveBtn?.addEventListener('click', async () => {
+    const inputs = grid.querySelectorAll('input[data-channel]');
+    const streams = {};
+    inputs.forEach(inp => {
+      const key = inp.getAttribute('data-channel');
+      const val = inp.value.trim();
+      // Strip full YouTube URLs down to ID if pasted
+      const match = val.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+      streams[key] = match ? match[1] : val;
+    });
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+    try {
+      const res = await fetch(API + '/api/org/settings/news-streams', {
+        method: 'POST',
+        headers: authH(),
+        body: JSON.stringify({ streams })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (json.ok) {
+        showStatus('Stream IDs saved. Live Alerts player will update immediately.', true);
+        buildGrid(streams);
+      } else {
+        showStatus('Save failed: ' + (json.error || 'Unknown error'), false);
+      }
+    } catch (e) {
+      showStatus('Save failed: ' + (e.message || e), false);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Stream IDs';
+    }
+  });
+
+  // Init — only run if master admin (retry once after auth loads)
+  function tryInit() {
+    if (isMaster()) {
+      card.style.display = '';
+      loadStreams();
+    }
+  }
+  tryInit();
+  setTimeout(tryInit, 800);
+})();
+</script>
 
 </body>
 </html>
