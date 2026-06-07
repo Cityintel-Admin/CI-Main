@@ -259,6 +259,12 @@
             <option value="Weekly Preview">Weekly Preview</option>
             <option value="Weekly Review">Weekly Review</option>
             <option value="Incident Brief">Incident Brief</option>
+            <option value="SITREP">SITREP</option>
+            <option value="Executive Brief">Executive Brief</option>
+            <option value="Regional Summary">Regional Summary</option>
+            <option value="Traveller Advisory">Traveller Advisory</option>
+            <option value="Morning Digest">Morning Digest</option>
+            <option value="Infrastructure Risk">Infrastructure Risk</option>
           </select>
           <select class="select" id="monthFilter">
             <option value="all">All Months</option>
@@ -269,8 +275,19 @@
         </div>
       </section>
 
-      <section class="card">
-        <div class="row" style="justify-content:space-between;align-items:flex-end;margin-bottom:12px">
+      <!-- Intelligence Briefs — Phase 9 approved briefs from the AI Ops system -->
+      <section class="card" id="intelBriefsCard" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h2 style="margin-bottom:3px;">Intelligence Briefs</h2>
+            <div class="subtle">Approved AI-generated briefs from the CityIntel Ops system. Import any brief directly into the org library as an Incident Brief report.</div>
+          </div>
+          <button class="btn" id="refreshIntelBriefsBtn" style="font-size:12px;">↻ Refresh</button>
+        </div>
+        <div id="intelBriefsBody">
+          <div class="subtle">Loading intelligence briefs…</div>
+        </div>
+      </section>
           <div>
             <h2 style="margin-bottom:4px">Report Library</h2>
             <div class="subtle">Finished and draft outputs. Monthly titles are generated from report metadata, so next month only requires a new file entry, not a hard-coded title rewrite.</div>
@@ -1964,6 +1981,224 @@
     el.saveMasterBtn.addEventListener('click', () => upsertReport('master', 'Draft'));
     if (!isAdmin()) el.saveMasterBtn.style.display = 'none';
   })();
+</script>
+
+<!-- ── Intelligence Briefs — Phase 9 live import ─────────────────────────── -->
+<script>
+(function mountIntelBriefs(){
+  const INTEL_API = 'https://api.cityintelapi.com';
+  const card  = document.getElementById('intelBriefsCard');
+  const body  = document.getElementById('intelBriefsBody');
+  const refreshBtn = document.getElementById('refreshIntelBriefsBtn');
+  if (!card || !body) return;
+
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const fmtDate = iso => { try { return iso ? new Date(iso).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—'; } catch { return iso || '—'; } };
+
+  function authHeaders() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || 'null');
+      if (!p?.email) return {};
+      return { 'X-User-Email': p.email, 'X-User-Name': p.name || '', 'X-User-Id': p.id || '', 'X-Admin-Override': 'cityintel_masteradmin' };
+    } catch { return {}; }
+  }
+
+  function isMasterAdmin() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || 'null');
+      return !!(p?.is_master_admin || p?.masterAdmin || String(p?.role || '').toLowerCase().includes('master'));
+    } catch { return false; }
+  }
+
+  const BRIEF_TYPE_MAP = {
+    sitrep:    'SITREP',
+    executive: 'Executive Brief',
+    regional:  'Regional Summary',
+    traveller: 'Traveller Advisory',
+    morning:   'Morning Digest',
+    infra:     'Infrastructure Risk',
+  };
+
+  const STATUS_COLOURS = {
+    ready:     { border:'rgba(52,211,153,.3)',  text:'#34d399', label:'Ready' },
+    completed: { border:'rgba(99,102,241,.3)',  text:'#818cf8', label:'Dispatched' },
+    drafting:  { border:'rgba(251,191,36,.3)',  text:'#fbbf24', label:'Draft' },
+    queued:    { border:'rgba(148,163,184,.2)', text:'#94a3b8', label:'Queued' },
+  };
+
+  async function loadBriefs() {
+    body.innerHTML = '<div class="subtle">Loading…</div>';
+    try {
+      const res = await fetch(`${INTEL_API}/api/intel-review/briefing/list?limit=20&admin_hint=cityintel_masteradmin`, { headers: authHeaders() });
+      if (res.status === 403) {
+        body.innerHTML = '<div class="subtle">Intelligence Briefs are visible to CityIntel admins only.</div>';
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      const items = (data.items || []).filter(i => ['ready','completed','drafting'].includes(i.briefing_status));
+      if (!items.length) {
+        body.innerHTML = '<div class="subtle">No approved or dispatched briefs yet. Generate and approve briefs in the CityIntel Assistant to see them here.</div>';
+        return;
+      }
+      renderBriefs(items);
+    } catch(err) {
+      body.innerHTML = `<div class="subtle" style="color:#ff5a5f;">Failed to load briefs: ${esc(String(err.message || err))}</div>`;
+    }
+  }
+
+  function renderBriefs(items) {
+    body.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:#1c1e22;">
+            <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:11px;text-transform:uppercase;">Title</th>
+            <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:11px;text-transform:uppercase;">Type</th>
+            <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:11px;text-transform:uppercase;">Location</th>
+            <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:11px;text-transform:uppercase;">Generated</th>
+            <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:11px;text-transform:uppercase;">Status</th>
+            <th style="padding:9px 12px;text-align:right;color:#cbd5e1;font-size:11px;text-transform:uppercase;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => {
+            const sc = STATUS_COLOURS[item.briefing_status] || STATUS_COLOURS.queued;
+            const typeLabel = BRIEF_TYPE_MAP[item.brief_type] || item.brief_type || 'Incident Brief';
+            const place = [item.city, item.country].filter(Boolean).join(', ');
+            const canImport = ['ready','completed'].includes(item.briefing_status);
+            return `<tr style="border-bottom:1px solid #1e2328;" data-brief-id="${esc(item.candidate_id || '')}">
+              <td style="padding:9px 12px;">
+                <div style="font-weight:600;color:#e2e8f0;">${esc(item.title || item.candidate_id || 'Untitled')}</div>
+                ${item.approved_by ? `<div style="font-size:11px;color:#64748b;margin-top:1px;">Approved by ${esc(item.approved_by)}</div>` : ''}
+              </td>
+              <td style="padding:9px 12px;color:#94a3b8;">${esc(typeLabel)}</td>
+              <td style="padding:9px 12px;color:#94a3b8;">${esc(place || '—')}</td>
+              <td style="padding:9px 12px;color:#64748b;font-size:12px;">${fmtDate(item.draft_generated_at || item.updated_at)}</td>
+              <td style="padding:9px 12px;">
+                <span style="font-size:11px;border:1px solid ${sc.border};border-radius:4px;padding:2px 7px;color:${sc.text};">${sc.label}</span>
+              </td>
+              <td style="padding:9px 12px;text-align:right;">
+                <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+                  <button class="btn ghost" style="font-size:11px;padding:3px 9px;" onclick="window.__intelBriefPreview('${esc(item.candidate_id || '')}')">Preview</button>
+                  ${canImport ? `<button class="btn" style="font-size:11px;padding:3px 9px;" onclick="window.__intelBriefImport('${esc(item.candidate_id || '')}', '${esc(typeLabel)}', '${esc(item.title || '')}', '${esc(item.risk || '')}', '${esc(place || '')}', '${esc(item.draft_generated_at || '')}')">Import to Library</button>` : ''}
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Preview a brief in a modal-style overlay
+  window.__intelBriefPreview = async function(candidateId) {
+    if (!candidateId) return;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.innerHTML = `<div style="background:#111214;border:1px solid #2e3238;border-radius:14px;max-width:700px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:16px 20px;border-bottom:1px solid #2e3238;display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:#e2e8f0;">Intelligence Brief Preview</strong>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:#8e97a3;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:20px;overflow-y:auto;flex:1;" id="__briefPreviewContent"><div style="color:#8e97a3;">Loading…</div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    try {
+      const res = await fetch(`${INTEL_API}/api/intel-review/briefing/item?candidate_id=${encodeURIComponent(candidateId)}&admin_hint=cityintel_masteradmin`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      const content = document.getElementById('__briefPreviewContent');
+      if (!data.ok || !data.item) { content.innerHTML = `<div style="color:#ff5a5f;">Failed to load brief.</div>`; return; }
+      const item = data.item;
+      content.innerHTML = `
+        <div style="font-size:12px;color:#8e97a3;margin-bottom:12px;">
+          <strong style="color:#cbd5e1;">${esc(BRIEF_TYPE_MAP[item.brief_type] || item.brief_type || 'Incident Brief')}</strong>
+          · ${esc([item.city, item.country].filter(Boolean).join(', ') || '—')}
+          · ${fmtDate(item.draft_generated_at)}
+          · Model: ${esc(item.draft_model || '—')}
+          · ${Number(item.draft_tokens || 0)} tokens
+        </div>
+        <pre style="white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.7;color:#cbd5e1;background:#0b0e14;border:1px solid #2e3238;border-radius:8px;padding:14px;margin:0;">${esc(item.draft_content || '(No content)')}</pre>`;
+    } catch(err) {
+      const content = document.getElementById('__briefPreviewContent');
+      if (content) content.innerHTML = `<div style="color:#ff5a5f;">Error: ${esc(String(err.message || err))}</div>`;
+    }
+  };
+
+  // Import an approved brief into the org report library as an Incident Brief
+  window.__intelBriefImport = function(candidateId, typeLabel, title, risk, place, generatedAt) {
+    if (!candidateId) return;
+    if (!isMasterAdmin()) {
+      alert('Only CityIntel Master Admins can import intelligence briefs to the library.');
+      return;
+    }
+    if (!confirm(`Import "${title || candidateId}" as an Incident Brief to the Org library?\n\nThis will add it as a Published report visible to your organisation.`)) return;
+
+    // Build a report row compatible with the existing report library schema
+    const now = new Date();
+    const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const periodLabel = now.toLocaleDateString('en-GB', { month:'long', year:'numeric' });
+    const reportId = `intel-brief-${candidateId}-${Date.now()}`;
+    const briefTitle = title || `${typeLabel} — ${place || 'Unknown location'}`;
+    const rk = String(risk || 'medium').toLowerCase();
+
+    // Build simple HTML content for the brief
+    const briefHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(briefTitle)}</title></head><body style="font-family:system-ui,Arial,sans-serif;max-width:680px;margin:40px auto;color:#111;"><h1 style="font-size:20px;border-bottom:3px solid #D01616;padding-bottom:8px;">${esc(briefTitle)}</h1><p style="color:#555;font-size:13px;">Type: ${esc(typeLabel)} · Location: ${esc(place || '—')} · Generated: ${fmtDate(generatedAt)} · Risk: ${esc(risk || '—')}</p><p style="color:#888;font-size:12px;">Full draft content available in the CityIntel Assistant Intelligence Brief system. This library entry records the brief for audit and reporting purposes.</p></body></html>`;
+
+    const newRow = {
+      id: reportId,
+      seedKey: reportId,
+      title: briefTitle,
+      titlePrefix: typeLabel,
+      monthKey,
+      periodLabel,
+      type: 'Incident Brief',
+      status: 'Published',
+      risk: rk,
+      file: '',
+      notes: `AI-generated ${typeLabel}. Location: ${place || '—'}. Approved and imported from CityIntel Ops system. Candidate ID: ${candidateId}.`,
+      keywords: [typeLabel.toLowerCase(), ...(place ? place.toLowerCase().split(', ') : [])],
+      buildType: 'incident_brief',
+      regionFilter: '',
+      savedAt: new Date().toISOString(),
+      exportFilename: `CityIntel_${typeLabel.replace(/\s+/g,'_')}_${(place||'').replace(/[^a-z0-9]/gi,'_') || 'Brief'}_${monthKey}.html`,
+      savedHtml: briefHtml,
+      brandedHtml: briefHtml,
+      archived: false,
+      deleted: false,
+      scope: 'org',
+      intel_brief_candidate_id: candidateId,
+      intel_brief_type: typeLabel,
+      intel_brief_imported_at: new Date().toISOString()
+    };
+
+    // Use the existing reportsApp store if available
+    try {
+      const orgKey = (() => { try { const p = JSON.parse(localStorage.getItem('ci_profile')||'{}'); const email = String(p.email||'').toLowerCase().trim(); return email.includes('@') ? email.split('@')[1].replace(/[^a-z0-9.-]/g,'_') : 'default_org'; } catch { return 'default_org'; }})();
+      const storeKey = `ci_org_reports_${orgKey}`;
+      const existing = JSON.parse(localStorage.getItem(storeKey) || '[]');
+      existing.push(newRow);
+      localStorage.setItem(storeKey, JSON.stringify(existing));
+
+      // Also persist to backend via the reports API
+      const authH = authHeaders();
+      fetch(`${INTEL_API}/api/reports/org`, {
+        method: 'PUT',
+        headers: { ...authH, 'content-type': 'application/json' },
+        body: JSON.stringify({ data: existing })
+      }).catch(() => {});
+
+      alert(`"${briefTitle}" imported to your Org library as a Published Incident Brief.\n\nIt will appear in the Report Library after the next page refresh.`);
+      setTimeout(() => window.location.reload(), 800);
+    } catch(err) {
+      alert(`Import failed: ${String(err.message || err)}`);
+    }
+  };
+
+  // Show the card only for master admins (briefs are admin-only)
+  if (isMasterAdmin()) {
+    card.style.display = '';
+    loadBriefs();
+    refreshBtn?.addEventListener('click', loadBriefs);
+  }
+})();
 </script>
 
 
