@@ -310,6 +310,36 @@
     <div class="kpi"><div id="psPending" class="value" style="color:#f0b429">—</div></div>
     <div class="legend">Candidates awaiting action</div>
   </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Active Patterns</h3>
+    <div class="kpi"><div id="psActivePatterns" class="value" style="color:#a78bfa">—</div></div>
+    <div class="legend">Wave · instability · spread</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Waves Detected</h3>
+    <div class="kpi"><div id="psWavesDetected" class="value" style="color:#fb923c">—</div></div>
+    <div class="legend">Protest wave signals</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Briefs Generated</h3>
+    <div class="kpi"><div id="psBriefsGenerated" class="value" style="color:#fbbf24">—</div></div>
+    <div class="legend">AI-drafted security briefs</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Briefs Dispatched</h3>
+    <div class="kpi"><div id="psBriefsDispatched" class="value" style="color:#34d399">—</div></div>
+    <div class="legend">Approved and sent</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>Recs Pending</h3>
+    <div class="kpi"><div id="psRecPending" class="value" style="color:#fb923c">—</div></div>
+    <div class="legend">Awaiting analyst action</div>
+  </section>
+  <section class="card" style="grid-column:span 3">
+    <h3>High-Conf Recs</h3>
+    <div class="kpi"><div id="psHighConfRec" class="value" style="color:#fbbf24">—</div></div>
+    <div class="legend">≥75% confidence pending</div>
+  </section>
 </div>
 
 <!-- Org list table -->
@@ -362,6 +392,8 @@
     <button class="btn org-drill-tab" data-tab="travellers">Travellers</button>
     <button class="btn org-drill-tab" data-tab="checkins">Check-in Schedules</button>
     <button class="btn org-drill-tab" data-tab="escalations">Escalation Contacts</button>
+    <button class="btn org-drill-tab" data-tab="intelligence">Intelligence</button>
+    <button class="btn org-drill-tab" data-tab="briefings">Briefings</button>
   </div>
 
   <div id="orgDrillContent" style="overflow:auto;border:1px solid var(--g600);border-radius:12px;min-height:120px">
@@ -1406,6 +1438,21 @@ const makeBar = (label, count, color) => {
       setKpi('psApproved', p.approved_candidates);
       setKpi('psPending', p.pending_review);
 
+      // Phase 8/9/10A — fetch from ops-dashboard for these metrics
+      fetch(`${API}/api/intel-review/ops-dashboard?admin_hint=cityintel_masteradmin`, {headers:authH()})
+        .then(r=>r.json()).catch(()=>({}))
+        .then(d=>{
+          const m = d.metrics || {};
+          const bs = d.briefing_draft_stats || {};
+          const rs = d.recommendation_stats || {};
+          setKpi('psActivePatterns',  m.active_patterns      || 0);
+          setKpi('psWavesDetected',   m.waves_detected       || 0);
+          setKpi('psBriefsGenerated', Number(bs.awaiting_approval||0) + Number(bs.ready_for_dispatch||0) + Number(bs.completed||0));
+          setKpi('psBriefsDispatched',bs.completed           || 0);
+          setKpi('psRecPending',      Number(rs.total||0) - Number(rs.actioned||0));
+          setKpi('psHighConfRec',     rs.high_conf_pending   || 0);
+        }).catch(()=>{});
+
       allOrgs = d.orgs || [];
       renderOrgTable(allOrgs);
 
@@ -1462,23 +1509,54 @@ const makeBar = (label, count, color) => {
     panel.scrollIntoView({behavior:'smooth', block:'start'});
 
     try{
-      const res = await fetch(`${API}/api/admin/org-detail?org_id=${encodeURIComponent(orgId)}`, {headers:authH()});
-      const d = await res.json().catch(()=>({}));
+      // Fetch org detail + intelligence data in parallel
+      const [orgRes, intelRes, briefRes] = await Promise.all([
+        fetch(`${API}/api/admin/org-detail?org_id=${encodeURIComponent(orgId)}`, {headers:authH()}),
+        fetch(`${API}/api/intel-review/recommendations?limit=20&pending_only=false&admin_hint=cityintel_masteradmin`, {headers:authH()}).catch(()=>null),
+        fetch(`${API}/api/intel-review/briefing/list?limit=20&admin_hint=cityintel_masteradmin`, {headers:authH()}).catch(()=>null),
+      ]);
+
+      const d = await orgRes.json().catch(()=>({}));
       if(!d.ok) throw new Error(d.error||'Failed');
       drillData = d;
+
+      // Attach intelligence context (globally scoped — filter by org country if available)
+      if(intelRes?.ok){
+        const intelData = await intelRes.json().catch(()=>({}));
+        drillData.recommendation_stats = intelData.stats || {};
+        // Filter clusters by org's countries (if org has asset/traveller data with countries)
+        const orgCountries = new Set([
+          ...(d.assets||[]).map(a=>a.country).filter(Boolean),
+          ...(d.travellers||[]).map(t=>t.country).filter(Boolean)
+        ]);
+        drillData.incident_clusters = (d.incident_clusters || []).filter(c =>
+          !orgCountries.size || orgCountries.has(c.country)
+        );
+        drillData.intelligence_patterns = intelData.patterns || [];
+      }
+
+      if(briefRes?.ok){
+        const briefData = await briefRes.json().catch(()=>({}));
+        drillData.briefings = briefData.items || [];
+      }
 
       const o = d.org||{};
       document.getElementById('orgDrillTitle').textContent = o.name||orgId;
       document.getElementById('orgDrillMeta').textContent = `ID: ${o.id} · Invite: ${o.invite_code||'—'} · Created: ${fmtDate(o.created_at)}`;
 
       const s = d.summary||{};
+      const rs = drillData.recommendation_stats || {};
+      const briefs = drillData.briefings || [];
+      const briefDispatched = briefs.filter(b=>b.briefing_status==='completed').length;
       document.getElementById('orgDrillKpis').innerHTML = [
-        ['Users', s.users||0, '#93c5fd'],
-        ['Assets', s.assets||0, '#fff'],
-        ['Travellers', s.travellers||0, '#fff'],
-        ['Active Travel', s.active_travellers||0, '#33c48d'],
-        ['Check-ins', s.checkin_schedules||0, '#fff'],
-        ['Esc. Contacts', s.escalation_contacts||0, '#f0b429'],
+        ['Users',         s.users||0,                col='#93c5fd'],
+        ['Assets',        s.assets||0,               col='#fff'],
+        ['Travellers',    s.travellers||0,            col='#fff'],
+        ['Active Travel', s.active_travellers||0,     col='#33c48d'],
+        ['Check-ins',     s.checkin_schedules||0,     col='#fff'],
+        ['Esc. Contacts', s.escalation_contacts||0,   col='#f0b429'],
+        ['Rec. Pending',  Number(rs.total||0) - Number(rs.actioned||0), col='#fb923c'],
+        ['Briefs Sent',   briefDispatched,            col='#a78bfa'],
       ].map(([label, val, col]) => `
         <div style="background:#111214;border:1px solid #2e3238;border-radius:12px;padding:12px;text-align:center">
           <div style="font-size:22px;font-weight:800;color:${col}">${val}</div>
@@ -1579,7 +1657,66 @@ const makeBar = (label, count, color) => {
           <td style="padding:9px 12px"><span style="color:${c.active?'#33c48d':'var(--muted)'}">● ${c.active?'Active':'Inactive'}</span></td>
         </tr>`).join('')}</tbody></table>`;
     }
-  }
+    else if(tab === 'intelligence'){
+      // Phase 8 — intelligence patterns for this org's country/region context
+      const clusters = drillData.incident_clusters || [];
+      const patterns = drillData.intelligence_patterns || [];
+      const recStats = drillData.recommendation_stats || {};
+      const clusterHtml = clusters.length
+        ? `<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:500px">
+            <thead><tr style="background:#1c1e22">${['Cluster','Location','Severity','Events','Status'].map(h=>`<th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase">${h}</th>`).join('')}</tr></thead>
+            <tbody>${clusters.slice(0,10).map(c=>`<tr style="border-bottom:1px solid var(--g600)">
+              <td style="padding:9px 12px"><strong style="color:#e2e8f0">${esc(c.title||'Untitled')}</strong></td>
+              <td style="padding:9px 12px;color:var(--muted)">${esc([c.city,c.country].filter(Boolean).join(', ')||'—')}</td>
+              <td style="padding:9px 12px"><span style="color:${Number(c.severity_score||0)>=70?'#ff5a5f':Number(c.severity_score||0)>=40?'#f0b429':'#33c48d'};font-weight:700">${Math.round(Number(c.severity_score||0))}</span></td>
+              <td style="padding:9px 12px;color:var(--muted)">${Number(c.event_count||0)}</td>
+              <td style="padding:9px 12px"><span style="font-size:11px;padding:1px 7px;border-radius:4px;border:1px solid var(--g500);color:var(--muted)">${esc(c.status||'active')}</span></td>
+            </tr>`).join('')}</tbody></table>`
+        : '<div style="padding:12px;color:var(--muted)">No active incident clusters for this organisation\'s region.</div>';
+
+      const patternHtml = patterns.length
+        ? patterns.slice(0,5).map(p=>`<div style="padding:10px 12px;border-bottom:1px solid var(--g600);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <div><strong style="font-size:12px;color:#e2e8f0">${esc(p.title||'Pattern')}</strong><div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(p.pattern_type?.replace(/_/g,' ')||'')} · ${esc(p.country||'global')} · ${Number(p.cluster_count||0)} clusters</div></div>
+            <span style="font-size:11px;padding:2px 7px;border-radius:4px;border:1px solid rgba(167,139,250,.3);color:#a78bfa">${Math.round(Number(p.confidence||0)*100)}% conf · sev ${Math.round(Number(p.severity_score||0))}</span>
+          </div>`).join('')
+        : '<div style="padding:12px;color:var(--muted)">No intelligence patterns detected yet.</div>';
+
+      content.innerHTML = `
+        <div style="padding:14px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            ${[
+              {label:'Active Clusters',  val: clusters.length,                         col:'#60a5fa'},
+              {label:'Recommendations',  val: Number(recStats.total||0),               col:'#fbbf24'},
+              {label:'High-Conf Pending',val: Number(recStats.high_conf_pending||0),   col:'#fb923c'},
+              {label:'Actioned',         val: Number(recStats.actioned||0),            col:'#34d399'},
+            ].map(k=>`<div style="flex:1;min-width:100px;background:#1c1e22;border:1px solid var(--g600);border-radius:8px;padding:8px 12px;text-align:center"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:3px">${esc(k.label)}</div><div style="font-size:20px;font-weight:800;color:${k.col}">${k.val}</div></div>`).join('')}
+          </div>
+          <h4 style="font-size:12px;text-transform:uppercase;color:#cbd5e1;margin:0 0 8px">Incident Clusters</h4>
+          ${clusterHtml}
+          <h4 style="font-size:12px;text-transform:uppercase;color:#cbd5e1;margin:14px 0 8px">Intelligence Patterns</h4>
+          <div style="border:1px solid var(--g600);border-radius:8px;overflow:hidden">${patternHtml}</div>
+        </div>`;
+    }
+    else if(tab === 'briefings'){
+      // Phase 9 — briefing history for this org
+      const briefings = drillData.briefings || [];
+      if(!briefings.length){
+        content.innerHTML='<div style="padding:16px;color:var(--muted)">No briefing history for this organisation. Briefs appear here once generated and approved in the CityIntel Assistant.</div>';
+        return;
+      }
+      const scCol = { ready:'#34d399', completed:'#818cf8', drafting:'#fbbf24', queued:'#94a3b8', draft_error:'#f87171' };
+      const typeMap = { sitrep:'SITREP', executive:'Executive Brief', regional:'Regional Summary', traveller:'Traveller Advisory', morning:'Morning Digest', infra:'Infrastructure Risk' };
+      content.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:600px">
+        <thead><tr style="background:#1c1e22">${['Title','Type','Status','Generated','Approved By','Dispatched'].map(h=>`<th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase">${h}</th>`).join('')}</tr></thead>
+        <tbody>${briefings.map(b=>`<tr style="border-bottom:1px solid var(--g600)">
+          <td style="padding:9px 12px"><strong style="color:#e2e8f0">${esc(b.title||b.candidate_id||'Untitled')}</strong><div style="font-size:11px;color:var(--muted)">${esc([b.city,b.country].filter(Boolean).join(', ')||'—')}</div></td>
+          <td style="padding:9px 12px;color:var(--muted)">${esc(typeMap[b.brief_type]||b.brief_type||'—')}</td>
+          <td style="padding:9px 12px"><span style="color:${scCol[b.briefing_status]||'var(--muted)'};font-weight:600">${esc(b.briefing_status||'—')}</span></td>
+          <td style="padding:9px 12px;color:var(--muted);font-size:12px">${b.draft_generated_at?fmtDate(b.draft_generated_at):'—'}</td>
+          <td style="padding:9px 12px;color:var(--muted)">${esc(b.approved_by||'—')}</td>
+          <td style="padding:9px 12px;color:var(--muted);font-size:12px">${b.dispatched_at?fmtDate(b.dispatched_at):'—'}</td>
+        </tr>`).join('')}</tbody></table>`;
+    }
 
   // Tab wiring
   document.querySelectorAll('.org-drill-tab').forEach(btn => {
