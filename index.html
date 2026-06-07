@@ -937,6 +937,21 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           </div>
         </section>
 
+        <!-- AI Recommendations widget — read-only strip for operators -->
+        <section class="card" style="grid-column: span 12;display:none" id="aiRecommendationsWidget">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:800;font-size:16px;">🤖 AI Recommendations</div>
+              <div style="font-size:12px;color:#8e97a3;margin-top:2px;">High-confidence items from the CityIntel intelligence pipeline. Review and act in the <a href="cityintel-assistant.html" style="color:#33c48d;text-decoration:none;">CityIntel Assistant</a>.</div>
+            </div>
+            <span id="aiRecWidgetBadge" style="display:none;font-size:11px;font-weight:700;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.3);border-radius:5px;padding:3px 9px;color:#fb923c;"></span>
+          </div>
+          <div id="aiRecWidgetBody" style="border:1px solid #2e3238;border-radius:10px;overflow:hidden;"></div>
+          <div style="margin-top:8px;text-align:right;">
+            <a href="cityintel-assistant.html" style="font-size:12px;color:#33c48d;text-decoration:none;">Review all in Assistant →</a>
+          </div>
+        </section>
+
         <section class="card ci-feed-card" style="grid-column: span 12;">
           <div class="ci-feed-header">
             <div>
@@ -4465,6 +4480,86 @@ function CI_updatePanicMapOverlayIndex(st){
   }
 
   setTimeout(tryMount, 600);
+})();
+</script>
+
+<!-- ── AI Recommendations widget ─────────────────────────────────────────── -->
+<script>
+(function mountAiRecommendationsWidget(){
+  const API = 'https://api.cityintelapi.com';
+  const widget = document.getElementById('aiRecommendationsWidget');
+  const body   = document.getElementById('aiRecWidgetBody');
+  const badge  = document.getElementById('aiRecWidgetBadge');
+  if (!widget || !body) return;
+
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function authH() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
+      if (!p?.email) return {};
+      return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||'','X-Admin-Override':'cityintel_masteradmin'};
+    } catch { return {}; }
+  }
+
+  function isMasterAdmin() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
+      return !!(p?.is_master_admin || p?.masterAdmin || String(p?.role||'').toLowerCase().includes('master'));
+    } catch { return false; }
+  }
+
+  const REC_ICON  = { recommend_escalation:'🚨', recommend_briefing:'📋', recommend_watchlist:'👁', recommend_research:'🔍' };
+  const REC_LABEL = { recommend_escalation:'Escalate', recommend_briefing:'Brief', recommend_watchlist:'Watchlist', recommend_research:'Research' };
+  const REC_COL   = { recommend_escalation:'rgba(239,68,68,.3)', recommend_briefing:'rgba(251,191,36,.3)', recommend_watchlist:'rgba(99,102,241,.3)', recommend_research:'rgba(96,165,250,.3)' };
+  const REC_TEXT  = { recommend_escalation:'#f87171', recommend_briefing:'#fbbf24', recommend_watchlist:'#a78bfa', recommend_research:'#60a5fa' };
+
+  async function load() {
+    try {
+      const res = await fetch(`${API}/api/intel-review/recommendations?limit=6&min_confidence=0.7&pending_only=true&admin_hint=cityintel_masteradmin`, {headers:authH()});
+      if (!res.ok) return; // silent — not visible to operators without master admin
+      const data = await res.json().catch(()=>({}));
+      const items = data.items || [];
+      const stats = data.stats || {};
+
+      if (!items.length) { widget.style.display='none'; return; }
+
+      widget.style.display = '';
+
+      // Badge
+      const highConf = Number(stats.high_conf_pending || 0);
+      if (badge && highConf > 0) {
+        badge.textContent = `${highConf} high-confidence`;
+        badge.style.display = '';
+      }
+
+      body.innerHTML = items.map((item, i) => {
+        const icon  = REC_ICON[item.automation_decision]  || '●';
+        const label = REC_LABEL[item.automation_decision] || 'Review';
+        const col   = REC_COL[item.automation_decision]   || '#2e3238';
+        const text  = REC_TEXT[item.automation_decision]  || '#8e97a3';
+        const conf  = Math.round(Number(item.automation_confidence||0)*100);
+        const place = [item.city, item.country].filter(Boolean).join(', ');
+        const isLast = i === items.length - 1;
+        return `<div style="padding:10px 14px;${isLast?'':'border-bottom:1px solid #16171a;'}border-left:3px solid ${col};display:flex;align-items:center;gap:10px;">
+          <span style="font-size:16px;flex-shrink:0;">${icon}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:600;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title||'Untitled')}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:1px;">${esc(place)}${item.risk?' · '+esc(item.risk):''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:700;color:${text};">${label}</span>
+            <span style="font-size:10px;color:#475569;">${conf}%</span>
+          </div>
+        </div>`;
+      }).join('');
+    } catch { /* silent — widget is supplementary */ }
+  }
+
+  // Only show widget to master admins; load after a short delay to not block main page
+  if (isMasterAdmin()) {
+    setTimeout(load, 2000);
+  }
 })();
 </script>
 
