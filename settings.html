@@ -1078,39 +1078,86 @@
     setTimeout(() => { statusEl.textContent = ''; }, 5000);
   }
 
-  function buildGrid(streams, customMeta) {
+  function buildGrid(streams, customMeta, hidden) {
     grid.innerHTML = '';
+    hidden = hidden || {};
     // Standard channels
     CHANNELS.forEach(ch => {
       const currentId = (streams[ch.key] || '').trim();
+      const isHidden  = !!(hidden[ch.key]);
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:12px;position:relative';
+      wrap.style.cssText = `background:${isHidden ? 'rgba(255,255,255,.015)' : 'rgba(255,255,255,.03)'};border:1px solid ${isHidden ? 'rgba(255,180,0,.2)' : 'rgba(255,255,255,.09)'};border-radius:10px;padding:12px;position:relative;opacity:${isHidden ? '0.7' : '1'}`;
       wrap.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-size:12px;font-weight:700;color:#e2e8f0">${ch.name}</div>
-          ${currentId ? `<button type="button" data-clear="${ch.key}"
-            style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid rgba(239,68,68,.3);
-              background:rgba(239,68,68,.08);color:#f87171;cursor:pointer;"
-            title="Remove stream ID for ${ch.name}">✕ Clear</button>` : ''}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:6px;flex-wrap:wrap">
+          <div style="font-size:12px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px">
+            ${ch.name}
+            ${isHidden ? '<span style="font-size:10px;padding:1px 6px;border-radius:999px;background:rgba(255,180,0,.15);border:1px solid rgba(255,180,0,.3);color:#fbbf24">Hidden</span>' : ''}
+          </div>
+          <div style="display:flex;gap:5px;align-items:center">
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:${isHidden ? '#fbbf24' : '#64748b'};user-select:none" title="Hide this channel from Live Alerts operators">
+              <input type="checkbox" data-hide="${ch.key}" ${isHidden ? 'checked' : ''}
+                style="accent-color:#f59e0b;width:13px;height:13px;cursor:pointer">
+              Hide from Live Alerts
+            </label>
+            ${currentId ? `<button type="button" data-clear="${ch.key}"
+              style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid rgba(239,68,68,.3);
+                background:rgba(239,68,68,.08);color:#f87171;cursor:pointer;"
+              title="Remove stream ID for ${ch.name}">✕ Clear</button>` : ''}
+          </div>
         </div>
         <input type="text" data-channel="${ch.key}" value="${currentId}"
           placeholder="YouTube video ID (e.g. dQw4w9WgXcQ)"
           style="width:100%;box-sizing:border-box;background:#0b0e14;border:1px solid rgba(255,255,255,.1);
             color:#e2e8f0;border-radius:7px;padding:6px 10px;font-size:12px;font-family:monospace;outline:none">
-        ${currentId
-          ? `<div style="margin-top:5px;font-size:11px;color:#22c55e">✓ Active — <a href="https://www.youtube.com/watch?v=${currentId}" target="_blank" rel="noopener" style="color:#67e8f9">verify ↗</a></div>`
-          : `<div style="margin-top:5px;font-size:11px;color:#64748b">Not set — player hidden for this channel</div>`
-        }
+        <div class="ns-status-${ch.key}" style="margin-top:5px;font-size:11px;color:${isHidden ? '#fbbf24' : currentId ? '#22c55e' : '#64748b'}">
+          ${isHidden
+            ? 'Hidden — tab not shown to operators'
+            : currentId
+              ? `✓ Active — <a href="https://www.youtube.com/watch?v=${currentId}" target="_blank" rel="noopener" style="color:#67e8f9">verify ↗</a>`
+              : 'Not set — player hidden for this channel'
+          }
+        </div>
       `;
+
+      // Wire hide checkbox
+      const hideChk = wrap.querySelector(`[data-hide="${ch.key}"]`);
+      if (hideChk) {
+        hideChk.addEventListener('change', () => {
+          const nowHidden = hideChk.checked;
+          const label = hideChk.closest('label');
+          if (label) label.style.color = nowHidden ? '#fbbf24' : '#64748b';
+          wrap.style.opacity = nowHidden ? '0.7' : '1';
+          wrap.style.borderColor = nowHidden ? 'rgba(255,180,0,.2)' : 'rgba(255,255,255,.09)';
+          const statusEl = wrap.querySelector(`.ns-status-${ch.key}`);
+          const inp = wrap.querySelector(`input[data-channel="${ch.key}"]`);
+          const id = inp?.value?.trim() || '';
+          if (statusEl) {
+            if (nowHidden) {
+              statusEl.style.color = '#fbbf24';
+              statusEl.textContent = 'Hidden — tab not shown to operators';
+            } else if (id) {
+              statusEl.style.color = '#22c55e';
+              statusEl.innerHTML = `✓ Active — <a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener" style="color:#67e8f9">verify ↗</a>`;
+            } else {
+              statusEl.style.color = '#64748b';
+              statusEl.textContent = 'Not set — player hidden for this channel';
+            }
+          }
+        });
+      }
+
       // Wire clear button
       const clearBtn = wrap.querySelector(`[data-clear="${ch.key}"]`);
       if (clearBtn) {
         clearBtn.addEventListener('click', () => {
           const inp = wrap.querySelector(`input[data-channel="${ch.key}"]`);
-          if (inp) { inp.value = ''; }
+          if (inp) inp.value = '';
           clearBtn.remove();
-          wrap.querySelector('div:last-child').textContent = 'Not set — player hidden for this channel';
-          wrap.querySelector('div:last-child').style.color = '#64748b';
+          const statusEl = wrap.querySelector(`.ns-status-${ch.key}`);
+          if (statusEl) {
+            statusEl.style.color = '#64748b';
+            statusEl.textContent = 'Not set — player hidden for this channel';
+          }
         });
       }
       grid.appendChild(wrap);
@@ -1177,9 +1224,13 @@
     try {
       const res = await fetch(API + '/api/org/settings/news-streams', { headers: authH() });
       const json = await res.json().catch(() => ({}));
-      buildGrid(json.ok && json.streams ? json.streams : {}, json.customMeta || {});
+      buildGrid(
+        json.ok && json.streams ? json.streams : {},
+        json.customMeta || {},
+        json.hidden || {}
+      );
     } catch {
-      buildGrid({}, {});
+      buildGrid({}, {}, {});
     }
   }
 
@@ -1191,6 +1242,13 @@
       const val = inp.value.trim();
       const match = val.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
       streams[key] = match ? match[1] : val;
+    });
+
+    // Collect hidden flags
+    const hidden = {};
+    grid.querySelectorAll('input[data-hide]').forEach(chk => {
+      const key = chk.getAttribute('data-hide');
+      if (chk.checked) hidden[key] = true;
     });
 
     // Collect custom sources
@@ -1217,12 +1275,12 @@
       const res = await fetch(API + '/api/org/settings/news-streams', {
         method: 'POST',
         headers: authH(),
-        body: JSON.stringify({ streams, customMeta })
+        body: JSON.stringify({ streams, customMeta, hidden })
       });
       const json = await res.json().catch(() => ({}));
       if (json.ok) {
         showStatus('Stream IDs saved. Live Alerts player will update immediately.', true);
-        buildGrid(streams);
+        buildGrid(streams, customMeta, hidden);
       } else {
         showStatus('Save failed: ' + (json.error || 'Unknown error'), false);
       }
