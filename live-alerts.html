@@ -4449,16 +4449,53 @@ padding-bottom: 12px;
   border-color:rgba(208,22,22,.5);background:rgba(208,22,22,.1);color:#fca5a5;
 }
 /* Player area */
+.ci-news-feeds-row{
+  display:flex;gap:10px;align-items:flex-start;
+  margin-bottom:0;
+}
 .ci-news-player-wrap{
   position:relative;
-  width:100%;max-width:560px;
+  flex:1;
   aspect-ratio:16/9;
   max-height:280px;
   border-radius:10px;overflow:hidden;
   background:#000;
+  transition:flex .25s ease;
+}
+.ci-news-feeds-row.single .ci-news-player-wrap{
+  max-width:560px;margin:0 auto;flex:none;width:100%;
+}
+.ci-news-feeds-row.dual .ci-news-player-wrap{
+  min-width:0;
 }
 .ci-news-player-wrap iframe{
   position:absolute;inset:0;width:100%;height:100%;border:none;
+}
+/* Second feed tab bar */
+.ci-news-tabs-2{
+  display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px;
+}
+.ci-news-body.dual-mode .ci-news-tabs-2{
+  display:flex;
+}
+/* Feed label pills */
+.ci-news-feed-label{
+  position:absolute;top:6px;left:8px;z-index:2;
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;
+  background:rgba(0,0,0,.6);color:#e2e8f0;border:1px solid rgba(255,255,255,.15);
+  pointer-events:none;
+}
+/* Dual feed toggle button */
+.ci-news-dual-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8;cursor:pointer;transition:background .15s,border-color .15s;
+  white-space:nowrap;
+}
+.ci-news-dual-btn:hover{background:rgba(255,255,255,.08);color:#e2e8f0;}
+.ci-news-dual-btn.active{
+  background:rgba(208,22,22,.1);border-color:rgba(208,22,22,.4);color:#fca5a5;
 }
 .ci-news-player-footer{
   display:flex;align-items:center;justify-content:space-between;
@@ -4629,17 +4666,31 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="ci-news-tab" data-channel="france24">France 24</button>
       <button type="button" class="ci-news-tab" data-channel="dw">DW News</button>
     </div>
-    <div class="ci-news-player-wrap">
-      <iframe
-        id="ciNewsIframe"
-        src=""
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-        loading="lazy"
-        title="Live News Stream">
-      </iframe>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+      <div class="ci-news-tabs-2" id="ciNewsTabs2">
+        <!-- Populated dynamically when dual mode is active -->
+      </div>
+      <button type="button" class="ci-news-dual-btn" id="ciNewsDualBtn" title="Toggle dual-feed mode — watch two channels side by side">
+        ⊞ Dual feed
+      </button>
     </div>
-    <div class="ci-news-player-footer">
+    <div class="ci-news-feeds-row single" id="ciNewsFeedsRow">
+      <div class="ci-news-player-wrap" id="ciNewsPlayerWrap1">
+        <div class="ci-news-feed-label" id="ciNewsFeedLabel1">Feed 1</div>
+        <iframe id="ciNewsIframe" src=""
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy" title="Live News Feed 1">
+        </iframe>
+      </div>
+      <div class="ci-news-player-wrap" id="ciNewsPlayerWrap2" style="display:none">
+        <div class="ci-news-feed-label" id="ciNewsFeedLabel2">Feed 2</div>
+        <iframe id="ciNewsIframe2" src=""
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy" title="Live News Feed 2">
+        </iframe>
+      </div>
+    </div>
+    <div class="ci-news-player-footer" id="ciNewsFooter">
       <span class="ci-news-player-source" id="ciNewsSource">Streaming via YouTube Live</span>
       <button type="button" class="ci-news-mute-btn" id="ciNewsMuteNote" title="Note: streams load muted by default. Click the player volume icon to unmute.">
         🔇 Muted by default — click player to unmute
@@ -14442,12 +14493,10 @@ Example:
         const matches = str.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g);
         const parts = [];
         for(const m of matches){
-          const chunk = m[1].replace(/[^ -~
-]/g,' ').trim();
+          const chunk = m[1].replace(/[^\x20-\x7e]/g,' ').trim();
           if(chunk.length > 20) parts.push(chunk);
         }
-        text = parts.join('
-').substring(0,50000);
+        text = parts.join('\n').substring(0,50000);
         if(!text.trim()) text = '(PDF text extraction produced no readable content. Please paste the text manually.)';
       } else {
         text = await file.text();
@@ -14972,18 +15021,28 @@ Generate 3-5 structured steps that will guide the operator through assessing and
   const header      = document.getElementById('ciNewsHeader');
   const toggleBtn   = document.getElementById('ciNewsToggleBtn');
   const iframe      = document.getElementById('ciNewsIframe');
-  const playerWrap  = document.querySelector('.ci-news-player-wrap');
-  const tabs        = document.querySelectorAll('.ci-news-tab');
+  const iframe2     = document.getElementById('ciNewsIframe2');
+  const playerWrap1 = document.getElementById('ciNewsPlayerWrap1');
+  const playerWrap2 = document.getElementById('ciNewsPlayerWrap2');
+  const feedsRow    = document.getElementById('ciNewsFeedsRow');
+  const feedLabel1  = document.getElementById('ciNewsFeedLabel1');
+  const feedLabel2  = document.getElementById('ciNewsFeedLabel2');
+  const tabs        = document.querySelectorAll('#ciNewsTabs .ci-news-tab');
+  const tabs2bar    = document.getElementById('ciNewsTabs2');
+  const dualBtn     = document.getElementById('ciNewsDualBtn');
   const channelMeta = document.getElementById('ciNewsCurrentChannel');
   const sourceEl    = document.getElementById('ciNewsSource');
-  const footer      = document.querySelector('.ci-news-player-footer');
+  const footer      = document.getElementById('ciNewsFooter');
+  const newsBody    = document.getElementById('ciNewsBody');
 
   if (!panel) return;
 
-  let currentChannel = 'sky';
-  let isOpen = false;
-  let streamIds = {};      // populated from API — { sky: 'abc123', bbc: '', ... }
-  let hiddenChannels = {}; // { sky: true, bbc: true } — set by Master Admin in Settings
+  let currentChannel  = 'sky';
+  let currentChannel2 = null;    // null = dual mode off
+  let dualMode        = false;
+  let isOpen          = false;
+  let streamIds = {};
+  let hiddenChannels = {};
 
   function authH() {
     try {
@@ -15083,38 +15142,142 @@ Generate 3-5 structured steps that will guide the operator through assessing and
     return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&iv_load_policy=3`;
   }
 
-  function renderChannel(key) {
-    currentChannel = key;
-    const ch = CHANNELS[key];
-    if (!ch) return;
-    // Don't render hidden channels for regular operators
-    if (hiddenChannels[key] && !isMasterAdmin()) return;
+  // ── Single/dual feed rendering ──────────────────────────────────────────
+  function renderChannel(key, feed) {
+    // feed: 1 (default) or 2
+    const f = feed === 2 ? 2 : 1;
 
-    // Update tab active state
-    tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-channel') === key));
-    if (channelMeta) channelMeta.textContent = ch.name;
+    if (f === 1) {
+      currentChannel = key;
+      const ch = CHANNELS[key];
+      if (!ch) return;
+      if (hiddenChannels[key] && !isMasterAdmin()) return;
 
-    const videoId = (streamIds[key] || '').trim();
+      // Update primary tab active state
+      document.querySelectorAll('#ciNewsTabs .ci-news-tab').forEach(
+        t => t.classList.toggle('active', t.getAttribute('data-channel') === key)
+      );
+      if (channelMeta) channelMeta.textContent = ch.name + (dualMode ? ' (Feed 1)' : '');
+      if (feedLabel1) feedLabel1.textContent = ch.name;
 
-    if (videoId && iframe && playerWrap) {
-      // Active stream ID — show player
-      iframe.src = buildSrc(videoId);
-      playerWrap.style.display = '';
-      if (footer) footer.style.display = '';
-      if (sourceEl) sourceEl.textContent = `${ch.name} · YouTube Live · muted by default`;
+      const videoId = (streamIds[key] || '').trim();
+      if (videoId && iframe && playerWrap1) {
+        iframe.src = buildSrc(videoId);
+        playerWrap1.style.display = '';
+        if (!dualMode && footer) {
+          footer.style.display = '';
+          if (sourceEl) sourceEl.textContent = `${ch.name} · YouTube Live · muted by default`;
+        }
+      } else {
+        if (iframe) iframe.src = '';
+        if (playerWrap1) playerWrap1.style.display = dualMode ? '' : 'none';
+        if (!dualMode && footer) footer.style.display = 'none';
+      }
     } else {
-      // No ID set — hide player, show nothing (just tabs)
-      if (iframe) iframe.src = '';
-      if (playerWrap) playerWrap.style.display = 'none';
-      if (footer) footer.style.display = 'none';
+      // Feed 2
+      currentChannel2 = key;
+      const ch = CHANNELS[key];
+      if (!ch) return;
+      if (hiddenChannels[key] && !isMasterAdmin()) return;
+
+      // Update secondary tab active state
+      tabs2bar && tabs2bar.querySelectorAll('.ci-news-tab').forEach(
+        t => t.classList.toggle('active', t.getAttribute('data-channel') === key)
+      );
+      if (feedLabel2) feedLabel2.textContent = ch.name;
+
+      const videoId = (streamIds[key] || '').trim();
+      if (videoId && iframe2 && playerWrap2) {
+        iframe2.src = buildSrc(videoId);
+        playerWrap2.style.display = '';
+      } else {
+        if (iframe2) iframe2.src = '';
+      }
     }
+  }
+
+  // Build the second tab bar (mirrors the first, minus the currently-selected feed-1 channel)
+  function buildTabs2() {
+    if (!tabs2bar) return;
+    tabs2bar.innerHTML = '';
+    const allKeys = Object.keys(CHANNELS);
+    allKeys.forEach(k => {
+      if (hiddenChannels[k] && !isMasterAdmin()) return;
+      if (!streamIds[k]) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ci-news-tab' + (k === currentChannel2 ? ' active' : '');
+      btn.setAttribute('data-channel', k);
+      btn.textContent = CHANNELS[k].name;
+      if (hiddenChannels[k] && isMasterAdmin()) {
+        btn.style.opacity = '0.4';
+        btn.style.borderStyle = 'dashed';
+      }
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        renderChannel(k, 2);
+      });
+      tabs2bar.appendChild(btn);
+    });
+  }
+
+  function enterDualMode() {
+    dualMode = true;
+    if (feedsRow) { feedsRow.classList.remove('single'); feedsRow.classList.add('dual'); }
+    if (playerWrap1) playerWrap1.style.display = '';
+    if (playerWrap2) playerWrap2.style.display = '';
+    if (feedLabel1) feedLabel1.style.display = '';
+    if (feedLabel2) feedLabel2.style.display = '';
+    if (newsBody) newsBody.classList.add('dual-mode');
+    if (footer) footer.style.display = 'none'; // hide single footer in dual mode
+    if (dualBtn) { dualBtn.classList.add('active'); dualBtn.textContent = '⊠ Single feed'; }
+    buildTabs2();
+    // Pick a default second channel — first available that isn't feed 1
+    if (!currentChannel2) {
+      const pick = Object.keys(CHANNELS).find(k =>
+        k !== currentChannel && streamIds[k] && !(hiddenChannels[k] && !isMasterAdmin())
+      );
+      if (pick) renderChannel(pick, 2);
+    } else {
+      renderChannel(currentChannel2, 2);
+    }
+    if (channelMeta) channelMeta.textContent = (CHANNELS[currentChannel]?.name || '') + ' (Feed 1)';
+  }
+
+  function exitDualMode() {
+    dualMode = false;
+    currentChannel2 = null;
+    if (feedsRow) { feedsRow.classList.remove('dual'); feedsRow.classList.add('single'); }
+    if (playerWrap2) { playerWrap2.style.display = 'none'; if (iframe2) iframe2.src = ''; }
+    if (feedLabel1) feedLabel1.style.display = 'none';
+    if (feedLabel2) feedLabel2.style.display = 'none';
+    if (newsBody) newsBody.classList.remove('dual-mode');
+    if (dualBtn) { dualBtn.classList.remove('active'); dualBtn.textContent = '⊞ Dual feed'; }
+    // Restore single footer
+    const videoId = (streamIds[currentChannel] || '').trim();
+    if (videoId && footer) {
+      footer.style.display = '';
+      if (sourceEl) sourceEl.textContent = `${CHANNELS[currentChannel]?.name || ''} · YouTube Live · muted by default`;
+    }
+    if (channelMeta) channelMeta.textContent = CHANNELS[currentChannel]?.name || '';
+  }
+
+  // Dual button toggle
+  if (dualBtn) {
+    dualBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      dualMode ? exitDualMode() : enterDualMode();
+    });
   }
 
   function openPanel() {
     isOpen = true;
     panel.classList.add('open');
     if (toggleBtn) toggleBtn.textContent = '▼ Close';
-    renderChannel(currentChannel);
+    // Hide feed labels until dual mode activated
+    if (feedLabel1) feedLabel1.style.display = 'none';
+    if (feedLabel2) feedLabel2.style.display = 'none';
+    renderChannel(currentChannel, 1);
   }
 
   function closePanel() {
@@ -15122,6 +15285,9 @@ Generate 3-5 structured steps that will guide the operator through assessing and
     panel.classList.remove('open');
     if (toggleBtn) toggleBtn.textContent = '▶ Open';
     if (iframe) iframe.src = '';
+    if (iframe2) iframe2.src = '';
+    // Reset dual mode state on close
+    if (dualMode) exitDualMode();
   }
 
   // Toggle
@@ -15130,12 +15296,12 @@ Generate 3-5 structured steps that will guide the operator through assessing and
     isOpen ? closePanel() : openPanel();
   });
 
-  // Channel tabs
-  tabs.forEach(tab => {
+  // Primary channel tabs (feed 1)
+  document.querySelectorAll('#ciNewsTabs .ci-news-tab').forEach(tab => {
     tab.addEventListener('click', (e) => {
       e.stopPropagation();
       const key = tab.getAttribute('data-channel');
-      if (key) renderChannel(key);
+      if (key) renderChannel(key, 1);
     });
   });
 
@@ -15149,7 +15315,10 @@ Generate 3-5 structured steps that will guide the operator through assessing and
   // Expose for settings page to trigger a refresh after saving
   window.ciNewsReloadStreams = async function() {
     await loadStreamIds();
-    if (isOpen) renderChannel(currentChannel);
+    if (isOpen) {
+      renderChannel(currentChannel, 1);
+      if (dualMode && currentChannel2) renderChannel(currentChannel2, 2);
+    }
   };
 
 })();
