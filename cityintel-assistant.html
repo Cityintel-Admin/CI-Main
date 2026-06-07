@@ -31,6 +31,7 @@
             <button class="btn" id="aiOpsRunCorrelation" type="button">Run Incident Correlation</button>
             <button class="btn" id="aiOpsLinkClusters" type="button">Link Related Clusters</button>
             <button class="btn" id="aiOpsLinkLiveAlerts" type="button">Link Live Alerts</button>
+            <button class="btn" id="aiOpsAnalysePatterns" type="button">Analyse Patterns</button>
           </div>
           <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
         </div>
@@ -80,6 +81,32 @@
           <div class="small" style="margin-bottom:10px;color:#8e97a3;">Links current live alerts into persistent incident clusters. Advisory only until admin review.</div>
           <div id="aiOpsLiveAlertMemory" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
             <div class="small">No live alert memory links loaded yet.</div>
+          </div>
+        </div>
+
+        <!-- Phase 8 — Intelligence Patterns -->
+        <div class="intel-candidate-section">
+          <h3>Intelligence patterns</h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">Detected protest waves, regional instability signals, and multi-country spreads. Run <strong>Analyse Patterns</strong> to update.</div>
+          <div id="aiOpsPatternStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px;"></div>
+          <div id="aiOpsIntelPatterns" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+            <div class="small">No intelligence patterns detected yet. Run Analyse Patterns after incident clusters exist.</div>
+          </div>
+        </div>
+
+        <!-- Phase 8 — Live Agent Activity Stream -->
+        <div class="intel-candidate-section">
+          <h3>
+            Live agent activity
+            <span id="aiOpsActivityPollBadge" style="display:inline-flex;align-items:center;gap:5px;margin-left:10px;font-size:11px;font-weight:400;color:#8e97a3;">
+              <span id="aiOpsActivityPollDot" style="width:7px;height:7px;border-radius:50%;background:#2e3238;display:inline-block;"></span>
+              <span id="aiOpsActivityPollLabel">Idle</span>
+            </span>
+          </h3>
+          <div class="small" style="margin-bottom:10px;color:#8e97a3;">Real-time stream of AI agent actions — ingestion, scoring, correlation, pattern detection. Auto-refreshes every 15s when open.</div>
+          <div id="aiOpsActivityStats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;"></div>
+          <div id="aiOpsActivityFeed" style="max-height:340px;overflow-y:auto;border:1px solid #2e3238;border-radius:10px;background:#0b0e14;">
+            <div class="small" style="padding:12px;color:#8e97a3;">Loading agent activity…</div>
           </div>
         </div>
 
@@ -756,6 +783,7 @@
       aiOpsRunCorrelation: document.getElementById('aiOpsRunCorrelation'),
       aiOpsLinkClusters: document.getElementById('aiOpsLinkClusters'),
       aiOpsLinkLiveAlerts: document.getElementById('aiOpsLinkLiveAlerts'),
+      aiOpsAnalysePatterns: document.getElementById('aiOpsAnalysePatterns'),
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
@@ -767,6 +795,12 @@
       aiOpsIncidentClusterDetail: document.getElementById('aiOpsIncidentClusterDetail'),
       aiOpsRelatedClusters: document.getElementById('aiOpsRelatedClusters'),
       aiOpsLiveAlertMemory: document.getElementById('aiOpsLiveAlertMemory'),
+      aiOpsIntelPatterns:  document.getElementById('aiOpsIntelPatterns'),
+      aiOpsPatternStats:   document.getElementById('aiOpsPatternStats'),
+      aiOpsActivityFeed:   document.getElementById('aiOpsActivityFeed'),
+      aiOpsActivityStats:  document.getElementById('aiOpsActivityStats'),
+      aiOpsActivityPollDot:   document.getElementById('aiOpsActivityPollDot'),
+      aiOpsActivityPollLabel: document.getElementById('aiOpsActivityPollLabel'),
       intelIndexQuery: document.getElementById('intelReviewIndexQuery'),
       intelIndexSearch: document.getElementById('intelReviewIndexSearch'),
       intelCopyAll:   document.getElementById('intelReviewCopyAll'),
@@ -980,7 +1014,191 @@
       });
     }
 
-    function renderAiOpsIncidentClusters(items = []){
+    // ── Phase 8: Intelligence Patterns ────────────────────────────────────
+
+    function patternTypeLabel(type = '') {
+      if (type === 'protest_wave') return '🌊 Protest Wave';
+      if (type === 'regional_instability') return '⚠️ Regional Instability';
+      if (type === 'multi_country_spread') return '🌍 Multi-Country Spread';
+      return '🔗 Pattern';
+    }
+
+    function patternTypeColour(type = '') {
+      if (type === 'protest_wave') return { border: 'rgba(251,146,60,.35)', bg: 'rgba(251,146,60,.06)', pill: 'warn' };
+      if (type === 'regional_instability') return { border: 'rgba(239,68,68,.35)', bg: 'rgba(239,68,68,.06)', pill: 'high' };
+      if (type === 'multi_country_spread') return { border: 'rgba(139,92,246,.35)', bg: 'rgba(139,92,246,.06)', pill: 'medium' };
+      return { border: '#2e3238', bg: 'transparent', pill: 'low' };
+    }
+
+    function renderIntelPatterns(patterns = [], stats = {}) {
+      // Mini stat bar
+      if (el.aiOpsPatternStats) {
+        const s = stats || {};
+        el.aiOpsPatternStats.innerHTML = [
+          `<div style="background:#111214;border:1px solid #2e3238;border-radius:8px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:#8e97a3;text-transform:uppercase;margin-bottom:3px;">Active</div><div style="font-size:18px;font-weight:800;">${Number(s.active||0)}</div></div>`,
+          `<div style="background:#111214;border:1px solid rgba(251,146,60,.3);border-radius:8px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:#8e97a3;text-transform:uppercase;margin-bottom:3px;">Waves</div><div style="font-size:18px;font-weight:800;color:#fb923c;">${Number(s.wave_patterns||0)}</div></div>`,
+          `<div style="background:#111214;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:#8e97a3;text-transform:uppercase;margin-bottom:3px;">Instability</div><div style="font-size:18px;font-weight:800;color:#f87171;">${Number(s.instability_patterns||0)}</div></div>`,
+          `<div style="background:#111214;border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:#8e97a3;text-transform:uppercase;margin-bottom:3px;">Spread</div><div style="font-size:18px;font-weight:800;color:#a78bfa;">${Number(s.spread_patterns||0)}</div></div>`,
+          `<div style="background:#111214;border:1px solid #2e3238;border-radius:8px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:#8e97a3;text-transform:uppercase;margin-bottom:3px;">Peak Severity</div><div style="font-size:18px;font-weight:800;">${Number(s.max_severity||0)}</div></div>`,
+        ].join('');
+      }
+
+      if (!el.aiOpsIntelPatterns) return;
+      if (!patterns.length) {
+        el.aiOpsIntelPatterns.innerHTML = '<div class="small">No intelligence patterns detected yet. Run <strong>Analyse Patterns</strong> after incident clusters have been correlated.</div>';
+        return;
+      }
+
+      el.aiOpsIntelPatterns.innerHTML = patterns.map(p => {
+        const conf = Math.round(Number(p.confidence || 0) * 100);
+        const sev = Math.round(Number(p.severity_score || 0));
+        const col = patternTypeColour(p.pattern_type || '');
+        const typeLabel = patternTypeLabel(p.pattern_type || '');
+        const clusterCount = Number(p.cluster_count || 0);
+        const waveFlag = Number(p.wave_detected || 0) ? `<span style="font-size:10px;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.3);border-radius:4px;padding:1px 6px;color:#fb923c;margin-left:5px;">WAVE</span>` : '';
+        const multiFlag = Number(p.multi_country || 0) ? `<span style="font-size:10px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:4px;padding:1px 6px;color:#a78bfa;margin-left:5px;">MULTI-COUNTRY</span>` : '';
+
+        let actors = [];
+        try { actors = JSON.parse(p.actor_entities || '[]'); } catch {}
+        let locations = [];
+        try { locations = JSON.parse(p.location_spread || '[]'); } catch {}
+
+        return `
+          <div style="background:${col.bg};border:1px solid ${col.border};border-radius:12px;padding:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+              <div>
+                <strong style="font-size:13px;">${esc(typeLabel)}</strong>${waveFlag}${multiFlag}
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <span class="pill ${col.pill}" title="Confidence">${conf}%</span>
+                <span style="font-size:11px;color:#8e97a3;">sev ${sev}</span>
+              </div>
+            </div>
+            <div style="font-size:13px;color:#e2e8f0;margin-bottom:6px;font-weight:600;">${esc(p.title || 'Pattern signal')}</div>
+            <div class="small" style="color:#94a3b8;margin-bottom:8px;line-height:1.55;">${esc(p.summary || '')}</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+              ${clusterCount ? `<span class="small" style="color:#8e97a3;"><strong style="color:#cbd5e1;">${clusterCount}</strong> clusters</span>` : ''}
+              ${p.span_hours != null ? `<span class="small" style="color:#8e97a3;"><strong style="color:#cbd5e1;">${Math.round(Number(p.temporal_span_hours||p.span_hours||0))}h</strong> span</span>` : ''}
+              ${p.country && p.country !== 'global' && p.country !== 'multi' ? `<span class="small" style="color:#8e97a3;"><strong style="color:#cbd5e1;">${esc(p.country)}</strong></span>` : ''}
+              ${p.last_seen_at ? `<span class="small" style="color:#8e97a3;">${esc(dateLabel(p.last_seen_at) || p.last_seen_at)}</span>` : ''}
+            </div>
+            ${actors.length ? `<div class="small" style="color:#8e97a3;margin-bottom:6px;"><strong style="color:#94a3b8;">Actors:</strong> ${actors.slice(0,6).map(a => `<span style="background:rgba(255,255,255,.05);border:1px solid #2e3238;border-radius:4px;padding:1px 5px;margin:1px 2px;display:inline-block;">${esc(a)}</span>`).join('')}</div>` : ''}
+            ${locations.length ? `<div class="small" style="color:#8e97a3;"><strong style="color:#94a3b8;">Locations:</strong> ${locations.slice(0,8).map(l => esc(l)).join(', ')}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    // ── Phase 8: Live Agent Activity Stream ───────────────────────────────
+
+    let _activityPollTimer = null;
+    let _activityLastSeen = '';
+
+    function ciActivityPollState(active) {
+      if (el.aiOpsActivityPollDot) {
+        el.aiOpsActivityPollDot.style.background = active ? '#33c48d' : '#2e3238';
+        el.aiOpsActivityPollDot.style.animation = active ? 'dotPulse 1.4s ease-in-out infinite' : 'none';
+      }
+      if (el.aiOpsActivityPollLabel) {
+        el.aiOpsActivityPollLabel.textContent = active ? 'Live' : 'Idle';
+      }
+    }
+
+    function renderActivityStats(stats = {}) {
+      if (!el.aiOpsActivityStats) return;
+      const count24h = Number(stats.last_24h_count || 0);
+      const byType = stats.by_type || {};
+      const topTypes = Object.entries(byType).sort((a,b) => b[1]-a[1]).slice(0,5);
+      el.aiOpsActivityStats.innerHTML = `
+        <span style="font-size:11px;background:#111214;border:1px solid #2e3238;border-radius:6px;padding:3px 8px;color:#cbd5e1;">
+          <strong>${count24h}</strong> events in last 24h
+        </span>
+        ${topTypes.map(([t,c]) => `<span style="font-size:11px;background:#111214;border:1px solid #2e3238;border-radius:6px;padding:3px 8px;color:#8e97a3;"><strong style="color:#cbd5e1;">${c}</strong> ${esc(t.replace(/_/g,' '))}</span>`).join('')}
+      `;
+    }
+
+    function renderActivityFeed(items = [], append = false) {
+      if (!el.aiOpsActivityFeed) return;
+      if (!items.length && !append) {
+        el.aiOpsActivityFeed.innerHTML = '<div class="small" style="padding:12px;color:#8e97a3;">No agent activity yet. Actions will appear here as the system processes events.</div>';
+        return;
+      }
+      if (!items.length) return;
+
+      const html = items.map(item => {
+        const place = [item.city, item.country].filter(Boolean).join(', ');
+        const actor = item.actor_email ? `<span style="color:#64748b;">👤 ${esc(item.actor_email)}</span>` : `<span style="color:#64748b;">🤖 system</span>`;
+        const ts = item.created_at ? `<span style="color:#475569;margin-left:6px;">${esc(dateLabel(item.created_at) || item.created_at)}</span>` : '';
+        const isPatternEvent = item.event_type === 'intelligence_pattern_detected';
+        const isClusterEvent = (item.event_type || '').includes('cluster');
+        const isLiveEvent = (item.event_type || '').includes('live_alert');
+        const borderLeft = isPatternEvent ? 'border-left:3px solid #a78bfa;' : isClusterEvent ? 'border-left:3px solid #60a5fa;' : isLiveEvent ? 'border-left:3px solid #34d399;' : 'border-left:3px solid #2e3238;';
+        return `
+          <div style="padding:9px 12px;border-bottom:1px solid #16171a;${borderLeft}display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:16px;flex-shrink:0;line-height:1.3;">${esc(item.icon || '●')}</span>
+            <div style="min-width:0;flex:1;">
+              <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;">
+                <strong style="font-size:12px;color:#e2e8f0;">${esc(item.label || item.event_type || 'Activity')}</strong>
+                <span style="font-size:10px;white-space:nowrap;">${actor}${ts}</span>
+              </div>
+              ${item.title ? `<div class="small" style="color:#94a3b8;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title)}</div>` : ''}
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px;">
+                ${place ? `<span style="font-size:10px;color:#64748b;">${esc(place)}</span>` : ''}
+                ${item.risk ? `<span style="font-size:10px;color:#64748b;">Risk: ${esc(item.risk)}</span>` : ''}
+                ${item.lifecycle_state ? `<span style="font-size:10px;color:#64748b;">${esc(item.lifecycle_state.replace(/_/g,' '))}</span>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      if (append) {
+        el.aiOpsActivityFeed.insertAdjacentHTML('afterbegin', html);
+        // Trim to avoid unbounded growth
+        const rows = el.aiOpsActivityFeed.querySelectorAll(':scope > div');
+        if (rows.length > 80) rows[rows.length - 1].remove();
+      } else {
+        el.aiOpsActivityFeed.innerHTML = html;
+      }
+    }
+
+    async function fetchActivityStream(since = '') {
+      const url = intelReviewUrl('/api/intel-review/agent/activity') + `&limit=40${since ? `&since=${encodeURIComponent(since)}` : ''}`;
+      const res = await fetch(url, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      return data;
+    }
+
+    async function loadActivityStream(append = false) {
+      try {
+        const data = await fetchActivityStream(append ? _activityLastSeen : '');
+        const items = data.items || [];
+        if (items.length) {
+          _activityLastSeen = items[0].created_at || '';
+        }
+        renderActivityFeed(items, append);
+        renderActivityStats(data.stats || {});
+      } catch (err) {
+        if (!append && el.aiOpsActivityFeed) {
+          el.aiOpsActivityFeed.innerHTML = `<div class="small" style="padding:12px;color:#ff5a5f;">Activity stream unavailable: ${esc(String(err.message || err))}</div>`;
+        }
+      }
+    }
+
+    function startActivityPoll() {
+      stopActivityPoll();
+      ciActivityPollState(true);
+      _activityPollTimer = setInterval(() => {
+        if (el.aiOpsModal && el.aiOpsModal.classList.contains('open')) {
+          loadActivityStream(true);
+        } else {
+          stopActivityPoll();
+        }
+      }, 15000);
+    }
+
+    function stopActivityPoll() {
+      if (_activityPollTimer) { clearInterval(_activityPollTimer); _activityPollTimer = null; }
+      ciActivityPollState(false);
+    }
       if (!el.aiOpsIncidentClusters) return;
       if (!items.length) {
         el.aiOpsIncidentClusters.innerHTML = '<div class="small">No active incident clusters yet. Run Incident Correlation after candidates are refreshed/scored.</div>';
@@ -1232,6 +1450,8 @@
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '<div class="small">Loading activity…</div>';
         if (el.aiOpsIncidentClusters) el.aiOpsIncidentClusters.innerHTML = '<div class="small">Loading incident clusters…</div>';
         if (el.aiOpsLiveAlertMemory) el.aiOpsLiveAlertMemory.innerHTML = '<div class="small">Loading live alert memory…</div>';
+        if (el.aiOpsIntelPatterns) el.aiOpsIntelPatterns.innerHTML = '<div class="small">Loading patterns…</div>';
+        if (el.aiOpsActivityFeed) el.aiOpsActivityFeed.innerHTML = '<div class="small" style="padding:12px;color:#8e97a3;">Loading agent activity…</div>';
       }
 
       try {
@@ -1262,7 +1482,11 @@
             renderAiOpsMetric('Largest Cluster', m.largest_cluster_size),
             renderAiOpsMetric('Live Memory', m.live_alert_memory_links),
             renderAiOpsMetric('Strong Live Links', m.strong_live_alert_matches),
-            renderAiOpsMetric('Live Source Conf.', m.avg_live_source_confidence ? `${m.avg_live_source_confidence}%` : 0)
+            renderAiOpsMetric('Live Source Conf.', m.avg_live_source_confidence ? `${m.avg_live_source_confidence}%` : 0),
+            renderAiOpsMetric('Active Patterns', m.active_patterns),
+            renderAiOpsMetric('Waves Detected', m.waves_detected),
+            renderAiOpsMetric('Peak Pattern Sev.', m.max_pattern_severity),
+            renderAiOpsMetric('Agent Events (24h)', m.agent_activity_24h),
           ].join('');
         }
 
@@ -1284,6 +1508,15 @@
         renderAiOpsRelatedClusters(data.related_cluster_links || []);
         renderAiOpsLiveAlertMemory(data.live_alert_memory || []);
 
+        // Phase 8
+        renderIntelPatterns(data.intelligence_patterns || [], data.pattern_stats || {});
+        renderActivityFeed(data.agent_activity || []);
+        renderActivityStats(data.agent_activity_stats || {});
+        if (data.agent_activity && data.agent_activity.length) {
+          _activityLastSeen = data.agent_activity[0]?.created_at || '';
+        }
+        startActivityPoll();
+
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
         }
@@ -1298,6 +1531,8 @@
         if (el.aiOpsRelatedClusters) el.aiOpsRelatedClusters.innerHTML = '';
         if (el.aiOpsActivity) el.aiOpsActivity.innerHTML = '';
         if (el.aiOpsIncidentClusters) el.aiOpsIncidentClusters.innerHTML = '';
+        if (el.aiOpsIntelPatterns) el.aiOpsIntelPatterns.innerHTML = '';
+        if (el.aiOpsActivityFeed) el.aiOpsActivityFeed.innerHTML = '';
       }
     }
 
@@ -1320,6 +1555,13 @@
       }
       if (action === 'cluster_linking') {
         return `Cluster linking: evaluated ${Number(data.evaluated_clusters || 0)} clusters · compared ${Number(data.compared_pairs || 0)} pairs · links ${Number(data.links_created_or_updated || 0)}`;
+      }
+      if (action === 'pattern_analysis') {
+        const ps = data.patterns || [];
+        const waveCount = ps.filter(p => p.pattern_type === 'protest_wave').length;
+        const instabCount = ps.filter(p => p.pattern_type === 'regional_instability').length;
+        const spreadCount = ps.filter(p => p.pattern_type === 'multi_country_spread').length;
+        return `Pattern analysis: analysed ${Number(data.clusters_analysed || 0)} clusters · ${Number(data.patterns_detected || 0)} patterns — ${waveCount} wave, ${instabCount} instability, ${spreadCount} spread`;
       }
       if (action === 'policy_evaluate') {
         const c = data.counts || {};
@@ -3701,7 +3943,6 @@ async function ask(){
     el.panelClose.addEventListener('click',()=>setPanelOpen(false));
     if (el.intelBtn) el.intelBtn.addEventListener('click',()=>{ setIntelModal(true); loadIntelReviewQueue(); });
     if (el.aiOpsBtn) el.aiOpsBtn.addEventListener('click', loadAiOpsDashboard);
-    if (el.aiOpsClose) el.aiOpsClose.addEventListener('click',()=>setAiOpsDashboard(false));
     if (el.aiOpsRefresh) el.aiOpsRefresh.addEventListener('click',()=>runAiOpsControl(el.aiOpsRefresh, 'Refreshing…', 'refresh', async()=>{ await loadAiOpsDashboard({ silent: true }); return { ok:true }; }));
     if (el.aiOpsOpenReview) el.aiOpsOpenReview.addEventListener('click',()=>{ setAiOpsDashboard(false); setIntelModal(true); loadIntelReviewQueue(); });
     if (el.aiOpsHealthCheck) el.aiOpsHealthCheck.addEventListener('click',()=>runAiOpsControl(el.aiOpsHealthCheck, 'Checking…', 'health', ()=>fetchAiOpsJson('/api/intel-review/health')));
@@ -3715,7 +3956,20 @@ async function ask(){
     if (el.aiOpsRunCorrelation) el.aiOpsRunCorrelation.addEventListener('click',()=>runAiOpsControl(el.aiOpsRunCorrelation, 'Correlating…', 'incident_correlation', ()=>fetchAiOpsJson('/api/intel-review/incidents/correlate', { method:'POST', body: JSON.stringify({ limit: 250, min_cluster_size: 2 }) })));
     if (el.aiOpsLinkClusters) el.aiOpsLinkClusters.addEventListener('click',()=>runAiOpsControl(el.aiOpsLinkClusters, 'Linking clusters…', 'cluster_linking', ()=>fetchAiOpsJson('/api/intel-review/incidents/link-clusters', { method:'POST', body: JSON.stringify({ limit: 120, min_score: 0.42 }) })));
     if (el.aiOpsLinkLiveAlerts) el.aiOpsLinkLiveAlerts.addEventListener('click',()=>runAiOpsControl(el.aiOpsLinkLiveAlerts, 'Linking live alerts…', 'live_alert_memory', ()=>fetchAiOpsJson('/api/intel-review/incidents/link-live-alerts', { method:'POST', body: JSON.stringify({ limit: 150, min_score: 0.42 }) })));
-    if (el.intelClose) el.intelClose.addEventListener('click',()=>setIntelModal(false));
+    if (el.aiOpsAnalysePatterns) el.aiOpsAnalysePatterns.addEventListener('click',()=>runAiOpsControl(el.aiOpsAnalysePatterns, 'Analysing patterns…', 'pattern_analysis', async () => {
+      const result = await fetchAiOpsJson('/api/intel-review/incidents/analyse-patterns', { method:'POST', body: JSON.stringify({ limit: 150 }) });
+      // Refresh pattern section after analysis
+      renderIntelPatterns(result.patterns || [], {
+        active: (result.patterns || []).length,
+        wave_patterns: (result.patterns || []).filter(p => p.pattern_type === 'protest_wave').length,
+        instability_patterns: (result.patterns || []).filter(p => p.pattern_type === 'regional_instability').length,
+        spread_patterns: (result.patterns || []).filter(p => p.pattern_type === 'multi_country_spread').length,
+        waves_detected: (result.patterns || []).filter(p => p.pattern_type === 'protest_wave').length,
+        max_severity: Math.max(0, ...(result.patterns || []).map(p => Number(p.severity_score || 0)))
+      });
+      return result;
+    }));
+    if (el.aiOpsClose) el.aiOpsClose.addEventListener('click',()=>{ setAiOpsDashboard(false); stopActivityPoll(); });
     if (el.intelRefresh) el.intelRefresh.addEventListener('click',()=>runIntelToolbarTask(el.intelRefresh, 'Refreshing…', loadIntelReviewQueue));
     if (el.intelCollect) el.intelCollect.addEventListener('click',()=>runIntelToolbarTask(el.intelCollect, 'Searching…', collectIntelReviewCandidates));
     if (el.intelScore) el.intelScore.addEventListener('click',()=>runIntelToolbarTask(el.intelScore, 'Scoring…', scoreIntelReviewQueue));
@@ -3766,7 +4020,7 @@ async function ask(){
       el.intelExport.value=txt;
       try{ await navigator.clipboard.writeText(txt); }catch{}
     });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') { setPanelOpen(false); if (el.intelDrawer?.classList.contains('open')) setIntelDrawerOpen(false); else setIntelModal(false); } });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') { setPanelOpen(false); if (el.intelDrawer?.classList.contains('open')) setIntelDrawerOpen(false); else { setIntelModal(false); stopActivityPoll(); } } });
 
     // Nav active state
     const here = location.pathname.split('/').pop()||'index.html';
