@@ -389,7 +389,40 @@
   </div>
 </section>
 
-<div id="billing-card" class="billing-card">
+<!-- Briefing Preferences — Phase 9 -->
+<section class="card" id="briefingPrefsCard" style="display:none;margin-bottom:16px;">
+  <h3>Briefing Preferences</h3>
+  <div class="muted" style="margin-bottom:14px;font-size:13px;">Default settings for AI-generated intelligence briefs. These are used when auto-generating briefs from the CityIntel Assistant.</div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div>
+      <label style="font-size:12px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:5px;">Default brief type</label>
+      <select id="briefPrefType" style="background:#1c1e22;border:1px solid #2e3238;color:#e9edf2;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;width:100%;max-width:320px;">
+        <option value="sitrep">SITREP (Situation Report)</option>
+        <option value="executive">Executive Brief</option>
+        <option value="regional">Regional Summary</option>
+        <option value="traveller">Traveller Advisory</option>
+        <option value="morning">Morning Intelligence Digest</option>
+        <option value="infra">Infrastructure Risk Summary</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:5px;">Default recipients (comma-separated)</label>
+      <input id="briefPrefRecipients" type="text" placeholder="analyst@company.com, security@company.com" style="background:#1c1e22;border:1px solid #2e3238;color:#e9edf2;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;width:100%;max-width:500px;box-sizing:border-box;">
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">These addresses are pre-filled when dispatching any approved brief.</div>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:5px;">Auto-generate on approval</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#94a3b8;">
+        <input type="checkbox" id="briefPrefAutoGen" style="accent-color:#33c48d;width:16px;height:16px;">
+        Automatically generate a SITREP when a candidate is added to the briefing queue
+      </label>
+    </div>
+  </div>
+  <div style="margin-top:14px;display:flex;gap:8px;align-items:center;">
+    <button class="pill-btn primary" id="briefPrefSave" style="padding:7px 18px;font-size:13px;">Save Preferences</button>
+    <span id="briefPrefStatus" style="font-size:12px;color:var(--muted);"></span>
+  </div>
+</section>
   <div class="billing-header">
     <h3>Billing</h3>
     <span id="billing-badge" class="badge">Loading…</span>
@@ -1301,6 +1334,75 @@
   }
   tryInit();
   setTimeout(tryInit, 800);
+})();
+</script>
+
+<!-- ── Briefing Preferences — Phase 9 ────────────────────────────────────── -->
+<script>
+(function mountBriefingPrefs(){
+  const API = 'https://api.cityintelapi.com';
+  const card       = document.getElementById('briefingPrefsCard');
+  const typeSelect = document.getElementById('briefPrefType');
+  const recipInput = document.getElementById('briefPrefRecipients');
+  const autoGenChk = document.getElementById('briefPrefAutoGen');
+  const saveBtn    = document.getElementById('briefPrefSave');
+  const statusEl   = document.getElementById('briefPrefStatus');
+  if (!card) return;
+
+  const STORE_KEY = 'ci_briefing_prefs';
+
+  function isMasterAdmin() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
+      return !!(p?.is_master_admin || p?.masterAdmin || String(p?.role||'').toLowerCase().includes('master'));
+    } catch { return false; }
+  }
+
+  function loadPrefs() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; }
+  }
+
+  function savePrefs(prefs) {
+    localStorage.setItem(STORE_KEY, JSON.stringify(prefs));
+    // Also persist to worker for cross-device access
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
+      if (!p?.email) return;
+      fetch(`${API}/api/org/settings`, {
+        method: 'POST',
+        headers: { 'content-type':'application/json', 'X-User-Email':p.email, 'X-User-Name':p.name||'' },
+        body: JSON.stringify({ briefing_prefs: prefs })
+      }).catch(()=>{});
+    } catch {}
+  }
+
+  function init() {
+    if (!isMasterAdmin()) return; // Only show to master admins
+    card.style.display = '';
+    const prefs = loadPrefs();
+    if (typeSelect && prefs.default_brief_type) typeSelect.value = prefs.default_brief_type;
+    if (recipInput && prefs.default_recipients) recipInput.value = prefs.default_recipients;
+    if (autoGenChk) autoGenChk.checked = !!prefs.auto_generate_on_approval;
+  }
+
+  saveBtn?.addEventListener('click', () => {
+    const prefs = {
+      default_brief_type: typeSelect?.value || 'sitrep',
+      default_recipients: (recipInput?.value || '').trim(),
+      auto_generate_on_approval: autoGenChk?.checked || false,
+      saved_at: new Date().toISOString()
+    };
+    savePrefs(prefs);
+    // Make prefs accessible globally for other pages
+    window.CI_BRIEFING_PREFS = prefs;
+    if (statusEl) { statusEl.textContent = '✓ Saved'; statusEl.style.color = '#33c48d'; setTimeout(() => { statusEl.textContent = ''; }, 2500); }
+  });
+
+  // Expose prefs globally so reports/assistant pages can read them
+  const existing = loadPrefs();
+  if (Object.keys(existing).length) window.CI_BRIEFING_PREFS = existing;
+
+  init();
 })();
 </script>
 
