@@ -35,6 +35,9 @@
             <button class="btn" id="aiOpsAutoGenBriefs" type="button">Auto-Generate Briefs</button>
           </div>
           <div id="aiOpsDashboardControlOutput" class="small" style="margin-top:10px;color:#8e97a3;">Controls are admin-only. Actions still use the same guarded Intel Review endpoints.</div>
+
+          <!-- Last-run strip -->
+          <div id="aiOpsLastRunStrip" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;"></div>
         </div>
 
         <div class="intel-candidate-section">
@@ -880,6 +883,7 @@
       aiOpsBriefDraftStatus:document.getElementById('aiOpsBriefDraftStatus'),
       aiOpsBriefDraftClose: document.getElementById('aiOpsBriefDraftClose'),
       aiOpsControlOutput: document.getElementById('aiOpsDashboardControlOutput'),
+      aiOpsLastRunStrip:  document.getElementById('aiOpsLastRunStrip'),
       aiOpsMetrics:  document.getElementById('aiOpsDashboardMetrics'),
       aiOpsHealth:   document.getElementById('aiOpsDashboardHealth'),
       aiOpsPolicy:   document.getElementById('aiOpsPolicyPanel'),
@@ -987,17 +991,29 @@
     }
 
     function renderAiOpsActivity(items = []){
-      if (!items.length) return '<div class="small">No recent lifecycle activity found.</div>';
-      return items.map(item => {
+      if (!items.length) return '<div class="small" style="color:#8e97a3;">No recent lifecycle activity found.</div>';
+      return `<div style="border:1px solid #2e3238;border-radius:8px;overflow:hidden;">` + items.slice(0, 8).map((item, i) => {
         const place = [item.city, item.country].filter(Boolean).join(', ');
-        return `
-          <div style="padding:10px 0;border-bottom:1px solid #2e3238;">
-            <strong>${esc(item.title || item.candidate_id || 'Untitled candidate')}</strong><br>
-            <span>${esc(item.event_type || item.action || 'event')}${item.lifecycle_state ? ` · ${esc(item.lifecycle_state)}` : ''}</span><br>
-            ${place ? `<span>${esc(place)}</span><br>` : ''}
-            <span>${esc(item.actor_email || 'system')} · ${esc(dateLabel(item.created_at) || item.created_at || '')}</span>
-          </div>`;
-      }).join('');
+        const icon = ciActivityIcon ? ciActivityIcon(item.event_type || '') : '●';
+        const label = ciActivityLabel ? ciActivityLabel(item.event_type || '', item.action || '', item.lifecycle_state || '') : (item.event_type || 'event');
+        const actor = item.actor_email ? item.actor_email : 'system';
+        const ts = dateLabel(item.created_at) || item.created_at || '';
+        const isPatternEvent = (item.event_type || '').includes('pattern');
+        const isClusterEvent = (item.event_type || '').includes('cluster');
+        const isLiveEvent = (item.event_type || '').includes('live_alert');
+        const borderLeft = isPatternEvent ? 'border-left:3px solid #a78bfa;' : isClusterEvent ? 'border-left:3px solid #60a5fa;' : isLiveEvent ? 'border-left:3px solid #34d399;' : 'border-left:3px solid #2e3238;';
+        return `<div style="padding:8px 10px;${i < items.length-1 ? 'border-bottom:1px solid #16171a;' : ''}${borderLeft}display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:14px;flex-shrink:0;line-height:1.4;">${esc(icon)}</span>
+          <div style="min-width:0;flex:1;">
+            <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <strong style="font-size:11px;color:#e2e8f0;">${esc(label)}</strong>
+              <span style="font-size:10px;color:#475569;white-space:nowrap;">${esc(actor)} · ${esc(ts)}</span>
+            </div>
+            ${item.title ? `<div style="font-size:11px;color:#94a3b8;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title)}</div>` : ''}
+            ${place ? `<div style="font-size:10px;color:#64748b;">${esc(place)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('') + `</div>`;
     }
 
     function renderAiOpsQueueCard(title, items = [], queueKey = ''){
@@ -1302,6 +1318,53 @@
       ciActivityPollState(false);
     }
 
+    // ── Last-run strip ────────────────────────────────────────────────────
+
+    function lastRunAge(isoTs) {
+      if (!isoTs) return null;
+      const diff = Date.now() - (Date.parse(isoTs) || 0);
+      if (diff < 0) return 'just now';
+      const mins  = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days  = Math.floor(diff / 86400000);
+      if (mins  < 2)  return 'just now';
+      if (mins  < 60) return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      return `${days}d ago`;
+    }
+
+    function lastRunColour(isoTs) {
+      if (!isoTs) return { bg: 'rgba(255,255,255,.04)', border: '#2e3238', text: '#475569' };
+      const hours = (Date.now() - (Date.parse(isoTs) || 0)) / 3600000;
+      if (hours < 1)  return { bg: 'rgba(52,211,153,.08)',  border: 'rgba(52,211,153,.3)',  text: '#34d399' };
+      if (hours < 6)  return { bg: 'rgba(96,165,250,.08)',  border: 'rgba(96,165,250,.3)',  text: '#60a5fa' };
+      if (hours < 24) return { bg: 'rgba(251,191,36,.08)',  border: 'rgba(251,191,36,.3)',  text: '#fbbf24' };
+      return              { bg: 'rgba(239,68,68,.08)',  border: 'rgba(239,68,68,.3)',  text: '#f87171' };
+    }
+
+    async function loadLastRunStrip() {
+      if (!el.aiOpsLastRunStrip) return;
+      try {
+        const res = await fetch(intelReviewUrl('/api/intel-review/ops/last-run-times'), { headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (!data.ok || !data.last_run_times) {
+          el.aiOpsLastRunStrip.innerHTML = '';
+          return;
+        }
+        const times = data.last_run_times;
+        el.aiOpsLastRunStrip.innerHTML = Object.entries(times).map(([key, op]) => {
+          const age = lastRunAge(op.last_run);
+          const col = lastRunColour(op.last_run);
+          const title = op.last_run ? `Last run: ${op.last_run}` : 'Never run';
+          return `<span title="${esc(title)}" style="font-size:10px;background:${col.bg};border:1px solid ${col.border};border-radius:5px;padding:2px 7px;color:${col.text};white-space:nowrap;cursor:default;">
+            <strong>${esc(op.label)}</strong>&nbsp;·&nbsp;${esc(age || 'Never')}
+          </span>`;
+        }).join('');
+      } catch {
+        el.aiOpsLastRunStrip.innerHTML = '';
+      }
+    }
+
     // ── Phase 9: Briefing Generation ──────────────────────────────────────
 
     const BRIEF_TYPE_LABELS = {
@@ -1505,7 +1568,20 @@
 
     async function dispatchBrief(candidateId) {
       if (!candidateId) return;
-      const recipientInput = prompt('Enter recipient email address(es) to dispatch this brief to.\nSeparate multiple with commas:');
+
+      // Pre-fetch escalation contacts to offer as defaults
+      let suggestedEmails = [];
+      try {
+        const contactsRes = await fetch(intelReviewUrl('/api/intel-review/briefing/dispatch-contacts'), { headers: authHeaders() });
+        const contactsData = await contactsRes.json().catch(() => ({}));
+        suggestedEmails = (contactsData.contacts || []).map(c => c.email).filter(Boolean);
+      } catch {}
+
+      const defaultRecipients = suggestedEmails.slice(0, 5).join(', ');
+      const recipientInput = prompt(
+        `Dispatch brief to:\n${suggestedEmails.length ? `Suggested contacts (${suggestedEmails.length} found):\n${suggestedEmails.slice(0,8).map(e=>`  • ${e}`).join('\n')}\n\n` : ''}Enter recipient email address(es), separated by commas:`,
+        defaultRecipients
+      );
       if (!recipientInput || !recipientInput.trim()) return;
       const recipients = recipientInput.split(',').map(r => r.trim()).filter(r => r.includes('@'));
       if (!recipients.length) { setAiOpsControlOutput('No valid email addresses entered.', 'warn'); return; }
@@ -1846,7 +1922,9 @@
         }
 
         renderAiOpsPolicy(data.policy || {});
-        renderAiOpsPolicyRecommendations(data.policy_recommendations || [], data.recommendation_stats || {});
+
+        // Phase 10A — load fresh recommendations from dedicated endpoint (replaces old policy_recommendations)
+        loadAnalystAssistRecommendations();
         renderRecStats(data.recommendation_stats || {});
 
         renderAiOpsQueues(data.queue_previews || {});
@@ -1863,12 +1941,12 @@
         }
         startActivityPoll();
 
+        // Last-run strip
+        loadLastRunStrip();
+
         // Phase 9
         renderBriefDraftStats(data.briefing_draft_stats || {});
         loadBriefingQueueList();
-
-        // Phase 10A — load fresh recommendations from dedicated endpoint
-        loadAnalystAssistRecommendations();
 
         if (el.aiOpsActivity) {
           el.aiOpsActivity.innerHTML = renderAiOpsActivity(data.recent_activity || []);
@@ -1908,6 +1986,9 @@
       }
       if (action === 'cluster_linking') {
         return `Cluster linking: evaluated ${Number(data.evaluated_clusters || 0)} clusters · compared ${Number(data.compared_pairs || 0)} pairs · links ${Number(data.links_created_or_updated || 0)}`;
+      }
+      if (action === 'live_alert_memory') {
+        return `Live alert memory: processed ${Number(data.processed || 0)} · linked ${Number(data.linked || 0)} · seeded ${Number(data.seeded || 0)} · skipped ${Number(data.skipped || 0)}`;
       }
       if (action === 'pattern_analysis') {
         const ps = data.patterns || [];
@@ -2188,6 +2269,7 @@
         const data = await task();
         setAiOpsControlOutput(summariseAiOpsControlResult(action, data), 'ok');
         await loadAiOpsDashboard({ silent: true });
+        loadLastRunStrip();
         return data;
       } catch (err) {
         setAiOpsControlOutput(`${label.replace('…','')} failed: ${String(err.message || err)}`, 'error');
