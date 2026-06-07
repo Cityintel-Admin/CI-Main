@@ -14947,94 +14947,134 @@ Generate 3-5 structured steps that will guide the operator through assessing and
 
 <script>
 // ============================================================
-// CityIntel Live News Player
-// All streams are permanent YouTube Live embeds — muted by
-// default so they don't blast audio on load.
+// CityIntel Live News Player v2
+// Reads active YouTube stream IDs from /api/org/settings/news-streams
+// (set by Master Admin via Settings page).
+// When a channel has no ID set, hides the player and shows
+// just the channel tabs — operator can still switch to a working one.
 // ============================================================
 (function(){
+  const API = 'https://api.cityintelapi.com';
 
-  // Channel definitions — all permanent YouTube Live stream IDs
+  // Channel metadata — names, YouTube live page URLs for fallback
   const CHANNELS = {
-    sky:       { name: 'Sky News',    id: 'inYdrzEzX5o', source: 'Sky News via YouTube Live' },
-    bbc:       { name: 'BBC News',    id: 'w_Ma8oQLmSM', source: 'BBC News via YouTube Live' },
-    cnn:       { name: 'CNN',         id: 'aXKVfgv80WI', source: 'CNN via YouTube Live' },
-    bloomberg: { name: 'Bloomberg',   id: 'dp8PhLsUcFE', source: 'Bloomberg Television via YouTube Live' },
-    euronews:  { name: 'Euronews',    id: 'kegpkVBBSoQ', source: 'Euronews via YouTube Live' },
-    aljazeera: { name: 'Al Jazeera',  id: 'h3MuIUoQFDo', source: 'Al Jazeera English via YouTube Live' },
-    france24:  { name: 'France 24',   id: 'l7ND_m-LoHY', source: 'France 24 via YouTube Live' },
-    dw:        { name: 'DW News',     id: 'sYnECh6GnD4', source: 'DW News via YouTube Live' },
+    sky:       { name: 'Sky News',    liveUrl: 'https://www.youtube.com/@SkyNews/live' },
+    bbc:       { name: 'BBC News',    liveUrl: 'https://www.youtube.com/@BBCNews/live' },
+    cnn:       { name: 'CNN',         liveUrl: 'https://www.youtube.com/@CNN/live' },
+    bloomberg: { name: 'Bloomberg',   liveUrl: 'https://www.youtube.com/@Bloomberg/live' },
+    euronews:  { name: 'Euronews',    liveUrl: 'https://www.youtube.com/@euronews/live' },
+    aljazeera: { name: 'Al Jazeera',  liveUrl: 'https://www.youtube.com/@aljazeeraenglish/live' },
+    france24:  { name: 'France 24',   liveUrl: 'https://www.youtube.com/@FRANCE24/live' },
+    dw:        { name: 'DW News',     liveUrl: 'https://www.youtube.com/@dwnews/live' },
   };
 
-  const panel      = document.getElementById('ciNewsPanel');
-  const header     = document.getElementById('ciNewsHeader');
-  const toggleBtn  = document.getElementById('ciNewsToggleBtn');
-  const iframe     = document.getElementById('ciNewsIframe');
-  const tabs       = document.querySelectorAll('.ci-news-tab');
-  const channelMeta= document.getElementById('ciNewsCurrentChannel');
-  const sourceEl   = document.getElementById('ciNewsSource');
+  const panel       = document.getElementById('ciNewsPanel');
+  const header      = document.getElementById('ciNewsHeader');
+  const toggleBtn   = document.getElementById('ciNewsToggleBtn');
+  const iframe      = document.getElementById('ciNewsIframe');
+  const playerWrap  = document.querySelector('.ci-news-player-wrap');
+  const tabs        = document.querySelectorAll('.ci-news-tab');
+  const channelMeta = document.getElementById('ciNewsCurrentChannel');
+  const sourceEl    = document.getElementById('ciNewsSource');
+  const footer      = document.querySelector('.ci-news-player-footer');
 
-  if (!panel || !iframe) return;
+  if (!panel) return;
 
   let currentChannel = 'sky';
   let isOpen = false;
+  let streamIds = {};  // populated from API — { sky: 'abc123', bbc: '', ... }
 
-  function buildSrc(channelKey) {
-    const ch = CHANNELS[channelKey];
-    if (!ch) return '';
-    // mute=1 — muted by default, user can unmute via player controls
-    // autoplay=1 needed for the embed to start, but mute=1 prevents audio blast
-    return `https://www.youtube-nocookie.com/embed/${ch.id}?autoplay=1&mute=1&rel=0&modestbranding=1&iv_load_policy=3`;
+  function authH() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || 'null');
+      if (!p?.email) return {};
+      return { 'X-User-Email': p.email, 'X-User-Name': p.name || '', 'X-User-Id': p.id || '' };
+    } catch { return {}; }
   }
 
-  function switchChannel(key) {
+  // Load active stream IDs from settings API
+  async function loadStreamIds() {
+    try {
+      const res = await fetch(API + '/api/org/settings/news-streams', { headers: authH() });
+      const json = await res.json().catch(() => ({}));
+      if (json.ok && json.streams) {
+        streamIds = json.streams;
+      }
+    } catch (e) {
+      // API unavailable — streamIds stays empty, fallback mode
+    }
+  }
+
+  function buildSrc(videoId) {
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&iv_load_policy=3`;
+  }
+
+  function renderChannel(key) {
     currentChannel = key;
     const ch = CHANNELS[key];
     if (!ch) return;
-    iframe.src = buildSrc(key);
-    if (channelMeta) channelMeta.textContent = ch.name;
-    if (sourceEl) sourceEl.textContent = ch.source;
+
     // Update tab active state
     tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-channel') === key));
+    if (channelMeta) channelMeta.textContent = ch.name;
+
+    const videoId = (streamIds[key] || '').trim();
+
+    if (videoId && iframe && playerWrap) {
+      // Active stream ID — show player
+      iframe.src = buildSrc(videoId);
+      playerWrap.style.display = '';
+      if (footer) footer.style.display = '';
+      if (sourceEl) sourceEl.textContent = `${ch.name} · YouTube Live · muted by default`;
+    } else {
+      // No ID set — hide player, show nothing (just tabs)
+      if (iframe) iframe.src = '';
+      if (playerWrap) playerWrap.style.display = 'none';
+      if (footer) footer.style.display = 'none';
+    }
   }
 
   function openPanel() {
     isOpen = true;
     panel.classList.add('open');
     if (toggleBtn) toggleBtn.textContent = '▼ Close';
-    // Only load iframe when first opened — avoid loading 8 streams on page load
-    if (!iframe.src || iframe.src === window.location.href) {
-      switchChannel(currentChannel);
-    }
+    renderChannel(currentChannel);
   }
 
   function closePanel() {
     isOpen = false;
     panel.classList.remove('open');
     if (toggleBtn) toggleBtn.textContent = '▶ Open';
-    // Pause the stream by clearing src — prevents background audio/bandwidth drain
-    iframe.src = '';
+    if (iframe) iframe.src = '';
   }
 
-  // Toggle on header or button click
+  // Toggle
   header.addEventListener('click', (e) => {
-    // Don't toggle if clicking a tab inside (tabs are in body not header, but safety check)
     if (e.target.closest('.ci-news-tabs')) return;
     isOpen ? closePanel() : openPanel();
   });
 
-  // Channel tab switching
+  // Channel tabs
   tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
       e.stopPropagation();
       const key = tab.getAttribute('data-channel');
-      if (key) switchChannel(key);
+      if (key) renderChannel(key);
     });
   });
 
-  // Keyboard: Escape closes if open
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && isOpen) closePanel();
   });
+
+  // Load IDs on init — panel stays closed until operator opens it
+  loadStreamIds();
+
+  // Expose for settings page to trigger a refresh after saving
+  window.ciNewsReloadStreams = async function() {
+    await loadStreamIds();
+    if (isOpen) renderChannel(currentChannel);
+  };
 
 })();
 </script>
