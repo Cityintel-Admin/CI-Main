@@ -1,5 +1,3 @@
-
-  
 <!doctype html>
 <html lang="en">
 <head>
@@ -89,7 +87,7 @@
   <script src="admin-links.js"></script>
   <script src="alerts-data.js"></script>
 
- <style>
+<style>
     :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2}
     body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
     .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:60px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
@@ -4269,6 +4267,18 @@ comments = (function dedupe(list){
             <button id="niCommentSubmit" class="btn-outline-pill" style="height:38px;align-self:flex-end;">Post</button>
           </div>
           <div id="niCommentStatus" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)"></div>
+
+          <!-- Phase 9 — Generate Intel Brief (shown for escalated/high-severity posts) -->
+          <div id="niGenerateBriefRow" style="display:none;margin-top:14px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);border-radius:10px;background:rgba(251,191,36,.04);">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:3px;">📋 Generate Intelligence Brief</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.5);">This post is escalated or high-severity. Add it to the AI briefing queue to generate a SITREP or Incident Brief.</div>
+              </div>
+              <button id="niBriefQueueBtn" class="btn-outline-pill" style="font-size:11px;border-color:rgba(251,191,36,.4);color:#fbbf24;flex-shrink:0;">Add to Briefing Queue</button>
+            </div>
+            <div id="niBriefQueueStatus" style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.5);"></div>
+          </div>
         </div>
       `;
 
@@ -4313,6 +4323,71 @@ comments = (function dedupe(list){
     const boloToggle    = document.getElementById('detailBoloToggle');
     const btnBolo       = document.getElementById('btnUpdateBolo');
     if (!commentBtn || !commentInput) return;
+
+    // ── Phase 9 — Generate Intel Brief ──
+    const briefRow      = document.getElementById('niGenerateBriefRow');
+    const briefQueueBtn = document.getElementById('niBriefQueueBtn');
+    const briefStatus   = document.getElementById('niBriefQueueStatus');
+
+    // Show brief row for escalated or high-severity posts
+    if (briefRow) {
+      const isHighSeverity = ['high','critical'].includes(String(p.severity||'').toLowerCase());
+      const isEscalated    = ['police','escalated'].includes(String(p.post_status||'').toLowerCase());
+      briefRow.style.display = (isHighSeverity || isEscalated) ? '' : 'none';
+    }
+
+    if (briefQueueBtn && briefStatus) {
+      briefQueueBtn.onclick = async () => {
+        briefQueueBtn.disabled = true;
+        briefQueueBtn.textContent = 'Queuing…';
+        briefStatus.textContent = '';
+        try {
+          // Build a minimal candidate payload from the post
+          const candidateId = 'ni-post-' + String(p.id || Date.now());
+          const payload = {
+            candidate_id: candidateId,
+            title: p.title || 'Neighbourhood Intel Post',
+            city: p.city || (p.geo_label ? p.geo_label.split(',')[0].trim() : ''),
+            country: p.country || '',
+            risk: p.severity || 'high',
+            source: 'Neighbourhood Intel',
+            summary: (p.body || '').slice(0, 500),
+            brief_type: 'sitrep'
+          };
+
+          // Add to briefing queue via worker
+          const res = await apiFetch(API_BASE + '/api/intel-review/briefing/generate', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (data.ok) {
+            briefStatus.style.color = '#33c48d';
+            briefStatus.textContent = '✓ Brief draft generated. Review in CityIntel Assistant.';
+            briefQueueBtn.textContent = 'Queued ✓';
+          } else {
+            // If the endpoint requires the item to be in the queue first, just queue it
+            const queueRes = await apiFetch(API_BASE + '/api/intel-review/briefing/auto-generate', {
+              method: 'POST',
+              body: JSON.stringify({ limit: 1, brief_type: 'sitrep' })
+            }).catch(() => null);
+            briefStatus.style.color = '#fbbf24';
+            briefStatus.textContent = data.error?.includes('not found')
+              ? '⚠ Could not auto-generate — open CityIntel Assistant to generate manually for this candidate.'
+              : '⚠ ' + (data.error || 'Queue request sent. Check Assistant for status.');
+            briefQueueBtn.textContent = 'Check Assistant';
+            briefQueueBtn.onclick = () => { window.location.href = 'cityintel-assistant.html'; };
+            briefQueueBtn.disabled = false;
+          }
+        } catch (err) {
+          briefStatus.style.color = '#ff5a5f';
+          briefStatus.textContent = 'Error: ' + String(err.message || err);
+          briefQueueBtn.textContent = 'Add to Briefing Queue';
+          briefQueueBtn.disabled = false;
+        }
+      };
+    }
 
     // ── Status update ──
     if (btnStatus && statusSel) {
@@ -5238,3 +5313,4 @@ btnSubmitPost.addEventListener('click', async () => {
 </script>
 </body>
 </html>
+
