@@ -30,7 +30,7 @@
 <!-- Future Android / PWA -->
 <link rel="manifest" href="/manifest.json">
 
-  <style>
+   <style>
   /* ===== CityIntel theme + components ===== */
   :root{
     --brand-red:#D01616; --brand-black:#0C0C0C;
@@ -632,6 +632,7 @@
               <button class="btn" type="button" id="assetDrawerClose">Close</button>
             </div>
             <div id="assetDrawerBody" class="drawer-grid"></div>
+            <div id="assetDrawerRiskBanner" style="margin-top:10px;"></div>
           </aside>
         </div>
       </div>
@@ -1190,7 +1191,29 @@
       ].join('');
       assetDrawerBackdrop.classList.add('open');
       assetDrawerBackdrop.setAttribute('aria-hidden', 'false');
-    }
+
+      // Phase 8 — Live risk proximity check for this asset location
+      const riskBanner = document.getElementById('assetDrawerRiskBanner');
+      if (riskBanner) {
+        riskBanner.innerHTML = '';
+        const city = a.city || '';
+        const country = a.country || '';
+        if (city || country) {
+          const apiUrl = `https://api.cityintelapi.com/api/protests?${city ? 'city='+encodeURIComponent(city) : 'country='+encodeURIComponent(country)}&risk=high&limit=3`;
+          fetch(apiUrl, { headers: (function(){ try { const p = JSON.parse(localStorage.getItem('ci_profile')||'{}'); return p.email ? {'X-User-Email':p.email} : {}; } catch { return {}; } })() })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+              const items = Array.isArray(data) ? data : (data?.data || data?.items || []);
+              const highRisk = items.filter(a => String(a.risk||'').toLowerCase().startsWith('hi')).slice(0, 3);
+              if (!highRisk.length) return;
+              riskBanner.innerHTML = `<div style="padding:10px 12px;background:rgba(255,90,95,.1);border:1px solid rgba(255,90,95,.3);border-radius:10px;">
+                <div style="font-size:12px;font-weight:700;color:#ff5a5f;margin-bottom:6px;">⚠ ${highRisk.length} Active High-Risk Event${highRisk.length>1?'s':''} Near This Asset</div>
+                ${highRisk.map(ev => `<div style="font-size:11px;color:rgba(255,255,255,.75);padding:3px 0;border-top:1px solid rgba(255,255,255,.06);">${esc(ev.title||'Event')}${ev.city?' · '+esc(ev.city):''}</div>`).join('')}
+                <a href="live-alerts.html" style="display:inline-block;margin-top:8px;font-size:11px;color:#ff5a5f;text-decoration:none;border:1px solid rgba(255,90,95,.3);border-radius:5px;padding:2px 8px;">View Live Alerts →</a>
+              </div>`;
+            }).catch(() => {});
+        }
+      }
 
     function closeAssetDrawer(){
       if (!assetDrawerBackdrop) return;
@@ -1628,3 +1651,4 @@
 	
 </body>
 </html>
+
