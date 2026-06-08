@@ -42,7 +42,7 @@
 <link rel="manifest" href="/manifest.json">
 
 	
-  <style>
+   <style>
     :root{
       --brand-red:#D01616; --brand-black:#0C0C0C;
       --g900:#111214; --g800:#16171a; --g700:#1c1e22; --g600:#24272c; --g500:#2e3238;
@@ -362,7 +362,53 @@
   </section>
 </div>
 
-<!-- Org list table -->
+<!-- LLM Usage Monitor — Master Admin only -->
+<section class="card" id="llmUsageCard" style="margin-bottom:20px;display:none;">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+    <div>
+      <h3 style="margin:0;">AI Token Usage</h3>
+      <div class="legend">Token consumption and estimated API cost across the platform. Master Admin only.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <select id="llmPeriodSelect" style="background:#1c1e22;border:1px solid var(--g600);color:var(--text);border-radius:7px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;">
+        <option value="24h">Last 24h</option>
+        <option value="7d" selected>Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+      </select>
+      <button id="llmRefreshBtn" class="btn" style="font-size:12px;padding:5px 10px;">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- KPI tiles -->
+  <div id="llmKpiGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px;"></div>
+
+  <!-- Two-column: daily chart + breakdowns -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-wrap:wrap;" id="llmDetailGrid">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Daily token usage</div>
+      <div id="llmDailyChart" style="background:#0f1012;border-radius:8px;overflow:hidden;"></div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">By function</div>
+      <div id="llmByFunction" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden;"></div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">By model</div>
+      <div id="llmByModel" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden;"></div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Top orgs by usage</div>
+      <div id="llmByOrg" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden;"></div>
+    </div>
+  </div>
+
+  <!-- Recent calls log -->
+  <div style="margin-top:16px;">
+    <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Recent calls</div>
+    <div id="llmRecentCalls" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden;overflow-x:auto;"></div>
+  </div>
+</section>
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
     <div>
@@ -1737,7 +1783,7 @@ const makeBar = (label, count, color) => {
           <td style="padding:9px 12px;color:var(--muted);font-size:12px">${b.dispatched_at?fmtDate(b.dispatched_at):'—'}</td>
         </tr>`).join('')}</tbody></table>`;
     }
-} 
+
   // Tab wiring
   document.querySelectorAll('.org-drill-tab').forEach(btn => {
     btn.addEventListener('click', () => setDrillTab(btn.dataset.tab));
@@ -1754,7 +1800,6 @@ const makeBar = (label, count, color) => {
 
   // Init
   loadPlatformStats();
-
 })();
 </script>
 <script>
@@ -1817,5 +1862,163 @@ const makeBar = (label, count, color) => {
 })();
 </script>
 
+<!-- ── LLM Usage Monitor ─────────────────────────────────────────────────── -->
+<script>
+(function mountLLMUsage(){
+  const API  = 'https://api.cityintelapi.com';
+  const card = document.getElementById('llmUsageCard');
+  if (!card) return;
+
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmtCost = v => '$' + Number(v||0).toFixed(4);
+  const fmtNum  = v => Number(v||0).toLocaleString();
+  const fmtDate = iso => { try { return iso?new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}):'—'; } catch { return iso||'—'; } };
+  const fmtTime = iso => { try { return iso?new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—'; } catch { return '—'; } };
+
+  function isMaster() {
+    try { return !!(window.CIAuth && typeof CIAuth.isMasterAdmin==='function' && CIAuth.isMasterAdmin()); }
+    catch { return false; }
+  }
+
+  function authH() {
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile')||'{}');
+      return p.email ? {'X-User-Email':p.email,'X-Admin-Override':'cityintel_masteradmin'} : {};
+    } catch { return {}; }
+  }
+
+  const FN_LABELS = {
+    brief_generation: 'Brief Generation',
+    assistant_query:  'Assistant Query',
+    workflow_summary: 'Workflow Summary',
+    analyst_assist:   'Analyst Assist',
+  };
+
+  function fnLabel(fn) { return FN_LABELS[fn] || esc(fn||'Other'); }
+
+  function renderKpis(s) {
+    const kpis = [
+      { label:'Total Calls',     val: fmtNum(s.total_calls),        col:'#60a5fa' },
+      { label:'Total Tokens',    val: fmtNum(s.total_tokens),       col:'#a78bfa' },
+      { label:'Prompt Tokens',   val: fmtNum(s.prompt_tokens),      col:'#8e97a3' },
+      { label:'Output Tokens',   val: fmtNum(s.completion_tokens),  col:'#94a3b8' },
+      { label:'Est. Cost',       val: fmtCost(s.total_cost_usd),    col:'#fbbf24' },
+      { label:'Avg Tokens/Call', val: fmtNum(s.avg_tokens_per_call),col:'#8e97a3' },
+      { label:'Avg Latency',     val: Math.round(s.avg_duration_ms||0)+'ms', col:'#64748b' },
+      { label:'Errors',          val: fmtNum(s.error_count),        col: s.error_count>0?'#f87171':'#34d399' },
+      { label:'Orgs Active',     val: fmtNum(s.orgs_active),        col:'#34d399' },
+    ];
+    const el = document.getElementById('llmKpiGrid');
+    if (!el) return;
+    el.innerHTML = kpis.map(k => `
+      <div style="background:#1c1e22;border:1px solid #2e3238;border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:${k.col};">${k.val}</div>
+        <div style="font-size:10px;color:#8e97a3;text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">${k.label}</div>
+      </div>`).join('');
+  }
+
+  function renderDailyChart(daily) {
+    const el = document.getElementById('llmDailyChart');
+    if (!el || !daily.length) { if(el) el.innerHTML='<div style="padding:12px;color:#64748b;font-size:12px;">No data</div>'; return; }
+    const maxTok = Math.max(...daily.map(d=>Number(d.tokens||0)),1);
+    const W=400, H=60, n=daily.length;
+    const pts = daily.map((d,i)=>{
+      const x=Math.round(i/(n-1||1)*W);
+      const y=Math.round(H - (Number(d.tokens||0)/maxTok)*H);
+      return `${x},${y}`;
+    }).join(' ');
+    el.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;display:block;">
+        <defs><linearGradient id="llmGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa" stop-opacity=".3"/><stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/></linearGradient></defs>
+        <polygon points="${pts} ${W},${H} 0,${H}" fill="url(#llmGrad)"/>
+        <polyline points="${pts}" fill="none" stroke="#a78bfa" stroke-width="2"/>
+        ${daily.map((d,i)=>{
+          const x=Math.round(i/(n-1||1)*W);
+          const y=Math.round(H - (Number(d.tokens||0)/maxTok)*H);
+          return `<circle cx="${x}" cy="${y}" r="2.5" fill="#a78bfa"/>`;
+        }).join('')}
+      </svg>
+      <div style="display:flex;justify-content:space-between;padding:4px 4px 6px;font-size:10px;color:#475569;">
+        <span>${esc(fmtDate(daily[0]?.day))}</span>
+        <span>${esc(fmtDate(daily[daily.length-1]?.day))}</span>
+      </div>`;
+  }
+
+  function renderTable(elId, rows, cols) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!rows.length) { el.innerHTML='<div style="padding:12px;color:#64748b;font-size:12px;">No data</div>'; return; }
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#1c1e22;">${cols.map(c=>`<th style="padding:7px 10px;text-align:${c.align||'left'};color:#94a3b8;font-size:11px;text-transform:uppercase;">${c.label}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map((row,i)=>`<tr style="${i<rows.length-1?'border-bottom:1px solid #16171a;':''}">
+        ${cols.map(c=>`<td style="padding:7px 10px;color:${c.color||'#cbd5e1'};text-align:${c.align||'left'};">${c.render?c.render(row):esc(String(row[c.key]??'—'))}</td>`).join('')}
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  async function load() {
+    const period = document.getElementById('llmPeriodSelect')?.value || '7d';
+    const kpiGrid = document.getElementById('llmKpiGrid');
+    if (kpiGrid) kpiGrid.innerHTML = '<div style="grid-column:1/-1;color:#8e97a3;font-size:13px;">Loading…</div>';
+    try {
+      const res = await fetch(`${API}/api/admin/llm-usage?period=${period}`, { headers: authH() });
+      if (!res.ok) { if(kpiGrid) kpiGrid.innerHTML=`<div style="color:#ff5a5f;font-size:13px;">Failed (${res.status})</div>`; return; }
+      const data = await res.json().catch(()=>({}));
+      if (!data.ok) { if(kpiGrid) kpiGrid.innerHTML=`<div style="color:#ff5a5f;font-size:13px;">${esc(data.error||'Error')}</div>`; return; }
+
+      renderKpis(data.summary || {});
+      renderDailyChart(data.daily || []);
+
+      renderTable('llmByFunction', data.by_function||[], [
+        { label:'Function', key:'call_function', render: r=>fnLabel(r.call_function) },
+        { label:'Calls',    key:'calls',    align:'right', color:'#cbd5e1', render: r=>fmtNum(r.calls) },
+        { label:'Tokens',   key:'tokens',   align:'right', color:'#a78bfa', render: r=>fmtNum(r.tokens) },
+        { label:'Cost',     key:'cost_usd', align:'right', color:'#fbbf24', render: r=>fmtCost(r.cost_usd) },
+        { label:'Avg Tok',  key:'avg_tokens',align:'right',color:'#8e97a3', render: r=>Math.round(Number(r.avg_tokens||0)) },
+      ]);
+
+      renderTable('llmByModel', data.by_model||[], [
+        { label:'Model',  key:'model',    render: r=>esc(String(r.model||'—').replace('claude-','Claude ').replace('gpt-','GPT-')) },
+        { label:'Calls',  key:'calls',    align:'right', render: r=>fmtNum(r.calls) },
+        { label:'Tokens', key:'tokens',   align:'right', color:'#a78bfa', render: r=>fmtNum(r.tokens) },
+        { label:'Cost',   key:'cost_usd', align:'right', color:'#fbbf24', render: r=>fmtCost(r.cost_usd) },
+      ]);
+
+      renderTable('llmByOrg', data.by_org||[], [
+        { label:'Org',    key:'org_id',   render: r=>esc(r.org_id||'system') },
+        { label:'Calls',  key:'calls',    align:'right', render: r=>fmtNum(r.calls) },
+        { label:'Tokens', key:'tokens',   align:'right', color:'#a78bfa', render: r=>fmtNum(r.tokens) },
+        { label:'Cost',   key:'cost_usd', align:'right', color:'#fbbf24', render: r=>fmtCost(r.cost_usd) },
+      ]);
+
+      renderTable('llmRecentCalls', data.recent||[], [
+        { label:'Time',    key:'called_at',  render: r=>`${fmtDate(r.called_at)} ${fmtTime(r.called_at)}` },
+        { label:'Function',key:'call_function', render: r=>fnLabel(r.call_function) },
+        { label:'Model',   key:'model',       render: r=>esc(String(r.model||'—').slice(0,25)) },
+        { label:'Tokens',  key:'total_tokens', align:'right', color:'#a78bfa', render: r=>fmtNum(r.total_tokens) },
+        { label:'Cost',    key:'cost_usd',     align:'right', color:'#fbbf24', render: r=>fmtCost(r.cost_usd) },
+        { label:'ms',      key:'duration_ms',  align:'right', color:'#64748b', render: r=>fmtNum(r.duration_ms) },
+        { label:'Status',  key:'status',       render: r=>`<span style="color:${r.status==='ok'?'#34d399':'#f87171'};">${esc(r.status||'—')}</span>` },
+        { label:'By',      key:'called_by',    render: r=>esc((r.called_by||'').split('@')[0]||'—') },
+      ]);
+    } catch (e) {
+      if (kpiGrid) kpiGrid.innerHTML = `<div style="color:#ff5a5f;font-size:13px;">Error: ${esc(String(e.message||e))}</div>`;
+    }
+  }
+
+  function init() {
+    if (!isMaster()) return;
+    card.style.display = '';
+    load();
+    document.getElementById('llmPeriodSelect')?.addEventListener('change', load);
+    document.getElementById('llmRefreshBtn')?.addEventListener('click', load);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else setTimeout(init, 500);
+})();
+</script>
+
 </body>
 </html>
+
