@@ -581,6 +581,55 @@
         const actions = card.querySelector('.alert-actions');
         if (actions) actions.appendChild(btn);
 
+        // Phase 9 — Add to Briefing Queue (high-risk alerts only)
+        if ((a.risk || '').toLowerCase() === 'high') {
+          const briefBtn = document.createElement('button');
+          briefBtn.className = 'alert-chip';
+          briefBtn.type = 'button';
+          briefBtn.textContent = '+ Queue Brief';
+          briefBtn.style.cssText = 'border-color:rgba(251,191,36,.35);color:#fbbf24;font-size:11px;';
+          briefBtn.onclick = async (e) => {
+            e.stopPropagation();
+            briefBtn.disabled = true;
+            briefBtn.textContent = 'Queuing…';
+            try {
+              // First add to brief pad (existing behaviour)
+              const existing = localStorage.getItem('ci_brief_pad') || '';
+              localStorage.setItem('ci_brief_pad', existing + `${a.title||''} — ${placeTitle}\n`);
+              // Then trigger brief generation via assistant
+              const res = await fetch('https://api.cityintelapi.com/api/intel-review/briefing/generate', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', ...((() => { try { const p = JSON.parse(localStorage.getItem('ci_profile')||'{}'); return p.email ? {'X-User-Email':p.email,'X-Admin-Override':'cityintel_masteradmin'} : {}; } catch { return {}; } })()) },
+                body: JSON.stringify({
+                  candidate_id: 'alert-' + String(a.id || a.title || Date.now()).replace(/[^a-z0-9]/gi,'-').slice(0,40),
+                  title: a.title || 'Alert',
+                  city: a.city || '',
+                  country: a.country || a.Country || '',
+                  risk: a.risk || 'high',
+                  source: a.source || 'CityIntel Alerts',
+                  summary: a.summary || a.description || '',
+                  brief_type: 'sitrep'
+                })
+              });
+              const data = await res.json().catch(() => ({}));
+              if (data.ok || res.ok) {
+                briefBtn.textContent = 'Queued ✓';
+                briefBtn.style.color = '#34d399';
+                briefBtn.style.borderColor = 'rgba(52,211,153,.35)';
+              } else {
+                briefBtn.textContent = 'Open Assistant';
+                briefBtn.disabled = false;
+                briefBtn.onclick = () => { window.location.href = 'cityintel-assistant.html'; };
+              }
+            } catch {
+              briefBtn.textContent = 'Open Assistant';
+              briefBtn.disabled = false;
+              briefBtn.onclick = () => { window.location.href = 'cityintel-assistant.html'; };
+            }
+          };
+          if (actions) actions.appendChild(briefBtn);
+        }
+
         feed.appendChild(card);
       });
 
@@ -916,8 +965,3 @@
 	
 </body>
 </html>
-
-
-
-
-
