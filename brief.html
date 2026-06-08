@@ -91,7 +91,7 @@
 
 	
   
-  <style>
+ <style>
     :root{
       --brand-red:#D01616; --brand-black:#0C0C0C;
       --gray-900:#111214; --gray-800:#16171a; --gray-700:#1c1e22; --gray-600:#24272c;
@@ -506,6 +506,30 @@
           <a class="btn-link" href="alerts.html">View All Alerts</a>
           <a class="btn-link" href="events.html">Browse Events</a>
         </div>
+      </section>
+
+      <!-- Active Intelligence Patterns — Phase 8 -->
+      <section class="card span-12" id="section-intel-patterns" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h2 style="margin:0 0 3px;">Active Intelligence Patterns</h2>
+            <div class="muted" style="font-size:12px;">AI-detected protest waves, regional instability signals, and multi-country spreads from the CityIntel intelligence pipeline.</div>
+          </div>
+          <a class="btn-link" href="cityintel-assistant.html" style="font-size:12px;">Manage in Assistant →</a>
+        </div>
+        <div id="intelPatternsBody"><div class="muted">Loading patterns…</div></div>
+      </section>
+
+      <!-- Live Intelligence Briefs — Phase 9 -->
+      <section class="card span-12" id="section-intel-briefs" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h2 style="margin:0 0 3px;">Live Intelligence Briefs</h2>
+            <div class="muted" style="font-size:12px;">AI-drafted and approved security briefs ready for review and dispatch. Generated from active incident clusters in the CityIntel Ops system.</div>
+          </div>
+          <a class="btn-link" href="cityintel-assistant.html" style="font-size:12px;">Manage in Assistant →</a>
+        </div>
+        <div id="intelBriefsBody"><div class="muted">Loading intelligence briefs…</div></div>
       </section>
     </div>
 
@@ -1257,5 +1281,71 @@ function detectTheme(a) {
 })();
 </script>
 		  
+
+<!-- ── Phase 8/9 Live Data ──────────────────────────────────────────────── -->
+<script>
+(function mountBriefLiveData(){
+  const API='https://api.cityintelapi.com';
+  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmtDate=iso=>{try{return iso?new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';}catch{return iso||'—';}};
+  function authH(){try{const p=JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');if(!p?.email)return{};return{'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||'','X-Admin-Override':'cityintel_masteradmin'};}catch{return{};}}
+  function isMasterAdmin(){try{const p=JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');return!!(p?.is_master_admin||p?.masterAdmin||String(p?.role||'').toLowerCase().includes('master'));}catch{return false;}}
+
+  const PATTERN_ICONS={'protest_wave':'🌊','regional_instability':'⚠️','multi_country_spread':'🌍'};
+  const PATTERN_LABELS={'protest_wave':'Protest Wave','regional_instability':'Regional Instability','multi_country_spread':'Multi-Country Spread'};
+  const PATTERN_COLS={'protest_wave':'rgba(251,146,60,.25)','regional_instability':'rgba(239,68,68,.25)','multi_country_spread':'rgba(139,92,246,.25)'};
+  const BRIEF_TYPE_MAP={sitrep:'SITREP',executive:'Executive Brief',regional:'Regional Summary',traveller:'Traveller Advisory',morning:'Morning Digest',infra:'Infrastructure Risk'};
+  const BRIEF_STATUS_COL={ready:'#34d399',completed:'#818cf8',drafting:'#fbbf24'};
+  const BRIEF_STATUS_LABEL={ready:'Ready for dispatch',completed:'Dispatched',drafting:'Awaiting approval'};
+
+  async function loadPatterns(){
+    const card=document.getElementById('section-intel-patterns'),body=document.getElementById('intelPatternsBody');
+    if(!card||!body)return;
+    try{
+      const res=await fetch(API+'/api/intel-review/incidents/patterns?limit=6&admin_hint=cityintel_masteradmin',{headers:authH()});
+      if(!res.ok)return;
+      const data=await res.json().catch(()=>({}));
+      const patterns=data.patterns||[];
+      if(!patterns.length){card.style.display='none';return;}
+      card.style.display='';
+      body.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">'+
+        patterns.map(p=>{
+          const icon=PATTERN_ICONS[p.pattern_type]||'🔗';
+          const label=PATTERN_LABELS[p.pattern_type]||p.pattern_type||'Pattern';
+          const col=PATTERN_COLS[p.pattern_type]||'rgba(255,255,255,.06)';
+          const conf=Math.round(Number(p.confidence||0)*100);
+          const sev=Math.round(Number(p.severity_score||0));
+          const place=p.country&&p.country!=='global'&&p.country!=='multi'?esc(p.country):'Global';
+          return '<div style="padding:12px;border:1px solid '+col+';border-radius:12px;background:rgba(255,255,255,.02);"><div style="display:flex;gap:8px;margin-bottom:6px;"><span style="font-size:16px;">'+icon+'</span><strong style="font-size:13px;color:#e2e8f0;">'+esc(label)+'</strong><span style="margin-left:auto;font-size:10px;color:#94a3b8;">'+conf+'% · sev '+sev+'</span></div><div style="font-size:12px;color:#94a3b8;line-height:1.5;">'+esc((p.title||'').slice(0,120))+'</div><div style="font-size:11px;color:#64748b;margin-top:6px;">'+esc(place)+(Number(p.cluster_count||0)?' · '+Number(p.cluster_count)+' clusters':'')+'</div></div>';
+        }).join('')+'</div>';
+    }catch(e){/*silent*/}
+  }
+
+  async function loadBriefs(){
+    const card=document.getElementById('section-intel-briefs'),body=document.getElementById('intelBriefsBody');
+    if(!card||!body)return;
+    try{
+      const res=await fetch(API+'/api/intel-review/briefing/list?limit=8&admin_hint=cityintel_masteradmin',{headers:authH()});
+      if(!res.ok)return;
+      const data=await res.json().catch(()=>({}));
+      const items=(data.items||[]).filter(i=>['ready','completed','drafting'].includes(i.briefing_status));
+      if(!items.length){card.style.display='none';return;}
+      card.style.display='';
+      body.innerHTML='<div style="border:1px solid #2e3238;border-radius:10px;overflow:hidden;">'+
+        items.map((item,i)=>{
+          const type=BRIEF_TYPE_MAP[item.brief_type]||item.brief_type||'Incident Brief';
+          const sc=BRIEF_STATUS_COL[item.briefing_status]||'#8e97a3';
+          const sl=BRIEF_STATUS_LABEL[item.briefing_status]||item.briefing_status;
+          const place=[item.city,item.country].filter(Boolean).join(', ');
+          const isLast=i===items.length-1;
+          return '<div style="padding:10px 14px;'+(isLast?'':'border-bottom:1px solid #1e2328;')+'display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="flex:1;min-width:0;"><strong style="font-size:13px;color:#e2e8f0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(item.title||item.candidate_id||'Untitled')+'</strong><span style="font-size:11px;color:#64748b;">'+esc(type)+(place?' · '+esc(place):'')+' · '+fmtDate(item.draft_generated_at||item.updated_at)+'</span></div><div style="display:flex;gap:8px;align-items:center;flex-shrink:0;"><span style="font-size:11px;color:'+sc+';">'+esc(sl)+'</span>'+(item.briefing_status==='ready'?'<a href="cityintel-assistant.html" style="font-size:11px;padding:3px 9px;border:1px solid rgba(52,211,153,.35);border-radius:5px;color:#34d399;text-decoration:none;background:rgba(52,211,153,.08);">Review →</a>':'')+'</div></div>';
+        }).join('')+'</div><div style="margin-top:8px;text-align:right;"><a href="reports.html" style="font-size:12px;color:#33c48d;text-decoration:none;">View in Reports Library →</a></div>';
+    }catch(e){/*silent*/}
+  }
+
+  if(isMasterAdmin()){loadPatterns();loadBriefs();}
+})();
+</script>
 </body>
 </html>
+
