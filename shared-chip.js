@@ -4,6 +4,10 @@
  * Usage: <script src="auth.js"></script><script src="shared-chip.js"></script>
  * Requires: <div id="topActions" style="position:relative"></div> in the brandbar.
  */
+
+<link rel="icon" type="image/jpeg" href="CityintLogo.jpg">
+
+
 (function mountTopActions() {
   function run() {
     const host = document.getElementById('topActions');
