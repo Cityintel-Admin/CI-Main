@@ -95,7 +95,6 @@
   .dropdown a { display:block; padding:8px 12px; color:var(--text); text-decoration:none; font-size:14px; }
   .dropdown a:hover { background:rgba(255,255,255,0.05); }
 
-
   .brandbar{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);
             background:linear-gradient(90deg,rgba(208,22,22,.2),rgba(208,22,22,0))}
   .brandbar img{width:auto;height:60px;object-fit:contain;border-radius:6px;background:#fff}
@@ -103,10 +102,7 @@
   .hero{text-align:center;margin:6px 0 18px}
   .hero h1{margin:0 0 6px;font-size:26px;color:var(--brand-red)}
   .hero p{margin:0;color:var(--muted)}
-
-
-
-	  
+  
   .main{grid-area:main;padding:18px}
   .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
 
@@ -191,7 +187,6 @@
   }
 
 
-
   /* ===== Travellers v2 layout + filter polish ===== */
   .travellers-card{grid-column:span 12;max-width:100%;}
   .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -229,7 +224,6 @@
   .main{padding:10px}
   .card{padding:12px}
 }
-
   
 
   /* ===== Phase 6 traveller bulk + drawer ===== */
@@ -558,6 +552,7 @@
       </div>
     </div>
     <div id="travDrawerCheckinBanner" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:10px;background:rgba(51,196,141,.1);border:1px solid rgba(51,196,141,.3);color:#33c48d;font-size:13px"></div>
+    <div id="travDrawerRiskBanner"></div>
     <div class="drawer-grid" id="travDrawerGrid"></div>
   </aside>
 
@@ -749,7 +744,6 @@ async function saveTravellers(list){
     console.warn('Org traveller save failed (still saved locally):', e);
   }
 }
-
     
 async function loadTravellersFromOrgOrLocal(seed){
   try{
@@ -766,7 +760,6 @@ async function loadTravellersFromOrgOrLocal(seed){
   }
   return seed;
 }
-
 
     let travellers = await loadTravellersFromOrgOrLocal(loadTravellers());
 
@@ -1213,8 +1206,6 @@ function renderTable(){
       });
     }
 
-
-
     function setBulkStatus(msg){ if (bulkStatus) bulkStatus.textContent = msg || ''; }
 
     const TRAV_CSV_FIELDS = [
@@ -1395,6 +1386,30 @@ function renderTable(){
       ];
       drawerGrid.innerHTML = items.map(([label,value,full]) => `<div class="drawer-item ${full?'full':''}"><div class="drawer-label">${escapeHtml(label)}</div><div class="drawer-value">${escapeHtml(value || '—')}</div></div>`).join('');
       drawerBackdrop?.classList.add('open'); drawer.classList.add('open');
+
+      // Phase 8 — Live risk proximity check
+      const riskBanner = document.getElementById('travDrawerRiskBanner');
+      if (riskBanner) {
+        riskBanner.style.display = 'none';
+        riskBanner.innerHTML = '';
+        const city = t.city || '';
+        const country = t.country || '';
+        if (city || country) {
+          fetch(`https://api.cityintelapi.com/api/protests?${city?'city='+encodeURIComponent(city):'country='+encodeURIComponent(country)}&risk=high&limit=3`, {headers: authHeaders()})
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+              const items = Array.isArray(data) ? data : (data?.data || data?.items || []);
+              const highRisk = items.filter(a => String(a.risk||'').toLowerCase().startsWith('hi')).slice(0, 3);
+              if (!highRisk.length) return;
+              riskBanner.style.display = '';
+              riskBanner.innerHTML = `<div style="padding:10px 12px;background:rgba(255,90,95,.1);border:1px solid rgba(255,90,95,.3);border-radius:10px;margin-bottom:12px;">
+                <div style="font-size:12px;font-weight:700;color:#ff5a5f;margin-bottom:6px;">⚠ ${highRisk.length} Active High-Risk Event${highRisk.length>1?'s':''} Near ${escapeHtml(city||country)}</div>
+                ${highRisk.map(a => `<div style="font-size:11px;color:rgba(255,255,255,.75);padding:3px 0;border-top:1px solid rgba(255,255,255,.06);">${escapeHtml(a.title||'Event')}${a.city?' · '+escapeHtml(a.city):''}</div>`).join('')}
+                <a href="live-alerts.html" style="display:inline-block;margin-top:8px;font-size:11px;color:#ff5a5f;text-decoration:none;border:1px solid rgba(255,90,95,.3);border-radius:5px;padding:2px 8px;">View Live Alerts →</a>
+              </div>`;
+            }).catch(() => {});
+        }
+      }
     }
     function closeTravellerDrawer(){ drawerBackdrop?.classList.remove('open'); drawer?.classList.remove('open'); drawerCurrentTraveller = null; }
 
@@ -1541,7 +1556,6 @@ function renderTable(){
 })();
 </script>
 
-
-	
 </body>
 </html>
+
