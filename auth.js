@@ -273,7 +273,12 @@
 
   localStorage.setItem(
     'ci_subscribed',
-    String(user.accessType === 'internal' || user.status === 'active')
+    String(
+      user.accessType === 'internal' ||
+      user.status === 'active' ||
+      user.roleKey === 'master-admin' ||
+      user.roleKey === 'org-admin'
+    )
   );
 
   if (user.plan) {
@@ -311,6 +316,11 @@
       try {
         const p = normalizeProfile(JSON.parse(localStorage.getItem('ci_profile') || '{}'));
         if (!p || !p.email || p.is_master) return;
+        // Org Admins are always considered active — never redirect to subscribe
+        if (p.roleKey === 'org-admin') {
+          localStorage.setItem('ci_subscribed', 'true');
+          return;
+        }
 
         // Throttle (2 min) unless forced
         const last = Number(sessionStorage.getItem('ci_sub_checked_at') || 0);
