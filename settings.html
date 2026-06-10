@@ -407,8 +407,8 @@
 
 <!-- Briefing Preferences — Phase 9 -->
 <section class="card" id="briefingPrefsCard" style="display:none;margin-bottom:16px;">
-  <h3>Briefing Preferences</h3>
-  <div class="muted" style="margin-bottom:14px;font-size:13px;">Default settings for AI-generated intelligence briefs. These are used when auto-generating briefs from the CityIntel Assistant.</div>
+  <h2>Briefing Preferences</h2>
+  <p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Default settings for AI-generated intelligence briefs. These are used when auto-generating briefs from the CityIntel Assistant and Intelligence Brief page.</p>
   <div style="display:flex;flex-direction:column;gap:12px;">
     <div>
       <label style="font-size:12px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:5px;">Default brief type</label>
@@ -1367,10 +1367,22 @@
 
   const STORE_KEY = 'ci_briefing_prefs';
 
-  function isMasterAdmin() {
+  function isMasterOrOrgAdmin() {
     try {
+      // Use CIAuth if available (source of truth)
+      if (window.CIAuth && CIAuth.isLoggedIn()) {
+        return !!(CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin());
+      }
+      // Fallback to stored profile
       const p = JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');
-      return !!(p?.is_master_admin || p?.masterAdmin || String(p?.role||'').toLowerCase().includes('master'));
+      if (!p) return false;
+      const rk = String(p?.roleKey || p?.role_key || '').toLowerCase();
+      const role = String(p?.role || '').toLowerCase();
+      return !!(
+        p?.is_master || p?.is_master_admin || p?.masterAdmin ||
+        rk === 'master-admin' || rk === 'org-admin' ||
+        role.includes('master') || role.includes('org admin') || role.includes('admin')
+      );
     } catch { return false; }
   }
 
@@ -1393,7 +1405,7 @@
   }
 
   function init() {
-    if (!isMasterAdmin()) return; // Only show to master admins
+    if (!isMasterOrOrgAdmin()) return; // Only show to master/org admins
     card.style.display = '';
     const prefs = loadPrefs();
     if (typeSelect && prefs.default_brief_type) typeSelect.value = prefs.default_brief_type;
@@ -1419,6 +1431,8 @@
   if (Object.keys(existing).length) window.CI_BRIEFING_PREFS = existing;
 
   init();
+  // Retry after auth has had time to load
+  setTimeout(init, 600);
 })();
 </script>
 
