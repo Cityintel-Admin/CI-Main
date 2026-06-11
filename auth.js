@@ -288,9 +288,9 @@
   }
 
   const params = new URLSearchParams(location.search);
-  const next = params.get('next') || 'index.html';
-
-  location.href = next;
+  const next = params.get('next') || 'dashboard.html';
+  // If 'next' points to the old index.html, send to dashboard instead
+  location.href = next === 'index.html' ? 'dashboard.html' : next;
 
   return profile;
 },
@@ -307,7 +307,7 @@
 
     requireAuth(redirectTo = 'login.html') {
       if (!this.isLoggedIn()) {
-        const nxt = encodeURIComponent(location.pathname.split('/').pop() || 'index.html');
+        const nxt = encodeURIComponent(location.pathname.split('/').pop() || 'dashboard.html');
         location.href = `${redirectTo}?next=${nxt}`;
       }
     },
@@ -394,7 +394,7 @@ const status = String(
 
         const path = (location.pathname.split('/').pop() || '').toLowerCase();
         const protectedPages = [
-          'index.html','alerts.html','events.html','reports.html','watch.html',
+          'dashboard.html','alerts.html','events.html','reports.html','watch.html',
           'operations-log.html','operationslog.html','analytics.html','system-flow.html','sources.html','settings.html',
           'live-alerts.html','assets.html','travellers.html','brief.html','trends.html',
           'neighborhood-intel.html','neighbourhood-intel.html'
