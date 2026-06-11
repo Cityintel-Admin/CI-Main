@@ -12,6 +12,12 @@
   if (!(CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin() || CIAuth.isOperator())) {
     location.replace('index.html');
   }
+  // Admin and operator roles are always considered subscribed — never bounce to subscribe page
+  try {
+    if (CIAuth.isMasterAdmin() || CIAuth.isOrgAdmin() || CIAuth.isOperator()) {
+      localStorage.setItem('ci_subscribed', 'true');
+    }
+  } catch(_) {}
 </script>
 	
 <script>
@@ -4634,37 +4640,38 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="page-title-actions">
-        <a
-          id="ciEscalationContactsBtn"
-          class="btn-outline-pill"
-          href="escalation-contacts.html"
-          style="display:none;"
-          title="Manage organisation escalation recipients"
-        >
-          Escalation contacts
-        </a>
-
-        <button
-          id="ciEscalationQueueToggle"
-          class="btn-outline-pill"
-          type="button"
-          title="Show escalation queue"
-        >
-          Escalation queue
-        </button>
+        <div id="liveStatusStrip" class="live-status-strip" aria-live="polite" style="justify-content:flex-end;">
+          <div id="syncStatusBadge" class="live-status-badge" data-state="load"><strong>Sync</strong> Loading…</div>
+          <div id="panicStatusBadge" class="live-status-badge" data-state="load"><strong>Panic</strong> Starting…</div>
+          <div id="dataModeBadge" class="live-status-badge" data-state="load"><strong>Data mode</strong> Detecting…</div>
+          <div id="lastUpdatedBadge" class="live-status-badge" data-state="load"><strong>Last updated</strong> --</div>
+        </div>
       </div>
-	</div>
+    </div>
 
 <div id="liveNowStrip" class="live-now-strip">
       <div class="live-now-label">NOW</div>
       <div class="live-now-stats live-now-empty">No alerts in the current window.</div>
     </div>
 
-<div id="liveStatusStrip" class="live-status-strip" aria-live="polite">
-  <div id="syncStatusBadge" class="live-status-badge" data-state="load"><strong>Sync</strong> Loading…</div>
-  <div id="panicStatusBadge" class="live-status-badge" data-state="load"><strong>Panic</strong> Starting…</div>
-  <div id="dataModeBadge" class="live-status-badge" data-state="load"><strong>Data mode</strong> Detecting…</div>
-  <div id="lastUpdatedBadge" class="live-status-badge" data-state="load"><strong>Last updated</strong> --</div>
+<div class="live-status-strip" style="padding:6px 0;" aria-live="polite">
+  <a
+    id="ciEscalationContactsBtn"
+    class="btn-outline-pill"
+    href="escalation-contacts.html"
+    style="display:none;"
+    title="Manage organisation escalation recipients"
+  >
+    Escalation contacts
+  </a>
+  <button
+    id="ciEscalationQueueToggle"
+    class="btn-outline-pill"
+    type="button"
+    title="Show escalation queue"
+  >
+    Escalation queue
+  </button>
   <div class="live-status-spacer"></div>
   <div id="liveStatusNote" class="live-status-note"></div>
 </div>
@@ -11466,22 +11473,21 @@ const assetIcon = L.divIcon({
     const count = document.getElementById('cityintelAdminPostsCount');
     if (!list) return;
 
-    // /api/feed is CityIntel Master Admin only. Do not call it for Org Admin / Operator,
-    // otherwise the page works but the console gets noisy 403s.
-    if (!ciIsMasterAdminUser()) {
-      window.CICityIntelAdminPosts = [];
-      try { cityIntelAdminLayer.clearLayers(); } catch (_) {}
-      if (count) count.textContent = '0';
-      list.innerHTML = '<div class="ci-admin-post-empty">No mapped admin posts currently active.</div>';
-      return;
-    }
-
+    // All authenticated users can view admin posts (read-only for operators/org-admin)
+    // Only master admin can manage/create them via the feed API
     try{
       list.innerHTML = '<div class="ci-admin-post-empty">Loading mapped posts…</div>';
       const headers = await authHeaders({ 'Accept':'application/json' });
       const res = await fetch(withEmailParam(API_ORIGIN + '/api/feed'), { headers });
       const data = await res.json().catch(function(){ return null; });
-      if (!res.ok || !data || data.ok === false) throw new Error((data && data.error) || ('feed failed ' + res.status));
+      if (!res.ok || !data || data.ok === false) {
+        // For non-master users a 403 is expected if not yet permitted — fail silently
+        window.CICityIntelAdminPosts = [];
+        try { cityIntelAdminLayer.clearLayers(); } catch (_) {}
+        if (count) count.textContent = '0';
+        list.innerHTML = '<div class="ci-admin-post-empty">No mapped admin posts currently active.</div>';
+        return;
+      }
 
       const posts = (Array.isArray(data.data) ? data.data : [])
         .filter(ciFeedPostHasCoords)
