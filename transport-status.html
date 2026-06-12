@@ -326,8 +326,9 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
         </div>
         <div class="table-tools">
           <select id="pageSizeSelect" title="Rows per page">
+            <option value="10" selected>10 rows</option>
             <option value="25">25 rows</option>
-            <option value="50" selected>50 rows</option>
+            <option value="50">50 rows</option>
             <option value="100">100 rows</option>
           </select>
           <button class="btn" id="prevPageBtn" type="button">← Prev</button>
@@ -403,7 +404,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── State ─────────────────────────────────────────────────────────
   let allDisruptions = [];
   let currentPage = 1;
-  let pageSize = 50;
+  let pageSize = 10;
   let viewAll = false;
   let map, markers = [];
 
@@ -484,7 +485,24 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
       if(!nearby.length){ section.style.display='none'; return; }
 
       section.style.display = 'block';
-      list.innerHTML = nearby.map(n => {
+
+      // Deduplicate: for each point, keep only the highest-severity disruption per source
+      // This prevents MTA NYC flooding the list with every line alert for the same traveller
+      const deduped = [];
+      const seen = new Map();
+      for (const n of nearby.sort((a,b) => {
+        const sev = ['suspended','severe','major','moderate','planned','minor','good','unknown'];
+        return sev.indexOf(a.disruption.severity) - sev.indexOf(b.disruption.severity);
+      })) {
+        const dedupKey = `${n.point.name}::${n.disruption._source}::${n.disruption.severity}`;
+        if (!seen.has(dedupKey)) {
+          seen.set(dedupKey, true);
+          deduped.push(n);
+        }
+      }
+
+      const INITIAL_SHOW = 10;
+      const renderItems = (items) => items.map(n => {
         const sevCol = SEV_COLOR[n.disruption.severity]||'#8e97a3';
         const icon = n.point.type === 'traveller' ? '🧳' : '🏢';
         return `<div style="padding:8px 0;border-bottom:1px solid rgba(240,180,41,.1);font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -493,6 +511,24 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
           <span style="color:var(--muted);font-size:12px">${n.dist.toFixed(1)}km away · ${esc(sourceName(n.disruption._source))}</span>
         </div>`;
       }).join('');
+
+      list.innerHTML = renderItems(deduped.slice(0, INITIAL_SHOW));
+
+      // Show more button if there are more entries
+      const showMoreEl = document.getElementById('proximityShowMore');
+      if (showMoreEl) showMoreEl.remove();
+      if (deduped.length > INITIAL_SHOW) {
+        const btn = document.createElement('button');
+        btn.id = 'proximityShowMore';
+        btn.className = 'btn';
+        btn.style.cssText = 'margin-top:10px;font-size:12px;';
+        btn.textContent = `Show all ${deduped.length} disruptions`;
+        btn.addEventListener('click', () => {
+          list.innerHTML = renderItems(deduped);
+          btn.remove();
+        });
+        list.after(btn);
+      }
     }catch(e){ console.warn('Transport proximity check failed', e.message); }
   }
 
