@@ -209,10 +209,19 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
     <!-- KPI row -->
     <div class="kpi-row">
-      <div class="kpi red"><div class="kpi-val" id="kpiUnplanned">—</div><div class="kpi-lbl">Unplanned outages</div></div>
-      <div class="kpi orange"><div class="kpi-val" id="kpiPlanned">—</div><div class="kpi-lbl">Planned works</div></div>
-      <div class="kpi green"><div class="kpi-val" id="kpiRestored">—</div><div class="kpi-lbl">Recently restored</div></div>
-      <div class="kpi"><div class="kpi-val" id="kpiLongest" style="font-size:18px">—</div><div class="kpi-lbl">Longest active outage</div></div>
+      <div class="kpi red" id="kpiUnplannedCard" style="cursor:pointer" title="Click to filter table to unplanned outages">
+        <div class="kpi-val" id="kpiUnplanned">—</div><div class="kpi-lbl">Unplanned outages</div>
+      </div>
+      <div class="kpi orange" id="kpiPlannedCard" style="cursor:pointer" title="Click to filter table to planned works">
+        <div class="kpi-val" id="kpiPlanned">—</div><div class="kpi-lbl">Planned works</div>
+      </div>
+      <div class="kpi green" id="kpiRestoredCard" style="cursor:pointer" title="Click to filter table to recently restored">
+        <div class="kpi-val" id="kpiRestored">—</div><div class="kpi-lbl">Recently restored</div>
+      </div>
+      <div class="kpi" id="kpiFocusCard" style="cursor:pointer;border:1px dashed rgba(255,255,255,.15)" title="Click a map location to see outages within 1km">
+        <div class="kpi-val" id="kpiFocus" style="font-size:18px">📍</div>
+        <div class="kpi-lbl" id="kpiFocusLbl">Click map to focus area</div>
+      </div>
     </div>
 
     <!-- Proximity alerts (shown if any outages near registered assets) -->
@@ -303,7 +312,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   let markers = [];
   let assetMarkers = [];
   let tablePage = 1;
-  let tablePageSize = 50;
+  let tablePageSize = 10;
   let tableViewAll = false;
 
   // ── Auth helpers ────────────────────────────────────────────────────
@@ -417,12 +426,51 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   });
 
   // ── Map init ─────────────────────────────────────────────────────────
+  let focusCircle = null;
   function initMap(){
     map = L.map('outageMap',{zoomControl:true}).setView([51.5074,-0.1278],9);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
       attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       subdomains:'abcd', maxZoom:19
     }).addTo(map);
+
+    // Map click → Area Focus: show outages within 1km and update KPI card
+    map.on('click', function(e) {
+      const { lat, lng } = e.latlng;
+      const FOCUS_KM = 1;
+
+      // Remove previous focus circle
+      if (focusCircle) { focusCircle.remove(); focusCircle = null; }
+      focusCircle = L.circle([lat, lng], {
+        radius: FOCUS_KM * 1000,
+        color: '#93c5fd', weight: 2, fillColor: '#93c5fd', fillOpacity: 0.08,
+        dashArray: '6 4'
+      }).addTo(map);
+
+      // Filter outages within radius
+      const nearby = allOutages.filter(o => {
+        const oLat = o.lat ?? o.geopoint?.lat ?? (Array.isArray(o.geopoint) ? o.geopoint[0] : null);
+        const oLon = o.lon ?? o.geopoint?.lon ?? o.geopoint?.lng ?? (Array.isArray(o.geopoint) ? o.geopoint[1] : null);
+        if (!oLat || !oLon) return false;
+        return distKm(lat, lng, oLat, oLon) <= FOCUS_KM;
+      });
+
+      // Update Area Focus KPI
+      document.getElementById('kpiFocus').textContent    = nearby.length;
+      document.getElementById('kpiFocusLbl').textContent = `Within ${FOCUS_KM}km of pin`;
+      document.getElementById('kpiFocusCard').style.borderColor = '#93c5fd';
+      document.getElementById('kpiFocusCard').style.borderStyle = 'solid';
+
+      // Reset other KPI opacity, clear kpiFilter
+      kpiFilter = null;
+      ['kpiUnplannedCard','kpiPlannedCard','kpiRestoredCard'].forEach(id => {
+        document.getElementById(id).style.opacity = '0.4';
+      });
+      document.getElementById('kpiFocusCard').style.opacity = '1';
+
+      // Render focused table
+      renderTable(nearby);
+    });
   }
 
   function clearMarkers(){
@@ -493,6 +541,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
           <button class="mini-btn" id="prevPageBtn" ${tablePage <= 1 || tableViewAll ? 'disabled' : ''}>‹ Prev</button>
           <button class="mini-btn" id="nextPageBtn" ${tablePage >= totalPages || tableViewAll ? 'disabled' : ''}>Next ›</button>
           <select id="pageSizeSelect" title="Rows per page">
+            <option value="10" ${tablePageSize===10&&!tableViewAll?'selected':''}>10</option>
             <option value="25" ${tablePageSize===25&&!tableViewAll?'selected':''}>25</option>
             <option value="50" ${tablePageSize===50&&!tableViewAll?'selected':''}>50</option>
             <option value="100" ${tablePageSize===100&&!tableViewAll?'selected':''}>100</option>
@@ -555,32 +604,59 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   }
 
   // ── KPIs ──────────────────────────────────────────────────────────────
+  let kpiFilter = null; // 'unplanned' | 'planned' | 'restored' | null
+
   function updateKPIs(outages){
-    const unplanned=outages.filter(o=>outageType(o)==='unplanned').length;
-    const planned=outages.filter(o=>outageType(o)==='planned').length;
-    const restored=outages.filter(o=>outageType(o)==='restored').length;
-    // Longest active: oldest unresolved outage — sanity check: only consider last 180 days
-    const MAX_AGE_MS = 180 * 24 * 3600000;
-    const active = outages.filter(o => {
-      if(outageType(o) === 'restored') return false;
-      if(!o.start_time) return false;
-      const age = Date.now() - new Date(o.start_time).getTime();
-      return age > 0 && age < MAX_AGE_MS; // filter out corrupt/null timestamps
-    });
-    let longestLabel = '—';
-    if(active.length) {
-      const oldest = active.reduce((a,b) => {
-        const at = new Date(a.start_time).getTime();
-        const bt = new Date(b.start_time).getTime();
-        return at < bt ? a : b;
-      });
-      longestLabel = elapsed(oldest.start_time);
-    }
-    document.getElementById('kpiUnplanned').textContent=unplanned;
-    document.getElementById('kpiPlanned').textContent=planned;
-    document.getElementById('kpiRestored').textContent=restored;
-    document.getElementById('kpiLongest').textContent=longestLabel;
+    const unplanned = outages.filter(o=>outageType(o)==='unplanned').length;
+    const planned   = outages.filter(o=>outageType(o)==='planned').length;
+    const restored  = outages.filter(o=>outageType(o)==='restored').length;
+    document.getElementById('kpiUnplanned').textContent = unplanned;
+    document.getElementById('kpiPlanned').textContent   = planned;
+    document.getElementById('kpiRestored').textContent  = restored;
   }
+
+  function applyKpiFilter(type) {
+    // Toggle off if same filter clicked again
+    kpiFilter = kpiFilter === type ? null : type;
+    // Reset area focus
+    document.getElementById('kpiFocus').textContent   = '📍';
+    document.getElementById('kpiFocusLbl').textContent = 'Click map to focus area';
+    document.getElementById('kpiFocusCard').style.borderColor = 'rgba(255,255,255,.15)';
+    // Visual active state
+    ['kpiUnplannedCard','kpiPlannedCard','kpiRestoredCard'].forEach(id => {
+      document.getElementById(id).style.opacity = '1';
+    });
+    if (kpiFilter) {
+      const activeId = kpiFilter === 'unplanned' ? 'kpiUnplannedCard'
+                     : kpiFilter === 'planned'   ? 'kpiPlannedCard'
+                     : 'kpiRestoredCard';
+      ['kpiUnplannedCard','kpiPlannedCard','kpiRestoredCard'].forEach(id => {
+        document.getElementById(id).style.opacity = id === activeId ? '1' : '0.4';
+      });
+    }
+    const filtered = kpiFilter
+      ? allOutages.filter(o => outageType(o) === kpiFilter)
+      : allOutages;
+    plotOutages(filtered);
+    renderTable(filtered);
+  }
+
+  // Wire KPI card clicks
+  document.getElementById('kpiUnplannedCard')?.addEventListener('click', () => applyKpiFilter('unplanned'));
+  document.getElementById('kpiPlannedCard')?.addEventListener('click',   () => applyKpiFilter('planned'));
+  document.getElementById('kpiRestoredCard')?.addEventListener('click',  () => applyKpiFilter('restored'));
+  document.getElementById('kpiFocusCard')?.addEventListener('click', () => {
+    // Clear area focus, restore full view
+    kpiFilter = null;
+    document.getElementById('kpiFocus').textContent    = '📍';
+    document.getElementById('kpiFocusLbl').textContent = 'Click map to focus area';
+    document.getElementById('kpiFocusCard').style.borderColor = 'rgba(255,255,255,.15)';
+    ['kpiUnplannedCard','kpiPlannedCard','kpiRestoredCard'].forEach(id => {
+      document.getElementById(id).style.opacity = '1';
+    });
+    plotOutages(allOutages);
+    renderTable(allOutages);
+  });
 
   // ── Proximity check against org assets ───────────────────────────────
   async function checkProximity(outages){
