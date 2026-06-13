@@ -4604,6 +4604,218 @@ function CI_updatePanicMapOverlayIndex(st){
 })();
 </script>
 
+
+<style id="ci-dashboard-v121-polish-css">
+  .ci-dashboard-collapsible{position:relative}
+  .ci-collapse-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:12px;flex-wrap:wrap;
+  }
+  .ci-collapse-head-title{font-weight:800;font-size:16px;color:var(--text)}
+  .ci-collapse-head-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .ci-collapse-toggle,.ci-feed-more-btn{
+    appearance:none;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;
+    padding:6px 12px;border-radius:9px;font:700 12px system-ui;cursor:pointer;text-decoration:none;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .ci-collapse-toggle:hover,.ci-feed-more-btn:hover{filter:brightness(1.08)}
+  .ci-collapse-body{display:none}
+  .ci-dashboard-collapsible.is-open .ci-collapse-body{display:block}
+  .ci-live-feed-controls{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+  .ci-live-feed-limited .ci-feed-post:nth-of-type(n+5){display:none}
+</style>
+
+<script id="ci-dashboard-v121-polish-js">
+(function cityIntelDashboardV121Polish(){
+  function ready(fn){ if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
+  ready(function(){
+    const grid = document.querySelector('main.main .grid');
+    if(!grid) return;
+
+    function closestCardWithId(id){
+      const el = document.getElementById(id);
+      return el ? (el.closest('.card') || el) : null;
+    }
+
+    // 1) Move Quick Actions above KPI cards and update buttons.
+    const quick = Array.from(grid.children).find(el => /Quick Actions/.test(el.textContent || ''));
+    if(quick){
+      quick.id = 'dashboardQuickActions';
+      const qaStyle = 'display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font:700 12px system-ui;text-decoration:none';
+      quick.innerHTML = `
+        <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:4px">Quick Actions</span>
+        <a href="live-alerts.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.35);color:#fca5a5;font:700 12px system-ui;text-decoration:none">🔴 Escalation Queue</a>
+        <a href="live-alerts.html#workflow" id="qaRunWorkflow" style="${qaStyle}">🤖 Run AI Workflow</a>
+        <a href="travellers.html" style="${qaStyle}">✈ Add Traveller</a>
+        <a href="flight-status.html" style="${qaStyle}">🛫 Flight Status</a>
+        <a href="power-outages.html" style="${qaStyle}">⚡ Power Outages</a>
+        <a href="transport-status.html" style="${qaStyle}">🚇 Transport Status</a>
+        <a href="checkin.html" style="${qaStyle}">📋 Check-in Manager</a>
+        <a href="brief.html" style="${qaStyle}">📄 Intelligence Brief</a>
+        <span id="qaTrainCount" style="display:none;margin-left:auto;font-size:12px;color:#94a3b8"></span>
+      `;
+      grid.insertBefore(quick, grid.firstElementChild);
+    }
+
+    // 2) Move sections into requested order:
+    // Map -> Live Feed -> Traveller Flight Monitoring -> Power -> Transport -> Recent Activity.
+    const mapCard = closestCardWithId('riskMap');
+    const feedCard = closestCardWithId('ciFeedList');
+    const flightCard = document.getElementById('flightStatusWidget');
+    const powerWrap = document.getElementById('powerOutageWidgetWrapper');
+    const transportWrap = document.getElementById('transportWidgetWrapper');
+    const opsCard = document.getElementById('opsLogWidget');
+
+    function moveAfter(node, after){
+      if(node && after && after.parentNode){
+        after.parentNode.insertBefore(node, after.nextSibling);
+      }
+    }
+
+    if(mapCard && feedCard) moveAfter(feedCard, mapCard);
+    if(feedCard && flightCard) moveAfter(flightCard, feedCard);
+    if(flightCard && powerWrap) moveAfter(powerWrap, flightCard);
+    if(powerWrap && transportWrap) moveAfter(transportWrap, powerWrap);
+    if(transportWrap && opsCard) moveAfter(opsCard, transportWrap);
+
+    // 3) Limit Live Feed to 4 posts initially, with Show more and Open Live Alerts.
+    (function setupLiveFeedLimit(){
+      const list = document.getElementById('ciFeedList');
+      const card = list ? list.closest('.card') : null;
+      if(!list || !card || document.getElementById('ciFeedLimitControls')) return;
+
+      list.classList.add('ci-live-feed-limited');
+
+      const controls = document.createElement('div');
+      controls.id = 'ciFeedLimitControls';
+      controls.className = 'ci-live-feed-controls';
+      controls.innerHTML = `
+        <button type="button" class="ci-feed-more-btn" id="ciFeedShowMoreBtn">Show more</button>
+        <a class="ci-feed-more-btn" href="live-alerts.html">Open Live Alerts →</a>
+      `;
+      card.appendChild(controls);
+
+      const btn = document.getElementById('ciFeedShowMoreBtn');
+      btn.addEventListener('click', function(){
+        const limited = list.classList.toggle('ci-live-feed-limited');
+        btn.textContent = limited ? 'Show more' : 'Show less';
+      });
+
+      const sync = function(){
+        const posts = list.querySelectorAll('.ci-feed-post');
+        controls.style.display = posts.length > 4 ? 'flex' : 'none';
+      };
+      new MutationObserver(sync).observe(list, {childList:true, subtree:false});
+      sync();
+    })();
+
+    // 4) Make dashboard widgets collapsed by default.
+    function makeCollapsible(section, title, subtitle, fullUrl){
+      if(!section || section.dataset.ciCollapseReady === '1') return;
+      section.dataset.ciCollapseReady = '1';
+      section.classList.add('ci-dashboard-collapsible');
+      section.style.gridColumn = 'span 12';
+
+      const existing = Array.from(section.childNodes);
+      const body = document.createElement('div');
+      body.className = 'ci-collapse-body';
+      existing.forEach(n => body.appendChild(n));
+
+      const head = document.createElement('div');
+      head.className = 'ci-collapse-head';
+      head.innerHTML = `
+        <div>
+          <div class="ci-collapse-head-title">${title}</div>
+          <div class="ci-collapse-head-sub">${subtitle || ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${fullUrl ? `<a class="ci-collapse-toggle" href="${fullUrl}">Full view →</a>` : ''}
+          <button type="button" class="ci-collapse-toggle" aria-expanded="false">Open</button>
+        </div>
+      `;
+      const toggle = head.querySelector('button');
+      toggle.addEventListener('click', function(){
+        const open = section.classList.toggle('is-open');
+        toggle.textContent = open ? 'Close' : 'Open';
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+
+      section.appendChild(head);
+      section.appendChild(body);
+    }
+
+    makeCollapsible(flightCard, '✈ Traveller Flight Monitoring', 'Monitored traveller flights and departure hubs.', 'flight-status.html');
+    makeCollapsible(powerWrap, '⚡ Power Outages', 'UK Power Networks summary and asset proximity.', 'power-outages.html');
+    makeCollapsible(transportWrap, '🚇 Transport Status', 'TfL, National Rail, MTA and LTA disruption snapshot.', 'transport-status.html');
+    makeCollapsible(opsCard, '📋 Recent Activity', 'Latest master-admin activity log.', 'operationslog.html');
+
+    // 5) Replace dashboard Flight Status widget content with traveller monitoring style.
+    async function renderTravellerFlightMonitoring(){
+      const widget = document.getElementById('flightStatusWidget');
+      const body = document.getElementById('flightWidgetBody');
+      const meta = document.getElementById('flightWidgetMeta');
+      if(!widget || !body) return;
+
+      const API = window.API_BASE || 'https://api.cityintelapi.com';
+      function getProfile(){ try{return JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');}catch{return null;} }
+      function authH(){
+        const p=getProfile(); if(!p?.email) return {};
+        return {'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||'','X-User-Role':p.role||''};
+      }
+      const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+      widget.style.display = '';
+      if(meta) meta.textContent = 'Traveller records with flight numbers or airport hubs';
+
+      try{
+        const res = await fetch(`${API}/api/org/travellers`, {headers:authH()});
+        const json = await res.json().catch(()=>({}));
+        const travellers = Array.isArray(json.data) ? json.data : (Array.isArray(json.travellers) ? json.travellers : []);
+        const withFlight = travellers.filter(t => t.flight_number || t.flight || t.flightNumber);
+        const withHub = travellers.filter(t => t.departure_iata || t.origin_iata || t.home_airport_iata || t.airport_iata);
+
+        const active = travellers.filter(t => /active|travel|in-country|upcoming/i.test(String(t.status || t.trip_status || ''))).length;
+        const rows = travellers.slice(0,6).map(t=>{
+          const flight = (t.flight_number || t.flight || t.flightNumber || '').toString().trim();
+          const hub = (t.departure_iata || t.origin_iata || t.home_airport_iata || t.airport_iata || '').toString().trim();
+          const route = [t.origin || t.from || hub, t.destination || t.to || t.city || t.country].filter(Boolean).join(' → ') || 'No route stored';
+          return `<div style="display:grid;grid-template-columns:1.2fr .9fr 1.4fr .8fr;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
+            <div><strong style="color:#e9edf2">${esc(t.name || t.traveller_name || t.email || 'Traveller')}</strong><div style="color:#64748b">${esc(t.email || '')}</div></div>
+            <div style="color:#cbd5e1">${flight ? esc(flight) : (hub ? esc(hub) : 'No flight')}</div>
+            <div style="color:#94a3b8">${esc(route)}</div>
+            <div>${flight ? `<a href="flight-status.html?q=${encodeURIComponent(flight)}" style="color:#67e8f9;text-decoration:none">Check live →</a>` : `<span style="color:#64748b">Add flight</span>`}</div>
+          </div>`;
+        }).join('');
+
+        body.innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px;width:100%">
+            <div style="background:#1c1e22;border:1px solid #2e3238;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:800;color:#e9edf2">${travellers.length}</div><div style="font-size:11px;color:#8e97a3;text-transform:uppercase;font-weight:800">Travellers</div></div>
+            <div style="background:#1c1e22;border:1px solid #2e3238;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:800;color:#33c48d">${active}</div><div style="font-size:11px;color:#8e97a3;text-transform:uppercase;font-weight:800">Active / upcoming</div></div>
+            <div style="background:#1c1e22;border:1px solid #2e3238;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:800;color:#f0b429">${withFlight.length}</div><div style="font-size:11px;color:#8e97a3;text-transform:uppercase;font-weight:800">Flight numbers</div></div>
+            <div style="background:#1c1e22;border:1px solid #2e3238;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:800;color:#93c5fd">${withHub.length}</div><div style="font-size:11px;color:#8e97a3;text-transform:uppercase;font-weight:800">Airport hubs</div></div>
+          </div>
+          <div style="width:100%;border:1px solid #2e3238;border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.02)">
+            ${rows || '<div style="color:var(--muted);font-size:13px">No traveller records found yet.</div>'}
+          </div>
+        `;
+      }catch(e){
+        body.innerHTML = '<div style="color:var(--muted);font-size:13px">Traveller flight monitoring unavailable.</div>';
+      }
+    }
+
+    // Run after original dashboard widget scripts have had a moment to populate.
+    setTimeout(renderTravellerFlightMonitoring, 1200);
+    setTimeout(function(){
+      // Some original widgets set display after async load; keep collapsed wrapper state.
+      ['flightStatusWidget','powerOutageWidgetWrapper','transportWidgetWrapper','opsLogWidget'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el && el.classList.contains('ci-dashboard-collapsible')) el.classList.remove('is-open');
+      });
+    }, 2200);
+  });
+})();
+</script>
+
 </body>
 </html>
 
