@@ -488,49 +488,52 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
       section.style.display = 'block';
 
-      // Deduplicate: for each point, keep only the highest-severity disruption per source
-      // This prevents MTA NYC flooding the list with every line alert for the same traveller
+      // Deduplicate per point+source+severity before grouping
       const deduped = [];
       const seen = new Map();
-      for (const n of nearby.sort((a,b) => {
-        const sev = ['suspended','severe','major','moderate','planned','minor','good','unknown'];
-        return sev.indexOf(a.disruption.severity) - sev.indexOf(b.disruption.severity);
-      })) {
+      const sevOrder = ['suspended','severe','major','moderate','planned','minor','good','unknown'];
+      for (const n of nearby.sort((a,b) => sevOrder.indexOf(a.disruption.severity) - sevOrder.indexOf(b.disruption.severity))) {
         const dedupKey = `${n.point.name}::${n.disruption._source}::${n.disruption.severity}`;
-        if (!seen.has(dedupKey)) {
-          seen.set(dedupKey, true);
-          deduped.push(n);
-        }
+        if (!seen.has(dedupKey)) { seen.set(dedupKey, true); deduped.push(n); }
       }
 
-      const INITIAL_SHOW = 10;
-      const renderItems = (items) => items.map(n => {
-        const sevCol = SEV_COLOR[n.disruption.severity]||'#8e97a3';
-        const icon = n.point.type === 'traveller' ? '🧳' : '🏢';
-        return `<div style="padding:8px 0;border-bottom:1px solid rgba(240,180,41,.1);font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid;color:${sevCol};border-color:${sevCol}44;background:${sevCol}18">${esc(n.disruption.severity||'disrupted')}</span>
-          <span>${icon} <strong>${esc(n.point.name)}</strong> — ${esc(n.disruption.line)}: ${esc(n.disruption.status)}</span>
-          <span style="color:var(--muted);font-size:12px">${n.dist.toFixed(1)}km away · ${esc(sourceName(n.disruption._source))}</span>
+      // Group by entity name
+      const grouped = {};
+      for (const n of deduped) {
+        const key = n.point.name || 'Unknown';
+        if (!grouped[key]) grouped[key] = { point: n.point, items: [] };
+        grouped[key].items.push(n);
+      }
+
+      list.innerHTML = Object.entries(grouped).map(([name, group]) => {
+        const icon = group.point.type === 'traveller' ? '🧳' : '🏢';
+        const count = group.items.length;
+        const worstSev = group.items.map(n=>n.disruption.severity||'unknown')
+          .sort((a,b) => sevOrder.indexOf(a) - sevOrder.indexOf(b))[0];
+        const sevCol = SEV_COLOR[worstSev] || '#8e97a3';
+        const entityId = 'proxEntity_' + name.replace(/\W/g,'_');
+        const rows = group.items.map(n => {
+          const sc = SEV_COLOR[n.disruption.severity] || '#8e97a3';
+          return `<div style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid;color:${sc};border-color:${sc}44;background:${sc}18;flex-shrink:0">${esc(n.disruption.severity||'disrupted')}</span>
+            <span style="flex:1;min-width:140px">${esc(n.disruption.line)}: ${esc(n.disruption.status)}</span>
+            <span style="color:var(--muted)">${n.dist.toFixed(1)}km · ${esc(sourceName(n.disruption._source))}</span>
+          </div>`;
+        }).join('');
+        return `<div style="margin-bottom:8px;border:1px solid rgba(240,180,41,.2);border-radius:10px;overflow:hidden">
+          <div onclick="const d=document.getElementById('${entityId}');d.style.display=d.style.display==='none'?'block':'none';this.querySelector('.prox-chevron').textContent=d.style.display==='none'?'\u25b6':'\u25bc'"
+               style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;background:rgba(240,180,41,.05);user-select:none">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;font-size:11px;font-weight:800;background:${sevCol}22;color:${sevCol};border:1px solid ${sevCol}44;flex-shrink:0">${count}</span>
+            <span style="font-weight:700;font-size:13px">${icon} ${esc(name)}</span>
+            <span style="color:var(--muted);font-size:12px;flex:1">${count} disruption${count!==1?'s':''} nearby</span>
+            <span class="prox-chevron" style="color:var(--muted);font-size:11px">▼</span>
+          </div>
+          <div id="${entityId}">${rows}</div>
         </div>`;
       }).join('');
 
-      list.innerHTML = renderItems(deduped.slice(0, INITIAL_SHOW));
-
-      // Show more button if there are more entries
       const showMoreEl = document.getElementById('proximityShowMore');
       if (showMoreEl) showMoreEl.remove();
-      if (deduped.length > INITIAL_SHOW) {
-        const btn = document.createElement('button');
-        btn.id = 'proximityShowMore';
-        btn.className = 'btn';
-        btn.style.cssText = 'margin-top:10px;font-size:12px;';
-        btn.textContent = `Show all ${deduped.length} disruptions`;
-        btn.addEventListener('click', () => {
-          list.innerHTML = renderItems(deduped);
-          btn.remove();
-        });
-        list.after(btn);
-      }
     }catch(e){ console.warn('Transport proximity check failed', e.message); }
   }
 
