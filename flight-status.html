@@ -151,6 +151,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--brand-red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .refresh-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.quick-link-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--gray-600);background:var(--gray-700);color:var(--text);text-decoration:none;transition:border-color .15s,background .15s}
+.quick-link-pill:hover{border-color:var(--brand-red);background:rgba(208,22,22,.08)}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:tpulse 2s ease-in-out infinite}
 @keyframes tpulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
 .region-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
@@ -164,6 +166,21 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   .flight-result-grid{grid-template-columns:1fr}
   .brandbar .title{display:none}
 }
+/* NAS advisory section */
+.nas-empty{color:var(--muted);font-size:13px;padding:8px 0}
+.nas-advisory{border:1px solid rgba(255,90,95,.25);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.nas-advisory.warning{border-color:rgba(240,180,41,.3)}
+.nas-advisory.info{border-color:rgba(147,197,253,.25)}
+.nas-advisory-header{display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;user-select:none}
+.nas-advisory.critical .nas-advisory-header{background:rgba(255,90,95,.06)}
+.nas-advisory.warning .nas-advisory-header{background:rgba(240,180,41,.05)}
+.nas-advisory.info .nas-advisory-header{background:rgba(147,197,253,.04)}
+.nas-advisory-body{padding:10px 13px;font-size:12px;border-top:1px solid rgba(255,255,255,.07);display:none}
+.nas-advisory-body.open{display:block}
+.nas-detail-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.nas-detail-row:last-child{border-bottom:none}
+.nas-detail-label{color:var(--muted)}
+.nas-detail-value{font-weight:600;text-align:right;max-width:60%}
   </style>
 </head>
 <body>
@@ -204,7 +221,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     <div class="toprow">
       <div>
         <p class="page-title">✈ Flight Status</p>
-        <p class="page-sub">Global airport activity, monitored traveller flights, and live flight lookup. Data via OpenSky ADS-B (free, ~15s lag) and AviationStack where configured.</p>
+        <p class="page-sub">Global airport activity, monitored traveller flights, and live flight lookup. Data via OpenSky ADS-B (free, ~15s lag), AviationStack where configured, and FAA NAS airspace advisories (US airports).</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <div class="refresh-row">
@@ -212,6 +229,9 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
           <span id="lastUpdated">Loading…</span>
         </div>
         <button class="btn" id="refreshBtn">↺ Refresh</button>
+        <a href="live-alerts.html" class="quick-link-pill">🚨 Live Alerts</a>
+        <a href="power-outages.html" class="quick-link-pill">⚡ Power Outages</a>
+        <a href="transport-status.html" class="quick-link-pill">🚇 Transport Status</a>
       </div>
     </div>
 
@@ -221,7 +241,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     </div>
 
     <!-- KPI band -->
-    <div class="kpi-row">
+    <div class="kpi-row" style="grid-template-columns:repeat(5,1fr)">
       <div class="kpi blue">
         <div class="kpi-val" id="kpiAirports">—</div>
         <div class="kpi-lbl">Airports Monitored</div>
@@ -233,6 +253,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
       <div class="kpi orange">
         <div class="kpi-val" id="kpiModerate">—</div>
         <div class="kpi-lbl">Moderate Activity</div>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-val" id="kpiNas">—</div>
+        <div class="kpi-lbl">NAS Advisories</div>
       </div>
       <div class="kpi red">
         <div class="kpi-val" id="kpiMonitored">—</div>
@@ -248,6 +272,18 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
           <div class="spinner"></div>
           Loading traveller records…
         </div>
+      </div>
+    </div>
+
+    <!-- NAS Airspace Advisories -->
+    <div class="card" id="nasCard">
+      <div class="card-title" style="margin-bottom:4px">
+        ⚡ NAS Airspace Advisories
+        <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">US airports · FAA live feed · no key required</span>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 12px">Ground stops, ground delays, closures, and departure delays currently active across US airports in your monitored set.</p>
+      <div id="nasAdvisoryList">
+        <div class="status-msg"><div class="spinner"></div>Loading advisories…</div>
       </div>
     </div>
 
@@ -379,6 +415,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   let allAirports = [];
   let allTravellers = [];
   let trackedFlights = [];
+  let nasEvents = {}; // airportId → event object
   let currentRegion = 'all';
   let hasAviationStack = false;
 
@@ -621,9 +658,13 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
           <td>${activityBadge(ap.disruption?.level)}</td>
           <td>${ap.disruption?.departures_sampled!=null ? ap.disruption.departures_sampled : '—'}</td>
           <td>${avsCell}</td>
-          <td>${ap.opensky_error
-            ? `<span style="color:var(--danger);font-size:11px">OpenSky error</span>`
-            : '<span style="color:var(--muted);font-size:11px">OpenSky</span>'}
+          <td>
+            ${ap.opensky_error
+              ? `<span style="color:var(--danger);font-size:11px">OpenSky error</span>`
+              : '<span style="color:var(--muted);font-size:11px">OpenSky</span>'}
+            ${nasEvents[ap.iata]
+              ? `<span style="margin-left:4px;font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(255,90,95,.15);color:var(--danger);border:1px solid rgba(255,90,95,.3)">NAS ⚡</span>`
+              : ''}
           </td>
         </tr>`;
     }).join('');
@@ -699,6 +740,138 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     }
   }
 
+  // ── NAS Airspace Advisories ────────────────────────────────────────
+  // FAA National Airspace System Status — free, no key, US airports only
+  // Uses FAA IATA codes (same as IATA for most US airports)
+  const NAS_URL = 'https://nasstatus.faa.gov/api/airport-events';
+
+  // Map of our monitored US airports to their FAA IDs (FAA uses IATA for most)
+  const US_AIRPORTS = new Set([
+    'JFK','EWR','LAX','ORD','ATL','DFW','MIA','SFO','SEA','BOS','DEN','LAS',
+    'YYZ','YVR','MEX' // Canada/Mexico entries won't match but harmless
+  ]);
+
+  async function loadNasAdvisories() {
+    const el = document.getElementById('nasAdvisoryList');
+    try {
+      const res = await fetch(NAS_URL, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      // Filter to only airports in our monitored set
+      const relevant = data.filter(e => US_AIRPORTS.has(e.airportId));
+
+      // Further filter to only those with active advisories
+      const active = relevant.filter(e =>
+        e.groundStop || e.groundDelay || e.airportClosure || e.departureDelay || e.arrivalDelay
+      );
+
+      // Update KPI
+      document.getElementById('kpiNas').textContent = active.length;
+
+      if (!active.length) {
+        el.innerHTML = `<div class="nas-empty">✓ No active NAS advisories for monitored US airports.</div>`;
+        return;
+      }
+
+      // Store for table use
+      nasEvents = {};
+      data.filter(e => e.groundStop || e.groundDelay || e.airportClosure || e.departureDelay)
+          .forEach(e => { nasEvents[e.airportId] = e; });
+      renderAirportTable(allAirports);
+        const advisories = [];
+
+        if (e.groundStop) {
+          advisories.push({
+            type: 'critical',
+            label: 'Ground Stop',
+            icon: '🛑',
+            reason: e.groundStop.impactingCondition || '—',
+            expires: e.groundStop.programExpirationTime,
+            detail: e.groundStop
+          });
+        }
+        if (e.groundDelay) {
+          advisories.push({
+            type: 'warning',
+            label: 'Ground Delay Program',
+            icon: '⏱',
+            reason: e.groundDelay.impactingCondition || '—',
+            avgDelay: e.groundDelay.avgDelay,
+            maxDelay: e.groundDelay.maxDelay,
+            expires: e.groundDelay.endTime,
+            detail: e.groundDelay
+          });
+        }
+        if (e.airportClosure) {
+          advisories.push({
+            type: 'critical',
+            label: 'Airport Closure',
+            icon: '🚫',
+            reason: e.airportClosure.text || e.airportClosure.simpleText || '—',
+            expires: e.airportClosure.endTime,
+            detail: e.airportClosure
+          });
+        }
+        if (e.departureDelay) {
+          advisories.push({
+            type: 'warning',
+            label: 'Departure Delay',
+            icon: '⚠',
+            reason: e.departureDelay.reason || '—',
+            avgDelay: e.departureDelay.averageDelay,
+            expires: null,
+            detail: e.departureDelay
+          });
+        }
+        if (e.arrivalDelay) {
+          advisories.push({
+            type: 'info',
+            label: 'Arrival Delay',
+            icon: '🔵',
+            reason: e.arrivalDelay.reason || '—',
+            avgDelay: e.arrivalDelay.averageDelay,
+            expires: null,
+            detail: e.arrivalDelay
+          });
+        }
+
+        const nasId = 'nas_' + e.airportId;
+        const worstType = advisories.find(a => a.type === 'critical') ? 'critical'
+                        : advisories.find(a => a.type === 'warning') ? 'warning' : 'info';
+        const typeCol = worstType === 'critical' ? 'var(--danger)'
+                      : worstType === 'warning' ? 'var(--warn)' : 'var(--info)';
+        const countBadge = advisories.length > 1
+          ? `<span style="font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:${typeCol}22;color:${typeCol};border:1px solid ${typeCol}44">${advisories.length}</span>`
+          : '';
+
+        const bodyRows = advisories.map(a => {
+          const rows = [
+            `<div class="nas-detail-row"><span class="nas-detail-label">${a.icon} ${esc(a.label)}</span><span class="nas-detail-value" style="color:${a.type==='critical'?'var(--danger)':a.type==='warning'?'var(--warn)':'var(--info)'}">${esc(a.reason)}</span></div>`
+          ];
+          if (a.avgDelay) rows.push(`<div class="nas-detail-row"><span class="nas-detail-label">Avg delay</span><span class="nas-detail-value">${Math.round(a.avgDelay)} min${a.maxDelay?` (max ${Math.round(a.maxDelay)}m)`:''}</span></div>`);
+          if (a.expires) rows.push(`<div class="nas-detail-row"><span class="nas-detail-label">Expires</span><span class="nas-detail-value">${fmtTime(a.expires)}</span></div>`);
+          return rows.join('');
+        }).join('<div style="margin:6px 0;border-top:1px solid rgba(255,255,255,.07)"></div>');
+
+        return `<div class="nas-advisory ${worstType}">
+          <div class="nas-advisory-header" onclick="const b=document.getElementById('${nasId}_body');b.classList.toggle('open');this.querySelector('.nas-chev').textContent=b.classList.contains('open')?'▼':'▶'">
+            <span style="font-weight:800;font-size:13px">${esc(e.airportId)}</span>
+            <span style="color:var(--muted);font-size:12px;flex:1">${esc(e.airportLongName||e.airportId)}</span>
+            ${countBadge}
+            <span style="font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:${typeCol}22;color:${typeCol};border:1px solid ${typeCol}44">${esc(advisories[0].label)}</span>
+            <span class="nas-chev" style="color:var(--muted);font-size:11px">▶</span>
+          </div>
+          <div class="nas-advisory-body" id="${nasId}_body">${bodyRows}</div>
+        </div>`;
+      }).join('');
+
+    } catch(err) {
+      document.getElementById('kpiNas').textContent = '—';
+      el.innerHTML = `<div class="nas-empty" style="color:var(--muted)">NAS advisory feed unavailable (${esc(String(err?.message||err))}). This is a direct FAA endpoint — if CORS is blocked, a future worker endpoint can proxy it.</div>`;
+    }
+  }
+
   // ── KPI update ────────────────────────────────────────────────────
   function updateKPIs(airports){
     document.getElementById('kpiAirports').textContent = airports.length;
@@ -710,12 +883,15 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   async function load(){
     document.getElementById('lastUpdated').textContent = 'Loading…';
 
-    // Load travellers and airport data in parallel
+    // Load travellers, airport data, and NAS advisories in parallel
     const [travellersWithFlights, airportRes] = await Promise.allSettled([
       loadTravellers().then(list => list),
       fetch(`${API}/api/flight-status?mode=airports`, {headers:authHeaders()})
         .then(r => r.json()).catch(() => ({}))
     ]);
+
+    // NAS advisories load independently (doesn't block main data)
+    loadNasAdvisories();
 
     const withFlights = travellersWithFlights.status === 'fulfilled' ? travellersWithFlights.value : [];
     const airportData = airportRes.status === 'fulfilled' ? airportRes.value : {};
@@ -775,7 +951,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   }
 
   // ── Events ────────────────────────────────────────────────────────
-  document.getElementById('refreshBtn').addEventListener('click', load);
+  document.getElementById('refreshBtn').addEventListener('click', () => { load(); loadNasAdvisories(); });
 
   document.getElementById('flightSearchBtn').addEventListener('click', () => {
     const val = document.getElementById('flightSearchInput').value;
@@ -852,41 +1028,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 })();
 </script>
 
-<!-- Top actions / user menu (matches other pages) -->
-<script>
-(function mountTopActions(){
-  const host = document.getElementById('topActions');
-  if(!host) return;
-  const readJson = k => { try{ return JSON.parse(localStorage.getItem(k)||'{}'); } catch{ return {}; } };
-  const profile  = readJson('cityintel.profile.v1');
-  const authUser = (window.CIAuth&&CIAuth.who) ? (CIAuth.who()||{}) : readJson('ci_user');
-  const displayName = profile.displayName||authUser.name||authUser.email||'CityIntel User';
-  const displayRole = profile.role||authUser.roleLabel||authUser.role||'Member';
-  const initialsOf = s => { s=String(s||'CI').trim(); if(!s) return 'CI'; if(s.includes('@')) return s[0].toUpperCase(); const p=s.split(/\s+/); return ((p[0]?.[0]||'C')+(p[1]?.[0]||'')).toUpperCase(); };
-  if(window.CIAuth&&CIAuth.isLoggedIn()){
-    const isMaster = CIAuth.isMasterAdmin ? CIAuth.isMasterAdmin() : false;
-    host.innerHTML = `
-      <div class="user" id="userChip">
-        <div class="avatar">${initialsOf(displayName)}</div>
-        <div><b>${displayName}</b> <span style="color:#8e97a3;font-size:12px">${displayRole}</span></div>
-      </div>
-      <div class="dropdown" id="userMenu">
-        ${isMaster?`<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a>`:''}
-        <a href="profile.html">Profile</a>
-        <a href="settings.html">Manage Billing</a>
-        <a href="#" id="logoutLink">Log out</a>
-      </div>`;
-    const chip=document.getElementById('userChip'), menu=document.getElementById('userMenu');
-    chip.addEventListener('click',()=>{ menu.style.display=menu.style.display==='block'?'none':'block'; });
-    document.addEventListener('click',e=>{ if(!host.contains(e.target)) menu.style.display='none'; });
-    document.getElementById('logoutLink').addEventListener('click',e=>{ e.preventDefault(); try{CIAuth.logout();}catch(_){} location.href='index.html'; });
-  } else {
-    const here=location.pathname.split('/').pop()||'index.html';
-    const next=encodeURIComponent(here+location.search+location.hash);
-    host.innerHTML=`<a class="login-btn" href="login.html?next=${next}">Log in</a>`;
-  }
-})();
-</script>
+<script src="shared-chip.js"></script>
 
 </body>
 </html>
