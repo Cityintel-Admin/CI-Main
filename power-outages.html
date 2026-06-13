@@ -218,7 +218,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       <div class="kpi green" id="kpiRestoredCard" style="cursor:pointer" title="Click to filter table to recently restored">
         <div class="kpi-val" id="kpiRestored">—</div><div class="kpi-lbl">Recently restored</div>
       </div>
-      <div class="kpi" id="kpiFocusCard" style="cursor:pointer;border:1px dashed rgba(255,255,255,.15)" title="Click a map location to focus outages within 1km. Saved across refreshes — click card to clear.">
+      <div class="kpi" id="kpiFocusCard" style="cursor:pointer;border:1px dashed rgba(255,255,255,.15)" title="Click a map location to focus outages within your selected radius. Saved across refreshes — click card to clear.">
         <div class="kpi-val" id="kpiFocus" style="font-size:18px">📍</div>
         <div class="kpi-lbl" id="kpiFocusLbl">Click map to focus area</div>
       </div>
@@ -278,6 +278,14 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
           </select>
           <input id="searchFilter" placeholder="Search postcode…" style="width:150px"/>
           <button class="btn" id="myLocationBtn" title="Show outages near your location">📍 Near me</button>
+          <div style="display:flex;align-items:center;gap:4px;margin-left:4px">
+            <span style="font-size:11px;color:var(--muted);white-space:nowrap">Focus radius:</span>
+            <div style="display:flex;border:1px solid var(--gray-600);border-radius:8px;overflow:hidden">
+              <button class="radius-btn active" data-km="1" style="padding:5px 10px;font-size:12px;font-weight:600;border:none;background:rgba(208,22,22,.2);color:var(--text);cursor:pointer;font-family:inherit;border-right:1px solid var(--gray-600)">1km</button>
+              <button class="radius-btn" data-km="5" style="padding:5px 10px;font-size:12px;font-weight:600;border:none;background:var(--gray-700);color:var(--muted);cursor:pointer;font-family:inherit;border-right:1px solid var(--gray-600)">5km</button>
+              <button class="radius-btn" data-km="10" style="padding:5px 10px;font-size:12px;font-weight:600;border:none;background:var(--gray-700);color:var(--muted);cursor:pointer;font-family:inherit">10km</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="outageMap"></div>
@@ -427,6 +435,18 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
   // ── Map init ─────────────────────────────────────────────────────────
   let focusCircle = null;
+  let currentFocusKm = 1; // default radius
+
+  function setRadiusBtn(km) {
+    currentFocusKm = km;
+    try { localStorage.setItem('ci_outage_focus_km', String(km)); } catch(e) {}
+    document.querySelectorAll('.radius-btn').forEach(b => {
+      const active = Number(b.dataset.km) === km;
+      b.style.background = active ? 'rgba(208,22,22,.2)' : 'var(--gray-700)';
+      b.style.color = active ? 'var(--text)' : 'var(--muted)';
+      b.classList.toggle('active', active);
+    });
+  }
   function initMap(){
     map = L.map('outageMap',{zoomControl:true}).setView([51.5074,-0.1278],9);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
@@ -445,21 +465,26 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       try {
         const saved = localStorage.getItem('ci_outage_focus');
         if (!saved) return;
-        const { lat, lng } = JSON.parse(saved);
+        const { lat, lng, km } = JSON.parse(saved);
         if (typeof lat === 'number' && typeof lng === 'number') {
+          const radius = km || 1;
+          setRadiusBtn(radius);
           map.setView([lat, lng], Math.max(map.getZoom(), 13));
-          applyAreaFocus(lat, lng);
+          applyAreaFocus(lat, lng, radius);
         }
       } catch(e) { /* ignore */ }
     };
   }
 
-  function applyAreaFocus(lat, lng) {
-      const FOCUS_KM = 1;
+  function applyAreaFocus(lat, lng, km) {
+      const FOCUS_KM = km || currentFocusKm || 1;
+      currentFocusKm = FOCUS_KM;
 
-      // Save to localStorage
-      try { localStorage.setItem('ci_outage_focus', JSON.stringify({ lat, lng })); } catch(e) {}
+      // Save to localStorage (pin + radius together)
+      try { localStorage.setItem('ci_outage_focus', JSON.stringify({ lat, lng, km: FOCUS_KM })); } catch(e) {}
 
+      // Sync radius button UI
+      setRadiusBtn(FOCUS_KM);
       // Remove previous focus circle
       if (focusCircle) { focusCircle.remove(); focusCircle = null; }
       focusCircle = L.circle([lat, lng], {
@@ -665,6 +690,28 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   document.getElementById('kpiUnplannedCard')?.addEventListener('click', () => applyKpiFilter('unplanned'));
   document.getElementById('kpiPlannedCard')?.addEventListener('click',   () => applyKpiFilter('planned'));
   document.getElementById('kpiRestoredCard')?.addEventListener('click',  () => applyKpiFilter('restored'));
+  // Radius selector buttons
+  document.querySelectorAll('.radius-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const km = Number(btn.dataset.km);
+      setRadiusBtn(km);
+      // If a focus pin is already active, re-apply with new radius
+      try {
+        const saved = localStorage.getItem('ci_outage_focus');
+        if (saved) {
+          const { lat, lng } = JSON.parse(saved);
+          if (typeof lat === 'number') applyAreaFocus(lat, lng, km);
+        }
+      } catch(e) {}
+    });
+  });
+
+  // Restore saved radius preference on load (before data arrives)
+  try {
+    const savedKm = localStorage.getItem('ci_outage_focus_km');
+    if (savedKm) setRadiusBtn(Number(savedKm));
+  } catch(e) {}
+
   document.getElementById('kpiFocusCard')?.addEventListener('click', () => {
     try { localStorage.removeItem('ci_outage_focus'); } catch(e) {}
     // Clear area focus, restore full view
