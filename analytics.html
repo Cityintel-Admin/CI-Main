@@ -133,6 +133,15 @@
     .lead-modal-note{color:var(--muted);font-size:12px;margin-top:4px}
     .lead-action-btn:disabled{opacity:.45;cursor:not-allowed}
 
+    .lead-row-click{cursor:pointer}
+    .lead-row-click:hover{background:rgba(255,255,255,.035)}
+    .lead-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .lead-detail-box{background:#101114;border:1px solid var(--g600);border-radius:10px;padding:10px}
+    .lead-detail-box b{display:block;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+    .lead-onboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .lead-onboard-grid .full{grid-column:1/-1}
+    .lead-onboard-grid input,.lead-onboard-grid textarea{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}
+
 
 
 /* ===== Mobile layout tweaks ===== */
@@ -260,6 +269,41 @@
   <div style="display:flex;gap:8px;align-items:center">
     <div id="platformLastChecked" style="font-size:12px;color:var(--muted)">Loading…</div>
     <button id="platformRefreshBtn" class="btn" type="button">↺ Refresh</button>
+  </div>
+</div>
+
+<!-- LEAD DETAIL MODAL -->
+<div id="leadDetailModal" class="lead-modal-backdrop" aria-hidden="true">
+  <div class="lead-modal" role="dialog" aria-modal="true">
+    <h3 style="margin-bottom:4px;">Access Request Details</h3>
+    <div id="leadDetailRecipient" class="lead-muted" style="margin-bottom:10px;">Loading request...</div>
+    <div id="leadDetailBody"></div>
+    <div class="lead-modal-actions">
+      <button id="leadDetailClose" class="btn" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD ONBOARD MODAL -->
+<div id="leadOnboardModal" class="lead-modal-backdrop" aria-hidden="true">
+  <div class="lead-modal" role="dialog" aria-modal="true">
+    <h3 style="margin-bottom:4px;">Onboard Organisation</h3>
+    <div id="leadOnboardRecipient" class="lead-muted" style="margin-bottom:10px;">Loading onboarding form...</div>
+    <div class="lead-onboard-grid">
+      <div><label>Default city</label><input id="obCity" placeholder="London"></div>
+      <div><label>Default country</label><input id="obCountry" placeholder="United Kingdom"></div>
+      <div><label>Latitude</label><input id="obLat" placeholder="51.5072"></div>
+      <div><label>Longitude</label><input id="obLon" placeholder="-0.1276"></div>
+      <div><label>Default radius km</label><input id="obRadius" type="number" min="1" max="50" value="5"></div>
+      <div><label>Power / transport region</label><input id="obOpsRegion" placeholder="London / UK"></div>
+      <div class="full"><label>Initial live-alert feeds</label><input id="obFeeds" placeholder="London, United Kingdom, Europe"></div>
+      <div class="full"><label>Onboarding notes</label><textarea id="obNotes" placeholder="Master admin notes, feed scope, rollout requirements..."></textarea></div>
+    </div>
+    <div id="leadOnboardStatus" class="lead-muted" style="margin-top:10px;"></div>
+    <div class="lead-modal-actions">
+      <button id="leadOnboardClose" class="btn" type="button">Close</button>
+      <button id="leadOnboardSave" class="btn primary" type="button">Save onboarding</button>
+    </div>
   </div>
 </div>
 
@@ -1143,6 +1187,18 @@ const makeBar = (label, count, color) => {
   const historyRecipient = document.getElementById('leadHistoryRecipient');
   const historyClose = document.getElementById('leadHistoryClose');
 
+  const detailModal = document.getElementById('leadDetailModal');
+  const detailRecipient = document.getElementById('leadDetailRecipient');
+  const detailBody = document.getElementById('leadDetailBody');
+  const detailClose = document.getElementById('leadDetailClose');
+
+  const onboardModal = document.getElementById('leadOnboardModal');
+  const onboardRecipient = document.getElementById('leadOnboardRecipient');
+  const onboardStatus = document.getElementById('leadOnboardStatus');
+  const onboardClose = document.getElementById('leadOnboardClose');
+  const onboardSave = document.getElementById('leadOnboardSave');
+  let activeOnboardLead = null;
+
   let latestRows = [];
   let activeLead = null;
   let activeMessageType = 'reply';
@@ -1204,7 +1260,9 @@ const makeBar = (label, count, color) => {
 
     return `
       <div class="lead-actions">
+        <button class="lead-action-btn reply" data-lead-detail="${id}">View</button>
         <button class="lead-action-btn reply" data-lead-history="${id}">Messages</button>
+        <button class="lead-action-btn reply" data-lead-onboard="${id}">Onboard</button>
         <button class="lead-action-btn reply" data-lead-message="reply" data-lead-id="${id}">Reply</button>
         <button class="lead-action-btn contact" data-lead-message="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
         <button class="lead-action-btn approve" data-lead-action="approved" data-lead-id="${id}" ${disabled('approved')}>Approve</button>
@@ -1224,7 +1282,7 @@ const makeBar = (label, count, color) => {
       const name = `${r.first_name || ''} ${r.surname || ''}`.trim() || '—';
       const email = r.email || '';
       return `
-        <tr>
+        <tr class="lead-row-click" data-lead-detail-row="${esc(r.id)}">
           <td><strong>${esc(name)}</strong><div class="lead-muted">${esc(email)}</div></td>
           <td>${esc(r.company)}</td>
           <td>${esc(r.role)}</td>
@@ -1232,7 +1290,7 @@ const makeBar = (label, count, color) => {
           <td>${esc(r.region)}</td>
           <td>${statusBadge(r.status)}</td>
           <td>${esc(fmtDate(r.created_at))}</td>
-          <td><div class="lead-message" title="${esc(r.message)}">${esc(r.message)}</div></td>
+          <td><div class="lead-message" title="${esc(r.message)}">${esc(r.message)}</div><div class="lead-muted">Heard: ${esc(r.heard_from || '—')}</div></td>
           <td>${actionButtons(r)}</td>
         </tr>
       `;
@@ -1295,6 +1353,81 @@ const makeBar = (label, count, color) => {
         btn.textContent = label;
       }
     }
+  }
+
+  function openLeadDetail(id){
+    const row = latestRows.find(r => String(r.id) === String(id));
+    if (!row || !detailModal || !detailBody) return;
+    detailRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    detailBody.innerHTML = `
+      <div class="lead-detail-grid">
+        <div class="lead-detail-box"><b>Name</b>${esc(fullName(row))}</div>
+        <div class="lead-detail-box"><b>Email</b>${esc(row.email)}</div>
+        <div class="lead-detail-box"><b>Company</b>${esc(row.company)}</div>
+        <div class="lead-detail-box"><b>Role</b>${esc(row.role)}</div>
+        <div class="lead-detail-box"><b>Team size</b>${esc(row.team_size)}</div>
+        <div class="lead-detail-box"><b>Interest</b>${esc(row.interest)}</div>
+        <div class="lead-detail-box"><b>Region</b>${esc(row.region)}</div>
+        <div class="lead-detail-box"><b>Heard from</b>${esc(row.heard_from || '—')} ${row.heard_from_detail ? '• '+esc(row.heard_from_detail) : ''}</div>
+        <div class="lead-detail-box full" style="grid-column:1/-1"><b>Message</b><div style="white-space:pre-wrap">${esc(row.message)}</div></div>
+      </div>`;
+    detailModal.style.display = 'flex';
+    detailModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeLeadDetail(){ if(detailModal){ detailModal.style.display='none'; detailModal.setAttribute('aria-hidden','true'); } }
+
+  async function openLeadOnboard(id){
+    const row = latestRows.find(r => String(r.id) === String(id));
+    if (!row || !onboardModal) return;
+    activeOnboardLead = row;
+    onboardRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    onboardStatus.textContent = 'Loading saved onboarding draft…';
+    onboardModal.style.display = 'flex';
+    onboardModal.setAttribute('aria-hidden','false');
+    try{
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(row.id)}/onboard`, { headers: authHeaders() });
+      const data = await res.json().catch(()=>({}));
+      const ob = data.onboarding || {};
+      document.getElementById('obCity').value = ob.defaultCity || '';
+      document.getElementById('obCountry').value = ob.defaultCountry || '';
+      document.getElementById('obLat').value = ob.defaultLat || '';
+      document.getElementById('obLon').value = ob.defaultLon || '';
+      document.getElementById('obRadius').value = ob.defaultRadiusKm || 5;
+      document.getElementById('obOpsRegion').value = ob.transportRegion || ob.powerRegion || '';
+      document.getElementById('obFeeds').value = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds.join(', ') : (ob.liveAlertFeeds || row.region || '');
+      document.getElementById('obNotes').value = ob.notes || '';
+      onboardStatus.textContent = data.ok ? 'Draft loaded.' : 'No saved draft yet.';
+    }catch(e){
+      onboardStatus.textContent = 'Could not load saved draft — you can still save a new one.';
+    }
+  }
+
+  function closeLeadOnboard(){ if(onboardModal){ onboardModal.style.display='none'; onboardModal.setAttribute('aria-hidden','true'); } activeOnboardLead=null; }
+
+  async function saveLeadOnboard(){
+    if(!activeOnboardLead) return;
+    const payload = {
+      defaultCity: document.getElementById('obCity').value.trim(),
+      defaultCountry: document.getElementById('obCountry').value.trim(),
+      defaultLat: document.getElementById('obLat').value.trim(),
+      defaultLon: document.getElementById('obLon').value.trim(),
+      defaultRadiusKm: document.getElementById('obRadius').value.trim() || '5',
+      liveAlertFeeds: document.getElementById('obFeeds').value.split(',').map(x=>x.trim()).filter(Boolean),
+      powerRegion: document.getElementById('obOpsRegion').value.trim(),
+      transportRegion: document.getElementById('obOpsRegion').value.trim(),
+      notes: document.getElementById('obNotes').value.trim()
+    };
+    onboardStatus.textContent = 'Saving onboarding configuration…';
+    onboardSave.disabled = true;
+    try{
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(activeOnboardLead.id)}/onboard`, { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
+      onboardStatus.textContent = 'Onboarding configuration saved.';
+      await loadLeads();
+    }catch(e){ onboardStatus.textContent = 'Save failed: ' + (e.message || e); }
+    finally{ onboardSave.disabled = false; }
   }
 
   async function openLeadHistory(id){
@@ -1412,6 +1545,24 @@ const makeBar = (label, count, color) => {
 
   if (body) {
     body.addEventListener('click', (e) => {
+      const detailBtn = e.target.closest('[data-lead-detail]');
+      if (detailBtn) {
+        openLeadDetail(detailBtn.getAttribute('data-lead-detail'));
+        return;
+      }
+
+      const onboardBtn = e.target.closest('[data-lead-onboard]');
+      if (onboardBtn) {
+        openLeadOnboard(onboardBtn.getAttribute('data-lead-onboard'));
+        return;
+      }
+
+      const rowClick = e.target.closest('[data-lead-detail-row]');
+      if (rowClick && !e.target.closest('button')) {
+        openLeadDetail(rowClick.getAttribute('data-lead-detail-row'));
+        return;
+      }
+
       const historyBtn = e.target.closest('[data-lead-history]');
       if (historyBtn) {
         const id = historyBtn.getAttribute('data-lead-history');
@@ -1440,10 +1591,17 @@ const makeBar = (label, count, color) => {
   if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeMessageModal(); });
   if (historyClose) historyClose.addEventListener('click', closeLeadHistory);
   if (historyModal) historyModal.addEventListener('click', (e) => { if (e.target === historyModal) closeLeadHistory(); });
+  if (detailClose) detailClose.addEventListener('click', closeLeadDetail);
+  if (detailModal) detailModal.addEventListener('click', (e) => { if (e.target === detailModal) closeLeadDetail(); });
+  if (onboardClose) onboardClose.addEventListener('click', closeLeadOnboard);
+  if (onboardSave) onboardSave.addEventListener('click', saveLeadOnboard);
+  if (onboardModal) onboardModal.addEventListener('click', (e) => { if (e.target === onboardModal) closeLeadOnboard(); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeMessageModal();
       closeLeadHistory();
+      closeLeadDetail();
+      closeLeadOnboard();
     }
   });
 
