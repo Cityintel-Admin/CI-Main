@@ -263,6 +263,10 @@
     role: user.role,
     roleKey: user.roleKey,
     roleLabel: user.roleLabel,
+    org_id: user.org_id || user.orgId || null,
+    orgId: user.org_id || user.orgId || null,
+    accessType: user.accessType || user.access_type || null,
+    status: user.status || null,
     is_admin: user.roleKey === 'master-admin',
     is_master: user.roleKey === 'master-admin'
   });
@@ -385,7 +389,9 @@ const status = String(
           role: roleStringForCompatibility(nextRoleKey),
           roleLabel: roleLabelFromKey(nextRoleKey),
           accessType,
-          status: status || p.status
+          status: status || p.status,
+          org_id: data.org_id || data.orgId || p.org_id || p.orgId || null,
+          orgId: data.org_id || data.orgId || p.org_id || p.orgId || null
         });
 
         persistProfile(refreshedProfile);
