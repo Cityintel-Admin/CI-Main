@@ -70,20 +70,34 @@ nav a.active{background:rgba(208,22,22,.15);border-color:var(--brand-red)}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* Status grid */
 .status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.source-card{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:12px;padding:13px 15px}
+.source-card{
+  background:var(--gray-700);
+  border:1px solid var(--gray-600);
+  border-radius:12px;
+  padding:13px 15px;
+  min-width:0;
+  overflow:hidden;
+}
 .source-card.ok{border-color:rgba(51,196,141,.3)}
 .source-card.warn{border-color:rgba(240,180,41,.3)}
 .source-card.error{border-color:rgba(255,90,95,.3)}
 .source-card.loading{border-color:var(--gray-600)}
-.source-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.source-name{font-weight:700;font-size:13px}
-.source-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.source-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:10px;min-width:0}
+.source-name{font-weight:700;font-size:13px;min-width:0;overflow-wrap:anywhere}
+.source-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap}
 .badge-ok{background:rgba(51,196,141,.15);color:var(--ok);border:1px solid rgba(51,196,141,.3)}
 .badge-warn{background:rgba(240,180,41,.15);color:var(--warn);border:1px solid rgba(240,180,41,.3)}
 .badge-error{background:rgba(255,90,95,.15);color:var(--danger);border:1px solid rgba(255,90,95,.3)}
 .badge-muted{background:rgba(142,151,163,.1);color:var(--muted);border:1px solid rgba(142,151,163,.2)}
-.source-meta{font-size:12px;color:var(--muted);line-height:1.5}
-.source-detail{font-size:12px;color:#c9d0d8;margin-top:4px}
+.source-meta,.source-detail{
+  font-size:12px;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.source-meta{color:var(--muted)}
+.source-detail{color:#c9d0d8;margin-top:4px}
+@media(max-width:700px){.status-grid{grid-template-columns:1fr}.source-head{flex-direction:column;align-items:flex-start}}
 /* Summary bar */
 .summary-bar{display:flex;gap:12px;flex-wrap:wrap}
 .sum-item{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:10px;padding:12px 16px;min-width:90px}
@@ -354,17 +368,13 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
         pushResult('warn');
       }
 
-      // HK MTR: no key required — returns {ok, count, note} or {ok:false, error}
+      // HK MTR: currently hidden unless the feed responds cleanly.
+      // The public endpoint can return 404/HTML intermittently, which created a noisy
+      // error card and long overlapping URL text on the Sources page.
       const hkmtr = s.hkmtr;
       if(hkmtr?.ok && hkmtr?.count!=null){
         cards.push(sourceCard('Hong Kong MTR','ok', hkmtr.count>0?`${hkmtr.count} disruptions`:(hkmtr.note||'Normal service'), hkmtr.hint||'No API key required'));
         pushResult('ok');
-      } else if(hkmtr?.ok===false && hkmtr?.error){
-        cards.push(sourceCard('Hong Kong MTR','error',hkmtr.error,'Open data feed — no key required · https://rt.data.gov.hk'));
-        pushResult('error');
-      } else {
-        cards.push(sourceCard('Hong Kong MTR','warn','Not responding','Open data feed — no key required'));
-        pushResult('warn');
       }
 
       grid.innerHTML = cards.join('');
@@ -454,15 +464,23 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
   async function checkFlight(){
     const grid = document.getElementById('flightGrid');
     try{
-      const res = await fetch(API+'/api/flight-status/schema-debug', {headers:authH()});
-      const d = await res.json().catch(()=>({}));
+      const [schemaRes, nasRes, travRes] = await Promise.allSettled([
+        fetch(API+'/api/flight-status/schema-debug', {headers:authH()}),
+        fetch(API+'/api/nas-advisories', {headers:authH()}),
+        fetch(API+'/api/org/travellers', {headers:authH()})
+      ]);
+
       const cards = [];
 
-      // Flight returns {ok, has_opensky_creds, has_aviationstack, airports_supported, recent_keys:[{cache_key, fetched_at}]}
-      if(d.has_opensky_creds){
-        const lastFetch = d.recent_keys?.[0]?.fetched_at;
+      const schema = schemaRes.status === 'fulfilled'
+        ? await schemaRes.value.json().catch(()=>({}))
+        : { ok:false, error:schemaRes.reason?.message || 'Schema debug request failed' };
+
+      // OpenSky / airport cache
+      if(schema.has_opensky_creds){
+        const lastFetch = schema.recent_keys?.[0]?.fetched_at;
         cards.push(sourceCard('OpenSky Network','ok',
-          `${d.airports_supported||78} airports supported · OAuth2 authenticated · ${d.recent_keys?.length||0} cache entries`,
+          `${schema.airports_supported||78} airports supported · OAuth2 authenticated · ${schema.recent_keys?.length||0} cache entries`,
           lastFetch ? `Last cached: ${fmtTime(lastFetch)}` : 'Cache warming via cron'));
         pushResult('ok');
       } else {
@@ -470,12 +488,75 @@ a{color:#9ccaff}a:hover{text-decoration:underline}
         pushResult('warn');
       }
 
-      if(d.has_aviationstack){
+      // CityIntel live flight lookup endpoint — this is the worker route used by flight-status.html.
+      if(schema.ok !== false){
+        cards.push(sourceCard('CityIntel Flight Lookup','ok',
+          'Worker endpoint available · /api/flight-status?mode=flight&q=BA123',
+          'Uses OpenSky live ADS-B with optional AviationStack/AirLabs enrichment'));
+        pushResult('ok');
+      } else {
+        cards.push(sourceCard('CityIntel Flight Lookup','error',
+          schema.error || 'Flight status schema endpoint unavailable',
+          'Check /api/flight-status/schema-debug'));
+        pushResult('error');
+      }
+
+      // AviationStack optional enrichment
+      if(schema.has_aviationstack){
         cards.push(sourceCard('AviationStack','ok','Configured — delay, gate & schedule data active','Optional enrichment layer'));
         pushResult('ok');
       } else {
         cards.push(sourceCard('AviationStack','warn','Key not configured','Add AVIATIONSTACK_API_KEY for delay minutes and gate data · optional'));
         pushResult('warn');
+      }
+
+      // FAA NAS advisory proxy — latest worker API from the flight-status upgrade.
+      if(nasRes.status === 'fulfilled'){
+        const nas = await nasRes.value.json().catch(()=>({}));
+        if(nasRes.value.ok && nas.ok){
+          cards.push(sourceCard('FAA NAS Advisories','ok',
+            `${nas.count ?? (nas.events||[]).length ?? 0} active advisory records`,
+            `Worker proxy /api/nas-advisories · fetched ${fmtTime(nas.fetched_at)}`));
+          pushResult('ok');
+        } else {
+          cards.push(sourceCard('FAA NAS Advisories','error',
+            nas.error || `HTTP ${nasRes.value.status}`,
+            'Worker proxy active, but FAA NAS response failed'));
+          pushResult('error');
+        }
+      } else {
+        cards.push(sourceCard('FAA NAS Advisories','error',
+          nasRes.reason?.message || 'Could not reach /api/nas-advisories',
+          'Check worker deployment and CORS'));
+        pushResult('error');
+      }
+
+      // Traveller records feed — supports monitored traveller flights and departure hubs.
+      if(travRes.status === 'fulfilled'){
+        const trav = await travRes.value.json().catch(()=>({}));
+        const arr = Array.isArray(trav.travellers) ? trav.travellers
+                  : Array.isArray(trav.items) ? trav.items
+                  : Array.isArray(trav.data) ? trav.data
+                  : Array.isArray(trav) ? trav
+                  : [];
+        if(travRes.value.ok || arr.length){
+          const withFlights = arr.filter(t => t.flight || t.flight_number || t.flightNumber || t.outbound_flight || t.return_flight).length;
+          const withHubs = arr.filter(t => t.departure_iata || t.origin_iata || t.home_airport_iata || t.airport_iata).length;
+          cards.push(sourceCard('Traveller Flight Monitoring','ok',
+            `${arr.length} traveller records · ${withFlights} with flight numbers · ${withHubs} with departure hubs`,
+            'Source: /api/org/travellers'));
+          pushResult('ok');
+        } else {
+          cards.push(sourceCard('Traveller Flight Monitoring','warn',
+            'Traveller endpoint returned no records',
+            'Add traveller flight numbers or departure_iata/origin_iata fields to populate monitoring'));
+          pushResult('warn');
+        }
+      } else {
+        cards.push(sourceCard('Traveller Flight Monitoring','error',
+          travRes.reason?.message || 'Could not reach traveller endpoint',
+          'Check /api/org/travellers'));
+        pushResult('error');
       }
 
       grid.innerHTML = cards.join('');
