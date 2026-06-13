@@ -261,6 +261,24 @@
 
   <div id="orgMsg" class="muted" style="margin-top:10px;"></div>
 </section>
+<section class="card" id="orgUserInviteCard">
+  <h2>Organisation User Invites</h2>
+  <p class="muted">Invite up to 5 initial operator users for this organisation. Invited users receive the same password setup flow as approved requests.</p>
+  <div id="inviteSeatStatus" class="muted" style="margin:10px 0;">Loading invite seats…</div>
+  <div class="row" style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+    <div><label>User name</label><input id="inviteUserName" placeholder="Optional display name"></div>
+    <div><label>User email</label><input id="inviteUserEmail" type="email" placeholder="user@company.com"></div>
+    <button id="sendOrgInviteBtn" type="button">Send invite</button>
+  </div>
+  <div id="inviteMsg" class="muted" style="margin-top:10px;"></div>
+  <div style="overflow:auto;margin-top:12px;border:1px solid var(--gray-600);border-radius:12px;">
+    <table style="width:100%;border-collapse:collapse;min-width:620px;">
+      <thead><tr style="background:#1c1e22"><th style="padding:8px;text-align:left">Email</th><th style="padding:8px;text-align:left">Name</th><th style="padding:8px;text-align:left">Status</th><th style="padding:8px;text-align:left">Created</th></tr></thead>
+      <tbody id="orgInviteRows"><tr><td colspan="4" class="muted" style="padding:10px;">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
 
       
 
@@ -1436,6 +1454,50 @@
 })();
 </script>
 
+
+<script>
+(function orgInviteManager(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  function q(id){ return document.getElementById(id); }
+  function getAuthHeaders(){
+    const u = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : JSON.parse(localStorage.getItem('ci_user') || '{}');
+    const h = {'Content-Type':'application/json','Accept':'application/json'};
+    if(u.email) h['X-User-Email'] = u.email;
+    if(u.name) h['X-User-Name'] = u.name;
+    if(u.id || u.email) h['X-User-Id'] = u.id || u.email;
+    if(u.roleKey) h['X-User-Role-Key'] = u.roleKey;
+    if(u.role) h['X-User-Role'] = u.role;
+    return h;
+  }
+  function canManage(){ try{return !!(window.CIAuth && (CIAuth.isOrgAdmin() || CIAuth.isMasterAdmin()));}catch{return false;} }
+  function esc(v){return String(v??'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  async function loadInvites(){
+    const card=q('orgUserInviteCard'); if(!card) return;
+    if(!canManage()){ card.style.display='none'; return; }
+    try{
+      const res=await fetch(API_BASE + '/api/org/invites',{headers:getAuthHeaders()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok) throw new Error(data.error||'Failed');
+      q('inviteSeatStatus').textContent = `${data.activeOperators || 0}/${data.maxOperators || 5} operator seats currently active or reserved.`;
+      const rows=Array.isArray(data.data)?data.data:[];
+      q('orgInviteRows').innerHTML = rows.length ? rows.map(r=>`<tr><td style="padding:8px;border-top:1px solid var(--gray-600)">${esc(r.email)}</td><td style="padding:8px;border-top:1px solid var(--gray-600)">${esc(r.name)}</td><td style="padding:8px;border-top:1px solid var(--gray-600)">${esc(r.status)}</td><td style="padding:8px;border-top:1px solid var(--gray-600)">${esc(r.created_at||'')}</td></tr>`).join('') : '<tr><td colspan="4" class="muted" style="padding:10px;">No operator invites sent yet.</td></tr>';
+    }catch(e){ q('inviteSeatStatus').textContent='Invite manager unavailable: '+(e.message||e); }
+  }
+  async function sendInvite(){
+    const email=q('inviteUserEmail').value.trim(); const name=q('inviteUserName').value.trim();
+    if(!email){ q('inviteMsg').textContent='Enter an email address.'; return; }
+    q('inviteMsg').textContent='Sending invite…';
+    try{
+      const res=await fetch(API_BASE + '/api/org/invites',{method:'POST',headers:getAuthHeaders(),body:JSON.stringify({email,name})});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok) throw new Error(data.error||'Invite failed');
+      q('inviteMsg').textContent='Invite sent. Password setup email should arrive shortly.'; q('inviteUserEmail').value=''; q('inviteUserName').value=''; await loadInvites();
+    }catch(e){ q('inviteMsg').textContent='Invite failed: '+(e.message||e); }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadInvites); else loadInvites();
+  document.addEventListener('click', e=>{ if(e.target && e.target.id==='sendOrgInviteBtn') sendInvite(); });
+})();
+</script>
 </body>
 </html>
 
