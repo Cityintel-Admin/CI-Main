@@ -134,6 +134,15 @@ nav a.active{background:rgba(208,22,22,.15);border-color:var(--brand-red)}
 .airport-iata{font-weight:800;font-size:15px;margin-bottom:2px}
 .airport-name{font-size:11px;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .airport-stat{font-size:12px;margin-top:4px}
+
+/* Traveller departure hubs */
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.hub-card{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:10px;padding:12px 14px}
+.hub-iata{font-weight:900;font-size:16px;margin-bottom:2px}
+.hub-name{font-size:11px;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-stat{font-size:12px;color:#c9d0d8;margin-top:3px}
+.hub-travellers{font-size:11px;color:var(--info);margin-top:6px;line-height:1.4}
+
 /* Table */
 .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--gray-600)}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -298,6 +307,16 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
         <button class="btn" id="flightSearchClear" style="display:none">✕ Clear</button>
       </div>
       <div id="flightSearchResult"></div>
+    </div>
+
+
+    <!-- Traveller departure hubs -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">🧳 Traveller Departure Hubs</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 12px">Airports currently referenced by registered traveller records. This uses your own traveller data, so it works even when external airport activity feeds are limited.</p>
+      <div class="hub-grid" id="travellerHubGrid">
+        <div class="status-msg" style="grid-column:1/-1">Loading traveller hub data…</div>
+      </div>
     </div>
 
     <!-- Map -->
@@ -528,10 +547,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── Load travellers and extract flight numbers ────────────────────
   async function loadTravellers(){
     try{
-      const res = await fetch(API+'/api/travellers', {headers:authHeaders()});
+      const res = await fetch(API+'/api/org/travellers', {headers:authHeaders()});
       const data = await res.json().catch(()=>({}));
       if(!res.ok||!data.ok) return [];
-      const list = Array.isArray(data.travellers) ? data.travellers : (Array.isArray(data) ? data : []);
+      const list = Array.isArray(data.travellers) ? data.travellers : (Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
       allTravellers = list;
       // Extract travellers who have a flight_number stored
       return list.filter(t => t.flight_number || t.flight || t.flightNumber);
@@ -540,6 +559,71 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
   function getTravellerFlightNum(t){
     return String(t.flight_number || t.flight || t.flightNumber || '').trim().toUpperCase();
+  }
+
+
+  function travellerAirportCode(t){
+    return String(
+      t.departure_iata || t.departure_airport_iata || t.airport_iata ||
+      t.home_airport_iata || t.origin_iata || t.from_iata ||
+      t.flight_departure_iata || ''
+    ).trim().toUpperCase();
+  }
+
+  function travellerAirportName(t, code){
+    return String(
+      t.departure_airport || t.airport_name || t.home_airport ||
+      t.origin_airport || t.from_airport || (code ? (AIRPORT_NAME_FALLBACK[code] || code) : 'Unknown airport')
+    ).trim();
+  }
+
+  const AIRPORT_NAME_FALLBACK = {
+    LHR:'London Heathrow', LGW:'London Gatwick', STN:'London Stansted', LTN:'London Luton',
+    LCY:'London City', MAN:'Manchester', BHX:'Birmingham', EDI:'Edinburgh', GLA:'Glasgow',
+    JFK:'John F Kennedy', EWR:'Newark', LAX:'Los Angeles', ORD:"O'Hare Chicago", ATL:'Atlanta',
+    DFW:'Dallas Fort Worth', MIA:'Miami', SFO:'San Francisco', SEA:'Seattle', BOS:'Boston',
+    CDG:'Paris Charles de Gaulle', AMS:'Amsterdam Schiphol', FRA:'Frankfurt', DXB:'Dubai',
+    SIN:'Singapore Changi', HKG:'Hong Kong', SYD:'Sydney', MEL:'Melbourne', YYZ:'Toronto Pearson'
+  };
+
+  function renderTravellerHubs(travellers){
+    const el = document.getElementById('travellerHubGrid');
+    if(!el) return;
+
+    const buckets = new Map();
+    (travellers||[]).forEach(t => {
+      const code = travellerAirportCode(t);
+      if(!code) return;
+      const name = travellerAirportName(t, code);
+      const travellerName = t.full_name || t.name || [t.first_name,t.last_name].filter(Boolean).join(' ') || t.email || 'Traveller';
+      const flightNum = getTravellerFlightNum(t);
+      if(!buckets.has(code)) buckets.set(code, { code, name, travellers: [], flights: new Set(), upcoming: 0 });
+      const b = buckets.get(code);
+      b.travellers.push(travellerName);
+      if(flightNum) b.flights.add(flightNum);
+      if(t.flight_number || t.flight || t.flightNumber || t.trip_date || t.departure_date || t.status === 'upcoming') b.upcoming++;
+    });
+
+    const hubs = Array.from(buckets.values()).sort((a,b) => b.travellers.length - a.travellers.length || a.code.localeCompare(b.code));
+
+    if(!hubs.length){
+      el.innerHTML = `<div class="monitored-empty" style="grid-column:1/-1">No traveller departure airport fields found yet. Add fields such as <code>departure_iata</code>, <code>origin_iata</code>, or <code>home_airport_iata</code> to traveller records to populate this hub view.</div>`;
+      return;
+    }
+
+    el.innerHTML = hubs.map(h => `
+      <div class="hub-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div>
+            <div class="hub-iata">${esc(h.code)}</div>
+            <div class="hub-name">${esc(h.name)}</div>
+          </div>
+          <span class="badge badge-blue">${h.travellers.length} traveller${h.travellers.length!==1?'s':''}</span>
+        </div>
+        <div class="hub-stat">${h.flights.size} monitored flight${h.flights.size!==1?'s':''}${h.upcoming?` · ${h.upcoming} active/upcoming`:''}</div>
+        <div class="hub-travellers">${esc(h.travellers.slice(0,4).join(', '))}${h.travellers.length>4?'…':''}</div>
+      </div>
+    `).join('');
   }
 
   // ── Render monitored flights ──────────────────────────────────────
@@ -743,7 +827,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── NAS Airspace Advisories ────────────────────────────────────────
   // FAA National Airspace System Status — free, no key, US airports only
   // Uses FAA IATA codes (same as IATA for most US airports)
-  const NAS_URL = 'https://nasstatus.faa.gov/api/airport-events';
+  const NAS_URL = API + '/api/nas-advisories';
 
   // Map of our monitored US airports to their FAA IDs (FAA uses IATA for most)
   const US_AIRPORTS = new Set([
@@ -754,9 +838,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   async function loadNasAdvisories() {
     const el = document.getElementById('nasAdvisoryList');
     try {
-      const res = await fetch(NAS_URL, { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(NAS_URL, { headers: authHeaders(), signal: AbortSignal.timeout(10000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const raw = await res.json();
+      const data = Array.isArray(raw) ? raw : (Array.isArray(raw.events) ? raw.events : (Array.isArray(raw.data) ? raw.data : []));
 
       // Filter to only airports in our monitored set
       const relevant = data.filter(e => US_AIRPORTS.has(e.airportId));
@@ -870,7 +955,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
     } catch(err) {
       document.getElementById('kpiNas').textContent = '—';
-      el.innerHTML = `<div class="nas-empty" style="color:var(--muted)">NAS advisory feed unavailable (${esc(String(err?.message||err))}). This is a direct FAA endpoint — if CORS is blocked, a future worker endpoint can proxy it.</div>`;
+      el.innerHTML = `<div class="nas-empty" style="color:var(--muted)">NAS advisory feed unavailable (${esc(String(err?.message||err))}). This is served through the CityIntel worker proxy, so check /api/nas-advisories and worker logs if it persists.</div>`;
     }
   }
 
@@ -896,6 +981,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     loadNasAdvisories();
 
     const withFlights = travellersWithFlights.status === 'fulfilled' ? travellersWithFlights.value : [];
+    renderTravellerHubs(allTravellers);
     const airportData = airportRes.status === 'fulfilled' ? airportRes.value : {};
 
     // ── Airport overview ──
