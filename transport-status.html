@@ -138,8 +138,17 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:tpulse 2s ease-in-out infinite}
 @keyframes tpulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
 .detail-panel{background:rgba(240,180,41,.04);border:1px solid rgba(240,180,41,.2);border-radius:12px;padding:14px;display:none}
-.detail-title{font-weight:800;font-size:14px;color:var(--warn);margin-bottom:6px}
-.detail-reason{font-size:13px;color:#c9d0d8;line-height:1.5}
+.detail-title{font-weight:800;font-size:14px;color:var(--warn);margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.detail-block{background:rgba(0,0,0,.2);border-radius:8px;padding:9px 11px}
+.detail-block-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.detail-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.detail-row:last-child{border-bottom:none}
+.detail-row-label{color:var(--muted)}
+.detail-row-val{font-weight:600;text-align:right;max-width:60%}
+.detail-reason-full{font-size:13px;color:#c9d0d8;line-height:1.6;margin-top:8px;padding:10px;background:rgba(0,0,0,.15);border-radius:8px;border-left:3px solid rgba(240,180,41,.4)}
+.detail-stops{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
+.detail-close{float:right;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:0 4px;background:none;border:none;font-family:inherit}
 @media(max-width:900px){
   .app{grid-template-columns:1fr}.sidebar{display:none}
   .kpi-row{grid-template-columns:1fr 1fr}
@@ -240,8 +249,13 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
     <!-- Disruption detail panel (shown on row click) -->
     <div id="detailPanel" class="detail-panel">
-      <div class="detail-title" id="detailTitle">—</div>
-      <div class="detail-reason" id="detailReason">—</div>
+      <div class="detail-title">
+        <span id="detailTitle">—</span>
+        <button class="detail-close" id="detailClose" title="Close">✕</button>
+      </div>
+      <div class="detail-grid" id="detailGrid"></div>
+      <div class="detail-reason-full" id="detailReason" style="display:none"></div>
+      <div class="detail-stops" id="detailStops" style="display:none"></div>
     </div>
 
     <!-- Proximity alerts (shown if disruptions near registered assets or travellers) -->
@@ -515,10 +529,16 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
         const entityId = 'proxEntity_' + name.replace(/\W/g,'_');
         const rows = group.items.map(n => {
           const sc = SEV_COLOR[n.disruption.severity] || '#8e97a3';
-          return `<div style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid;color:${sc};border-color:${sc}44;background:${sc}18;flex-shrink:0">${esc(n.disruption.severity||'disrupted')}</span>
-            <span style="flex:1;min-width:140px">${esc(n.disruption.line)}: ${esc(n.disruption.status)}</span>
-            <span style="color:var(--muted)">${n.dist.toFixed(1)}km · ${esc(sourceName(n.disruption._source))}</span>
+          const timing = n.disruption.start_time ? timeAgo(n.disruption.start_time) : '';
+          const timingStr = timing ? ` · since ${timing}` : '';
+          const reasonSnip = n.disruption.reason ? n.disruption.reason.slice(0, 120) + (n.disruption.reason.length > 120 ? '…' : '') : '';
+          return `<div style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${reasonSnip?'4px':'0'}">
+              <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid;color:${sc};border-color:${sc}44;background:${sc}18;flex-shrink:0">${esc(n.disruption.severity||'disrupted')}</span>
+              <span style="font-weight:600">${esc(n.disruption.line)}: ${esc(n.disruption.status)}</span>
+              <span style="color:var(--muted);margin-left:auto">${n.dist.toFixed(1)}km · ${esc(sourceName(n.disruption._source))}${timingStr}</span>
+            </div>
+            ${reasonSnip ? `<div style="color:#c9d0d8;font-size:11px;padding-left:2px">${esc(reasonSnip)}</div>` : ''}
           </div>`;
         }).join('');
         return `<div style="margin-bottom:8px;border:1px solid rgba(240,180,41,.2);border-radius:10px;overflow:hidden">
@@ -526,10 +546,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
                style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;background:rgba(240,180,41,.05);user-select:none">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;font-size:11px;font-weight:800;background:${sevCol}22;color:${sevCol};border:1px solid ${sevCol}44;flex-shrink:0">${count}</span>
             <span style="font-weight:700;font-size:13px">${icon} ${esc(name)}</span>
-            <span style="color:var(--muted);font-size:12px;flex:1">${count} disruption${count!==1?'s':''} nearby</span>
-            <span class="prox-chevron" style="color:var(--muted);font-size:11px">▼</span>
+            <span style="color:var(--muted);font-size:12px;flex:1">${count} disruption${count!==1?'s':''} nearby · tap to expand</span>
+            <span class="prox-chevron" style="color:var(--muted);font-size:11px">▶</span>
           </div>
-          <div id="${entityId}">${rows}</div>
+          <div id="${entityId}" style="display:none">${rows}</div>
         </div>`;
       }).join('');
 
@@ -604,8 +624,54 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── Detail panel ──────────────────────────────────────────────────
   function showDetail(d){
     const panel = document.getElementById('detailPanel');
-    document.getElementById('detailTitle').textContent = `${MODE_ICON[d.mode]||'🚇'} ${d.line} — ${d.status}`;
-    document.getElementById('detailReason').textContent = d.reason || 'No further detail available.';
+    const SEV_COLOR_MAP = {suspended:'#ff5a5f',severe:'#ff5a5f',major:'#f0b429',moderate:'#f0b429',planned:'#93c5fd',minor:'#8e97a3',good:'#33c48d'};
+    const sc = SEV_COLOR_MAP[d.severity] || '#8e97a3';
+
+    document.getElementById('detailTitle').innerHTML =
+      `${MODE_ICON[d.mode]||'🚇'} <strong>${esc(d.line)}</strong>
+       <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid;color:${sc};border-color:${sc}44;background:${sc}18">${esc(d.severity||'disrupted')}</span>
+       <span style="color:var(--muted);font-size:13px;font-weight:400">${esc(d.status)}</span>`;
+
+    // Build info grid
+    const rows = [];
+    const srcLabels = {tfl:'TfL',nationalrail:'National Rail',mta:'MTA NYC',lta:'Singapore LTA',tokyo:'Tokyo Metro',hkmtr:'HK MTR',db:'Deutsche Bahn',sncf:'SNCF'};
+    if (d._source) rows.push(['Source', srcLabels[d._source] || d._source]);
+    if (d.mode)    rows.push(['Mode', (MODE_ICON[d.mode]||'') + ' ' + d.mode]);
+    if (d.start_time) rows.push(['Active since', timeAgo(d.start_time)]);
+    if (d.end_time)   rows.push(['Expected end', (() => { try { return new Date(d.end_time).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch{ return d.end_time; } })()]);
+    if (!d.start_time && !d.end_time) rows.push(['Updated', 'Current snapshot']);
+    if (d.lat && d.lon) rows.push(['Location', `${d.lat.toFixed(3)}, ${d.lon.toFixed(3)}`]);
+
+    const grid = document.getElementById('detailGrid');
+    if (rows.length) {
+      grid.style.display = 'grid';
+      grid.innerHTML = `<div class="detail-block" style="grid-column:1/-1">
+        <div class="detail-block-title">Disruption details</div>
+        ${rows.map(([label,val]) => `<div class="detail-row"><span class="detail-row-label">${esc(label)}</span><span class="detail-row-val">${esc(String(val))}</span></div>`).join('')}
+      </div>`;
+    } else {
+      grid.style.display = 'none';
+      grid.innerHTML = '';
+    }
+
+    // Full reason text
+    const reasonEl = document.getElementById('detailReason');
+    if (d.reason) {
+      reasonEl.textContent = d.reason;
+      reasonEl.style.display = 'block';
+    } else {
+      reasonEl.style.display = 'none';
+    }
+
+    // Affected stops
+    const stopsEl = document.getElementById('detailStops');
+    if (d.affected_stops && d.affected_stops.length) {
+      stopsEl.innerHTML = `<strong style="color:var(--warn)">Affected stops:</strong> ${d.affected_stops.map(s=>esc(s)).join(' · ')}`;
+      stopsEl.style.display = 'block';
+    } else {
+      stopsEl.style.display = 'none';
+    }
+
     panel.style.display = 'block';
     panel.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
@@ -773,6 +839,9 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
   // ── Events ────────────────────────────────────────────────────────
   document.getElementById('refreshBtn').addEventListener('click', loadTransport);
+  document.getElementById('detailClose')?.addEventListener('click', () => {
+    document.getElementById('detailPanel').style.display = 'none';
+  });
   ['sevFilter','sourceFilter','modeFilter','searchFilter'].forEach(id=>{
     document.getElementById(id).addEventListener('input', ()=>{ resetPagination(); renderTable(); });
   });
