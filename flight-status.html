@@ -332,41 +332,22 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
       <div id="flightMap"></div>
     </div>
 
-    <!-- Airport overview -->
-    <div class="card">
-      <div class="card-title" style="margin-bottom:10px">🌍 Airport Activity Overview</div>
-      <div class="region-tabs" id="regionTabs">
-        <button class="region-tab active" data-region="all">All</button>
-        <button class="region-tab" data-region="uk">UK</button>
-        <button class="region-tab" data-region="europe">Europe</button>
-        <button class="region-tab" data-region="northamerica">N. America</button>
-        <button class="region-tab" data-region="middleeast">Middle East</button>
-        <button class="region-tab" data-region="africa">Africa</button>
-        <button class="region-tab" data-region="asia">Asia</button>
-        <button class="region-tab" data-region="oceania">Oceania</button>
-        <button class="region-tab" data-region="latam">Latin America</button>
-      </div>
-      <div class="airport-grid" id="airportGrid">
-        <div class="status-msg" style="grid-column:1/-1">
-          <div class="spinner"></div>
-          Loading airport data…
-        </div>
-      </div>
-    </div>
-
-    <!-- Airport table -->
+    <!-- Traveller disruption table -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-        <span style="font-weight:700;font-size:15px">Airport Detail Table</span>
+        <div>
+          <div style="font-weight:700;font-size:15px">Traveller Disruption Table</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Rows are built from traveller records, monitored flight numbers, departure hubs and NAS advisories. Click a row with a flight number to run a live lookup.</div>
+        </div>
         <div class="filter-bar">
-          <input class="filter-bar" id="airportSearch" type="text" placeholder="Search airports…" style="border-radius:8px;padding:7px 10px;min-width:160px"/>
-          <select id="activityFilter">
-            <option value="">All activity levels</option>
-            <option value="active">High activity</option>
-            <option value="moderate">Moderate</option>
-            <option value="low">Low</option>
-            <option value="quiet">Quiet</option>
-            <option value="unknown">No data</option>
+          <input class="filter-bar" id="travellerDisruptionSearch" type="text" placeholder="Search traveller, flight, airport…" style="border-radius:8px;padding:7px 10px;min-width:210px"/>
+          <select id="travellerDisruptionFilter">
+            <option value="">All rows</option>
+            <option value="action">Needs attention</option>
+            <option value="nas">NAS advisory</option>
+            <option value="delayed">Delayed / disrupted</option>
+            <option value="tracked">Tracked live</option>
+            <option value="no_flight">No flight number</option>
           </select>
         </div>
       </div>
@@ -374,16 +355,16 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
         <table>
           <thead>
             <tr>
-              <th>IATA</th>
-              <th>Airport</th>
-              <th>Activity</th>
-              <th>Departures Sampled</th>
-              <th>AviationStack Delay</th>
-              <th>Source</th>
+              <th>Traveller</th>
+              <th>Flight / Hub</th>
+              <th>Route / Position</th>
+              <th>Status</th>
+              <th>Advisory / Risk</th>
+              <th>Next Action</th>
             </tr>
           </thead>
-          <tbody id="airportTableBody">
-            <tr><td colspan="6" class="status-msg"><div class="spinner"></div></td></tr>
+          <tbody id="travellerDisruptionBody">
+            <tr><td colspan="6" class="status-msg">Loading traveller disruption view…</td></tr>
           </tbody>
         </table>
       </div>
@@ -676,9 +657,111 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     el.innerHTML = `<div class="monitored-band">${html}</div>`;
   }
 
+
+  // ── Render traveller disruption table ──────────────────────────────
+  function travellerDisplayName(t){
+    return t.full_name || t.name || [t.first_name,t.last_name].filter(Boolean).join(' ') || t.email || 'Traveller';
+  }
+
+  function flightStatusByNumber(flightResults){
+    const map = new Map();
+    (flightResults || []).forEach(f => {
+      if(f && f.flight_number) map.set(String(f.flight_number).toUpperCase(), f);
+    });
+    return map;
+  }
+
+  function travellerRowSeverity(t, f, airportCode){
+    const nas = airportCode && nasEvents[airportCode];
+    const status = String(f?.status || '').toLowerCase();
+    const depDelay = Number(f?.schedule?.departure_delay || 0);
+    const arrDelay = Number(f?.schedule?.arrival_delay || 0);
+    if(nas) return { tag:'nas', label:'NAS advisory', badge:'badge-orange', action:'Review airport advisory before travel' };
+    if(status.includes('cancel')) return { tag:'delayed', label:'Cancelled', badge:'badge-red', action:'Escalate to travel/security team' };
+    if(status.includes('divert')) return { tag:'delayed', label:'Diverted', badge:'badge-orange', action:'Monitor route and destination change' };
+    if(depDelay > 0 || arrDelay > 0 || status.includes('delay')) return { tag:'delayed', label:'Delay signal', badge:'badge-orange', action:'Monitor delay and traveller impact' };
+    if(f?.live) return { tag:'tracked', label:'Live tracked', badge:'badge-green', action:'No immediate action' };
+    if(getTravellerFlightNum(t)) return { tag:'action', label:'Lookup pending', badge:'badge-blue', action:'Run live lookup / wait for ADS-B match' };
+    return { tag:'no_flight', label:'No flight number', badge:'badge-muted', action:'Add flight number to monitor live status' };
+  }
+
+  function renderTravellerDisruptionTable(travellers, flightResults){
+    const tbody = document.getElementById('travellerDisruptionBody');
+    if(!tbody) return;
+
+    const search = (document.getElementById('travellerDisruptionSearch')?.value || '').trim().toLowerCase();
+    const filter = document.getElementById('travellerDisruptionFilter')?.value || '';
+    const flights = flightStatusByNumber(flightResults);
+
+    let rows = (travellers || []).map(t => {
+      const flightNum = getTravellerFlightNum(t);
+      const f = flightNum ? flights.get(flightNum) : null;
+      const airportCode = travellerAirportCode(t) || f?.schedule?.departure_iata || '';
+      const airportName = travellerAirportName(t, airportCode);
+      const sev = travellerRowSeverity(t, f, airportCode);
+      const name = travellerDisplayName(t);
+      const route = f?.schedule
+        ? `${f.schedule.departure_iata || f.schedule.departure_airport || '—'} → ${f.schedule.arrival_iata || f.schedule.arrival_airport || '—'}`
+        : (airportCode ? `${airportCode} · ${airportName}` : 'No departure hub stored');
+      const live = f?.live
+        ? `${f.live.on_ground ? 'On ground' : 'Airborne'}${f.live.altitude_ft ? ' · ' + Number(f.live.altitude_ft).toLocaleString() + ' ft' : ''}`
+        : '';
+      const nas = airportCode && nasEvents[airportCode];
+      const advisory = nas
+        ? 'NAS advisory active'
+        : (f?.opensky_error ? `OpenSky: ${f.opensky_error}` : (f?.error || 'No active advisory'));
+      const haystack = [name, flightNum, airportCode, airportName, route, sev.label, advisory].join(' ').toLowerCase();
+      return { t, f, flightNum, airportCode, airportName, sev, name, route, live, advisory, haystack };
+    });
+
+    if(search) rows = rows.filter(r => r.haystack.includes(search));
+    if(filter) {
+      rows = rows.filter(r => {
+        if(filter === 'action') return ['nas','delayed','action'].includes(r.sev.tag);
+        return r.sev.tag === filter;
+      });
+    }
+
+    rows.sort((a,b) => {
+      const weight = { nas:5, delayed:4, action:3, tracked:2, no_flight:1 };
+      return (weight[b.sev.tag] || 0) - (weight[a.sev.tag] || 0) || a.name.localeCompare(b.name);
+    });
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">No traveller disruption rows match the current filter.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(r => {
+      const delayed = Number(r.f?.schedule?.departure_delay || r.f?.schedule?.arrival_delay || 0);
+      return `<tr class="traveller-disruption-row" data-flight="${esc(r.flightNum)}" style="${r.flightNum ? 'cursor:pointer' : ''}">
+        <td>
+          <strong>${esc(r.name)}</strong>
+          ${r.t.email ? `<div style="font-size:11px;color:var(--muted)">${esc(r.t.email)}</div>` : ''}
+        </td>
+        <td>
+          ${r.flightNum ? `<strong>${esc(r.flightNum)}</strong>` : '<span style="color:var(--muted)">No flight</span>'}
+          ${r.airportCode ? `<div style="font-size:11px;color:var(--muted)">${esc(r.airportCode)} · ${esc(r.airportName)}</div>` : ''}
+        </td>
+        <td>
+          ${esc(r.route)}
+          ${r.live ? `<div style="font-size:11px;color:var(--info);margin-top:3px">${esc(r.live)}</div>` : ''}
+        </td>
+        <td>
+          ${statusBadge(r.f?.status || (r.flightNum ? 'lookup pending' : 'not monitored'))}
+          ${delayed > 0 ? `<div style="font-size:11px;color:var(--warn);margin-top:3px">${delayed}m delay</div>` : ''}
+        </td>
+        <td><span class="badge ${r.sev.badge}">${esc(r.sev.label)}</span><div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(r.advisory)}</div></td>
+        <td style="font-size:12px;color:var(--muted)">${esc(r.sev.action)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+
   // ── Render airport grid ───────────────────────────────────────────
   function renderAirportGrid(airports, region){
     const grid = document.getElementById('airportGrid');
+    if(!grid) return;
     const filtered = region === 'all' ? airports : airports.filter(a => AIRPORT_REGION[a.iata] === region);
 
     if(!filtered.length){
@@ -714,6 +797,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
   // ── Render airport table ──────────────────────────────────────────
   function renderAirportTable(airports){
+    const tbody = document.getElementById('airportTableBody');
+    if(!tbody) return;
     const search = (document.getElementById('airportSearch')?.value||'').toLowerCase();
     const activity = document.getElementById('activityFilter')?.value||'';
 
@@ -723,7 +808,6 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     );
     if(activity) filtered = filtered.filter(a => (a.disruption?.level||'unknown') === activity);
 
-    const tbody = document.getElementById('airportTableBody');
     if(!filtered.length){
       tbody.innerHTML = `<tr><td colspan="6" class="status-msg">No matching airports.</td></tr>`;
       return;
@@ -982,6 +1066,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
     const withFlights = travellersWithFlights.status === 'fulfilled' ? travellersWithFlights.value : [];
     renderTravellerHubs(allTravellers);
+    renderTravellerDisruptionTable(allTravellers, trackedFlights);
     const airportData = airportRes.status === 'fulfilled' ? airportRes.value : {};
 
     // ── Airport overview ──
@@ -1007,8 +1092,8 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
       }
     } else {
       document.getElementById('kpiAirports').textContent = '—';
-      document.getElementById('airportGrid').innerHTML = `<div class="status-msg" style="grid-column:1/-1">⚠ Failed to load airport data: ${esc(String(airportData.error||'Unknown error'))}</div>`;
-      document.getElementById('airportTableBody').innerHTML = `<tr><td colspan="6" class="status-msg">Failed to load.</td></tr>`;
+      if(document.getElementById('airportGrid')) document.getElementById('airportGrid').innerHTML = `<div class="status-msg" style="grid-column:1/-1">⚠ Failed to load airport data: ${esc(String(airportData.error||'Unknown error'))}</div>`;
+      if(document.getElementById('airportTableBody')) document.getElementById('airportTableBody').innerHTML = `<tr><td colspan="6" class="status-msg">Failed to load.</td></tr>`;
       document.getElementById('lastUpdated').textContent = 'Error';
     }
 
@@ -1024,17 +1109,21 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
           const fdata = await res.json().catch(()=>({}));
           trackedFlights = fdata.ok && Array.isArray(fdata.flights) ? fdata.flights : [];
           renderMonitoredFlights(trackedFlights, withFlights);
+          renderTravellerDisruptionTable(allTravellers, trackedFlights);
           // Plot tracked flight positions on map
           clearFlightMarkers();
           trackedFlights.forEach(f => plotTrackedFlight(f));
         } catch{
           renderMonitoredFlights([], withFlights);
+          renderTravellerDisruptionTable(allTravellers, []);
         }
       } else {
         renderMonitoredFlights([], []);
+        renderTravellerDisruptionTable(allTravellers, []);
       }
     } else {
       renderMonitoredFlights([], []);
+      renderTravellerDisruptionTable(allTravellers, []);
     }
   }
 
@@ -1066,7 +1155,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   });
 
   // Region tabs
-  document.getElementById('regionTabs').addEventListener('click', e => {
+  document.getElementById('regionTabs')?.addEventListener('click', e => {
     const btn = e.target.closest('.region-tab');
     if(!btn) return;
     document.querySelectorAll('.region-tab').forEach(b=>b.classList.remove('active'));
@@ -1081,12 +1170,26 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   });
 
   // Airport card click → scroll map to that airport
-  document.getElementById('airportGrid').addEventListener('click', e => {
+  document.getElementById('airportGrid')?.addEventListener('click', e => {
     const card = e.target.closest('.airport-card');
     if(!card) return;
     const iata = card.dataset.iata;
     const ap = allAirports.find(a => a.iata === iata);
     if(ap?.coords) map.setView(ap.coords, 8);
+  });
+
+  // Traveller disruption table filters + row click → lookup
+  ['travellerDisruptionSearch','travellerDisruptionFilter'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => renderTravellerDisruptionTable(allTravellers, trackedFlights));
+    document.getElementById(id)?.addEventListener('change', () => renderTravellerDisruptionTable(allTravellers, trackedFlights));
+  });
+
+  document.getElementById('travellerDisruptionBody')?.addEventListener('click', e => {
+    const row = e.target.closest('.traveller-disruption-row');
+    if(!row || !row.dataset.flight) return;
+    document.getElementById('flightSearchInput').value = row.dataset.flight;
+    searchFlight(row.dataset.flight);
+    document.getElementById('flightSearchInput').scrollIntoView({behavior:'smooth',block:'center'});
   });
 
   // Monitored flight card → lookup
@@ -1110,7 +1213,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── Init ──────────────────────────────────────────────────────────
   initMap();
   load();
-  // Auto-refresh every 10 minutes (airport overview has 10min cache)
+  // Auto-refresh every 10 minutes
   setInterval(load, 10 * 60 * 1000);
 
 })();
