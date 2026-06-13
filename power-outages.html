@@ -218,7 +218,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       <div class="kpi green" id="kpiRestoredCard" style="cursor:pointer" title="Click to filter table to recently restored">
         <div class="kpi-val" id="kpiRestored">—</div><div class="kpi-lbl">Recently restored</div>
       </div>
-      <div class="kpi" id="kpiFocusCard" style="cursor:pointer;border:1px dashed rgba(255,255,255,.15)" title="Click a map location to see outages within 1km">
+      <div class="kpi" id="kpiFocusCard" style="cursor:pointer;border:1px dashed rgba(255,255,255,.15)" title="Click a map location to focus outages within 1km. Saved across refreshes — click card to clear.">
         <div class="kpi-val" id="kpiFocus" style="font-size:18px">📍</div>
         <div class="kpi-lbl" id="kpiFocusLbl">Click map to focus area</div>
       </div>
@@ -434,10 +434,31 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       subdomains:'abcd', maxZoom:19
     }).addTo(map);
 
-    // Map click → Area Focus: show outages within 1km and update KPI card
+    // Map click → Area Focus: show outages within 1km, update KPI, persist to localStorage
     map.on('click', function(e) {
       const { lat, lng } = e.latlng;
+      applyAreaFocus(lat, lng);
+    });
+
+    // Restore saved focus pin on load (after outages are loaded)
+    window._restoreFocusIfSaved = function() {
+      try {
+        const saved = localStorage.getItem('ci_outage_focus');
+        if (!saved) return;
+        const { lat, lng } = JSON.parse(saved);
+        if (typeof lat === 'number' && typeof lng === 'number') {
+          map.setView([lat, lng], Math.max(map.getZoom(), 13));
+          applyAreaFocus(lat, lng);
+        }
+      } catch(e) { /* ignore */ }
+    };
+  }
+
+  function applyAreaFocus(lat, lng) {
       const FOCUS_KM = 1;
+
+      // Save to localStorage
+      try { localStorage.setItem('ci_outage_focus', JSON.stringify({ lat, lng })); } catch(e) {}
 
       // Remove previous focus circle
       if (focusCircle) { focusCircle.remove(); focusCircle = null; }
@@ -470,7 +491,6 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
       // Render focused table
       renderTable(nearby);
-    });
   }
 
   function clearMarkers(){
@@ -646,6 +666,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   document.getElementById('kpiPlannedCard')?.addEventListener('click',   () => applyKpiFilter('planned'));
   document.getElementById('kpiRestoredCard')?.addEventListener('click',  () => applyKpiFilter('restored'));
   document.getElementById('kpiFocusCard')?.addEventListener('click', () => {
+    try { localStorage.removeItem('ci_outage_focus'); } catch(e) {}
     // Clear area focus, restore full view
     kpiFilter = null;
     document.getElementById('kpiFocus').textContent    = '📍';
@@ -718,16 +739,43 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       }
       document.getElementById('proximitySection').style.display='block';
       const list=document.getElementById('proximityList');
-      list.innerHTML=nearby.map(n=>{
-        const t=outageType(n.outage);
-        const area=n.outage.postcode||n.outage.operating_zone||'Unknown area';
-        const customers=n.outage.customers_affected?Number(n.outage.customers_affected).toLocaleString()+' customers':'';
-        const icon = n.asset.type==='traveller' ? '🧳' : '🏢';
-        return `<div class="prox-item">
-          <span class="badge ${typeBadgeClass(t)}">${typeLabel(t)}</span>
-          <span>${icon} <strong>${esc(n.asset.name||'Asset')}</strong> — ${esc(area)}</span>
-          <span style="color:var(--muted);font-size:12px">${n.dist.toFixed(1)}km away ${customers?'· '+customers:''}</span>
-          ${n.outage.estimated_restoration?`<span style="color:var(--warn);font-size:12px">Est. restore: ${fmtTime(n.outage.estimated_restoration)}</span>`:''}
+
+      // Group by entity name
+      const grouped = {};
+      for (const n of nearby) {
+        const key = n.asset.name || 'Unknown';
+        if (!grouped[key]) grouped[key] = { asset: n.asset, items: [] };
+        grouped[key].items.push(n);
+      }
+
+      list.innerHTML = Object.entries(grouped).map(([name, group]) => {
+        const icon = group.asset.type === 'traveller' ? '🧳' : '🏢';
+        const count = group.items.length;
+        // Worst severity badge colour
+        const sevOrder = ['unplanned','planned','restored'];
+        const worstType = group.items.map(n=>outageType(n.outage)).sort((a,b)=>sevOrder.indexOf(a)-sevOrder.indexOf(b))[0];
+        const badgeClass = typeBadgeClass(worstType);
+        const entityId = 'proxEntity_' + name.replace(/\W/g,'_');
+        const rows = group.items.map(n => {
+          const t = outageType(n.outage);
+          const area = n.outage.postcode || n.outage.operating_zone || 'Unknown area';
+          const customers = n.outage.customers_affected ? Number(n.outage.customers_affected).toLocaleString()+' customers' : '';
+          return `<div style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+            <span class="badge ${typeBadgeClass(t)}" style="flex-shrink:0">${typeLabel(t)}</span>
+            <span style="flex:1;min-width:120px">${esc(area)}</span>
+            <span style="color:var(--muted)">${n.dist.toFixed(1)}km${customers ? ' · '+customers : ''}</span>
+            ${n.outage.estimated_restoration ? `<span style="color:var(--warn)">Est. restore: ${fmtTime(n.outage.estimated_restoration)}</span>` : ''}
+          </div>`;
+        }).join('');
+        return `<div style="margin-bottom:8px;border:1px solid rgba(240,180,41,.2);border-radius:10px;overflow:hidden">
+          <div onclick="const d=document.getElementById('${entityId}');d.style.display=d.style.display==='none'?'block':'none';this.querySelector('.prox-chevron').textContent=d.style.display==='none'?'▶':'▼'"
+               style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;background:rgba(240,180,41,.05);user-select:none">
+            <span class="badge ${badgeClass}" style="flex-shrink:0">${count}</span>
+            <span style="font-weight:700;font-size:13px">${icon} ${esc(name)}</span>
+            <span style="color:var(--muted);font-size:12px;flex:1">${count} outage${count!==1?'s':''} nearby</span>
+            <span class="prox-chevron" style="color:var(--muted);font-size:11px">▼</span>
+          </div>
+          <div id="${entityId}">${rows}</div>
         </div>`;
       }).join('');
     }catch(e){ console.warn('Proximity check failed',e.message); }
@@ -787,6 +835,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
       updateKPIs(allOutages);
       applyFilters();
       checkProximity(allOutages);
+      if (window._restoreFocusIfSaved) window._restoreFocusIfSaved();
 
     }catch(e){
       tableWrap.innerHTML=`<div class="status-msg">Network error — could not reach CityIntel API.<br><small style="color:var(--muted)">${esc(e.message)}</small></div>`;
