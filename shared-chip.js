@@ -5,6 +5,9 @@
  * Requires: <div id="topActions" style="position:relative"></div> in the brandbar.
  */
 
+<link rel="icon" type="image/jpeg" href="CityintLogo.jpg">
+
+
 (function mountTopActions() {
   function run() {
     const host = document.getElementById('topActions');
@@ -47,6 +50,11 @@
           ${isMaster ? '<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>' : ''}
           <a href="profile.html">Profile</a>
           <a href="settings.html">Settings</a>
+          <div style="border-top:1px solid rgba(255,255,255,.08);margin:6px 0"></div>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="support.html">Support</a>
+          <div style="border-top:1px solid rgba(255,255,255,.08);margin:6px 0"></div>
           <a href="#" id="logoutLink">Log out</a>
         </div>
       `;
