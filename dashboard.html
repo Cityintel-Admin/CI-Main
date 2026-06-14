@@ -1030,6 +1030,18 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <main class="main">
 
       <div class="grid">
+
+        <section class="card" id="orgIntelProfileCard" style="grid-column:span 12;display:none;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <h3 style="margin:0 0 4px;">Organisation Intelligence Profile</h3>
+              <div id="orgIntelProfileSummary" style="color:var(--muted);font-size:13px;">Loading organisation profile…</div>
+            </div>
+            <a href="settings.html" class="btn" style="text-decoration:none;">Edit in Settings</a>
+          </div>
+          <div id="orgIntelProfileChips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
+        </section>
+
         <!-- KPIs -->
 
         
@@ -5082,6 +5094,58 @@ function CI_updatePanicMapOverlayIndex(st){
       });
     }, 2200);
   });
+})();
+</script>
+
+
+<script>
+(function ciDashboardIntelligenceProfileCard(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  function esc(v){return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  function authHeaders(){
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):JSON.parse(localStorage.getItem('ci_user')||'{}');
+      const h={'Accept':'application/json'};
+      if(u.email) h['X-User-Email']=u.email;
+      if(u.name) h['X-User-Name']=u.name;
+      if(u.id||u.email) h['X-User-Id']=u.id||u.email;
+      if(u.roleKey) h['X-User-Role-Key']=u.roleKey;
+      if(u.role) h['X-User-Role']=u.role;
+      return h;
+    }catch{return {'Accept':'application/json'};}
+  }
+  function chip(label,value){
+    if(!value && value !== 0) return '';
+    return `<span style="display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:999px;padding:6px 10px;font-size:12px;"><b>${esc(label)}</b>${esc(value)}</span>`;
+  }
+  async function run(){
+    const card=document.getElementById('orgIntelProfileCard');
+    const summary=document.getElementById('orgIntelProfileSummary');
+    const chips=document.getElementById('orgIntelProfileChips');
+    if(!card||!summary||!chips) return;
+    try{
+      const res=await fetch(API_BASE+'/api/org/onboarding',{headers:authHeaders()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok||!data.data) throw new Error(data.error||'No profile');
+      const ob=data.data;
+      const feeds=Array.isArray(ob.liveAlertFeeds)?ob.liveAlertFeeds:[];
+      const cats=Array.isArray(ob.sourceCategories)?ob.sourceCategories:[];
+      card.style.display='';
+      summary.innerHTML = `<b>${esc(ob.operationalFocus || 'Operational profile')}</b>${ob.primaryUseCase ? ' · '+esc(ob.primaryUseCase) : ''}`;
+      chips.innerHTML = [
+        chip('Scope', ob.intelligenceScope || 'City'),
+        chip('Radius', (ob.monitoringRadiusKm || ob.defaultRadiusKm || 25) + 'km'),
+        chip('Feed package', ob.feedPackage || ob.operationalFocus || 'Default'),
+        chip('Location', [ob.defaultCity, ob.defaultCountry].filter(Boolean).join(', ')),
+        chip('Feeds', feeds.join(', ')),
+        chip('Categories', cats.join(', '))
+      ].filter(Boolean).join('');
+      try{ localStorage.setItem('ci_org_intelligence_profile', JSON.stringify(ob)); }catch(_){}
+    }catch(e){
+      card.style.display='none';
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
 </script>
 
