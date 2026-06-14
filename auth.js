@@ -196,6 +196,30 @@
     }
   }
 
+
+  async function cacheOrgOnboarding(profile) {
+    try {
+      if (!profile || !profile.email || profile.roleKey === 'master-admin') return null;
+      const headers = {
+        'Accept': 'application/json',
+        'X-User-Email': profile.email,
+        'X-User-Name': profile.name || '',
+        'X-User-Id': profile.id || profile.email,
+        'X-User-Role-Key': profile.roleKey || '',
+        'X-User-Role': profile.role || ''
+      };
+      const res = await fetch(`${API_BASE}/api/org/onboarding`, { headers });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok && data.data) {
+        localStorage.setItem('ci_org_onboarding', JSON.stringify(data.data));
+        return data.data;
+      }
+    } catch (e) {
+      console.warn('Onboarding defaults fetch failed:', e);
+    }
+    return null;
+  }
+
   // ------------- CIAuth -------------
   const CIAuth = {
     who() {
@@ -272,6 +296,7 @@
   });
 
   persistProfile(profile);
+  await cacheOrgOnboarding(profile);
 
   LS.set('ci_token', token());
 
@@ -307,6 +332,7 @@
       localStorage.removeItem('ci_subscribed');
       localStorage.removeItem('ci_plan');
       localStorage.removeItem('ci_trial');
+      localStorage.removeItem('ci_org_onboarding');
     },
 
     requireAuth(redirectTo = 'login.html') {
