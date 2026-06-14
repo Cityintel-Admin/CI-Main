@@ -3820,6 +3820,15 @@ padding-bottom: 12px;
   margin-right:4px;
 }
 
+
+
+/* Phase 2B.2A — intelligence priority badges */
+.ci-priority-badge{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#cbd5e1;vertical-align:middle;white-space:nowrap}
+.ci-priority-badge.critical{border-color:rgba(255,90,95,.65);background:rgba(255,90,95,.16);color:#fecaca}
+.ci-priority-badge.high{border-color:rgba(240,180,41,.65);background:rgba(240,180,41,.14);color:#fde68a}
+.ci-priority-badge.medium{border-color:rgba(96,165,250,.55);background:rgba(96,165,250,.12);color:#bfdbfe}
+.ci-priority-badge.low{border-color:rgba(148,163,184,.35);background:rgba(148,163,184,.08);color:#cbd5e1}
+
 </style>
 <style>
 
@@ -4602,6 +4611,48 @@ padding-bottom: 12px;
 .ci-news-mute-btn:hover{background:rgba(255,255,255,.09);color:#e2e8f0;}
 
 </style>
+<style>
+/* ===== Mobile fix: Live Map sidebar (Operator Queues / Feeds) ===========
+   At narrow widths the accumulated 3-column #liveMapCard .global-map-side
+   grid (with overflow:visible) squeezes "queues"/"feeds"/etc into columns
+   narrower than their content, causing visual overlap. Force a single
+   stacked column on phones, and let long feed rows wrap onto two lines
+   instead of collapsing the remove button. This block is placed last so
+   it wins ties against the existing !important rules. */
+@media (max-width: 600px){
+  #liveMapCard .global-map-side{
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "radius"
+      "queues"
+      "feeds"
+      "add"
+      "manual"
+      "alerts" !important;
+  }
+  .live-map-feed-row{
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+  }
+  .feed-open-btn{
+    flex-wrap: wrap !important;
+    gap: 6px 10px !important;
+  }
+  .feed-open-btn .feed-name{
+    flex: 1 1 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  .feed-open-btn .feed-count{
+    margin-left: 0 !important;
+  }
+  .live-map-feed-remove{
+    flex-shrink: 0 !important;
+  }
+}
+</style>
+
 </head>
 
 <script>
@@ -5766,6 +5817,7 @@ function renderEventGroupsInto(list, events, limit){
     const langBadgeHtml = getLanguageBadgeHtml(first);
     const geoBadgeHtml = ciGeoBadgeHtml(first);
     const sourceBadgeHtml = ciSourceBadgeHtml(first);
+    const priorityBadgeHtml = (typeof window.ciPriorityBadgeHtml === 'function') ? window.ciPriorityBadgeHtml(first) : '';
 
     const groupEl  = document.createElement('div');
     const ageClass = getAgeClass(first.when);
@@ -5794,7 +5846,7 @@ function renderEventGroupsInto(list, events, limit){
       <div class="eg-header">
         <div class="eg-title">
           <span class="eg-icon">${cat.slice(0,1).toUpperCase()}</span>
-          ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}${ciLinkedBadgeHtml(first)}${sourceBadgeHtml}
+          ${first.title || first.summary || '(no title)'}${langBadgeHtml}${geoBadgeHtml}${ciLinkedBadgeHtml(first)}${sourceBadgeHtml}${priorityBadgeHtml}
         </div>
         <div class="eg-meta">
           <span class="eg-updates">${updates > 0 ? `(${updates} updates)` : ''}</span>
@@ -6400,7 +6452,8 @@ function dedupeClientEvents(events){
 
 async function loadPersistentEventsForFeed(feed){
   const all = await fetchPersistentAlertCache();
-  return dedupeClientEvents(all.filter(ev => eventMatchesFeed(ev, feed)).map(ev => ciApplyGeoValidation(ev, feed)).filter(Boolean));
+  const matched = dedupeClientEvents(all.filter(ev => eventMatchesFeed(ev, feed)).map(ev => ciApplyGeoValidation(ev, feed)).filter(Boolean));
+  return (typeof window.ciPrioritiseAlertList === 'function') ? window.ciPrioritiseAlertList(matched, feed) : matched;
 }
 
 // Pull cached alerts into every visible feed and queue without waiting for a manual refresh.
@@ -9289,6 +9342,128 @@ function ageLabel(when) {
   return `${days}d ago`;
 }
 
+
+
+<script>
+/* Phase 2B.2A — client-side organisation intelligence prioritisation.
+   Nothing is hidden; relevant alerts are boosted and then sorted higher. */
+(function(){
+  const norm = (v)=>String(v || '').trim().toLowerCase();
+  const list = (v)=>Array.isArray(v) ? v.map(String).map(s=>s.trim()).filter(Boolean) : String(v || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const uniq = (arr)=>Array.from(new Set((arr || []).map(s=>String(s || '').trim()).filter(Boolean)));
+
+  const CATEGORY_KEYWORDS = {
+    aviation: ['flight','airport','airline','aviation','runway','terminal','airspace','faa','opensky','ground stop','air traffic'],
+    transport: ['rail','train','metro','tube','subway','bus','road','traffic','highway','strike','transport','station','line suspended','delay'],
+    travel: ['border','visa','passport','travel','traveller','tourist','route','journey','hotel','evacuation'],
+    protest: ['protest','demonstration','march','rally','activist','picket','sit-in','strike action'],
+    civil_unrest: ['riot','clash','civil unrest','unrest','disorder','looting','crowd violence'],
+    crime: ['shooting','stabbing','robbery','burglary','assault','murder','kidnap','gunfire','armed'],
+    terrorism: ['terror','bomb','explosive','ied','attack','hostage','militant'],
+    power: ['power outage','blackout','electricity','grid','substation','power cut'],
+    weather: ['storm','flood','snow','heatwave','weather','hurricane','wildfire','rain warning'],
+    maritime: ['port','ship','vessel','maritime','harbour','cargo','dock'],
+    health: ['health','disease','outbreak','hospital','infection','pandemic'],
+    cyber: ['cyber','ransomware','data breach','hack','malware'],
+    executive_protection: ['vip','executive','protection','hotel','motorcade','venue','security detail']
+  };
+
+  const FOCUS_WEIGHTS = {
+    'travel risk': { aviation:25, transport:20, travel:20, weather:12, protest:10, civil_unrest:12, terrorism:20, crime:5, power:8 },
+    'corporate security': { protest:18, civil_unrest:20, crime:15, terrorism:22, power:12, transport:10, aviation:5, weather:8, cyber:12 },
+    'executive protection': { executive_protection:25, protest:18, civil_unrest:20, terrorism:24, aviation:15, transport:14, crime:15, travel:12 },
+    'gsoc / soc': { terrorism:22, civil_unrest:20, protest:15, crime:15, power:14, transport:12, weather:10, cyber:16, aviation:8 },
+    'business continuity': { power:22, weather:18, transport:16, cyber:18, civil_unrest:12, protest:10, aviation:8, health:12 },
+    'ngo': { protest:16, civil_unrest:18, terrorism:16, health:14, weather:12, travel:10, transport:10, crime:12 },
+    'government': { terrorism:22, protest:18, civil_unrest:18, cyber:16, crime:14, transport:10, power:12 }
+  };
+
+  function getOrgProfile(){
+    const org = window.currentOrg || {};
+    const ob = org.onboarding || org.defaults || org.config || org;
+    let cached = {};
+    try { cached = JSON.parse(localStorage.getItem('ci_org_defaults') || '{}') || {}; } catch(_) {}
+    return Object.assign({}, cached, ob, org);
+  }
+
+  function inferCategory(ev){
+    const text = norm([ev?.title, ev?.summary, ev?.description, ev?.category, ev?.type, ev?.src].filter(Boolean).join(' '));
+    for (const [cat, words] of Object.entries(CATEGORY_KEYWORDS)) {
+      if (words.some(w => text.includes(w))) return cat;
+    }
+    return norm(ev?.category || ev?.type || 'security').replace(/\s+/g, '_') || 'security';
+  }
+
+  function ciPriorityLabel(score){
+    if (score >= 85) return 'critical';
+    if (score >= 70) return 'high';
+    if (score >= 50) return 'medium';
+    return 'low';
+  }
+
+  function ciScoreAlertPriority(ev, feed){
+    const profile = getOrgProfile();
+    const risk = norm(ev?.risk || ev?.severity || 'medium');
+    let score = risk === 'high' || risk === 'critical' || risk === 'severe' ? 60 : risk === 'low' ? 25 : 42;
+    const reasons = [`risk:${risk || 'medium'}`];
+    const cat = inferCategory(ev);
+
+    const focus = norm(profile.operationalFocus || profile.feedPackage || feed?.feedPackage || '');
+    const weights = FOCUS_WEIGHTS[focus] || {};
+    if (weights[cat]) { score += weights[cat]; reasons.push(`focus +${weights[cat]} ${cat}`); }
+
+    const enabled = list(profile.sourceCategories || feed?.keywords || '').map(x=>norm(x).replace(/[\s-]+/g, '_'));
+    if (enabled.includes(cat)) { score += 10; reasons.push('enabled category +10'); }
+
+    const places = uniq([
+      ...list(profile.monitoringRegions),
+      ...list(profile.liveAlertFeeds),
+      ...list(profile.defaultAlertScope),
+      profile.defaultCity, profile.defaultCountry,
+      ...(feed?.places || []), feed?.rawCities, feed?.displayLabel
+    ]).map(norm).filter(Boolean);
+    const text = norm([ev?.title, ev?.city, ev?.country, ev?.description, ev?.src].filter(Boolean).join(' '));
+    if (places.some(p => p && text.includes(p))) { score += 15; reasons.push('monitored region +15'); }
+
+    const sensitivity = norm(profile.alertSensitivity || profile.sensitivity || 'balanced');
+    if (sensitivity.includes('critical')) score += 10;
+    else if (sensitivity.includes('high')) score += 6;
+    else if (sensitivity.includes('low')) score -= 5;
+
+    const sourceScore = Number(ev?.source_score || ev?.sourceScore || 0);
+    if (Number.isFinite(sourceScore) && sourceScore >= 80) score += 4;
+    if (ev?.geo_suspect || String(ev?.geo_confidence_label || '').toLowerCase() === 'low') score -= 8;
+
+    score = Math.max(0, Math.min(100, Math.round(score)));
+    return Object.assign({}, ev, {
+      priority_score: Number.isFinite(Number(ev?.priority_score)) ? Number(ev.priority_score) : score,
+      priority_label: ev?.priority_label || ciPriorityLabel(score),
+      priority_category: ev?.priority_category || cat,
+      priority_reason: ev?.priority_reason || reasons.join(' • ')
+    });
+  }
+
+  function ciPrioritiseAlertList(events, feed){
+    return (events || []).map(ev => ciScoreAlertPriority(ev, feed)).sort((a,b) => {
+      const ps = (Number(b.priority_score || 0) - Number(a.priority_score || 0));
+      if (ps) return ps;
+      return (Date.parse(b.when || b.when_ts || b.created_at || '') || 0) - (Date.parse(a.when || a.when_ts || a.created_at || '') || 0);
+    });
+  }
+
+  function ciPriorityBadgeHtml(ev){
+    const score = Math.max(0, Math.min(100, Math.round(Number(ev?.priority_score || 0))));
+    const label = String(ev?.priority_label || ciPriorityLabel(score)).toLowerCase();
+    const title = String(ev?.priority_reason || 'Organisation intelligence priority');
+    return `<span class="ci-priority-badge ${escapeHtml(label)}" title="${escapeHtml(title)}">Priority ${score}</span>`;
+  }
+
+  window.ciScoreAlertPriority = ciScoreAlertPriority;
+  window.ciPrioritiseAlertList = ciPrioritiseAlertList;
+  window.ciPriorityBadgeHtml = ciPriorityBadgeHtml;
+})();
+</script>
+
 // Put the events into an existing card (no refetch here)
 const MAX_VISIBLE_EVENTS = 20;
 
@@ -9333,8 +9508,9 @@ function renderEventsIntoCard(cardEl, events, feed) {
       return (typeof getDisposition === 'function') ? getDisposition(ev) === 'untriaged' : true;
     });
 
-  const verifiedEvents = displayEvents.filter(ev => !ciIsLowGeoConfidence(ev));
-  const unverifiedEvents = displayEvents.filter(ev => ciIsLowGeoConfidence(ev));
+  const scoredDisplayEvents = (typeof window.ciPrioritiseAlertList === 'function') ? window.ciPrioritiseAlertList(displayEvents, feed) : displayEvents;
+  const verifiedEvents = scoredDisplayEvents.filter(ev => !ciIsLowGeoConfidence(ev));
+  const unverifiedEvents = scoredDisplayEvents.filter(ev => ciIsLowGeoConfidence(ev));
 
   // update shared store + per-feed header/map/sidebar stats.
   // Low-confidence location rows are deliberately held out of the main feed/map counts
