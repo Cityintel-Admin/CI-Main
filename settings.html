@@ -265,6 +265,79 @@
   <h2>Organisation Onboarding Defaults</h2>
   <p class="muted">Configuration approved by CityIntel during onboarding. These defaults are used by Profile, Live Alerts, Power Outages and Transport Status.</p>
   <div id="orgOnboardingDefaultsBody" class="muted" style="margin-top:10px;">Loading onboarding defaults…</div>
+  <form id="orgIntelProfileForm" style="display:none;margin-top:14px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <div>
+        <label>Operational focus</label>
+        <select id="orgOperationalFocus">
+          <option value="">Select focus</option>
+          <option>Corporate Security</option>
+          <option>Travel Risk</option>
+          <option>Executive Protection</option>
+          <option>GSOC / SOC</option>
+          <option>Business Continuity</option>
+          <option>NGO</option>
+          <option>Government</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Primary use case</label>
+        <select id="orgPrimaryUseCase">
+          <option value="">Select use case</option>
+          <option>Monitoring Operations</option>
+          <option>Traveller Protection</option>
+          <option>Site Security</option>
+          <option>Executive Protection</option>
+          <option>Intelligence Monitoring</option>
+          <option>Business Continuity</option>
+          <option>Crisis Response</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Intelligence scope</label>
+        <select id="orgIntelligenceScope">
+          <option>City</option>
+          <option>Metro Region</option>
+          <option>Country</option>
+          <option>Multi-Country</option>
+          <option>Global</option>
+        </select>
+      </div>
+      <div>
+        <label>Monitoring radius km</label>
+        <input id="orgMonitoringRadius" type="number" min="1" max="250" value="25">
+      </div>
+      <div>
+        <label>Feed package</label>
+        <select id="orgFeedPackage">
+          <option>Corporate Security</option>
+          <option>Travel Risk</option>
+          <option>Executive Protection</option>
+          <option>Crisis / SOC</option>
+          <option>Facilities / Business Continuity</option>
+          <option>Custom</option>
+        </select>
+      </div>
+      <div>
+        <label>Live alert scope</label>
+        <input id="orgDefaultAlertScope" placeholder="London, United Kingdom">
+      </div>
+      <div class="full" style="grid-column:1/-1;">
+        <label>Source categories</label>
+        <input id="orgSourceCategories" placeholder="security, protests, travel, transport, power, weather, aviation">
+      </div>
+      <div class="full" style="grid-column:1/-1;">
+        <label>Live alert feeds / places</label>
+        <input id="orgLiveAlertFeeds" placeholder="London, United Kingdom, Europe">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;">
+      <button id="saveOrgIntelProfileBtn" type="submit">Save intelligence profile</button>
+      <span id="orgIntelProfileMsg" class="muted"></span>
+    </div>
+  </form>
 </section>
 <section class="card" id="orgUserInviteCard">
   <h2>Organisation User Invites</h2>
@@ -1507,19 +1580,60 @@
 <script>
 (function loadOrgOnboardingDefaultsSettings(){
   const API_BASE = 'https://api.cityintelapi.com';
+  let currentOnboarding = null;
   function q(id){ return document.getElementById(id); }
   function esc(v){return String(v ?? '—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
-  function getAuthHeaders(){
+  function getAuthHeaders(json=false){
     try{
       const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):JSON.parse(localStorage.getItem('ci_user')||'{}');
       const h={'Accept':'application/json'};
+      if(json) h['Content-Type']='application/json';
       if(u.email) h['X-User-Email']=u.email;
       if(u.name) h['X-User-Name']=u.name;
       if(u.id||u.email) h['X-User-Id']=u.id||u.email;
       if(u.roleKey) h['X-User-Role-Key']=u.roleKey;
       if(u.role) h['X-User-Role']=u.role;
       return h;
-    }catch{return {'Accept':'application/json'};}
+    }catch{return json ? {'Accept':'application/json','Content-Type':'application/json'} : {'Accept':'application/json'};}
+  }
+  function setVal(id, value){ const el=q(id); if(el) el.value = value ?? ''; }
+  function splitCsv(value){
+    if(Array.isArray(value)) return value;
+    return String(value || '').split(',').map(x=>x.trim()).filter(Boolean);
+  }
+  function populateForm(ob){
+    currentOnboarding = ob || {};
+    const feeds = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds : splitCsv(ob.liveAlertFeeds);
+    const categories = Array.isArray(ob.sourceCategories) ? ob.sourceCategories : splitCsv(ob.sourceCategories);
+    setVal('orgOperationalFocus', ob.operationalFocus || '');
+    setVal('orgPrimaryUseCase', ob.primaryUseCase || '');
+    setVal('orgIntelligenceScope', ob.intelligenceScope || 'City');
+    setVal('orgMonitoringRadius', ob.monitoringRadiusKm || ob.defaultRadiusKm || 25);
+    setVal('orgFeedPackage', ob.feedPackage || ob.operationalFocus || 'Corporate Security');
+    setVal('orgDefaultAlertScope', ob.defaultAlertScope || feeds.join(', '));
+    setVal('orgSourceCategories', categories.join(', '));
+    setVal('orgLiveAlertFeeds', feeds.join(', '));
+    const form=q('orgIntelProfileForm'); if(form) form.style.display='block';
+  }
+  function summaryHtml(ob){
+    const feeds = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds : [];
+    const cats = Array.isArray(ob.sourceCategories) ? ob.sourceCategories : [];
+    return `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+        <div><b>Organisation</b><br>${esc(ob.company||'—')}</div>
+        <div><b>Admin</b><br>${esc(ob.adminName||'—')} · ${esc(ob.adminEmail||'—')}</div>
+        <div><b>Operational focus</b><br>${esc(ob.operationalFocus||'—')}</div>
+        <div><b>Primary use case</b><br>${esc(ob.primaryUseCase||'—')}</div>
+        <div><b>Intelligence scope</b><br>${esc(ob.intelligenceScope||'City')}</div>
+        <div><b>Monitoring radius</b><br>${esc(ob.monitoringRadiusKm||ob.defaultRadiusKm||25)} km</div>
+        <div><b>Feed package</b><br>${esc(ob.feedPackage||'—')}</div>
+        <div><b>Source categories</b><br>${esc(cats.join(', ')||'—')}</div>
+        <div><b>Primary location</b><br>${esc(ob.defaultCity||'—')}, ${esc(ob.defaultCountry||'—')}</div>
+        <div><b>Map centre</b><br>${esc(ob.defaultLat||'—')}, ${esc(ob.defaultLon||'—')}</div>
+        <div><b>Live alert scope</b><br>${esc(ob.defaultAlertScope || feeds.join(', ') || '—')}</div>
+        <div><b>Ops region</b><br>${esc(ob.transportRegion||ob.powerRegion||'—')}</div>
+      </div>
+    `;
   }
   async function run(){
     const body=q('orgOnboardingDefaultsBody'); if(!body) return;
@@ -1529,23 +1643,41 @@
       if(!res.ok||!data.ok||!data.data) throw new Error(data.error||'No onboarding config');
       const ob=data.data;
       try{ localStorage.setItem('ci_org_onboarding', JSON.stringify(ob)); }catch(_){ }
-      body.innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
-          <div><b>Organisation</b><br>${esc(ob.company||'—')}</div>
-          <div><b>Admin</b><br>${esc(ob.adminName||'—')} · ${esc(ob.adminEmail||'—')}</div>
-          <div><b>Access route</b><br>${esc(ob.accessRoute||'—')}</div>
-          <div><b>Seats</b><br>${esc(ob.seatLimit||6)} total (${Math.max(1, Number(ob.seatLimit||6)-1)} operator seats)</div>
-          <div><b>Primary location</b><br>${esc(ob.defaultCity||'—')}, ${esc(ob.defaultCountry||'—')}</div>
-          <div><b>Map centre</b><br>${esc(ob.defaultLat||'—')}, ${esc(ob.defaultLon||'—')} · ${esc(ob.defaultRadiusKm||5)}km</div>
-          <div><b>Live alert scope</b><br>${esc(ob.defaultAlertScope || (ob.liveAlertFeeds||[]).join(', ') || '—')}</div>
-          <div><b>Ops region</b><br>${esc(ob.transportRegion||ob.powerRegion||'—')}</div>
-        </div>
-      `;
-    }catch(e){ body.textContent='No approved onboarding defaults found yet.'; }
+      body.innerHTML = summaryHtml(ob);
+      populateForm(ob);
+    }catch(e){
+      body.textContent='No approved onboarding defaults found yet.';
+      const form=q('orgIntelProfileForm'); if(form) form.style.display='none';
+    }
+  }
+  async function save(e){
+    e.preventDefault();
+    const msg=q('orgIntelProfileMsg');
+    if(msg) msg.textContent='Saving…';
+    try{
+      const payload = Object.assign({}, currentOnboarding || {}, {
+        operationalFocus: q('orgOperationalFocus')?.value || '',
+        primaryUseCase: q('orgPrimaryUseCase')?.value || '',
+        intelligenceScope: q('orgIntelligenceScope')?.value || 'City',
+        monitoringRadiusKm: q('orgMonitoringRadius')?.value || 25,
+        defaultRadiusKm: q('orgMonitoringRadius')?.value || 25,
+        feedPackage: q('orgFeedPackage')?.value || '',
+        defaultAlertScope: q('orgDefaultAlertScope')?.value || '',
+        sourceCategories: splitCsv(q('orgSourceCategories')?.value || ''),
+        liveAlertFeeds: splitCsv(q('orgLiveAlertFeeds')?.value || '')
+      });
+      const res=await fetch(API_BASE+'/api/org/onboarding',{method:'PUT',headers:getAuthHeaders(true),body:JSON.stringify(payload)});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok) throw new Error(data.error||'Save failed');
+      if(msg) msg.textContent='Saved ✅';
+      await run();
+    }catch(err){
+      if(msg) msg.textContent='Save failed: '+(err.message||err);
+    }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
-})();
-</script>
+  document.addEventListener('submit', e=>{ if(e.target && e.target.id==='orgIntelProfileForm') save(e); });
+})();</script>
 
 </body>
 </html>
