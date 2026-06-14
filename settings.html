@@ -261,6 +261,11 @@
 
   <div id="orgMsg" class="muted" style="margin-top:10px;"></div>
 </section>
+<section class="card" id="orgOnboardingDefaultsCard">
+  <h2>Organisation Onboarding Defaults</h2>
+  <p class="muted">Configuration approved by CityIntel during onboarding. These defaults are used by Profile, Live Alerts, Power Outages and Transport Status.</p>
+  <div id="orgOnboardingDefaultsBody" class="muted" style="margin-top:10px;">Loading onboarding defaults…</div>
+</section>
 <section class="card" id="orgUserInviteCard">
   <h2>Organisation User Invites</h2>
   <p class="muted">Invite up to 5 initial operator users for this organisation. Invited users receive the same password setup flow as approved requests.</p>
@@ -1498,6 +1503,50 @@
   document.addEventListener('click', e=>{ if(e.target && e.target.id==='sendOrgInviteBtn') sendInvite(); });
 })();
 </script>
+
+<script>
+(function loadOrgOnboardingDefaultsSettings(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  function q(id){ return document.getElementById(id); }
+  function esc(v){return String(v ?? '—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  function getAuthHeaders(){
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):JSON.parse(localStorage.getItem('ci_user')||'{}');
+      const h={'Accept':'application/json'};
+      if(u.email) h['X-User-Email']=u.email;
+      if(u.name) h['X-User-Name']=u.name;
+      if(u.id||u.email) h['X-User-Id']=u.id||u.email;
+      if(u.roleKey) h['X-User-Role-Key']=u.roleKey;
+      if(u.role) h['X-User-Role']=u.role;
+      return h;
+    }catch{return {'Accept':'application/json'};}
+  }
+  async function run(){
+    const body=q('orgOnboardingDefaultsBody'); if(!body) return;
+    try{
+      const res=await fetch(API_BASE+'/api/org/onboarding',{headers:getAuthHeaders()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok||!data.data) throw new Error(data.error||'No onboarding config');
+      const ob=data.data;
+      try{ localStorage.setItem('ci_org_onboarding', JSON.stringify(ob)); }catch(_){ }
+      body.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <div><b>Organisation</b><br>${esc(ob.company||'—')}</div>
+          <div><b>Admin</b><br>${esc(ob.adminName||'—')} · ${esc(ob.adminEmail||'—')}</div>
+          <div><b>Access route</b><br>${esc(ob.accessRoute||'—')}</div>
+          <div><b>Seats</b><br>${esc(ob.seatLimit||6)} total (${Math.max(1, Number(ob.seatLimit||6)-1)} operator seats)</div>
+          <div><b>Primary location</b><br>${esc(ob.defaultCity||'—')}, ${esc(ob.defaultCountry||'—')}</div>
+          <div><b>Map centre</b><br>${esc(ob.defaultLat||'—')}, ${esc(ob.defaultLon||'—')} · ${esc(ob.defaultRadiusKm||5)}km</div>
+          <div><b>Live alert scope</b><br>${esc(ob.defaultAlertScope || (ob.liveAlertFeeds||[]).join(', ') || '—')}</div>
+          <div><b>Ops region</b><br>${esc(ob.transportRegion||ob.powerRegion||'—')}</div>
+        </div>
+      `;
+    }catch(e){ body.textContent='No approved onboarding defaults found yet.'; }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
+</script>
+
 </body>
 </html>
 
