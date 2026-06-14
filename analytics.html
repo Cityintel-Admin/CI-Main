@@ -145,6 +145,15 @@
     .onboard-help{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:-4px}
     .lead-action-btn.onboard{border-color:#a78bfa;color:#ddd6fe}
 
+    .ob-inline-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .ob-chip-grid{display:flex;gap:8px;flex-wrap:wrap;background:#0f1012;border:1px solid var(--g600);border-radius:10px;padding:10px}
+    .ob-chip-grid label{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 9px;border:1px solid var(--g500);border-radius:999px;background:#16171a;font-size:12px;color:#d7dce3;cursor:pointer}
+    .ob-chip-grid input{width:auto;margin:0}
+    .ob-region-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:6px}
+    .ob-region-row button{padding:8px 10px}
+    .ob-mini-note{font-size:12px;color:var(--muted);margin-top:6px}
+
+
 
 
 /* ===== Mobile layout tweaks ===== */
@@ -311,14 +320,45 @@
       <div><label>Monitoring radius km</label><input id="obRadius" type="number" min="1" max="250" value="25"></div>
       <div><label>Latitude</label><input id="obLat" placeholder="51.5072"></div>
       <div><label>Longitude</label><input id="obLon" placeholder="-0.1276"></div>
+      <div class="full">
+        <div class="ob-inline-actions">
+          <button id="obAutoLocate" class="btn" type="button">📍 Auto locate from address</button>
+          <span id="obGeoStatus" class="lead-muted">Uses address, city, country and postcode. Admin can still edit lat/lon manually.</span>
+        </div>
+      </div>
 
       <div class="onboard-section-title">Initial feed configuration</div>
       <div><label>Power / transport region</label><input id="obOpsRegion" placeholder="London / UK"></div>
       <div><label>Intelligence scope</label><select id="obIntelScope"><option>City</option><option>Metro Region</option><option>Country</option><option>Multi-Country</option><option>Global</option></select></div>
       <div><label>Default live-alert scope</label><input id="obAlertScope" placeholder="London, United Kingdom"></div>
       <div><label>Feed package</label><select id="obFeedPackage"><option>Corporate Security</option><option>Travel Risk</option><option>Executive Protection</option><option>Crisis / SOC</option><option>Facilities / Business Continuity</option><option>Custom</option></select></div>
-      <div class="full"><label>Initial live-alert feeds</label><input id="obFeeds" placeholder="London, United Kingdom, Europe"></div>
-      <div class="full"><label>Enabled source categories</label><input id="obSourceCategories" placeholder="security, protests, travel, transport, power, weather, aviation"></div>
+      <div class="full">
+        <label>Initial monitoring regions / live-alert feeds</label>
+        <div id="obFeedsList"></div>
+        <div class="ob-inline-actions">
+          <button id="obAddFeedRegion" class="btn" type="button">+ Add region</button>
+          <span class="ob-mini-note">Examples: London, UK · Paris, France · Dubai, UAE</span>
+        </div>
+      </div>
+      <div><label>Alert sensitivity</label><select id="obAlertSensitivity"><option>Balanced</option><option>Low Noise</option><option>High Awareness</option><option>Critical Monitoring</option></select></div>
+      <div class="full"><label>Enabled source categories</label>
+        <div id="obSourceCategories" class="ob-chip-grid">
+          <label><input type="checkbox" value="security"> Security</label>
+          <label><input type="checkbox" value="protests"> Protests</label>
+          <label><input type="checkbox" value="civil_unrest"> Civil Unrest</label>
+          <label><input type="checkbox" value="travel"> Travel</label>
+          <label><input type="checkbox" value="aviation"> Aviation</label>
+          <label><input type="checkbox" value="maritime"> Maritime</label>
+          <label><input type="checkbox" value="transport"> Transport</label>
+          <label><input type="checkbox" value="power"> Power</label>
+          <label><input type="checkbox" value="weather"> Weather</label>
+          <label><input type="checkbox" value="health"> Health</label>
+          <label><input type="checkbox" value="crime"> Crime</label>
+          <label><input type="checkbox" value="terrorism"> Terrorism</label>
+          <label><input type="checkbox" value="cyber"> Cyber</label>
+          <label><input type="checkbox" value="executive_protection"> Executive Protection</label>
+        </div>
+      </div>
       <div class="full"><label>Onboarding notes</label><textarea id="obNotes" placeholder="Master admin notes, feed scope, rollout requirements..."></textarea></div>
     </div>
     <div id="leadOnboardStatus" class="lead-muted" style="margin-top:10px;"></div>
@@ -1413,6 +1453,85 @@ const makeBar = (label, count, color) => {
     return '';
   }
 
+
+  function normaliseList(value){
+    if (Array.isArray(value)) return value.map(x=>String(x||'').trim()).filter(Boolean);
+    return String(value || '').split(',').map(x=>x.trim()).filter(Boolean);
+  }
+
+  function setFeedRegions(values){
+    const host = document.getElementById('obFeedsList');
+    if (!host) return;
+    const list = normaliseList(values);
+    if (!list.length) list.push('');
+    host.innerHTML = '';
+    list.forEach(v => addFeedRegionRow(v));
+  }
+
+  function addFeedRegionRow(value = ''){
+    const host = document.getElementById('obFeedsList');
+    if (!host) return;
+    const row = document.createElement('div');
+    row.className = 'ob-region-row';
+    row.innerHTML = `<input class="obFeedRegionInput" placeholder="London, UK" value="${esc(value).replace(/"/g,'&quot;')}"><button class="btn obRemoveFeedRegion" type="button">Remove</button>`;
+    host.appendChild(row);
+    const remove = row.querySelector('.obRemoveFeedRegion');
+    remove.addEventListener('click', () => {
+      row.remove();
+      if (!host.querySelector('.obFeedRegionInput')) addFeedRegionRow('');
+    });
+  }
+
+  function getFeedRegions(){
+    return Array.from(document.querySelectorAll('.obFeedRegionInput'))
+      .map(el => el.value.trim())
+      .filter(Boolean);
+  }
+
+  function setSourceCategories(values){
+    const selected = new Set(normaliseList(values).map(x=>x.toLowerCase()));
+    if (!selected.size) ['security','protests','travel','transport','power'].forEach(x=>selected.add(x));
+    document.querySelectorAll('#obSourceCategories input[type="checkbox"]').forEach(cb => {
+      cb.checked = selected.has(String(cb.value || '').toLowerCase());
+    });
+  }
+
+  function getSourceCategories(){
+    return Array.from(document.querySelectorAll('#obSourceCategories input[type="checkbox"]:checked'))
+      .map(cb => cb.value.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function joinAddressForGeocode(){
+    return [
+      document.getElementById('obAddress')?.value,
+      document.getElementById('obCity')?.value,
+      document.getElementById('obPostcode')?.value,
+      document.getElementById('obCountry')?.value
+    ].map(x => String(x || '').trim()).filter(Boolean).join(', ');
+  }
+
+  async function autoLocateOnboarding(){
+    const status = document.getElementById('obGeoStatus');
+    const q = joinAddressForGeocode();
+    if (!q) {
+      if (status) status.textContent = 'Enter an address, city, postcode or country first.';
+      return;
+    }
+    if (status) status.textContent = 'Locating…';
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/geocode?q=${encodeURIComponent(q)}`, { headers: authHeaders() });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok || data.lat == null || data.lon == null) throw new Error(data.error || 'No location match found');
+      document.getElementById('obLat').value = Number(data.lat).toFixed(6);
+      document.getElementById('obLon').value = Number(data.lon).toFixed(6);
+      if (status) status.textContent = `Located: ${data.displayName || q}`;
+    } catch (e) {
+      if (status) status.textContent = `Auto locate failed: ${e.message || e}. You can still enter lat/lon manually.`;
+    }
+  }
+
+
   async function openLeadOnboard(id){
     const row = latestRows.find(r => String(r.id) === String(id));
     if (!row || !onboardModal) return;
@@ -1452,8 +1571,9 @@ const makeBar = (label, count, color) => {
       document.getElementById('obIntelScope').value = ob.intelligenceScope || ob.defaultIntelligenceScope || 'City';
       document.getElementById('obAlertScope').value = ob.defaultAlertScope || row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ') || '';
       document.getElementById('obFeedPackage').value = ob.feedPackage || ob.operationalFocus || 'Corporate Security';
-      document.getElementById('obFeeds').value = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds.join(', ') : (ob.liveAlertFeeds || row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ') || '');
-      document.getElementById('obSourceCategories').value = Array.isArray(ob.sourceCategories) ? ob.sourceCategories.join(', ') : (ob.sourceCategories || 'security, protests, travel, transport, power');
+      setFeedRegions(ob.liveAlertFeeds || ob.monitoringRegions || row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ') || '');
+      const sensitivityEl = document.getElementById('obAlertSensitivity'); if (sensitivityEl) sensitivityEl.value = ob.alertSensitivity || 'Balanced';
+      setSourceCategories(ob.sourceCategories || 'security, protests, travel, transport, power');
       document.getElementById('obNotes').value = ob.notes || `Source request: ${row.interest || 'Access request'}\nTeam size: ${row.team_size || row.teamSize || '—'}\nHeard from: ${row.heard_from || row.heardFrom || '—'}${row.message ? `\n\nRequirements:\n${row.message}` : ''}`;
       onboardStatus.textContent = data.ok ? 'Draft loaded. Review location and feed scope before approval.' : 'No saved draft yet. Values prefilled from the submitted request.';
     }catch(e){
@@ -1473,8 +1593,9 @@ const makeBar = (label, count, color) => {
       document.getElementById('obIntelScope').value = 'City';
       document.getElementById('obAlertScope').value = row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ');
       document.getElementById('obFeedPackage').value = row.operational_focus || 'Corporate Security';
-      document.getElementById('obFeeds').value = row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ');
-      document.getElementById('obSourceCategories').value = 'security, protests, travel, transport, power';
+      setFeedRegions(row.region || [submittedCity, submittedCountry].filter(Boolean).join(', '));
+      const sensitivityEl = document.getElementById('obAlertSensitivity'); if (sensitivityEl) sensitivityEl.value = 'Balanced';
+      setSourceCategories('security, protests, travel, transport, power');
       onboardStatus.textContent = 'Could not load saved draft — values have been prefilled from the request and can still be saved.';
     }
   }
@@ -1501,8 +1622,10 @@ const makeBar = (label, count, color) => {
       intelligenceScope: document.getElementById('obIntelScope').value.trim() || 'City',
       defaultAlertScope: document.getElementById('obAlertScope').value.trim(),
       feedPackage: document.getElementById('obFeedPackage').value.trim() || 'Corporate Security',
-      liveAlertFeeds: document.getElementById('obFeeds').value.split(',').map(x=>x.trim()).filter(Boolean),
-      sourceCategories: document.getElementById('obSourceCategories').value.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean),
+      liveAlertFeeds: getFeedRegions(),
+      monitoringRegions: getFeedRegions(),
+      alertSensitivity: document.getElementById('obAlertSensitivity')?.value || 'Balanced',
+      sourceCategories: getSourceCategories(),
       powerRegion: document.getElementById('obOpsRegion').value.trim(),
       transportRegion: document.getElementById('obOpsRegion').value.trim(),
       modules: ['live_alerts','assets','travellers','power_outages','transport_status','flight_status'],
@@ -1715,6 +1838,8 @@ const makeBar = (label, count, color) => {
   if (onboardClose) onboardClose.addEventListener('click', closeLeadOnboard);
   if (onboardSave) onboardSave.addEventListener('click', () => saveLeadOnboard());
   if (onboardApprove) onboardApprove.addEventListener('click', () => saveLeadOnboard({ approve:true }));
+  document.getElementById('obAutoLocate')?.addEventListener('click', autoLocateOnboarding);
+  document.getElementById('obAddFeedRegion')?.addEventListener('click', () => addFeedRegionRow(''));
   if (onboardModal) onboardModal.addEventListener('click', (e) => { if (e.target === onboardModal) closeLeadOnboard(); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
