@@ -5333,6 +5333,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // -------------------- FEED STORAGE / STATE --------------------
 const STORAGE_KEY = 'ci_live_feeds_v1';
+
+// CityIntel onboarding feed defaults helpers
+// These prevent the standard starter feeds (Global/EU/UK/US) from masking
+// organisation-specific onboarding feeds after a new org is approved.
+const CI_STARTER_FEED_IDS = new Set(['seed-global','seed-eu','seed-uk','seed-usa']);
+function ciIsStarterFeed(f){
+  return !!(f && (CI_STARTER_FEED_IDS.has(String(f.id || '')) || String(f.source || '') === 'starter_default'));
+}
+function ciNonTrainingFeeds(feeds){
+  return (Array.isArray(feeds) ? feeds : []).filter(f => f && !f.isTraining);
+}
+function ciOrgManagedFeed(f){
+  return !!(f && String(f.source || '') === 'org_onboarding_default');
+}
+function ciSlugFeedId(value){
+  return String(value || 'region').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'region';
+}
+function ciNormaliseList(value){
+  if (Array.isArray(value)) return value.map(x => String(x || '').trim()).filter(Boolean);
+  return String(value || '').split(',').map(x => x.trim()).filter(Boolean);
+}
+function ciRisksForSensitivity(value){
+  const v = String(value || 'Balanced').toLowerCase();
+  if (v.includes('critical')) return ['high'];
+  if (v.includes('high')) return ['high','med'];
+  if (v.includes('low')) return ['high','med'];
+  return ['high','med','low'];
+}
 const FEED_EVENTS_KEY = 'ci_live_feed_events_v1';
 const HISTORY_WINDOWS = [12, 24, 48, 72];                    // For "Load earlier" – how far back we go on each click (in hours)
 
@@ -6571,22 +6599,26 @@ function ciPushOrgFeeds(feeds) {
 
 async function ciLoadOrgFeeds() {
   // Operators always load from the org's saved feed set.
-  // Admins only load if they have no feeds yet (first login / fresh session).
+  // Admins only keep local feeds if those feeds are genuinely custom.
+  // Starter fallback feeds must not block onboarding defaults.
   const isOperator = !ciIsAdminRole();
-  const existing = loadFeeds().filter(f => !f.isTraining);
-  if (!isOperator && existing.length > 0) return; // admin already has local feeds
+  const current = loadFeeds();
+  const existing = ciNonTrainingFeeds(current);
+  const hasCustomExisting = existing.length > 0 && !existing.every(ciIsStarterFeed);
+  if (!isOperator && hasCustomExisting) return; // admin already has custom local feeds
 
   try {
     const res = await fetch(API_ORIGIN + '/api/org/feeds', {
       headers: ciGetAuthHeaders()
     });
     const data = await res.json().catch(() => ({}));
-    if (data.ok && Array.isArray(data.feeds) && data.feeds.length > 0) {
-      // Merge: keep training feeds if present, replace everything else
+    const serverFeeds = Array.isArray(data.feeds) ? data.feeds : (Array.isArray(data.data) ? data.data : []);
+    if (data.ok && serverFeeds.length > 0) {
+      // Merge: keep training feeds if present, replace everything else.
+      // If the server only has starter fallback feeds, onboarding defaults can still replace them afterwards.
       const training = loadFeeds().filter(f => f.isTraining);
-      const merged = [...data.feeds, ...training];
+      const merged = [...serverFeeds, ...training];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-      // Signal UI to re-render feed list if already mounted
       if (typeof window.ciRenderFeedList === 'function') window.ciRenderFeedList();
     }
   } catch {}
@@ -6597,8 +6629,13 @@ async function ciLoadOrgFeeds() {
 async function ciLoadOnboardingFeedDefaults(){
   try {
     if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
-    const existing = loadFeeds().filter(f => !f.isTraining);
-    if (existing.length > 0) return;
+
+    // Do not let fallback starter feeds block approved onboarding defaults.
+    const existing = ciNonTrainingFeeds(loadFeeds());
+    const existingIsOnlyStarter = existing.length === 0 || existing.every(ciIsStarterFeed);
+    const existingIsOrgManaged = existing.length > 0 && existing.every(f => ciOrgManagedFeed(f) || ciIsStarterFeed(f));
+    if (!existingIsOnlyStarter && !existingIsOrgManaged) return;
+
     const h = ciGetAuthHeaders();
     const email = h['X-User-Email'] || '';
     const res = await fetch(API_ORIGIN + '/api/org/me' + (email ? ('?email=' + encodeURIComponent(email)) : ''), { headers:h });
@@ -6606,30 +6643,54 @@ async function ciLoadOnboardingFeedDefaults(){
     const org = data.org || data.data || data;
     if (!org || org.ok === false) return;
     const ob = org.onboarding || org.defaults || org.config || org;
-    const rawFeeds = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds : String(ob.liveAlertFeeds || ob.defaultAlertScope || ob.city || ob.defaultCity || '').split(',');
-    const places = rawFeeds.map(x => String(x || '').trim()).filter(Boolean);
+
     const city = String(ob.defaultCity || ob.city || org.city || '').trim();
     const country = String(ob.defaultCountry || ob.country || org.country || '').trim();
     const scope = String(ob.intelligenceScope || ob.defaultIntelligenceScope || 'City').trim();
-    const categories = Array.isArray(ob.sourceCategories) ? ob.sourceCategories : String(ob.sourceCategories || 'security, protests, travel, transport, power').split(',').map(x=>x.trim()).filter(Boolean);
-    const primaryPlaces = places.length ? places : [city, country].filter(Boolean);
+    const radiusKm = Number(ob.monitoringRadiusKm || ob.defaultRadiusKm || 25);
+    const categories = ciNormaliseList(ob.sourceCategories || 'security, protests, travel, transport, power');
+    const sensitivity = String(ob.alertSensitivity || 'Balanced');
+
+    let primaryPlaces = ciNormaliseList(ob.monitoringRegions);
+    if (!primaryPlaces.length) primaryPlaces = ciNormaliseList(ob.liveAlertFeeds);
+    if (!primaryPlaces.length) primaryPlaces = ciNormaliseList(ob.defaultAlertScope);
+    if (!primaryPlaces.length) primaryPlaces = [city, country].filter(Boolean);
+    primaryPlaces = Array.from(new Set(primaryPlaces.map(x => String(x || '').trim()).filter(Boolean)));
     if (!primaryPlaces.length) return;
-    const label = scope && scope.toLowerCase() !== 'city' ? `${primaryPlaces.join(', ')} · ${scope}` : primaryPlaces.join(', ');
-    const feed = {
-      id: 'org-default-' + Date.now().toString(36),
-      places: primaryPlaces.map(x => String(x).toLowerCase()),
-      rawCities: primaryPlaces.join(', '),
-      displayLabel: label,
-      risks: ['high','med','low'],
+
+    const orgFeeds = primaryPlaces.map((place, idx) => ({
+      id: 'org-default-' + ciSlugFeedId(place) + '-' + idx,
+      places: [String(place).toLowerCase()],
+      rawCities: place,
+      displayLabel: scope && scope.toLowerCase() !== 'city' ? `${place} · ${scope}` : place,
+      risks: ciRisksForSensitivity(sensitivity),
       useLive: true,
       keywords: categories,
       source: 'org_onboarding_default',
       intelligenceScope: scope,
-      monitoringRadiusKm: Number(ob.monitoringRadiusKm || ob.defaultRadiusKm || 25)
-    };
+      monitoringRadiusKm: radiusKm,
+      alertSensitivity: sensitivity,
+      feedPackage: ob.feedPackage || ob.operationalFocus || ''
+    }));
+
     const training = loadFeeds().filter(f => f.isTraining);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([feed, ...training]));
-    try { localStorage.setItem('ci_org_defaults', JSON.stringify({ city, country, liveAlertFeeds:primaryPlaces, sourceCategories:categories, intelligenceScope:scope, radiusKm:feed.monitoringRadiusKm })); } catch(_) {}
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...orgFeeds, ...training]));
+    try {
+      localStorage.setItem('ci_org_defaults', JSON.stringify({
+        city, country,
+        liveAlertFeeds: primaryPlaces,
+        monitoringRegions: primaryPlaces,
+        sourceCategories: categories,
+        intelligenceScope: scope,
+        radiusKm,
+        alertSensitivity: sensitivity,
+        feedPackage: ob.feedPackage || ob.operationalFocus || ''
+      }));
+    } catch(_) {}
+
+    // Persist approved org defaults back to org feeds so operators inherit them.
+    if (ciCanManageFeeds()) ciPushOrgFeeds(orgFeeds);
+
     if (typeof window.ciRenderFeedList === 'function') window.ciRenderFeedList();
     setTimeout(() => { try { if (typeof renderFeeds === 'function') renderFeeds(); } catch(_) {} }, 250);
   } catch(e) { console.warn('CityIntel: onboarding feed defaults unavailable', e); }
@@ -9580,15 +9641,15 @@ async function renderFeeds(){
 // Auto-seed several useful starters if none exist
 if (feeds.length === 0){
   const starters = [
-    { id: 'seed-global', title: 'Global (live)', places: ['global'],  risks: ['high','med'], useLive: true  },
-    { id: 'seed-eu',     title: 'Europe (live)', places: ['eu'],      risks: ['high','med'], useLive: true  },
-    { id: 'seed-uk',     title: 'UK (live)',     places: ['uk'],      risks: ['high','med'], useLive: true  },
-    { id: 'seed-usa',    title: 'US (live)',     places: ['us'],      risks: ['high','med'], useLive: true  },
+    { id: 'seed-global', title: 'Global (live)', places: ['global'],  risks: ['high','med'], useLive: true, source: 'starter_default'  },
+    { id: 'seed-eu',     title: 'Europe (live)', places: ['eu'],      risks: ['high','med'], useLive: true, source: 'starter_default'  },
+    { id: 'seed-uk',     title: 'UK (live)',     places: ['uk'],      risks: ['high','med'], useLive: true, source: 'starter_default'  },
+    { id: 'seed-usa',    title: 'US (live)',     places: ['us'],      risks: ['high','med'], useLive: true, source: 'starter_default'  },
   ];
 
   // persist (title is only for display – we derive label from places below)
   saveFeeds(starters.map(s => ({
-    id: s.id, places: s.places, risks: s.risks, useLive: s.useLive,
+    id: s.id, places: s.places, risks: s.risks, useLive: s.useLive, source: s.source || 'starter_default',
     // keywords left empty by default
   })));
 
