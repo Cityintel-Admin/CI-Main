@@ -3476,6 +3476,38 @@ let mapWindowMode = '7d';      // default: protest markers for next 7 days
     const feedFocusLayer = L.layerGroup().addTo(map);
     window.ciIndexMap = map;
 
+
+  // Phase 2A: apply approved onboarding defaults to the dashboard map.
+  (async function applyOrgDashboardDefaults(){
+    try{
+      const API = window.API_BASE || 'https://api.cityintelapi.com';
+      const user = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : JSON.parse(localStorage.getItem('ci_profile') || '{}');
+      const email = String(user.email || '').trim();
+      const headers = { 'Accept':'application/json' };
+      if(email) headers['X-User-Email'] = email;
+      if(user.name) headers['X-User-Name'] = user.name;
+      if(user.id) headers['X-User-Id'] = user.id;
+      if(user.roleKey) headers['X-User-Role-Key'] = user.roleKey;
+      if(user.role) headers['X-User-Role'] = user.role;
+      const res = await fetch(API + '/api/org/me' + (email ? ('?email=' + encodeURIComponent(email)) : ''), { headers });
+      const data = await res.json().catch(()=>({}));
+      const org = data.org || data.data || data;
+      if(!org || org.ok === false) return;
+      const ob = org.onboarding || org.defaults || org.config || org;
+      const lat = Number(ob.defaultLat ?? ob.lat ?? ob.latitude ?? ob.mapLat);
+      const lon = Number(ob.defaultLon ?? ob.lon ?? ob.lng ?? ob.longitude ?? ob.mapLon);
+      const radius = Number(ob.monitoringRadiusKm ?? ob.defaultRadiusKm ?? ob.radiusKm ?? 25);
+      const city = ob.defaultCity || ob.city || org.city || '';
+      const country = ob.defaultCountry || ob.country || org.country || '';
+      if(Number.isFinite(lat) && Number.isFinite(lon)){
+        map.setView([lat, lon], radius <= 10 ? 11 : radius <= 30 ? 9 : 7, { animate:false });
+        const meta = document.getElementById('riskMapMeta');
+        if(meta) meta.textContent = `Showing organisation default area${city ? ' for ' + city : ''}${country ? ', ' + country : ''}. Monitoring radius: ${radius || 25} km.`;
+        try { localStorage.setItem('ci_org_defaults', JSON.stringify({ orgName:org.name||org.orgName||'', city, country, lat, lon, radiusKm:radius, intelligenceScope:ob.intelligenceScope||'', liveAlertFeeds:ob.liveAlertFeeds||[] })); } catch(_) {}
+      }
+    }catch(e){ console.warn('CityIntel: dashboard org defaults unavailable', e); }
+  })();
+
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap © CARTO',
     maxZoom: 19,
@@ -5056,4 +5088,3 @@ function CI_updatePanicMapOverlayIndex(st){
 </body>
 </html>
 
- 
