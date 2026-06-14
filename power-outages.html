@@ -433,9 +433,43 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
     applyRegionToMap(e.target.value);
   });
 
+
+
+  async function loadPhase2AOrgDefaults(){
+    try{
+      const headers = authHeaders();
+      const email = headers['X-User-Email'] || headers['x-user-email'] || '';
+      const res = await fetch(API + '/api/org/me' + (email ? ('?email=' + encodeURIComponent(email)) : ''), { headers });
+      const data = await res.json().catch(()=>({}));
+      const org = data.org || data.data || data;
+      if(!org || org.ok === false) return null;
+      const ob = org.onboarding || org.defaults || org.config || org;
+      const lat = Number(ob.defaultLat ?? ob.lat ?? ob.latitude);
+      const lon = Number(ob.defaultLon ?? ob.lon ?? ob.lng ?? ob.longitude);
+      const radiusKm = Number(ob.monitoringRadiusKm ?? ob.defaultRadiusKm ?? ob.radiusKm ?? 25);
+      const region = ob.powerRegion || ob.transportRegion || ob.defaultCity || ob.city || org.city || '';
+      const city = ob.defaultCity || ob.city || org.city || '';
+      const country = ob.defaultCountry || ob.country || org.country || '';
+      return { orgName: org.name || org.orgName || ob.orgName || '', lat, lon, radiusKm, region, city, country };
+    }catch(e){ console.warn('CityIntel: power outage org defaults unavailable', e); return null; }
+  }
+
+  async function applyPhase2APowerDefaults(){
+    const d = await loadPhase2AOrgDefaults();
+    if(!d) return;
+    if(Number.isFinite(d.radiusKm) && d.radiusKm > 0) setRadiusBtn(d.radiusKm);
+    if(Number.isFinite(d.lat) && Number.isFinite(d.lon) && map){
+      map.setView([d.lat, d.lon], d.radiusKm <= 10 ? 12 : d.radiusKm <= 30 ? 10 : 8);
+      try { localStorage.setItem('ci_outage_focus', JSON.stringify({ lat:d.lat, lng:d.lon, km:d.radiusKm || 25, source:'org_onboarding_default' })); } catch(_) {}
+      if(typeof applyAreaFocus === 'function') applyAreaFocus(d.lat, d.lon, d.radiusKm || 25);
+    }
+    const note = document.querySelector('.coverage-note');
+    if(note && (d.city || d.country)) note.innerHTML = `📍 Organisation default loaded: ${[d.city,d.country].filter(Boolean).join(', ')} · Radius ${d.radiusKm || 25} km`;
+  }
+
   // ── Map init ─────────────────────────────────────────────────────────
   let focusCircle = null;
-  let currentFocusKm = 1; // default radius
+  let currentFocusKm = 25; // default radius from onboarding when available
 
   function setRadiusBtn(km) {
     currentFocusKm = km;
@@ -449,6 +483,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   }
   function initMap(){
     map = L.map('outageMap',{zoomControl:true}).setView([51.5074,-0.1278],9);
+    setTimeout(applyPhase2APowerDefaults, 250);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
       attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       subdomains:'abcd', maxZoom:19
