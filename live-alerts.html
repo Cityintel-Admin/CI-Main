@@ -6592,11 +6592,55 @@ async function ciLoadOrgFeeds() {
   } catch {}
 }
 
+
+
+async function ciLoadOnboardingFeedDefaults(){
+  try {
+    if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
+    const existing = loadFeeds().filter(f => !f.isTraining);
+    if (existing.length > 0) return;
+    const h = ciGetAuthHeaders();
+    const email = h['X-User-Email'] || '';
+    const res = await fetch(API_ORIGIN + '/api/org/me' + (email ? ('?email=' + encodeURIComponent(email)) : ''), { headers:h });
+    const data = await res.json().catch(()=>({}));
+    const org = data.org || data.data || data;
+    if (!org || org.ok === false) return;
+    const ob = org.onboarding || org.defaults || org.config || org;
+    const rawFeeds = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds : String(ob.liveAlertFeeds || ob.defaultAlertScope || ob.city || ob.defaultCity || '').split(',');
+    const places = rawFeeds.map(x => String(x || '').trim()).filter(Boolean);
+    const city = String(ob.defaultCity || ob.city || org.city || '').trim();
+    const country = String(ob.defaultCountry || ob.country || org.country || '').trim();
+    const scope = String(ob.intelligenceScope || ob.defaultIntelligenceScope || 'City').trim();
+    const categories = Array.isArray(ob.sourceCategories) ? ob.sourceCategories : String(ob.sourceCategories || 'security, protests, travel, transport, power').split(',').map(x=>x.trim()).filter(Boolean);
+    const primaryPlaces = places.length ? places : [city, country].filter(Boolean);
+    if (!primaryPlaces.length) return;
+    const label = scope && scope.toLowerCase() !== 'city' ? `${primaryPlaces.join(', ')} · ${scope}` : primaryPlaces.join(', ');
+    const feed = {
+      id: 'org-default-' + Date.now().toString(36),
+      places: primaryPlaces.map(x => String(x).toLowerCase()),
+      rawCities: primaryPlaces.join(', '),
+      displayLabel: label,
+      risks: ['high','med','low'],
+      useLive: true,
+      keywords: categories,
+      source: 'org_onboarding_default',
+      intelligenceScope: scope,
+      monitoringRadiusKm: Number(ob.monitoringRadiusKm || ob.defaultRadiusKm || 25)
+    };
+    const training = loadFeeds().filter(f => f.isTraining);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([feed, ...training]));
+    try { localStorage.setItem('ci_org_defaults', JSON.stringify({ city, country, liveAlertFeeds:primaryPlaces, sourceCategories:categories, intelligenceScope:scope, radiusKm:feed.monitoringRadiusKm })); } catch(_) {}
+    if (typeof window.ciRenderFeedList === 'function') window.ciRenderFeedList();
+    setTimeout(() => { try { if (typeof renderFeeds === 'function') renderFeeds(); } catch(_) {} }, 250);
+  } catch(e) { console.warn('CityIntel: onboarding feed defaults unavailable', e); }
+}
+
 // Run org feed load on page init (after auth is ready)
 (function() {
   function tryOrgFeedLoad() {
     if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
     ciLoadOrgFeeds();
+    setTimeout(ciLoadOnboardingFeedDefaults, 900);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(tryOrgFeedLoad, 700));
