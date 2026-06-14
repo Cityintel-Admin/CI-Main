@@ -124,7 +124,7 @@
 
     .lead-action-btn.reply{border-color:#60a5fa;color:#bfdbfe}
     .lead-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
-    .lead-modal{width:min(720px,100%);background:#16171a;border:1px solid var(--g600);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:18px}
+    .lead-modal{width:min(880px,100%);background:#16171a;border:1px solid var(--g600);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:18px}
     .lead-modal h3{margin:0 0 6px;font-size:18px}
     .lead-modal label{display:block;margin:12px 0 6px;color:#cbd5e1;font-weight:700;font-size:13px}
     .lead-modal input,.lead-modal textarea{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:10px;font:inherit}
@@ -140,7 +140,10 @@
     .lead-detail-box b{display:block;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
     .lead-onboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
     .lead-onboard-grid .full{grid-column:1/-1}
-    .lead-onboard-grid input,.lead-onboard-grid textarea{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}
+    .lead-onboard-grid input,.lead-onboard-grid textarea,.lead-onboard-grid select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}
+    .onboard-section-title{grid-column:1/-1;margin:8px 0 -2px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);color:#fff;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .onboard-help{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:-4px}
+    .lead-action-btn.onboard{border-color:#a78bfa;color:#ddd6fe}
 
 
 
@@ -290,19 +293,34 @@
     <h3 style="margin-bottom:4px;">Onboard Organisation</h3>
     <div id="leadOnboardRecipient" class="lead-muted" style="margin-bottom:10px;">Loading onboarding form...</div>
     <div class="lead-onboard-grid">
+      <div class="onboard-section-title">Organisation profile</div>
+      <div><label>Organisation name</label><input id="obOrgName" placeholder="Organisation Ltd"></div>
+      <div><label>Org admin email</label><input id="obAdminEmail" placeholder="admin@company.com"></div>
+      <div><label>Access route</label><select id="obAccessRoute"><option>Professional plan</option><option>Enterprise / custom pricing</option><option>Product demo</option></select></div>
+      <div><label>Initial user seats</label><input id="obSeatLimit" type="number" min="1" max="250" value="6"></div>
+
+      <div class="onboard-section-title">Primary map location</div>
+      <div class="onboard-help">Review the submitted address and adjust latitude/longitude before approval. These defaults can feed dashboard maps, Live Alerts, Power Outages, Transport Status and profile settings.</div>
+      <div class="full"><label>Submitted / operating address</label><input id="obAddress" placeholder="Building, street, area, or site name"></div>
       <div><label>Default city</label><input id="obCity" placeholder="London"></div>
       <div><label>Default country</label><input id="obCountry" placeholder="United Kingdom"></div>
+      <div><label>Postcode / ZIP</label><input id="obPostcode" placeholder="SW1A 1AA"></div>
+      <div><label>Timezone</label><input id="obTimezone" placeholder="Europe/London"></div>
+      <div><label>Default radius km</label><input id="obRadius" type="number" min="1" max="50" value="5"></div>
       <div><label>Latitude</label><input id="obLat" placeholder="51.5072"></div>
       <div><label>Longitude</label><input id="obLon" placeholder="-0.1276"></div>
-      <div><label>Default radius km</label><input id="obRadius" type="number" min="1" max="50" value="5"></div>
+
+      <div class="onboard-section-title">Initial feed configuration</div>
       <div><label>Power / transport region</label><input id="obOpsRegion" placeholder="London / UK"></div>
+      <div><label>Default live-alert scope</label><input id="obAlertScope" placeholder="London, United Kingdom"></div>
       <div class="full"><label>Initial live-alert feeds</label><input id="obFeeds" placeholder="London, United Kingdom, Europe"></div>
       <div class="full"><label>Onboarding notes</label><textarea id="obNotes" placeholder="Master admin notes, feed scope, rollout requirements..."></textarea></div>
     </div>
     <div id="leadOnboardStatus" class="lead-muted" style="margin-top:10px;"></div>
     <div class="lead-modal-actions">
       <button id="leadOnboardClose" class="btn" type="button">Close</button>
-      <button id="leadOnboardSave" class="btn primary" type="button">Save onboarding</button>
+      <button id="leadOnboardSave" class="btn" type="button">Save onboarding</button>
+      <button id="leadOnboardApprove" class="btn primary" type="button">Save &amp; approve</button>
     </div>
   </div>
 </div>
@@ -1197,6 +1215,7 @@ const makeBar = (label, count, color) => {
   const onboardStatus = document.getElementById('leadOnboardStatus');
   const onboardClose = document.getElementById('leadOnboardClose');
   const onboardSave = document.getElementById('leadOnboardSave');
+  const onboardApprove = document.getElementById('leadOnboardApprove');
   let activeOnboardLead = null;
 
   let latestRows = [];
@@ -1256,13 +1275,14 @@ const makeBar = (label, count, color) => {
   function actionButtons(row){
     const id = esc(row.id);
     const status = String(row.status || 'new').toLowerCase();
+    const hasLocation = !!(row.latitude || row.longitude || row.city || row.country || row.address || row.postcode);
     const disabled = (target) => status === target ? 'disabled' : '';
 
     return `
       <div class="lead-actions">
         <button class="lead-action-btn reply" data-lead-detail="${id}">View</button>
         <button class="lead-action-btn reply" data-lead-history="${id}">Messages</button>
-        <button class="lead-action-btn reply" data-lead-onboard="${id}">Onboard</button>
+        <button class="lead-action-btn onboard" data-lead-onboard="${id}">Onboard${hasLocation ? ' • map' : ''}</button>
         <button class="lead-action-btn reply" data-lead-message="reply" data-lead-id="${id}">Reply</button>
         <button class="lead-action-btn contact" data-lead-message="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
         <button class="lead-action-btn approve" data-lead-action="approved" data-lead-id="${id}" ${disabled('approved')}>Approve</button>
@@ -1368,7 +1388,11 @@ const makeBar = (label, count, color) => {
         <div class="lead-detail-box"><b>Team size</b>${esc(row.team_size)}</div>
         <div class="lead-detail-box"><b>Interest</b>${esc(row.interest)}</div>
         <div class="lead-detail-box"><b>Region</b>${esc(row.region)}</div>
-        <div class="lead-detail-box"><b>Heard from</b>${esc(row.heard_from || '—')} ${row.heard_from_detail ? '• '+esc(row.heard_from_detail) : ''}</div>
+        <div class="lead-detail-box"><b>Heard from</b>${esc(row.heard_from || row.heardFrom || '—')} ${row.heard_from_detail || row.heardFromDetail ? '• '+esc(row.heard_from_detail || row.heardFromDetail) : ''}</div>
+        <div class="lead-detail-box"><b>Address</b>${esc(row.address || row.operating_address || '—')}</div>
+        <div class="lead-detail-box"><b>Location</b>${esc([row.city, row.postcode, row.country].filter(Boolean).join(', ') || '—')}</div>
+        <div class="lead-detail-box"><b>Map coordinates</b>${esc((row.latitude && row.longitude) ? `${row.latitude}, ${row.longitude}` : 'Pending admin review')}</div>
+        <div class="lead-detail-box"><b>Geo source</b>${esc(row.geocode_source || row.geocodeSource || row.geocode_confidence || row.geocodeConfidence || '—')}</div>
         <div class="lead-detail-box full" style="grid-column:1/-1"><b>Message</b><div style="white-space:pre-wrap">${esc(row.message)}</div></div>
       </div>`;
     detailModal.style.display = 'flex';
@@ -1376,6 +1400,13 @@ const makeBar = (label, count, color) => {
   }
 
   function closeLeadDetail(){ if(detailModal){ detailModal.style.display='none'; detailModal.setAttribute('aria-hidden','true'); } }
+
+  function leadField(row, ...names){
+    for (const name of names) {
+      if (row && row[name] != null && String(row[name]).trim() !== '') return row[name];
+    }
+    return '';
+  }
 
   async function openLeadOnboard(id){
     const row = latestRows.find(r => String(r.id) === String(id));
@@ -1385,49 +1416,116 @@ const makeBar = (label, count, color) => {
     onboardStatus.textContent = 'Loading saved onboarding draft…';
     onboardModal.style.display = 'flex';
     onboardModal.setAttribute('aria-hidden','false');
+
+    const submittedAddress = leadField(row, 'address', 'operating_address', 'main_address');
+    const submittedCity = leadField(row, 'city', 'default_city');
+    const submittedCountry = leadField(row, 'country', 'default_country');
+    const submittedPostcode = leadField(row, 'postcode', 'postal_code', 'zip');
+    const submittedTimezone = leadField(row, 'timezone', 'time_zone');
+    const submittedLat = leadField(row, 'latitude', 'lat', 'default_lat');
+    const submittedLon = leadField(row, 'longitude', 'lon', 'lng', 'default_lon');
+
     try{
       const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(row.id)}/onboard`, { headers: authHeaders() });
       const data = await res.json().catch(()=>({}));
       const ob = data.onboarding || {};
-      document.getElementById('obCity').value = ob.defaultCity || '';
-      document.getElementById('obCountry').value = ob.defaultCountry || '';
-      document.getElementById('obLat').value = ob.defaultLat || '';
-      document.getElementById('obLon').value = ob.defaultLon || '';
+      document.getElementById('obOrgName').value = ob.orgName || row.company || '';
+      document.getElementById('obAdminEmail').value = ob.adminEmail || row.email || '';
+      document.getElementById('obAccessRoute').value = ob.accessRoute || row.interest || 'Professional plan';
+      document.getElementById('obSeatLimit').value = ob.seatLimit || ob.userSeatLimit || 6;
+      document.getElementById('obAddress').value = ob.address || submittedAddress || '';
+      document.getElementById('obCity').value = ob.defaultCity || submittedCity || '';
+      document.getElementById('obCountry').value = ob.defaultCountry || submittedCountry || '';
+      document.getElementById('obPostcode').value = ob.postcode || submittedPostcode || '';
+      document.getElementById('obTimezone').value = ob.timezone || submittedTimezone || '';
+      document.getElementById('obLat').value = ob.defaultLat || submittedLat || '';
+      document.getElementById('obLon').value = ob.defaultLon || submittedLon || '';
       document.getElementById('obRadius').value = ob.defaultRadiusKm || 5;
-      document.getElementById('obOpsRegion').value = ob.transportRegion || ob.powerRegion || '';
-      document.getElementById('obFeeds').value = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds.join(', ') : (ob.liveAlertFeeds || row.region || '');
-      document.getElementById('obNotes').value = ob.notes || '';
-      onboardStatus.textContent = data.ok ? 'Draft loaded.' : 'No saved draft yet.';
+      document.getElementById('obOpsRegion').value = ob.transportRegion || ob.powerRegion || [submittedCity, submittedCountry].filter(Boolean).join(' / ') || '';
+      document.getElementById('obAlertScope').value = ob.defaultAlertScope || row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ') || '';
+      document.getElementById('obFeeds').value = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds.join(', ') : (ob.liveAlertFeeds || row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ') || '');
+      document.getElementById('obNotes').value = ob.notes || `Source request: ${row.interest || 'Access request'}\nTeam size: ${row.team_size || row.teamSize || '—'}\nHeard from: ${row.heard_from || row.heardFrom || '—'}${row.message ? `\n\nRequirements:\n${row.message}` : ''}`;
+      onboardStatus.textContent = data.ok ? 'Draft loaded. Review location and feed scope before approval.' : 'No saved draft yet. Values prefilled from the submitted request.';
     }catch(e){
-      onboardStatus.textContent = 'Could not load saved draft — you can still save a new one.';
+      document.getElementById('obOrgName').value = row.company || '';
+      document.getElementById('obAdminEmail').value = row.email || '';
+      document.getElementById('obAccessRoute').value = row.interest || 'Professional plan';
+      document.getElementById('obAddress').value = submittedAddress || '';
+      document.getElementById('obCity').value = submittedCity || '';
+      document.getElementById('obCountry').value = submittedCountry || '';
+      document.getElementById('obPostcode').value = submittedPostcode || '';
+      document.getElementById('obTimezone').value = submittedTimezone || '';
+      document.getElementById('obLat').value = submittedLat || '';
+      document.getElementById('obLon').value = submittedLon || '';
+      document.getElementById('obOpsRegion').value = [submittedCity, submittedCountry].filter(Boolean).join(' / ');
+      document.getElementById('obAlertScope').value = row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ');
+      document.getElementById('obFeeds').value = row.region || [submittedCity, submittedCountry].filter(Boolean).join(', ');
+      onboardStatus.textContent = 'Could not load saved draft — values have been prefilled from the request and can still be saved.';
     }
   }
 
   function closeLeadOnboard(){ if(onboardModal){ onboardModal.style.display='none'; onboardModal.setAttribute('aria-hidden','true'); } activeOnboardLead=null; }
 
-  async function saveLeadOnboard(){
-    if(!activeOnboardLead) return;
-    const payload = {
+  function onboardingPayloadFromForm(){
+    return {
+      orgName: document.getElementById('obOrgName').value.trim(),
+      adminEmail: document.getElementById('obAdminEmail').value.trim(),
+      accessRoute: document.getElementById('obAccessRoute').value.trim(),
+      seatLimit: document.getElementById('obSeatLimit').value.trim() || '6',
+      address: document.getElementById('obAddress').value.trim(),
       defaultCity: document.getElementById('obCity').value.trim(),
       defaultCountry: document.getElementById('obCountry').value.trim(),
+      postcode: document.getElementById('obPostcode').value.trim(),
+      timezone: document.getElementById('obTimezone').value.trim(),
       defaultLat: document.getElementById('obLat').value.trim(),
       defaultLon: document.getElementById('obLon').value.trim(),
       defaultRadiusKm: document.getElementById('obRadius').value.trim() || '5',
+      defaultAlertScope: document.getElementById('obAlertScope').value.trim(),
       liveAlertFeeds: document.getElementById('obFeeds').value.split(',').map(x=>x.trim()).filter(Boolean),
       powerRegion: document.getElementById('obOpsRegion').value.trim(),
       transportRegion: document.getElementById('obOpsRegion').value.trim(),
+      modules: ['live_alerts','assets','travellers','power_outages','transport_status','flight_status'],
+      locationReviewedByAdmin: true,
       notes: document.getElementById('obNotes').value.trim()
     };
-    onboardStatus.textContent = 'Saving onboarding configuration…';
-    onboardSave.disabled = true;
+  }
+
+  async function saveLeadOnboard(options = {}){
+    if(!activeOnboardLead) return false;
+    const payload = onboardingPayloadFromForm();
+    if(!payload.orgName || !payload.adminEmail){
+      onboardStatus.textContent = 'Organisation name and org admin email are required before saving.';
+      return false;
+    }
+    if((payload.defaultLat && !payload.defaultLon) || (!payload.defaultLat && payload.defaultLon)){
+      onboardStatus.textContent = 'Latitude and longitude must both be completed, or both left blank for later review.';
+      return false;
+    }
+    onboardStatus.textContent = options.approve ? 'Saving onboarding configuration and approving request…' : 'Saving onboarding configuration…';
+    if (onboardSave) onboardSave.disabled = true;
+    if (onboardApprove) onboardApprove.disabled = true;
     try{
       const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(activeOnboardLead.id)}/onboard`, { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
       const data = await res.json().catch(()=>({}));
       if(!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
-      onboardStatus.textContent = 'Onboarding configuration saved.';
-      await loadLeads();
-    }catch(e){ onboardStatus.textContent = 'Save failed: ' + (e.message || e); }
-    finally{ onboardSave.disabled = false; }
+
+      if (options.approve) {
+        await updateLeadStatus(activeOnboardLead.id, 'approved');
+        onboardStatus.textContent = 'Onboarding saved and request approved.';
+        closeLeadOnboard();
+      } else {
+        onboardStatus.textContent = 'Onboarding configuration saved. You can now approve when ready.';
+        await loadLeads();
+      }
+      return true;
+    }catch(e){
+      onboardStatus.textContent = 'Save failed: ' + (e.message || e);
+      return false;
+    }
+    finally{
+      if (onboardSave) onboardSave.disabled = false;
+      if (onboardApprove) onboardApprove.disabled = false;
+    }
   }
 
   async function openLeadHistory(id){
@@ -1594,7 +1692,8 @@ const makeBar = (label, count, color) => {
   if (detailClose) detailClose.addEventListener('click', closeLeadDetail);
   if (detailModal) detailModal.addEventListener('click', (e) => { if (e.target === detailModal) closeLeadDetail(); });
   if (onboardClose) onboardClose.addEventListener('click', closeLeadOnboard);
-  if (onboardSave) onboardSave.addEventListener('click', saveLeadOnboard);
+  if (onboardSave) onboardSave.addEventListener('click', () => saveLeadOnboard());
+  if (onboardApprove) onboardApprove.addEventListener('click', () => saveLeadOnboard({ approve:true }));
   if (onboardModal) onboardModal.addEventListener('click', (e) => { if (e.target === onboardModal) closeLeadOnboard(); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
