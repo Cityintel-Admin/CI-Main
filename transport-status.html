@@ -447,7 +447,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   let pinCircle = null;
   let pinActive = false;
   let pinLat = null, pinLon = null;
-  let currentPinKm = 5;
+  let currentPinKm = 25;
 
   function setRadiusBtn(km) {
     currentPinKm = km;
@@ -484,6 +484,44 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     localStorage.setItem(REGION_PREF_KEY, e.target.value);
     applyRegionToMap(e.target.value);
   });
+
+
+
+  async function loadPhase2AOrgDefaults(){
+    try{
+      const headers = authHeaders();
+      const email = headers['X-User-Email'] || headers['x-user-email'] || '';
+      const res = await fetch(API + '/api/org/me' + (email ? ('?email=' + encodeURIComponent(email)) : ''), { headers });
+      const data = await res.json().catch(()=>({}));
+      const org = data.org || data.data || data;
+      if(!org || org.ok === false) return null;
+      const ob = org.onboarding || org.defaults || org.config || org;
+      const lat = Number(ob.defaultLat ?? ob.lat ?? ob.latitude);
+      const lon = Number(ob.defaultLon ?? ob.lon ?? ob.lng ?? ob.longitude);
+      const radiusKm = Number(ob.monitoringRadiusKm ?? ob.defaultRadiusKm ?? ob.radiusKm ?? 25);
+      const region = ob.transportRegion || ob.powerRegion || ob.defaultCity || ob.city || org.city || '';
+      const city = ob.defaultCity || ob.city || org.city || '';
+      const country = ob.defaultCountry || ob.country || org.country || '';
+      return { orgName: org.name || org.orgName || ob.orgName || '', lat, lon, radiusKm, region, city, country };
+    }catch(e){ console.warn('CityIntel: transport org defaults unavailable', e); return null; }
+  }
+
+  async function applyPhase2ATransportDefaults(){
+    const d = await loadPhase2AOrgDefaults();
+    if(!d) return;
+    if(Number.isFinite(d.radiusKm) && d.radiusKm > 0) setRadiusBtn(d.radiusKm);
+    if(Number.isFinite(d.lat) && Number.isFinite(d.lon) && map){
+      map.setView([d.lat, d.lon], d.radiusKm <= 10 ? 12 : d.radiusKm <= 30 ? 10 : 8);
+      try { localStorage.setItem('ci_transport_pin_km', String(d.radiusKm || 25)); } catch(_) {}
+    }
+    const regionSel = document.getElementById('regionPref');
+    if(regionSel && d.region){
+      const opt = Array.from(regionSel.options).find(o => String(o.textContent||o.value).toLowerCase().includes(String(d.region).toLowerCase()) || String(d.region).toLowerCase().includes(String(o.value).toLowerCase()));
+      if(opt) regionSel.value = opt.value;
+    }
+    const note = document.querySelector('.coverage-note');
+    if(note && (d.city || d.country)) note.innerHTML = `📍 Organisation default loaded: ${[d.city,d.country].filter(Boolean).join(', ')} · Radius ${d.radiusKm || 25} km`;
+  }
 
   function sourceName(src){
     return ({tfl:'TfL',nationalrail:'National Rail',mta:'MTA NYC',lta:'Singapore LTA',tokyo:'Tokyo Metro',hkmtr:'HK MTR'})[src] || src || 'Source';
@@ -595,6 +633,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
   // ── Map ───────────────────────────────────────────────────────────
   function initMap(){
     map = L.map('transportMap',{zoomControl:true}).setView([51.509,-0.118],10);
+    setTimeout(applyPhase2ATransportDefaults, 250);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
       attribution:'© OpenStreetMap © CARTO',maxZoom:19,subdomains:'abcd'
     }).addTo(map);
