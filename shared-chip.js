@@ -53,6 +53,7 @@
           <div style="border-top:1px solid rgba(255,255,255,.08);margin:6px 0"></div>
           <a href="privacy.html">Privacy</a>
           <a href="terms.html">Terms</a>
+          <a href="cookies.html">Cookies</a>
           <a href="support.html">Support</a>
           <div style="border-top:1px solid rgba(255,255,255,.08);margin:6px 0"></div>
           <a href="#" id="logoutLink">Log out</a>
