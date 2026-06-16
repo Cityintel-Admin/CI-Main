@@ -9512,6 +9512,22 @@ function ageLabel(when) {
     return 'low';
   }
 
+
+  function defaultPriorityControls(){
+    return { categoryWeights:{ security:0, protests:0, civil_unrest:0, travel:0, aviation:0, transport:0, power:0, crime:0, terrorism:0, weather:0 }, enabledCategoryBoost:10, monitoredRegionBoost:15, lowGeoPenalty:8, sourceCredibilityBoost:4 };
+  }
+  function normalisePriorityControls(input){
+    const d = defaultPriorityControls();
+    const raw = (input && typeof input === 'object') ? input : {};
+    const out = Object.assign({}, d, raw, { categoryWeights:Object.assign({}, d.categoryWeights, raw.categoryWeights || {}) });
+    Object.keys(out.categoryWeights).forEach(k => out.categoryWeights[k] = Number(out.categoryWeights[k] || 0));
+    out.enabledCategoryBoost = Number(out.enabledCategoryBoost ?? d.enabledCategoryBoost);
+    out.monitoredRegionBoost = Number(out.monitoredRegionBoost ?? d.monitoredRegionBoost);
+    out.lowGeoPenalty = Number(out.lowGeoPenalty ?? d.lowGeoPenalty);
+    out.sourceCredibilityBoost = Number(out.sourceCredibilityBoost ?? d.sourceCredibilityBoost);
+    return out;
+  }
+
   function ciScoreAlertPriority(ev, feed){
     const profile = getOrgProfile();
     const risk = norm(ev?.risk || ev?.severity || 'medium');
@@ -9523,8 +9539,13 @@ function ageLabel(when) {
     const weights = FOCUS_WEIGHTS[focus] || {};
     if (weights[cat]) { score += weights[cat]; reasons.push(`focus +${weights[cat]} ${cat}`); }
 
+    const controls = normalisePriorityControls(profile.priorityControls || profile.priority_controls || {});
+    const customCatBoost = Number(controls.categoryWeights?.[cat] || 0);
+    if (customCatBoost) { score += customCatBoost; reasons.push(`custom ${cat} ${customCatBoost >= 0 ? '+' : ''}${customCatBoost}`); }
+
     const enabled = list(profile.sourceCategories || feed?.keywords || '').map(x=>norm(x).replace(/[\s-]+/g, '_'));
-    if (enabled.includes(cat)) { score += 10; reasons.push('enabled category +10'); }
+    const enabledBoost = Number(controls.enabledCategoryBoost ?? 10);
+    if (enabled.includes(cat) && enabledBoost) { score += enabledBoost; reasons.push(`enabled category +${enabledBoost}`); }
 
     const places = uniq([
       ...list(profile.monitoringRegions),
@@ -9534,7 +9555,8 @@ function ageLabel(when) {
       ...(feed?.places || []), feed?.rawCities, feed?.displayLabel
     ]).map(norm).filter(Boolean);
     const text = norm([ev?.title, ev?.city, ev?.country, ev?.description, ev?.src].filter(Boolean).join(' '));
-    if (places.some(p => p && text.includes(p))) { score += 15; reasons.push('monitored region +15'); }
+    const placeBoost = Number(controls.monitoredRegionBoost ?? 15);
+    if (places.some(p => p && text.includes(p)) && placeBoost) { score += placeBoost; reasons.push(`monitored region +${placeBoost}`); }
 
     const sensitivity = norm(profile.alertSensitivity || profile.sensitivity || 'balanced');
     if (sensitivity.includes('critical')) score += 10;
@@ -9542,8 +9564,10 @@ function ageLabel(when) {
     else if (sensitivity.includes('low')) score -= 5;
 
     const sourceScore = Number(ev?.source_score || ev?.sourceScore || 0);
-    if (Number.isFinite(sourceScore) && sourceScore >= 80) score += 4;
-    if (ev?.geo_suspect || String(ev?.geo_confidence_label || '').toLowerCase() === 'low') score -= 8;
+    const sourceBoost = Number(controls.sourceCredibilityBoost ?? 4);
+    if (Number.isFinite(sourceScore) && sourceScore >= 80 && sourceBoost) score += sourceBoost;
+    const lowGeoPenalty = Number(controls.lowGeoPenalty ?? 8);
+    if (ev?.geo_suspect || String(ev?.geo_confidence_label || '').toLowerCase() === 'low') score -= lowGeoPenalty;
 
     score = Math.max(0, Math.min(100, Math.round(score)));
     return Object.assign({}, ev, {
