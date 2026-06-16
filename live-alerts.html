@@ -1993,6 +1993,20 @@ async function loadOrgContext() {
   line-height:1;
 }
 .live-map-feed-remove:hover{background:rgba(244,63,94,.2);}
+.live-map-feed-edit{
+  width:44px; height:34px;
+  border-radius:10px;
+  border:1px solid rgba(147,197,253,.45);
+  background:rgba(30,64,175,.12);
+  color:#bfdbfe;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:800;
+}
+.live-map-feed-edit:hover{background:rgba(30,64,175,.2);}
 
 .live-map-feed-row:hover{
   background:#111827;
@@ -5979,6 +5993,19 @@ function eventMatchesFeed(ev, feed){
   const places = feed.places || [];
   if (places.length && !places.some(p => feedRegionMatchesPlace(p, ev.city))) return false;
 
+  // City-specific feeds should only show alerts with actual city evidence.
+  // This prevents broad/global stories from being pulled into London/Newham just
+  // because the provider assigned weak feed-context metadata.
+  try {
+    const cityPlaces = places.filter(p => !ciIsRegionPlace(p));
+    if (cityPlaces.length) {
+      const text = ciGeoText(ev);
+      const cityEvidence = cityPlaces.some(p => ciTextMentionsCity(text, p) || ciSourceHintsCity(text, p));
+      const coordEvidence = ciGeoHasCoords(ev) && cityPlaces.some(p => feedRegionMatchesPlace(p, ev.city));
+      if (!cityEvidence && !coordEvidence) return false;
+    }
+  } catch(_) {}
+
   // Phase 7E: do not let a city-specific feed inherit weak provider/feed context
   // unless the city is actually evidenced by title/summary/source/coords. Region
   // feeds stay visible, but low-confidence rows are labelled in the detail panel.
@@ -6650,7 +6677,30 @@ function ciPushOrgFeeds(feeds) {
   }, 800); // debounce rapid add/remove actions
 }
 
+
+function ciCurrentOrgCacheKey(){
+  try {
+    const u = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : {};
+    const orgId = String(u.orgId || u.org_id || u.organisationId || u.organizationId || u.org || '').trim();
+    const email = String(u.email || localStorage.getItem('ci_user_email') || '').trim().toLowerCase();
+    return orgId || email || 'anonymous';
+  } catch(_) { return 'anonymous'; }
+}
+function ciGuardFeedCacheForCurrentOrg(){
+  const key = ciCurrentOrgCacheKey();
+  const prev = localStorage.getItem('ci_live_alerts_cache_owner');
+  if (prev && prev !== key) {
+    try { localStorage.removeItem(STORAGE_KEY); } catch(_) {}
+    try { localStorage.removeItem(FEED_EVENTS_KEY); } catch(_) {}
+    try { localStorage.removeItem(FEED_ARCHIVE_KEY); } catch(_) {}
+    try { localStorage.removeItem('ci_alert_status_v1'); } catch(_) {}
+    try { window.CI_ALL_ALERTS = []; } catch(_) {}
+  }
+  try { localStorage.setItem('ci_live_alerts_cache_owner', key); } catch(_) {}
+}
+
 async function ciLoadOrgFeeds() {
+  ciGuardFeedCacheForCurrentOrg();
   // Operators always load from the org's saved feed set.
   // Admins only keep local feeds if those feeds are genuinely custom.
   // Starter fallback feeds must not block onboarding defaults.
@@ -7551,6 +7601,7 @@ function renderLanguageTools(item){
 
 // -------------------- OPERATOR DISPOSITION (per-alert, per-user) --------------------
 const CI_ALERT_STATUS_KEY = 'ci_alert_status_v1';
+const CI_QUEUED_ALERTS_KEY = 'ci_alert_queued_events_v1';
 
 const detailDispositionEl = document.getElementById('detailDisposition');
 const detailDispositionUpdatedEl = document.getElementById('detailDispositionUpdated');
@@ -7614,13 +7665,71 @@ function loadAlertStatusMap(){
 function saveAlertStatusMap(map){
   try{ localStorage.setItem(CI_ALERT_STATUS_KEY, JSON.stringify(map || {})); }catch(_){}
 }
+function alertStableKey(ev){
+  if (!ev) return 'stable_' + ciHash('null');
+  const id = ev.id || ev._id || ev.event_id;
+  if (id) return 'id_' + String(id);
+  const base = [
+    ev.title || ev.summary || ev.description || '',
+    ev.city || ev.City || ev.location || '',
+    ev.country || ev.Country || '',
+    ev.src || ev.source || ev.domain || ''
+  ].join('|').toLowerCase();
+  return 'stable_' + ciHash(base);
+}
+function alertStatusKeys(ev){
+  const out = [];
+  try { out.push(alertKey(ev)); } catch(_) {}
+  try { out.push(alertStableKey(ev)); } catch(_) {}
+  try { const k = ciSharedAlertKey(ev); if (k) out.push('shared_' + k); } catch(_) {}
+  return Array.from(new Set(out.filter(Boolean)));
+}
+function loadQueuedAlertMap(){
+  try { return JSON.parse(localStorage.getItem(CI_QUEUED_ALERTS_KEY) || '{}') || {}; } catch(_) { return {}; }
+}
+function saveQueuedAlertMap(map){
+  try { localStorage.setItem(CI_QUEUED_ALERTS_KEY, JSON.stringify(map || {})); } catch(_) {}
+}
+function rememberQueuedAlert(ev, status){
+  try {
+    const st = String(status || '').toLowerCase();
+    const map = loadQueuedAlertMap();
+    const user = getOperatorEmail();
+    map[user] = map[user] || {};
+    const keys = alertStatusKeys(ev);
+    if (st === 'untriaged' || st === 'cleared') {
+      keys.forEach(k => { delete map[user][k]; });
+    } else {
+      const snap = Object.assign({}, ev, { __queuedAt: Date.now() });
+      keys.forEach(k => { map[user][k] = snap; });
+    }
+    saveQueuedAlertMap(map);
+  } catch(_) {}
+}
+function getQueuedAlertEvents(){
+  try {
+    const map = loadQueuedAlertMap();
+    const userMap = map[getOperatorEmail()] || {};
+    const seen = new Set();
+    return Object.keys(userMap).map(k => userMap[k]).filter(ev => {
+      const sk = alertStableKey(ev);
+      if (seen.has(sk)) return false;
+      seen.add(sk);
+      return true;
+    });
+  } catch(_) { return []; }
+}
 
 function getStatusRecord(ev){
   const user = getOperatorEmail();
-  const key = alertKey(ev);
+  const keys = alertStatusKeys(ev);
+  const key = keys[0] || alertKey(ev);
   const map = loadAlertStatusMap();
-  const rec = map?.[user]?.[key] || null;
-  return { user, key, rec, map };
+  let rec = null;
+  for (const k of keys) {
+    if (map?.[user]?.[k]) { rec = map[user][k]; break; }
+  }
+  return { user, key, keys, rec, map };
 }
 
 function getDisposition(ev){
@@ -7633,19 +7742,21 @@ function getDispositionNote(ev){
 }
 
 function setDisposition(ev, status, note){
-  const { user, key, map } = getStatusRecord(ev);
+  const { user, key, keys, map } = getStatusRecord(ev);
   const st = String(status || 'untriaged').toLowerCase();
   const safeSt = (['untriaged','escalated','monitoring','cleared'].includes(st)) ? st : 'untriaged';
 
   map[user] = map[user] || {};
-  map[user][key] = {
+  const rec = {
     status: safeSt,
     note: String(note || '').slice(0, 120),
     updatedAt: Date.now(),
     updatedIso: ciNowIso()
   };
+  (keys && keys.length ? keys : [key]).forEach(k => { map[user][k] = rec; });
   saveAlertStatusMap(map);
-  return map[user][key];
+  rememberQueuedAlert(ev, safeSt);
+  return rec;
 }
 
 function formatUpdatedAt(rec){
@@ -9343,6 +9454,8 @@ function ageLabel(when) {
 }
 
 
+
+<script>
 /* Phase 2B.2A — client-side organisation intelligence prioritisation.
    Nothing is hidden; relevant alerts are boosted and then sorted higher. */
 (function(){
@@ -9460,7 +9573,7 @@ function ageLabel(when) {
   window.ciPrioritiseAlertList = ciPrioritiseAlertList;
   window.ciPriorityBadgeHtml = ciPriorityBadgeHtml;
 })();
-
+</script>
 
 // Put the events into an existing card (no refetch here)
 const MAX_VISIBLE_EVENTS = 20;
@@ -9805,6 +9918,7 @@ if (places.length) {
 
 // -------------------- CARD RENDER --------------------
 async function renderFeeds(){
+  try { ciGuardFeedCacheForCurrentOrg(); } catch(_) {}
   const grid = document.getElementById('feedsGrid');
   setLiveStatus({ syncText:'Refreshing alerts…' });
 
@@ -11964,6 +12078,13 @@ const assetIcon = L.divIcon({
         <span class="feed-count">${s.total} alerts</span>
       `;
 
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'live-map-feed-edit';
+      editBtn.title = 'Edit feed';
+      editBtn.setAttribute('aria-label', `Edit feed ${s.label}`);
+      editBtn.textContent = 'Edit';
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'live-map-feed-remove';
@@ -11973,6 +12094,7 @@ const assetIcon = L.divIcon({
 
       row.appendChild(openBtn);
       if (typeof window.ciCanManageFeeds !== 'function' || window.ciCanManageFeeds()) {
+        row.appendChild(editBtn);
         row.appendChild(removeBtn);
       }
       host.appendChild(row);
@@ -12556,6 +12678,16 @@ function redrawIncidentRadius(){
         out.push(item);
       });
     }catch(_){}
+
+    // Include snapshots of alerts routed to Monitoring/Escalated so queue state survives feed refreshes.
+    try {
+      getQueuedAlertEvents().forEach(ev => {
+        const item = Object.assign({}, ev);
+        item._feedId = item._feedId || '__queued__';
+        item._feedLabel = item._feedLabel || 'Operator queue';
+        out.push(item);
+      });
+    } catch(_) {}
 
     // sort newest first
     out.sort((a,b)=>(Date.parse(eventWhen(b))||0)-(Date.parse(eventWhen(a))||0));
@@ -13344,6 +13476,21 @@ const selectEvent = async (ev, rowEl) => {
   backBtn.addEventListener('click', showFeeds);
 
   document.addEventListener('click', (e) => {
+    // Edit feed button
+    const editBtn = e.target.closest('.live-map-feed-edit');
+    if (editBtn) {
+      if (typeof window.ciCanManageFeeds === 'function' && !window.ciCanManageFeeds()) {
+        e.preventDefault(); e.stopPropagation(); return;
+      }
+      const row = editBtn.closest('.live-map-feed-row');
+      const feedId = row && row.dataset.feedid;
+      const feed = (typeof loadFeeds === 'function' ? loadFeeds() : []).find(f => String(f.id) === String(feedId));
+      if (feed && typeof openFeedModal === 'function') openFeedModal(feed);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     // Remove feed button
     const removeBtn = e.target.closest('.live-map-feed-remove');
     if (removeBtn) {
