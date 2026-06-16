@@ -349,6 +349,17 @@ html,body{overflow-x:hidden;max-width:100vw}
         <label>Live alert feeds / places</label>
         <input id="orgLiveAlertFeeds" placeholder="London, United Kingdom, Europe">
       </div>
+      <div class="full ci-priority-controls" style="grid-column:1/-1;border:1px solid var(--g600, var(--gray-600));border-radius:12px;padding:12px;margin-top:4px;">
+        <label style="display:block;margin-bottom:6px;">Live-alert priority tuning</label>
+        <div class="lead-muted" style="margin-bottom:8px;">Boost or reduce categories without hiding other alerts. Use small values such as +5, +10, or -5.</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;"><label>Security<input class="ciPriorityCatWeight" data-cat="security" type="number" min="-50" max="50" step="1" value="0"></label><label>Protests<input class="ciPriorityCatWeight" data-cat="protests" type="number" min="-50" max="50" step="1" value="0"></label><label>Civil Unrest<input class="ciPriorityCatWeight" data-cat="civil_unrest" type="number" min="-50" max="50" step="1" value="0"></label><label>Travel<input class="ciPriorityCatWeight" data-cat="travel" type="number" min="-50" max="50" step="1" value="0"></label><label>Aviation<input class="ciPriorityCatWeight" data-cat="aviation" type="number" min="-50" max="50" step="1" value="0"></label><label>Transport<input class="ciPriorityCatWeight" data-cat="transport" type="number" min="-50" max="50" step="1" value="0"></label><label>Power<input class="ciPriorityCatWeight" data-cat="power" type="number" min="-50" max="50" step="1" value="0"></label><label>Crime<input class="ciPriorityCatWeight" data-cat="crime" type="number" min="-50" max="50" step="1" value="0"></label><label>Terrorism<input class="ciPriorityCatWeight" data-cat="terrorism" type="number" min="-50" max="50" step="1" value="0"></label><label>Weather<input class="ciPriorityCatWeight" data-cat="weather" type="number" min="-50" max="50" step="1" value="0"></label></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px;">
+          <label>Enabled category boost<input id="orgEnabledCategoryBoost" type="number" min="0" max="50" step="1" value="10"></label>
+          <label>Monitored region boost<input id="orgMonitoredRegionBoost" type="number" min="0" max="50" step="1" value="15"></label>
+          <label>Low geo penalty<input id="orgLowGeoPenalty" type="number" min="0" max="50" step="1" value="8"></label>
+          <label>Source credibility boost<input id="orgSourceCredibilityBoost" type="number" min="0" max="50" step="1" value="4"></label>
+        </div>
+      </div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;">
       <button id="saveOrgIntelProfileBtn" type="submit">Save intelligence profile</button>
@@ -1631,6 +1642,32 @@ html,body{overflow-x:hidden;max-width:100vw}
     if(Array.isArray(value)) return value;
     return String(value || '').split(',').map(x=>x.trim()).filter(Boolean);
   }
+
+  function defaultPriorityControls(){
+    return { categoryWeights:{ security:0, protests:0, civil_unrest:0, travel:0, aviation:0, transport:0, power:0, crime:0, terrorism:0, weather:0 }, enabledCategoryBoost:10, monitoredRegionBoost:15, lowGeoPenalty:8, sourceCredibilityBoost:4 };
+  }
+  function setPriorityControls(ctrl){
+    const d = defaultPriorityControls();
+    const c = Object.assign({}, d, ctrl || {}, { categoryWeights:Object.assign({}, d.categoryWeights, (ctrl||{}).categoryWeights || {}) });
+    document.querySelectorAll('.ciPriorityCatWeight').forEach(input => { input.value = Number(c.categoryWeights[input.dataset.cat] || 0); });
+    const set=(id,v)=>{ const el=q(id); if(el) el.value = Number(v); };
+    set('orgEnabledCategoryBoost', c.enabledCategoryBoost);
+    set('orgMonitoredRegionBoost', c.monitoredRegionBoost);
+    set('orgLowGeoPenalty', c.lowGeoPenalty);
+    set('orgSourceCredibilityBoost', c.sourceCredibilityBoost);
+  }
+  function getPriorityControls(){
+    const d = defaultPriorityControls();
+    const out = Object.assign({}, d, { categoryWeights:{} });
+    document.querySelectorAll('.ciPriorityCatWeight').forEach(input => { out.categoryWeights[input.dataset.cat] = Number(input.value || 0); });
+    const num=(id,fb)=>{ const el=q(id); const n=Number(el?.value); return Number.isFinite(n) ? n : fb; };
+    out.enabledCategoryBoost = num('orgEnabledCategoryBoost', 10);
+    out.monitoredRegionBoost = num('orgMonitoredRegionBoost', 15);
+    out.lowGeoPenalty = num('orgLowGeoPenalty', 8);
+    out.sourceCredibilityBoost = num('orgSourceCredibilityBoost', 4);
+    return out;
+  }
+
   function populateForm(ob){
     currentOnboarding = ob || {};
     const feeds = Array.isArray(ob.liveAlertFeeds) ? ob.liveAlertFeeds : splitCsv(ob.liveAlertFeeds);
@@ -1643,6 +1680,7 @@ html,body{overflow-x:hidden;max-width:100vw}
     setVal('orgDefaultAlertScope', ob.defaultAlertScope || feeds.join(', '));
     setVal('orgSourceCategories', categories.join(', '));
     setVal('orgLiveAlertFeeds', feeds.join(', '));
+    setPriorityControls(ob.priorityControls || {});
     const form=q('orgIntelProfileForm'); if(form) form.style.display='block';
   }
   function summaryHtml(ob){
@@ -1694,6 +1732,7 @@ html,body{overflow-x:hidden;max-width:100vw}
         feedPackage: q('orgFeedPackage')?.value || '',
         defaultAlertScope: q('orgDefaultAlertScope')?.value || '',
         sourceCategories: splitCsv(q('orgSourceCategories')?.value || ''),
+        priorityControls: getPriorityControls(),
         liveAlertFeeds: splitCsv(q('orgLiveAlertFeeds')?.value || '')
       });
       const res=await fetch(API_BASE+'/api/org/onboarding',{method:'PUT',headers:getAuthHeaders(true),body:JSON.stringify(payload)});
