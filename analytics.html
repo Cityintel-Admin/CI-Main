@@ -372,9 +372,24 @@
         </select>
       </div>
 
-      <div id="obCustomRegionWrap" style="display:none">
-        <label>Custom region scope</label>
-        <input id="obCustomRegion" placeholder="e.g. France, Belgium, Netherlands">
+      <div id="obCustomRegionWrap" style="display:none;grid-column:1/-1">
+        <label>Custom region — select countries</label>
+        <div style="border:1px solid var(--g600);border-radius:10px;overflow:hidden;background:#0f1012">
+          <!-- Search bar -->
+          <div style="padding:8px;border-bottom:1px solid var(--g600)">
+            <input id="obCountrySearch" type="text" placeholder="Search countries…"
+              style="width:100%;box-sizing:border-box;background:transparent;border:none;outline:none;color:var(--text);font:inherit;font-size:13px">
+          </div>
+          <!-- Country list -->
+          <div id="obCountryList" style="max-height:220px;overflow-y:auto;padding:6px"></div>
+          <!-- Selected summary -->
+          <div style="padding:8px;border-top:1px solid var(--g600);display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span id="obCountrySelCount" style="font-size:12px;color:var(--muted)">No countries selected</span>
+            <button type="button" id="obCountryClearBtn" style="font-size:12px;padding:3px 10px;border-radius:6px;border:1px solid var(--g600);background:transparent;color:var(--muted);cursor:pointer;display:none">Clear all</button>
+          </div>
+        </div>
+        <!-- Hidden storage field (JSON array of ISO codes) -->
+        <input type="hidden" id="obCustomRegion">
       </div>
 
       <div><label>Initial user seats</label><input id="obSeatLimit" type="number" min="1" max="250" value="6"></div>
@@ -1663,8 +1678,105 @@ const makeBar = (label, count, color) => {
     accessSel.addEventListener('change', () => { setTodayDefault(); updatePlanFields(); });
     trialDaysIn?.addEventListener('input', updatePlanFields);
     billingStartIn?.addEventListener('change', updatePlanFields);
+    // ── Country picker for custom tier ────────────────────────────────
+    let _pickerCountries = [];  // [{iso, name, hasData}]
+    let _pickerSelected  = new Set();
+
+    async function initCountryPicker() {
+      const list = document.getElementById('obCountryList');
+      if (!list || _pickerCountries.length) return; // already loaded
+      list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">Loading…</div>';
+      try {
+        const res = await fetch((window.CI_API_BASE || 'https://api.cityintelapi.com') + '/api/admin/data-countries', {
+          headers: typeof authHeaders === 'function' ? authHeaders() : {}
+        });
+        const data = await res.json().catch(() => ({}));
+        _pickerCountries = Array.isArray(data.countries) ? data.countries : [];
+      } catch(_) {
+        _pickerCountries = [];
+      }
+      // Fall back to a minimal hardcoded list if endpoint unavailable
+      if (!_pickerCountries.length) {
+        _pickerCountries = [
+          {iso:'GB',name:'United Kingdom',hasData:true},{iso:'US',name:'United States',hasData:true},
+          {iso:'FR',name:'France',hasData:true},{iso:'DE',name:'Germany',hasData:true},
+          {iso:'AU',name:'Australia',hasData:true},{iso:'NG',name:'Nigeria',hasData:true},
+          {iso:'KE',name:'Kenya',hasData:true},{iso:'ZA',name:'South Africa',hasData:true},
+          {iso:'IN',name:'India',hasData:false},{iso:'JP',name:'Japan',hasData:false},
+          {iso:'SG',name:'Singapore',hasData:false},{iso:'AE',name:'United Arab Emirates',hasData:false},
+        ];
+      }
+      renderCountryPicker('');
+    }
+
+    function renderCountryPicker(query) {
+      const list = document.getElementById('obCountryList');
+      if (!list) return;
+      const q = (query || '').toLowerCase();
+      const filtered = q
+        ? _pickerCountries.filter(c => c.name.toLowerCase().includes(q) || c.iso.toLowerCase().includes(q))
+        : _pickerCountries;
+
+      if (!filtered.length) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">No countries match</div>';
+        return;
+      }
+      list.innerHTML = filtered.map(c => {
+        const checked = _pickerSelected.has(c.iso);
+        const badge = c.hasData
+          ? '<span style="margin-left:5px;font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(51,196,141,.15);color:#33c48d;font-weight:700">Data</span>'
+          : '';
+        return `<label style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:13px${checked ? ';background:rgba(196,26,26,.12)' : ''}">
+          <input type="checkbox" value="${c.iso}" ${checked ? 'checked' : ''} style="accent-color:#c41a1a;width:14px;height:14px;flex-shrink:0">
+          <span>${c.name}${badge}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--muted)">${c.iso}</span>
+        </label>`;
+      }).join('');
+
+      // Wire checkboxes
+      list.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.addEventListener('change', () => {
+          if (cb.checked) _pickerSelected.add(cb.value);
+          else _pickerSelected.delete(cb.value);
+          savePickerToHidden();
+          renderCountryPicker(document.getElementById('obCountrySearch')?.value || '');
+        });
+      });
+    }
+
+    function savePickerToHidden() {
+      const codes = [..._pickerSelected];
+      const hidden = document.getElementById('obCustomRegion');
+      if (hidden) hidden.value = JSON.stringify(codes);
+      const countEl = document.getElementById('obCountrySelCount');
+      const clearBtn = document.getElementById('obCountryClearBtn');
+      if (countEl) countEl.textContent = codes.length ? `${codes.length} countr${codes.length === 1 ? 'y' : 'ies'} selected` : 'No countries selected';
+      if (clearBtn) clearBtn.style.display = codes.length ? '' : 'none';
+    }
+
+    function loadPickerFromValue(val) {
+      _pickerSelected = new Set();
+      try {
+        const parsed = JSON.parse(val || '[]');
+        if (Array.isArray(parsed)) parsed.forEach(c => _pickerSelected.add(String(c).toUpperCase()));
+      } catch(_) {
+        // legacy free-text: best-effort
+        String(val || '').split(/[,;]+/).forEach(s => { const t = s.trim().toUpperCase(); if (t.length === 2) _pickerSelected.add(t); });
+      }
+      savePickerToHidden();
+    }
+
+    document.getElementById('obCountrySearch')?.addEventListener('input', e => renderCountryPicker(e.target.value));
+    document.getElementById('obCountryClearBtn')?.addEventListener('click', () => {
+      _pickerSelected.clear();
+      savePickerToHidden();
+      renderCountryPicker(document.getElementById('obCountrySearch')?.value || '');
+    });
+
     dataTierSel?.addEventListener('change', () => {
-      if (customRegWrap) customRegWrap.style.display = dataTierSel.value === 'custom' ? '' : 'none';
+      const isCustom = dataTierSel.value === 'custom';
+      if (customRegWrap) customRegWrap.style.display = isCustom ? '' : 'none';
+      if (isCustom) initCountryPicker();
     });
 
     // Expose for openLeadOnboard to call after populating saved values
@@ -1748,9 +1860,14 @@ const makeBar = (label, count, color) => {
       if (document.getElementById('obDataTier')) {
         document.getElementById('obDataTier').value   = ob.dataTier || 'global';
         const customWrap = document.getElementById('obCustomRegionWrap');
-        if (customWrap) customWrap.style.display = (ob.dataTier === 'custom') ? '' : 'none';
+        const isCustom = (ob.dataTier === 'custom');
+        if (customWrap) customWrap.style.display = isCustom ? '' : 'none';
+        if (isCustom) {
+          await initCountryPicker();
+          loadPickerFromValue(ob.customRegion || '');
+          renderCountryPicker('');
+        }
       }
-      if (document.getElementById('obCustomRegion')) document.getElementById('obCustomRegion').value = ob.customRegion || '';
       // Refresh computed fields (trial days → expiry etc) without overwriting loaded values
       if (window._ciRefreshPlanFields && !ob.planExpiresAt) window._ciRefreshPlanFields();
       document.getElementById('obSeatLimit').value = ob.seatLimit || ob.userSeatLimit || 6;
