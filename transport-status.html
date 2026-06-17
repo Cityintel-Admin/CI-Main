@@ -941,6 +941,18 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
     try {
       const res = await fetch(API+'/api/transport-status?v=3', {headers:authHeaders()});
       const data = await res.json().catch(()=>({}));
+      if(data && data.tier_blocked){
+        const main=document.querySelector('main.main')||document.querySelector('.main');
+        if(main){
+          main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;padding:40px 20px;gap:14px">
+            <div style="font-size:48px">🚆</div>
+            <h2 style="margin:0;font-size:20px;color:#e2e8f0">Not available for your region</h2>
+            <p style="margin:0;color:#8e97a3;max-width:420px;line-height:1.6">${data.message||'Transport Status covers UK, France, Germany, US and Singapore networks. Your data tier does not include these regions.'}</p>
+            <a href="index.html" style="color:#6b7280;font-size:13px;text-decoration:underline;margin-top:8px">← Back to Dashboard</a>
+          </div>`;
+        }
+        return;
+      }
       if(!res.ok||!data.ok) throw new Error(data.error||`HTTP ${res.status}`);
 
       allDisruptions = data.disruptions || [];
@@ -1042,5 +1054,132 @@ tbody tr:hover td{background:rgba(255,255,255,.03)}
 
 })();
 </script>
+<!-- ── CIAccess: tier banner + module enforcement (v129) ─────────────────── -->
+<script>
+(function(){
+'use strict';
+const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+
+// ── Tier labels ────────────────────────────────────────────────────────────
+const TIER_LABELS = {
+  global:'Global',emea:'EMEA',europe:'Europe',uk_only:'UK only',
+  usa_only:'USA only',apac:'APAC',custom:'Custom region',
+};
+
+// ── Module → page map ─────────────────────────────────────────────────────
+const MODULE_PAGES = {
+  live_alerts:'live-alerts.html', assets:'assets.html', travellers:'travellers.html',
+  power_outages:'power-outages.html', transport_status:'transport-status.html',
+  flight_status:'flight-status.html', reports:'reports.html',
+  intelligence_brief:'brief.html', trends:'trends.html',
+  neighbourhood_intel:'neighbourhood-intel.html', check_in_manager:'check-in.html',
+  cityintel_ai:'cityintel-assistant.html', high_risk_events:'high-risk-events.html',
+  all_events:'events.html', alerts:'alerts.html', training:'training-scenarios.html',
+};
+
+// ── Fetch org config (cached in localStorage, TTL 5 min) ──────────────────
+async function getOrgConfig(){
+  const CACHE_KEY='ci_org_onboarding'; const TTL=5*60*1000;
+  try{
+    const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+    if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
+  }catch(_){}
+  try{
+    const hdrs = {};
+    if(window.CIAuth && CIAuth.who){
+      const u=CIAuth.who()||{};
+      hdrs['X-User-Email']=u.email||'';
+      hdrs['X-User-Id']=u.id||u.email||'';
+      hdrs['X-User-Name']=u.name||'';
+    }
+    const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
+    const d=await res.json().catch(()=>({}));
+    const cfg=d.data||{};
+    cfg._ts=Date.now();
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify(cfg));}catch(_){}
+    return cfg;
+  }catch(_){ return {}; }
+}
+
+// ── Render tier banner ─────────────────────────────────────────────────────
+function showTierBanner(tier,extraMsg){
+  if(!tier||tier==='global') return;
+  const id='ci-tier-banner';
+  if(document.getElementById(id)) return;
+  const label=TIER_LABELS[tier]||tier;
+  const el=document.createElement('div');
+  el.id=id;
+  el.style.cssText='position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#1a1400;border-bottom:2px solid #b45309;color:#fbbf24;font:600 13px system-ui,sans-serif';
+  el.innerHTML=`<span>📍 Data tier: <strong>${label}</strong>${extraMsg?' — '+extraMsg:''}</span><button onclick="this.parentNode.remove()" style="background:none;border:none;color:#fbbf24;font-size:16px;cursor:pointer;padding:0 4px;line-height:1">✕</button>`;
+  const main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+  main.insertBefore(el,main.firstChild);
+}
+
+// ── Render module-locked page ─────────────────────────────────────────────
+function showModuleLocked(moduleName){
+  const main=document.querySelector('main.main')||document.querySelector('.main');
+  if(!main) return;
+  main.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px;gap:14px">
+      <div style="font-size:48px">🔒</div>
+      <h2 style="margin:0;font-size:20px;color:#e2e8f0">Not included in your plan</h2>
+      <p style="margin:0;color:#8e97a3;max-width:440px;line-height:1.6">
+        <strong style="color:#e2e8f0">${moduleName}</strong> is not enabled for your organisation.
+        Contact your CityIntel account manager to upgrade or add this module.
+      </p>
+      <a href="mailto:contact@city-intel.com" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 20px;border-radius:999px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.4);color:#fca5a5;font:600 13px system-ui,sans-serif;text-decoration:none">
+        Contact CityIntel →
+      </a>
+      <a href="index.html" style="color:#6b7280;font-size:13px;text-decoration:underline;margin-top:4px">← Back to Dashboard</a>
+    </div>`;
+}
+
+// ── Check module access ────────────────────────────────────────────────────
+// moduleName = key from MODULE_PAGES (e.g. 'live_alerts')
+// Returns true if allowed (or if modules not configured = allow all)
+function isModuleAllowed(modules, moduleName){
+  if(!Array.isArray(modules)||modules.length===0) return true; // no restrictions
+  return modules.includes(moduleName);
+}
+
+// ── Public API ─────────────────────────────────────────────────────────────
+window.CIAccess = {
+  getOrgConfig,
+  showTierBanner,
+  showModuleLocked,
+  isModuleAllowed,
+  TIER_LABELS,
+  MODULE_PAGES,
+  // Called by each page on load: check module access then show tier banner
+  async initPage(moduleKey, bannerExtraMsg){
+    const cfg = await getOrgConfig();
+    const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+    if(moduleKey && !isModuleAllowed(modules, moduleKey)){
+      const label = Object.keys(MODULE_PAGES).find(k=>k===moduleKey)||moduleKey;
+      showModuleLocked(label.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+      return false; // blocked
+    }
+    if(cfg.dataTier && cfg.dataTier!=='global'){
+      showTierBanner(cfg.dataTier, bannerExtraMsg||'');
+    }
+    return true; // allowed
+  },
+  // Called after API response — show banner if tier filtering was applied server-side
+  handleApiTier(data, moduleBannerMsg){
+    if(data && data.tier && !data.tierIsGlobal){
+      showTierBanner(data.tier, moduleBannerMsg||'Data filtered to your access tier');
+    }
+  },
+};
+})();
+</script>
+<!-- ── /CIAccess ───────────────────────────────────────────────────────── -->
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  if(window.CIAccess) CIAccess.initPage('transport_status');
+});
+</script>
+
 </body>
 </html>
