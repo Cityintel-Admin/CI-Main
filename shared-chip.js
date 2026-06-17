@@ -35,6 +35,27 @@
       const initials = initialsOf(displayName);
       const isMaster = CIAuth.isMasterAdmin ? CIAuth.isMasterAdmin() : false;
 
+      // ── Heartbeat beacon — fires every 2 min while logged in ──────────
+      (function startHeartbeat() {
+        const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
+        const u = authUser;
+        const payload = JSON.stringify({
+          user_id:  u.id || u.email || '',
+          org_id:   u.org_id || u.orgId || '',
+          org_name: u.org_name || u.orgName || '',
+          email:    u.email || '',
+          name:     displayName,
+          page:     location.pathname.split('/').pop() || 'index.html',
+        });
+        function beat() {
+          try {
+            navigator.sendBeacon(API + '/api/admin/heartbeat', new Blob([payload], { type: 'application/json' }));
+          } catch (_) {}
+        }
+        beat(); // fire immediately on page load
+        setInterval(beat, 2 * 60 * 1000); // then every 2 minutes
+      })();
+
       host.innerHTML = `
         <div class="user" id="userChip" style="cursor:pointer">
           <div class="avatar">${initials}</div>
