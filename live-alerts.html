@@ -9702,6 +9702,10 @@ function ageLabel(when) {
       <ul class="ci-triage-reasons">${reasons.slice(0,6).map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul>
       ${blockers.length ? `<div class="ci-triage-blockers"><b>Guardrail:</b> ${blockers.map(escapeHtml).join(' • ')}</div>` : ''}
       <div class="ci-triage-next"><b>Recommended next step:</b> ${escapeHtml(scored.recommended_next_step || '')}</div>
+      <div class="ci-triage-actions" style="margin-top:10px;">
+        <button type="button" id="btnQueueBriefingCandidate" class="btn-ghost" onclick="window.ciQueueCurrentAlertForBriefing && window.ciQueueCurrentAlertForBriefing(true)">Add to Briefing Queue</button>
+        <span id="ciBriefingQueueStatus" class="ci-triage-action-hint">Creates a review item for the Intelligence Brief page. No publication is automatic.</span>
+      </div>
       <div class="ci-triage-next">Advisory only — no action is taken until an operator changes the disposition.</div>
     </div>`;
   }
@@ -9712,6 +9716,30 @@ function ageLabel(when) {
     const score = Math.round(Number(scored.recommended_score || 0));
     return `<span class="ci-triage-badge ${escapeHtml(action)}" title="AI triage recommendation: ${escapeHtml(label)} (${score}%)">${escapeHtml(label)}</span>`;
   }
+
+  async function ciQueueCurrentAlertForBriefing(force){
+    const item = window.__lastDetailItem || null;
+    if (!item) { alert('Open an alert first.'); return; }
+    const scored = (typeof window.ciScoreAlertPriority === 'function') ? window.ciScoreAlertPriority(item) : item;
+    const btn = document.getElementById('btnQueueBriefingCandidate');
+    if (btn) { btn.disabled = true; btn.textContent = 'Queueing…'; }
+    try{
+      const headers = (typeof authHeaders === 'function') ? await authHeaders({ 'Accept':'application/json' }) : { 'Content-Type':'application/json' };
+      const res = await fetch('https://api.cityintelapi.com/api/intel-review/briefing/queue-live-alert', {
+        method:'POST', headers,
+        body: JSON.stringify({ alert: scored, force: force === true })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || data.detail || data.reason || 'Could not queue briefing candidate');
+      if (btn) { btn.textContent = 'Queued for Brief'; btn.dataset.queued = 'true'; }
+      const note = document.getElementById('ciBriefingQueueStatus');
+      if (note) note.textContent = 'Queued for Intelligence Brief review.';
+    }catch(e){
+      alert(String(e && e.message ? e.message : e));
+      if (btn) { btn.disabled = false; btn.textContent = 'Add to Briefing Queue'; }
+    }
+  }
+  window.ciQueueCurrentAlertForBriefing = ciQueueCurrentAlertForBriefing;
 
 
   function defaultPriorityControls(){
