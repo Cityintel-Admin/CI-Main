@@ -9717,12 +9717,57 @@ function ageLabel(when) {
     return `<span class="ci-triage-badge ${escapeHtml(action)}" title="AI triage recommendation: ${escapeHtml(label)} (${score}%)">${escapeHtml(label)}</span>`;
   }
 
+  function ciBriefingLocalKey(){
+    try{
+      const email = (typeof getClientEmail === 'function') ? getClientEmail() : '';
+      return 'ci_briefing_candidates_' + (email || 'default').toLowerCase();
+    }catch(_){ return 'ci_briefing_candidates_default'; }
+  }
+  function ciLoadLocalBriefingCandidates(){
+    try{ const v = JSON.parse(localStorage.getItem(ciBriefingLocalKey()) || '[]'); return Array.isArray(v) ? v : []; }catch(_){ return []; }
+  }
+  function ciSaveLocalBriefingCandidates(items){
+    try{ localStorage.setItem(ciBriefingLocalKey(), JSON.stringify((items || []).slice(0, 50))); }catch(_){}
+  }
+  function ciCandidateIdFromAlert(item){
+    const base = [item?.title, item?.city, item?.country, item?.when || item?.raw_time || item?.src].filter(Boolean).join('|');
+    let h = 0;
+    for (let i=0;i<base.length;i++) h = ((h << 5) - h + base.charCodeAt(i)) | 0;
+    return 'live_' + Math.abs(h).toString(36);
+  }
+  function ciStoreBriefingCandidateLocally(item, scored){
+    const now = new Date().toISOString();
+    const candidate = {
+      candidate_id: ciCandidateIdFromAlert(item),
+      title: item?.title || item?.headline || 'Live alert briefing candidate',
+      city: item?.city || '',
+      country: item?.country || '',
+      brief_type: 'sitrep',
+      briefing_status: 'queued',
+      updated_at: now,
+      draft_generated_at: now,
+      source: 'live-alerts-local',
+      alert: item,
+      triage: scored || item,
+      recommended_action: scored?.recommended_action || item?.recommended_action || '',
+      recommended_score: scored?.recommended_score || item?.recommended_score || 0,
+      recommended_reasons: scored?.recommended_reasons || item?.recommended_reasons || []
+    };
+    const list = ciLoadLocalBriefingCandidates();
+    const ix = list.findIndex(x => String(x.candidate_id) === String(candidate.candidate_id));
+    if (ix >= 0) list[ix] = Object.assign({}, list[ix], candidate);
+    else list.unshift(candidate);
+    ciSaveLocalBriefingCandidates(list);
+    return candidate;
+  }
+
   async function ciQueueCurrentAlertForBriefing(force){
     const item = window.__lastDetailItem || null;
     if (!item) { alert('Open an alert first.'); return; }
     const scored = (typeof window.ciScoreAlertPriority === 'function') ? window.ciScoreAlertPriority(item) : item;
     const btn = document.getElementById('btnQueueBriefingCandidate');
     if (btn) { btn.disabled = true; btn.textContent = 'Queueing…'; }
+    const note = document.getElementById('ciBriefingQueueStatus');
     try{
       const headers = (typeof authHeaders === 'function') ? await authHeaders({ 'Accept':'application/json' }) : { 'Content-Type':'application/json' };
       const res = await fetch('https://api.cityintelapi.com/api/intel-review/briefing/queue-live-alert', {
@@ -9732,11 +9777,14 @@ function ageLabel(when) {
       const data = await res.json().catch(()=>({}));
       if (!res.ok || !data.ok) throw new Error(data.error || data.detail || data.reason || 'Could not queue briefing candidate');
       if (btn) { btn.textContent = 'Queued for Brief'; btn.dataset.queued = 'true'; }
-      const note = document.getElementById('ciBriefingQueueStatus');
       if (note) note.textContent = 'Queued for Intelligence Brief review.';
     }catch(e){
-      alert(String(e && e.message ? e.message : e));
-      if (btn) { btn.disabled = false; btn.textContent = 'Add to Briefing Queue'; }
+      // Graceful fallback while the Worker route is being deployed/updated: keep the review item locally
+      // so the Intelligence Brief page can still display it for analyst review.
+      const c = ciStoreBriefingCandidateLocally(item, scored);
+      if (btn) { btn.textContent = 'Queued locally'; btn.dataset.queued = 'true'; }
+      if (note) note.textContent = 'Queued locally for Intelligence Brief review. Worker sync can pick this up once the route is available.';
+      console.warn('CityIntel: briefing queue Worker route unavailable; stored local candidate', e, c);
     }
   }
   window.ciQueueCurrentAlertForBriefing = ciQueueCurrentAlertForBriefing;
