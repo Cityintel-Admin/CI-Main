@@ -1301,8 +1301,8 @@ function detectTheme(a) {
   const PATTERN_LABELS={'protest_wave':'Protest Wave','regional_instability':'Regional Instability','multi_country_spread':'Multi-Country Spread'};
   const PATTERN_COLS={'protest_wave':'rgba(251,146,60,.25)','regional_instability':'rgba(239,68,68,.25)','multi_country_spread':'rgba(139,92,246,.25)'};
   const BRIEF_TYPE_MAP={sitrep:'SITREP',executive:'Executive Brief',regional:'Regional Summary',traveller:'Traveller Advisory',morning:'Morning Digest',infra:'Infrastructure Risk'};
-  const BRIEF_STATUS_COL={ready:'#34d399',completed:'#818cf8',drafting:'#fbbf24'};
-  const BRIEF_STATUS_LABEL={ready:'Ready for dispatch',completed:'Dispatched',drafting:'Awaiting approval'};
+  const BRIEF_STATUS_COL={queued:'#60a5fa',ready:'#34d399',completed:'#818cf8',drafting:'#fbbf24',draft_error:'#fb7185'};
+  const BRIEF_STATUS_LABEL={queued:'Queued candidate',ready:'Ready for dispatch',completed:'Dispatched',drafting:'Awaiting approval',draft_error:'Draft error'};
 
   async function loadPatterns(){
     const card=document.getElementById('section-intel-patterns'),body=document.getElementById('intelPatternsBody');
@@ -1334,7 +1334,7 @@ function detectTheme(a) {
       const res=await fetch(API+'/api/intel-review/briefing/list?limit=8&admin_hint=cityintel_masteradmin',{headers:authH()});
       if(!res.ok)return;
       const data=await res.json().catch(()=>({}));
-      const items=(data.items||[]).filter(i=>['ready','completed','drafting'].includes(i.briefing_status));
+      const items=(data.items||[]).filter(i=>['queued','ready','completed','drafting','draft_error'].includes(i.briefing_status));
       if(!items.length){card.style.display='none';return;}
       card.style.display='';
       body.innerHTML='<div style="border:1px solid #2e3238;border-radius:10px;overflow:hidden;">'+
@@ -1344,8 +1344,20 @@ function detectTheme(a) {
           const sl=BRIEF_STATUS_LABEL[item.briefing_status]||item.briefing_status;
           const place=[item.city,item.country].filter(Boolean).join(', ');
           const isLast=i===items.length-1;
-          return '<div style="padding:10px 14px;'+(isLast?'':'border-bottom:1px solid #1e2328;')+'display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="flex:1;min-width:0;"><strong style="font-size:13px;color:#e2e8f0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(item.title||item.candidate_id||'Untitled')+'</strong><span style="font-size:11px;color:#64748b;">'+esc(type)+(place?' · '+esc(place):'')+' · '+fmtDate(item.draft_generated_at||item.updated_at)+'</span></div><div style="display:flex;gap:8px;align-items:center;flex-shrink:0;"><span style="font-size:11px;color:'+sc+';">'+esc(sl)+'</span>'+(item.briefing_status==='ready'?'<a href="cityintel-assistant.html" style="font-size:11px;padding:3px 9px;border:1px solid rgba(52,211,153,.35);border-radius:5px;color:#34d399;text-decoration:none;background:rgba(52,211,153,.08);">Review →</a>':'')+'</div></div>';
+          return '<div style="padding:10px 14px;'+(isLast?'':'border-bottom:1px solid #1e2328;')+'display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="flex:1;min-width:0;"><strong style="font-size:13px;color:#e2e8f0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(item.title||item.candidate_id||'Untitled')+'</strong><span style="font-size:11px;color:#64748b;">'+esc(type)+(place?' · '+esc(place):'')+' · '+fmtDate(item.draft_generated_at||item.updated_at)+'</span></div><div style="display:flex;gap:8px;align-items:center;flex-shrink:0;"><span style="font-size:11px;color:'+sc+';">'+esc(sl)+'</span>'+(item.briefing_status==='queued'?'<button data-candidate="'+esc(item.candidate_id)+'" class="brief-generate-btn" style="font-size:11px;padding:3px 9px;border:1px solid rgba(96,165,250,.45);border-radius:5px;color:#bfdbfe;background:rgba(37,99,235,.10);cursor:pointer;">Generate draft</button>':'')+(item.briefing_status==='ready'?'<a href="cityintel-assistant.html" style="font-size:11px;padding:3px 9px;border:1px solid rgba(52,211,153,.35);border-radius:5px;color:#34d399;text-decoration:none;background:rgba(52,211,153,.08);">Review →</a>':'')+'</div></div>';
         }).join('')+'</div><div style="margin-top:8px;text-align:right;"><a href="reports.html" style="font-size:12px;color:#33c48d;text-decoration:none;">View in Reports Library →</a></div>';
+      body.querySelectorAll('.brief-generate-btn').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const id=btn.getAttribute('data-candidate')||''; if(!id)return;
+          btn.disabled=true; btn.textContent='Generating…';
+          try{
+            const r=await fetch(API+'/api/intel-review/briefing/generate?admin_hint=cityintel_masteradmin',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},authH()),body:JSON.stringify({candidate_id:id,brief_type:'sitrep'})});
+            const j=await r.json().catch(()=>({}));
+            if(!r.ok||!j.ok) throw new Error(j.error||'Draft generation failed');
+            loadBriefs();
+          }catch(err){btn.disabled=false;btn.textContent='Generate draft';alert(String(err&&err.message?err.message:err));}
+        });
+      });
     }catch(e){/*silent*/}
   }
 
