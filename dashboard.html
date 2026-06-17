@@ -1086,6 +1086,20 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <div id="orgIntelProfileChips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
         </section>
 
+
+        <!-- ── First-run onboarding checklist ─────────────────────────────── -->
+        <section class="card" id="ciSetupChecklist" style="grid-column:span 12;display:none;border-left:3px solid #D01616;background:linear-gradient(135deg,rgba(208,22,22,.06),rgba(0,0,0,0))">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+            <div>
+              <h3 style="margin:0 0 4px;font-size:16px">👋 Welcome to CityIntel</h3>
+              <p style="margin:0;color:var(--muted);font-size:13px">Complete these steps to get your workspace operational.</p>
+            </div>
+            <button id="ciChecklistDismiss" type="button" style="background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;flex-shrink:0">Dismiss</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px" id="ciChecklistItems"></div>
+        </section>
+        <!-- ── /First-run onboarding checklist ────────────────────────────── -->
+
         <!-- KPIs -->
         <div class="kpi-grid" style="grid-column: span 12;">
 
@@ -5301,7 +5315,7 @@ const MODULE_PAGES = {
   flight_status:'flight-status.html', reports:'reports.html',
   intelligence_brief:'brief.html', trends:'trends.html',
   neighbourhood_intel:'neighbourhood-intel.html', check_in_manager:'check-in.html',
-  cityintel_ai:'cityintel-assistant.html', high_risk_events:'high-risk-events.html',
+  cityintel_ai:'cityintel-assistant.html', high_risk_events:'alerts.html',
   all_events:'events.html', alerts:'alerts.html', training:'training-scenarios.html',
 };
 
@@ -5410,6 +5424,200 @@ document.addEventListener("DOMContentLoaded",function(){
 </script>
 
 <script src="shared-nav.js"></script>
+
+<!-- ── CityIntel first-run setup checklist ──────────────────────────────── -->
+<script>
+(function(){
+'use strict';
+
+const DISMISS_KEY = 'ci_setup_checklist_dismissed';
+const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+
+// Step definitions: { id, tier, label, desc, href, check(data) → bool }
+const STEPS = [
+  {
+    id: 'org_profile',
+    tier: 'Setup',
+    label: 'Organisation profile configured',
+    desc: 'Set your default city, monitoring radius and operational focus.',
+    href: 'settings.html',
+    check: (d) => !!(d.onboarding?.defaultCity || d.onboarding?.operationalFocus),
+  },
+  {
+    id: 'live_feeds',
+    tier: 'Setup',
+    label: 'Live alert feeds added',
+    desc: 'Add at least one city or region feed to start receiving live alerts.',
+    href: 'live-alerts.html',
+    check: (d) => Array.isArray(d.onboarding?.liveAlertFeeds) && d.onboarding.liveAlertFeeds.length > 0,
+  },
+  {
+    id: 'assets',
+    tier: 'Configure',
+    label: 'Assets registered',
+    desc: 'Add offices, sites or locations so proximity alerts can be generated.',
+    href: 'assets.html',
+    check: (d) => (d.assetCount || 0) > 0,
+  },
+  {
+    id: 'travellers',
+    tier: 'Configure',
+    label: 'Travellers added',
+    desc: 'Register travellers to track their locations and send check-in alerts.',
+    href: 'travellers.html',
+    check: (d) => (d.travellerCount || 0) > 0,
+  },
+  {
+    id: 'escalation',
+    tier: 'Configure',
+    label: 'Escalation contacts set',
+    desc: 'Add contacts who receive alerts when a panic alarm or escalation fires.',
+    href: 'escalation-contacts.html',
+    check: (d) => (d.escalationCount || 0) > 0,
+  },
+  {
+    id: 'team',
+    tier: 'Operational',
+    label: 'Team member invited',
+    desc: 'Invite at least one operator so your team can monitor together.',
+    href: 'settings.html',
+    check: (d) => (d.memberCount || 0) > 1,
+  },
+  {
+    id: 'panic',
+    tier: 'Operational',
+    label: 'Panic alarm tested',
+    desc: 'Verify the panic alarm is online and reachable by your team.',
+    href: 'panicalarm.html',
+    check: (d) => !!(d.panicOnline),
+  },
+];
+
+const TIER_COLORS = {
+  Setup:       'rgba(96,165,250,.18)',
+  Configure:   'rgba(167,139,250,.18)',
+  Operational: 'rgba(52,211,153,.18)',
+};
+const TIER_TEXT = {
+  Setup:       '#93c5fd',
+  Configure:   '#c4b5fd',
+  Operational: '#6ee7b7',
+};
+
+function authH(){
+  try{
+    const u = (window.CIAuth&&CIAuth.who) ? (CIAuth.who()||{}) : JSON.parse(localStorage.getItem('ci_user')||'{}');
+    const h = {'Accept':'application/json'};
+    if(u.email) h['X-User-Email']=u.email;
+    if(u.name)  h['X-User-Name']=u.name;
+    if(u.id)    h['X-User-Id']=u.id;
+    if(u.roleKey) h['X-User-Role-Key']=u.roleKey;
+    if(u.role)  h['X-User-Role']=u.role;
+    return h;
+  }catch{ return {'Accept':'application/json'}; }
+}
+
+async function gatherData(){
+  const data = { onboarding: null, assetCount:0, travellerCount:0, escalationCount:0, memberCount:1, panicOnline:false };
+  try{
+    // Onboarding config (includes live feeds)
+    const ob = await fetch(API+'/api/org/onboarding', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
+    if(ob.ok && ob.data) data.onboarding = ob.data;
+  }catch(_){}
+  try{
+    // Assets
+    const a = await fetch(API+'/api/org/assets', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
+    data.assetCount = Array.isArray(a.data||a.assets) ? (a.data||a.assets).length : 0;
+  }catch(_){}
+  try{
+    // Travellers
+    const t = await fetch(API+'/api/org/travellers', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
+    data.travellerCount = Array.isArray(t.data||t.travellers) ? (t.data||t.travellers).length : 0;
+  }catch(_){}
+  try{
+    // Panic status (already fetched by dashboard - piggyback from DOM if available)
+    const panicBadge = document.getElementById('panicStatusBadge') || document.querySelector('[data-panic-status]');
+    if(panicBadge) data.panicOnline = panicBadge.textContent.toLowerCase().includes('online');
+  }catch(_){}
+  return data;
+}
+
+function renderChecklist(data){
+  const card = document.getElementById('ciSetupChecklist');
+  const container = document.getElementById('ciChecklistItems');
+  if(!card || !container) return;
+
+  const results = STEPS.map(s => ({ ...s, done: s.check(data) }));
+  const allDone = results.every(s => s.done);
+  const doneCount = results.filter(s => s.done).length;
+
+  // Hide entirely if all done or user dismissed
+  if(allDone || localStorage.getItem(DISMISS_KEY) === '1'){
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = '';
+
+  // Update heading with progress
+  const heading = card.querySelector('h3');
+  if(heading) heading.textContent = `👋 Welcome to CityIntel — ${doneCount}/${results.length} steps complete`;
+
+  // Group by tier
+  const grouped = {};
+  for(const step of results){
+    if(!grouped[step.tier]) grouped[step.tier] = [];
+    grouped[step.tier].push(step);
+  }
+
+  container.innerHTML = Object.entries(grouped).map(([tier, steps]) => `
+    <div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
+                  color:${TIER_TEXT[tier]};margin-bottom:8px;padding:3px 8px;border-radius:6px;
+                  background:${TIER_COLORS[tier]};display:inline-block">${tier}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${steps.map(s => `
+          <a href="${s.href}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;
+             border-radius:10px;border:1px solid ${s.done ? 'rgba(52,211,153,.2)' : 'rgba(255,255,255,.07)'};
+             background:${s.done ? 'rgba(52,211,153,.06)' : 'rgba(255,255,255,.02)'};
+             text-decoration:none;color:inherit;transition:border-color .15s"
+             onmouseover="this.style.borderColor='rgba(208,22,22,.4)'"
+             onmouseout="this.style.borderColor='${s.done ? 'rgba(52,211,153,.2)' : 'rgba(255,255,255,.07)'}'">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">${s.done ? '✅' : '⬜'}</span>
+            <div style="min-width:0">
+              <div style="font-size:13px;font-weight:${s.done ? '600' : '700'};color:${s.done ? 'var(--muted)' : 'var(--text)'};
+                          ${s.done ? 'text-decoration:line-through;' : ''}">${s.label}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">${s.desc}</div>
+            </div>
+          </a>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Dismiss button
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('ciChecklistDismiss');
+  if(btn) btn.addEventListener('click', () => {
+    try{ localStorage.setItem(DISMISS_KEY, '1'); }catch(_){}
+    const card = document.getElementById('ciSetupChecklist');
+    if(card) card.style.display = 'none';
+  });
+});
+
+// Run after page settles (other fetches have fired)
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(async () => {
+    try{
+      const data = await gatherData();
+      renderChecklist(data);
+    }catch(e){ console.warn('CityIntel: setup checklist error', e); }
+  }, 1200); // slight delay so dashboard data loads first
+});
+
+})();
+</script>
+<!-- ── /CityIntel first-run setup checklist ──────────────────────────────── -->
 </body>
 </html>
 
