@@ -16124,6 +16124,209 @@ Generate 3-5 structured steps that will guide the operator through assessing and
 })();
 </script>
 
+<!-- ── CITierFilter: tier-aware filter UI ──────────────────────────────────── -->
+<script>
+(function(){
+'use strict';
+
+// ISO country codes → country name (subset covering all tier sets)
+const ISO_TO_COUNTRY = {
+  'GB':'United Kingdom','IE':'Ireland','FR':'France','DE':'Germany','IT':'Italy',
+  'ES':'Spain','PT':'Portugal','NL':'Netherlands','BE':'Belgium','LU':'Luxembourg',
+  'AT':'Austria','CH':'Switzerland','SE':'Sweden','NO':'Norway','DK':'Denmark',
+  'FI':'Finland','PL':'Poland','CZ':'Czech Republic','SK':'Slovakia','HU':'Hungary',
+  'RO':'Romania','BG':'Bulgaria','HR':'Croatia','SI':'Slovenia','EE':'Estonia',
+  'LV':'Latvia','LT':'Lithuania','GR':'Greece','CY':'Cyprus','MT':'Malta',
+  'IS':'Iceland','AL':'Albania','RS':'Serbia','BA':'Bosnia','ME':'Montenegro',
+  'MK':'North Macedonia','XK':'Kosovo','MD':'Moldova','UA':'Ukraine','GE':'Georgia',
+  'AM':'Armenia','AZ':'Azerbaijan','TR':'Turkey','IL':'Israel','JO':'Jordan',
+  'LB':'Lebanon','PS':'Palestine','SA':'Saudi Arabia','AE':'UAE','QA':'Qatar',
+  'KW':'Kuwait','BH':'Bahrain','OM':'Oman','YE':'Yemen','IQ':'Iraq','IR':'Iran',
+  'SY':'Syria','EG':'Egypt','LY':'Libya','TN':'Tunisia','DZ':'Algeria','MA':'Morocco',
+  'SD':'Sudan','ET':'Ethiopia','NG':'Nigeria','GH':'Ghana','KE':'Kenya','ZA':'South Africa',
+  'SN':'Senegal','CI':'Ivory Coast','CM':'Cameroon','TZ':'Tanzania','UG':'Uganda',
+  'MZ':'Mozambique','ZW':'Zimbabwe','ZM':'Zambia','RW':'Rwanda','ML':'Mali',
+  'BF':'Burkina Faso','NE':'Niger','GN':'Guinea','SL':'Sierra Leone','LR':'Liberia',
+  'TD':'Chad','SO':'Somalia','ER':'Eritrea','DJ':'Djibouti','CF':'Central African Republic',
+  'CG':'Congo','CD':'DR Congo','GA':'Gabon','GQ':'Equatorial Guinea','AO':'Angola',
+  'NA':'Namibia','BW':'Botswana','LS':'Lesotho','SZ':'Eswatini','MW':'Malawi',
+  'MG':'Madagascar','SC':'Seychelles','MU':'Mauritius',
+  'US':'United States',
+  'CA':'Canada','MX':'Mexico','BR':'Brazil','AR':'Argentina','CL':'Chile',
+  'CO':'Colombia','PE':'Peru','VE':'Venezuela','EC':'Ecuador','BO':'Bolivia',
+  'PY':'Paraguay','UY':'Uruguay','GY':'Guyana','SR':'Suriname',
+  'AU':'Australia','NZ':'New Zealand','JP':'Japan','CN':'China','KR':'South Korea',
+  'HK':'Hong Kong','TW':'Taiwan','SG':'Singapore','MY':'Malaysia','TH':'Thailand',
+  'VN':'Vietnam','PH':'Philippines','ID':'Indonesia','IN':'India','PK':'Pakistan',
+  'BD':'Bangladesh','LK':'Sri Lanka','NP':'Nepal','MM':'Myanmar','KH':'Cambodia',
+  'LA':'Laos','BN':'Brunei','MN':'Mongolia','KZ':'Kazakhstan','UZ':'Uzbekistan',
+};
+
+// Tier → allowed ISO codes (mirrors worker TIER_COUNTRY_SETS)
+const TIER_ISO = {
+  global:    null,
+  emea:      new Set(['GB','IE','FR','DE','IT','ES','PT','NL','BE','LU','AT','CH','SE','NO','DK','FI','PL','CZ','SK','HU','RO','BG','HR','SI','EE','LV','LT','GR','CY','MT','IS','AL','RS','BA','ME','MK','XK','MD','UA','GE','AM','AZ','TR','IL','JO','LB','PS','SA','AE','QA','KW','BH','OM','YE','IQ','IR','SY','EG','LY','TN','DZ','MA','SD','ET','NG','GH','KE','ZA','SN','CI','CM','TZ','UG','MZ','ZW','ZM','RW','ML','BF','NE','GN','SL','LR','TD','SO','ER','DJ','CF','CG','CD','GA','GQ','AO','NA','BW','LS','SZ','MW','MG','SC','MU']),
+  europe:    new Set(['GB','IE','FR','DE','IT','ES','PT','NL','BE','LU','AT','CH','SE','NO','DK','FI','PL','CZ','SK','HU','RO','BG','HR','SI','EE','LV','LT','GR','CY','MT','IS','AL','RS','BA','ME','MK','XK','MD','UA','GE','AM','AZ']),
+  uk_only:   new Set(['GB']),
+  usa_only:  new Set(['US']),
+  apac:      new Set(['AU','NZ','JP','CN','KR','HK','TW','SG','MY','TH','VN','PH','ID','IN','PK','BD','LK','NP','MM','KH','LA','BN','MV','BT','MN','KZ','UZ','TM','TJ','KG','AF']),
+};
+
+// Tier → which continent options to KEEP (by option value)
+const TIER_CONTINENTS = {
+  global:   null,
+  emea:     new Set(['europe','africa','middle east']),
+  europe:   new Set(['europe']),
+  uk_only:  new Set(['europe']),
+  usa_only: new Set(['north america']),
+  apac:     new Set(['asia','oceania']),
+  custom:   null, // custom handled separately
+};
+
+// Country name → ISO (built from ISO_TO_COUNTRY)
+const COUNTRY_TO_ISO = Object.fromEntries(
+  Object.entries(ISO_TO_COUNTRY).map(([iso, name]) => [name.toLowerCase(), iso])
+);
+
+function resolveIso(countryName) {
+  if (!countryName) return null;
+  const n = countryName.toLowerCase().trim();
+  return COUNTRY_TO_ISO[n] || null;
+}
+
+function tierAllowsCountryName(tier, allowedISOs, countryName) {
+  if (!allowedISOs) return true; // global
+  const iso = resolveIso(countryName);
+  if (!iso) return true; // unknown country — let it through, server already filtered
+  return allowedISOs.has(iso);
+}
+
+// ── Apply tier restrictions to a continent <select> ──────────────────────────
+function applyTierToContinent(sel, tier) {
+  const allowed = TIER_CONTINENTS[tier];
+  if (!allowed) return; // global or custom — no restriction
+  let firstAllowed = null;
+  for (const opt of sel.options) {
+    if (!opt.value) continue; // "All continents" — remove
+    if (allowed.has(opt.value)) {
+      opt.disabled = false;
+      if (!firstAllowed) firstAllowed = opt.value;
+    } else {
+      opt.disabled = true;
+      opt.style.color = '#4b5563';
+    }
+  }
+  // If only one continent allowed, pre-select and disable the "all" option
+  if (allowed.size === 1 && firstAllowed) {
+    sel.value = firstAllowed;
+    sel.options[0].disabled = true; // disable "All continents"
+    sel.disabled = false;
+    sel.title = `Restricted to your data tier (${tier})`;
+    addLockHint(sel);
+  } else if (allowed.size > 0) {
+    sel.title = `Some continents are outside your data tier (${tier})`;
+    addLockHint(sel);
+  }
+}
+
+// ── Apply tier restrictions to a country <select> ────────────────────────────
+function applyTierToCountry(sel, tier, allowedISOs) {
+  if (!allowedISOs) return;
+  // Remove out-of-tier options (keep "All countries" header)
+  for (const opt of [...sel.options]) {
+    if (!opt.value) continue;
+    if (!tierAllowsCountryName(tier, allowedISOs, opt.value)) {
+      opt.remove();
+    }
+  }
+  const remaining = [...sel.options].filter(o => o.value).length;
+  if (remaining === 1) {
+    // Only one country — pre-select, disable dropdown
+    sel.value = [...sel.options].find(o => o.value)?.value || '';
+    sel.options[0].disabled = true;
+    sel.disabled = true;
+    sel.title = `Restricted to ${sel.value} (${tier} tier)`;
+    addLockHint(sel);
+  } else if (remaining > 0 && remaining < 195) {
+    sel.title = `Filtered to your data tier (${tier})`;
+    addLockHint(sel);
+  }
+}
+
+// ── Add a small lock icon to the label of a restricted select ────────────────
+const _hinted = new WeakSet();
+function addLockHint(sel) {
+  if (_hinted.has(sel)) return;
+  _hinted.add(sel);
+  const lbl = sel.closest('div,td,th')?.querySelector('label[for="' + sel.id + '"]')
+    || document.querySelector('label[for="' + sel.id + '"]');
+  if (!lbl) return;
+  if (lbl.querySelector('.ci-tier-lock')) return;
+  const span = document.createElement('span');
+  span.className = 'ci-tier-lock';
+  span.title = 'Restricted by your data tier';
+  span.style.cssText = 'margin-left:5px;font-size:10px;opacity:.7;cursor:default;';
+  span.textContent = '🔒';
+  lbl.appendChild(span);
+}
+
+// ── Main entry: apply tier restrictions to a set of named selects ─────────────
+async function applyTierToFilters(config) {
+  // config: { continent?: id, country?: id, tier?: string, allowedISOs?: Set }
+  // If tier not passed, read from org config
+  let tier = config.tier;
+  let allowedISOs = config.allowedISOs;
+
+  if (!tier && window.CIAccess) {
+    try {
+      const orgCfg = await CIAccess.getOrgConfig();
+      tier = (orgCfg.dataTier || 'global').toLowerCase();
+      // For custom tier, use customCodes if available
+      if (tier === 'custom' && orgCfg.customRegion) {
+        try {
+          const codes = JSON.parse(orgCfg.customRegion);
+          if (Array.isArray(codes)) allowedISOs = new Set(codes);
+        } catch(_) {}
+      }
+    } catch(_) { return; }
+  }
+
+  if (!tier || tier === 'global') return; // no restrictions
+
+  if (!allowedISOs) allowedISOs = TIER_ISO[tier] || null;
+
+  if (config.continent) {
+    const sel = document.getElementById(config.continent);
+    if (sel) applyTierToContinent(sel, tier);
+  }
+  if (config.country) {
+    const sel = document.getElementById(config.country);
+    if (sel) applyTierToCountry(sel, tier, allowedISOs);
+  }
+}
+
+// ── Watch for country options being repopulated by page JS ───────────────────
+// Pages rebuild country selects dynamically after data loads — we need to re-apply
+function watchAndReapply(selectId, tier, allowedISOs) {
+  if (!allowedISOs) return;
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const obs = new MutationObserver(() => {
+    // Small debounce to let the page finish populating
+    clearTimeout(sel._tierTimeout);
+    sel._tierTimeout = setTimeout(() => {
+      applyTierToCountry(sel, tier, allowedISOs);
+    }, 80);
+  });
+  obs.observe(sel, { childList: true });
+}
+
+// Expose globally so pages can call it
+window.CITierFilter = { applyTierToFilters, watchAndReapply, TIER_ISO, ISO_TO_COUNTRY };
+})();
+</script>
+<!-- ── /CITierFilter ───────────────────────────────────────────────────────── -->
+
 <!-- ── CIAccess: tier banner + module enforcement (v129) ─────────────────── -->
 <script>
 (function(){
@@ -16248,6 +16451,15 @@ window.CIAccess = {
 <script>
 document.addEventListener("DOMContentLoaded",function(){
   if(window.CIAccess) CIAccess.initPage('live_alerts','Live alerts are filtered to your data tier');
+  // Apply tier-aware filter restrictions
+  if(window.CITierFilter){
+    CITierFilter.applyTierToFilters({ country:'ciAlertCountryFilter' });
+    CIAccess.getOrgConfig().then(cfg=>{
+      const tier = (cfg.dataTier||'global').toLowerCase();
+      const isos = CITierFilter.TIER_ISO[tier]||null;
+      if(isos) CITierFilter.watchAndReapply('ciAlertCountryFilter', tier, isos);
+    }).catch(()=>{});
+  }
 });
 </script>
 	  
