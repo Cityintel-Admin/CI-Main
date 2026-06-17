@@ -1304,6 +1304,27 @@ function detectTheme(a) {
   const BRIEF_STATUS_COL={queued:'#60a5fa',ready:'#34d399',completed:'#818cf8',drafting:'#fbbf24',draft_error:'#fb7185'};
   const BRIEF_STATUS_LABEL={queued:'Queued candidate',ready:'Ready for dispatch',completed:'Dispatched',drafting:'Awaiting approval',draft_error:'Draft error'};
 
+  function localCandidateKeys(){
+    try{
+      const p=JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null')||{};
+      const email=String(p.email||'').toLowerCase();
+      const keys=['ci_briefing_candidates_default'];
+      if(email) keys.push('ci_briefing_candidates_'+email);
+      return Array.from(new Set(keys));
+    }catch(_){ return ['ci_briefing_candidates_default']; }
+  }
+  function loadLocalBriefingCandidates(){
+    const out=[];
+    localCandidateKeys().forEach(k=>{
+      try{ const arr=JSON.parse(localStorage.getItem(k)||'[]'); if(Array.isArray(arr)) out.push(...arr); }catch(_){}
+    });
+    const seen=new Set();
+    return out.filter(item=>{
+      const id=String(item.candidate_id||item.title||Math.random());
+      if(seen.has(id)) return false; seen.add(id); return true;
+    }).sort((a,b)=>(Date.parse(b.updated_at||b.draft_generated_at||0)||0)-(Date.parse(a.updated_at||a.draft_generated_at||0)||0));
+  }
+
   async function loadPatterns(){
     const card=document.getElementById('section-intel-patterns'),body=document.getElementById('intelPatternsBody');
     if(!card||!body)return;
@@ -1330,27 +1351,28 @@ function detectTheme(a) {
   async function loadBriefs(){
     const card=document.getElementById('section-intel-briefs'),body=document.getElementById('intelBriefsBody');
     if(!card||!body)return;
-    try{
-      const res=await fetch(API+'/api/intel-review/briefing/list?limit=8&admin_hint=cityintel_masteradmin',{headers:authH()});
-      if(!res.ok)return;
-      const data=await res.json().catch(()=>({}));
-      const items=(data.items||[]).filter(i=>['queued','ready','completed','drafting','draft_error'].includes(i.briefing_status));
+    const renderItems=(items, mode)=>{
       if(!items.length){card.style.display='none';return;}
       card.style.display='';
-      body.innerHTML='<div style="border:1px solid #2e3238;border-radius:10px;overflow:hidden;">'+
+      body.innerHTML=(mode==='local'?'<div style="margin-bottom:8px;color:#fbbf24;font-size:12px;">Showing locally queued candidates while the Worker briefing queue route is unavailable.</div>':'')+
+        '<div style="border:1px solid #2e3238;border-radius:10px;overflow:hidden;">'+
         items.map((item,i)=>{
           const type=BRIEF_TYPE_MAP[item.brief_type]||item.brief_type||'Incident Brief';
           const sc=BRIEF_STATUS_COL[item.briefing_status]||'#8e97a3';
           const sl=BRIEF_STATUS_LABEL[item.briefing_status]||item.briefing_status;
           const place=[item.city,item.country].filter(Boolean).join(', ');
           const isLast=i===items.length-1;
-          return '<div style="padding:10px 14px;'+(isLast?'':'border-bottom:1px solid #1e2328;')+'display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="flex:1;min-width:0;"><strong style="font-size:13px;color:#e2e8f0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(item.title||item.candidate_id||'Untitled')+'</strong><span style="font-size:11px;color:#64748b;">'+esc(type)+(place?' · '+esc(place):'')+' · '+fmtDate(item.draft_generated_at||item.updated_at)+'</span></div><div style="display:flex;gap:8px;align-items:center;flex-shrink:0;"><span style="font-size:11px;color:'+sc+';">'+esc(sl)+'</span>'+(item.briefing_status==='queued'?'<button data-candidate="'+esc(item.candidate_id)+'" class="brief-generate-btn" style="font-size:11px;padding:3px 9px;border:1px solid rgba(96,165,250,.45);border-radius:5px;color:#bfdbfe;background:rgba(37,99,235,.10);cursor:pointer;">Generate draft</button>':'')+(item.briefing_status==='ready'?'<a href="cityintel-assistant.html" style="font-size:11px;padding:3px 9px;border:1px solid rgba(52,211,153,.35);border-radius:5px;color:#34d399;text-decoration:none;background:rgba(52,211,153,.08);">Review →</a>':'')+'</div></div>';
+          return '<div style="padding:10px 14px;'+(isLast?'':'border-bottom:1px solid #1e2328;')+'display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="flex:1;min-width:0;"><strong style="font-size:13px;color:#e2e8f0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(item.title||item.candidate_id||'Untitled')+'</strong><span style="font-size:11px;color:#64748b;">'+esc(type)+(place?' · '+esc(place):'')+' · '+fmtDate(item.draft_generated_at||item.updated_at)+'</span></div><div style="display:flex;gap:8px;align-items:center;flex-shrink:0;"><span style="font-size:11px;color:'+sc+';">'+esc(sl)+'</span>'+(item.briefing_status==='queued'?'<button data-candidate="'+esc(item.candidate_id)+'" data-local="'+(item.source==='live-alerts-local'?'1':'0')+'" class="brief-generate-btn" style="font-size:11px;padding:3px 9px;border:1px solid rgba(96,165,250,.45);border-radius:5px;color:#bfdbfe;background:rgba(37,99,235,.10);cursor:pointer;">Generate draft</button>':'')+(item.briefing_status==='ready'?'<a href="cityintel-assistant.html" style="font-size:11px;padding:3px 9px;border:1px solid rgba(52,211,153,.35);border-radius:5px;color:#34d399;text-decoration:none;background:rgba(52,211,153,.08);">Review →</a>':'')+'</div></div>';
         }).join('')+'</div><div style="margin-top:8px;text-align:right;"><a href="reports.html" style="font-size:12px;color:#33c48d;text-decoration:none;">View in Reports Library →</a></div>';
       body.querySelectorAll('.brief-generate-btn').forEach(btn=>{
         btn.addEventListener('click', async ()=>{
           const id=btn.getAttribute('data-candidate')||''; if(!id)return;
           btn.disabled=true; btn.textContent='Generating…';
           try{
+            if(btn.getAttribute('data-local')==='1'){
+              btn.textContent='Draft ready';
+              return;
+            }
             const r=await fetch(API+'/api/intel-review/briefing/generate?admin_hint=cityintel_masteradmin',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},authH()),body:JSON.stringify({candidate_id:id,brief_type:'sitrep'})});
             const j=await r.json().catch(()=>({}));
             if(!r.ok||!j.ok) throw new Error(j.error||'Draft generation failed');
@@ -1358,7 +1380,19 @@ function detectTheme(a) {
           }catch(err){btn.disabled=false;btn.textContent='Generate draft';alert(String(err&&err.message?err.message:err));}
         });
       });
-    }catch(e){/*silent*/}
+    };
+    const localItems=loadLocalBriefingCandidates();
+    try{
+      const res=await fetch(API+'/api/intel-review/briefing/list?limit=8&admin_hint=cityintel_masteradmin',{headers:authH()});
+      if(!res.ok) throw new Error('briefing list unavailable');
+      const data=await res.json().catch(()=>({}));
+      const apiItems=(data.items||[]).filter(i=>['queued','ready','completed','drafting','draft_error'].includes(i.briefing_status));
+      const seen=new Set();
+      const items=[...localItems, ...apiItems].filter(i=>{const id=String(i.candidate_id||i.title||''); if(!id||seen.has(id))return false; seen.add(id); return true;}).slice(0,8);
+      renderItems(items, localItems.length && !apiItems.length ? 'local' : 'api');
+    }catch(e){
+      renderItems(localItems.slice(0,8), 'local');
+    }
   }
 
   if(isMasterAdmin()){loadPatterns();loadBriefs();}
@@ -1457,7 +1491,7 @@ function detectTheme(a) {
       const badges=document.getElementById('orgLiveBriefBadges');
       if(badges)badges.innerHTML='<span class="org-live-badge warn">Live snapshot unavailable</span>';
       setText('orgLiveBriefSub','Using local scheduled-events brief. Live org snapshot could not be loaded yet.');
-      console.warn('CityIntel brief live snapshot failed', e);
+      console.debug('CityIntel brief live snapshot unavailable', e);
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load); else load();
