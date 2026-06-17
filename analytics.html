@@ -645,6 +645,31 @@
     <div id="llmRecentCalls" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden;overflow-x:auto;"></div>
   </div>
 </section>
+<section class="card" id="liveSessionsCard" style="margin-bottom:20px;display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Live Sessions</h3>
+      <div class="legend">Users active in the last <select id="sessionWindowSelect" style="background:#1c1e22;border:1px solid var(--g600);color:var(--text);border-radius:6px;padding:2px 6px;font-size:12px;font-family:inherit;outline:none"><option value="5" selected>5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select> — auto-refreshes every 60 s</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="sessionCount" style="font-size:22px;font-weight:800;color:#33c48d">—</span>
+      <span style="color:var(--muted);font-size:13px">online</span>
+      <button id="sessionRefreshBtn" class="btn" style="font-size:12px;padding:5px 10px">↻</button>
+    </div>
+  </div>
+  <div id="sessionTableWrap" style="overflow:auto;border:1px solid var(--g600);border-radius:12px">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:580px">
+      <thead><tr style="background:#1c1e22">
+        <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase">User</th>
+        <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase">Org</th>
+        <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase">Current Page</th>
+        <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase">Last Seen</th>
+      </tr></thead>
+      <tbody id="sessionTableBody"><tr><td colspan="4" style="padding:16px;color:var(--muted)">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
     <div>
@@ -696,6 +721,7 @@
     <button class="btn org-drill-tab" data-tab="escalations">Escalation Contacts</button>
     <button class="btn org-drill-tab" data-tab="intelligence">Intelligence</button>
     <button class="btn org-drill-tab" data-tab="briefings">Briefings</button>
+    <button class="btn org-drill-tab" data-tab="setup">Setup Checklist</button>
   </div>
 
   <div id="orgDrillContent" style="overflow:auto;border:1px solid var(--g600);border-radius:12px;min-height:120px">
@@ -2664,6 +2690,130 @@ const makeBar = (label, count, color) => {
           <td style="padding:9px 12px;color:var(--muted);font-size:12px">${b.dispatched_at?fmtDate(b.dispatched_at):'—'}</td>
         </tr>`).join('')}</tbody></table>`;
     }
+    else if(tab === 'setup'){
+      // Setup Checklist — master admin view of this org's onboarding progress
+      content.innerHTML = '<div style="padding:20px;color:var(--muted)">Loading setup checklist…</div>';
+
+      try {
+        const cfgRes = await fetch(`${API}/api/admin/org-onboarding?org_id=${encodeURIComponent(drillOrgId)}`, { headers: authH() });
+        const cfgData = await cfgRes.json().catch(() => ({}));
+        const cfg = cfgData.data || {};
+        const d = drillData || {};
+        const s = d.summary || {};
+        const org = d.org || {};
+
+        // Build checklist items (mirrors dashboard onboarding logic but admin-side)
+        const CHECKLIST = [
+          // Tier: Setup
+          {
+            tier: 'Setup', icon: '🏢', label: 'Organisation created',
+            detail: `Org ID: ${esc(org.id||'—')}`,
+            done: !!org.id,
+          },
+          {
+            tier: 'Setup', icon: '⚙️', label: 'Onboarding config saved',
+            detail: cfg.city ? `City: ${esc(cfg.city)}` : 'No city set',
+            done: !!(cfg.city || cfg.country),
+          },
+          {
+            tier: 'Setup', icon: '📍', label: 'City / country configured',
+            detail: [cfg.city, cfg.country].filter(Boolean).join(', ') || 'Not set',
+            done: !!(cfg.city && cfg.country),
+          },
+          {
+            tier: 'Setup', icon: '📦', label: 'Modules assigned',
+            detail: Array.isArray(cfg.modules) && cfg.modules.length
+              ? cfg.modules.join(', ')
+              : (cfg.modules === null || !cfg.modules ? 'All modules enabled' : 'No modules'),
+            done: true, // null/empty = all enabled = valid
+          },
+          // Tier: Configure
+          {
+            tier: 'Configure', icon: '👤', label: 'Users invited',
+            detail: `${s.users||0} user${s.users===1?'':'s'} registered`,
+            done: (s.users||0) > 0,
+          },
+          {
+            tier: 'Configure', icon: '🏗️', label: 'Assets added',
+            detail: `${s.assets||0} asset${s.assets===1?'':'s'}`,
+            done: (s.assets||0) > 0,
+          },
+          {
+            tier: 'Configure', icon: '✈️', label: 'Travellers configured',
+            detail: `${s.travellers||0} traveller${s.travellers===1?'':'s'}`,
+            done: (s.travellers||0) > 0,
+          },
+          {
+            tier: 'Configure', icon: '🚨', label: 'Escalation contacts set',
+            detail: `${s.escalation_contacts||0} contact${s.escalation_contacts===1?'':'s'}`,
+            done: (s.escalation_contacts||0) > 0,
+          },
+          // Tier: Operational
+          {
+            tier: 'Operational', icon: '📡', label: 'Live alert feeds configured',
+            detail: Array.isArray(cfg.feed_regions) && cfg.feed_regions.length
+              ? cfg.feed_regions.join(', ')
+              : (cfg.alert_scope ? esc(cfg.alert_scope) : 'No feed regions set'),
+            done: !!(Array.isArray(cfg.feed_regions) && cfg.feed_regions.length) || !!cfg.alert_scope,
+          },
+          {
+            tier: 'Operational', icon: '🔔', label: 'Check-in schedules active',
+            detail: `${s.checkin_schedules||0} schedule${s.checkin_schedules===1?'':'s'}`,
+            done: (s.checkin_schedules||0) > 0,
+          },
+          {
+            tier: 'Operational', icon: '✅', label: 'First login by org user',
+            detail: (d.users||[]).some(u=>u.last_login_at) ? 'At least one user has logged in' : 'No logins recorded yet',
+            done: (d.users||[]).some(u=>u.last_login_at),
+          },
+        ];
+
+        const tiers = ['Setup','Configure','Operational'];
+        const tierColours = { Setup:'#60a5fa', Configure:'#a78bfa', Operational:'#34d399' };
+        const doneTotal = CHECKLIST.filter(c=>c.done).length;
+        const pct = Math.round((doneTotal / CHECKLIST.length) * 100);
+
+        const tierHtml = tiers.map(tier => {
+          const items = CHECKLIST.filter(c => c.tier === tier);
+          const tierDone = items.filter(c=>c.done).length;
+          return `
+            <div style="margin-bottom:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${tierColours[tier]}">${esc(tier)}</span>
+                <span style="font-size:11px;color:var(--muted)">${tierDone}/${items.length}</span>
+              </div>
+              ${items.map(item => `
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:9px;background:${item.done?'rgba(51,196,141,.06)':'rgba(255,255,255,.02)'};border:1px solid ${item.done?'rgba(51,196,141,.2)':'var(--g600)'};margin-bottom:6px">
+                  <span style="font-size:16px;flex-shrink:0;margin-top:1px">${item.icon}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:${item.done?'600':'400'};color:${item.done?'#e2e8f0':'#8e97a3'}">${esc(item.label)}</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.detail}</div>
+                  </div>
+                  <span style="font-size:18px;flex-shrink:0">${item.done?'✅':'⬜'}</span>
+                </div>`).join('')}
+            </div>`;
+        }).join('');
+
+        content.innerHTML = `
+          <div style="padding:16px">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+              <div style="flex:1;min-width:200px">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Setup completion</div>
+                <div style="height:10px;background:var(--g700);border-radius:999px;overflow:hidden;border:1px solid var(--g600)">
+                  <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#33c48d,#60a5fa);border-radius:999px;transition:width .4s"></div>
+                </div>
+                <div style="font-size:12px;color:${pct===100?'#33c48d':'var(--muted)'};margin-top:4px">${doneTotal} of ${CHECKLIST.length} steps complete — ${pct}%</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:32px;font-weight:800;color:${pct===100?'#33c48d':pct>=66?'#f0b429':'#ff5a5f'}">${pct}%</div>
+              </div>
+            </div>
+            ${tierHtml}
+          </div>`;
+      } catch(e) {
+        content.innerHTML = `<div style="padding:16px;color:#fca5a5">Failed to load setup checklist: ${esc(String(e?.message||e))}</div>`;
+      }
+    }
   }  // end renderDrillTab
 
   // Tab wiring
@@ -2682,6 +2832,83 @@ const makeBar = (label, count, color) => {
 
   // Init
   loadPlatformStats();
+})();
+</script>
+
+<!-- ── Live Sessions Panel ──────────────────────────────────────────────── -->
+<script>
+(function(){
+  if(!window.CIAuth || !CIAuth.isMasterAdmin()) return;
+  const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const card = document.getElementById('liveSessionsCard');
+  const countEl = document.getElementById('sessionCount');
+  const tbody = document.getElementById('sessionTableBody');
+  const windowSel = document.getElementById('sessionWindowSelect');
+  const refreshBtn = document.getElementById('sessionRefreshBtn');
+  if(!card) return;
+  card.style.display = '';
+
+  function who(){ try{return(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(JSON.parse(localStorage.getItem('ci_user')||'{}'));}catch{return{};} }
+  function authH(){
+    const u=who(),h={'Content-Type':'application/json','Accept':'application/json'};
+    if(u.email)h['X-User-Email']=u.email;
+    if(u.name)h['X-User-Name']=u.name;
+    if(u.id)h['X-User-Id']=u.id;
+    if(window.CIAuth?.isMasterAdmin?.())h['X-User-Role']='MasterAdmin';
+    return h;
+  }
+  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function relTime(iso){
+    if(!iso) return '—';
+    const secs = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+    if(secs < 60) return `${secs}s ago`;
+    if(secs < 3600) return `${Math.floor(secs/60)}m ago`;
+    return `${Math.floor(secs/3600)}h ago`;
+  }
+  function pageLabel(p){
+    if(!p) return '—';
+    return p.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  }
+
+  async function loadSessions(){
+    const mins = windowSel ? windowSel.value : '5';
+    try {
+      const res = await fetch(`${API}/api/admin/active-sessions?minutes=${mins}`, { headers: authH() });
+      const d = await res.json().catch(()=>({}));
+      if(!d.ok) throw new Error(d.error||'Failed');
+      const sessions = d.sessions || [];
+      if(countEl) countEl.textContent = sessions.length;
+      if(!tbody) return;
+      if(!sessions.length){
+        tbody.innerHTML = `<tr><td colspan="4" style="padding:16px;color:var(--muted)">No users active in the last ${mins} minute${mins==='1'?'':'s'}.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = sessions.map(s => `
+        <tr style="border-bottom:1px solid var(--g600)">
+          <td style="padding:9px 12px">
+            <strong>${esc(s.name||s.email||s.user_id)}</strong>
+            <div style="font-size:11px;color:var(--muted)">${esc(s.email||'')}</div>
+          </td>
+          <td style="padding:9px 12px">${esc(s.org_name||s.org_id)}</td>
+          <td style="padding:9px 12px">
+            <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--g500);font-size:12px">
+              ${esc(pageLabel(s.page))}
+            </span>
+          </td>
+          <td style="padding:9px 12px;color:var(--muted);font-size:12px">${relTime(s.updated_at)}</td>
+        </tr>`).join('');
+    } catch(e){
+      if(tbody) tbody.innerHTML = `<tr><td colspan="4" style="padding:12px;color:#fca5a5">Failed to load sessions: ${esc(String(e?.message||e))}</td></tr>`;
+      if(countEl) countEl.textContent = '—';
+    }
+  }
+
+  if(windowSel) windowSel.addEventListener('change', loadSessions);
+  if(refreshBtn) refreshBtn.addEventListener('click', loadSessions);
+
+  // Auto-refresh every 60 seconds
+  loadSessions();
+  setInterval(loadSessions, 60 * 1000);
 })();
 </script>
 <script>
