@@ -24,29 +24,24 @@
   const NAV_LINKS = [
     // ── Core (all users) ────────────────────────────────────────────────────
     { href: 'index.html',               label: 'Dashboard',           role: 'all' },
+    { href: 'cityintel-assistant.html', label: 'CityIntel AI',        role: 'all',       module: 'cityintel_ai' },
+    { href: 'live-alerts.html',         label: 'Live Alerts',         role: 'all',       module: 'live_alerts' },
     { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', role: 'all',       module: 'neighbourhood_intel' },
-    { href: 'assets.html',              label: 'Assets',              role: 'all',       module: 'assets' },
-    { href: 'travellers.html',          label: 'Travellers',          role: 'all',       module: 'travellers' },
-    // ── Intelligence ────────────────────────────────────────────────────────
     { href: 'alerts.html',              label: 'High Risk Events',    role: 'all',       module: 'alerts' },
     { href: 'events.html',              label: 'All Events',          role: 'all',       module: 'all_events' },
-    { href: 'live-alerts.html',         label: 'Live Alerts',         role: 'all',       module: 'live_alerts' },
     { href: 'brief.html',               label: 'Intelligence Brief',  role: 'all',       module: 'intelligence_brief' },
-    { href: 'trends.html',              label: 'Trends & Forecasts',  role: 'all',       module: 'trends' },
-    // ── Operational ─────────────────────────────────────────────────────────
     { href: 'power-outages.html',       label: 'Power Outages',       role: 'all',       module: 'power_outages' },
     { href: 'transport-status.html',    label: 'Transport Status',    role: 'all',       module: 'transport_status' },
     { href: 'flight-status.html',       label: 'Flight Status',       role: 'all',       module: 'flight_status' },
-    { href: 'checkin.html',             label: 'Check-in Manager',    role: 'all',       module: 'check_in_manager' },
-    // ── Reports & AI ────────────────────────────────────────────────────────
     { href: 'reports.html',             label: 'Reports',             role: 'all',       module: 'reports' },
-    { href: 'cityintel-assistant.html', label: 'CityIntel AI',        role: 'all',       module: 'cityintel_ai' },
-    // ── Training ────────────────────────────────────────────────────────────
-    { href: 'training-review.html',     label: 'Training Record',     role: 'all',       module: 'training_review' },
+    { href: 'trends.html',              label: 'Trends & Forecasts',  role: 'all',       module: 'trends' },
+    { href: 'checkin.html',             label: 'Check-in Manager',    role: 'all',       module: 'check_in_manager' },
     { href: 'training-scenario-admin.html', label: 'Training Admin',  role: 'orgAdmin' },
-    // ── Org Admin ───────────────────────────────────────────────────────────
+    { href: 'training-review.html',     label: 'Training Record',     role: 'all',       module: 'training_review' },
+    { href: 'panicalarm.html',          label: 'Panic Alarm',         role: 'orgAdmin' },
+    { href: 'assets.html',              label: 'Assets',              role: 'all',       module: 'assets' },
+    { href: 'travellers.html',          label: 'Travellers',          role: 'all',       module: 'travellers' },
     { href: 'escalation-contacts.html', label: 'Escalation Contacts', role: 'orgAdmin' },
-    
     // ── Info / support ──────────────────────────────────────────────────────
     { href: 'sources.html',             label: 'Sources',             role: 'all' },
     { href: 'settings.html',            label: 'Settings',            role: 'all' },
