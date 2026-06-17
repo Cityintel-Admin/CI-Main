@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<script src="auth.js"></script>
+<script src="admin-links.js"></script>
+<script src="metrics.js"></script>
+<script>
+  CIAuth.requireAuth();
+</script>
+
+<meta charset="utf-8">
+<title>CityIntel — My Training Record</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="CityIntel – Situational Intelligence">
+<meta property="og:description" content="Live alerts, incident monitoring, and risk intelligence for security and operations teams.">
+<meta property="og:image" content="/CityintLogo.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#9d2b2b">
+
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    CIAuth.injectUserChip(document.getElementById('topActions'));
+    CIAuth.updateSidebarForRole(document.querySelector('aside.sidebar nav'));
+  });
+</script>
+
+<style>
+  :root{--brand-red:#D01616;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--text:#e9edf2;--muted:#8e97a3}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 system-ui;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text)}
+  .brandbar{display:flex;align-items:center;gap:12px;padding:10px 18px;background:rgba(0,0,0,.4);border-bottom:1px solid var(--gray-600);position:relative}
+  .brandbar img{height:32px;width:32px;border-radius:8px;object-fit:cover}
+  .app{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 53px)}
+  .sidebar{background:#0c0c0c;border-right:1px solid var(--gray-600);display:flex;flex-direction:column;padding:18px 14px;gap:18px}
+  .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  nav a{display:flex;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--text);border:1px solid transparent;font-size:13px}
+  nav a:hover{background:var(--gray-600);border-color:var(--gray-500)}
+  nav a.active{background:rgba(208,22,22,0.15);border-color:var(--brand-red)}
+  .main{padding:24px;max-width:1100px}
+  .card{background:#16171a;border:1px solid var(--gray-600);border-radius:16px;padding:20px;margin-bottom:20px}
+  .page-title{font-size:22px;font-weight:700;margin:0 0 4px}
+  .page-sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+
+  /* KPI row */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .kpi-card{background:#16171a;border:1px solid var(--gray-600);border-radius:14px;padding:16px 18px;text-align:center}
+  .kpi-value{font-size:32px;font-weight:800;line-height:1}
+  .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px}
+  .kpi-grade-a{color:#4ade80}.kpi-grade-b{color:#a3e635}.kpi-grade-c{color:#fbbf24}.kpi-grade-d{color:#f97316}.kpi-grade-f{color:#f87171}
+
+  /* Sparkline trend */
+  .trend-bar{display:flex;align-items:flex-end;gap:3px;height:36px;margin-top:8px}
+  .trend-bar-item{flex:1;border-radius:3px 3px 0 0;min-height:4px;cursor:default;transition:opacity .15s}
+  .trend-bar-item:hover{opacity:.75}
+
+  /* Session list */
+  .session-list{display:flex;flex-direction:column;gap:10px}
+  .session-card{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .15s}
+  .session-card:hover{border-color:rgba(208,22,22,.5)}
+  .session-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .session-grade{font-size:22px;font-weight:800}
+  .session-date{font-size:12px;color:var(--muted)}
+  .session-stats{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+  .session-stats strong{color:var(--text)}
+  .session-note{font-size:12px;color:var(--muted);margin-top:6px;font-style:italic}
+  .session-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .badge-pass{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+  .badge-warn{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+  .badge-fail{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+  .badge-none{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
+
+  /* Detail panel */
+  .detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px}
+  .detail-overlay.open{display:flex}
+  .detail-modal{background:#16171a;border:1px solid var(--gray-600);border-radius:18px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+  .detail-header{padding:20px 24px 14px;border-bottom:1px solid var(--gray-600);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;background:#16171a;border-radius:18px 18px 0 0;z-index:2}
+  .detail-header h3{margin:0 0 4px;font-size:17px}
+  .detail-header p{margin:0;font-size:12px;color:var(--muted)}
+  .detail-close{background:none;border:1px solid var(--gray-600);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;flex-shrink:0}
+  .detail-close:hover{border-color:var(--brand-red)}
+  .detail-body{padding:20px 24px}
+
+  /* Score summary */
+  .score-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+  .score-card{background:var(--gray-700);border:1px solid var(--gray-600);border-radius:12px;padding:14px;text-align:center}
+  .score-card.highlight{border-color:rgba(208,22,22,.4);background:rgba(208,22,22,.06)}
+  .score-val{font-size:30px;font-weight:800}
+  .score-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:4px}
+
+  /* Per-scenario cards */
+  .sc-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+  .sc-card{background:var(--gray-700);border-radius:10px;border:1px solid var(--gray-600);padding:12px 14px}
+  .sc-card.sc-pass{border-left:3px solid #4ade80}
+  .sc-card.sc-warn{border-left:3px solid #fbbf24}
+  .sc-card.sc-fail{border-left:3px solid #f87171}
+  .sc-card.sc-none{border-left:3px solid #475569}
+  .sc-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .sc-title{font-weight:600;font-size:13px;flex:1}
+  .sc-pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill-pass{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+  .pill-warn{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+  .pill-fail{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+  .pill-none{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
+  .sc-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px}
+  .sc-feedback{margin-top:8px;font-size:12px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+  .fb-pass{border-color:rgba(74,222,128,.2);color:#86efac}
+  .fb-warn{border-color:rgba(251,191,36,.2);color:#fde68a}
+  .fb-fail{border-color:rgba(248,113,113,.2);color:#fca5a5}
+
+  /* Recommendations */
+  .rec-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+  .rec-item{background:var(--gray-700);border:1px solid rgba(147,197,253,.15);border-radius:10px;padding:10px 12px;font-size:13px;color:#bfdbfe;display:flex;gap:8px;align-items:flex-start}
+  .rec-icon{flex-shrink:0;margin-top:1px}
+
+  /* Empty / loading states */
+  .empty{text-align:center;padding:40px;color:var(--muted)}
+  .loading{text-align:center;padding:40px;color:var(--muted);font-style:italic}
+
+  /* Section title */
+  .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
+
+  @media(max-width:700px){
+    .app{grid-template-columns:1fr}
+    .sidebar{display:none}
+    .kpi-row{grid-template-columns:repeat(2,1fr)}
+    .score-row{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+
+<body>
+  <div class="brandbar">
+    <img src="CityintLogo.jpg" alt="CityIntel Logo">
+    <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
+    <div id="topActions" style="position:relative;margin-left:auto"></div>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="section-label"></div>
+      <nav>
+
+    <a href="training-review.htm" class="active">Training Record</a>
+		<a href="index.html" class="active">Dashboard</a>
+		<a href="cityintel-assistant.html">CityIntel AI (BETA)</a>
+		<a href="live-alerts.html">Live Alerts</a>    
+		<a href="neighborhood-intel.html">Neighbourhood Intel</a> 
+    <a href="alerts.html">High Risk Events</a>
+    <a href="events.html">All Events</a>
+		<a href="brief.html">Intelligence Brief</a>
+		<a href="power-outages.html">Power Outages</a>
+		<a href="transport-status.html">Transport Status</a>
+		<a href="flight-status.html">Flight Status</a> 
+		<a href="reports.html">Reports</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <h1 class="page-title">🎯 My Training Record</h1>
+      <p class="page-sub">Review your past training sessions, scores, and areas for improvement.</p>
+
+      <!-- KPI summary row -->
+      <div class="kpi-row" id="kpiRow">
+        <div class="kpi-card"><div class="kpi-value" id="kpiSessions">—</div><div class="kpi-label">Sessions</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpiAvgScore">—</div><div class="kpi-label">Avg Score</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpiBestGrade">—</div><div class="kpi-label">Best Grade</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpiResponseRate">—</div><div class="kpi-label">Response Rate</div></div>
+      </div>
+
+      <!-- Score trend -->
+      <div class="card" id="trendCard" style="display:none">
+        <div class="section-title">Score Trend — Last 10 Sessions</div>
+        <div class="trend-bar" id="trendBar"></div>
+      </div>
+
+      <!-- Session history -->
+      <div class="card">
+        <div class="section-title">Session History</div>
+        <div class="session-list" id="sessionList">
+          <div class="loading">Loading your training sessions…</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Detail overlay -->
+  <div class="detail-overlay" id="detailOverlay">
+    <div class="detail-modal">
+      <div class="detail-header">
+        <div>
+          <h3 id="detailTitle">Session Debrief</h3>
+          <p id="detailSubtitle"></p>
+        </div>
+        <button class="detail-close" onclick="closeDetail()">✕ Close</button>
+      </div>
+      <div class="detail-body" id="detailBody"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+'use strict';
+
+const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+
+function authHeaders(){
+  const hdrs = { 'Content-Type':'application/json' };
+  if(window.CIAuth && CIAuth.who){
+    const u = CIAuth.who()||{};
+    hdrs['X-User-Email'] = u.email||'';
+    hdrs['X-User-Id']    = u.id||u.email||'';
+    hdrs['X-User-Name']  = u.name||'';
+  }
+  return hdrs;
+}
+
+async function apiFetch(path, opts={}){
+  const res = await fetch(API + path, { ...opts, headers: authHeaders() });
+  const d = await res.json().catch(()=>({}));
+  return d;
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso){ if(!iso) return '—'; return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function fmtDuration(min){ return min > 0 ? `${min}min` : '—'; }
+
+function gradeColor(g){
+  return g==='A'?'#4ade80':g==='B'?'#a3e635':g==='C'?'#fbbf24':g==='D'?'#f97316':'#f87171';
+}
+function gradeClass(g){
+  return g==='A'?'kpi-grade-a':g==='B'?'kpi-grade-b':g==='C'?'kpi-grade-c':g==='D'?'kpi-grade-d':'kpi-grade-f';
+}
+
+let allSessions = [];
+
+async function load(){
+  try {
+    const res = await apiFetch('/api/org/training-sessions');
+    allSessions = Array.isArray(res.data) ? res.data : [];
+  } catch(e) {
+    allSessions = [];
+  }
+
+  renderKPIs();
+  renderTrend();
+  renderList();
+}
+
+function renderKPIs(){
+  const count = allSessions.length;
+  document.getElementById('kpiSessions').textContent = count || '0';
+
+  if(!count){
+    document.getElementById('kpiAvgScore').textContent = '—';
+    document.getElementById('kpiBestGrade').textContent = '—';
+    document.getElementById('kpiResponseRate').textContent = '—';
+    return;
+  }
+
+  const avgScore = Math.round(allSessions.reduce((s,x)=>s+(x.overall_pct||0),0)/count);
+  document.getElementById('kpiAvgScore').textContent = avgScore + '%';
+
+  const gradeOrder = ['A','B','C','D','F'];
+  const best = gradeOrder.find(g => allSessions.some(s => (s.grade||'F')===g)) || '—';
+  const bestEl = document.getElementById('kpiBestGrade');
+  bestEl.textContent = best;
+  bestEl.className = 'kpi-value ' + gradeClass(best);
+
+  const totalScenarios = allSessions.reduce((s,x)=>s+(x.scenario_count||0),0);
+  const totalResponded  = allSessions.reduce((s,x)=>s+(x.responded_count||0),0);
+  const rr = totalScenarios > 0 ? Math.round((totalResponded/totalScenarios)*100) : 0;
+  document.getElementById('kpiResponseRate').textContent = rr + '%';
+}
+
+function renderTrend(){
+  const trendCard = document.getElementById('trendCard');
+  if(allSessions.length < 2){ trendCard.style.display='none'; return; }
+  trendCard.style.display='';
+
+  const recent = [...allSessions].slice(0,10).reverse();
+  const maxPct = Math.max(...recent.map(s=>s.overall_pct||0), 1);
+  const bar = document.getElementById('trendBar');
+  bar.innerHTML = recent.map(s => {
+    const pct = s.overall_pct || 0;
+    const h = Math.max(4, Math.round((pct/maxPct)*32));
+    const col = pct>=80?'#4ade80':pct>=60?'#fbbf24':'#f87171';
+    return `<div class="trend-bar-item" title="${pct}% · ${fmtDate(s.started_at)}" style="height:${h}px;background:${col};"></div>`;
+  }).join('');
+}
+
+function renderList(){
+  const list = document.getElementById('sessionList');
+  if(!allSessions.length){
+    list.innerHTML = '<div class="empty">No training sessions recorded yet.<br><span style="font-size:12px">Your scores will appear here after you complete a training session in live alerts.</span></div>';
+    return;
+  }
+
+  list.innerHTML = allSessions.map((s,i) => {
+    const grade = s.grade || 'F';
+    const pct   = s.overall_pct || 0;
+    const badgeCls = pct>=80?'badge-pass':pct>=60?'badge-warn':s.responded_count>0?'badge-fail':'badge-none';
+    const badgeTxt = pct>=80?'Pass':pct>=60?'Good':s.responded_count>0?'Needs Work':'No responses';
+    return `
+      <div class="session-card" onclick="openDetail(${i})">
+        <div class="session-head">
+          <div>
+            <div style="font-size:13px;font-weight:600;">${fmtDate(s.started_at)}</div>
+            <div class="session-date">${fmtDuration(s.duration_min)} · ${s.scenario_count||0} scenario${(s.scenario_count||0)!==1?'s':''} · ${s.responded_count||0} responded</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="session-badge ${badgeCls}">${badgeTxt}</span>
+            <div class="session-grade" style="color:${gradeColor(grade)}">${pct}% <span style="font-size:16px">${grade}</span></div>
+          </div>
+        </div>
+        ${s.trainees ? `<div class="session-note">👥 ${esc(s.trainees)}</div>` : ''}
+        ${s.notes ? `<div class="session-note">${esc(s.notes)}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function openDetail(idx){
+  const s = allSessions[idx];
+  if(!s) return;
+
+  document.getElementById('detailTitle').textContent = `Session — ${fmtDate(s.started_at)}`;
+  document.getElementById('detailSubtitle').textContent =
+    `${fmtDuration(s.duration_min)} · ${s.scenario_count||0} scenario${(s.scenario_count||0)!==1?'s':''} · ${s.responded_count||0} responded`;
+
+  let scores = null;
+  try { scores = typeof s.scores_json==='string' ? JSON.parse(s.scores_json) : s.scores_json; } catch(_){}
+
+  const body = document.getElementById('detailBody');
+  const grade = s.grade || 'F';
+  const pct   = s.overall_pct || 0;
+
+  // Score summary cards
+  const durStr = fmtDuration(s.duration_min);
+  const rrPct  = (s.scenario_count||0) > 0 ? Math.round(((s.responded_count||0)/(s.scenario_count||1))*100) : 0;
+
+  let html = `
+    <div class="score-row">
+      <div class="score-card highlight">
+        <div class="score-val" style="color:${gradeColor(grade)}">${pct}%</div>
+        <div class="score-lbl">Overall Score</div>
+      </div>
+      <div class="score-card">
+        <div class="score-val" style="color:${gradeColor(grade)}">${grade}</div>
+        <div class="score-lbl">Grade</div>
+      </div>
+      <div class="score-card">
+        <div class="score-val">${rrPct}%</div>
+        <div class="score-lbl">Response Rate</div>
+      </div>
+    </div>`;
+
+  // Per-scenario breakdown
+  if(scores && scores.length){
+    html += `<div class="section-title" style="margin-bottom:8px">Scenario Breakdown</div>`;
+    html += `<div class="sc-list">`;
+    html += scores.map((s, i) => renderScoredScenario(s, i)).join('');
+    html += `</div>`;
+
+    // Recommendations
+    const recs = buildRecommendations(scores, pct);
+    if(recs.length){
+      html += `<div class="section-title" style="margin-bottom:8px">Recommendations</div>`;
+      html += `<div class="rec-list">`;
+      html += recs.map(r => `<div class="rec-item"><span class="rec-icon">💡</span><span>${esc(r)}</span></div>`).join('');
+      html += `</div>`;
+    }
+  } else {
+    html += `<div class="empty" style="padding:20px">Detailed per-scenario data was not saved for this session.</div>`;
+  }
+
+  body.innerHTML = html;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function renderScoredScenario(s, i){
+  // s is the scored shape: { sc, responded, action, actionCorrect, responseMs, pct, tier, expectedAction }
+  // Handle both nested (sc.title) and flat (s.title) shapes from different save formats
+  const sc = s.sc || s;
+  const title = sc.title || sc.name || `Scenario ${i+1}`;
+  const risk  = (sc.risk||'').toLowerCase();
+  const category = sc.category || '';
+  const responded = s.responded !== undefined ? s.responded : !!s.action;
+  const action = s.action || sc.status || '';
+  const actionCorrect = s.actionCorrect;
+  const responseMs = s.responseMs || 0;
+  const pct  = typeof s.pct === 'number' ? s.pct : 0;
+  const tier = s.tier || (pct>=80?'pass':pct>=50?'warn':responded?'fail':'no-response');
+  const expectedAction = s.expectedAction || sc.expectedAction || '';
+
+  const pillCls = tier==='pass'?'pill-pass':tier==='warn'?'pill-warn':tier==='no-response'?'pill-none':'pill-fail';
+  const pillTxt = tier==='pass'?'Pass':tier==='warn'?'Partial':tier==='no-response'?'No Response':'Needs Work';
+  const cardCls = tier==='pass'?'sc-pass':tier==='warn'?'sc-warn':tier==='no-response'?'sc-none':'sc-fail';
+
+  const riskCol = risk==='high'?'#ff5a5f':risk==='med'?'#f0b429':'#33c48d';
+  const respStr = responseMs > 0 ? `${(responseMs/60000).toFixed(1)}min response` : '';
+
+  // Build feedback message
+  let feedback = '';
+  let fbCls = 'fb-fail';
+  if(!responded){
+    feedback = 'No response recorded. Ensure you take action on every scenario — escalate, monitor, or clear based on the risk level.';
+  } else if(actionCorrect){
+    fbCls = 'fb-pass';
+    feedback = `Correct — you ${action} this scenario as expected.${respStr ? ` Response time: ${respStr}.` : ''}`;
+  } else {
+    const exp = expectedAction ? `Expected action was <strong>${expectedAction}</strong>.` : '';
+    feedback = `You chose to <strong>${action}</strong> but ${exp} Review the risk level and context to calibrate your response.`;
+    fbCls = 'fb-warn';
+  }
+
+  return `
+    <div class="sc-card ${cardCls}">
+      <div class="sc-head">
+        <div class="sc-title">${esc(title)}</div>
+        <span class="sc-pill ${pillCls}">${pillTxt} · ${pct}%</span>
+      </div>
+      <div class="sc-meta">
+        <span style="color:${riskCol};font-weight:700">${risk.toUpperCase() || '—'}</span>
+        ${category ? `<span>${esc(category)}</span>` : ''}
+        ${respStr ? `<span>⏱ ${respStr}</span>` : ''}
+        ${action ? `<span>Action: <strong style="color:var(--text)">${esc(action)}</strong></span>` : ''}
+      </div>
+      ${feedback ? `<div class="sc-feedback ${fbCls}">${feedback}</div>` : ''}
+    </div>`;
+}
+
+function buildRecommendations(scores, overallPct){
+  const recs = [];
+  const noResponse = scores.filter(s => !s.responded && s.responded !== undefined ? !s.responded : !s.action);
+  const wrongAction = scores.filter(s => s.responded && !s.actionCorrect);
+  const slowResponse = scores.filter(s => s.responseMs > 5 * 60000);
+  const highRiskMissed = scores.filter(s => {
+    const sc = s.sc || s;
+    return (sc.risk||'').toLowerCase()==='high' && (s.action||'')!=='escalated';
+  });
+
+  if(noResponse.length > 0)
+    recs.push(`You did not respond to ${noResponse.length} scenario${noResponse.length>1?'s':''} — always take an action, even if it's clearing a false positive.`);
+  if(highRiskMissed.length > 0)
+    recs.push(`${highRiskMissed.length} high-risk scenario${highRiskMissed.length>1?'s were':'was'} not escalated — high-risk events should almost always be escalated to the duty manager.`);
+  if(wrongAction.length > 0)
+    recs.push(`Review the expected responses for ${wrongAction.length} scenario${wrongAction.length>1?'s':''} where your action differed from the expected outcome.`);
+  if(slowResponse.length > 0)
+    recs.push(`${slowResponse.length} scenario${slowResponse.length>1?'s':''} had a response time over 5 minutes — practice prioritising alerts in the live feed to improve speed.`);
+  if(overallPct >= 80)
+    recs.push('Strong overall performance. Keep reviewing debrief notes to maintain consistency under pressure.');
+  else if(overallPct >= 60)
+    recs.push('Good progress — focus on response speed and matching the expected action to risk level to reach the next grade.');
+
+  return recs;
+}
+
+function closeDetail(){
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+
+// Close on overlay click
+document.getElementById('detailOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeDetail();
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeDetail(); });
+
+// Nav active state
+const here = location.pathname.split('/').pop()||'index.html';
+document.querySelectorAll('nav a').forEach(a=>{
+  if(a.getAttribute('href')===here) a.classList.add('active'); else a.classList.remove('active');
+});
+
+// Init
+load();
+
+})();
+</script>
+
+<!-- ── CIAccess: tier banner + module enforcement (v129) ─────────────────── -->
+<script>
+(function(){
+'use strict';
+const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+const TIER_LABELS = {
+  global:'Global',emea:'EMEA',europe:'Europe',uk_only:'UK only',
+  usa_only:'USA only',apac:'APAC',custom:'Custom region',
+};
+const MODULE_PAGES = {
+  live_alerts:'live-alerts.html', assets:'assets.html', travellers:'travellers.html',
+  power_outages:'power-outages.html', transport_status:'transport-status.html',
+  flight_status:'flight-status.html', reports:'reports.html',
+  intelligence_brief:'brief.html', trends:'trends.html',
+  neighbourhood_intel:'neighbourhood-intel.html', check_in_manager:'check-in.html',
+  cityintel_ai:'cityintel-assistant.html', high_risk_events:'high-risk-events.html',
+  all_events:'events.html', alerts:'alerts.html', training:'training-scenarios.html',
+  training_review:'training-review.html',
+};
+async function getOrgConfig(){
+  const CACHE_KEY='ci_org_onboarding'; const TTL=5*60*1000;
+  try{
+    const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+    if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
+  }catch(_){}
+  try{
+    const hdrs = {};
+    if(window.CIAuth && CIAuth.who){
+      const u=CIAuth.who()||{};
+      hdrs['X-User-Email']=u.email||'';
+      hdrs['X-User-Id']=u.id||u.email||'';
+      hdrs['X-User-Name']=u.name||'';
+    }
+    const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
+    const d=await res.json().catch(()=>({}));
+    const cfg=d.data||{};
+    cfg._ts=Date.now();
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify(cfg));}catch(_){}
+    return cfg;
+  }catch(_){ return {}; }
+}
+function showTierBanner(tier,extraMsg){
+  if(!tier||tier==='global') return;
+  const id='ci-tier-banner';
+  if(document.getElementById(id)) return;
+  const label=TIER_LABELS[tier]||tier;
+  const el=document.createElement('div');
+  el.id=id;
+  el.style.cssText='position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#1a1400;border-bottom:2px solid #b45309;color:#fbbf24;font:600 13px system-ui,sans-serif';
+  el.innerHTML=`<span>📍 Data tier: <strong>${label}</strong>${extraMsg?' — '+extraMsg:''}</span><button onclick="this.parentNode.remove()" style="background:none;border:none;color:#fbbf24;font-size:16px;cursor:pointer;padding:0 4px;line-height:1">✕</button>`;
+  const main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+  main.insertBefore(el,main.firstChild);
+}
+function showModuleLocked(moduleName){
+  const main=document.querySelector('main.main')||document.querySelector('.main');
+  if(!main) return;
+  main.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px;gap:14px">
+      <div style="font-size:48px">🔒</div>
+      <h2 style="margin:0;font-size:20px;color:#e2e8f0">Not included in your plan</h2>
+      <p style="margin:0;color:#8e97a3;max-width:440px;line-height:1.6">
+        <strong style="color:#e2e8f0">${moduleName}</strong> is not enabled for your organisation.
+        Contact your CityIntel account manager to upgrade or add this module.
+      </p>
+      <a href="mailto:contact@city-intel.com" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 20px;border-radius:999px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.4);color:#fca5a5;font:600 13px system-ui,sans-serif;text-decoration:none">
+        Contact CityIntel →
+      </a>
+      <a href="index.html" style="color:#6b7280;font-size:13px;text-decoration:underline;margin-top:4px">← Back to Dashboard</a>
+    </div>`;
+}
+function isModuleAllowed(modules, moduleName){
+  if(!Array.isArray(modules)||modules.length===0) return true;
+  return modules.includes(moduleName);
+}
+window.CIAccess = {
+  getOrgConfig, showTierBanner, showModuleLocked, isModuleAllowed, TIER_LABELS, MODULE_PAGES,
+  async initPage(moduleKey, bannerExtraMsg){
+    const cfg = await getOrgConfig();
+    const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+    if(moduleKey && !isModuleAllowed(modules, moduleKey)){
+      const label = Object.keys(MODULE_PAGES).find(k=>k===moduleKey)||moduleKey;
+      showModuleLocked(label.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+      return false;
+    }
+    if(cfg.dataTier && cfg.dataTier!=='global') showTierBanner(cfg.dataTier, bannerExtraMsg||'');
+    return true;
+  },
+  handleApiTier(data, moduleBannerMsg){
+    if(data && data.tier && !data.tierIsGlobal) showTierBanner(data.tier, moduleBannerMsg||'Data filtered to your access tier');
+  },
+};
+})();
+</script>
+<!-- ── /CIAccess ───────────────────────────────────────────────────────── -->
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(window.CIAccess) CIAccess.initPage('training_review');
+});
+</script>
+
+<script src="shared-chip.js"></script>
+
+</body>
+</html>
