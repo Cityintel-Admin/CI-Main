@@ -1295,7 +1295,19 @@ function detectTheme(a) {
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const fmtDate=iso=>{try{return iso?new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';}catch{return iso||'—';}};
   function authH(){try{const p=JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');if(!p?.email)return{};return{'X-User-Email':p.email,'X-User-Name':p.name||'','X-User-Id':p.id||'','X-Admin-Override':'cityintel_masteradmin'};}catch{return{};}}
-  function isMasterAdmin(){try{const p=JSON.parse(localStorage.getItem('ci_profile')||localStorage.getItem('ci_user')||'null');return!!(p?.is_master_admin||p?.masterAdmin||String(p?.role||'').toLowerCase().includes('master'));}catch{return false;}}
+  function isMasterAdmin(){
+    // Prefer CIAuth (set by auth.js) which is the authoritative source
+    try { if (window.CIAuth && typeof CIAuth.isMasterAdmin === 'function') return CIAuth.isMasterAdmin(); } catch(_) {}
+    // Fallback: read from localStorage
+    try {
+      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || 'null');
+      if (!p) return false;
+      return !!(p?.is_master_admin || p?.masterAdmin ||
+        String(p?.role || '').toLowerCase().includes('master') ||
+        String(p?.role_key || '').toLowerCase().includes('master') ||
+        String(p?.roleKey || '').toLowerCase().includes('master'));
+    } catch { return false; }
+  }
 
   const PATTERN_ICONS={'protest_wave':'🌊','regional_instability':'⚠️','multi_country_spread':'🌍'};
   const PATTERN_LABELS={'protest_wave':'Protest Wave','regional_instability':'Regional Instability','multi_country_spread':'Multi-Country Spread'};
@@ -1396,6 +1408,11 @@ function detectTheme(a) {
   }
 
   if(isMasterAdmin()){loadPatterns();loadBriefs();}
+  else {
+    // Org admins and operators can also see their org's queued briefs
+    // (the API endpoint filters by org for non-master-admins)
+    loadBriefs();
+  }
 })();
 </script>
 
