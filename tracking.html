@@ -122,12 +122,17 @@
     if(!sessions.length){ body.innerHTML='<tr><td colspan="6" class="muted">No tracking sessions yet.</td></tr>'; return; }
     body.innerHTML = sessions.map(s=>{
       const f=freshness(s), st=String(s.status||'invited').toLowerCase();
-      return `<tr class="session-row ${s.id===selectedId?'active':''}" data-id="${esc(s.id)}"><td><b>${esc(s.employee_name||'Unnamed')}</b><div class="muted">${esc(s.employee_email||s.employee_phone||'')}</div></td><td><span class="pill ${esc(st)}">${esc(st)}</span></td><td><span class="pill ${esc(f)}">${esc(f)}</span></td><td>${ago(s.last_ping_at)}<div class="muted">${fmt(s.last_ping_at)}</div></td><td>${esc(s.interval_minutes||15)} min</td><td><button class="btn" data-copy="${esc(s.invite_url||'')}">Copy link</button> <button class="btn warn" data-pause="${esc(s.id)}">Pause</button> <button class="btn danger" data-stop="${esc(s.id)}">Stop</button></td></tr>`;
+      const stopped = st === 'stopped' || st === 'archived';
+      const actions = stopped
+        ? `<button class="btn" data-copy="${esc(s.invite_url||'')}">Copy link</button> <button class="btn danger" data-archive="${esc(s.id)}">Remove</button>`
+        : `<button class="btn" data-copy="${esc(s.invite_url||'')}">Copy link</button> <button class="btn warn" data-pause="${esc(s.id)}">Pause</button> <button class="btn danger" data-stop="${esc(s.id)}">Deactivate</button>`;
+      return `<tr class="session-row ${s.id===selectedId?'active':''}" data-id="${esc(s.id)}"><td><b>${esc(s.employee_name||'Unnamed')}</b><div class="muted">${esc(s.employee_email||s.employee_phone||'')}</div></td><td><span class="pill ${esc(st)}">${esc(st)}</span></td><td><span class="pill ${esc(f)}">${esc(f)}</span></td><td>${ago(s.last_ping_at)}<div class="muted">${fmt(s.last_ping_at)}</div></td><td>${esc(s.interval_minutes||15)} min</td><td>${actions}</td></tr>`;
     }).join('');
     body.querySelectorAll('.session-row').forEach(tr=>tr.addEventListener('click', e=>{ if(e.target.closest('button')) return; selectSession(tr.dataset.id); }));
     body.querySelectorAll('[data-copy]').forEach(btn=>btn.addEventListener('click', e=>{ navigator.clipboard.writeText(btn.dataset.copy||'').then(()=>alert('Invite link copied')); }));
     body.querySelectorAll('[data-pause]').forEach(btn=>btn.addEventListener('click', e=>setStatus(btn.dataset.pause,'paused')));
-    body.querySelectorAll('[data-stop]').forEach(btn=>btn.addEventListener('click', e=>{ if(confirm('Stop this tracking session?')) setStatus(btn.dataset.stop,'stopped'); }));
+    body.querySelectorAll('[data-stop]').forEach(btn=>btn.addEventListener('click', e=>{ if(confirm('Deactivate this tracking session? The employee link will stop sending location and the marker will be removed from the live map.')) setStatus(btn.dataset.stop,'stopped'); }));
+    body.querySelectorAll('[data-archive]').forEach(btn=>btn.addEventListener('click', e=>{ if(confirm('Remove this stopped tracking session from the admin list? Route history will no longer show here.')) setStatus(btn.dataset.archive,'archived'); }));
   }
 
   function renderMap(){
@@ -135,6 +140,8 @@
     markers.forEach(m=>map.removeLayer(m)); markers.clear();
     const bounds=[];
     sessions.forEach(s=>{
+      const st = String(s.status || '').toLowerCase();
+      if(st === 'stopped' || st === 'archived') return;
       const lat=Number(s.last_lat), lng=Number(s.last_lng); if(!Number.isFinite(lat)||!Number.isFinite(lng)) return;
       const f=freshness(s); const marker=L.marker([lat,lng],{icon:markerIcon(f)}).addTo(map);
       marker.bindPopup(`<b>${esc(s.employee_name||'Employee')}</b><br>${esc(s.status||'')} · ${esc(f)}<br>Last ping: ${ago(s.last_ping_at)}<br>Accuracy: ${esc(s.last_accuracy||'—')}m`);
