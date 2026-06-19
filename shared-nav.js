@@ -36,6 +36,7 @@
     { href: 'reports.html',             label: 'Reports',             role: 'all',       module: 'reports' },
     { href: 'trends.html',              label: 'Trends & Forecasts',  role: 'all',       module: 'trends' },
     { href: 'checkin.html',             label: 'Check-in Manager',    role: 'all',       module: 'check_in_manager' },
+    { href: 'tracking.html',            label: 'CityIntel Track',     role: 'all',       module: 'tracking' },
     { href: 'training-scenario-admin.html', label: 'Training Admin',  role: 'orgAdmin' },
     { href: 'training-review.html',     label: 'Training Record',     role: 'all',       module: 'training_review' },
     { href: 'panicalarm.html',          label: 'Panic Alarm',         role: 'orgAdmin' },
