@@ -1718,7 +1718,91 @@ async function loadOrgContext() {
   line-height:1.35;
 }
 
-/* Phase 8H escalation contact preview */
+/* Phase 5C — AI triage suggestion block inside escalation transition form */
+.ci-ai-suggestion-block {
+  background: rgba(167,139,250,.07);
+  border: 1px solid rgba(167,139,250,.28);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #c4b5fd;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(167,139,250,.18);
+  color: #ddd6fe;
+  font-weight: 600;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-note {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-reasons {
+  list-style: none;
+  margin: 0 0 6px 0;
+  padding: 0;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-reasons li {
+  font-size: 12px;
+  color: #cbd5e1;
+  padding: 2px 0;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-reasons li::before {
+  content: '✓ ';
+  color: #a78bfa;
+  font-weight: 700;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-next {
+  font-size: 11px;
+  color: #94a3b8;
+  border-top: 1px solid rgba(167,139,250,.15);
+  padding-top: 7px;
+  margin-top: 4px;
+}
+.ci-ai-suggestion-block .ci-ai-suggestion-disclaimer {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 5px;
+  font-style: italic;
+}
+/* Escalate button in triage panel */
+.btn-triage-escalate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(248,113,113,.5);
+  border-radius: 7px;
+  background: rgba(127,29,29,.18);
+  color: #fca5a5;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.btn-triage-escalate:hover {
+  background: rgba(127,29,29,.35);
+  border-color: rgba(248,113,113,.8);
+  color: #fff;
+}
+
+/* Phase 5C escalation candidate tag in triage panel */
 .ci-escalation-preview{
   display:flex;
   flex-direction:column;
@@ -9697,15 +9781,20 @@ function ageLabel(when) {
     const action = String(scored.recommended_action || 'MONITOR').toLowerCase();
     const reasons = Array.isArray(scored.recommended_reasons) ? scored.recommended_reasons : String(scored.recommended_reasons || '').split('•').map(s=>s.trim()).filter(Boolean);
     const blockers = Array.isArray(scored.recommended_blockers) ? scored.recommended_blockers : [];
+    const isEscalationCandidate = action === 'escalation_candidate';
+    const escalateBtn = isEscalationCandidate
+      ? `<button type="button" class="btn-triage-escalate" onclick="window.ciOpenEscalationFromTriage && window.ciOpenEscalationFromTriage()">🚨 Open Escalation Form</button>`
+      : '';
     return `<div class="ci-triage-panel">
       <div class="ci-triage-head"><div class="ci-triage-action">${escapeHtml(scored.recommended_label || ciTriageActionLabel(scored.recommended_action))}</div><div class="ci-triage-score">Confidence ${Math.round(Number(scored.recommended_score || 0))}%</div></div>
       <ul class="ci-triage-reasons">${reasons.slice(0,6).map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul>
       ${blockers.length ? `<div class="ci-triage-blockers"><b>Guardrail:</b> ${blockers.map(escapeHtml).join(' • ')}</div>` : ''}
       <div class="ci-triage-next"><b>Recommended next step:</b> ${escapeHtml(scored.recommended_next_step || '')}</div>
-      <div class="ci-triage-actions" style="margin-top:10px;">
+      <div class="ci-triage-actions" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        ${escalateBtn}
         <button type="button" id="btnQueueBriefingCandidate" class="btn-ghost" onclick="window.ciQueueCurrentAlertForBriefing && window.ciQueueCurrentAlertForBriefing(true)">Add to Briefing Queue</button>
-        <span id="ciBriefingQueueStatus" class="ci-triage-action-hint">Creates a review item for the Intelligence Brief page. No publication is automatic.</span>
       </div>
+      <span id="ciBriefingQueueStatus" class="ci-triage-action-hint">Creates a review item for the Intelligence Brief page. No publication is automatic.</span>
       <div class="ci-triage-next">Advisory only — no action is taken until an operator changes the disposition.</div>
     </div>`;
   }
@@ -9788,6 +9877,61 @@ function ageLabel(when) {
     }
   }
   window.ciQueueCurrentAlertForBriefing = ciQueueCurrentAlertForBriefing;
+
+  // ── Phase 5C: Open escalation transition form pre-populated with AI triage data ──
+  function ciOpenEscalationFromTriage() {
+    const item = window.__lastDetailItem || window.__ciCurrentDetailItem || null;
+    if (!item) { alert('Open an alert first.'); return; }
+
+    if (typeof openTransitionModal !== 'function') {
+      console.warn('CityIntel: openTransitionModal not available');
+      return;
+    }
+
+    // Score the item to get full triage recommendation
+    const scored = (typeof window.ciScoreAlertPriority === 'function')
+      ? window.ciScoreAlertPriority(item)
+      : item;
+
+    // Open the existing escalation transition form.
+    // openTransitionModal sets bodyEl.innerHTML synchronously before showing the modal,
+    // so we inject the AI suggestion block in a setTimeout(50ms) that fires after it renders.
+    openTransitionModal(item, 'escalated', {});
+
+    // Inject AI suggestion block and pre-populate fields after modal renders
+    setTimeout(() => {
+      const bodyEl = document.getElementById('ciTransitionBody');
+      if (!bodyEl || document.getElementById('ciAiTriageSuggestion')) return;
+      const reasons = Array.isArray(scored.recommended_reasons)
+        ? scored.recommended_reasons : [];
+      const confidence = Math.round(Number(scored.recommended_score || 0));
+      const label = scored.recommended_label || 'Escalation candidate';
+      const nextStep = scored.recommended_next_step || '';
+      const escHtml = v => String(v ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      const html = `
+        <div class="ci-ai-suggestion-block" id="ciAiTriageSuggestion">
+          <div class="ci-ai-suggestion-head">
+            <span class="ci-ai-suggestion-label">AI Triage Recommendation</span>
+            <span class="ci-ai-suggestion-badge">${escHtml(label)}</span>
+            <span class="ci-ai-suggestion-badge" style="background:rgba(51,196,141,.12);color:#86efac;">Confidence ${confidence}%</span>
+          </div>
+          ${reasons.length ? `<ul class="ci-ai-suggestion-reasons">${reasons.slice(0,5).map(r=>`<li>${escHtml(r)}</li>`).join('')}</ul>` : ''}
+          ${nextStep ? `<div class="ci-ai-suggestion-next"><b>AI suggested next step:</b> ${escHtml(nextStep)}</div>` : ''}
+          <div class="ci-ai-suggestion-disclaimer">AI recommendation only. Analyst review required before any action.</div>
+        </div>`;
+      bodyEl.insertAdjacentHTML('afterbegin', html);
+      // Pre-populate brief if empty
+      const briefEl = document.getElementById('ciIncidentBrief');
+      if (briefEl && !briefEl.value.trim() && reasons.length) {
+        briefEl.value = [`AI Triage: ${label} (${confidence}% confidence)`, `Reasons: ${reasons.join('; ')}`].join('\n');
+      }
+      if (confidence >= 75) {
+        const cb = bodyEl.querySelector('[data-ci-reason="threshold"]');
+        if (cb && !cb.checked) cb.checked = true;
+      }
+    }, 50);
+  }
+  window.ciOpenEscalationFromTriage = ciOpenEscalationFromTriage;
 
 
   function defaultPriorityControls(){
