@@ -688,6 +688,10 @@
       <div class="legend">Internal user support conversations. Master Admin only.</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="supportSearchInput" type="search" placeholder="Search tickets, orgs, users…" style="background:#0f1012;border:1px solid var(--g600);color:var(--text);border-radius:7px;padding:6px 9px;font-size:12px;font-family:inherit;outline:none;min-width:220px">
+      <select id="supportOrgFilter" style="background:#1c1e22;border:1px solid var(--g600);color:var(--text);border-radius:7px;padding:6px 8px;font-size:12px;font-family:inherit;outline:none;min-width:150px">
+        <option value="all" selected>All orgs</option>
+      </select>
       <select id="supportStatusFilter" style="background:#1c1e22;border:1px solid var(--g600);color:var(--text);border-radius:7px;padding:6px 8px;font-size:12px;font-family:inherit;outline:none">
         <option value="open" selected>Open</option>
         <option value="pending">Pending</option>
@@ -3008,6 +3012,8 @@ const makeBar = (label, count, color) => {
   const messagesEl = document.getElementById('supportMessages');
   const headerEl = document.getElementById('supportThreadHeader');
   const filter = document.getElementById('supportStatusFilter');
+  const orgFilter = document.getElementById('supportOrgFilter');
+  const searchInput = document.getElementById('supportSearchInput');
   const refreshBtn = document.getElementById('supportRefreshBtn');
   const replyBox = document.getElementById('supportReplyBox');
   const replyBtn = document.getElementById('supportReplyBtn');
@@ -3054,7 +3060,11 @@ const makeBar = (label, count, color) => {
 
   function statusPill(status){
     const s = String(status || 'open').toLowerCase();
-    const colour = s === 'closed' ? '#8e97a3' : s === 'pending' ? '#f0b429' : '#33c48d';
+    const colour =
+      s === 'closed' ? '#8e97a3' :
+      s === 'resolved' ? '#33c48d' :
+      s === 'pending' ? '#f0b429' :
+      '#33c48d';
     return `<span style="display:inline-flex;padding:2px 7px;border-radius:999px;border:1px solid ${colour};color:${colour};font-size:11px;text-transform:capitalize">${esc(s)}</span>`;
   }
 
@@ -3079,21 +3089,90 @@ const makeBar = (label, count, color) => {
       high:'#f0b429',
       urgent:'#ff5a5f'
     };
-    const colour = colours[p] || colours.normal;
-    return `<span style="display:inline-flex;padding:2px 7px;border-radius:999px;border:1px solid ${colour};color:${colour};font-size:11px;text-transform:capitalize">${esc(p)}</span>`;
+    const labels = {
+      low:'Low',
+      normal:'Normal',
+      high:'High',
+      urgent:'Urgent'
+    };
+    const c = colours[p] || colours.normal;
+    return `<span style="font-size:11px;border:1px solid ${c};color:${c};border-radius:999px;padding:1px 7px">${esc(labels[p] || 'Normal')}</span>`;
+  }
+
+  function threadOrgKey(t){
+    return String(t.org_id || t.org_name || 'unknown').trim() || 'unknown';
+  }
+
+  function threadOrgLabel(t){
+    return String(t.org_name || t.org_id || 'Unknown org').trim() || 'Unknown org';
+  }
+
+  function updateOrgFilterOptions(){
+    if(!orgFilter) return;
+    const current = orgFilter.value || 'all';
+    const map = new Map();
+
+    threads.forEach(t => {
+      const key = threadOrgKey(t);
+      const label = threadOrgLabel(t);
+      if(key && !map.has(key)) map.set(key, label);
+    });
+
+    const options = Array.from(map.entries()).sort((a,b) => String(a[1]).localeCompare(String(b[1])));
+    orgFilter.innerHTML =
+      `<option value="all">All orgs</option>` +
+      options.map(([key,label]) => `<option value="${esc(key)}">${esc(label)}</option>`).join('');
+
+    if(current !== 'all' && map.has(current)) orgFilter.value = current;
+    else orgFilter.value = 'all';
+  }
+
+  function filteredThreads(){
+    const org = orgFilter ? String(orgFilter.value || 'all') : 'all';
+    const q = searchInput ? String(searchInput.value || '').trim().toLowerCase() : '';
+
+    return threads.filter(t => {
+      if(org !== 'all' && threadOrgKey(t) !== org) return false;
+
+      if(q){
+        const haystack = [
+          t.subject,
+          t.user_name,
+          t.user_email,
+          t.org_name,
+          t.org_id,
+          t.category,
+          supportCategoryLabel(t.category),
+          t.priority,
+          t.status,
+          t.last_message,
+          t.id
+        ].map(v => String(v || '').toLowerCase()).join(' ');
+        if(!haystack.includes(q)) return false;
+      }
+
+      return true;
+    });
   }
 
   function renderThreadList(){
+    const view = filteredThreads();
+
     if(!threads.length){
-      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads found.</div>`;
+      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads found for this status.</div>`;
       return;
     }
 
-    list.innerHTML = threads.map(t => {
+    if(!view.length){
+      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads match the current filters.</div>`;
+      return;
+    }
+
+    list.innerHTML = view.map(t => {
       const unread = Number(t.unread_admin || 0);
       const selected = activeThread && activeThread.id === t.id;
       return `
-        <button type="button" data-thread-id="${esc(t.id)}" style="width:100%;text-align:left;background:${selected?'rgba(208,22,22,.12)':'transparent'};border:0;border-bottom:1px solid var(--g600);padding:10px 12px;color:var(--text);cursor:pointer">
+        <button type="button" data-thread-id="${esc(t.id)}" style="width:100%;text-align:left;background:${selected?'rgba(208,22,22,.18)':'transparent'};border:0;border-bottom:1px solid var(--g600);padding:10px 12px;color:var(--text);cursor:pointer">
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
             <strong style="font-size:13px">${esc(t.subject || 'Support request')}</strong>
             ${unread ? `<span style="background:#D01616;color:#fff;border-radius:999px;padding:1px 7px;font-size:11px">${unread}</span>` : ''}
@@ -3103,7 +3182,7 @@ const makeBar = (label, count, color) => {
             <span style="font-size:11px;color:#bfdbfe">${esc(supportCategoryLabel(t.category))}</span>
             ${supportPriorityPill(t.priority)}
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(t.org_name || t.org_id || '—')} · ${relTime(t.updated_at || t.last_message_at)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(threadOrgLabel(t))} · ${relTime(t.updated_at || t.last_message_at)}</div>
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:5px">
             ${statusPill(t.status)}
             <span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px">${esc(t.last_message || '')}</span>
@@ -3126,22 +3205,32 @@ const makeBar = (label, count, color) => {
     activeThread = thread;
     renderThreadList();
 
+    const status = String(thread.status || 'open').toLowerCase();
+    const isResolved = status === 'resolved';
+    const isClosed = status === 'closed';
+
     headerEl.innerHTML = `
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
         <span>${esc(thread.subject || 'Support request')}</span>
         <span>${statusPill(thread.status)}</span>
       </div>
-      <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:3px">${esc(thread.user_name || thread.user_email || 'Unknown user')} · ${esc(thread.org_name || thread.org_id || '—')}</div>
+      <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:3px">${esc(thread.user_name || thread.user_email || 'Unknown user')} · ${esc(threadOrgLabel(thread))}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
         <span style="font-size:12px;color:#bfdbfe">${esc(supportCategoryLabel(thread.category))}</span>
         ${supportPriorityPill(thread.priority)}
         ${thread.resolved_at ? `<span style="font-size:11px;color:#bbf7d0">Resolved ${relTime(thread.resolved_at)}</span>` : ''}
       </div>`;
 
+    const lifecycleNotice = isResolved
+      ? `<div style="align-self:stretch;border:1px solid rgba(51,196,141,.45);background:rgba(51,196,141,.08);color:#bbf7d0;border-radius:12px;padding:9px 10px;font-size:12px">✓ This support request has been marked as resolved.</div>`
+      : isClosed
+        ? `<div style="align-self:stretch;border:1px solid rgba(142,151,163,.45);background:rgba(142,151,163,.08);color:#cbd5e1;border-radius:12px;padding:9px 10px;font-size:12px">This support request has been closed.</div>`
+        : '';
+
     if(!messages.length){
-      messagesEl.innerHTML = `<div style="color:var(--muted)">No messages yet.</div>`;
+      messagesEl.innerHTML = `${lifecycleNotice}<div style="color:var(--muted)">No messages yet.</div>`;
     } else {
-      messagesEl.innerHTML = messages.map(m => {
+      messagesEl.innerHTML = lifecycleNotice + messages.map(m => {
         const isAdmin = String(m.sender_type || '').toLowerCase() === 'admin';
         return `
           <div style="align-self:${isAdmin?'flex-end':'flex-start'};max-width:82%;background:${isAdmin?'rgba(208,22,22,.16)':'#101114'};border:1px solid ${isAdmin?'rgba(208,22,22,.45)':'var(--g600)'};border-radius:12px;padding:9px 10px">
@@ -3152,16 +3241,23 @@ const makeBar = (label, count, color) => {
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    setComposerEnabled(true);
+    setComposerEnabled(!isClosed);
+    if(resolveBtn) resolveBtn.disabled = isResolved || isClosed;
+    if(closeBtn) closeBtn.disabled = isClosed;
+    if(replyBox && isClosed) replyBox.placeholder = 'This ticket is closed.';
+    else if(replyBox && isResolved) replyBox.placeholder = 'Optional: send a follow-up or close this resolved ticket.';
+    else if(replyBox) replyBox.placeholder = 'Type a reply…';
   }
 
   async function loadThreads(keepSelection = true){
     const status = filter ? filter.value : 'open';
     try {
-      const res = await fetch(`${API}/api/admin/support/threads?status=${encodeURIComponent(status)}&limit=100`, { headers: authHeaders() });
+      const res = await fetch(`${API}/api/admin/support/threads?status=${encodeURIComponent(status)}&limit=250`, { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
       if(!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
+
       threads = Array.isArray(data.data) ? data.data : [];
+      updateOrgFilterOptions();
       renderThreadList();
 
       if(keepSelection && activeThread){
@@ -3223,11 +3319,23 @@ const makeBar = (label, count, color) => {
       });
       const data = await res.json().catch(() => ({}));
       if(!res.ok || !data.ok) throw new Error(data.error || `Update failed: ${res.status}`);
+
+      if(status === 'resolved' && filter && filter.value === 'open') {
+        filter.value = 'resolved';
+      }
+
       await loadThreads(false);
       await openThread(activeThread.id, false);
     } catch(e) {
       alert(`Unable to update thread: ${e.message || e}`);
     }
+  }
+
+  function clearActiveThread(){
+    activeThread = null;
+    headerEl.textContent = 'Select a thread';
+    messagesEl.innerHTML = `<div style="color:var(--muted)">Choose a support thread to view messages.</div>`;
+    setComposerEnabled(false);
   }
 
   list.addEventListener('click', e => {
@@ -3237,12 +3345,16 @@ const makeBar = (label, count, color) => {
 
   refreshBtn?.addEventListener('click', () => loadThreads(true));
   filter?.addEventListener('change', () => {
-    activeThread = null;
-    headerEl.textContent = 'Select a thread';
-    messagesEl.innerHTML = `<div style="color:var(--muted)">Choose a support thread to view messages.</div>`;
-    setComposerEnabled(false);
+    clearActiveThread();
     loadThreads(false);
   });
+  orgFilter?.addEventListener('change', () => {
+    renderThreadList();
+  });
+  searchInput?.addEventListener('input', () => {
+    renderThreadList();
+  });
+
   replyBtn?.addEventListener('click', sendReply);
   pendingBtn?.addEventListener('click', () => updateStatus('pending'));
   resolveBtn?.addEventListener('click', () => updateStatus('resolved'));
