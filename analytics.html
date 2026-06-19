@@ -681,6 +681,49 @@
   </div>
 </section>
 
+<section class="card" id="supportInboxCard" style="margin-bottom:20px;display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Support Inbox</h3>
+      <div class="legend">Internal user support conversations. Master Admin only.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="supportStatusFilter" style="background:#1c1e22;border:1px solid var(--g600);color:var(--text);border-radius:7px;padding:6px 8px;font-size:12px;font-family:inherit;outline:none">
+        <option value="open" selected>Open</option>
+        <option value="pending">Pending</option>
+        <option value="closed">Closed</option>
+        <option value="all">All</option>
+      </select>
+      <button id="supportRefreshBtn" class="btn" type="button" style="font-size:12px;padding:6px 10px">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:14px" id="supportInboxGrid">
+    <div style="border:1px solid var(--g600);border-radius:12px;overflow:hidden;min-height:260px">
+      <div style="padding:9px 12px;background:#1c1e22;color:#cbd5e1;font-size:12px;text-transform:uppercase;font-weight:700">Threads</div>
+      <div id="supportThreadList" style="max-height:420px;overflow:auto">
+        <div style="padding:14px;color:var(--muted)">Loading support threads…</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--g600);border-radius:12px;overflow:hidden;min-height:260px;display:flex;flex-direction:column">
+      <div id="supportThreadHeader" style="padding:10px 12px;background:#1c1e22;color:#cbd5e1;font-size:13px;font-weight:700">Select a thread</div>
+      <div id="supportMessages" style="padding:12px;display:flex;flex-direction:column;gap:8px;max-height:330px;overflow:auto;flex:1">
+        <div style="color:var(--muted)">Choose a support thread to view messages.</div>
+      </div>
+      <div style="border-top:1px solid var(--g600);padding:10px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <textarea id="supportReplyBox" placeholder="Type a reply…" style="flex:1;min-width:240px;min-height:70px;resize:vertical;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit" disabled></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="supportReplyBtn" class="btn primary" type="button" disabled>Send reply</button>
+          <button id="supportPendingBtn" class="btn" type="button" disabled>Mark pending</button>
+          <button id="supportCloseBtn" class="btn" type="button" disabled>Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
     <div>
@@ -2951,6 +2994,227 @@ const makeBar = (label, count, color) => {
   setInterval(loadSessions, 60 * 1000);
 })();
 </script>
+
+<!-- ── Support Inbox Panel ──────────────────────────────────────────────── -->
+<script>
+(function(){
+  if(!window.CIAuth || !CIAuth.isMasterAdmin()) return;
+
+  const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const card = document.getElementById('supportInboxCard');
+  const list = document.getElementById('supportThreadList');
+  const messagesEl = document.getElementById('supportMessages');
+  const headerEl = document.getElementById('supportThreadHeader');
+  const filter = document.getElementById('supportStatusFilter');
+  const refreshBtn = document.getElementById('supportRefreshBtn');
+  const replyBox = document.getElementById('supportReplyBox');
+  const replyBtn = document.getElementById('supportReplyBtn');
+  const pendingBtn = document.getElementById('supportPendingBtn');
+  const closeBtn = document.getElementById('supportCloseBtn');
+
+  if(!card || !list) return;
+  card.style.display = '';
+
+  let threads = [];
+  let activeThread = null;
+  let refreshTimer = null;
+
+  function who(){
+    try { return (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : JSON.parse(localStorage.getItem('ci_user') || '{}'); }
+    catch { return {}; }
+  }
+
+  function authHeaders(){
+    const u = who();
+    const h = { 'Content-Type':'application/json', 'Accept':'application/json' };
+    if (u.email) h['X-User-Email'] = u.email;
+    if (u.name) h['X-User-Name'] = u.name;
+    if (u.id) h['X-User-Id'] = u.id;
+    h['X-User-Role'] = 'MasterAdmin';
+    return h;
+  }
+
+  function esc(s){
+    return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function relTime(iso){
+    if(!iso) return '—';
+    const ms = Date.now() - new Date(iso).getTime();
+    if(!Number.isFinite(ms)) return '—';
+    const secs = Math.max(0, Math.round(ms / 1000));
+    if(secs < 60) return `${secs}s ago`;
+    if(secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+    if(secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+    return `${Math.floor(secs / 86400)}d ago`;
+  }
+
+  function statusPill(status){
+    const s = String(status || 'open').toLowerCase();
+    const colour = s === 'closed' ? '#8e97a3' : s === 'pending' ? '#f0b429' : '#33c48d';
+    return `<span style="display:inline-flex;padding:2px 7px;border-radius:999px;border:1px solid ${colour};color:${colour};font-size:11px;text-transform:capitalize">${esc(s)}</span>`;
+  }
+
+  function renderThreadList(){
+    if(!threads.length){
+      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads found.</div>`;
+      return;
+    }
+
+    list.innerHTML = threads.map(t => {
+      const unread = Number(t.unread_admin || 0);
+      const selected = activeThread && activeThread.id === t.id;
+      return `
+        <button type="button" data-thread-id="${esc(t.id)}" style="width:100%;text-align:left;background:${selected?'rgba(208,22,22,.12)':'transparent'};border:0;border-bottom:1px solid var(--g600);padding:10px 12px;color:var(--text);cursor:pointer">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+            <strong style="font-size:13px">${esc(t.subject || 'Support request')}</strong>
+            ${unread ? `<span style="background:#D01616;color:#fff;border-radius:999px;padding:1px 7px;font-size:11px">${unread}</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:#cbd5e1;margin-top:3px">${esc(t.user_name || t.user_email || 'Unknown user')}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(t.org_name || t.org_id || '—')} · ${relTime(t.updated_at || t.last_message_at)}</div>
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:5px">
+            ${statusPill(t.status)}
+            <span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px">${esc(t.last_message || '')}</span>
+          </div>
+        </button>`;
+    }).join('');
+  }
+
+  function setComposerEnabled(enabled){
+    if(replyBox) replyBox.disabled = !enabled;
+    if(replyBtn) replyBtn.disabled = !enabled;
+    if(pendingBtn) pendingBtn.disabled = !enabled;
+    if(closeBtn) closeBtn.disabled = !enabled;
+  }
+
+  function renderMessages(data){
+    const thread = data.thread;
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+    activeThread = thread;
+    renderThreadList();
+
+    headerEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+        <span>${esc(thread.subject || 'Support request')}</span>
+        <span>${statusPill(thread.status)}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:3px">${esc(thread.user_name || thread.user_email || 'Unknown user')} · ${esc(thread.org_name || thread.org_id || '—')}</div>`;
+
+    if(!messages.length){
+      messagesEl.innerHTML = `<div style="color:var(--muted)">No messages yet.</div>`;
+    } else {
+      messagesEl.innerHTML = messages.map(m => {
+        const isAdmin = String(m.sender_type || '').toLowerCase() === 'admin';
+        return `
+          <div style="align-self:${isAdmin?'flex-end':'flex-start'};max-width:82%;background:${isAdmin?'rgba(208,22,22,.16)':'#101114'};border:1px solid ${isAdmin?'rgba(208,22,22,.45)':'var(--g600)'};border-radius:12px;padding:9px 10px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${esc(isAdmin ? 'CityIntel Support' : (m.sender_name || m.sender_email || 'User'))} · ${relTime(m.created_at)}</div>
+            <div style="white-space:pre-wrap;color:#e9edf2">${esc(m.message || '')}</div>
+          </div>`;
+      }).join('');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    setComposerEnabled(true);
+  }
+
+  async function loadThreads(keepSelection = true){
+    const status = filter ? filter.value : 'open';
+    try {
+      const res = await fetch(`${API}/api/admin/support/threads?status=${encodeURIComponent(status)}&limit=100`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
+      threads = Array.isArray(data.data) ? data.data : [];
+      renderThreadList();
+
+      if(keepSelection && activeThread){
+        const stillThere = threads.find(t => t.id === activeThread.id);
+        if(stillThere) await openThread(activeThread.id, false);
+      }
+    } catch(e) {
+      list.innerHTML = `<div style="padding:14px;color:#fecaca">Unable to load support inbox: ${esc(e.message || e)}</div>`;
+    }
+  }
+
+  async function openThread(id, rerenderList = true){
+    if(!id) return;
+    try {
+      const res = await fetch(`${API}/api/admin/support/threads/${encodeURIComponent(id)}/messages`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
+      renderMessages(data);
+      if(rerenderList) await loadThreads(false);
+    } catch(e) {
+      messagesEl.innerHTML = `<div style="color:#fecaca">Unable to open thread: ${esc(e.message || e)}</div>`;
+    }
+  }
+
+  async function sendReply(){
+    if(!activeThread || !replyBox) return;
+    const message = replyBox.value.trim();
+    if(!message) return;
+
+    const old = replyBtn.textContent;
+    replyBtn.disabled = true;
+    replyBtn.textContent = 'Sending…';
+
+    try {
+      const res = await fetch(`${API}/api/admin/support/threads/${encodeURIComponent(activeThread.id)}/messages`, {
+        method:'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Send failed: ${res.status}`);
+      replyBox.value = '';
+      await openThread(activeThread.id);
+    } catch(e) {
+      alert(`Unable to send reply: ${e.message || e}`);
+    } finally {
+      replyBtn.disabled = false;
+      replyBtn.textContent = old;
+    }
+  }
+
+  async function updateStatus(status){
+    if(!activeThread) return;
+    try {
+      const res = await fetch(`${API}/api/admin/support/threads/${encodeURIComponent(activeThread.id)}`, {
+        method:'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ status, mark_admin_read:true })
+      });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Update failed: ${res.status}`);
+      await loadThreads(false);
+      await openThread(activeThread.id, false);
+    } catch(e) {
+      alert(`Unable to update thread: ${e.message || e}`);
+    }
+  }
+
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('[data-thread-id]');
+    if(btn) openThread(btn.dataset.threadId);
+  });
+
+  refreshBtn?.addEventListener('click', () => loadThreads(true));
+  filter?.addEventListener('change', () => {
+    activeThread = null;
+    headerEl.textContent = 'Select a thread';
+    messagesEl.innerHTML = `<div style="color:var(--muted)">Choose a support thread to view messages.</div>`;
+    setComposerEnabled(false);
+    loadThreads(false);
+  });
+  replyBtn?.addEventListener('click', sendReply);
+  pendingBtn?.addEventListener('click', () => updateStatus('pending'));
+  closeBtn?.addEventListener('click', () => updateStatus('closed'));
+
+  setComposerEnabled(false);
+  loadThreads(false);
+  refreshTimer = setInterval(() => loadThreads(true), 60000);
+})();
+</script>
+
 <script>
 (function(){
   function hideNavLink(href){
