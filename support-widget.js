@@ -515,8 +515,9 @@
     state.sending = sending;
     const btn = $(IDS.send);
     if (btn) {
-      btn.disabled = sending;
-      btn.textContent = sending ? 'Sending…' : 'Send';
+      const locked = isResolvedThread(state.thread) && !state.forceNewSubject;
+      btn.disabled = sending || locked;
+      btn.textContent = locked ? threadStatusLabel(state.thread) : (sending ? 'Sending…' : 'Send');
     }
   }
 
@@ -533,6 +534,68 @@
     }
   }
 
+  function isResolvedThread(thread){
+    const status = String(thread?.status || '').toLowerCase();
+    return status === 'resolved' || status === 'closed';
+  }
+
+  function threadStatusLabel(thread){
+    const status = String(thread?.status || 'open').toLowerCase();
+    if (status === 'resolved') return 'Resolved';
+    if (status === 'closed') return 'Closed';
+    if (status === 'pending') return 'Pending';
+    return 'Open';
+  }
+
+  function threadStatusBanner(thread){
+    const status = String(thread?.status || '').toLowerCase();
+    if (status === 'resolved') {
+      return `
+        <div class="ci-support-status ok" style="display:block;margin-bottom:8px">
+          ✓ This support request has been marked as resolved by CityIntel Support.
+          Start a new request if you need more help.
+        </div>`;
+    }
+    if (status === 'closed') {
+      return `
+        <div class="ci-support-status" style="display:block;margin-bottom:8px;color:#cbd5e1">
+          This support request has been closed. Start a new request if you need more help.
+        </div>`;
+    }
+    if (status === 'pending') {
+      return `
+        <div class="ci-support-status ok" style="display:block;margin-bottom:8px;border-color:rgba(240,180,41,.35);color:#fde68a;background:rgba(240,180,41,.08)">
+          This support request is pending review.
+        </div>`;
+    }
+    return '';
+  }
+
+  function setResolvedFormState(thread){
+    const messageEl = $(IDS.message);
+    const sendBtn = $(IDS.send);
+    const muted = document.querySelector('.ci-support-muted');
+    const locked = isResolvedThread(thread) && !state.forceNewSubject;
+
+    if (messageEl) {
+      messageEl.disabled = locked;
+      messageEl.placeholder = locked
+        ? `${threadStatusLabel(thread)} ticket — start a new request if you need more help.`
+        : 'Type your message…';
+    }
+
+    if (sendBtn) {
+      sendBtn.disabled = locked || state.sending;
+      sendBtn.textContent = locked ? threadStatusLabel(thread) : (state.sending ? 'Sending…' : 'Send');
+    }
+
+    if (muted) {
+      muted.textContent = locked
+        ? 'This ticket is resolved. Start a new request for further assistance.'
+        : 'Replies appear here when support responds.';
+    }
+  }
+
   function renderMessages(){
     const box = $(IDS.messages);
     const subject = $(IDS.subject);
@@ -542,6 +605,7 @@
 
     const thread = state.thread;
     const messages = Array.isArray(state.messages) ? state.messages : [];
+    const locked = isResolvedThread(thread) && !state.forceNewSubject;
 
     if (subject) {
       if (thread && !state.forceNewSubject) {
@@ -557,20 +621,24 @@
       }
     }
 
+    const banner = thread && !state.forceNewSubject ? threadStatusBanner(thread) : '';
+
     if (!thread && !messages.length) {
       box.innerHTML = `
         <div class="ci-support-empty">
           Need help? Send a message to CityIntel support. Include what page you are on and what you were trying to do.
         </div>`;
+      setResolvedFormState(null);
       return;
     }
 
     if (!messages.length) {
-      box.innerHTML = `<div class="ci-support-empty">No messages yet. Send a message below.</div>`;
+      box.innerHTML = `${banner}<div class="ci-support-empty">No messages yet. Send a message below.</div>`;
+      setResolvedFormState(thread);
       return;
     }
 
-    box.innerHTML = messages.map(m => {
+    box.innerHTML = banner + messages.map(m => {
       const type = String(m.sender_type || '').toLowerCase() === 'admin' ? 'admin' : 'user';
       const label = type === 'admin' ? 'CityIntel Support' : 'You';
       return `
@@ -582,6 +650,7 @@
     }).join('');
 
     box.scrollTop = box.scrollHeight;
+    setResolvedFormState(thread);
   }
 
   function render(){
@@ -629,6 +698,11 @@
     if (!message) {
       showStatus('Type a message before sending.', 'error');
       messageEl?.focus();
+      return;
+    }
+
+    if (isResolvedThread(state.thread) && !state.forceNewSubject) {
+      showStatus('This ticket is resolved. Start a new request if you need more help.', 'error');
       return;
     }
 
@@ -709,7 +783,16 @@
     }
     if (category) { category.disabled = false; category.value = 'technical'; }
     if (priority) { priority.disabled = false; priority.value = 'normal'; }
-    if (message) message.value = '';
+    if (message) {
+      message.disabled = false;
+      message.value = '';
+      message.placeholder = 'Type your message…';
+    }
+    const sendBtn = $(IDS.send);
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send';
+    }
     renderMessages();
   }
 
