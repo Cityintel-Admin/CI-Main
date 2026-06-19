@@ -1,5 +1,4 @@
-<!-- metrics.js -->
-
+// metrics.js
 // CityIntel client-side metrics + live-session heartbeat
 (function(){
   const KEY = 'ci_metrics_events';
@@ -20,8 +19,10 @@
   function nowISO(){ return new Date().toISOString(); }
 
   function safeJson(key, fallback){
-    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
-    catch { return fallback; }
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch { return fallback; }
   }
 
   function firstNonEmpty(){
@@ -31,20 +32,41 @@
     return '';
   }
 
-  function readPossibleProfile(){
-    const ciAuthUser = (() => {
-      try { return (window.CIAuth && typeof CIAuth.who === 'function') ? (CIAuth.who() || {}) : {}; }
-      catch { return {}; }
-    })();
+  function ciAuthUser(){
+    try { return (window.CIAuth && typeof CIAuth.who === 'function') ? (CIAuth.who() || {}) : {}; }
+    catch { return {}; }
+  }
 
+  function isMasterAdminFromAnywhere(authUser, profileV1, ciUser, ciProfile){
+    try { if (window.CIAuth && typeof CIAuth.isMasterAdmin === 'function' && CIAuth.isMasterAdmin()) return true; } catch {}
+    const roleText = firstNonEmpty(
+      authUser.role,
+      authUser.roleKey,
+      authUser.role_key,
+      profileV1.role,
+      profileV1.roleKey,
+      ciUser.role,
+      ciUser.roleKey,
+      ciProfile.role,
+      ciProfile.roleKey,
+      localStorage.getItem('ci_role'),
+      localStorage.getItem('cityintel.role')
+    ).toLowerCase().replace(/[\s_-]+/g, '');
+    return roleText.includes('masteradmin') || roleText === 'master';
+  }
+
+  function readPossibleProfile(){
+    const authUser = ciAuthUser();
     const profileV1 = safeJson('cityintel.profile.v1', {});
     const ciUser = safeJson('ci_user', {});
     const ciProfile = safeJson('ci_profile', {});
     const orgProfile = safeJson('cityintel.orgProfile.v1', {});
     const currentOrg = safeJson('cityintel.currentOrg.v1', {});
+    const orgSettings = safeJson('cityintel.orgSettings.v1', {});
 
     const email = firstNonEmpty(
-      ciAuthUser.email,
+      authUser.email,
+      authUser.user_email,
       profileV1.email,
       ciUser.email,
       ciProfile.email,
@@ -53,77 +75,91 @@
     ).toLowerCase();
 
     const name = firstNonEmpty(
-      ciAuthUser.name,
-      ciAuthUser.displayName,
+      authUser.name,
+      authUser.displayName,
+      authUser.display_name,
       profileV1.displayName,
+      profileV1.display_name,
       profileV1.name,
       ciUser.name,
+      ciUser.displayName,
       ciProfile.name,
+      ciProfile.displayName,
       email
     );
 
-    const isMasterAdmin = (() => {
-      try { if (window.CIAuth && typeof CIAuth.isMasterAdmin === 'function' && CIAuth.isMasterAdmin()) return true; } catch {}
-      const roleText = firstNonEmpty(
-        ciAuthUser.role,
-        ciAuthUser.roleKey,
-        profileV1.role,
-        ciUser.role,
-        ciProfile.role,
-        localStorage.getItem('ci_role'),
-        localStorage.getItem('cityintel.role')
-      ).toLowerCase().replace(/[\s_-]+/g, '');
-      return roleText.includes('masteradmin') || roleText === 'master';
-    })();
+    const isMasterAdmin = isMasterAdminFromAnywhere(authUser, profileV1, ciUser, ciProfile);
 
     const orgId = firstNonEmpty(
-      ciAuthUser.org_id,
-      ciAuthUser.orgId,
-      ciAuthUser.organisationId,
-      ciAuthUser.organizationId,
+      authUser.org_id,
+      authUser.orgId,
+      authUser.organisation_id,
+      authUser.organisationId,
+      authUser.organization_id,
+      authUser.organizationId,
       profileV1.org_id,
       profileV1.orgId,
+      profileV1.organisation_id,
+      profileV1.organisationId,
       ciUser.org_id,
       ciUser.orgId,
+      ciUser.organisation_id,
+      ciUser.organisationId,
       ciProfile.org_id,
       ciProfile.orgId,
+      ciProfile.organisation_id,
+      ciProfile.organisationId,
       orgProfile.id,
       orgProfile.org_id,
       orgProfile.orgId,
       currentOrg.id,
       currentOrg.org_id,
       currentOrg.orgId,
+      orgSettings.id,
+      orgSettings.org_id,
+      orgSettings.orgId,
       localStorage.getItem('ci_org_id'),
       localStorage.getItem('cityintel.orgId'),
       isMasterAdmin ? 'master-admin' : ''
     );
 
     const orgName = firstNonEmpty(
-      ciAuthUser.org_name,
-      ciAuthUser.orgName,
-      ciAuthUser.organisationName,
-      ciAuthUser.organizationName,
+      authUser.org_name,
+      authUser.orgName,
+      authUser.organisation_name,
+      authUser.organisationName,
+      authUser.organization_name,
+      authUser.organizationName,
       profileV1.org_name,
       profileV1.orgName,
+      profileV1.organisation_name,
+      profileV1.organisationName,
       ciUser.org_name,
       ciUser.orgName,
+      ciUser.organisation_name,
+      ciUser.organisationName,
       ciProfile.org_name,
       ciProfile.orgName,
+      ciProfile.organisation_name,
+      ciProfile.organisationName,
       orgProfile.name,
       orgProfile.org_name,
       orgProfile.orgName,
       currentOrg.name,
       currentOrg.org_name,
       currentOrg.orgName,
+      orgSettings.name,
+      orgSettings.org_name,
+      orgSettings.orgName,
       localStorage.getItem('ci_org_name'),
       localStorage.getItem('cityintel.orgName'),
       isMasterAdmin ? 'CityIntel Master Admin' : ''
     );
 
     const userId = firstNonEmpty(
-      ciAuthUser.id,
-      ciAuthUser.user_id,
-      ciAuthUser.userId,
+      authUser.id,
+      authUser.user_id,
+      authUser.userId,
       profileV1.id,
       profileV1.user_id,
       profileV1.userId,
@@ -139,7 +175,20 @@
       isMasterAdmin ? 'master-admin' : ''
     );
 
-    return { userId, orgId, orgName, email, name, isMasterAdmin };
+    const role = firstNonEmpty(
+      authUser.role,
+      authUser.roleKey,
+      authUser.role_key,
+      profileV1.role,
+      profileV1.roleKey,
+      ciUser.role,
+      ciUser.roleKey,
+      ciProfile.role,
+      ciProfile.roleKey,
+      isMasterAdmin ? 'MasterAdmin' : ''
+    );
+
+    return { userId, orgId, orgName, email, name, role, isMasterAdmin };
   }
 
   function currentPage(){
@@ -157,32 +206,39 @@
       org_name: p.orgName,
       email: p.email,
       name: p.name,
+      role: p.role,
+      is_master_admin: !!p.isMasterAdmin,
       page: currentPage()
     };
   }
 
+  function heartbeatHeaders(payload){
+    const h = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    if (payload.email) h['X-User-Email'] = payload.email;
+    if (payload.name) h['X-User-Name'] = payload.name;
+    if (payload.user_id) h['X-User-Id'] = payload.user_id;
+    if (payload.role) h['X-User-Role'] = payload.role;
+    if (payload.is_master_admin) h['X-User-Role'] = 'MasterAdmin';
+    if (payload.org_id) h['X-Org-Id'] = payload.org_id;
+    return h;
+  }
+
   async function sendHeartbeat(){
     const body = heartbeatPayload();
-    if (!body.user_id || !body.org_id) return false;
 
-    const jsonBody = JSON.stringify(body);
+    // Do not attempt a blank anonymous heartbeat.
+    if (!body.user_id && !body.email && !body.name) return false;
+
     const url = `${API_BASE}${HEARTBEAT_PATH}`;
 
     try {
-      if (navigator.sendBeacon) {
-        const blob = new Blob([jsonBody], { type: 'application/json' });
-        if (navigator.sendBeacon(url, blob)) return true;
-      }
-    } catch (_) {}
-
-    try {
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: jsonBody,
+        headers: heartbeatHeaders(body),
+        body: JSON.stringify(body),
         keepalive: true
       });
-      return true;
+      return !!res.ok;
     } catch (_) {
       return false;
     }
@@ -225,7 +281,6 @@
     },
     sendHeartbeat,
     getHeartbeatPayload: heartbeatPayload,
-    // Utility for analytics page
     getEvents() { return read(); }
   };
 
@@ -239,4 +294,3 @@
     startHeartbeat();
   }
 })();
-
