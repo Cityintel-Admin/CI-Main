@@ -557,13 +557,14 @@
     renderMessages();
   }
 
-  async function loadThread({ silent = false } = {}){
+  async function loadThread({ silent = false, markRead = false } = {}){
     if (state.loading) return;
     state.loading = true;
     if (!silent) showStatus('', '');
 
     try {
-      const res = await fetch(`${API_BASE}/api/support/my-thread`, {
+      const url = `${API_BASE}/api/support/my-thread${markRead ? '?mark_read=1' : ''}`;
+      const res = await fetch(url, {
         method: 'GET',
         headers: authHeaders()
       });
@@ -634,7 +635,7 @@
       panel.setAttribute('aria-hidden', 'false');
     }
     if (toggle) toggle.setAttribute('aria-expanded', 'true');
-    loadThread({ silent: false });
+    loadThread({ silent: false, markRead: true });
     setTimeout(() => $(IDS.message)?.focus(), 80);
   }
 
