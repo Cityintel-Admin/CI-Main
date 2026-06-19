@@ -20,6 +20,8 @@
     messages: 'ciSupportMessages',
     subject: 'ciSupportSubject',
     message: 'ciSupportMessage',
+    category: 'ciSupportCategory',
+    priority: 'ciSupportPriority',
     send: 'ciSupportSend',
     status: 'ciSupportStatus',
     close: 'ciSupportClose',
@@ -361,6 +363,7 @@
         gap:8px;
       }
       .ci-support-input,
+      .ci-support-select,
       .ci-support-textarea{
         width:100%;
         box-sizing:border-box;
@@ -373,8 +376,14 @@
         outline:none;
       }
       .ci-support-input:focus,
+      .ci-support-select:focus,
       .ci-support-textarea:focus{
         border-color:rgba(208,22,22,.65);
+      }
+      .ci-support-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
       }
       .ci-support-textarea{
         min-height:86px;
@@ -444,6 +453,23 @@
           </div>
           <div class="ci-support-form">
             <input id="${IDS.subject}" class="ci-support-input" type="text" maxlength="180" placeholder="Subject" autocomplete="off">
+            <div class="ci-support-row">
+              <select id="${IDS.category}" class="ci-support-select" aria-label="Support category">
+                <option value="technical">Technical Issue</option>
+                <option value="feature_request">Feature Request</option>
+                <option value="account_billing">Account/Billing</option>
+                <option value="training">Training</option>
+                <option value="traveller_issue">Traveller Issue</option>
+                <option value="live_alerts">Live Alerts</option>
+                <option value="other">Other</option>
+              </select>
+              <select id="${IDS.priority}" class="ci-support-select" aria-label="Support priority">
+                <option value="low">Low Priority</option>
+                <option value="normal" selected>Normal Priority</option>
+                <option value="high">High Priority</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
             <textarea id="${IDS.message}" class="ci-support-textarea" maxlength="5000" placeholder="Type your message…"></textarea>
             <div class="ci-support-actions">
               <div>
@@ -510,6 +536,8 @@
   function renderMessages(){
     const box = $(IDS.messages);
     const subject = $(IDS.subject);
+    const category = $(IDS.category);
+    const priority = $(IDS.priority);
     if (!box) return;
 
     const thread = state.thread;
@@ -519,8 +547,12 @@
       if (thread && !state.forceNewSubject) {
         subject.value = thread.subject || 'Support request';
         subject.disabled = true;
+        if (category) { category.value = thread.category || 'technical'; category.disabled = true; }
+        if (priority) { priority.value = thread.priority || 'normal'; priority.disabled = true; }
       } else {
         subject.disabled = false;
+        if (category) category.disabled = false;
+        if (priority) priority.disabled = false;
         if (state.forceNewSubject && subject.value === (thread?.subject || 'Support request')) subject.value = '';
       }
     }
@@ -587,8 +619,12 @@
   async function sendMessage(){
     const subjectEl = $(IDS.subject);
     const messageEl = $(IDS.message);
+    const categoryEl = $(IDS.category);
+    const priorityEl = $(IDS.priority);
     const message = String(messageEl?.value || '').trim();
     const subject = String(subjectEl?.value || '').trim() || 'Support request';
+    const category = String(categoryEl?.value || 'technical');
+    const priority = String(priorityEl?.value || 'normal');
 
     if (!message) {
       showStatus('Type a message before sending.', 'error');
@@ -606,6 +642,8 @@
         headers: authHeaders(),
         body: JSON.stringify({
           subject,
+          category,
+          priority,
           message,
           org_id: user.orgId || '',
           org_name: user.orgName || ''
@@ -661,12 +699,16 @@
     state.messages = [];
     showStatus('Starting a new support request. Write a subject and message below.', 'ok');
     const subject = $(IDS.subject);
+    const category = $(IDS.category);
+    const priority = $(IDS.priority);
     const message = $(IDS.message);
     if (subject) {
       subject.disabled = false;
       subject.value = '';
       subject.focus();
     }
+    if (category) { category.disabled = false; category.value = 'technical'; }
+    if (priority) { priority.disabled = false; priority.value = 'normal'; }
     if (message) message.value = '';
     renderMessages();
   }
