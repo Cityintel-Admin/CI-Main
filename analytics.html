@@ -3026,7 +3026,13 @@ const makeBar = (label, count, color) => {
 
   let threads = [];
   let activeThread = null;
+  let activeSla = null;
+  let activeNotes = [];
   let refreshTimer = null;
+  let notesWrap = null;
+  let noteListEl = null;
+  let noteTextEl = null;
+  let noteSaveBtn = null;
 
   function who(){
     try { return (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : JSON.parse(localStorage.getItem('ci_user') || '{}'); }
@@ -3053,22 +3059,44 @@ const makeBar = (label, count, color) => {
     if(!Number.isFinite(ms)) return '—';
     const secs = Math.max(0, Math.round(ms / 1000));
     if(secs < 60) return `${secs}s ago`;
-    if(secs < 3600) return `${Math.floor(secs / 60)}m ago`;
-    if(secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
-    return `${Math.floor(secs / 86400)}d ago`;
+    if(secs < 3600) return `${Math.floor(secs/60)}m ago`;
+    if(secs < 86400) return `${Math.floor(secs/3600)}h ago`;
+    return `${Math.floor(secs/86400)}d ago`;
   }
 
-  function statusPill(status){
+  function fmtDuration(ms){
+    const n = Number(ms);
+    if(!Number.isFinite(n) || n < 0) return '—';
+    const mins = Math.floor(n / 60000);
+    if(mins < 1) return '<1m';
+    if(mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    if(hrs < 24) return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    const hrRem = hrs % 24;
+    return hrRem ? `${days}d ${hrRem}h` : `${days}d`;
+  }
+
+  function statusChip(status){
     const s = String(status || 'open').toLowerCase();
-    const colour =
-      s === 'closed' ? '#8e97a3' :
-      s === 'resolved' ? '#33c48d' :
-      s === 'pending' ? '#f0b429' :
-      '#33c48d';
-    return `<span style="display:inline-flex;padding:2px 7px;border-radius:999px;border:1px solid ${colour};color:${colour};font-size:11px;text-transform:capitalize">${esc(s)}</span>`;
+    const styles = {
+      open:'border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.10)',
+      pending:'border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.10)',
+      resolved:'border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.10)',
+      closed:'border-color:#64748b;color:#cbd5e1;background:rgba(100,116,139,.10)'
+    };
+    return `<span style="display:inline-flex;padding:2px 8px;border-radius:999px;border:1px solid var(--g500);font-size:11px;font-weight:800;${styles[s]||''}">${esc(s.charAt(0).toUpperCase()+s.slice(1))}</span>`;
   }
 
-  function supportCategoryLabel(value){
+  function priChip(priority){
+    const p = String(priority || 'normal').toLowerCase();
+    const label = p === 'urgent' ? 'Urgent' : p.charAt(0).toUpperCase()+p.slice(1);
+    const color = p === 'urgent' ? '#fecaca' : p === 'high' ? '#fde68a' : p === 'low' ? '#bfdbfe' : '#cbd5e1';
+    return `<span style="display:inline-flex;padding:1px 7px;border-radius:999px;border:1px solid #3b82f6;color:${color};font-size:11px">${esc(label)}</span>`;
+  }
+
+  function catLabel(cat){
     const map = {
       technical:'Technical Issue',
       feature_request:'Feature Request',
@@ -3078,168 +3106,211 @@ const makeBar = (label, count, color) => {
       live_alerts:'Live Alerts',
       other:'Other'
     };
-    return map[String(value || '').toLowerCase()] || 'Technical Issue';
+    return map[String(cat||'technical')] || 'Technical Issue';
   }
 
-  function supportPriorityPill(priority){
-    const p = String(priority || 'normal').toLowerCase();
-    const colours = {
-      low:'#8e97a3',
-      normal:'#93c5fd',
-      high:'#f0b429',
-      urgent:'#ff5a5f'
-    };
-    const labels = {
-      low:'Low',
-      normal:'Normal',
-      high:'High',
-      urgent:'Urgent'
-    };
-    const c = colours[p] || colours.normal;
-    return `<span style="font-size:11px;border:1px solid ${c};color:${c};border-radius:999px;padding:1px 7px">${esc(labels[p] || 'Normal')}</span>`;
+  function messagePreview(t){
+    return esc(String(t?.last_message || '').slice(0, 90));
   }
 
-  function threadOrgKey(t){
-    return String(t.org_id || t.org_name || 'unknown').trim() || 'unknown';
+  function ensureNotesPanel(){
+    if(notesWrap || !messagesEl) return;
+    const parent = messagesEl.parentElement;
+    const composer = replyBox ? replyBox.closest('div[style*="border-top"]') : null;
+    if(!parent || !composer) return;
+
+    notesWrap = document.createElement('div');
+    notesWrap.id = 'supportInternalNotesPanel';
+    notesWrap.style.cssText = 'border-top:1px solid var(--g600);padding:10px 12px;background:#121316;display:none';
+    notesWrap.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <div>
+          <div style="font-weight:800;font-size:13px;color:#e9edf2">Internal Notes</div>
+          <div style="font-size:11px;color:var(--muted)">Visible to Master Admins only. Users never see these notes.</div>
+        </div>
+        <span id="supportInternalNoteCount" style="font-size:11px;color:var(--muted)">0 notes</span>
+      </div>
+      <div id="supportInternalNotesList" style="display:flex;flex-direction:column;gap:7px;max-height:160px;overflow:auto;margin-bottom:8px">
+        <div style="font-size:12px;color:var(--muted)">No internal notes yet.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <textarea id="supportInternalNoteText" placeholder="Add an internal admin note…" style="flex:1;min-width:220px;min-height:52px;resize:vertical;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:8px;font:inherit;font-size:12px"></textarea>
+        <button id="supportInternalNoteSave" class="btn" type="button" style="font-size:12px;padding:7px 10px">Save Note</button>
+      </div>
+    `;
+    parent.insertBefore(notesWrap, composer);
+    noteListEl = document.getElementById('supportInternalNotesList');
+    noteTextEl = document.getElementById('supportInternalNoteText');
+    noteSaveBtn = document.getElementById('supportInternalNoteSave');
+    noteSaveBtn?.addEventListener('click', saveInternalNote);
   }
 
-  function threadOrgLabel(t){
-    return String(t.org_name || t.org_id || 'Unknown org').trim() || 'Unknown org';
+  function renderNotes(notes){
+    ensureNotesPanel();
+    activeNotes = Array.isArray(notes) ? notes : [];
+    if(!notesWrap || !noteListEl) return;
+    notesWrap.style.display = activeThread ? '' : 'none';
+    const countEl = document.getElementById('supportInternalNoteCount');
+    if(countEl) countEl.textContent = `${activeNotes.length} note${activeNotes.length === 1 ? '' : 's'}`;
+
+    if(!activeNotes.length){
+      noteListEl.innerHTML = `<div style="font-size:12px;color:var(--muted)">No internal notes yet.</div>`;
+      return;
+    }
+
+    noteListEl.innerHTML = activeNotes.map(n => `
+      <div style="border:1px solid var(--g600);background:#0f1012;border-radius:10px;padding:8px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">
+          <strong style="color:#cbd5e1">${esc(n.author_name || n.author_email || 'Master Admin')}</strong>
+          · ${esc(relTime(n.created_at))}
+        </div>
+        <div style="white-space:pre-wrap;color:#e9edf2;font-size:12px;line-height:1.4">${esc(n.note || '')}</div>
+      </div>
+    `).join('');
+    noteListEl.scrollTop = noteListEl.scrollHeight;
+  }
+
+  function renderSla(sla, thread){
+    const s = sla || {};
+    const status = String(thread?.status || 'open').toLowerCase();
+    const items = [
+      ['Opened for', fmtDuration(s.opened_ms)],
+      ['First response', s.first_response_ms === null || s.first_response_ms === undefined ? 'Awaiting reply' : fmtDuration(s.first_response_ms)],
+      ['Last user reply', s.last_user_message_at ? relTime(s.last_user_message_at) : '—'],
+      ['Last admin reply', s.last_admin_message_at ? relTime(s.last_admin_message_at) : '—'],
+    ];
+    if(status === 'resolved' || status === 'closed'){
+      items.push(['Resolved in', s.resolved_ms === null || s.resolved_ms === undefined ? '—' : fmtDuration(s.resolved_ms)]);
+    }
+    items.push(['Messages', String(s.total_messages ?? '—')]);
+
+    return `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:7px;margin-top:8px">
+        ${items.map(([label,val]) => `
+          <div style="border:1px solid var(--g600);background:#101114;border-radius:9px;padding:7px 8px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">${esc(label)}</div>
+            <div style="font-size:12px;color:#e9edf2;font-weight:800;margin-top:2px">${esc(val)}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function matchesFilters(t){
+    const q = String(searchInput?.value || '').trim().toLowerCase();
+    const org = String(orgFilter?.value || 'all');
+    if(org !== 'all' && String(t.org_id || '') !== org) return false;
+    if(!q) return true;
+    const haystack = [
+      t.subject, t.user_name, t.user_email, t.org_name, t.org_id,
+      t.category, t.priority, t.status, t.last_message
+    ].join(' ').toLowerCase();
+    return haystack.includes(q);
   }
 
   function updateOrgFilterOptions(){
     if(!orgFilter) return;
     const current = orgFilter.value || 'all';
-    const map = new Map();
-
+    const orgs = new Map();
     threads.forEach(t => {
-      const key = threadOrgKey(t);
-      const label = threadOrgLabel(t);
-      if(key && !map.has(key)) map.set(key, label);
+      const id = String(t.org_id || '').trim();
+      if(!id) return;
+      const name = String(t.org_name || id).trim();
+      orgs.set(id, name);
     });
-
-    const options = Array.from(map.entries()).sort((a,b) => String(a[1]).localeCompare(String(b[1])));
-    orgFilter.innerHTML =
-      `<option value="all">All orgs</option>` +
-      options.map(([key,label]) => `<option value="${esc(key)}">${esc(label)}</option>`).join('');
-
-    if(current !== 'all' && map.has(current)) orgFilter.value = current;
-    else orgFilter.value = 'all';
-  }
-
-  function filteredThreads(){
-    const org = orgFilter ? String(orgFilter.value || 'all') : 'all';
-    const q = searchInput ? String(searchInput.value || '').trim().toLowerCase() : '';
-
-    return threads.filter(t => {
-      if(org !== 'all' && threadOrgKey(t) !== org) return false;
-
-      if(q){
-        const haystack = [
-          t.subject,
-          t.user_name,
-          t.user_email,
-          t.org_name,
-          t.org_id,
-          t.category,
-          supportCategoryLabel(t.category),
-          t.priority,
-          t.status,
-          t.last_message,
-          t.id
-        ].map(v => String(v || '').toLowerCase()).join(' ');
-        if(!haystack.includes(q)) return false;
-      }
-
-      return true;
-    });
+    orgFilter.innerHTML = `<option value="all">All orgs</option>` +
+      Array.from(orgs.entries()).sort((a,b)=>a[1].localeCompare(b[1])).map(([id,name]) =>
+        `<option value="${esc(id)}">${esc(name)}</option>`
+      ).join('');
+    orgFilter.value = orgs.has(current) ? current : 'all';
   }
 
   function renderThreadList(){
-    const view = filteredThreads();
-
-    if(!threads.length){
-      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads found for this status.</div>`;
+    const shown = threads.filter(matchesFilters);
+    if(!shown.length){
+      const status = filter ? filter.value : 'open';
+      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads found for this filter.</div>`;
       return;
     }
 
-    if(!view.length){
-      list.innerHTML = `<div style="padding:14px;color:var(--muted)">No support threads match the current filters.</div>`;
-      return;
-    }
-
-    list.innerHTML = view.map(t => {
+    list.innerHTML = shown.map(t => {
+      const active = activeThread && activeThread.id === t.id;
       const unread = Number(t.unread_admin || 0);
-      const selected = activeThread && activeThread.id === t.id;
+      const category = catLabel(t.category);
+      const opened = t.created_at ? relTime(t.created_at) : relTime(t.updated_at);
+      const firstResp = t.first_admin_response_at ? `First response ${relTime(t.first_admin_response_at)}` : 'Awaiting first response';
       return `
-        <button type="button" data-thread-id="${esc(t.id)}" style="width:100%;text-align:left;background:${selected?'rgba(208,22,22,.18)':'transparent'};border:0;border-bottom:1px solid var(--g600);padding:10px 12px;color:var(--text);cursor:pointer">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-            <strong style="font-size:13px">${esc(t.subject || 'Support request')}</strong>
-            ${unread ? `<span style="background:#D01616;color:#fff;border-radius:999px;padding:1px 7px;font-size:11px">${unread}</span>` : ''}
+        <button type="button" data-thread-id="${esc(t.id)}" style="width:100%;text-align:left;border:0;border-bottom:1px solid var(--g600);background:${active?'rgba(208,22,22,.16)':'transparent'};color:var(--text);padding:11px 12px;cursor:pointer;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <strong>${esc(t.subject || 'Support request')}</strong>
+            ${unread ? `<span style="min-width:18px;height:18px;border-radius:999px;background:#D01616;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center">${unread}</span>` : ''}
           </div>
-          <div style="font-size:12px;color:#cbd5e1;margin-top:3px">${esc(t.user_name || t.user_email || 'Unknown user')}</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px">
-            <span style="font-size:11px;color:#bfdbfe">${esc(supportCategoryLabel(t.category))}</span>
-            ${supportPriorityPill(t.priority)}
+          <div style="font-size:12px;color:#cbd5e1;margin-top:2px">${esc(t.user_name || t.user_email || 'User')}</div>
+          <div style="font-size:11px;color:#93c5fd;margin-top:3px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+            <span>${esc(category)}</span>
+            ${priChip(t.priority)}
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(threadOrgLabel(t))} · ${relTime(t.updated_at || t.last_message_at)}</div>
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:5px">
-            ${statusPill(t.status)}
-            <span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px">${esc(t.last_message || '')}</span>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(t.org_name || t.org_id || '—')} · opened ${esc(opened)} · ${esc(firstResp)}</div>
+          <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+            ${statusChip(t.status)}
+            <span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px">${messagePreview(t)}</span>
           </div>
-        </button>`;
+        </button>
+      `;
     }).join('');
   }
 
   function setComposerEnabled(enabled){
     if(replyBox) replyBox.disabled = !enabled;
     if(replyBtn) replyBtn.disabled = !enabled;
-    if(pendingBtn) pendingBtn.disabled = !enabled;
-    if(resolveBtn) resolveBtn.disabled = !enabled;
-    if(closeBtn) closeBtn.disabled = !enabled;
+    if(pendingBtn) pendingBtn.disabled = !activeThread;
+    if(resolveBtn) resolveBtn.disabled = !activeThread;
+    if(closeBtn) closeBtn.disabled = !activeThread;
+    if(noteTextEl) noteTextEl.disabled = !activeThread;
+    if(noteSaveBtn) noteSaveBtn.disabled = !activeThread;
   }
 
   function renderMessages(data){
-    const thread = data.thread;
+    const thread = data.thread || {};
     const messages = Array.isArray(data.messages) ? data.messages : [];
     activeThread = thread;
-    renderThreadList();
+    activeSla = data.sla || null;
 
-    const status = String(thread.status || 'open').toLowerCase();
-    const isResolved = status === 'resolved';
-    const isClosed = status === 'closed';
+    const isClosed = String(thread.status || '').toLowerCase() === 'closed';
+    const isResolved = String(thread.status || '').toLowerCase() === 'resolved';
 
     headerEl.innerHTML = `
-      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
-        <span>${esc(thread.subject || 'Support request')}</span>
-        <span>${statusPill(thread.status)}</span>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:900;color:#e9edf2">${esc(thread.subject || 'Support request')}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(thread.user_name || thread.user_email || 'User')} · ${esc(thread.org_name || thread.org_id || '')}</div>
+          <div style="font-size:12px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <strong style="color:#bfdbfe">${esc(catLabel(thread.category))}</strong>
+            ${priChip(thread.priority)}
+            ${statusChip(thread.status)}
+            ${thread.resolved_at ? `<span style="color:#bbf7d0;font-size:11px;font-weight:700">Resolved ${esc(relTime(thread.resolved_at))}</span>` : ''}
+          </div>
+        </div>
       </div>
-      <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:3px">${esc(thread.user_name || thread.user_email || 'Unknown user')} · ${esc(threadOrgLabel(thread))}</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
-        <span style="font-size:12px;color:#bfdbfe">${esc(supportCategoryLabel(thread.category))}</span>
-        ${supportPriorityPill(thread.priority)}
-        ${thread.resolved_at ? `<span style="font-size:11px;color:#bbf7d0">Resolved ${relTime(thread.resolved_at)}</span>` : ''}
-      </div>`;
+      ${renderSla(activeSla, thread)}
+    `;
 
-    const lifecycleNotice = isResolved
-      ? `<div style="align-self:stretch;border:1px solid rgba(51,196,141,.45);background:rgba(51,196,141,.08);color:#bbf7d0;border-radius:12px;padding:9px 10px;font-size:12px">✓ This support request has been marked as resolved.</div>`
-      : isClosed
-        ? `<div style="align-self:stretch;border:1px solid rgba(142,151,163,.45);background:rgba(142,151,163,.08);color:#cbd5e1;border-radius:12px;padding:9px 10px;font-size:12px">This support request has been closed.</div>`
-        : '';
-
-    if(!messages.length){
-      messagesEl.innerHTML = `${lifecycleNotice}<div style="color:var(--muted)">No messages yet.</div>`;
+    if(!messagesEl) return;
+    if(!messages.length) {
+      messagesEl.innerHTML = `<div style="color:var(--muted)">No messages yet.</div>`;
     } else {
-      messagesEl.innerHTML = lifecycleNotice + messages.map(m => {
-        const isAdmin = String(m.sender_type || '').toLowerCase() === 'admin';
-        return `
-          <div style="align-self:${isAdmin?'flex-end':'flex-start'};max-width:82%;background:${isAdmin?'rgba(208,22,22,.16)':'#101114'};border:1px solid ${isAdmin?'rgba(208,22,22,.45)':'var(--g600)'};border-radius:12px;padding:9px 10px">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${esc(isAdmin ? 'CityIntel Support' : (m.sender_name || m.sender_email || 'User'))} · ${relTime(m.created_at)}</div>
-            <div style="white-space:pre-wrap;color:#e9edf2">${esc(m.message || '')}</div>
-          </div>`;
+      messagesEl.innerHTML = messages.map(m => {
+        const admin = String(m.sender_type || '').toLowerCase() === 'admin';
+        return `<div style="align-self:${admin?'flex-end':'flex-start'};max-width:78%;border:1px solid ${admin?'rgba(208,22,22,.55)':'var(--g600)'};background:${admin?'rgba(208,22,22,.14)':'#101114'};border-radius:11px;padding:9px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${admin?'CityIntel Support':esc(m.sender_name || m.sender_email || 'User')} · ${esc(relTime(m.created_at))}</div>
+          <div style="white-space:pre-wrap;color:#e9edf2">${esc(m.message || '')}</div>
+        </div>`;
       }).join('');
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
+
+    ensureNotesPanel();
+    if(notesWrap) notesWrap.style.display = '';
 
     setComposerEnabled(!isClosed);
     if(resolveBtn) resolveBtn.disabled = isResolved || isClosed;
@@ -3247,6 +3318,50 @@ const makeBar = (label, count, color) => {
     if(replyBox && isClosed) replyBox.placeholder = 'This ticket is closed.';
     else if(replyBox && isResolved) replyBox.placeholder = 'Optional: send a follow-up or close this resolved ticket.';
     else if(replyBox) replyBox.placeholder = 'Type a reply…';
+  }
+
+  async function loadNotes(threadId){
+    ensureNotesPanel();
+    if(!threadId) {
+      renderNotes([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/admin/support/threads/${encodeURIComponent(threadId)}/internal-notes`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
+      renderNotes(data.notes || []);
+    } catch(e) {
+      ensureNotesPanel();
+      if(noteListEl) noteListEl.innerHTML = `<div style="font-size:12px;color:#fecaca">Unable to load internal notes: ${esc(e.message || e)}</div>`;
+    }
+  }
+
+  async function saveInternalNote(){
+    if(!activeThread || !noteTextEl) return;
+    const note = noteTextEl.value.trim();
+    if(!note) return;
+
+    const old = noteSaveBtn.textContent;
+    noteSaveBtn.disabled = true;
+    noteSaveBtn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch(`${API}/api/admin/support/threads/${encodeURIComponent(activeThread.id)}/internal-notes`, {
+        method:'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ note })
+      });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Save failed: ${res.status}`);
+      noteTextEl.value = '';
+      await loadNotes(activeThread.id);
+    } catch(e) {
+      alert(`Unable to save internal note: ${e.message || e}`);
+    } finally {
+      noteSaveBtn.disabled = false;
+      noteSaveBtn.textContent = old;
+    }
   }
 
   async function loadThreads(keepSelection = true){
@@ -3276,6 +3391,7 @@ const makeBar = (label, count, color) => {
       const data = await res.json().catch(() => ({}));
       if(!res.ok || !data.ok) throw new Error(data.error || `Request failed: ${res.status}`);
       renderMessages(data);
+      await loadNotes(id);
       if(rerenderList) await loadThreads(false);
     } catch(e) {
       messagesEl.innerHTML = `<div style="color:#fecaca">Unable to open thread: ${esc(e.message || e)}</div>`;
@@ -3333,8 +3449,12 @@ const makeBar = (label, count, color) => {
 
   function clearActiveThread(){
     activeThread = null;
+    activeSla = null;
+    activeNotes = [];
     headerEl.textContent = 'Select a thread';
     messagesEl.innerHTML = `<div style="color:var(--muted)">Choose a support thread to view messages.</div>`;
+    if(notesWrap) notesWrap.style.display = 'none';
+    renderNotes([]);
     setComposerEnabled(false);
   }
 
@@ -3360,6 +3480,7 @@ const makeBar = (label, count, color) => {
   resolveBtn?.addEventListener('click', () => updateStatus('resolved'));
   closeBtn?.addEventListener('click', () => updateStatus('closed'));
 
+  ensureNotesPanel();
   setComposerEnabled(false);
   loadThreads(false);
   refreshTimer = setInterval(() => loadThreads(true), 60000);
