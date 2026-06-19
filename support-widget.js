@@ -659,6 +659,7 @@
   }
 
   async function loadThread({ silent = false, markRead = false } = {}){
+    if (state.forceNewSubject && silent && !markRead) return;
     if (state.loading) return;
     state.loading = true;
     if (!silent) showStatus('', '');
@@ -719,6 +720,7 @@
           category,
           priority,
           message,
+          new_thread: state.forceNewSubject === true,
           org_id: user.orgId || '',
           org_name: user.orgName || ''
         })
