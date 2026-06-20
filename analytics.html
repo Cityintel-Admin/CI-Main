@@ -120,6 +120,7 @@
     .lead-action-btn:hover{border-color:#D01616}
     .lead-action-btn.contact{border-color:#f0b429;color:#fde68a}
     .lead-action-btn.approve{border-color:#33c48d;color:#bbf7d0}
+    .lead-action-btn.trial{border-color:#38bdf8;color:#bae6fd}
     .lead-action-btn.reject{border-color:#ff5a5f;color:#fecaca}
 
     .lead-action-btn.reply{border-color:#60a5fa;color:#bfdbfe}
@@ -520,7 +521,8 @@
     <div class="lead-modal-actions">
       <button id="leadOnboardClose" class="btn" type="button">Close</button>
       <button id="leadOnboardSave" class="btn" type="button">Save onboarding</button>
-      <button id="leadOnboardApprove" class="btn primary" type="button">Save &amp; approve</button>
+      <button id="leadOnboardApprove" class="lead-action-btn approve" type="button">Approve access</button>
+      <button id="leadOnboardActivateTrial" class="btn primary" type="button">Activate trial</button>
     </div>
   </div>
 </div>
@@ -1593,6 +1595,7 @@ const makeBar = (label, count, color) => {
   const onboardClose = document.getElementById('leadOnboardClose');
   const onboardSave = document.getElementById('leadOnboardSave');
   const onboardApprove = document.getElementById('leadOnboardApprove');
+  const onboardActivateTrial = document.getElementById('leadOnboardActivateTrial');
   let activeOnboardLead = null;
 
   let latestRows = [];
@@ -1662,6 +1665,7 @@ const makeBar = (label, count, color) => {
         <button class="lead-action-btn onboard" data-lead-onboard="${id}">Onboard${hasLocation ? ' • map' : ''}</button>
         <button class="lead-action-btn contact" data-lead-message="contacted" data-lead-id="${id}" ${disabled('contacted')}>Contacted</button>
         <button class="lead-action-btn approve" data-lead-action="approved" data-lead-id="${id}" ${disabled('approved')}>Approve</button>
+        <button class="lead-action-btn trial" data-lead-trial="${id}">Activate trial</button>
         <button class="lead-action-btn reject" data-lead-message="reject" data-lead-id="${id}" ${disabled('rejected')}>Reject</button>
       </div>
     `;
@@ -1893,6 +1897,39 @@ const makeBar = (label, count, color) => {
         btn.disabled = false;
         btn.textContent = label;
       }
+    }
+  }
+
+
+  async function activateLeadTrial(id, btn){
+    if (!id) return;
+    const row = latestRows.find(r => String(r.id) === String(id));
+    const label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Activating…'; }
+
+    try {
+      const payload = (activeOnboardLead && String(activeOnboardLead.id) === String(id))
+        ? onboardingPayloadFromForm()
+        : {};
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(id)}/activate-trial`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Trial activation failed: ${res.status}`);
+      await loadLeads();
+      if (onboardStatus && activeOnboardLead && String(activeOnboardLead.id) === String(id)) {
+        onboardStatus.textContent = `Trial activated${data.trialEndsAt ? ` until ${fmtDate(data.trialEndsAt)}` : ''}. Setup email sent if Resend is configured.`;
+        closeLeadOnboard();
+      } else {
+        alert(`Trial activated for ${fullName(row || {})}${data.trialEndsAt ? ` until ${fmtDate(data.trialEndsAt)}` : ''}.`);
+      }
+    } catch (e) {
+      alert(`Unable to activate trial: ${e.message || e}`);
+      if (onboardStatus && activeOnboardLead && String(activeOnboardLead.id) === String(id)) onboardStatus.textContent = 'Trial activation failed: ' + (e.message || e);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = label || 'Activate trial'; }
     }
   }
 
@@ -2258,7 +2295,7 @@ const makeBar = (label, count, color) => {
       setSourceCategories(ob.sourceCategories || 'security, protests, travel, transport, power');
       setPriorityControls(ob.priorityControls || {});
       document.getElementById('obNotes').value = ob.notes || `Source request: ${row.interest || 'Access request'}\nTeam size: ${row.team_size || row.teamSize || '—'}\nHeard from: ${row.heard_from || row.heardFrom || '—'}${row.message ? `\n\nRequirements:\n${row.message}` : ''}`;
-      onboardStatus.textContent = data.ok ? 'Draft loaded. Review location and feed scope before approval.' : 'No saved draft yet. Values prefilled from the submitted request.';
+      onboardStatus.textContent = data.ok ? 'Draft loaded. Review location and feed scope before approving access or activating a trial.' : 'No saved draft yet. Values prefilled from the submitted request.';
     }catch(e){
       document.getElementById('obOrgName').value = row.company || '';
       document.getElementById('obAdminEmail').value = row.email || '';
@@ -2339,17 +2376,20 @@ const makeBar = (label, count, color) => {
       onboardStatus.textContent = 'Latitude and longitude must both be completed, or both left blank for later review.';
       return false;
     }
-    onboardStatus.textContent = options.approve ? 'Saving onboarding configuration and approving request…' : 'Saving onboarding configuration…';
+    onboardStatus.textContent = options.activateTrial ? 'Saving onboarding configuration and activating trial…' : options.approve ? 'Saving onboarding configuration and approving access…' : 'Saving onboarding configuration…';
     if (onboardSave) onboardSave.disabled = true;
     if (onboardApprove) onboardApprove.disabled = true;
+    if (onboardActivateTrial) onboardActivateTrial.disabled = true;
     try{
       const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(activeOnboardLead.id)}/onboard`, { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
       const data = await res.json().catch(()=>({}));
       if(!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
 
-      if (options.approve) {
+      if (options.activateTrial) {
+        await activateLeadTrial(activeOnboardLead.id, onboardActivateTrial);
+      } else if (options.approve) {
         await updateLeadStatus(activeOnboardLead.id, 'approved');
-        onboardStatus.textContent = 'Onboarding saved and request approved.';
+        onboardStatus.textContent = 'Onboarding saved and access approved. Trial/billing can be activated separately when ready.';
         closeLeadOnboard();
       } else {
         onboardStatus.textContent = 'Onboarding configuration saved. You can now approve when ready.';
@@ -2363,6 +2403,7 @@ const makeBar = (label, count, color) => {
     finally{
       if (onboardSave) onboardSave.disabled = false;
       if (onboardApprove) onboardApprove.disabled = false;
+      if (onboardActivateTrial) onboardActivateTrial.disabled = false;
     }
   }
 
@@ -2642,6 +2683,7 @@ const makeBar = (label, count, color) => {
   if (onboardClose) onboardClose.addEventListener('click', closeLeadOnboard);
   if (onboardSave) onboardSave.addEventListener('click', () => saveLeadOnboard());
   if (onboardApprove) onboardApprove.addEventListener('click', () => saveLeadOnboard({ approve:true }));
+  if (onboardActivateTrial) onboardActivateTrial.addEventListener('click', () => saveLeadOnboard({ activateTrial:true }));
   document.getElementById('obAutoLocate')?.addEventListener('click', autoLocateOnboarding);
   document.getElementById('obAddFeedRegion')?.addEventListener('click', () => addFeedRegionRow(''));
   if (onboardModal) onboardModal.addEventListener('click', (e) => { if (e.target === onboardModal) closeLeadOnboard(); });
