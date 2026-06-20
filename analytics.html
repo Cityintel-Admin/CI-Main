@@ -847,6 +847,46 @@
 </div>
 
 
+<section class="card" id="trialAuditCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Trial Activation Audit</h3>
+      <div class="legend">Active/expired trials, reminder status, and audit history for lead conversions.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="trialAuditFilter" class="btn" style="background:#16171a;color:var(--text)">
+        <option value="all">All trials</option>
+        <option value="active">Active</option>
+        <option value="due">Reminder due</option>
+        <option value="expired">Expired</option>
+      </select>
+      <button id="trialAuditDryRunBtn" class="btn" type="button">Check due reminders</button>
+      <button id="trialAuditSendBtn" class="btn primary" type="button">Send due reminders</button>
+      <button id="trialAuditRefreshBtn" class="btn" type="button">Refresh</button>
+    </div>
+  </div>
+  <div id="trialAuditSummary" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px"></div>
+  <div class="lead-table-wrap">
+    <table class="lead-table" style="min-width:980px">
+      <thead>
+        <tr>
+          <th>Organisation</th>
+          <th>Admin</th>
+          <th>Trial dates</th>
+          <th>Package</th>
+          <th>Reminder status</th>
+          <th>Latest audit</th>
+        </tr>
+      </thead>
+      <tbody id="trialAuditBody">
+        <tr><td colspan="6" class="lead-muted">Loading trial audit…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="trialAuditStatus" class="lead-muted" style="margin-top:10px"></div>
+</section>
+
+
 
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
@@ -4000,6 +4040,127 @@ const makeBar = (label, count, color) => {
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else setTimeout(init, 500);
+})();
+</script>
+
+
+<script>
+(function trialAuditPanel(){
+  const API_BASE = 'https://api.cityintelapi.com';
+  const body = document.getElementById('trialAuditBody');
+  if (!body) return;
+  const filter = document.getElementById('trialAuditFilter');
+  const refreshBtn = document.getElementById('trialAuditRefreshBtn');
+  const dryRunBtn = document.getElementById('trialAuditDryRunBtn');
+  const sendBtn = document.getElementById('trialAuditSendBtn');
+  const summary = document.getElementById('trialAuditSummary');
+  const statusEl = document.getElementById('trialAuditStatus');
+  let trials = [];
+
+  function authHeaders(){
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(JSON.parse(localStorage.getItem('ci_user')||'{}'));
+      const h={'Content-Type':'application/json','Accept':'application/json'};
+      if(u.email)h['X-User-Email']=u.email;
+      if(u.name)h['X-User-Name']=u.name;
+      if(u.id)h['X-User-Id']=u.id;
+      h['X-User-Role']='MasterAdmin';
+      h['X-CI-Role']='MasterAdmin';
+      return h;
+    }catch{return{'Content-Type':'application/json','X-User-Role':'MasterAdmin'};}
+  }
+  const esc = (v) => String(v ?? '—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  function fmtDate(v){ const d=new Date(v||''); return isNaN(d) ? '—' : d.toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}); }
+  function dayLabel(n){ if(n === null || n === undefined || Number.isNaN(Number(n))) return '—'; n=Number(n); if(n < 0) return `${Math.abs(n)}d expired`; if(n === 0) return 'ends today'; if(n === 1) return '1d left'; return `${n}d left`; }
+  function statusBadge(text, kind){ return `<span class="lead-status ${esc(kind||'new')}">${esc(text)}</span>`; }
+
+  function filtered(){
+    const f = String(filter?.value || 'all');
+    return trials.filter(t => {
+      if (f === 'active') return t.state === 'active';
+      if (f === 'expired') return t.state === 'expired';
+      if (f === 'due') return !!t.nextReminder;
+      return true;
+    });
+  }
+
+  function renderSummary(){
+    if (!summary) return;
+    const active = trials.filter(t=>t.state==='active').length;
+    const expired = trials.filter(t=>t.state==='expired').length;
+    const due = trials.filter(t=>!!t.nextReminder).length;
+    const soon = trials.filter(t=>t.state==='active' && Number(t.daysRemaining) >= 0 && Number(t.daysRemaining) <= 7).length;
+    const boxes = [
+      ['Trials', trials.length, 'Total trial records'],
+      ['Active', active, 'Currently within trial window'],
+      ['Due', due, 'Reminder email due'],
+      ['Ending soon', soon, '7 days or less'],
+      ['Expired', expired, 'Past trial end date']
+    ];
+    summary.innerHTML = boxes.map(([label,val,sub]) => `<div class="card" style="margin:0;padding:12px"><div class="legend">${esc(label)}</div><div class="kpi"><div class="value">${esc(val)}</div></div><div class="lead-muted">${esc(sub)}</div></div>`).join('');
+  }
+
+  function render(){
+    renderSummary();
+    const rows = filtered();
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="6" class="lead-muted">No trial records found for this filter.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map(t => {
+      const audit = Array.isArray(t.audit) && t.audit.length ? t.audit[0] : null;
+      const modules = Array.isArray(t.modules) && t.modules.length ? t.modules.slice(0,5).join(', ') : 'All / not restricted';
+      const reminder = t.nextReminder ? statusBadge(`${t.nextReminder} due`, 'contacted') : (t.reminderExpiredSentAt ? statusBadge('expired sent','approved') : t.reminder1dSentAt ? statusBadge('1d sent','approved') : t.reminder7dSentAt ? statusBadge('7d sent','approved') : statusBadge('not due','new'));
+      return `<tr>
+        <td><strong>${esc(t.company || t.orgId)}</strong><div class="lead-muted">${esc(t.orgId || '')}</div></td>
+        <td>${esc(t.adminName || '—')}<div class="lead-muted">${esc(t.adminEmail || '—')}</div></td>
+        <td><strong>${esc(dayLabel(t.daysRemaining))}</strong><div class="lead-muted">Start: ${esc(t.billingStartAt || '—')}<br>Ends: ${esc(t.planExpiresAt ? String(t.planExpiresAt).slice(0,10) : '—')}</div></td>
+        <td>${esc(t.planType || 'trial')}<div class="lead-muted">Tier: ${esc(t.dataTier || 'global')} · Seats: ${esc(t.seatLimit || '—')}<br>${esc(modules)}</div></td>
+        <td>${reminder}<div class="lead-muted">7d: ${esc(t.reminder7dSentAt ? fmtDate(t.reminder7dSentAt) : '—')}<br>1d: ${esc(t.reminder1dSentAt ? fmtDate(t.reminder1dSentAt) : '—')}<br>Expired: ${esc(t.reminderExpiredSentAt ? fmtDate(t.reminderExpiredSentAt) : '—')}</div></td>
+        <td>${audit ? `<strong>${esc(audit.eventType)}</strong><div class="lead-muted">${esc(fmtDate(audit.createdAt))} · ${esc(audit.actorEmail || 'system')}</div><div style="margin-top:4px;color:#cbd5e1">${esc(audit.detail || '')}</div>` : '<span class="lead-muted">No audit events yet.</span>'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function load(){
+    body.innerHTML = '<tr><td colspan="6" class="lead-muted">Loading trial audit…</td></tr>';
+    if (statusEl) statusEl.textContent = '';
+    try{
+      const res = await fetch(`${API_BASE}/api/admin/trials`, { headers: authHeaders() });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      trials = Array.isArray(data.data) ? data.data : [];
+      render();
+      if (statusEl) statusEl.textContent = `Updated ${fmtDate(data.generatedAt || new Date().toISOString())}`;
+    }catch(e){
+      body.innerHTML = `<tr><td colspan="6" style="color:#fecaca;padding:12px">Unable to load trial audit: ${esc(e.message || e)}</td></tr>`;
+    }
+  }
+
+  async function sendReminders(dryRun){
+    const btn = dryRun ? dryRunBtn : sendBtn;
+    const old = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = dryRun ? 'Checking…' : 'Sending…'; }
+    try{
+      const res = await fetch(`${API_BASE}/api/admin/trials/send-reminders`, { method:'POST', headers:authHeaders(), body:JSON.stringify({ dryRun:!!dryRun }) });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      if (statusEl) statusEl.textContent = dryRun ? `${data.count || 0} reminders would be sent.` : `${data.count || 0} reminders processed.`;
+      await load();
+    }catch(e){
+      alert(`Reminder action failed: ${e.message || e}`);
+    }finally{
+      if (btn) { btn.disabled = false; btn.textContent = old; }
+    }
+  }
+
+  filter?.addEventListener('change', render);
+  refreshBtn?.addEventListener('click', load);
+  dryRunBtn?.addEventListener('click', () => sendReminders(true));
+  sendBtn?.addEventListener('click', () => {
+    if (confirm('Send due trial reminder emails now?')) sendReminders(false);
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
 })();
 </script>
 
