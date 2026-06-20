@@ -2514,6 +2514,7 @@ padding-bottom: 12px;
 /* asset / traveller / camera markers */
 .ci-asset-marker,
 .ci-trav-marker,
+.ci-live-track-marker,
 .ci-cam-marker{
   background:#111827;
   border-radius:999px;
@@ -2527,6 +2528,7 @@ padding-bottom: 12px;
 }
 .ci-asset-marker{ background:#3b82f6; }
 .ci-trav-marker{ background:#f97316; }
+.ci-live-track-marker{ background:#33c48d; box-shadow:0 0 0 3px rgba(51,196,141,.18),0 0 10px rgba(51,196,141,.55); }
 .ci-cam-marker{ background:#a855f7; }
 .ci-sky-marker{ background:#22d3ee; }
 
@@ -11021,6 +11023,7 @@ setTimeout(settleMap, 600);
   // ---- Assets & travellers markers ----
   const assetLayer = L.layerGroup().addTo(map);
   const travLayer  = L.layerGroup().addTo(map);
+  const liveTrackingLayer = L.layerGroup().addTo(map);
 
   
   // ---- Panic marker layer ----
@@ -12311,8 +12314,43 @@ const assetIcon = L.divIcon({
     }
     // Hotel clustering (same hotel across travellers)
     refreshHotelClusters();
+    refreshLiveTrackingOverlay().catch(()=>{});
 
 }
+
+
+  const liveTrackIcon = L.divIcon({ className:'ci-live-track-marker', html:'✓', iconSize:[18,18] });
+  function trackAgo(iso){
+    const t=Date.parse(iso||''); if(!Number.isFinite(t)) return '—';
+    const s=Math.max(0, Math.round((Date.now()-t)/1000)); if(s<60) return s+'s ago';
+    const m=Math.round(s/60); if(m<60) return m+'m ago'; const h=Math.round(m/60); if(h<48) return h+'h ago'; return Math.round(h/24)+'d ago';
+  }
+  async function refreshLiveTrackingOverlay(){
+    try{
+      liveTrackingLayer.clearLayers();
+      const headers = await authHeaders();
+      const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/tracking/sessions'), { headers });
+      const json = await res.json().catch(()=>null);
+      if(!json || !json.ok || !Array.isArray(json.sessions)) return;
+      window.CITrackingSessions = json.sessions;
+      json.sessions.forEach(s=>{
+        const st = String(s.status || '').toLowerCase();
+        if(st === 'stopped' || st === 'archived' || st === 'expired') return;
+        const lat = Number(s.last_lat), lon = Number(s.last_lng);
+        if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        const t = s.traveller || {};
+        const name = escapeHtml(String(s.employee_name || t.name || 'Tracked traveller'));
+        const loc = escapeHtml([t.city, t.country].filter(Boolean).join(', '));
+        const role = escapeHtml(String(t.role || ''));
+        const freshness = escapeHtml(String(s.freshness || ''));
+        const popup = `<b>Live tracking: ${name}</b><br>${role ? role + '<br>' : ''}${loc ? loc + '<br>' : ''}Status: ${escapeHtml(st)} · ${freshness}<br>Last ping: ${trackAgo(s.last_ping_at)}<br>Accuracy: ${escapeHtml(s.last_accuracy || '—')}m`;
+        L.marker([lat, lon], { icon: liveTrackIcon, zIndexOffset: 1600 }).addTo(liveTrackingLayer).bindPopup(popup, { maxWidth: 340 });
+      });
+    }catch(e){ console.warn('CityIntel live tracking overlay failed', e); }
+  }
+
+  setTimeout(()=>refreshLiveTrackingOverlay().catch(()=>{}), 1500);
+  setInterval(()=>refreshLiveTrackingOverlay().catch(()=>{}), 60000);
 
   map.on('moveend zoomend', () => {
     if (jamcamEnabled) {
