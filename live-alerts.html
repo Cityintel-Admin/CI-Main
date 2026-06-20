@@ -2548,6 +2548,8 @@ padding-bottom: 12px;
   font-size:9px;
   letter-spacing:.03em;
 }
+.ci-live-track-marker.risk{background:#dc2626;border-color:#fecaca;box-shadow:0 0 0 4px rgba(239,68,68,.20),0 0 14px rgba(239,68,68,.75);}
+.ci-live-prox-list{margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.10);font-size:12px}.ci-live-prox-title{font-weight:800;margin-bottom:4px}.ci-live-prox-item{margin-top:4px}.ci-live-prox-risk{display:inline-block;padding:1px 6px;border-radius:999px;background:rgba(255,255,255,.08);font-size:10px;font-weight:800;text-transform:uppercase}
 .ci-cam-marker{ background:#a855f7; }
 .ci-sky-marker{ background:#22d3ee; }
 
@@ -12345,10 +12347,49 @@ const assetIcon = L.divIcon({
   const liveTrackingToggleBtn = document.getElementById('liveTrackingToggleBtn');
   let liveTrackingEnabled = true;
   const liveTrackIcon = L.divIcon({ className:'ci-live-track-marker', html:'LIVE', iconSize:[34,22], iconAnchor:[17,11], popupAnchor:[0,-12] });
+  const liveTrackRiskIcon = L.divIcon({ className:'ci-live-track-marker risk', html:'RISK', iconSize:[38,22], iconAnchor:[19,11], popupAnchor:[0,-12] });
   function trackAgo(iso){
     const t=Date.parse(iso||''); if(!Number.isFinite(t)) return '—';
     const s=Math.max(0, Math.round((Date.now()-t)/1000)); if(s<60) return s+'s ago';
     const m=Math.round(s/60); if(m<60) return m+'m ago'; const h=Math.round(m/60); if(h<48) return h+'h ago'; return Math.round(h/24)+'d ago';
+  }
+
+  function ciLiveTrackNum(v){ const n=Number(v); return Number.isFinite(n) ? n : null; }
+  function ciLiveTrackDistanceKm(lat1, lon1, lat2, lon2){
+    const a=ciLiveTrackNum(lat1), b=ciLiveTrackNum(lon1), c=ciLiveTrackNum(lat2), d=ciLiveTrackNum(lon2);
+    if(a===null||b===null||c===null||d===null) return null;
+    const R=6371, rad=x=>x*Math.PI/180, dLat=rad(c-a), dLon=rad(d-b);
+    const x=Math.sin(dLat/2)**2 + Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(dLon/2)**2;
+    return R*(2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
+  }
+  function ciLiveTrackRiskRank(risk){ const r=String(risk||'').toLowerCase(); if(/critical|severe/.test(r)) return 4; if(/high/.test(r)) return 3; if(/medium|med/.test(r)) return 2; if(/low/.test(r)) return 1; return 0; }
+  function ciLiveTrackEventCoords(ev){
+    if(!ev) return null;
+    const lat = ciLiveTrackNum(ev.lat ?? ev.latitude);
+    const lon = ciLiveTrackNum(ev.lon ?? ev.lng ?? ev.longitude);
+    if(lat!==null && lon!==null) return {lat, lon};
+    try{
+      const g = typeof ev.geometry === 'string' ? JSON.parse(ev.geometry) : ev.geometry;
+      if(g && g.type === 'Point' && Array.isArray(g.coordinates)){
+        const glon=ciLiveTrackNum(g.coordinates[0]), glat=ciLiveTrackNum(g.coordinates[1]);
+        if(glat!==null && glon!==null) return {lat:glat, lon:glon};
+      }
+    }catch(_e){}
+    return null;
+  }
+  function ciLiveTrackNearbyIncidents(lat, lon, radiusKm){
+    let events = [];
+    try { if (typeof collectAllCachedEvents === 'function') events = collectAllCachedEvents(); } catch(_e) { events = []; }
+    if(!events.length && Array.isArray(window.CI_ALL_ALERTS)) events = window.CI_ALL_ALERTS;
+    return (events || []).map(ev=>{
+      const c=ciLiveTrackEventCoords(ev); if(!c) return null;
+      const d=ciLiveTrackDistanceKm(lat, lon, c.lat, c.lon); if(d===null || d>radiusKm) return null;
+      return Object.assign({}, ev, { __ciDistanceKm:Number(d.toFixed(2)) });
+    }).filter(Boolean).sort((a,b)=>(ciLiveTrackRiskRank(b.risk)-ciLiveTrackRiskRank(a.risk)) || (a.__ciDistanceKm-b.__ciDistanceKm)).slice(0,5);
+  }
+  function ciLiveTrackProximityHtml(items, radiusKm){
+    if(!items || !items.length) return `<div class="ci-live-prox-list"><div class="ci-live-prox-title">Nearby incidents</div><div>No mapped incidents within ${escapeHtml(radiusKm)} km.</div></div>`;
+    return `<div class="ci-live-prox-list"><div class="ci-live-prox-title">Nearby incidents within ${escapeHtml(radiusKm)} km</div>${items.map(i=>`<div class="ci-live-prox-item"><span class="ci-live-prox-risk">${escapeHtml(String(i.risk||'risk'))}</span> ${escapeHtml(i.title || i.summary || 'Incident')} · ${escapeHtml(i.__ciDistanceKm)} km</div>`).join('')}</div>`;
   }
   async function refreshLiveTrackingOverlay(){
     try{
@@ -12382,15 +12423,18 @@ const assetIcon = L.divIcon({
         const role = escapeHtml(String(t.role || ''));
         const freshness = escapeHtml(String(s.freshness || ''));
         const source = escapeHtml(String(s.last_source || s.source || 'tracking').toUpperCase());
-        const popup = `<div style="min-width:220px">
+        const nearby = ciLiveTrackNearbyIncidents(lat, lon, window.ciIncidentRadiusKm || 5);
+        const hasHighNearby = nearby.some(i => ciLiveTrackRiskRank(i.risk) >= 3);
+        const popup = `<div style="min-width:240px">
           <b>Live location: ${name}</b><br>
           ${role ? role + '<br>' : ''}${loc ? loc + '<br>' : ''}
           <b>Source:</b> ${source}<br>
           <b>Status:</b> ${escapeHtml(st || 'active')} · ${freshness}<br>
           <b>Last ping:</b> ${trackAgo(s.last_ping_at)}<br>
           <b>Accuracy:</b> ${escapeHtml(s.last_accuracy || '—')}m
+          ${ciLiveTrackProximityHtml(nearby, window.ciIncidentRadiusKm || 5)}
         </div>`;
-        L.marker([lat, lon], { icon: liveTrackIcon, zIndexOffset: 2400 }).addTo(liveTrackingLayer).bindPopup(popup, { maxWidth: 340 });
+        L.marker([lat, lon], { icon: hasHighNearby ? liveTrackRiskIcon : liveTrackIcon, zIndexOffset: 2400 }).addTo(liveTrackingLayer).bindPopup(popup, { maxWidth: 380 });
       });
       if (liveTrackingToggleBtn) {
         liveTrackingToggleBtn.classList.add('active');
