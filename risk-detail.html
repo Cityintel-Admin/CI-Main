@@ -701,14 +701,22 @@
   // alerts-data.js is intentionally easy to edit, so country values can arrive with
   // casing differences, spelling mistakes, city names, or compound labels. The risk
   // drill-down selectors should use one canonical country label per place.
+  const cleanLookupKey = v => String(v || '')
+    .trim()
+    .replace(/&/g, ' and ')
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
   const COUNTRY_ALIASES = new Map(Object.entries({
     'belgem': 'Belgium',
+    'belguim': 'Belgium',
     'belguim': 'Belgium',
     'belgium': 'Belgium',
     'france': 'France',
     'italy': 'Italy',
     'espana': 'Spain',
-    'españa': 'Spain',
     'spain': 'Spain',
     'england': 'United Kingdom',
     'northern ireland': 'United Kingdom',
@@ -734,12 +742,106 @@
     'czechia': 'Czech Republic',
     'czech republic': 'Czech Republic'
   }));
-  const titleCaseCountry = v => String(v || '')
+
+  const CONTINENT_ALIASES = new Map(Object.entries({
+    'africa': 'Africa',
+    'asia': 'Asia',
+    'asia pacific': 'Asia Pacific',
+    'apac': 'Asia Pacific',
+    'australia': 'Oceania',
+    'oceania': 'Oceania',
+    'europe': 'Europe',
+    'middle east': 'Middle East',
+    'north america': 'North America',
+    'america': 'North America',
+    'united states': 'North America',
+    'united states of america': 'North America',
+    'usa': 'North America',
+    'south america': 'South America'
+  }));
+
+  const CITY_ALIASES = new Map(Object.entries({
+    'london': 'London',
+    'berlin': 'Berlin',
+    'paris': 'Paris',
+    'dublin': 'Dublin',
+    'amsterdam': 'Amsterdam',
+    'brussels': 'Brussels',
+    'athens': 'Athens',
+    'thessaloniki': 'Thessaloniki',
+    'barcelona': 'Barcelona',
+    'alicante': 'Alicante',
+    'ankara': 'Ankara',
+    'antwerp': 'Antwerp',
+    'bath': 'Bath',
+    'birmingham': 'Birmingham',
+    'brighton': 'Brighton',
+    'bristol': 'Bristol',
+    'cardiff': 'Cardiff',
+    'edinburgh': 'Edinburgh',
+    'glasgow': 'Glasgow',
+    'leeds': 'Leeds',
+    'liverpool': 'Liverpool',
+    'manchester': 'Manchester',
+    'newcastle': 'Newcastle',
+    'nottingham': 'Nottingham',
+    'oxford': 'Oxford',
+    'belfast': 'Belfast',
+    'cork': 'Cork',
+    'galway': 'Galway',
+    'rome': 'Rome',
+    'milan': 'Milan',
+    'naples': 'Naples',
+    'madrid': 'Madrid',
+    'valencia': 'Valencia',
+    'lisbon': 'Lisbon',
+    'porto': 'Porto',
+    'vienna': 'Vienna',
+    'prague': 'Prague',
+    'warsaw': 'Warsaw',
+    'krakow': 'Krakow',
+    'oslo': 'Oslo',
+    'stockholm': 'Stockholm',
+    'copenhagen': 'Copenhagen',
+    'helsinki': 'Helsinki',
+    'riga': 'Riga',
+    'vilnius': 'Vilnius',
+    'tallinn': 'Tallinn',
+    'budapest': 'Budapest',
+    'bucharest': 'Bucharest',
+    'sofia': 'Sofia',
+    'zagreb': 'Zagreb',
+    'ljubljana': 'Ljubljana',
+    'sarajevo': 'Sarajevo',
+    'belgrade': 'Belgrade',
+    'skopje': 'Skopje',
+    'tirana': 'Tirana',
+    'nicosia': 'Nicosia',
+    'limassol': 'Limassol',
+    'geneva': 'Geneva',
+    'zurich': 'Zurich'
+  }));
+
+  const titleCaseWords = v => String(v || '')
     .trim()
     .replace(/\s+/g, ' ')
     .split(' ')
-    .map(part => /^(and|of|the)$/i.test(part) ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .map(part => /^(and|of|the|to|de|du|la|le|von|van)$/i.test(part) ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
+
+  const titleCaseCountry = titleCaseWords;
+
+  function normalizeContinentName(value){
+    const raw = String(value || '').trim().replace(/\s+/g, ' ');
+    if (!raw) return '';
+    // Compound/non-standard labels such as "Europe/Africa" should not become
+    // drill-down options because they are not a single continent scope.
+    if (/\s*[\/|]\s*/.test(raw)) return '';
+    const key = cleanLookupKey(raw);
+    if (CONTINENT_ALIASES.has(key)) return CONTINENT_ALIASES.get(key);
+    return titleCaseWords(raw);
+  }
+
   function normalizeCountryName(value){
     const raw = String(value || '').trim().replace(/\s+/g, ' ');
     if (!raw) return '';
@@ -747,11 +849,44 @@
     // should not create fake country drill-down options. Keep those events in
     // continent/global views instead.
     if (/\s*[\/|]\s*/.test(raw)) return '';
-    const key = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const key = cleanLookupKey(raw);
     if (COUNTRY_ALIASES.has(key)) return COUNTRY_ALIASES.get(key);
     return titleCaseCountry(raw);
   }
+
+  function normalizeCityName(value, row){
+    const raw = String(value || '').trim().replace(/\s+/g, ' ');
+    if (!raw) return '';
+    // Multi-city labels are useful in table text but produce confusing dropdown
+    // targets, so hide them from the city drill-down selector.
+    if (/\s*[\/|]\s*/.test(raw)) return '';
+
+    const combined = `${raw} ${row?.title || ''} ${row?.summary || ''} ${row?.location || ''}`;
+    const combinedKey = cleanLookupKey(combined);
+
+    // If the source put a venue, route, postcode, or full address in the city
+    // field, promote it to the recognised city found in the surrounding text.
+    for (const [needle, city] of CITY_ALIASES.entries()) {
+      const re = new RegExp(`(^|[^a-z])${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z]|$)`, 'i');
+      if (re.test(combinedKey)) return city;
+    }
+
+    const prefixCity = raw.match(/^([A-Za-z][A-Za-z .'-]{1,40})\s*[:–-]\s+/);
+    if (prefixCity && !/^(bbc|embassy|university|college|station|court|police|town hall|city hall)$/i.test(prefixCity[1].trim())) {
+      return titleCaseWords(prefixCity[1].trim());
+    }
+
+    const inCity = raw.match(/\bin\s+([A-Za-z][A-Za-z .'-]{1,40})$/i);
+    if (inCity) return titleCaseWords(inCity[1].trim());
+
+    const looksLikeAddress = /\d|\b(street|road|rd|avenue|ave|square|sq|station|house|gate|park|place|plaza|embassy|university|campus|centre|center|building|bridge|court|hall|march|postcode|ec\d|wc\d|sw\d|se\d|nw\d|n\d|e\d|w\d)\b/i.test(raw);
+    if (looksLikeAddress) return '';
+
+    return titleCaseWords(raw);
+  }
+
   const countryKey = value => normalizeCountryName(value).toLowerCase();
+  const continentKey = value => normalizeContinentName(value).toLowerCase();
   const legacyKey = a => `${a.title}|${a.time||''}|${a.city||''}|${a.country||a.Country||''}`;
   const key   = a => a && a._rowId ? String(a._rowId) : legacyKey(a);
   const fmt   = t => { const d=new Date(t); return isNaN(d)?'':d.toLocaleString('en-GB',{timeZone:'Europe/London',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
@@ -786,21 +921,23 @@
       ...a,
       _rowId: `alert-${idx}`,
       risk: norm(a.risk),
-      continent: a.continent || a.Continent || '',
+      continent: normalizeContinentName(a.continent || a.Continent || ''),
+      continentRaw: a.continent || a.Continent || '',
       countryRaw: rawCountry,
       country: normalizeCountryName(rawCountry),
-      city: a.city || a.City || '',
+      cityRaw: a.city || a.City || '',
+      city: normalizeCityName(a.city || a.City || '', a),
       _dt: a.time ? new Date(a.time) : null
     };
   });
 
   const mode = continentParam ? 'continent' : cityParam ? 'city' : normalizedRegionParam ? 'region' : 'global';
   const subset = mode === 'continent'
-    ? all.filter(a => (a.continent||'').toLowerCase() === continentParam.toLowerCase())
+    ? all.filter(a => continentKey(a.continent) === continentKey(continentParam))
     : mode === 'region'
     ? all.filter(a => countryKey(a.country) === countryKey(normalizedRegionParam))
     : mode === 'city'
-    ? all.filter(a => (a.city||'').toLowerCase().includes(cityParam.toLowerCase()))
+    ? all.filter(a => String(a.city || '').toLowerCase() === String(cityParam || '').toLowerCase())
     : all;
 
   const now = new Date();
@@ -1116,11 +1253,11 @@
 
     const continents = uniq(all.map(a => a.continent));
     const countries = uniq(all
-      .filter(a => !selectedContinent || clean(a.continent).toLowerCase() === clean(selectedContinent).toLowerCase())
+      .filter(a => !selectedContinent || continentKey(a.continent) === continentKey(selectedContinent))
       .map(a => a.country));
     const cities = uniq(all
       .filter(a => !selectedCountry || countryKey(a.country) === countryKey(selectedCountry))
-      .filter(a => selectedCountry || !selectedContinent || clean(a.continent).toLowerCase() === clean(selectedContinent).toLowerCase())
+      .filter(a => selectedCountry || !selectedContinent || continentKey(a.continent) === continentKey(selectedContinent))
       .map(a => a.city));
 
     function fillSelect(sel, items, placeholder, selected){
