@@ -2440,6 +2440,7 @@ padding-bottom: 12px;
 .gm-trav{  background:#f97316; }
 .gm-cam{ background:#a855f7; }
 .gm-sky{ background:#22d3ee; }
+.gm-live{ background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.18),0 0 10px rgba(34,197,94,.55); }
 
 .layer-toggle-btn{
   margin-left:auto;
@@ -2459,6 +2460,13 @@ padding-bottom: 12px;
   border-color:rgba(168,85,247,.65);
   color:#f3e8ff;
 }
+
+#liveTrackingToggleBtn.active{
+  background:rgba(34,197,94,.18);
+  border-color:rgba(34,197,94,.65);
+  color:#bbf7d0;
+}
+
 
 /* Feed list inside side panel */
 .global-map-feeds-block{
@@ -2528,7 +2536,18 @@ padding-bottom: 12px;
 }
 .ci-asset-marker{ background:#3b82f6; }
 .ci-trav-marker{ background:#f97316; }
-.ci-live-track-marker{ background:#33c48d; box-shadow:0 0 0 3px rgba(51,196,141,.18),0 0 10px rgba(51,196,141,.55); }
+.ci-live-track-marker{
+  width:34px !important;
+  height:22px !important;
+  line-height:20px !important;
+  border-radius:999px !important;
+  background:#16a34a;
+  border:2px solid #bbf7d0;
+  box-shadow:0 0 0 4px rgba(34,197,94,.18),0 0 14px rgba(34,197,94,.75);
+  color:#ecfdf5;
+  font-size:9px;
+  letter-spacing:.03em;
+}
 .ci-cam-marker{ background:#a855f7; }
 .ci-sky-marker{ background:#22d3ee; }
 
@@ -5204,6 +5223,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="gm-legend-row gm-legend-row-action">
         <div class="gm-legend-label"><span class="gm-dot gm-trav"></span><span>Travellers</span></div>
         
+      </div>
+      <div class="gm-legend-row gm-legend-row-action">
+        <div class="gm-legend-label"><span class="gm-dot gm-live"></span><span>Live Tracking</span></div>
+        <button type="button" id="liveTrackingToggleBtn" class="layer-toggle-btn active" title="Toggle current tracking/check-in pings">On</button>
       </div>
       <div class="gm-legend-row gm-legend-row-action">
         <div class="gm-legend-label"><span class="gm-dot gm-cam"></span><span>JamCams</span></div>
@@ -12319,7 +12342,9 @@ const assetIcon = L.divIcon({
 }
 
 
-  const liveTrackIcon = L.divIcon({ className:'ci-live-track-marker', html:'✓', iconSize:[18,18] });
+  const liveTrackingToggleBtn = document.getElementById('liveTrackingToggleBtn');
+  let liveTrackingEnabled = true;
+  const liveTrackIcon = L.divIcon({ className:'ci-live-track-marker', html:'LIVE', iconSize:[34,22], iconAnchor:[17,11], popupAnchor:[0,-12] });
   function trackAgo(iso){
     const t=Date.parse(iso||''); if(!Number.isFinite(t)) return '—';
     const s=Math.max(0, Math.round((Date.now()-t)/1000)); if(s<60) return s+'s ago';
@@ -12328,25 +12353,62 @@ const assetIcon = L.divIcon({
   async function refreshLiveTrackingOverlay(){
     try{
       liveTrackingLayer.clearLayers();
+      if (!liveTrackingEnabled) {
+        if (liveTrackingToggleBtn) {
+          liveTrackingToggleBtn.classList.remove('active');
+          liveTrackingToggleBtn.textContent = 'Off';
+        }
+        return;
+      }
+      if (liveTrackingToggleBtn) {
+        liveTrackingToggleBtn.classList.add('active');
+        liveTrackingToggleBtn.textContent = 'Loading…';
+      }
       const headers = await authHeaders();
       const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/tracking/sessions'), { headers });
       const json = await res.json().catch(()=>null);
       if(!json || !json.ok || !Array.isArray(json.sessions)) return;
       window.CITrackingSessions = json.sessions;
+      let liveCount = 0;
       json.sessions.forEach(s=>{
         const st = String(s.status || '').toLowerCase();
-        if(st === 'stopped' || st === 'archived' || st === 'expired') return;
+        if(st === 'stopped' || st === 'archived' || st === 'expired' || st === 'removed') return;
         const lat = Number(s.last_lat), lon = Number(s.last_lng);
         if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        liveCount += 1;
         const t = s.traveller || {};
         const name = escapeHtml(String(s.employee_name || t.name || 'Tracked traveller'));
         const loc = escapeHtml([t.city, t.country].filter(Boolean).join(', '));
         const role = escapeHtml(String(t.role || ''));
         const freshness = escapeHtml(String(s.freshness || ''));
-        const popup = `<b>Live tracking: ${name}</b><br>${role ? role + '<br>' : ''}${loc ? loc + '<br>' : ''}Status: ${escapeHtml(st)} · ${freshness}<br>Last ping: ${trackAgo(s.last_ping_at)}<br>Accuracy: ${escapeHtml(s.last_accuracy || '—')}m`;
-        L.marker([lat, lon], { icon: liveTrackIcon, zIndexOffset: 1600 }).addTo(liveTrackingLayer).bindPopup(popup, { maxWidth: 340 });
+        const source = escapeHtml(String(s.last_source || s.source || 'tracking').toUpperCase());
+        const popup = `<div style="min-width:220px">
+          <b>Live location: ${name}</b><br>
+          ${role ? role + '<br>' : ''}${loc ? loc + '<br>' : ''}
+          <b>Source:</b> ${source}<br>
+          <b>Status:</b> ${escapeHtml(st || 'active')} · ${freshness}<br>
+          <b>Last ping:</b> ${trackAgo(s.last_ping_at)}<br>
+          <b>Accuracy:</b> ${escapeHtml(s.last_accuracy || '—')}m
+        </div>`;
+        L.marker([lat, lon], { icon: liveTrackIcon, zIndexOffset: 2400 }).addTo(liveTrackingLayer).bindPopup(popup, { maxWidth: 340 });
       });
-    }catch(e){ console.warn('CityIntel live tracking overlay failed', e); }
+      if (liveTrackingToggleBtn) {
+        liveTrackingToggleBtn.classList.add('active');
+        liveTrackingToggleBtn.textContent = liveCount ? `On (${liveCount})` : 'On (0)';
+      }
+    }catch(e){
+      if (liveTrackingToggleBtn) liveTrackingToggleBtn.textContent = 'Unavailable';
+      console.warn('CityIntel live tracking overlay failed', e);
+    }
+  }
+
+  if (liveTrackingToggleBtn) {
+    liveTrackingToggleBtn.addEventListener('click', () => {
+      liveTrackingEnabled = !liveTrackingEnabled;
+      liveTrackingToggleBtn.classList.toggle('active', liveTrackingEnabled);
+      liveTrackingToggleBtn.textContent = liveTrackingEnabled ? 'Loading…' : 'Off';
+      refreshLiveTrackingOverlay().catch(()=>{});
+    });
   }
 
   setTimeout(()=>refreshLiveTrackingOverlay().catch(()=>{}), 1500);
