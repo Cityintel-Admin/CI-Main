@@ -91,6 +91,8 @@
   function proxRiskRank(risk){ const r=String(risk||'').toLowerCase(); if(/critical|severe/.test(r)) return 4; if(/high/.test(r)) return 3; if(/medium|med/.test(r)) return 2; if(/low/.test(r)) return 1; return 0; }
   function proxRiskClass(risk){ const n=proxRiskRank(risk); if(n>=4) return 'prox-band-critical'; if(n===3) return 'prox-band-high'; if(n===2) return 'prox-band-medium'; return 'prox-band-low'; }
   function proxBandClass(band){ const b=String(band||'none').toLowerCase(); return 'prox-band-'+(b||'none'); }
+  function proxRelevanceClass(v){ const s=String(v||'').toLowerCase(); if(s==='actionable') return 'prox-band-critical'; if(s==='watch') return 'prox-band-medium'; return 'prox-band-low'; }
+  function proxScoreLabel(i){ const score = Number(i && i.priority_score); if(!Number.isFinite(score)) return ''; const rel = i.relevance || (score>=70?'actionable':score>=45?'watch':'low'); return `<span class="risk-pill ${proxRelevanceClass(rel)}">score ${esc(score)} · ${esc(rel)}</span>`; }
   let proximityLayer = null;
   function clearProximityLayer(){ if(proximityLayer && map){ map.removeLayer(proximityLayer); } proximityLayer = null; }
   function incidentIcon(risk){ const n=proxRiskRank(risk); const color=n>=3?'#ff5a5f':n===2?'#f0b429':'#6bcf6b'; return L.divIcon({className:'', html:`<div style="width:16px;height:16px;border-radius:50%;border:2px solid #fff;background:${color};box-shadow:0 0 0 3px rgba(0,0,0,.35)"></div>`, iconSize:[22,22], iconAnchor:[11,11]}); }
@@ -111,8 +113,9 @@
       proxBand.innerHTML = `<span class="risk-pill ${proxBandClass(j.band)}">${esc(j.band || 'none')}</span>`;
       proxHigh.textContent = Number(counts.critical||0) + Number(counts.high||0);
       proxAge.textContent = ago(j.location && j.location.ping_at);
-      proximityMeta.textContent = `Within ${esc(j.radius_km || radius)} km · last ${esc(j.lookback_days || 30)} days`;
-      proximityList.innerHTML = items.length ? items.map(i=>`<div class="prox-item"><div class="prox-item-top"><div class="prox-title">${esc(i.title || 'Nearby incident')}</div><span class="risk-pill ${proxRiskClass(i.risk)}">${esc(i.risk || 'risk')}</span></div><div class="prox-meta">${esc(i.distance_km)} km · ${esc(i.city || 'Unknown location')} · ${fmt(i.when)}${i.source ? ' · '+esc(i.source) : ''}</div>${i.description ? `<div class="muted" style="margin-top:6px">${esc(String(i.description).slice(0,180))}</div>` : ''}</div>`).join('') : '<div class="muted">No geolocated incidents found within this radius.</div>';
+      const threshold = Number(j.scoring_threshold || 70);
+      proximityMeta.textContent = `Within ${esc(j.radius_km || radius)} km · last ${esc(j.lookback_days || 30)} days · ${esc(counts.actionable || 0)} actionable above score ${esc(threshold)}`;
+      proximityList.innerHTML = items.length ? items.map(i=>`<div class="prox-item"><div class="prox-item-top"><div class="prox-title">${esc(i.title || 'Nearby incident')}</div><span class="risk-pill ${proxRiskClass(i.risk)}">${esc(i.risk || 'risk')}</span></div><div class="prox-meta">${esc(i.distance_km)} km · ${esc(i.city || 'Unknown location')} · ${fmt(i.when)}${i.source ? ' · '+esc(i.source) : ''}${i.incident_type ? ' · '+esc(i.incident_type) : ''}</div><div style="margin-top:6px">${proxScoreLabel(i)}</div>${i.relevance_reason ? `<div class="muted" style="margin-top:6px">${esc(i.relevance_reason)}</div>` : ''}${i.description ? `<div class="muted" style="margin-top:6px">${esc(String(i.description).slice(0,180))}</div>` : ''}</div>`).join('') : '<div class="muted">No geolocated incidents found within this radius.</div>';
       renderRiskAlerts(j.risk_alerts || []);
       renderProximityOnMap(items);
     }catch(e){
@@ -144,7 +147,7 @@
     if(!items.length){ box.style.display='none'; return; }
     box.style.display='block';
     riskAlertCount.textContent = String(items.length);
-    riskAlertMeta.textContent = `${items.length} active high-risk proximity alert${items.length===1?'':'s'} for the selected traveller.`;
+    riskAlertMeta.textContent = `${items.length} actionable high-risk proximity alert${items.length===1?'':'s'} for the selected traveller.`;
     riskAlertList.innerHTML = items.slice(0,5).map(a=>`<div class="risk-alert-item"><b>${esc(a.title || 'Nearby high-risk incident')}</b><div class="muted">${esc(a.risk || 'high')} · ${esc(a.distance_km ?? '—')} km${a.city ? ' · '+esc(a.city) : ''}${a.incident_when ? ' · '+fmt(a.incident_when) : ''}</div></div>`).join('');
   }
 
