@@ -696,6 +696,62 @@
   const norm  = r => { r=(r||'').toLowerCase(); if(r.startsWith('hi')) return 'high'; if(r.startsWith('me')) return 'med'; return 'low'; };
   const label = r => r==='high'?'High':r==='med'?'Medium':'Low';
   const color = r => r==='high'?'#ff5a5f':r==='med'?'#f0b429':'#33c48d';
+
+  // CityIntel country hygiene layer.
+  // alerts-data.js is intentionally easy to edit, so country values can arrive with
+  // casing differences, spelling mistakes, city names, or compound labels. The risk
+  // drill-down selectors should use one canonical country label per place.
+  const COUNTRY_ALIASES = new Map(Object.entries({
+    'belgem': 'Belgium',
+    'belguim': 'Belgium',
+    'belgium': 'Belgium',
+    'france': 'France',
+    'italy': 'Italy',
+    'espana': 'Spain',
+    'españa': 'Spain',
+    'spain': 'Spain',
+    'england': 'United Kingdom',
+    'northern ireland': 'United Kingdom',
+    'scotland': 'United Kingdom',
+    'wales': 'United Kingdom',
+    'uk': 'United Kingdom',
+    'u.k.': 'United Kingdom',
+    'united kingdom': 'United Kingdom',
+    'great britain': 'United Kingdom',
+    'paris': 'France',
+    'dublin': 'Ireland',
+    'new york': 'United States',
+    'new york city': 'United States',
+    'washington d.c.': 'United States',
+    'washington dc': 'United States',
+    'usa': 'United States',
+    'u.s.a.': 'United States',
+    'us': 'United States',
+    'u.s.': 'United States',
+    'united states': 'United States',
+    'united states of america': 'United States',
+    'south korea': 'South Korea',
+    'czechia': 'Czech Republic',
+    'czech republic': 'Czech Republic'
+  }));
+  const titleCaseCountry = v => String(v || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map(part => /^(and|of|the)$/i.test(part) ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+  function normalizeCountryName(value){
+    const raw = String(value || '').trim().replace(/\s+/g, ' ');
+    if (!raw) return '';
+    // Compound labels such as "Italy / Spain" are useful in summaries, but they
+    // should not create fake country drill-down options. Keep those events in
+    // continent/global views instead.
+    if (/\s*[\/|]\s*/.test(raw)) return '';
+    const key = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (COUNTRY_ALIASES.has(key)) return COUNTRY_ALIASES.get(key);
+    return titleCaseCountry(raw);
+  }
+  const countryKey = value => normalizeCountryName(value).toLowerCase();
   const legacyKey = a => `${a.title}|${a.time||''}|${a.city||''}|${a.country||a.Country||''}`;
   const key   = a => a && a._rowId ? String(a._rowId) : legacyKey(a);
   const fmt   = t => { const d=new Date(t); return isNaN(d)?'':d.toLocaleString('en-GB',{timeZone:'Europe/London',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
@@ -723,21 +779,26 @@
     return items.slice(0,3);
   }
 
-  const all = (window.alertsData || []).map((a, idx) => ({
-    ...a,
-    _rowId: `alert-${idx}`,
-    risk: norm(a.risk),
-    continent: a.continent || a.Continent || '',
-    country: a.country || a.Country || '',
-    city: a.city || a.City || '',
-    _dt: a.time ? new Date(a.time) : null
-  }));
+  const normalizedRegionParam = normalizeCountryName(regionParam);
+  const all = (window.alertsData || []).map((a, idx) => {
+    const rawCountry = a.country || a.Country || '';
+    return {
+      ...a,
+      _rowId: `alert-${idx}`,
+      risk: norm(a.risk),
+      continent: a.continent || a.Continent || '',
+      countryRaw: rawCountry,
+      country: normalizeCountryName(rawCountry),
+      city: a.city || a.City || '',
+      _dt: a.time ? new Date(a.time) : null
+    };
+  });
 
-  const mode = continentParam ? 'continent' : cityParam ? 'city' : regionParam ? 'region' : 'global';
+  const mode = continentParam ? 'continent' : cityParam ? 'city' : normalizedRegionParam ? 'region' : 'global';
   const subset = mode === 'continent'
     ? all.filter(a => (a.continent||'').toLowerCase() === continentParam.toLowerCase())
     : mode === 'region'
-    ? all.filter(a => (a.country||'').toLowerCase() === regionParam.toLowerCase())
+    ? all.filter(a => countryKey(a.country) === countryKey(normalizedRegionParam))
     : mode === 'city'
     ? all.filter(a => (a.city||'').toLowerCase().includes(cityParam.toLowerCase()))
     : all;
@@ -891,7 +952,7 @@
   if (mode === 'continent') {
     pageTitle.textContent = `${continentParam} — Risk Detail`;
   } else if (mode === 'region') {
-    pageTitle.textContent = `${regionParam} — Risk Detail`;
+    pageTitle.textContent = `${normalizedRegionParam || regionParam} — Risk Detail`;
   } else if (mode === 'city') {
     pageTitle.textContent = `${cityParam} — Risk Detail`;
   } else {
@@ -964,7 +1025,7 @@
     locRisk.textContent = label(focus.risk);
     locRisk.className = 'tag ' + focus.risk;
   } else {
-    locCountry.textContent = mode==='global'?'Global':(mode==='continent'?continentParam:(mode==='region'?regionParam:(subset[0]?.country||'—')));
+    locCountry.textContent = mode==='global'?'Global':(mode==='continent'?continentParam:(mode==='region'?(normalizedRegionParam || regionParam):(subset[0]?.country||'—')));
     locCity.textContent = mode==='global'?'Multiple / global view':(mode==='continent'?'—':(mode==='region'?'Multiple / region view':cityParam));
     locRisk.textContent = label(badgeRisk);
     locRisk.className = 'tag ' + badgeRisk;
@@ -997,9 +1058,9 @@
         ? (focus?.continent || subset[0]?.continent || '')
         : '';
     const countryName = mode === 'region'
-      ? regionParam
+      ? (normalizedRegionParam || regionParam)
       : mode === 'city'
-        ? (regionParam || focus?.country || subset[0]?.country || '')
+        ? (normalizeCountryName(regionParam) || focus?.country || subset[0]?.country || '')
         : '';
     const cityName = mode === 'city'
       ? (cityParam || focus?.city || '')
@@ -1050,7 +1111,7 @@
     const clean = v => String(v || '').trim();
     const uniq = arr => Array.from(new Set(arr.map(clean).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
     const selectedContinent = mode === 'global' ? '' : (mode === 'continent' ? continentParam : (focus?.continent || subset[0]?.continent || ''));
-    const selectedCountry = mode === 'region' ? regionParam : mode === 'city' ? (regionParam || focus?.country || subset[0]?.country || '') : '';
+    const selectedCountry = mode === 'region' ? (normalizedRegionParam || regionParam) : mode === 'city' ? (normalizeCountryName(regionParam) || focus?.country || subset[0]?.country || '') : '';
     const selectedCity = mode === 'city' ? cityParam : '';
 
     const continents = uniq(all.map(a => a.continent));
@@ -1058,7 +1119,7 @@
       .filter(a => !selectedContinent || clean(a.continent).toLowerCase() === clean(selectedContinent).toLowerCase())
       .map(a => a.country));
     const cities = uniq(all
-      .filter(a => !selectedCountry || clean(a.country).toLowerCase() === clean(selectedCountry).toLowerCase())
+      .filter(a => !selectedCountry || countryKey(a.country) === countryKey(selectedCountry))
       .filter(a => selectedCountry || !selectedContinent || clean(a.continent).toLowerCase() === clean(selectedContinent).toLowerCase())
       .map(a => a.city));
 
@@ -1144,7 +1205,7 @@
   // render tables
   const lower = v => String(v || '').trim().toLowerCase();
   const focusCityKey = lower(focus?.city || cityParam);
-  const focusCountryKey = lower(focus?.country || regionParam);
+  const focusCountryKey = lower(focus?.country || normalizedRegionParam || regionParam);
   const focusContinentKey = lower(focus?.continent || continentParam);
 
   function rowContextMeta(r, tableKind='upcoming'){
@@ -1167,7 +1228,7 @@
     }
 
     if (mode === 'region') {
-      if (rowCountry && lower(regionParam) && rowCountry === lower(regionParam)) {
+      if (rowCountry && lower(normalizedRegionParam || regionParam) && rowCountry === lower(normalizedRegionParam || regionParam)) {
         return tableKind === 'recent'
           ? { text: '🌐 Earlier same-country', cls: 'match-exact' }
           : { text: '🌐 Exact country match', cls: 'match-exact' };
@@ -1248,7 +1309,7 @@
     let cityMarkerRegistry = new Map();
 
     const cityName = focus?.city || cityParam || 'Selected city';
-    const countryName = focus?.country || regionParam || subset[0]?.country || '';
+    const countryName = focus?.country || normalizeCountryName(regionParam) || subset[0]?.country || '';
 
     const cityViewToggle = document.getElementById('cityViewToggle');
     const cityRiskFilters = document.getElementById('cityRiskFilters');
@@ -1548,7 +1609,7 @@
     let countryMapInstance = null;
     let countryMarkerRegistry = new Map();
 
-    const countryName = mode === 'global' ? 'Global' : (regionParam || focus?.country || subset[0]?.country || 'Selected country');
+    const countryName = mode === 'global' ? 'Global' : (normalizeCountryName(regionParam) || focus?.country || subset[0]?.country || 'Selected country');
     const continentName = mode === 'global' ? 'Global' : (focus?.continent || subset[0]?.continent || '');
 
     const countryViewToggle = document.getElementById('countryViewToggle');
