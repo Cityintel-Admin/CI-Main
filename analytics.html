@@ -997,7 +997,7 @@
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
       <h3 style="margin:0">Revenue &amp; Pricing</h3>
-      <div class="legend">Phase C Step 4: commercial customer profiles now connect leads, trials, pricing, invoices, and customer value.</div>
+      <div class="legend">Phase C Step 7: invoice sending, payment links, lifecycle controls, and audit history.</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button id="commercialRefreshBtn" class="btn" type="button">Refresh</button>
@@ -4530,6 +4530,7 @@ document.addEventListener('DOMContentLoaded',function(){
     return `<button class="lead-action-btn reply" data-invoice-preview="${id}">Preview</button>
       <button class="lead-action-btn" data-invoice-select="${id}">Audit</button>
       ${payUrl ? `<button class="lead-action-btn reply" data-open-payment-link="${escapeHtml(payUrl)}">Open payment</button>` : `<button class="lead-action-btn trial" data-invoice-payment-link="${id}" ${disablePaid?'disabled':''}>Create payment link</button>`}
+      <button class="lead-action-btn approve" data-invoice-send="${id}" ${disablePaid?'disabled':''}>Send invoice</button>
       <button class="lead-action-btn contact" data-invoice-status="sent" data-invoice-id="${id}" ${disableSent?'disabled':''}>Mark sent</button>
       <button class="lead-action-btn approve" data-invoice-status="paid" data-invoice-id="${id}" ${disablePaid?'disabled':''}>Paid</button>
       <button class="lead-action-btn reject" data-invoice-status="void" data-invoice-id="${id}" ${disableVoid?'disabled':''}>Void</button>
@@ -4571,8 +4572,15 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!items.length) return alert('Select at least one invoice item.');
     const payload = { org_id:orgId, items, due_days:Number(document.getElementById('invDueDays')?.value||14), vat_rate:Number(document.getElementById('invVatRate')?.value||20), discount_type:document.getElementById('invDiscountType')?.value||'', discount_value:Number(document.getElementById('invDiscountValue')?.value||0), contact_name:document.getElementById('invContactName')?.value||'', contact_email:document.getElementById('invContactEmail')?.value||'', billing_address:document.getElementById('invBillingAddress')?.value||'', notes:document.getElementById('invNotes')?.value||'' };
     const data = await api('/api/admin/commercial/invoices', { method:'POST', body:JSON.stringify(payload) });
-    await loadInvoices(); renderInvoiceBuilder();
-    if(data.invoice?.id) window.open(API + '/api/admin/commercial/invoices/' + encodeURIComponent(data.invoice.id) + '/html', '_blank');
+    await loadInvoices();
+    if(data.invoice?.id){
+      commercialState.selectedInvoiceId = String(data.invoice.id);
+      await loadInvoiceEvents(data.invoice.id);
+      renderInvoiceBuilder();
+      window.open(API + '/api/admin/commercial/invoices/' + encodeURIComponent(data.invoice.id) + '/html', '_blank');
+    } else {
+      renderInvoiceBuilder();
+    }
   }
 
   async function load(){
@@ -4654,6 +4662,25 @@ document.addEventListener('DOMContentLoaded',function(){
       }catch(err){ alert(err.message||String(err)); } finally{ payBtn.disabled=false; }
       return;
     }
+    const sendBtn = e.target.closest('[data-invoice-send]');
+    if(sendBtn){
+      sendBtn.disabled = true;
+      try{
+        const id = sendBtn.getAttribute('data-invoice-send');
+        const invoice = (commercialState.invoices||[]).find(x=>String(x.id||'')===String(id));
+        const defaultEmail = invoice?.contact_email || (commercialState.profiles||[]).find(p=>String(p.org_id||'')===String(invoice?.org_id||''))?.billing_contact_email || '';
+        const to = prompt('Send invoice to:', defaultEmail || 'billing@company.com');
+        if(!to) return;
+        const createLink = !invoice?.stripe_payment_link_url && confirm('Create / include Stripe payment link if Stripe is configured?');
+        const data = await api('/api/admin/commercial/invoices/'+encodeURIComponent(id)+'/send-email', {method:'POST', body:JSON.stringify({to, create_payment_link:createLink, success_url:location.origin + location.pathname})});
+        if(!data.ok) throw new Error(data.error || 'Invoice email failed');
+        alert(data.sent ? 'Invoice email sent.' : 'Invoice send recorded.');
+        commercialState.selectedInvoiceId = id;
+        await loadInvoices(); await loadInvoiceEvents(id); renderInvoiceBuilder();
+      }catch(err){ alert(err.message||String(err)); } finally{ sendBtn.disabled=false; }
+      return;
+    }
+
     const portalBtn = e.target.closest('#customerPortalBtn');
     if(portalBtn){
       portalBtn.disabled = true;
