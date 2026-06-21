@@ -1020,7 +1020,22 @@
     <div class="revenue-panel revenue-alert" style="grid-column:span 3"><h4>Churn / expiry risk</h4><div id="commercialChurnRisk" class="money" style="font-size:26px">—</div><div class="legend">Trials ending within 7 days or inactive subscriptions</div></div>
     <div class="revenue-panel" style="grid-column:span 3"><h4>Invoice pipeline</h4><div id="commercialInvoicePipeline" class="money" style="font-size:26px">—</div><div class="legend">Profiles not yet billed</div></div>
     <div class="revenue-panel" style="grid-column:span 12"><h4>Stripe payment sync</h4><div class="legend">Webhook-ready: completed checkouts and payment events now update invoice status automatically. In Stripe, point the webhook endpoint to <b>https://api.cityintelapi.com/api/webhook</b> and enable checkout.session.completed, checkout.session.expired, payment_intent.succeeded, payment_intent.payment_failed, invoice.paid, invoice.payment_failed and charge.refunded.</div></div>
-    <div class="revenue-panel revenue-good" style="grid-column:span 12"><h4>Customer lifecycle automation</h4><div class="legend">Paid Stripe invoices now promote the organisation to Active Customer, close/convert trials, update billing and subscription status, and write a lifecycle timeline entry.</div><div id="commercialLifecycleRows" style="margin-top:10px"><div class="lead-muted">Loading lifecycle timeline…</div></div></div>
+    <div class="revenue-panel revenue-good" style="grid-column:span 12">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <h4>Customer timeline / commercial audit</h4>
+          <div class="legend">Full customer journey: access request → onboarding → trial → invoice → payment → active customer.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="commercialLifecycleOrgFilter" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:8px;min-width:220px">
+            <option value="">All organisations</option>
+          </select>
+          <button id="commercialLifecycleRefreshBtn" class="btn" type="button">Refresh timeline</button>
+        </div>
+      </div>
+      <div id="commercialLifecycleSummary" class="legend" style="margin-top:8px">Loading lifecycle summary…</div>
+      <div id="commercialLifecycleRows" style="margin-top:10px"><div class="lead-muted">Loading lifecycle timeline…</div></div>
+    </div>
 
     <div class="revenue-panel" style="grid-column:span 4"><h4>Conversion funnel</h4><div id="commercialFunnelRows"><div class="lead-muted">Loading…</div></div></div>
     <div class="revenue-panel" style="grid-column:span 4"><h4>Revenue by status</h4><div id="commercialStatusRows"><div class="lead-muted">Loading…</div></div></div>
@@ -4747,36 +4762,96 @@ document.addEventListener('DOMContentLoaded',function(){
     };
     return `<span class="commercial-pill" style="${map[tone]||''}">${esc(text || '—')}</span>`;
   }
+  function lifecycleTone(e){
+    const text = `${e.event_type || ''} ${e.to_status || ''} ${e.billing_status || ''}`.toLowerCase();
+    if(/paid|active|converted|onboarded|trial_activated/.test(text)) return 'active';
+    if(/failed|cancel|void|refund|expired|churn/.test(text)) return 'bad';
+    return 'warn';
+  }
+  function timelineIcon(type=''){
+    const t = String(type || '').toLowerCase();
+    if(t.includes('access')) return '📨';
+    if(t.includes('onboard')) return '🏢';
+    if(t.includes('trial')) return '⏱️';
+    if(t.includes('invoice')) return '🧾';
+    if(t.includes('payment') || t.includes('paid')) return '💳';
+    if(t.includes('active') || t.includes('converted')) return '✅';
+    return '•';
+  }
+  function eventTitle(e){
+    const map = {
+      access_request_created:'Access request created',
+      organisation_onboarded:'Organisation onboarded',
+      trial_activated:'Trial activated',
+      invoice_created:'Invoice created',
+      invoice_sent:'Invoice sent',
+      invoice_paid:'Invoice paid',
+      payment_succeeded:'Payment succeeded',
+      subscription_activated:'Subscription activated',
+      customer_activated:'Customer activated'
+    };
+    return map[e.event_type] || String(e.event_type || 'Lifecycle event').replace(/_/g,' ');
+  }
+  function populateLifecycleOrgFilter(orgs, selected){
+    const sel = document.getElementById('commercialLifecycleOrgFilter');
+    if(!sel) return;
+    const current = selected || sel.value || '';
+    const options = ['<option value="">All organisations</option>'].concat((orgs || []).map(o => {
+      const label = `${o.org_name || o.org_id || 'Organisation'}${o.customer_status ? ` · ${o.customer_status}` : ''}`;
+      return `<option value="${esc(o.org_id || '')}">${esc(label)}</option>`;
+    }));
+    sel.innerHTML = options.join('');
+    sel.value = current;
+  }
   async function loadLifecycle(){
     const el = document.getElementById('commercialLifecycleRows');
+    const summaryEl = document.getElementById('commercialLifecycleSummary');
     if(!el) return;
+    const filter = document.getElementById('commercialLifecycleOrgFilter')?.value || '';
     try{
-      const res = await fetch(`${API_BASE}/api/admin/commercial/lifecycle`, { headers: authHeaders() });
+      const qs = new URLSearchParams();
+      if(filter) qs.set('org_id', filter);
+      qs.set('limit','180');
+      const res = await fetch(`${API_BASE}/api/admin/commercial/lifecycle?${qs.toString()}`, { headers: authHeaders() });
       const data = await res.json().catch(()=>({}));
       if(!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      populateLifecycleOrgFilter(Array.isArray(data.orgs) ? data.orgs : [], filter);
       const events = Array.isArray(data.events) ? data.events : [];
+      const totals = data.totals || {};
+      if(summaryEl){
+        summaryEl.textContent = `${events.length} event(s) shown${filter ? ' for selected organisation' : ''} · ${totals.invoices || 0} invoice record(s) · ${totals.leads || 0} lead milestone(s)`;
+      }
       if(!events.length){
-        el.innerHTML = '<div class="lead-muted">No lifecycle events yet. The first paid Stripe invoice will appear here automatically.</div>';
+        el.innerHTML = '<div class="lead-muted">No lifecycle events yet. Access requests, trials, invoices and Stripe payment updates will appear here automatically.</div>';
         return;
       }
-      el.innerHTML = events.slice(0,8).map(e => {
-        const tone = /active|converted|paid/i.test(e.event_type || e.to_status || '') ? 'active' : (/failed|cancel|refund|attention/i.test(e.event_type || e.to_status || '') ? 'bad' : 'warn');
-        return `<div style="display:grid;grid-template-columns:190px minmax(0,1fr) 160px;gap:10px;align-items:start;padding:9px 0;border-top:1px solid var(--g600)">
-          <div>${badge(e.event_type || 'lifecycle', tone)}<div class="lead-muted" style="margin-top:4px">${esc(fmtDate(e.created_at))}</div></div>
-          <div><strong>${esc(e.org_name || e.org_id || 'Organisation')}</strong><div class="lead-muted">${esc(e.note || '')}</div><div class="lead-muted">Status: ${esc(e.from_status || '—')} → ${esc(e.to_status || '—')}</div></div>
-          <div class="lead-muted">${esc(e.invoice_id || '')}<br>${esc(e.actor || 'system')}</div>
+      el.innerHTML = events.slice(0,40).map(e => {
+        const tone = lifecycleTone(e);
+        const amount = Number.isFinite(Number(e.amount)) && Number(e.amount) > 0 ? ` · £${Number(e.amount).toFixed(2)}` : '';
+        const statusLine = (e.from_status || e.to_status) ? `<div class="lead-muted">Status: ${esc(e.from_status || '—')} → ${esc(e.to_status || '—')}</div>` : '';
+        const invoiceLine = (e.invoice_number || e.invoice_id) ? `<div class="lead-muted">Invoice: ${esc(e.invoice_number || e.invoice_id)}${amount}</div>` : '';
+        return `<div style="display:grid;grid-template-columns:42px 180px minmax(0,1fr) 170px;gap:10px;align-items:start;padding:11px 0;border-top:1px solid var(--g600)">
+          <div style="width:32px;height:32px;border-radius:999px;background:#1c1e22;border:1px solid var(--g500);display:grid;place-items:center">${timelineIcon(e.event_type)}</div>
+          <div>${badge(eventTitle(e), tone)}<div class="lead-muted" style="margin-top:4px">${esc(fmtDate(e.created_at))}</div><div class="lead-muted">${esc(e.source || '')}</div></div>
+          <div><strong>${esc(e.org_name || e.org_id || 'Organisation')}</strong><div class="lead-muted">${esc(e.note || '')}</div>${statusLine}${invoiceLine}</div>
+          <div class="lead-muted">${esc(e.actor || 'system')}<br>${esc(e.customer_status || '')}${e.subscription_status ? ` · ${esc(e.subscription_status)}` : ''}</div>
         </div>`;
       }).join('');
     }catch(e){
       el.innerHTML = `<div style="color:#fecaca">Unable to load lifecycle timeline: ${esc(e.message || e)}</div>`;
+      if(summaryEl) summaryEl.textContent = 'Timeline unavailable.';
     }
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLifecycle); else loadLifecycle();
+  document.addEventListener('change', e => {
+    if(e.target && e.target.id === 'commercialLifecycleOrgFilter') loadLifecycle();
+  });
   document.addEventListener('click', e => {
-    if(e.target && (e.target.id === 'commercialRefreshBtn' || e.target.id === 'invoiceRefreshBtn')) {
-      setTimeout(loadLifecycle, 800);
+    if(e.target && (e.target.id === 'commercialRefreshBtn' || e.target.id === 'invoiceRefreshBtn' || e.target.id === 'commercialLifecycleRefreshBtn')) {
+      setTimeout(loadLifecycle, 500);
     }
   });
+
 })();
 </script>
 
