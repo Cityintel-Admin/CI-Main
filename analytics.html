@@ -326,6 +326,9 @@
     .invoice-form-grid input,.invoice-form-grid textarea,.invoice-form-grid select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}.invoice-form-grid textarea{min-height:72px;resize:vertical}
     .invoice-item-row{display:grid;grid-template-columns:auto 1fr 90px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .invoice-history-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .invoice-history-row.selected{background:rgba(208,22,22,.08);border-radius:10px;padding-left:8px;padding-right:8px}
+    .invoice-event-row{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.025);margin-top:6px}
+    .invoice-event-row b{display:block;font-size:12px;color:#e5e7eb}.invoice-event-row span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
     @media(max-width:900px){.invoice-workbench{grid-template-columns:1fr}.invoice-form-grid{grid-template-columns:1fr}.invoice-form-grid .full{grid-column:auto}}
 
 
@@ -4491,7 +4494,7 @@ document.addEventListener('DOMContentLoaded',function(){
     }
   }
 
-  let commercialState = { pricing: [], profiles: [], invoices: [], selectedOrgId: '' };
+  let commercialState = { pricing: [], profiles: [], invoices: [], invoiceEvents: {}, selectedOrgId: '', selectedInvoiceId: '' };
   function invoiceStatusPill(status){ const s=String(status||'draft').toLowerCase(); const cls=s==='paid'?'active':(s==='void'?'disabled':''); return `<span class="commercial-pill ${cls}">${escapeHtml(s)}</span>`; }
   function renderInvoiceCustomerList(){
     if(!els.invoiceList) return;
@@ -4509,6 +4512,33 @@ document.addEventListener('DOMContentLoaded',function(){
     try{ const data = await api('/api/admin/commercial/invoices'); commercialState.invoices = data.invoices || []; }
     catch(e){ console.warn('invoice load failed', e); commercialState.invoices = []; }
   }
+  async function loadInvoiceEvents(invoiceId){
+    if(!invoiceId) return [];
+    try{
+      const data = await api('/api/admin/commercial/invoices/' + encodeURIComponent(invoiceId) + '/events');
+      commercialState.invoiceEvents[invoiceId] = data.events || [];
+      return commercialState.invoiceEvents[invoiceId];
+    }catch(e){ console.warn('invoice events load failed', e); commercialState.invoiceEvents[invoiceId] = []; return []; }
+  }
+  function invoiceLifecycleActions(i){
+    const id = escapeHtml(i.id||'');
+    const s = String(i.status||'draft').toLowerCase();
+    const disableSent = s === 'sent' || s === 'paid' || s === 'void' || s === 'cancelled';
+    const disablePaid = s === 'paid' || s === 'void' || s === 'cancelled';
+    const disableVoid = s === 'paid' || s === 'void' || s === 'cancelled';
+    return `<button class="lead-action-btn reply" data-invoice-preview="${id}">Preview</button>
+      <button class="lead-action-btn" data-invoice-select="${id}">Audit</button>
+      <button class="lead-action-btn contact" data-invoice-status="sent" data-invoice-id="${id}" ${disableSent?'disabled':''}>Mark sent</button>
+      <button class="lead-action-btn approve" data-invoice-status="paid" data-invoice-id="${id}" ${disablePaid?'disabled':''}>Paid</button>
+      <button class="lead-action-btn reject" data-invoice-status="void" data-invoice-id="${id}" ${disableVoid?'disabled':''}>Void</button>
+      <button class="lead-action-btn reject" data-invoice-status="cancelled" data-invoice-id="${id}" ${s==='cancelled'||s==='paid'?'disabled':''}>Cancel</button>`;
+  }
+  function renderInvoiceEvents(invoiceId){
+    const events = commercialState.invoiceEvents[invoiceId] || [];
+    if(!invoiceId) return '<div class="lead-muted">Select an invoice to view its lifecycle audit trail.</div>';
+    if(!events.length) return '<div class="lead-muted">No lifecycle audit events loaded for this invoice yet.</div>';
+    return events.map(ev=>`<div class="invoice-event-row"><b>${escapeHtml(ev.event_type||'event')} ${ev.from_status||ev.to_status?`· ${escapeHtml(ev.from_status||'—')} → ${escapeHtml(ev.to_status||'—')}`:''}</b><span>${escapeHtml(fmtDate(ev.created_at)||ev.created_at||'')} · ${escapeHtml(ev.actor||'system')}</span>${ev.note?`<span>${escapeHtml(ev.note)}</span>`:''}</div>`).join('');
+  }
   function renderInvoiceBuilder(){
     if(!els.invoiceBody) return;
     const orgId = commercialState.selectedOrgId;
@@ -4519,7 +4549,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const activePrices = (commercialState.pricing||[]).filter(p=>Number(p.active)!==0);
     const defaultPlan = activePrices.find(p=>String(p.item_type||'')==='plan') || activePrices[0];
     const history = (commercialState.invoices||[]).filter(i=>String(i.org_id||'')===String(orgId));
-    const historyHtml = history.length ? history.map(i=>`<div class="invoice-history-row"><div><b>${escapeHtml(i.invoice_number||i.id)}</b><div class="lead-muted">${escapeHtml(i.invoice_date||'')} · due ${escapeHtml(i.due_date||'')} · ${money(i.total||0)}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${invoiceStatusPill(i.status)}<button class="lead-action-btn reply" data-invoice-preview="${escapeHtml(i.id)}">Preview</button><button class="lead-action-btn contact" data-invoice-status="sent" data-invoice-id="${escapeHtml(i.id)}">Mark sent</button><button class="lead-action-btn approve" data-invoice-status="paid" data-invoice-id="${escapeHtml(i.id)}">Paid</button></div></div>`).join('') : '<div class="lead-muted">No invoices generated for this customer yet.</div>';
+    const historyHtml = history.length ? history.map(i=>`<div class="invoice-history-row ${commercialState.selectedInvoiceId===String(i.id||'')?'selected':''}"><div><b>${escapeHtml(i.invoice_number||i.id)}</b><div class="lead-muted">${escapeHtml(i.invoice_date||'')} · due ${escapeHtml(i.due_date||'')} · ${money(i.total||0)}</div><div class="lead-muted">${i.sent_at?'Sent '+escapeHtml(fmtDate(i.sent_at)):''}${i.paid_at?' · Paid '+escapeHtml(fmtDate(i.paid_at)):''}${i.voided_at?' · Voided '+escapeHtml(fmtDate(i.voided_at)):''}${i.cancelled_at?' · Cancelled '+escapeHtml(fmtDate(i.cancelled_at)):''}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${invoiceStatusPill(i.status)}${invoiceLifecycleActions(i)}</div></div>`).join('') : '<div class="lead-muted">No invoices generated for this customer yet.</div>';
     els.invoiceBody.innerHTML = `<div class="invoice-form-grid">
       <div><label class="lead-muted">Contact name</label><input id="invContactName" value="${escapeHtml(profile.billing_contact_name||'')}" placeholder="Finance contact"></div>
       <div><label class="lead-muted">Contact email</label><input id="invContactEmail" value="${escapeHtml(profile.billing_contact_email||'')}" placeholder="billing@company.com"></div>
@@ -4531,7 +4561,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="full"><label class="lead-muted">Invoice items</label><div id="invItemList">${activePrices.map(p=>`<label class="invoice-item-row"><input type="checkbox" data-inv-catalogue="${escapeHtml(p.id)}" ${p.id===defaultPlan?.id?'checked':''}><span>${escapeHtml(p.item_name)} <small class="lead-muted">${escapeHtml(p.category||p.item_type||'')}</small></span><input type="number" min="0" step="0.01" data-inv-price="${escapeHtml(p.id)}" value="${Number(p.monthly_price||0)}"></label>`).join('') || '<div class="lead-muted">No active pricing items. Seed or add items first.</div>'}</div></div>
       <div class="full"><label class="lead-muted">Notes</label><textarea id="invNotes" placeholder="Optional invoice notes"></textarea></div>
       <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="invoiceGenerateBtn" class="btn primary" type="button">Generate draft invoice</button></div>
-    </div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div>`;
+    </div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Lifecycle audit trail</h3><div id="invoiceAuditTrail">${renderInvoiceEvents(commercialState.selectedInvoiceId)}</div></div>`;
   }
   async function generateInvoice(){
     const orgId = commercialState.selectedOrgId; if(!orgId) return alert('Select a customer profile first.');
@@ -4552,6 +4582,10 @@ document.addEventListener('DOMContentLoaded',function(){
       commercialState.profiles = data.profiles || [];
       if(!commercialState.selectedOrgId && commercialState.profiles.length) commercialState.selectedOrgId = String(commercialState.profiles[0].org_id || '');
       await loadInvoices();
+      if(!commercialState.selectedInvoiceId && commercialState.selectedOrgId){
+        const firstInv = (commercialState.invoices||[]).find(i=>String(i.org_id||'')===String(commercialState.selectedOrgId));
+        if(firstInv?.id){ commercialState.selectedInvoiceId = String(firstInv.id); await loadInvoiceEvents(firstInv.id); }
+      }
       renderPricing(commercialState.pricing);
       renderSummary(data.summary||{}, commercialState.profiles);
       renderInvoiceCustomerList();
@@ -4588,15 +4622,35 @@ document.addEventListener('DOMContentLoaded',function(){
 
   document.addEventListener('click', async e=>{
     const profileBtn = e.target.closest('[data-invoice-profile]');
-    if(profileBtn){ commercialState.selectedOrgId = profileBtn.getAttribute('data-invoice-profile') || ''; renderInvoiceCustomerList(); renderInvoiceBuilder(); return; }
+    if(profileBtn){
+      commercialState.selectedOrgId = profileBtn.getAttribute('data-invoice-profile') || '';
+      const firstInv = (commercialState.invoices||[]).find(i=>String(i.org_id||'')===String(commercialState.selectedOrgId));
+      commercialState.selectedInvoiceId = firstInv?.id ? String(firstInv.id) : '';
+      if(commercialState.selectedInvoiceId) await loadInvoiceEvents(commercialState.selectedInvoiceId);
+      renderInvoiceCustomerList(); renderInvoiceBuilder(); return;
+    }
     const genBtn = e.target.closest('#invoiceGenerateBtn');
     if(genBtn){ genBtn.disabled=true; try{ await generateInvoice(); }catch(err){ alert(err.message||String(err)); } finally{ genBtn.disabled=false; } return; }
     const previewBtn = e.target.closest('[data-invoice-preview]');
     if(previewBtn){ window.open(API + '/api/admin/commercial/invoices/' + encodeURIComponent(previewBtn.getAttribute('data-invoice-preview')) + '/html', '_blank'); return; }
+    const selectBtn = e.target.closest('[data-invoice-select]');
+    if(selectBtn){ commercialState.selectedInvoiceId = selectBtn.getAttribute('data-invoice-select') || ''; await loadInvoiceEvents(commercialState.selectedInvoiceId); renderInvoiceBuilder(); return; }
     const statusBtn = e.target.closest('[data-invoice-status]');
-    if(statusBtn){ statusBtn.disabled=true; try{ await api('/api/admin/commercial/invoices/'+encodeURIComponent(statusBtn.getAttribute('data-invoice-id')), {method:'PUT', body:JSON.stringify({status:statusBtn.getAttribute('data-invoice-status')})}); await loadInvoices(); renderInvoiceBuilder(); }catch(err){ alert(err.message||String(err)); } finally{ statusBtn.disabled=false; } return; }
+    if(statusBtn){
+      statusBtn.disabled=true;
+      try{
+        const status = statusBtn.getAttribute('data-invoice-status');
+        const id = statusBtn.getAttribute('data-invoice-id');
+        let note = '';
+        if(['void','cancelled','paid'].includes(String(status||''))){ note = prompt(`Optional note for marking invoice ${status}:`, '') || ''; }
+        await api('/api/admin/commercial/invoices/'+encodeURIComponent(id), {method:'PUT', body:JSON.stringify({status, note})});
+        commercialState.selectedInvoiceId = id;
+        await loadInvoices(); await loadInvoiceEvents(id); renderInvoiceBuilder();
+      }catch(err){ alert(err.message||String(err)); } finally{ statusBtn.disabled=false; }
+      return;
+    }
   });
-  els.invoiceRefresh?.addEventListener('click', async()=>{ await loadInvoices(); renderInvoiceBuilder(); });
+  els.invoiceRefresh?.addEventListener('click', async()=>{ await loadInvoices(); if(commercialState.selectedInvoiceId) await loadInvoiceEvents(commercialState.selectedInvoiceId); renderInvoiceBuilder(); });
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', load); else load();
 })();
