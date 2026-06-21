@@ -296,6 +296,15 @@
     .commercial-form-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
     .commercial-form-row input,.commercial-form-row select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}
     @media(max-width:1000px){.commercial-form-row{grid-template-columns:1fr 1fr}.commercial-grid{grid-template-columns:1fr}.commercial-grid>*{grid-column:1/-1!important}}
+    .renewal-table-wrap{overflow:auto;border:1px solid var(--g600);border-radius:12px;background:#111214}
+    .renewal-table{width:100%;border-collapse:collapse;min-width:980px}
+    .renewal-table th,.renewal-table td{padding:10px;border-bottom:1px solid var(--g600);text-align:left;vertical-align:top}
+    .renewal-table th{background:#1c1e22;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .renewal-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid var(--g500);font-size:12px;background:#1c1e22;color:#cbd5e1}
+    .renewal-badge.active,.renewal-badge.renewed{border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)}
+    .renewal-badge.renewal_due_soon,.renewal-badge.renewal_in_progress{border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)}
+    .renewal-badge.expired,.renewal-badge.cancelled{border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)}
+
 
     /* ===== Revenue & Pricing dashboard layout polish ===== */
     .revenue-ops-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin:0 0 16px}
@@ -4453,7 +4462,8 @@ document.addEventListener('DOMContentLoaded',function(){
   const els = {
     mrr: document.getElementById('commercialMrr'), arr: document.getElementById('commercialArr'), pipeline: document.getElementById('commercialPipeline'), profiles: document.getElementById('commercialProfiles'),
     body: document.getElementById('commercialPricingBody'), summary: document.getElementById('commercialCustomerSummary'), status: document.getElementById('commercialStatus'), refresh: document.getElementById('commercialRefreshBtn'), sync: document.getElementById('commercialSyncBtn'), seed: document.getElementById('commercialSeedBtn'), add: document.getElementById('priceAddBtn'), paying: document.getElementById('commercialPayingClients'), trials: document.getElementById('commercialTrialClients'), trialMeta: document.getElementById('commercialTrialMeta'), churn: document.getElementById('commercialChurnRisk'), invoicePipeline: document.getElementById('commercialInvoicePipeline'), funnelRows: document.getElementById('commercialFunnelRows'), statusRows: document.getElementById('commercialStatusRows'), regionRows: document.getElementById('commercialRegionRows'),
-    invoiceList: document.getElementById('invoiceCustomerList'), invoiceTitle: document.getElementById('invoiceCustomerTitle'), invoiceMeta: document.getElementById('invoiceCustomerMeta'), invoiceBody: document.getElementById('invoiceBuilderBody'), invoiceRefresh: document.getElementById('invoiceRefreshBtn')
+    invoiceList: document.getElementById('invoiceCustomerList'), invoiceTitle: document.getElementById('invoiceCustomerTitle'), invoiceMeta: document.getElementById('invoiceCustomerMeta'), invoiceBody: document.getElementById('invoiceBuilderBody'), invoiceRefresh: document.getElementById('invoiceRefreshBtn'),
+    renewalRows: document.getElementById('renewalRows'), renewalRefresh: document.getElementById('renewalsRefreshBtn'), renewal30: document.getElementById('renewal30'), renewal60: document.getElementById('renewal60'), renewal90: document.getElementById('renewal90'), renewalOverdue: document.getElementById('renewalOverdue'), renewalProgress: document.getElementById('renewalProgress'), renewalPipeline: document.getElementById('renewalPipeline')
   };
   function renderPricing(items=[]){
     if(!els.body) return;
@@ -4511,7 +4521,41 @@ document.addEventListener('DOMContentLoaded',function(){
     }
   }
 
-  let commercialState = { pricing: [], profiles: [], invoices: [], invoiceEvents: {}, selectedOrgId: '', selectedInvoiceId: '', stripeConfigured: false };
+
+  function renewalBadge(status){ const s=String(status||'active').toLowerCase(); const label=String(status||'active').replace(/_/g,' '); return `<span class="renewal-badge ${escapeHtml(s)}">${escapeHtml(label)}</span>`; }
+  function renewalDaysText(days){ if(days===null || days===undefined || days==='') return 'No date set'; const n=Number(days); if(!Number.isFinite(n)) return 'No date set'; if(n<0) return `${Math.abs(n)}d overdue`; if(n===0) return 'Due today'; return `${n}d remaining`; }
+  function renderRenewals(data={}){
+    const summary=data.summary||{};
+    if(els.renewal30) els.renewal30.textContent=String(summary.upcoming_30||0);
+    if(els.renewal60) els.renewal60.textContent=String(summary.upcoming_60||0);
+    if(els.renewal90) els.renewal90.textContent=String(summary.upcoming_90||0);
+    if(els.renewalOverdue) els.renewalOverdue.textContent=String(summary.overdue||0);
+    if(els.renewalProgress) els.renewalProgress.textContent=String(summary.in_progress||0);
+    if(els.renewalPipeline) els.renewalPipeline.textContent=money(summary.renewal_pipeline_value||0);
+    const rows=data.renewals||[];
+    if(!els.renewalRows) return;
+    if(!rows.length){ els.renewalRows.innerHTML='<tr><td colspan="7" class="lead-muted">No renewal records yet. Active/trial customers will appear here when they have a renewal or next invoice date.</td></tr>'; return; }
+    els.renewalRows.innerHTML=rows.slice(0,80).map(p=>{
+      const org=escapeHtml(p.org_name||p.org_id||'Customer');
+      const id=escapeHtml(p.org_id||'');
+      const date=escapeHtml((p.renewal_date||'').slice(0,10)||'—');
+      const owner=escapeHtml(p.renewal_owner||p.account_manager||'Unassigned');
+      const notice=p.renewal_notice_sent_at ? escapeHtml(fmtDate(p.renewal_notice_sent_at)) : 'Not sent';
+      return `<tr data-renewal-org="${id}"><td><b>${org}</b><div class="lead-muted">${escapeHtml(p.plan_name||'Package pending')} · ${escapeHtml(p.customer_status||'')}</div></td><td>${renewalBadge(p.renewal_status_auto||p.renewal_status)}<div class="lead-muted">${escapeHtml(renewalDaysText(p.renewal_days))}</div></td><td><input data-renewal-field="renewal_date" type="date" value="${date==='—'?'':date}" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:8px;padding:7px"></td><td><input data-renewal-field="renewal_owner" value="${owner==='Unassigned'?'':owner}" placeholder="Owner" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:8px;padding:7px;width:140px"></td><td>${money(p.monthly_value||p.expected_value||0)}<div class="lead-muted">monthly</div></td><td>${notice}</td><td><select data-renewal-field="renewal_status" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:8px;padding:7px">${['active','renewal_due_soon','renewal_in_progress','renewed','cancelled','expired'].map(x=>`<option value="${x}" ${String(p.renewal_status_auto||p.renewal_status||'active')===x?'selected':''}>${x.replace(/_/g,' ')}</option>`).join('')}</select> <button class="lead-action-btn approve" data-action="save-renewal">Save</button></td></tr>`;
+    }).join('');
+  }
+  async function loadRenewals(){ try{ const data=await api('/api/admin/commercial/renewals'); renderRenewals(data); }catch(e){ if(els.renewalRows) els.renewalRows.innerHTML=`<tr><td colspan="7" class="lead-muted">Renewals unavailable: ${escapeHtml(e.message||String(e))}</td></tr>`; } }
+  async function saveRenewal(btn){
+    const tr=btn.closest('[data-renewal-org]'); if(!tr) return;
+    const orgId=tr.getAttribute('data-renewal-org');
+    const payload={}; tr.querySelectorAll('[data-renewal-field]').forEach(el=>payload[el.getAttribute('data-renewal-field')]=el.value);
+    btn.disabled=true; btn.textContent='Saving…';
+    try{ await api('/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/renewal',{method:'PUT',body:JSON.stringify(payload)}); await loadRenewals(); await loadLifecycle(); }
+    catch(e){ alert(e.message||String(e)); }
+    finally{ btn.disabled=false; btn.textContent='Save'; }
+  }
+
+  let commercialState = { pricing: [], profiles: [], renewals: [], invoices: [], invoiceEvents: {}, selectedOrgId: '', selectedInvoiceId: '', stripeConfigured: false };
   function invoiceStatusPill(status){ const s=String(status||'draft').toLowerCase(); const cls=s==='paid'?'active':(s==='void'?'disabled':''); return `<span class="commercial-pill ${cls}">${escapeHtml(s)}</span>`; }
   function renderInvoiceCustomerList(){
     if(!els.invoiceList) return;
@@ -4617,6 +4661,7 @@ document.addEventListener('DOMContentLoaded',function(){
       }
       renderPricing(commercialState.pricing);
       renderSummary(data.summary||{}, commercialState.profiles);
+      await loadRenewals();
       renderInvoiceCustomerList();
       renderInvoiceBuilder();
       if(els.status) els.status.textContent='Updated';
