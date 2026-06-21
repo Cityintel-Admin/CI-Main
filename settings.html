@@ -594,6 +594,12 @@ html,body{overflow-x:hidden;max-width:100vw}
     <div class="row" id="billing-renewal-owner-row" style="display:none;">
       <span class="label">Customer success owner</span><span id="billing-renewal-owner" class="value">—</span>
     </div>
+    <div class="row" id="billing-health-row" style="display:none;">
+      <span class="label">Customer health</span><span id="billing-health" class="value">—</span>
+    </div>
+    <div class="row" id="billing-health-factor-row" style="display:none;">
+      <span class="label">Health factors</span><span id="billing-health-factor" class="value">—</span>
+    </div>
     <div id="billingTimelineBox" style="display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
       <div class="label" style="margin-bottom:6px">Recent commercial timeline</div>
       <div id="billingTimelineRows" style="display:grid;gap:7px;color:#cbd5e1;font-size:12px"></div>
@@ -792,6 +798,10 @@ html,body{overflow-x:hidden;max-width:100vw}
     renewal: document.getElementById('billing-renewal'),
     renewalOwnerRow: document.getElementById('billing-renewal-owner-row'),
     renewalOwner: document.getElementById('billing-renewal-owner'),
+    healthRow: document.getElementById('billing-health-row'),
+    health: document.getElementById('billing-health'),
+    healthFactorRow: document.getElementById('billing-health-factor-row'),
+    healthFactor: document.getElementById('billing-health-factor'),
     btn: document.getElementById('btnBilling')
   };
 
@@ -847,6 +857,20 @@ html,body{overflow-x:hidden;max-width:100vw}
     const data = await res.json().catch(()=>({}));
     if(!res.ok || data.ok === false) return null;
     return (data.renewals || []).find(r => String(r.org_id || '') === String(orgId)) || null;
+  }
+
+  async function fetchCommercialHealth(orgId){
+    if(!orgId) return null;
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    const res = await fetch(API_BASE + '/api/admin/commercial/health', { headers:{ 'X-User-Email':p.email||'', 'X-User-Name':p.name||'', 'X-User-Role':p.role||'' } });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok || data.ok === false) return null;
+    return (data.health || []).find(r => String(r.org_id || '') === String(orgId)) || null;
+  }
+
+  function healthLabel(status){
+    const s = String(status || 'unknown').replace(/_/g,' ');
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
   function renewalDaysText(days){
@@ -958,6 +982,18 @@ html,body{overflow-x:hidden;max-width:100vw}
             if(els.renewalOwnerRow && els.renewalOwner){
               els.renewalOwnerRow.style.display = '';
               els.renewalOwner.textContent = renewal.renewal_owner || renewal.account_manager || 'Not assigned';
+            }
+          }
+        }
+        if(orgId && els.healthRow && els.health){
+          const health = await fetchCommercialHealth(orgId);
+          if(health){
+            els.healthRow.style.display = '';
+            els.health.textContent = `${Number(health.health_score || 0)}/100 · ${healthLabel(health.health_status)}`;
+            const factors = Array.isArray(health.health_factors) ? health.health_factors : [];
+            if(els.healthFactorRow && els.healthFactor && factors.length){
+              els.healthFactorRow.style.display = '';
+              els.healthFactor.textContent = factors.slice(0,3).map(f => `${f.label}: ${f.detail || f.value}`).join(' · ');
             }
           }
         }
