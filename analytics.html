@@ -994,10 +994,11 @@
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
       <h3 style="margin:0">Revenue &amp; Pricing</h3>
-      <div class="legend">Phase C Step 2: commercial operations dashboard, conversion funnel, pricing catalogue, and customer value — now grouped into clear dashboard rows.</div>
+      <div class="legend">Phase C Step 4: commercial customer profiles now connect leads, trials, pricing, invoices, and customer value.</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button id="commercialRefreshBtn" class="btn" type="button">Refresh</button>
+      <button id="commercialSyncBtn" class="btn" type="button">Sync customer profiles</button>
       <button id="commercialSeedBtn" class="btn" type="button">Seed defaults</button>
     </div>
   </div>
@@ -4431,7 +4432,7 @@ document.addEventListener('DOMContentLoaded',function(){
   async function api(path, opts={}){ const res=await fetch(API+path,{...opts,headers:{...headers(),...(opts.headers||{})}}); const data=await res.json().catch(()=>({})); if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText); return data; }
   const els = {
     mrr: document.getElementById('commercialMrr'), arr: document.getElementById('commercialArr'), pipeline: document.getElementById('commercialPipeline'), profiles: document.getElementById('commercialProfiles'),
-    body: document.getElementById('commercialPricingBody'), summary: document.getElementById('commercialCustomerSummary'), status: document.getElementById('commercialStatus'), refresh: document.getElementById('commercialRefreshBtn'), seed: document.getElementById('commercialSeedBtn'), add: document.getElementById('priceAddBtn'), paying: document.getElementById('commercialPayingClients'), trials: document.getElementById('commercialTrialClients'), trialMeta: document.getElementById('commercialTrialMeta'), churn: document.getElementById('commercialChurnRisk'), invoicePipeline: document.getElementById('commercialInvoicePipeline'), funnelRows: document.getElementById('commercialFunnelRows'), statusRows: document.getElementById('commercialStatusRows'), regionRows: document.getElementById('commercialRegionRows'),
+    body: document.getElementById('commercialPricingBody'), summary: document.getElementById('commercialCustomerSummary'), status: document.getElementById('commercialStatus'), refresh: document.getElementById('commercialRefreshBtn'), sync: document.getElementById('commercialSyncBtn'), seed: document.getElementById('commercialSeedBtn'), add: document.getElementById('priceAddBtn'), paying: document.getElementById('commercialPayingClients'), trials: document.getElementById('commercialTrialClients'), trialMeta: document.getElementById('commercialTrialMeta'), churn: document.getElementById('commercialChurnRisk'), invoicePipeline: document.getElementById('commercialInvoicePipeline'), funnelRows: document.getElementById('commercialFunnelRows'), statusRows: document.getElementById('commercialStatusRows'), regionRows: document.getElementById('commercialRegionRows'),
     invoiceList: document.getElementById('invoiceCustomerList'), invoiceTitle: document.getElementById('invoiceCustomerTitle'), invoiceMeta: document.getElementById('invoiceCustomerMeta'), invoiceBody: document.getElementById('invoiceBuilderBody'), invoiceRefresh: document.getElementById('invoiceRefreshBtn')
   };
   function renderPricing(items=[]){
@@ -4495,12 +4496,12 @@ document.addEventListener('DOMContentLoaded',function(){
   function renderInvoiceCustomerList(){
     if(!els.invoiceList) return;
     const profiles = commercialState.profiles || [];
-    if(!profiles.length){ els.invoiceList.innerHTML='<div class="lead-muted" style="padding:12px">No commercial customer profiles yet.</div>'; return; }
+    if(!profiles.length){ els.invoiceList.innerHTML='<div class="lead-muted" style="padding:12px">No commercial customer profiles yet. Use Sync customer profiles after onboarding or activating a trial.</div>'; return; }
     els.invoiceList.innerHTML = profiles.map(p=>{
       const active = commercialState.selectedOrgId === String(p.org_id||'');
       return `<button class="invoice-profile-btn ${active?'active':''}" data-invoice-profile="${escapeHtml(p.org_id||'')}">
         <div style="display:flex;justify-content:space-between;gap:8px"><b>${escapeHtml(p.org_name||p.org_id||'Organisation')}</b><span>${invoiceStatusPill(p.billing_status||'not_started')}</span></div>
-        <div class="lead-muted" style="margin-top:4px">${escapeHtml(p.customer_status||'lead')} · ${money(p.monthly_value||0)}/mo · ${escapeHtml(p.subscription_status||'inactive')}</div>
+        <div class="lead-muted" style="margin-top:4px">${escapeHtml(p.customer_status||'lead')} · ${money(p.monthly_value||0)}/mo · ${escapeHtml(p.subscription_status||'inactive')}</div><div class="lead-muted" style="margin-top:2px">${escapeHtml(p.plan_name||'Package pending')} · seats ${Number(p.seat_limit||0)||'—'} · renewal ${escapeHtml((p.renewal_date||'').slice(0,10)||'—')}</div>
       </button>`;
     }).join('');
   }
@@ -4514,14 +4515,14 @@ document.addEventListener('DOMContentLoaded',function(){
     const profile = (commercialState.profiles||[]).find(p=>String(p.org_id||'')===String(orgId));
     if(!profile){ els.invoiceBody.innerHTML='<div class="lead-muted">Choose a customer profile from the left.</div>'; return; }
     if(els.invoiceTitle) els.invoiceTitle.textContent = profile.org_name || 'Customer profile';
-    if(els.invoiceMeta) els.invoiceMeta.textContent = `${profile.customer_status||'lead'} · ${profile.subscription_status||'inactive'} · ${money(profile.monthly_value||0)} monthly value`;
+    if(els.invoiceMeta) els.invoiceMeta.textContent = `${profile.customer_status||'lead'} · ${profile.subscription_status||'inactive'} · ${profile.plan_name||'Package pending'} · ${money(profile.monthly_value||0)} monthly value`;
     const activePrices = (commercialState.pricing||[]).filter(p=>Number(p.active)!==0);
     const defaultPlan = activePrices.find(p=>String(p.item_type||'')==='plan') || activePrices[0];
     const history = (commercialState.invoices||[]).filter(i=>String(i.org_id||'')===String(orgId));
     const historyHtml = history.length ? history.map(i=>`<div class="invoice-history-row"><div><b>${escapeHtml(i.invoice_number||i.id)}</b><div class="lead-muted">${escapeHtml(i.invoice_date||'')} · due ${escapeHtml(i.due_date||'')} · ${money(i.total||0)}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${invoiceStatusPill(i.status)}<button class="lead-action-btn reply" data-invoice-preview="${escapeHtml(i.id)}">Preview</button><button class="lead-action-btn contact" data-invoice-status="sent" data-invoice-id="${escapeHtml(i.id)}">Mark sent</button><button class="lead-action-btn approve" data-invoice-status="paid" data-invoice-id="${escapeHtml(i.id)}">Paid</button></div></div>`).join('') : '<div class="lead-muted">No invoices generated for this customer yet.</div>';
     els.invoiceBody.innerHTML = `<div class="invoice-form-grid">
-      <div><label class="lead-muted">Contact name</label><input id="invContactName" placeholder="Finance contact"></div>
-      <div><label class="lead-muted">Contact email</label><input id="invContactEmail" value="" placeholder="billing@company.com"></div>
+      <div><label class="lead-muted">Contact name</label><input id="invContactName" value="${escapeHtml(profile.billing_contact_name||'')}" placeholder="Finance contact"></div>
+      <div><label class="lead-muted">Contact email</label><input id="invContactEmail" value="${escapeHtml(profile.billing_contact_email||'')}" placeholder="billing@company.com"></div>
       <div><label class="lead-muted">Due in days</label><input id="invDueDays" type="number" min="0" value="14"></div>
       <div><label class="lead-muted">VAT %</label><input id="invVatRate" type="number" min="0" step="0.01" value="20"></div>
       <div><label class="lead-muted">Discount</label><select id="invDiscountType"><option value="">No discount</option><option value="percent">Percent %</option><option value="fixed">Fixed £</option></select></div>
@@ -4577,6 +4578,7 @@ document.addEventListener('DOMContentLoaded',function(){
     try{ await saveRow(tr, btn.dataset.action==='toggle-price'); }catch(err){ alert(err.message||String(err)); } finally{ btn.disabled=false; }
   });
   els.refresh?.addEventListener('click', load);
+  els.sync?.addEventListener('click', async()=>{ try{ if(els.status) els.status.textContent='Syncing profiles…'; await api('/api/admin/commercial/sync', {method:'POST', body:'{}'}); await load(); }catch(e){ alert(e.message||String(e)); if(els.status) els.status.textContent='Sync failed'; } });
   els.seed?.addEventListener('click', async()=>{ try{ await api('/api/admin/commercial/seed', {method:'POST', body:'{}'}); await load(); }catch(e){ alert(e.message||String(e)); } });
   els.add?.addEventListener('click', async()=>{
     const item_name=document.getElementById('priceItemName')?.value||''; const category=document.getElementById('priceCategory')?.value||''; const item_type=document.getElementById('priceItemType')?.value||'addon'; const monthly_price=Number(document.getElementById('priceMonthly')?.value||0);
