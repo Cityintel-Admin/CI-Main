@@ -316,6 +316,19 @@
     @media(max-width:1100px){.revenue-ops-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.revenue-ops-grid>*{grid-column:span 3!important}}
     @media(max-width:720px){.revenue-ops-grid{grid-template-columns:1fr}.revenue-ops-grid>*{grid-column:1/-1!important}.commercial-form-row{grid-template-columns:1fr}}
 
+    .invoice-workbench{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,1fr);gap:14px;margin-top:14px}
+    .invoice-list{border:1px solid var(--g600);border-radius:12px;overflow:hidden;background:#111214;min-height:280px}
+    .invoice-list-head{padding:10px 12px;background:#1c1e22;border-bottom:1px solid var(--g600);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#cbd5e1;font-weight:800}
+    .invoice-profile-btn{width:100%;text-align:left;background:transparent;color:var(--text);border:0;border-bottom:1px solid var(--g600);padding:12px;cursor:pointer;font:inherit}
+    .invoice-profile-btn:hover,.invoice-profile-btn.active{background:rgba(208,22,22,.15)}
+    .invoice-panel{border:1px solid var(--g600);border-radius:12px;background:#111214;min-height:280px;padding:14px}
+    .invoice-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.invoice-form-grid .full{grid-column:1/-1}
+    .invoice-form-grid input,.invoice-form-grid textarea,.invoice-form-grid select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}.invoice-form-grid textarea{min-height:72px;resize:vertical}
+    .invoice-item-row{display:grid;grid-template-columns:auto 1fr 90px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .invoice-history-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    @media(max-width:900px){.invoice-workbench{grid-template-columns:1fr}.invoice-form-grid{grid-template-columns:1fr}.invoice-form-grid .full{grid-column:auto}}
+
+
   </style>
 </head>
 
@@ -1037,6 +1050,23 @@
       <div id="commercialCustomerSummary" style="display:grid;gap:8px">
         <div class="lead-muted">Loading customer profile summary…</div>
       </div>
+    </div>
+  </div>
+
+  <div class="invoice-workbench">
+    <div class="invoice-list">
+      <div class="invoice-list-head">Invoice Workbench</div>
+      <div id="invoiceCustomerList"><div class="lead-muted" style="padding:12px">Loading customer profiles…</div></div>
+    </div>
+    <div class="invoice-panel">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <h3 id="invoiceCustomerTitle" style="margin:0;font-size:15px">Select a customer profile</h3>
+          <div id="invoiceCustomerMeta" class="legend">Generate a branded draft invoice from the pricing catalogue.</div>
+        </div>
+        <button id="invoiceRefreshBtn" class="btn" type="button">Refresh invoices</button>
+      </div>
+      <div id="invoiceBuilderBody" class="lead-muted" style="margin-top:14px">Choose a customer profile from the left.</div>
     </div>
   </div>
 </section>
@@ -4401,7 +4431,8 @@ document.addEventListener('DOMContentLoaded',function(){
   async function api(path, opts={}){ const res=await fetch(API+path,{...opts,headers:{...headers(),...(opts.headers||{})}}); const data=await res.json().catch(()=>({})); if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText); return data; }
   const els = {
     mrr: document.getElementById('commercialMrr'), arr: document.getElementById('commercialArr'), pipeline: document.getElementById('commercialPipeline'), profiles: document.getElementById('commercialProfiles'),
-    body: document.getElementById('commercialPricingBody'), summary: document.getElementById('commercialCustomerSummary'), status: document.getElementById('commercialStatus'), refresh: document.getElementById('commercialRefreshBtn'), seed: document.getElementById('commercialSeedBtn'), add: document.getElementById('priceAddBtn'), paying: document.getElementById('commercialPayingClients'), trials: document.getElementById('commercialTrialClients'), trialMeta: document.getElementById('commercialTrialMeta'), churn: document.getElementById('commercialChurnRisk'), invoicePipeline: document.getElementById('commercialInvoicePipeline'), funnelRows: document.getElementById('commercialFunnelRows'), statusRows: document.getElementById('commercialStatusRows'), regionRows: document.getElementById('commercialRegionRows')
+    body: document.getElementById('commercialPricingBody'), summary: document.getElementById('commercialCustomerSummary'), status: document.getElementById('commercialStatus'), refresh: document.getElementById('commercialRefreshBtn'), seed: document.getElementById('commercialSeedBtn'), add: document.getElementById('priceAddBtn'), paying: document.getElementById('commercialPayingClients'), trials: document.getElementById('commercialTrialClients'), trialMeta: document.getElementById('commercialTrialMeta'), churn: document.getElementById('commercialChurnRisk'), invoicePipeline: document.getElementById('commercialInvoicePipeline'), funnelRows: document.getElementById('commercialFunnelRows'), statusRows: document.getElementById('commercialStatusRows'), regionRows: document.getElementById('commercialRegionRows'),
+    invoiceList: document.getElementById('invoiceCustomerList'), invoiceTitle: document.getElementById('invoiceCustomerTitle'), invoiceMeta: document.getElementById('invoiceCustomerMeta'), invoiceBody: document.getElementById('invoiceBuilderBody'), invoiceRefresh: document.getElementById('invoiceRefreshBtn')
   };
   function renderPricing(items=[]){
     if(!els.body) return;
@@ -4458,13 +4489,72 @@ document.addEventListener('DOMContentLoaded',function(){
         `<div class="legend">Commercial profile records now feed the dashboard, pricing catalogue, invoice pipeline, and later Stripe checkout/payment workflows.</div>`;
     }
   }
+
+  let commercialState = { pricing: [], profiles: [], invoices: [], selectedOrgId: '' };
+  function invoiceStatusPill(status){ const s=String(status||'draft').toLowerCase(); const cls=s==='paid'?'active':(s==='void'?'disabled':''); return `<span class="commercial-pill ${cls}">${escapeHtml(s)}</span>`; }
+  function renderInvoiceCustomerList(){
+    if(!els.invoiceList) return;
+    const profiles = commercialState.profiles || [];
+    if(!profiles.length){ els.invoiceList.innerHTML='<div class="lead-muted" style="padding:12px">No commercial customer profiles yet.</div>'; return; }
+    els.invoiceList.innerHTML = profiles.map(p=>{
+      const active = commercialState.selectedOrgId === String(p.org_id||'');
+      return `<button class="invoice-profile-btn ${active?'active':''}" data-invoice-profile="${escapeHtml(p.org_id||'')}">
+        <div style="display:flex;justify-content:space-between;gap:8px"><b>${escapeHtml(p.org_name||p.org_id||'Organisation')}</b><span>${invoiceStatusPill(p.billing_status||'not_started')}</span></div>
+        <div class="lead-muted" style="margin-top:4px">${escapeHtml(p.customer_status||'lead')} · ${money(p.monthly_value||0)}/mo · ${escapeHtml(p.subscription_status||'inactive')}</div>
+      </button>`;
+    }).join('');
+  }
+  async function loadInvoices(){
+    try{ const data = await api('/api/admin/commercial/invoices'); commercialState.invoices = data.invoices || []; }
+    catch(e){ console.warn('invoice load failed', e); commercialState.invoices = []; }
+  }
+  function renderInvoiceBuilder(){
+    if(!els.invoiceBody) return;
+    const orgId = commercialState.selectedOrgId;
+    const profile = (commercialState.profiles||[]).find(p=>String(p.org_id||'')===String(orgId));
+    if(!profile){ els.invoiceBody.innerHTML='<div class="lead-muted">Choose a customer profile from the left.</div>'; return; }
+    if(els.invoiceTitle) els.invoiceTitle.textContent = profile.org_name || 'Customer profile';
+    if(els.invoiceMeta) els.invoiceMeta.textContent = `${profile.customer_status||'lead'} · ${profile.subscription_status||'inactive'} · ${money(profile.monthly_value||0)} monthly value`;
+    const activePrices = (commercialState.pricing||[]).filter(p=>Number(p.active)!==0);
+    const defaultPlan = activePrices.find(p=>String(p.item_type||'')==='plan') || activePrices[0];
+    const history = (commercialState.invoices||[]).filter(i=>String(i.org_id||'')===String(orgId));
+    const historyHtml = history.length ? history.map(i=>`<div class="invoice-history-row"><div><b>${escapeHtml(i.invoice_number||i.id)}</b><div class="lead-muted">${escapeHtml(i.invoice_date||'')} · due ${escapeHtml(i.due_date||'')} · ${money(i.total||0)}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${invoiceStatusPill(i.status)}<button class="lead-action-btn reply" data-invoice-preview="${escapeHtml(i.id)}">Preview</button><button class="lead-action-btn contact" data-invoice-status="sent" data-invoice-id="${escapeHtml(i.id)}">Mark sent</button><button class="lead-action-btn approve" data-invoice-status="paid" data-invoice-id="${escapeHtml(i.id)}">Paid</button></div></div>`).join('') : '<div class="lead-muted">No invoices generated for this customer yet.</div>';
+    els.invoiceBody.innerHTML = `<div class="invoice-form-grid">
+      <div><label class="lead-muted">Contact name</label><input id="invContactName" placeholder="Finance contact"></div>
+      <div><label class="lead-muted">Contact email</label><input id="invContactEmail" value="" placeholder="billing@company.com"></div>
+      <div><label class="lead-muted">Due in days</label><input id="invDueDays" type="number" min="0" value="14"></div>
+      <div><label class="lead-muted">VAT %</label><input id="invVatRate" type="number" min="0" step="0.01" value="20"></div>
+      <div><label class="lead-muted">Discount</label><select id="invDiscountType"><option value="">No discount</option><option value="percent">Percent %</option><option value="fixed">Fixed £</option></select></div>
+      <div><label class="lead-muted">Discount value</label><input id="invDiscountValue" type="number" min="0" step="0.01" value="0"></div>
+      <div class="full"><label class="lead-muted">Billing address</label><textarea id="invBillingAddress" placeholder="Client billing address"></textarea></div>
+      <div class="full"><label class="lead-muted">Invoice items</label><div id="invItemList">${activePrices.map(p=>`<label class="invoice-item-row"><input type="checkbox" data-inv-catalogue="${escapeHtml(p.id)}" ${p.id===defaultPlan?.id?'checked':''}><span>${escapeHtml(p.item_name)} <small class="lead-muted">${escapeHtml(p.category||p.item_type||'')}</small></span><input type="number" min="0" step="0.01" data-inv-price="${escapeHtml(p.id)}" value="${Number(p.monthly_price||0)}"></label>`).join('') || '<div class="lead-muted">No active pricing items. Seed or add items first.</div>'}</div></div>
+      <div class="full"><label class="lead-muted">Notes</label><textarea id="invNotes" placeholder="Optional invoice notes"></textarea></div>
+      <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="invoiceGenerateBtn" class="btn primary" type="button">Generate draft invoice</button></div>
+    </div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div>`;
+  }
+  async function generateInvoice(){
+    const orgId = commercialState.selectedOrgId; if(!orgId) return alert('Select a customer profile first.');
+    const items = Array.from(document.querySelectorAll('[data-inv-catalogue]:checked')).map(cb=>{ const id=cb.getAttribute('data-inv-catalogue'); const price=document.querySelector(`[data-inv-price="${CSS.escape(id)}"]`)?.value||0; const cat=(commercialState.pricing||[]).find(p=>String(p.id)===String(id)); return { catalogue_id:id, description:cat?.item_name||'CityIntel service', quantity:1, unit_price:Number(price||0) }; });
+    if(!items.length) return alert('Select at least one invoice item.');
+    const payload = { org_id:orgId, items, due_days:Number(document.getElementById('invDueDays')?.value||14), vat_rate:Number(document.getElementById('invVatRate')?.value||20), discount_type:document.getElementById('invDiscountType')?.value||'', discount_value:Number(document.getElementById('invDiscountValue')?.value||0), contact_name:document.getElementById('invContactName')?.value||'', contact_email:document.getElementById('invContactEmail')?.value||'', billing_address:document.getElementById('invBillingAddress')?.value||'', notes:document.getElementById('invNotes')?.value||'' };
+    const data = await api('/api/admin/commercial/invoices', { method:'POST', body:JSON.stringify(payload) });
+    await loadInvoices(); renderInvoiceBuilder();
+    if(data.invoice?.id) window.open(API + '/api/admin/commercial/invoices/' + encodeURIComponent(data.invoice.id) + '/html', '_blank');
+  }
+
   async function load(){
     if(!els.body) return;
     try{
       if(els.status) els.status.textContent='Loading…';
       const data = await api('/api/admin/commercial/summary');
-      renderPricing(data.pricing||[]);
-      renderSummary(data.summary||{}, data.profiles||[]);
+      commercialState.pricing = data.pricing || [];
+      commercialState.profiles = data.profiles || [];
+      if(!commercialState.selectedOrgId && commercialState.profiles.length) commercialState.selectedOrgId = String(commercialState.profiles[0].org_id || '');
+      await loadInvoices();
+      renderPricing(commercialState.pricing);
+      renderSummary(data.summary||{}, commercialState.profiles);
+      renderInvoiceCustomerList();
+      renderInvoiceBuilder();
       if(els.status) els.status.textContent='Updated';
     }catch(e){
       if(els.body) els.body.innerHTML=`<tr><td colspan="7" class="lead-muted">Commercial data unavailable: ${escapeHtml(e.message||String(e))}</td></tr>`;
@@ -4493,6 +4583,19 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!item_name.trim()) return alert('Enter an item name first.');
     try{ await api('/api/admin/commercial/pricing', {method:'POST', body:JSON.stringify({item_name, category, item_type, monthly_price, annual_price:monthly_price*10})}); document.getElementById('priceItemName').value=''; document.getElementById('priceCategory').value=''; document.getElementById('priceMonthly').value=''; await load(); }catch(e){ alert(e.message||String(e)); }
   });
+
+  document.addEventListener('click', async e=>{
+    const profileBtn = e.target.closest('[data-invoice-profile]');
+    if(profileBtn){ commercialState.selectedOrgId = profileBtn.getAttribute('data-invoice-profile') || ''; renderInvoiceCustomerList(); renderInvoiceBuilder(); return; }
+    const genBtn = e.target.closest('#invoiceGenerateBtn');
+    if(genBtn){ genBtn.disabled=true; try{ await generateInvoice(); }catch(err){ alert(err.message||String(err)); } finally{ genBtn.disabled=false; } return; }
+    const previewBtn = e.target.closest('[data-invoice-preview]');
+    if(previewBtn){ window.open(API + '/api/admin/commercial/invoices/' + encodeURIComponent(previewBtn.getAttribute('data-invoice-preview')) + '/html', '_blank'); return; }
+    const statusBtn = e.target.closest('[data-invoice-status]');
+    if(statusBtn){ statusBtn.disabled=true; try{ await api('/api/admin/commercial/invoices/'+encodeURIComponent(statusBtn.getAttribute('data-invoice-id')), {method:'PUT', body:JSON.stringify({status:statusBtn.getAttribute('data-invoice-status')})}); await loadInvoices(); renderInvoiceBuilder(); }catch(err){ alert(err.message||String(err)); } finally{ statusBtn.disabled=false; } return; }
+  });
+  els.invoiceRefresh?.addEventListener('click', async()=>{ await loadInvoices(); renderInvoiceBuilder(); });
+
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', load); else load();
 })();
 </script>
