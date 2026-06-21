@@ -4494,7 +4494,7 @@ document.addEventListener('DOMContentLoaded',function(){
     }
   }
 
-  let commercialState = { pricing: [], profiles: [], invoices: [], invoiceEvents: {}, selectedOrgId: '', selectedInvoiceId: '' };
+  let commercialState = { pricing: [], profiles: [], invoices: [], invoiceEvents: {}, selectedOrgId: '', selectedInvoiceId: '', stripeConfigured: false };
   function invoiceStatusPill(status){ const s=String(status||'draft').toLowerCase(); const cls=s==='paid'?'active':(s==='void'?'disabled':''); return `<span class="commercial-pill ${cls}">${escapeHtml(s)}</span>`; }
   function renderInvoiceCustomerList(){
     if(!els.invoiceList) return;
@@ -4526,8 +4526,10 @@ document.addEventListener('DOMContentLoaded',function(){
     const disableSent = s === 'sent' || s === 'paid' || s === 'void' || s === 'cancelled';
     const disablePaid = s === 'paid' || s === 'void' || s === 'cancelled';
     const disableVoid = s === 'paid' || s === 'void' || s === 'cancelled';
+    const payUrl = String(i.stripe_payment_link_url || '').trim();
     return `<button class="lead-action-btn reply" data-invoice-preview="${id}">Preview</button>
       <button class="lead-action-btn" data-invoice-select="${id}">Audit</button>
+      ${payUrl ? `<button class="lead-action-btn reply" data-open-payment-link="${escapeHtml(payUrl)}">Open payment</button>` : `<button class="lead-action-btn trial" data-invoice-payment-link="${id}" ${disablePaid?'disabled':''}>Create payment link</button>`}
       <button class="lead-action-btn contact" data-invoice-status="sent" data-invoice-id="${id}" ${disableSent?'disabled':''}>Mark sent</button>
       <button class="lead-action-btn approve" data-invoice-status="paid" data-invoice-id="${id}" ${disablePaid?'disabled':''}>Paid</button>
       <button class="lead-action-btn reject" data-invoice-status="void" data-invoice-id="${id}" ${disableVoid?'disabled':''}>Void</button>
@@ -4549,7 +4551,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const activePrices = (commercialState.pricing||[]).filter(p=>Number(p.active)!==0);
     const defaultPlan = activePrices.find(p=>String(p.item_type||'')==='plan') || activePrices[0];
     const history = (commercialState.invoices||[]).filter(i=>String(i.org_id||'')===String(orgId));
-    const historyHtml = history.length ? history.map(i=>`<div class="invoice-history-row ${commercialState.selectedInvoiceId===String(i.id||'')?'selected':''}"><div><b>${escapeHtml(i.invoice_number||i.id)}</b><div class="lead-muted">${escapeHtml(i.invoice_date||'')} · due ${escapeHtml(i.due_date||'')} · ${money(i.total||0)}</div><div class="lead-muted">${i.sent_at?'Sent '+escapeHtml(fmtDate(i.sent_at)):''}${i.paid_at?' · Paid '+escapeHtml(fmtDate(i.paid_at)):''}${i.voided_at?' · Voided '+escapeHtml(fmtDate(i.voided_at)):''}${i.cancelled_at?' · Cancelled '+escapeHtml(fmtDate(i.cancelled_at)):''}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${invoiceStatusPill(i.status)}${invoiceLifecycleActions(i)}</div></div>`).join('') : '<div class="lead-muted">No invoices generated for this customer yet.</div>';
+    const historyHtml = history.length ? history.map(i=>`<div class="invoice-history-row ${commercialState.selectedInvoiceId===String(i.id||'')?'selected':''}"><div><b>${escapeHtml(i.invoice_number||i.id)}</b><div class="lead-muted">${escapeHtml(i.invoice_date||'')} · due ${escapeHtml(i.due_date||'')} · ${money(i.total||0)}</div><div class="lead-muted">${i.sent_at?'Sent '+escapeHtml(fmtDate(i.sent_at)):''}${i.paid_at?' · Paid '+escapeHtml(fmtDate(i.paid_at)):''}${i.stripe_payment_status?' · Stripe '+escapeHtml(i.stripe_payment_status):''}${i.stripe_payment_link_url?' · payment link ready':''}${i.voided_at?' · Voided '+escapeHtml(fmtDate(i.voided_at)):''}${i.cancelled_at?' · Cancelled '+escapeHtml(fmtDate(i.cancelled_at)):''}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${invoiceStatusPill(i.status)}${invoiceLifecycleActions(i)}</div></div>`).join('') : '<div class="lead-muted">No invoices generated for this customer yet.</div>';
     els.invoiceBody.innerHTML = `<div class="invoice-form-grid">
       <div><label class="lead-muted">Contact name</label><input id="invContactName" value="${escapeHtml(profile.billing_contact_name||'')}" placeholder="Finance contact"></div>
       <div><label class="lead-muted">Contact email</label><input id="invContactEmail" value="${escapeHtml(profile.billing_contact_email||'')}" placeholder="billing@company.com"></div>
@@ -4560,7 +4562,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="full"><label class="lead-muted">Billing address</label><textarea id="invBillingAddress" placeholder="Client billing address"></textarea></div>
       <div class="full"><label class="lead-muted">Invoice items</label><div id="invItemList">${activePrices.map(p=>`<label class="invoice-item-row"><input type="checkbox" data-inv-catalogue="${escapeHtml(p.id)}" ${p.id===defaultPlan?.id?'checked':''}><span>${escapeHtml(p.item_name)} <small class="lead-muted">${escapeHtml(p.category||p.item_type||'')}</small></span><input type="number" min="0" step="0.01" data-inv-price="${escapeHtml(p.id)}" value="${Number(p.monthly_price||0)}"></label>`).join('') || '<div class="lead-muted">No active pricing items. Seed or add items first.</div>'}</div></div>
       <div class="full"><label class="lead-muted">Notes</label><textarea id="invNotes" placeholder="Optional invoice notes"></textarea></div>
-      <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="invoiceGenerateBtn" class="btn primary" type="button">Generate draft invoice</button></div>
+      <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="customerPortalBtn" class="btn" type="button">Open Stripe portal</button><button id="invoiceGenerateBtn" class="btn primary" type="button">Generate draft invoice</button></div>
     </div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Lifecycle audit trail</h3><div id="invoiceAuditTrail">${renderInvoiceEvents(commercialState.selectedInvoiceId)}</div></div>`;
   }
   async function generateInvoice(){
@@ -4577,6 +4579,8 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!els.body) return;
     try{
       if(els.status) els.status.textContent='Loading…';
+      let stripeCfg = {};
+      try { stripeCfg = await api('/api/admin/commercial/stripe-config'); commercialState.stripeConfigured = !!stripeCfg.configured; } catch(_) { commercialState.stripeConfigured = false; }
       const data = await api('/api/admin/commercial/summary');
       commercialState.pricing = data.pricing || [];
       commercialState.profiles = data.profiles || [];
@@ -4635,6 +4639,32 @@ document.addEventListener('DOMContentLoaded',function(){
     if(previewBtn){ window.open(API + '/api/admin/commercial/invoices/' + encodeURIComponent(previewBtn.getAttribute('data-invoice-preview')) + '/html', '_blank'); return; }
     const selectBtn = e.target.closest('[data-invoice-select]');
     if(selectBtn){ commercialState.selectedInvoiceId = selectBtn.getAttribute('data-invoice-select') || ''; await loadInvoiceEvents(commercialState.selectedInvoiceId); renderInvoiceBuilder(); return; }
+    const openPayBtn = e.target.closest('[data-open-payment-link]');
+    if(openPayBtn){ window.open(openPayBtn.getAttribute('data-open-payment-link'), '_blank'); return; }
+    const payBtn = e.target.closest('[data-invoice-payment-link]');
+    if(payBtn){
+      payBtn.disabled = true;
+      try{
+        const id = payBtn.getAttribute('data-invoice-payment-link');
+        const data = await api('/api/admin/commercial/invoices/'+encodeURIComponent(id)+'/payment-link', {method:'POST', body:JSON.stringify({success_url:location.origin + location.pathname})});
+        if(!data.configured){ alert(data.error || 'Stripe is not configured yet.'); return; }
+        if(data.url) window.open(data.url, '_blank');
+        commercialState.selectedInvoiceId = id;
+        await loadInvoices(); await loadInvoiceEvents(id); renderInvoiceBuilder();
+      }catch(err){ alert(err.message||String(err)); } finally{ payBtn.disabled=false; }
+      return;
+    }
+    const portalBtn = e.target.closest('#customerPortalBtn');
+    if(portalBtn){
+      portalBtn.disabled = true;
+      try{
+        const orgId = commercialState.selectedOrgId; if(!orgId) return alert('Select a customer profile first.');
+        const data = await api('/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/billing-portal', {method:'POST', body:'{}'});
+        if(!data.configured){ alert(data.error || 'Stripe is not configured yet.'); return; }
+        if(data.url) window.open(data.url, '_blank'); else alert('No portal URL returned.');
+      }catch(err){ alert(err.message||String(err)); } finally{ portalBtn.disabled=false; }
+      return;
+    }
     const statusBtn = e.target.closest('[data-invoice-status]');
     if(statusBtn){
       statusBtn.disabled=true;
