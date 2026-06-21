@@ -1086,6 +1086,51 @@
 </section>
 
 
+
+
+<section class="card" id="customerSuccessDashboardCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Customer Success Dashboard</h3>
+      <div class="legend">Phase 12E: portfolio health, renewal risk, expansion forecast and daily account work queue.</div>
+    </div>
+    <button id="csDashboardRefreshBtn" class="btn" type="button">Refresh customer success</button>
+  </div>
+
+  <div class="commercial-grid" style="margin-bottom:14px">
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Active Customers</div><div id="csKpiActive" class="money">—</div><div class="legend">Active commercial profiles</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">At Risk</div><div id="csKpiAtRisk" class="money">—</div><div class="legend">At-risk + critical accounts</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Renewals Due</div><div id="csKpiRenewals" class="money">—</div><div class="legend">30 days + overdue</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Expansion Pipeline</div><div id="csKpiPipeline" class="money">—</div><div class="legend">Open expansion value</div></div>
+  </div>
+
+  <div class="revenue-ops-grid">
+    <div class="revenue-panel revenue-alert" style="grid-column:span 3"><h4>Revenue at risk</h4><div id="csExecRevenueRisk" class="money" style="font-size:24px">—</div><div class="legend">Monthly value linked to at-risk customers</div></div>
+    <div class="revenue-panel" style="grid-column:span 3"><h4>Weighted forecast</h4><div id="csExecWeighted" class="money" style="font-size:24px">—</div><div class="legend">Expansion value weighted by stage</div></div>
+    <div class="revenue-panel" style="grid-column:span 3"><h4>Won this month</h4><div id="csExecWon" class="money" style="font-size:24px">—</div><div class="legend">Closed-won expansion records</div></div>
+    <div class="revenue-panel" style="grid-column:span 3"><h4>Lost this month</h4><div id="csExecLost" class="money" style="font-size:24px">—</div><div class="legend">Closed-lost expansion records</div></div>
+
+    <div class="revenue-panel" style="grid-column:span 6">
+      <h4>Health Monitoring Queue</h4>
+      <div id="csHealthQueue"><div class="lead-muted">Loading health queue…</div></div>
+    </div>
+    <div class="revenue-panel" style="grid-column:span 6">
+      <h4>Renewal Automation Queue</h4>
+      <div id="csRenewalQueue"><div class="lead-muted">Loading renewal reminders…</div></div>
+    </div>
+    <div class="revenue-panel" style="grid-column:span 12">
+      <h4>Customer Success Work Queue</h4>
+      <div class="lead-table-wrap">
+        <table class="lead-table" style="min-width:980px">
+          <thead><tr><th>Customer</th><th>Health</th><th>Renewal</th><th>Next review</th><th>Next action</th><th>Owner</th></tr></thead>
+          <tbody id="csWorkQueue"><tr><td colspan="6" class="lead-muted">Loading customer success queue…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="csDashboardStatus" class="lead-muted" style="margin-top:10px">—</div>
+</section>
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
@@ -5066,6 +5111,62 @@ document.addEventListener('DOMContentLoaded',function(){
     }
   });
 
+})();
+</script>
+
+
+<script>
+(function customerSuccessDashboardPhase12E(){
+  const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  function h(){
+    if (typeof authHeaders === 'function') return authHeaders();
+    const out = {'Content-Type':'application/json'};
+    try { const u = window.CIAuth && CIAuth.who ? CIAuth.who() : null; if(u?.email) out['X-User-Email']=u.email; if(u?.name) out['X-User-Name']=u.name; if(u?.role) out['X-User-Role']=u.role; } catch(_){ }
+    return out;
+  }
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const money = v => '£' + Number(v || 0).toLocaleString(undefined,{maximumFractionDigits:0});
+  const date = v => v ? new Date(v).toLocaleDateString() : '—';
+  function pill(text, tone=''){
+    const map={healthy:'border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)',at_risk:'border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)',critical:'border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)'};
+    return `<span class="lead-status" style="${map[tone]||''}">${esc(text||'—')}</span>`;
+  }
+  function listRows(items, kind){
+    if(!items || !items.length) return '<div class="lead-muted">No immediate items.</div>';
+    return items.slice(0,8).map(x=>{
+      if(kind==='renewal') return `<div class="commercial-kpi" style="margin-bottom:8px"><b>${esc(x.org_name||x.org_id)}</b><div class="lead-muted">${esc(x.cadence||'Renewal follow-up')} · ${esc(x.renewal_days)} days · ${date(x.renewal_date)}</div></div>`;
+      return `<div class="commercial-kpi" style="margin-bottom:8px"><b>${esc(x.org_name||x.org_id)}</b><div class="lead-muted">${pill(x.health_label||x.health_status, x.health_status)} score ${esc(x.health_score ?? '—')} ${x.days_since_last_login?` · last login ${esc(x.days_since_last_login)}d`:''}</div></div>`;
+    }).join('');
+  }
+  function render(data){
+    const s=data.summary||{}, e=data.executive||{};
+    if($('csKpiActive')) $('csKpiActive').textContent=s.active_customers ?? '0';
+    if($('csKpiAtRisk')) $('csKpiAtRisk').textContent=Number(s.at_risk_customers||0)+Number(s.critical_customers||0);
+    if($('csKpiRenewals')) $('csKpiRenewals').textContent=Number(s.renewals_30||0)+Number(s.overdue_renewals||0);
+    if($('csKpiPipeline')) $('csKpiPipeline').textContent=money(s.open_pipeline_value||0);
+    if($('csExecRevenueRisk')) $('csExecRevenueRisk').textContent=money(e.revenue_at_risk||0);
+    if($('csExecWeighted')) $('csExecWeighted').textContent=money(s.weighted_pipeline_value||0);
+    if($('csExecWon')) $('csExecWon').textContent=`${s.won_this_month||0} · ${money(s.won_this_month_value||0)}`;
+    if($('csExecLost')) $('csExecLost').textContent=`${s.lost_this_month||0} · ${money(s.lost_this_month_value||0)}`;
+    if($('csHealthQueue')) $('csHealthQueue').innerHTML=listRows(data.health_queue||[], 'health');
+    if($('csRenewalQueue')) $('csRenewalQueue').innerHTML=listRows(data.renewal_reminder_queue||[], 'renewal');
+    const q=data.work_queue||[];
+    if($('csWorkQueue')) $('csWorkQueue').innerHTML=q.length?q.slice(0,60).map(r=>`<tr><td><b>${esc(r.org_name||r.org_id)}</b><div class="lead-muted">${esc(r.customer_status||'')}</div></td><td>${pill(r.health_label||r.health_status,r.health_status)}<div class="lead-muted">Score ${esc(r.health_score ?? '—')}</div></td><td>${date(r.renewal_date)}<div class="lead-muted">${r.renewal_days===null||r.renewal_days===undefined?'—':esc(r.renewal_days)+' days'}</div></td><td>${date(r.next_review_date)}</td><td>${esc(r.next_action||'—')}</td><td>${esc(r.owner||'—')}</td></tr>`).join(''):'<tr><td colspan="6" class="lead-muted">No customer success work queue items yet.</td></tr>';
+    if($('csDashboardStatus')) $('csDashboardStatus').textContent='Customer success dashboard updated.';
+  }
+  async function load(){
+    if(!$('customerSuccessDashboardCard')) return;
+    try{
+      if($('csDashboardStatus')) $('csDashboardStatus').textContent='Loading customer success dashboard…';
+      const res=await fetch(API+'/api/admin/commercial/success-dashboard',{headers:h()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok || data.ok===false) throw new Error(data.error||res.statusText);
+      render(data);
+    }catch(e){ if($('csDashboardStatus')) $('csDashboardStatus').textContent='Customer success dashboard unavailable: '+(e.message||String(e)); }
+  }
+  document.addEventListener('click', e=>{ if(e.target && e.target.id==='csDashboardRefreshBtn') load(); });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', load); else load();
 })();
 </script>
 
