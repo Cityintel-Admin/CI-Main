@@ -578,6 +578,13 @@ html,body{overflow-x:hidden;max-width:100vw}
     <div class="row" id="billing-trial-days-row" style="display:none;">
       <span class="label">Trial time remaining</span><span id="billing-trial-days" class="value">—</span>
     </div>
+
+    <div class="row" id="billing-invoice-row" style="display:none;">
+      <span class="label">Latest invoice</span><span id="billing-invoice" class="value">—</span>
+    </div>
+    <div class="row" id="billing-commercial-row" style="display:none;">
+      <span class="label">Commercial profile</span><span id="billing-commercial" class="value">—</span>
+    </div>
   </div>
 
         <p class="muted" style="color:#8e97a3">Update card, invoices, cancel or resume your plan.</p>
@@ -756,6 +763,10 @@ html,body{overflow-x:hidden;max-width:100vw}
     trial: document.getElementById('billing-trial'),
     trialDaysRow: document.getElementById('billing-trial-days-row'),
     trialDays: document.getElementById('billing-trial-days'),
+    invoiceRow: document.getElementById('billing-invoice-row'),
+    invoice: document.getElementById('billing-invoice'),
+    commercialRow: document.getElementById('billing-commercial-row'),
+    commercial: document.getElementById('billing-commercial'),
     btn: document.getElementById('btnBilling')
   };
 
@@ -784,6 +795,24 @@ html,body{overflow-x:hidden;max-width:100vw}
     if (days === 0) return 'Ends today';
     if (days === 1) return '1 day left';
     return `${days} days left`;
+  }
+
+
+  function profileOrgId(){
+    try{
+      const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+      return p.orgId || p.org_id || localStorage.getItem('ci_org_id') || '';
+    }catch{return localStorage.getItem('ci_org_id') || '';}
+  }
+  async function fetchCommercialInvoices(orgId){
+    if(!orgId) return [];
+    const u = new URL(API_BASE + '/api/admin/commercial/invoices');
+    u.searchParams.set('org_id', orgId);
+    const p = JSON.parse(localStorage.getItem('ci_profile') || '{}');
+    const res = await fetch(u, { headers:{ 'X-User-Email':p.email||'', 'X-User-Name':p.name||'', 'X-User-Role':p.role||'' } });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok || data.ok === false) return [];
+    return data.invoices || [];
   }
 
   async function fetchStatus(email, force=false){
@@ -851,6 +880,19 @@ html,body{overflow-x:hidden;max-width:100vw}
       setBadge('Loading…');
       const data = await fetchStatus(email, fromPortal);
       render(data);
+      try{
+        const orgId = profileOrgId();
+        const invoices = await fetchCommercialInvoices(orgId);
+        if(invoices.length && els.invoiceRow && els.invoice){
+          const latest = invoices[0];
+          els.invoiceRow.style.display = '';
+          els.invoice.textContent = `${latest.invoice_number || latest.id} · ${latest.status || 'draft'} · £${Number(latest.total||0).toLocaleString('en-GB')}`;
+        }
+        if(orgId && els.commercialRow && els.commercial){
+          els.commercialRow.style.display = '';
+          els.commercial.textContent = 'Commercial profile linked to organisation';
+        }
+      }catch(_){}
     }catch(e){
       setBadge('Error','warn');
       console.warn(e);
