@@ -23,7 +23,7 @@
   // module: optional — hides link if module not enabled for org
   const NAV_LINKS = [
     // ── Core (all users) ────────────────────────────────────────────────────
-    { href: 'dashboard.html',           label: 'Protest Dashboard',   role: 'all' },
+    { href: 'dashboard.html',           label: 'Dashboard',           role: 'all' },
     { href: 'cityintel-assistant.html', label: 'CityIntel AI',        role: 'all',       module: 'cityintel_ai' },
     { href: 'live-alerts.html',         label: 'Live Alerts',         role: 'all',       module: 'live_alerts' },
     { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', role: 'all',       module: 'neighbourhood_intel' },
@@ -31,11 +31,11 @@
     { href: 'brief.html',               label: 'Intelligence Brief',  role: 'all',       module: 'intelligence_brief' },
     { href: 'reports.html',             label: 'Reports',             role: 'all',       module: 'reports' },
     { href: 'trends.html',              label: 'Trends & Forecasts',  role: 'all',       module: 'trends' },
-    { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'Welfare Hub' },
+    { href: 'intel-hub.html',           label: 'Intel Hub',           role: 'all',       module: 'Intel Hub' },
     { href: 'travel-infrastructure.html',   label: 'Travel-Infrastructure Hub',  role: 'all', module: 'Travel-Infrastructure Hub' },
+    { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'Welfare Hub' },
     { href: 'training-scenario-admin.html', label: 'Training Admin',  role: 'orgAdmin' },
     { href: 'training-review.html',     label: 'Training Record',     role: 'all',       module: 'training_review' },
-    { href: 'escalation-contacts.html', label: 'Escalation Contacts', role: 'orgAdmin' },
     // ── Info / support ──────────────────────────────────────────────────────
     { href: 'sources.html',             label: 'Sources',             role: 'all' },
     { href: 'settings.html',            label: 'Settings',            role: 'all' },
