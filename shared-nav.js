@@ -23,22 +23,18 @@
   // module: optional — hides link if module not enabled for org
   const NAV_LINKS = [
     // ── Core (all users) ────────────────────────────────────────────────────
-    { href: 'index.html',               label: 'Dashboard',           role: 'all' },
+    { href: 'dashboard.html',           label: 'Protest Dashboard',   role: 'all' },
     { href: 'cityintel-assistant.html', label: 'CityIntel AI',        role: 'all',       module: 'cityintel_ai' },
     { href: 'live-alerts.html',         label: 'Live Alerts',         role: 'all',       module: 'live_alerts' },
     { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', role: 'all',       module: 'neighbourhood_intel' },
-    { href: 'alerts.html',              label: 'High Risk Events',    role: 'all',       module: 'alerts' },
-    { href: 'events.html',              label: 'All Events',          role: 'all',       module: 'all_events' },
+    { href: 'alerts.html',              label: 'Protests/Rally/Demo', role: 'all',       module: 'Protests/Rally/Demo' },
     { href: 'brief.html',               label: 'Intelligence Brief',  role: 'all',       module: 'intelligence_brief' },
-    { href: 'power-outages.html',       label: 'Power Outages',       role: 'all',       module: 'power_outages' },
-    { href: 'transport-status.html',    label: 'Transport Status',    role: 'all',       module: 'transport_status' },
-    { href: 'flight-status.html',       label: 'Flight Status',       role: 'all',       module: 'flight_status' },
     { href: 'reports.html',             label: 'Reports',             role: 'all',       module: 'reports' },
     { href: 'trends.html',              label: 'Trends & Forecasts',  role: 'all',       module: 'trends' },
     { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'Welfare Hub' },
+    { href: 'travel-infrastructure.html',   label: 'Travel-Infrastructure Hub',  role: 'all', module: 'Travel-Infrastructure Hub' },
     { href: 'training-scenario-admin.html', label: 'Training Admin',  role: 'orgAdmin' },
     { href: 'training-review.html',     label: 'Training Record',     role: 'all',       module: 'training_review' },
-    { href: 'assets.html',              label: 'Assets',              role: 'all',       module: 'assets' },
     { href: 'escalation-contacts.html', label: 'Escalation Contacts', role: 'orgAdmin' },
     // ── Info / support ──────────────────────────────────────────────────────
     { href: 'sources.html',             label: 'Sources',             role: 'all' },
