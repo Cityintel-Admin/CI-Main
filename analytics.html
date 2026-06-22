@@ -1191,6 +1191,65 @@
   <div id="contractStatusMsg" class="lead-muted" style="margin-top:10px">—</div>
 </section>
 
+<section class="card" id="slaManagementCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">SLA Management</h3>
+      <div class="legend">Phase 13B: SLA assignment, response/resolution targets, review dates, breach monitoring and customer timeline integration.</div>
+    </div>
+    <button id="slaRefreshBtn" class="btn" type="button">Refresh SLAs</button>
+  </div>
+  <div class="commercial-grid" style="margin-bottom:14px">
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Active SLAs</div><div id="slaKpiActive" class="money">—</div><div class="legend">Customers with active service levels</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Coverage</div><div id="slaKpiCoverage" class="money">—</div><div class="legend">Customer profiles with SLA assigned</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Reviews Due</div><div id="slaKpiReviews" class="money">—</div><div class="legend">Due or overdue SLA reviews</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Breach Watch</div><div id="slaKpiBreaches" class="money">—</div><div class="legend">Breached / breach-watch records</div></div>
+  </div>
+  <div class="revenue-ops-grid">
+    <div class="revenue-panel" style="grid-column:span 4">
+      <h4>Assign / Update SLA</h4>
+      <div style="display:grid;gap:8px">
+        <select id="slaOrgSelect" class="lead-action-btn" style="width:100%;padding:8px"></select>
+        <select id="slaTier" class="lead-action-btn" style="width:100%;padding:8px">
+          <option value="standard">Standard SLA</option>
+          <option value="enhanced">Enhanced SLA</option>
+          <option value="enterprise">Enterprise SLA</option>
+          <option value="custom">Custom SLA</option>
+          <option value="none">No SLA</option>
+        </select>
+        <select id="slaStatus" class="lead-action-btn" style="width:100%;padding:8px">
+          <option value="active">Active</option>
+          <option value="draft">Draft</option>
+          <option value="under_review">Under Review</option>
+          <option value="breach_watch">Breach Watch</option>
+          <option value="breached">Breached</option>
+          <option value="retired">Retired</option>
+        </select>
+        <input id="slaResponseTarget" placeholder="Response target e.g. 4 business hours" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="slaResolutionTarget" placeholder="Resolution target e.g. 1 business day" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="slaAvailabilityTarget" placeholder="Availability target e.g. 99.9%" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="slaReviewFrequency" placeholder="Review frequency e.g. Quarterly" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="slaNextReview" type="date" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="slaServiceOwner" placeholder="Service owner" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="slaSupportContact" placeholder="Support contact" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <textarea id="slaNotes" placeholder="SLA notes / review notes" style="min-height:70px;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"></textarea>
+        <button id="slaSaveBtn" class="btn primary" type="button">Save SLA</button>
+      </div>
+    </div>
+    <div class="revenue-panel" style="grid-column:span 8">
+      <h4>SLA Register</h4>
+      <div class="lead-table-wrap">
+        <table class="lead-table" style="min-width:1040px">
+          <thead><tr><th>Customer</th><th>Tier</th><th>Targets</th><th>Review</th><th>Owner</th><th>Actions</th></tr></thead>
+          <tbody id="slaRows"><tr><td colspan="6" class="lead-muted">Loading SLAs…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="slaStatusMsg" class="lead-muted" style="margin-top:10px">—</div>
+</section>
+
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
@@ -5322,6 +5381,62 @@ document.addEventListener('DOMContentLoaded',function(){
     }catch(err){ if(q('contractStatusMsg')) q('contractStatusMsg').textContent='Contract action failed: '+(err.message||String(err)); }
   });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadContracts); else loadContracts();
+})();
+</script>
+
+
+
+<script>
+(function slaManagementPhase13B(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const q=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const date=v=>v?new Date(v).toLocaleDateString():'—';
+  function headers(){ if(typeof authHeaders==='function') return authHeaders(); const out={'Content-Type':'application/json'}; try{const u=window.CIAuth&&CIAuth.who?CIAuth.who():null; if(u?.email) out['X-User-Email']=u.email; if(u?.name) out['X-User-Name']=u.name; if(u?.roleKey||u?.role) out['X-User-Role']=u.roleKey||u.role;}catch(_){ } return out; }
+  function pill(text,tone=''){ const s=String(tone||'').toLowerCase(); const map={active:'border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)',enterprise:'border-color:#a78bfa;color:#ddd6fe;background:rgba(167,139,250,.12)',enhanced:'border-color:#60a5fa;color:#bfdbfe;background:rgba(96,165,250,.12)',standard:'border-color:#8e97a3;color:#e5e7eb;background:rgba(255,255,255,.05)',breach_watch:'border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)',breached:'border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)',retired:'border-color:#8e97a3;color:#cbd5e1;background:rgba(255,255,255,.04)'}; return `<span class="lead-status" style="${map[s]||''}">${esc(text||'—')}</span>`; }
+  const tierDefaults={standard:['8 business hours','2 business days','99.0%','Annual'],enhanced:['4 business hours','1 business day','99.5%','Quarterly'],enterprise:['2 business hours','Same business day','99.9%','Quarterly'],custom:['Custom','Custom','Custom','Custom'],none:['','','','None']};
+  function applyDefaults(){ const d=tierDefaults[q('slaTier')?.value||'standard']||tierDefaults.standard; if(q('slaResponseTarget')&&!q('slaResponseTarget').value) q('slaResponseTarget').value=d[0]; if(q('slaResolutionTarget')&&!q('slaResolutionTarget').value) q('slaResolutionTarget').value=d[1]; if(q('slaAvailabilityTarget')&&!q('slaAvailabilityTarget').value) q('slaAvailabilityTarget').value=d[2]; if(q('slaReviewFrequency')&&!q('slaReviewFrequency').value) q('slaReviewFrequency').value=d[3]; }
+  async function load(){
+    if(!q('slaManagementCard')) return;
+    try{
+      if(q('slaStatusMsg')) q('slaStatusMsg').textContent='Loading SLA dashboard…';
+      const res=await fetch(API+'/api/admin/commercial/slas',{headers:headers()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText);
+      render(data);
+    }catch(e){ if(q('slaStatusMsg')) q('slaStatusMsg').textContent='SLA dashboard unavailable: '+(e.message||String(e)); }
+  }
+  function render(data){
+    const s=data.summary||{}, slas=data.slas||[];
+    if(q('slaKpiActive')) q('slaKpiActive').textContent=s.active_slas??0;
+    if(q('slaKpiCoverage')) q('slaKpiCoverage').textContent=(s.sla_coverage_percent??0)+'%';
+    if(q('slaKpiReviews')) q('slaKpiReviews').textContent=Number(s.review_due_30||0)+Number(s.review_overdue||0);
+    if(q('slaKpiBreaches')) q('slaKpiBreaches').textContent=s.breach_watch??0;
+    const sel=q('slaOrgSelect');
+    if(sel){ const prev=sel.value; const profiles=data.profiles||[]; sel.innerHTML=profiles.length?profiles.map(p=>`<option value="${esc(p.org_id)}">${esc(p.org_name||p.org_id)}</option>`).join(''):'<option value="">No customer profiles yet</option>'; if(prev) sel.value=prev; }
+    if(q('slaRows')) q('slaRows').innerHTML=slas.length?slas.map(x=>`<tr>
+      <td><b>${esc(x.org_name||x.org_id)}</b><div class="lead-muted">${esc(x.customer_status||'')}</div></td>
+      <td>${pill(x.sla_tier_label||x.sla_tier,x.sla_tier)}<div class="lead-muted">${pill(x.sla_status_label||x.sla_status,x.sla_status)}</div></td>
+      <td><b>Response:</b> ${esc(x.response_time_target||'—')}<div class="lead-muted">Resolution: ${esc(x.resolution_time_target||'—')} · Availability: ${esc(x.availability_target||'—')}</div></td>
+      <td>${date(x.next_review_date)}<div class="lead-muted">${x.review_days===null||x.review_days===undefined?'—':esc(x.review_days)+' days'} · ${esc(x.review_frequency||'—')}</div></td>
+      <td>${esc(x.service_owner||'—')}<div class="lead-muted">${esc(x.support_contact||'')}</div></td>
+      <td><button class="lead-action-btn" data-sla-status="active" data-sla-id="${esc(x.id)}">Active</button><button class="lead-action-btn contact" data-sla-status="under_review" data-sla-id="${esc(x.id)}">Review</button><button class="lead-action-btn reject" data-sla-status="breach_watch" data-sla-id="${esc(x.id)}">Breach watch</button></td>
+    </tr>`).join(''):'<tr><td colspan="6" class="lead-muted">No SLA records yet.</td></tr>';
+    if(q('slaStatusMsg')) q('slaStatusMsg').textContent='SLA dashboard updated.';
+  }
+  async function save(){
+    const orgId=q('slaOrgSelect')?.value||''; if(!orgId){ alert('Select a customer profile first.'); return; }
+    const body={sla_tier:q('slaTier')?.value||'standard',sla_status:q('slaStatus')?.value||'active',response_time_target:q('slaResponseTarget')?.value||'',resolution_time_target:q('slaResolutionTarget')?.value||'',availability_target:q('slaAvailabilityTarget')?.value||'',review_frequency:q('slaReviewFrequency')?.value||'',next_review_date:q('slaNextReview')?.value||'',service_owner:q('slaServiceOwner')?.value||'',support_contact:q('slaSupportContact')?.value||'',notes:q('slaNotes')?.value||''};
+    if(q('slaStatusMsg')) q('slaStatusMsg').textContent='Saving SLA…';
+    const res=await fetch(API+'/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/sla',{method:'POST',headers:headers(),body:JSON.stringify(body)});
+    const data=await res.json().catch(()=>({})); if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText);
+    ['slaResponseTarget','slaResolutionTarget','slaAvailabilityTarget','slaReviewFrequency','slaNextReview','slaServiceOwner','slaSupportContact','slaNotes'].forEach(id=>{ if(q(id)) q(id).value=''; });
+    await load();
+  }
+  async function update(id,status){ const res=await fetch(API+'/api/admin/commercial/slas/'+encodeURIComponent(id),{method:'PUT',headers:headers(),body:JSON.stringify({sla_status:status})}); const data=await res.json().catch(()=>({})); if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText); await load(); }
+  document.addEventListener('change',e=>{ if(e.target?.id==='slaTier') applyDefaults(); });
+  document.addEventListener('click',async e=>{ try{ if(e.target?.id==='slaRefreshBtn') await load(); if(e.target?.id==='slaSaveBtn') await save(); const id=e.target?.getAttribute?.('data-sla-id'); const st=e.target?.getAttribute?.('data-sla-status'); if(id&&st) await update(id,st); }catch(err){ if(q('slaStatusMsg')) q('slaStatusMsg').textContent='SLA action failed: '+(err.message||String(err)); }});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
 })();
 </script>
 
