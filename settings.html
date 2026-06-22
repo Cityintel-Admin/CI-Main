@@ -641,6 +641,13 @@ html,body{overflow-x:hidden;max-width:100vw}
   <div id="csSettingsDashboard" class="billing-card"><div class="label">Loading customer success overview…</div></div>
 </section>
 
+
+<section class="card" id="contractSettingsCard">
+  <h2>Contracts &amp; Agreements</h2>
+  <p class="muted">Subscription agreement, SLA, DPA, purchase order and other agreement status for this organisation.</p>
+  <div id="settingsContractSummary" class="billing-card" style="max-width:900px"><div class="label">Loading contract details…</div></div>
+</section>
+
 </main>
   </div>
 
@@ -2243,6 +2250,46 @@ else run();
       <div class="row"><span class="label">Next action</span><span class="value">${esc(row.next_action||'—')}</span></div>
       <div class="row"><span class="label">Monthly value</span><span class="value">${money(row.monthly_value||0)}</span></div>`;
     }catch(e){ box.innerHTML='<div class="label">Customer success overview unavailable: '+esc(e.message||String(e))+'</div>'; }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
+})();
+</script>
+
+
+<script>
+(function settingsContractsPhase13A(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const date=v=>v?new Date(v).toLocaleDateString():'—';
+  function headers(){ if(typeof authHeaders==='function') return authHeaders(); const out={'Content-Type':'application/json'}; try{const u=window.CIAuth&&CIAuth.who?CIAuth.who():null; if(u?.email) out['X-User-Email']=u.email; if(u?.name) out['X-User-Name']=u.name; if(u?.roleKey||u?.role) out['X-User-Role']=u.roleKey||u.role;}catch(_){ } return out; }
+  function currentOrgId(){ try{ const u=window.CIAuth&&CIAuth.who?CIAuth.who():null; return u?.orgId||u?.org_id||localStorage.getItem('ci_org_id')||''; }catch(_){ return localStorage.getItem('ci_org_id')||''; } }
+  function badge(status,label){ const s=String(status||'').toLowerCase(); const cls=(s==='active')?'ok':(['expired','terminated'].includes(s)?'warn':''); return `<span class="badge ${cls}">${esc(label||status||'—')}</span>`; }
+  async function load(){
+    const box=document.getElementById('settingsContractSummary'); if(!box) return;
+    const orgId=currentOrgId();
+    if(!orgId){ box.innerHTML='<div class="label">No organisation context found for contract display.</div>'; return; }
+    try{
+      const res=await fetch(API+'/api/admin/commercial/contracts?org_id='+encodeURIComponent(orgId),{headers:headers()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText);
+      const contracts=data.contracts||[];
+      const profile=(data.profiles||[]).find(p=>String(p.org_id||'')===String(orgId))||{};
+      if(!contracts.length){
+        box.innerHTML=`<div class="billing-header"><strong>${esc(profile.org_name||orgId)}</strong><span class="badge">No agreements</span></div><div class="label">No contract or agreement records have been attached yet.</div>`;
+        return;
+      }
+      const rows=contracts.slice(0,8).map(c=>`<div style="border-top:1px solid #202830;padding-top:10px;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong>${esc(c.agreement_label||c.agreement_type)}</strong>${badge(c.contract_status,c.contract_status_label)}</div>
+        <div class="row"><span class="label">Title</span><span class="value">${esc(c.contract_title||'—')}</span></div>
+        <div class="row"><span class="label">Reference</span><span class="value">${esc(c.contract_reference||'—')}</span></div>
+        <div class="row"><span class="label">Start / End</span><span class="value">${date(c.contract_start_date)} → ${date(c.contract_end_date)}</span></div>
+        <div class="row"><span class="label">Owner</span><span class="value">${esc(c.contract_owner||'—')}</span></div>
+        <div class="row"><span class="label">Auto renewal</span><span class="value">${Number(c.auto_renewal||0)?'Yes':'No'}</span></div>
+      </div>`).join('');
+      box.innerHTML=`<div class="billing-header"><strong>${esc(profile.org_name||contracts[0]?.org_name||orgId)}</strong><span class="badge ok">${contracts.length} agreement${contracts.length===1?'':'s'}</span></div>
+        <div class="row"><span class="label">Current contract status</span><span class="value">${esc(profile.contract_status_label||profile.contract_status||'—')}</span></div>
+        <div class="row"><span class="label">Contract end</span><span class="value">${date(profile.contract_end_date)}</span></div>${rows}`;
+    }catch(e){ box.innerHTML='<div class="label">Contract details unavailable: '+esc(e.message||String(e))+'</div>'; }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
 })();
