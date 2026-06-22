@@ -1131,6 +1131,66 @@
   <div id="csDashboardStatus" class="lead-muted" style="margin-top:10px">—</div>
 </section>
 
+
+<section class="card" id="contractManagementCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Contract &amp; Agreement Management</h3>
+      <div class="legend">Phase 13A: contract status, agreement repository, expiry tracking and customer timeline integration.</div>
+    </div>
+    <button id="contractRefreshBtn" class="btn" type="button">Refresh contracts</button>
+  </div>
+  <div class="commercial-grid" style="margin-bottom:14px">
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Active Agreements</div><div id="contractKpiActive" class="money">—</div><div class="legend">Signed/active contract records</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Unsigned</div><div id="contractKpiUnsigned" class="money">—</div><div class="legend">Draft, sent or awaiting signature</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Expiring 90d</div><div id="contractKpiExpiring" class="money">—</div><div class="legend">30/60/90 day contract window</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Expired</div><div id="contractKpiExpired" class="money">—</div><div class="legend">Expired agreement records</div></div>
+  </div>
+  <div class="revenue-ops-grid">
+    <div class="revenue-panel" style="grid-column:span 4">
+      <h4>Add / Track Agreement</h4>
+      <div style="display:grid;gap:8px">
+        <select id="contractOrgSelect" class="lead-action-btn" style="width:100%;padding:8px"></select>
+        <select id="contractType" class="lead-action-btn" style="width:100%;padding:8px">
+          <option value="subscription_agreement">Subscription Agreement</option>
+          <option value="sla">SLA</option>
+          <option value="nda">NDA</option>
+          <option value="dpa">DPA</option>
+          <option value="purchase_order">Purchase Order</option>
+          <option value="msa">MSA</option>
+          <option value="order_form">Order Form</option>
+          <option value="other">Other</option>
+        </select>
+        <select id="contractStatus" class="lead-action-btn" style="width:100%;padding:8px">
+          <option value="draft">Draft</option>
+          <option value="sent">Sent</option>
+          <option value="awaiting_signature">Awaiting Signature</option>
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+          <option value="terminated">Terminated</option>
+        </select>
+        <input id="contractTitle" placeholder="Contract title" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="contractReference" placeholder="Reference / PO / internal ID" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="contractStart" type="date" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"><input id="contractEnd" type="date" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"></div>
+        <input id="contractOwner" placeholder="Owner" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <label class="lead-muted"><input id="contractAutoRenew" type="checkbox"> Auto-renewal</label>
+        <textarea id="contractNotes" placeholder="Notes" style="min-height:70px;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"></textarea>
+        <button id="contractAddBtn" class="btn primary" type="button">Save agreement</button>
+      </div>
+    </div>
+    <div class="revenue-panel" style="grid-column:span 8">
+      <h4>Agreement Repository</h4>
+      <div class="lead-table-wrap">
+        <table class="lead-table" style="min-width:980px">
+          <thead><tr><th>Customer</th><th>Agreement</th><th>Status</th><th>End</th><th>Owner</th><th>Actions</th></tr></thead>
+          <tbody id="contractRows"><tr><td colspan="6" class="lead-muted">Loading contracts…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="contractStatusMsg" class="lead-muted" style="margin-top:10px">—</div>
+</section>
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
@@ -5167,6 +5227,101 @@ document.addEventListener('DOMContentLoaded',function(){
   }
   document.addEventListener('click', e=>{ if(e.target && e.target.id==='csDashboardRefreshBtn') load(); });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', load); else load();
+})();
+</script>
+
+
+<script>
+(function contractManagementPhase13A(){
+  const API_BASE_CTR = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const q = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const date = v => v ? new Date(v).toLocaleDateString() : '—';
+  function headers(){
+    if (typeof authHeaders === 'function') return authHeaders();
+    const out = {'Content-Type':'application/json'};
+    try { const u = window.CIAuth && CIAuth.who ? CIAuth.who() : null; if(u?.email) out['X-User-Email']=u.email; if(u?.name) out['X-User-Name']=u.name; if(u?.roleKey||u?.role) out['X-User-Role']=u.roleKey||u.role; } catch(_){ }
+    return out;
+  }
+  function pill(text, tone=''){
+    const s=String(tone||'').toLowerCase();
+    const map={active:'border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)',awaiting_signature:'border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)',sent:'border-color:#60a5fa;color:#bfdbfe;background:rgba(96,165,250,.12)',draft:'border-color:#8e97a3;color:#e5e7eb;background:rgba(255,255,255,.05)',expired:'border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)',terminated:'border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)'};
+    return `<span class="lead-status" style="${map[s]||''}">${esc(text||'—')}</span>`;
+  }
+  let latestContracts=[];
+  async function loadContracts(){
+    if(!q('contractManagementCard')) return;
+    try{
+      if(q('contractStatusMsg')) q('contractStatusMsg').textContent='Loading contract dashboard…';
+      const res=await fetch(API_BASE_CTR+'/api/admin/commercial/contracts',{headers:headers()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok || data.ok===false) throw new Error(data.error||res.statusText);
+      renderContracts(data);
+    }catch(e){ if(q('contractStatusMsg')) q('contractStatusMsg').textContent='Contract dashboard unavailable: '+(e.message||String(e)); }
+  }
+  function renderContracts(data){
+    const s=data.summary||{};
+    latestContracts=data.contracts||[];
+    if(q('contractKpiActive')) q('contractKpiActive').textContent=s.active_agreements??0;
+    if(q('contractKpiUnsigned')) q('contractKpiUnsigned').textContent=s.unsigned_agreements??0;
+    if(q('contractKpiExpiring')) q('contractKpiExpiring').textContent=Number(s.expiring_30||0)+Number(s.expiring_60||0)+Number(s.expiring_90||0);
+    if(q('contractKpiExpired')) q('contractKpiExpired').textContent=s.expired_agreements??0;
+    const sel=q('contractOrgSelect');
+    if(sel){
+      const prev=sel.value;
+      const profiles=data.profiles||[];
+      sel.innerHTML=profiles.length?profiles.map(p=>`<option value="${esc(p.org_id)}">${esc(p.org_name||p.org_id)}</option>`).join(''):'<option value="">No customer profiles yet</option>';
+      if(prev) sel.value=prev;
+    }
+    const rows=latestContracts;
+    if(q('contractRows')) q('contractRows').innerHTML=rows.length?rows.map(c=>`<tr>
+      <td><b>${esc(c.org_name||c.org_id)}</b><div class="lead-muted">${esc(c.contract_reference||'')}</div></td>
+      <td>${esc(c.agreement_label||c.agreement_type)}<div class="lead-muted">${esc(c.contract_title||'')}</div></td>
+      <td>${pill(c.contract_status_label||c.contract_status,c.contract_status)}</td>
+      <td>${date(c.contract_end_date)}<div class="lead-muted">${c.contract_days===null||c.contract_days===undefined?'—':esc(c.contract_days)+' days'}</div></td>
+      <td>${esc(c.contract_owner||'—')}</td>
+      <td><button class="lead-action-btn" data-contract-status="active" data-contract-id="${esc(c.id)}">Active</button><button class="lead-action-btn reject" data-contract-status="terminated" data-contract-id="${esc(c.id)}">Terminate</button></td>
+    </tr>`).join(''):'<tr><td colspan="6" class="lead-muted">No contract records yet.</td></tr>';
+    if(q('contractStatusMsg')) q('contractStatusMsg').textContent='Contract dashboard updated.';
+  }
+  async function saveContract(){
+    const orgId=q('contractOrgSelect')?.value||'';
+    if(!orgId){ alert('Select a customer profile first.'); return; }
+    const body={
+      agreement_type:q('contractType')?.value||'subscription_agreement',
+      contract_status:q('contractStatus')?.value||'draft',
+      contract_title:q('contractTitle')?.value||'',
+      contract_reference:q('contractReference')?.value||'',
+      contract_start_date:q('contractStart')?.value||'',
+      contract_end_date:q('contractEnd')?.value||'',
+      contract_owner:q('contractOwner')?.value||'',
+      auto_renewal:q('contractAutoRenew')?.checked?1:0,
+      notes:q('contractNotes')?.value||''
+    };
+    if(q('contractStatusMsg')) q('contractStatusMsg').textContent='Saving agreement…';
+    const res=await fetch(API_BASE_CTR+'/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/contracts',{method:'POST',headers:headers(),body:JSON.stringify(body)});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || data.ok===false) throw new Error(data.error||res.statusText);
+    ['contractTitle','contractReference','contractStart','contractEnd','contractOwner','contractNotes'].forEach(id=>{ if(q(id)) q(id).value=''; });
+    if(q('contractAutoRenew')) q('contractAutoRenew').checked=false;
+    await loadContracts();
+  }
+  async function updateStatus(id,status){
+    const res=await fetch(API_BASE_CTR+'/api/admin/commercial/contracts/'+encodeURIComponent(id),{method:'PUT',headers:headers(),body:JSON.stringify({contract_status:status})});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || data.ok===false) throw new Error(data.error||res.statusText);
+    await loadContracts();
+  }
+  document.addEventListener('click', async e=>{
+    try{
+      if(e.target?.id==='contractRefreshBtn') await loadContracts();
+      if(e.target?.id==='contractAddBtn') await saveContract();
+      const id=e.target?.getAttribute?.('data-contract-id');
+      const st=e.target?.getAttribute?.('data-contract-status');
+      if(id && st) await updateStatus(id,st);
+    }catch(err){ if(q('contractStatusMsg')) q('contractStatusMsg').textContent='Contract action failed: '+(err.message||String(err)); }
+  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadContracts); else loadContracts();
 })();
 </script>
 
