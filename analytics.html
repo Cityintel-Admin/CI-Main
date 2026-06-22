@@ -1250,6 +1250,59 @@
 </section>
 
 
+
+<section class="card" id="procurementManagementCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Procurement &amp; Purchase Orders</h3>
+      <div class="legend">Phase 13C: PO records, procurement contacts, accounts payable details, approval status and invoice reference rules.</div>
+    </div>
+    <button id="poRefreshBtn" class="btn" type="button">Refresh POs</button>
+  </div>
+  <div class="commercial-grid" style="margin-bottom:14px">
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Open POs</div><div id="poKpiOpen" class="money">—</div><div class="legend">Draft / submitted / approved</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Pending Approval</div><div id="poKpiPending" class="money">—</div><div class="legend">Submitted purchase orders</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Approved Value</div><div id="poKpiApprovedValue" class="money">—</div><div class="legend">Approved PO value</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Expired POs</div><div id="poKpiExpired" class="money">—</div><div class="legend">Expired or past expiry</div></div>
+  </div>
+  <div class="revenue-ops-grid">
+    <div class="revenue-panel" style="grid-column:span 4">
+      <h4>Procurement Profile</h4>
+      <div style="display:grid;gap:8px">
+        <select id="poProfileOrg" class="lead-action-btn" style="width:100%;padding:8px"></select>
+        <input id="poProcurementContact" placeholder="Procurement contact" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="poAccountsEmail" placeholder="Accounts payable email" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <label class="lead-muted" style="display:flex;gap:8px;align-items:center"><input id="poRequired" type="checkbox"> PO required before invoice/payment</label>
+        <textarea id="poInvoiceRules" placeholder="Invoice reference rules / procurement instructions" style="min-height:70px;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"></textarea>
+        <button id="poSaveProfileBtn" class="btn primary" type="button">Save Procurement Profile</button>
+      </div>
+      <h4 style="margin-top:18px">Create Purchase Order</h4>
+      <div style="display:grid;gap:8px">
+        <select id="poOrgSelect" class="lead-action-btn" style="width:100%;padding:8px"></select>
+        <input id="poNumber" placeholder="PO number / reference" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <select id="poStatus" class="lead-action-btn" style="width:100%;padding:8px">
+          <option value="draft">Draft</option><option value="submitted">Submitted</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="expired">Expired</option><option value="completed">Completed</option>
+        </select>
+        <input id="poValue" type="number" step="0.01" placeholder="PO value" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="poIssueDate" type="date" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <input id="poExpiryDate" type="date" style="background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px">
+        <textarea id="poNotes" placeholder="PO notes" style="min-height:60px;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"></textarea>
+        <button id="poCreateBtn" class="btn primary" type="button">Create PO</button>
+      </div>
+    </div>
+    <div class="revenue-panel" style="grid-column:span 8">
+      <h4>Purchase Order Register</h4>
+      <div class="lead-table-wrap">
+        <table class="lead-table" style="min-width:1100px">
+          <thead><tr><th>Customer</th><th>PO</th><th>Status</th><th>Value</th><th>Expiry</th><th>Procurement</th><th>Actions</th></tr></thead>
+          <tbody id="poRows"><tr><td colspan="7" class="lead-muted">Loading purchase orders…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="poStatusMsg" class="lead-muted" style="margin-top:10px">—</div>
+</section>
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
@@ -5437,6 +5490,53 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('change',e=>{ if(e.target?.id==='slaTier') applyDefaults(); });
   document.addEventListener('click',async e=>{ try{ if(e.target?.id==='slaRefreshBtn') await load(); if(e.target?.id==='slaSaveBtn') await save(); const id=e.target?.getAttribute?.('data-sla-id'); const st=e.target?.getAttribute?.('data-sla-status'); if(id&&st) await update(id,st); }catch(err){ if(q('slaStatusMsg')) q('slaStatusMsg').textContent='SLA action failed: '+(err.message||String(err)); }});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
+})();
+</script>
+
+
+<script>
+(function procurementPhase13C(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const q=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const money=v=>'£'+Number(v||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+  function headers(){
+    let u={}; try{u=(window.CIAuth&&CIAuth.who&&CIAuth.who())||JSON.parse(localStorage.getItem('ci_profile')||'{}')||{};}catch(_){u={};}
+    return {'Content-Type':'application/json','X-User-Email':u.email||'','X-User-Name':u.name||'','X-User-Role':u.role||u.roleKey||''};
+  }
+  async function api(path, opts={}){ const res=await fetch(API+path,{...opts,headers:{...headers(),...(opts.headers||{})}}); const data=await res.json().catch(()=>({})); if(!res.ok||data.ok===false) throw new Error(data.error||('HTTP '+res.status)); return data; }
+  let state={profiles:[], purchase_orders:[], summary:{}};
+  function fillSelect(el){
+    if(!el) return;
+    const profiles=state.profiles||[];
+    el.innerHTML=profiles.length?profiles.map(p=>`<option value="${esc(p.org_id)}">${esc(p.org_name||p.org_id)}</option>`).join(''):'<option value="">No customer profiles</option>';
+  }
+  function selectedProfile(id){ return (state.profiles||[]).find(p=>String(p.org_id)===String(q(id)?.value||''))||{}; }
+  function applyProfileToForm(){ const p=selectedProfile('poProfileOrg'); if(q('poProcurementContact')) q('poProcurementContact').value=p.procurement_contact||''; if(q('poAccountsEmail')) q('poAccountsEmail').value=p.accounts_payable_email||''; if(q('poRequired')) q('poRequired').checked=Number(p.po_required||0)===1; if(q('poInvoiceRules')) q('poInvoiceRules').value=p.invoice_reference_rules||''; }
+  function render(){
+    const s=state.summary||{};
+    if(q('poKpiOpen')) q('poKpiOpen').textContent=s.open_purchase_orders??0;
+    if(q('poKpiPending')) q('poKpiPending').textContent=s.pending_approval??0;
+    if(q('poKpiApprovedValue')) q('poKpiApprovedValue').textContent=money(s.approved_value||0);
+    if(q('poKpiExpired')) q('poKpiExpired').textContent=s.expired_purchase_orders??0;
+    fillSelect(q('poProfileOrg')); fillSelect(q('poOrgSelect')); applyProfileToForm();
+    const rows=state.purchase_orders||[];
+    if(q('poRows')) q('poRows').innerHTML=rows.length?rows.map(po=>`<tr>
+      <td><b>${esc(po.org_name||po.org_id)}</b><div class="lead-muted">${esc(po.org_id)}</div></td>
+      <td>${esc(po.po_number||'—')}</td><td><span class="lead-status">${esc(po.po_status_label||po.po_status||'Draft')}</span></td>
+      <td>${money(po.po_value||0)}</td><td>${esc(po.expiry_date||'—')}<div class="lead-muted">${po.po_days==null?'':(po.po_days<0?'Expired':po.po_days+' days')}</div></td>
+      <td>${esc(po.procurement_contact||'—')}<div class="lead-muted">${esc(po.accounts_payable_email||'')}</div></td>
+      <td class="lead-actions"><button class="lead-action-btn" data-po-id="${esc(po.id)}" data-po-status="submitted">Submit</button><button class="lead-action-btn approve" data-po-id="${esc(po.id)}" data-po-status="approved">Approve</button><button class="lead-action-btn" data-po-id="${esc(po.id)}" data-po-status="completed">Complete</button><button class="lead-action-btn reject" data-po-id="${esc(po.id)}" data-po-status="rejected">Reject</button></td>
+    </tr>`).join(''):'<tr><td colspan="7" class="lead-muted">No purchase orders yet.</td></tr>';
+    if(q('poStatusMsg')) q('poStatusMsg').textContent='Procurement dashboard updated.';
+  }
+  async function load(){ if(!q('procurementManagementCard')) return; if(q('poStatusMsg')) q('poStatusMsg').textContent='Loading procurement dashboard…'; state=await api('/api/admin/commercial/procurement'); render(); }
+  async function saveProfile(){ const org=q('poProfileOrg')?.value||''; if(!org) throw new Error('Select a customer'); await api('/api/admin/commercial/customers/'+encodeURIComponent(org)+'/procurement',{method:'POST',body:JSON.stringify({procurement_contact:q('poProcurementContact')?.value||'',accounts_payable_email:q('poAccountsEmail')?.value||'',po_required:q('poRequired')?.checked?1:0,invoice_reference_rules:q('poInvoiceRules')?.value||''})}); await load(); }
+  async function createPo(){ const org=q('poOrgSelect')?.value||''; if(!org) throw new Error('Select a customer'); await api('/api/admin/commercial/customers/'+encodeURIComponent(org)+'/purchase-orders',{method:'POST',body:JSON.stringify({po_number:q('poNumber')?.value||'',po_status:q('poStatus')?.value||'draft',po_value:q('poValue')?.value||0,issue_date:q('poIssueDate')?.value||'',expiry_date:q('poExpiryDate')?.value||'',notes:q('poNotes')?.value||''})}); ['poNumber','poValue','poIssueDate','poExpiryDate','poNotes'].forEach(id=>{if(q(id)) q(id).value='';}); await load(); }
+  async function updatePo(id,status){ await api('/api/admin/commercial/purchase-orders/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify({po_status:status})}); await load(); }
+  document.addEventListener('change',e=>{ if(e.target?.id==='poProfileOrg') applyProfileToForm(); });
+  document.addEventListener('click',async e=>{ try{ if(e.target?.id==='poRefreshBtn') await load(); if(e.target?.id==='poSaveProfileBtn') await saveProfile(); if(e.target?.id==='poCreateBtn') await createPo(); const id=e.target?.getAttribute?.('data-po-id'); const st=e.target?.getAttribute?.('data-po-status'); if(id&&st) await updatePo(id,st); }catch(err){ if(q('poStatusMsg')) q('poStatusMsg').textContent='Procurement action failed: '+(err.message||String(err)); }});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load,{once:true}); else load();
 })();
 </script>
 
