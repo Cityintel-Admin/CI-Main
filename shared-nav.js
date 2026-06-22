@@ -38,7 +38,6 @@
     { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'Welfare Hub' },
     { href: 'training-scenario-admin.html', label: 'Training Admin',  role: 'orgAdmin' },
     { href: 'training-review.html',     label: 'Training Record',     role: 'all',       module: 'training_review' },
-    { href: 'panicalarm.html',          label: 'Panic Alarm',         role: 'orgAdmin' },
     { href: 'assets.html',              label: 'Assets',              role: 'all',       module: 'assets' },
     { href: 'escalation-contacts.html', label: 'Escalation Contacts', role: 'orgAdmin' },
     // ── Info / support ──────────────────────────────────────────────────────
