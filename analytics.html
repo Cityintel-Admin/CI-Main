@@ -1251,6 +1251,35 @@
 
 
 
+
+<section class="card" id="creditNotesManagementCard" style="margin-bottom:20px;">
+  <h3>Credit Notes &amp; Billing Adjustments</h3>
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:10px">
+    <div class="legend">Phase 13D: create credit note documents, link invoices, apply commercial adjustments and track net revenue impact.</div>
+    <button class="btn" id="creditRefreshBtn">Refresh Credits</button>
+  </div>
+  <div class="grid" style="margin-bottom:14px">
+    <div class="card" style="grid-column:span 3"><div class="legend">Credits This Month</div><div class="kpi"><span class="value" id="creditKpiMonth">0</span></div><div class="legend" id="creditKpiMonthValue">£0.00</div></div>
+    <div class="card" style="grid-column:span 3"><div class="legend">Credits This Quarter</div><div class="kpi"><span class="value" id="creditKpiQuarter">0</span></div><div class="legend" id="creditKpiQuarterValue">£0.00</div></div>
+    <div class="card" style="grid-column:span 3"><div class="legend">Open Credits</div><div class="kpi"><span class="value" id="creditKpiOpen">0</span></div></div>
+    <div class="card" style="grid-column:span 3"><div class="legend">Net Revenue Impact</div><div class="kpi"><span class="value" id="creditKpiImpact">£0.00</span></div></div>
+  </div>
+  <div class="lead-onboard-grid" style="margin-bottom:14px">
+    <div><label>Customer</label><select id="creditOrgSelect"></select></div>
+    <div><label>Linked invoice</label><select id="creditInvoiceSelect"><option value="">No invoice selected</option></select></div>
+    <div><label>Credit type</label><select id="creditType"><option value="service_credit">Service Credit</option><option value="refund">Refund</option><option value="pricing_correction">Pricing Correction</option><option value="goodwill_credit">Goodwill Credit</option><option value="contract_adjustment">Contract Adjustment</option><option value="trial_extension_credit">Trial Extension Credit</option></select></div>
+    <div><label>Status</label><select id="creditStatus"><option value="draft">Draft</option><option value="issued">Issued</option><option value="applied">Applied</option><option value="cancelled">Cancelled</option></select></div>
+    <div><label>Credit amount</label><input id="creditAmount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    <div><label>Tax / VAT credit</label><input id="creditTax" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    <div><label>Issue date</label><input id="creditIssueDate" type="date"></div>
+    <div><label>Credit note number</label><input id="creditNumber" placeholder="Auto if blank"></div>
+    <div class="full"><label>Reason</label><input id="creditReason" placeholder="Why this credit note is being issued"></div>
+    <div class="full"><label>Notes</label><textarea id="creditNotes" placeholder="Optional internal or customer-facing notes" style="min-height:70px;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px"></textarea></div>
+  </div>
+  <div class="lead-actions" style="margin-bottom:12px"><button class="btn primary" id="creditCreateBtn">Create Credit Note Document</button><span class="lead-muted" id="creditStatusMsg">Ready.</span></div>
+  <div class="lead-table-wrap"><table class="lead-table"><thead><tr><th>Credit #</th><th>Customer</th><th>Invoice</th><th>Amount</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody id="creditRows"><tr><td colspan="7" class="lead-muted">Loading credit notes…</td></tr></tbody></table></div>
+</section>
+
 <section class="card" id="procurementManagementCard" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
     <div>
@@ -5537,6 +5566,30 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('change',e=>{ if(e.target?.id==='poProfileOrg') applyProfileToForm(); });
   document.addEventListener('click',async e=>{ try{ if(e.target?.id==='poRefreshBtn') await load(); if(e.target?.id==='poSaveProfileBtn') await saveProfile(); if(e.target?.id==='poCreateBtn') await createPo(); const id=e.target?.getAttribute?.('data-po-id'); const st=e.target?.getAttribute?.('data-po-status'); if(id&&st) await updatePo(id,st); }catch(err){ if(q('poStatusMsg')) q('poStatusMsg').textContent='Procurement action failed: '+(err.message||String(err)); }});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load,{once:true}); else load();
+})();
+</script>
+
+
+<script>
+(function creditNotesPhase13D(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const q=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const money=v=>'£'+Number(v||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+  function headers(){let u={};try{u=(window.CIAuth&&CIAuth.who&&CIAuth.who())||JSON.parse(localStorage.getItem('ci_profile')||'{}')||{};}catch(_){u={};}return {'Content-Type':'application/json','X-User-Email':u.email||'','X-User-Name':u.name||'','X-User-Role':u.role||u.roleKey||''};}
+  async function api(path,opts={}){const res=await fetch(API+path,{...opts,headers:{...headers(),...(opts.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok===false)throw new Error(data.error||('HTTP '+res.status));return data;}
+  let state={profiles:[],credit_notes:[],invoices:[],summary:{}};
+  function fillCustomers(){const sel=q('creditOrgSelect'); if(!sel)return; const prev=sel.value; const profiles=state.profiles||[]; sel.innerHTML=profiles.length?profiles.map(p=>`<option value="${esc(p.org_id)}">${esc(p.org_name||p.org_id)}</option>`).join(''):'<option value="">No customers</option>'; if(prev) sel.value=prev; fillInvoices();}
+  function fillInvoices(){const sel=q('creditInvoiceSelect'); if(!sel)return; const org=q('creditOrgSelect')?.value||''; const inv=(state.invoices||[]).filter(i=>!org||String(i.org_id)===String(org)); sel.innerHTML='<option value="">No invoice selected</option>'+inv.map(i=>`<option value="${esc(i.id)}">${esc(i.invoice_number||i.id)} · ${money(i.grand_total||i.total||0)}</option>`).join('');}
+  function statusBadge(s,l){const st=String(s||'').toLowerCase();const cls=st==='applied'||st==='closed'?'approved':(st==='cancelled'?'rejected':(st==='issued'?'contact':''));return `<span class="lead-status ${cls}">${esc(l||s||'Draft')}</span>`;}
+  function render(){const s=state.summary||{}; if(q('creditKpiMonth'))q('creditKpiMonth').textContent=s.credits_this_month??0; if(q('creditKpiMonthValue'))q('creditKpiMonthValue').textContent=money(s.credits_this_month_value||0); if(q('creditKpiQuarter'))q('creditKpiQuarter').textContent=s.credits_this_quarter??0; if(q('creditKpiQuarterValue'))q('creditKpiQuarterValue').textContent=money(s.credits_this_quarter_value||0); if(q('creditKpiOpen'))q('creditKpiOpen').textContent=s.open_credit_notes??0; if(q('creditKpiImpact'))q('creditKpiImpact').textContent=money(s.net_revenue_impact||0); fillCustomers(); const rows=state.credit_notes||[]; if(q('creditRows'))q('creditRows').innerHTML=rows.length?rows.map(c=>`<tr><td><b>${esc(c.credit_note_number||'—')}</b><div class="lead-muted">${esc((c.issue_date||'').slice(0,10)||'—')}</div></td><td>${esc(c.org_name||c.org_id)}</td><td>${esc(c.linked_invoice_number||c.linked_invoice_id||'—')}</td><td>${money(c.total_credit||0)}<div class="lead-muted">Net ${money(c.credit_amount||0)} · Tax ${money(c.tax_amount||0)}</div></td><td>${esc(c.credit_type_label||c.credit_type)}</td><td>${statusBadge(c.credit_status,c.credit_status_label)}</td><td class="lead-actions"><button class="lead-action-btn" data-credit-doc="${esc(c.id)}">Preview/Print</button><button class="lead-action-btn contact" data-credit-status="issued" data-credit-id="${esc(c.id)}">Issue</button><button class="lead-action-btn approve" data-credit-status="applied" data-credit-id="${esc(c.id)}">Apply</button><button class="lead-action-btn reject" data-credit-status="cancelled" data-credit-id="${esc(c.id)}">Cancel</button></td></tr>`).join(''):'<tr><td colspan="7" class="lead-muted">No credit notes yet.</td></tr>'; if(q('creditStatusMsg'))q('creditStatusMsg').textContent='Credit note dashboard updated.';}
+  async function load(){if(!q('creditNotesManagementCard'))return; if(q('creditStatusMsg'))q('creditStatusMsg').textContent='Loading credit notes…'; state=await api('/api/admin/commercial/credits'); render();}
+  async function createCredit(){const org=q('creditOrgSelect')?.value||''; if(!org)throw new Error('Select a customer'); const body={credit_note_number:q('creditNumber')?.value||'',linked_invoice_id:q('creditInvoiceSelect')?.value||'',credit_type:q('creditType')?.value||'service_credit',credit_status:q('creditStatus')?.value||'draft',issue_date:q('creditIssueDate')?.value||'',credit_amount:q('creditAmount')?.value||0,tax_amount:q('creditTax')?.value||0,reason:q('creditReason')?.value||'',notes:q('creditNotes')?.value||''}; await api('/api/admin/commercial/customers/'+encodeURIComponent(org)+'/credit-notes',{method:'POST',body:JSON.stringify(body)}); ['creditNumber','creditAmount','creditTax','creditIssueDate','creditReason','creditNotes'].forEach(id=>{if(q(id))q(id).value='';}); await load();}
+  async function updateCredit(id,status){await api('/api/admin/commercial/credit-notes/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify({credit_status:status})}); await load();}
+  async function openDoc(id){const data=await api('/api/admin/commercial/credit-notes/'+encodeURIComponent(id)+'/document'); const w=window.open('','_blank'); if(!w){alert('Popup blocked. Please allow popups to preview credit notes.');return;} w.document.open(); w.document.write(data.document_html||'<p>No document available</p>'); w.document.close();}
+  document.addEventListener('change',e=>{if(e.target?.id==='creditOrgSelect')fillInvoices();});
+  document.addEventListener('click',async e=>{try{if(e.target?.id==='creditRefreshBtn')await load(); if(e.target?.id==='creditCreateBtn')await createCredit(); const id=e.target?.getAttribute?.('data-credit-id'); const st=e.target?.getAttribute?.('data-credit-status'); if(id&&st)await updateCredit(id,st); const doc=e.target?.getAttribute?.('data-credit-doc'); if(doc)await openDoc(doc);}catch(err){if(q('creditStatusMsg'))q('creditStatusMsg').textContent='Credit note action failed: '+(err.message||String(err));}});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true}); else load();
 })();
 </script>
 
