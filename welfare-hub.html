@@ -121,6 +121,12 @@
     .contact-meta{color:var(--muted);font-size:12px;margin-bottom:8px}
     .contact-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 
+    .triage-box{margin-top:12px;background:rgba(147,197,253,.06);border:1px solid rgba(147,197,253,.22);border-radius:12px;padding:12px}
+    .triage-box.critical{background:rgba(255,90,95,.08);border-color:rgba(255,90,95,.35)}
+    .triage-box.warning{background:rgba(240,180,41,.08);border-color:rgba(240,180,41,.32)}
+    .triage-title{font-weight:950;margin-bottom:5px}
+    .triage-steps{margin:8px 0 0;padding-left:18px;color:#cbd5e1}
+    .role-note{margin-top:10px;background:rgba(255,255,255,.035);border:1px solid var(--gray-600);border-radius:12px;padding:10px;color:var(--muted);font-size:12px}
     .person-list.collapsed .person-item:nth-of-type(n+2){display:none}
     .person-list.collapsed{max-height:120px;overflow:hidden}
 
@@ -249,11 +255,11 @@
         </div>
         <div id="welfareMap" class="welfare-map"></div>
         <div class="map-legend">
-          <div class="legend-item"><span class="legend-dot traveller"></span>Traveller accommodation</div>
+          <div class="legend-item"><span class="legend-dot traveller"></span>Traveller accommodation / base</div>
           <div class="legend-item"><span class="legend-dot fresh"></span>Active tracking — fresh</div>
           <div class="legend-item"><span class="legend-dot stale"></span>Active tracking — stale</div>
           <div class="legend-item"><span class="legend-dot offline"></span>Active tracking — offline / old</div>
-          <div class="legend-item"><span class="legend-dot panic"></span>Active panic alarm</div>
+          <div class="legend-item"><span class="legend-dot panic"></span>Active panic</div>
         </div>
       </section>
 
@@ -373,6 +379,10 @@
   }
 
   let welfareMap=null, welfareMapLayer=null, welfareSearchMarker=null;
+  // Initial map framing: this is the "one plus click" bump for first/auto-fit view.
+  // Set to 0 to disable, 1 for one zoom level closer, 2 for two levels closer.
+  const WELFARE_INITIAL_MAP_ZOOM_BUMP = 1;
+  const WELFARE_INITIAL_MAP_MAX_ZOOM = 13;
   let welfareMapUserMoved=false, welfareMapFittedOnce=false, welfareMapProgrammatic=false;
   function coordOf(obj){
     if(!obj) return null;
@@ -412,9 +422,16 @@
     try{
       if(points.length){
         const group=L.featureGroup(welfareMapLayer.getLayers());
-        welfareMap.fitBounds(group.getBounds().pad(.005),{maxZoom:13});
+        welfareMap.fitBounds(group.getBounds().pad(.10),{maxZoom:WELFARE_INITIAL_MAP_MAX_ZOOM});
+        if(WELFARE_INITIAL_MAP_ZOOM_BUMP){
+          const nextZoom = Math.min(
+            WELFARE_INITIAL_MAP_MAX_ZOOM,
+            welfareMap.getZoom() + WELFARE_INITIAL_MAP_ZOOM_BUMP
+          );
+          welfareMap.setZoom(nextZoom, { animate:false });
+        }
       } else {
-        welfareMap.setView([15,0],2);
+        welfareMap.setView([20,0],2);
       }
       welfareMapFittedOnce=true;
     } finally {
@@ -826,6 +843,23 @@
     renderIncidentDetail();
   }
   function selectIncident(id){ state.selectedIncident=(state.welfareIncidents||[]).find(i=>i.id===id)||null; renderIncidents(); const p=findPersonByIssue({email:state.selectedIncident?.person_email,name:state.selectedIncident?.person_name}); if(p) { state.selected=p; renderOverview(); renderPeople(); } }
+  function triageForIncident(i={}){
+    const sev=norm(i.severity||'warning');
+    const src=norm(i.source_type||'manual');
+    const title=norm(i.title||'');
+    const critical = sev==='critical' || title.includes('offline') || title.includes('panic') || title.includes('missed');
+    if(src.includes('panic') || title.includes('panic')){
+      return {level:'critical', title:'Immediate panic response', summary:'Treat this as a live safety event until the person is confirmed safe.', steps:['Open Panic Alarm and review the current alarm state.','Attempt direct contact by phone and email.','Use Emergency Contacts if contact is not confirmed quickly.','Resolve only after safety is confirmed and the reason is recorded.']};
+    }
+    if(src.includes('tracking') || title.includes('tracking')){
+      return {level:critical?'critical':'warning', title:critical?'Tracking loss requires contact':'Tracking stale — verify freshness', summary:critical?'The person has no recent location ping. Confirm whether this is expected, device-related, or a welfare concern.':'Location has not updated recently. Monitor and contact if the stale period continues.', steps:['Check the person overview and last known location.','Invite or re-invite to tracking if needed.','Contact the traveller if the loss is unexpected.','Escalate if contact cannot be confirmed.']};
+    }
+    if(src.includes('checkin') || title.includes('check')){
+      return {level:critical?'critical':'warning', title:'Check-in welfare follow-up', summary:'A missed or overdue check-in should be treated as unresolved until the person responds.', steps:['Send or resend check-in if appropriate.','Attempt direct contact if overdue.','Escalate if no response after the agreed welfare threshold.','Resolve with the confirmation method used.']};
+    }
+    return {level:critical?'critical':'warning', title:'Welfare incident review', summary:'Review the person record, contact history and available location context before closing.', steps:['Review open alerts and timeline.','Record an operator note with the action taken.','Escalate if the incident cannot be safely closed.','Resolve only with a clear outcome note.']};
+  }
+
   function renderIncidentDetail(){
     const box=$('incidentDetail'); if(!box) return;
     const i=state.selectedIncident; if(!i){ box.className='empty'; box.innerHTML='Select an incident record to manage it.'; return; }
@@ -834,24 +868,31 @@
     const canManageIncident = isAdmin();
     box.innerHTML=`<div class="toprow"><div><h3>${esc(i.title||'Welfare issue')}</h3><span class="muted">${esc(i.person_name||'Unknown person')} · ${esc(i.person_email||'No email')}</span></div><span class="status-badge status-${esc(i.status||'open')}">${esc(i.status||'open')}</span></div>
       <div class="overview-grid" style="margin-top:10px"><div class="overview-cell"><b>Severity</b><span>${esc(i.severity||'warning')}</span></div><div class="overview-cell"><b>Source</b><span>${esc(i.source_type||'manual')}</span></div><div class="overview-cell"><b>First seen</b><span>${fmt(i.first_seen_at)}</span></div><div class="overview-cell"><b>Last seen</b><span>${fmt(i.last_seen_at||i.updated_at)}</span></div></div>
-      ${canManageIncident ? `<div class="incident-actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button></div>
-      <div class="note-box"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" data-act="note">Add note</button></div>` : `<div class="empty" style="margin-top:10px;text-align:left">Incident actions and note adding are restricted to Org Admin and Master Admin roles.</div>`}
+      ${(()=>{ const t=triageForIncident(i); return `<div class="triage-box ${esc(t.level)}"><div class="triage-title">${esc(t.title)}</div><div class="muted">${esc(t.summary)}</div><ol class="triage-steps">${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div>`; })()}
+      ${canManageIncident ? `<div class="incident-actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button><button class="btn" data-act="contacts">Emergency contacts</button></div>
+      <div class="note-box"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" data-act="note">Add note</button></div>
+      <div class="role-note">Admin controls are enabled. Acknowledge records ownership, Escalate marks the incident for urgent follow-up, and Resolve closes the persistent record after safety is confirmed.</div>` : `<div class="empty" style="margin-top:10px;text-align:left">Incident actions and note adding are restricted to Org Admin and Master Admin roles. Operators can view the incident, timeline, person overview and emergency contacts.</div>`}
       <h3 style="margin-top:14px">Notes</h3><div class="note-list">${notes.length?notes.map(n=>`<div class="note-item"><b>${esc(n.author_name||n.author_email||'Operator')}</b>${esc(n.note)}<span>${fmt(n.created_at)} · ${esc(n.note_type||'note')}</span></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>`;
     box.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>incidentAction(btn.dataset.act,i.id));
   }
   async function incidentAction(action,id){
     if(!isAdmin()) return toast('Incident management actions are admin only.', false);
     try{
-      if(action==='note'){
+      if(action==='contacts'){
+        setContactsDrawer(true);
+        return;
+      } else if(action==='note'){
         const note=$('incidentNoteInput')?.value?.trim(); if(!note) return toast('Enter a note first.',false);
         await api('/api/org/welfare/incidents/note',{method:'POST',body:JSON.stringify({incident_id:id,note})});
         toast('Note added.');
       } else {
         let status=action==='ack'?'acknowledged':action==='escalate'?'escalated':'resolved';
         let note='';
+        if(status==='escalated') note=prompt('Escalation note:', 'Escalated for emergency contact / supervisor follow-up')||'Escalated from Welfare Hub';
         if(status==='resolved') note=prompt('Resolution note:', 'Confirmed safe / no further action required')||'Resolved from Welfare Hub';
         await api('/api/org/welfare/incidents',{method:'PUT',body:JSON.stringify({id,status,note,resolution_note:note})});
         if(status==='resolved') state.selectedIncident=null;
+        if(status==='escalated') setContactsDrawer(true);
         toast(`Incident ${status}.`);
       }
       await loadWelfareIncidents(); buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople(); renderIncidents(); renderWelfareMap(); renderPanicBanner(state.panic); if(state.selected) renderOverview();
@@ -941,6 +982,8 @@
   renderTopUser(); initMobileNav(); initWelfareMapControls(); if($('openContactsDrawer')) $('openContactsDrawer').onclick=()=>setContactsDrawer(true); if($('closeContactsDrawer')) $('closeContactsDrawer').onclick=()=>setContactsDrawer(false); if($('contactDrawerBackdrop')) $('contactDrawerBackdrop').onclick=()=>setContactsDrawer(false); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
 })();
 </script>
-<script src="shared-chip.js"></script>
+
+ <script src="shared-chip.js"></script>
+  
 </body>
 </html>
