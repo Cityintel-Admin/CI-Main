@@ -24,10 +24,8 @@
   const NAV_LINKS = [
     // ── Core (all users) ────────────────────────────────────────────────────
     { href: 'dashboard.html',           label: 'Dashboard',           role: 'all' },
-    { href: 'cityintel-assistant.html', label: 'CityIntel AI',        role: 'all',       module: 'cityintel_ai' },
-    { href: 'live-alerts.html',         label: 'Live Alerts',         role: 'all',       module: 'live_alerts' },
-    { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', role: 'all',       module: 'Neighbourhood_intel' },
     { href: 'alerts.html',              label: 'Protests/Rally/Demo', role: 'all',       module: 'Protests/Rally/Demo' },
+    { href: 'monitoring-hub.html',      label: 'Monitoring Hub',      role: 'all',       module: 'Monitoring Hub' },
     { href: 'intel-hub.html',           label: 'Intel Hub',           role: 'all',       module: 'Intel Hub' },
     { href: 'travel-infrastructure.html',   label: 'Travel-Infrastructure Hub',  role: 'all', module: 'Travel-Infrastructure Hub' },
     { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'Welfare Hub' },
