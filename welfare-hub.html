@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Welfare Hub v3</title>
+  <title>CityIntel — Welfare Hub v3.2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -90,6 +90,25 @@
     .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.toast{position:fixed;right:18px;bottom:18px;background:#111214;border:1px solid var(--gray-500);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);display:none;max-width:360px;z-index:99}.toast.show{display:block}
     .empty{border:1px dashed var(--gray-600);border-radius:12px;padding:22px;color:var(--muted);text-align:center}
     .contact-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+    .mobile-nav-toggle{display:none;border:1px solid var(--gray-500);background:#16171a;color:var(--text);border-radius:8px;padding:5px 8px;font-weight:900;cursor:pointer}
+    .panic-banner{display:none;position:sticky;top:0;z-index:9999;margin:0;background:linear-gradient(90deg,rgba(120,0,0,.96),rgba(80,0,0,.96));border-bottom:1px solid rgba(255,255,255,.1);box-shadow:0 8px 24px rgba(0,0,0,.45);color:#fff;padding:10px 14px}
+    .panic-banner.show{display:block}
+    .panic-banner-inner{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+    .panic-beacon{width:14px;height:14px;border-radius:50%;background:#ff5a5f;box-shadow:0 0 0 0 rgba(255,90,95,.75);animation:panicPulse 1.4s infinite}
+    @keyframes panicPulse{0%{box-shadow:0 0 0 0 rgba(255,90,95,.75)}70%{box-shadow:0 0 0 12px rgba(255,90,95,0)}100%{box-shadow:0 0 0 0 rgba(255,90,95,0)}}
+    .panic-title{font-weight:950;text-transform:uppercase;letter-spacing:.08em}
+    .panic-meta{font-size:13px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .panic-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+    .panic-action{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:7px 10px;font-weight:800;text-decoration:none;cursor:pointer}
+    .panic-action.primary{background:#fff;color:#7f1d1d;border-color:#fff}
+    .welfare-map{height:420px;min-height:420px;width:100%;border:1px solid var(--gray-600);border-radius:14px;overflow:hidden;background:#0f1012;margin-top:12px;display:block}
+    .welfare-map .leaflet-container,.leaflet-container{font:12px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .map-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:12px;font-weight:800}
+    .legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}.legend-dot.fresh{background:var(--ok)}.legend-dot.stale{background:var(--warn)}.legend-dot.offline{background:var(--danger)}.legend-dot.panic{background:#fff}
+    .person-list.collapsed .person-item:nth-of-type(n+2){display:none}
+    .person-list.collapsed{max-height:120px;overflow:hidden}
+
     @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.two-col,.overview-shell{grid-template-columns:1fr}.api-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:720px){.app{grid-template-columns:1fr}.sidebar{display:none}.cards,.health,.api-strip{grid-template-columns:1fr}.overview-grid{grid-template-columns:1fr}.main{padding:12px}}
 
@@ -219,7 +238,7 @@
         </div>
         <div class="card">
           <div class="toprow"><h3>Person Search</h3><span class="muted" id="personCount">0 people</span></div>
-          <div class="searchbox"><input id="personSearch" placeholder="Search name, email, city or country…"><button class="btn" id="clearSearch">Clear</button></div>
+          <div class="searchbox"><input id="personSearch" placeholder="Search name, email, city or country…"><button class="btn" id="clearSearch">Clear</button><button class="btn" id="togglePeopleBtn" type="button">Show all</button></div>
           <div id="personList" class="person-list"><div class="empty">Loading people…</div></div>
         </div>
       </section>
@@ -250,7 +269,7 @@
 <script>
 (function(){
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{} };
+  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{}, peopleExpanded:false };
 
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -305,7 +324,7 @@
       state.panic=panic;
       state.source.panic=true;
       renderPanicBanner(panic);
-      buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople();
+      buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople(); renderWelfareMap();
       if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||state.selected; renderOverview(); }
     }catch(e){
       state.errors.panic=e.message;
@@ -335,6 +354,7 @@
   function renderWelfareMap(){
     const mapEl=$('welfareMap'); if(!mapEl || !window.L) return;
     if(!welfareMap){
+      if(!mapEl.style.height) mapEl.style.height='420px';
       welfareMap=L.map(mapEl,{scrollWheelZoom:false});
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(welfareMap);
       welfareMapLayer=L.layerGroup().addTo(welfareMap);
@@ -349,6 +369,13 @@
       const hasPanic=panicByEmail.has(norm(s.employee_email || p.email));
       const label=getName(s) || p.name || s.employee_email || 'Tracked person';
       points.push({coords:c,label,email:s.employee_email||p.email||'',status:s.freshness||trackingFreshness(s),last:s.last_ping_at,hasPanic});
+    }
+    for(const t of state.travellers||[]){
+      const c=coordOf(t); if(!c) continue;
+      const email=getEmail(t);
+      const already=points.some(pt=>norm(pt.email) && norm(pt.email)===norm(email));
+      if(already) continue;
+      points.push({coords:c,label:getName(t)||email||'Traveller',email:email||'',status:travellerRisk(t)?'stale':'fresh',last:getTravellerDates(t).from||t.updated_at||'',hasPanic:panicByEmail.has(norm(email))});
     }
     for(const a of activePanic){
       const c=coordOf(a); if(!c) continue;
@@ -367,7 +394,7 @@
     } else {
       welfareMap.setView([20,0],2);
     }
-    setTimeout(()=>welfareMap.invalidateSize(),150);
+    setTimeout(()=>welfareMap.invalidateSize(),150); setTimeout(()=>welfareMap.invalidateSize(),700);
   }
 
   function renderTopUser(){
@@ -579,9 +606,14 @@
 
   function renderPeople(){
     const q=norm($('personSearch').value);
-    const filtered=state.people.filter(p=>!q || [p.name,p.email,p.traveller?.city,p.traveller?.country,p.tracking?.traveller?.city,p.tracking?.traveller?.country].some(v=>norm(v).includes(q))).slice(0,50);
+    const all=state.people.filter(p=>!q || [p.name,p.email,p.traveller?.city,p.traveller?.country,p.tracking?.traveller?.city,p.tracking?.traveller?.country].some(v=>norm(v).includes(q)));
+    const expanded = !!state.peopleExpanded || !!q;
+    const filtered=expanded ? all.slice(0,50) : all.slice(0,1);
     $('personCount').textContent=`${state.people.length} people`;
-    const box=$('personList'); if(!filtered.length){ box.innerHTML='<div class="empty">No matching people.</div>'; return; }
+    const toggle=$('togglePeopleBtn');
+    if(toggle){ toggle.textContent=expanded && !q ? 'Show one' : 'Show all'; toggle.style.display=all.length>1 && !q ? 'inline-flex' : (q ? 'none' : 'inline-flex'); }
+    const box=$('personList'); if(!filtered.length){ box.className='person-list'; box.innerHTML='<div class="empty">No matching people.</div>'; return; }
+    box.className='person-list' + (expanded ? '' : ' collapsed');
     box.innerHTML=filtered.map(p=>`<div class="person-item ${state.selected?.key===p.key?'active':''}" data-person="${esc(p.key)}"><div class="person-top"><div><div class="person-name">${esc(p.name)}</div><div class="person-meta">${esc(p.email||'No email')} · ${p.critical.length?`${p.critical.length} critical`:p.warnings.length?`${p.warnings.length} warning`:'Healthy'}</div></div><span class="pill ${p.critical.length?'danger':p.warnings.length?'warn':'ok'}">${p.critical.length?'Critical':p.warnings.length?'Warning':'OK'}</span></div><div class="person-tags">${personTags(p)}</div></div>`).join('');
     box.querySelectorAll('[data-person]').forEach(el=>el.onclick=()=>selectPerson(el.dataset.person));
   }
@@ -617,16 +649,13 @@
     const admin=isAdmin();
     const email=p.email||t.email||tr.employee_email||'';
     const phone=p.phone||t.phone||tr.employee_phone||'';
+    const inviteQuery = `?name=${encodeURIComponent(p.name||'')}&email=${encodeURIComponent(email||'')}&phone=${encodeURIComponent(phone||'')}&action=invite`;
     actions.innerHTML = `
-      <a class="btn" href="travellers.html">Open Travellers</a>
-      <a class="btn" href="tracking.html">Open Tracking</a>
-      <a class="btn" href="checkin.html">Open Check-ins</a>
-      <a class="btn" href="panicalarm.html">Open Panic Alarm</a>
       ${email?`<a class="btn" href="mailto:${encodeURIComponent(email)}">Email</a>`:''}
       ${phone?`<a class="btn" href="tel:${encodeURIComponent(phone)}">Call</a>`:''}
       ${panic.id?`<button class="btn good" id="ackAlarmBtn">Acknowledge alarm</button><button class="btn danger" id="resetAlarmBtn">Reset alarm</button>`:''}
-      ${sch.id?`<button class="btn ${admin?'primary':''}" id="sendCheckinBtn" ${admin?'':'disabled title="Admin only"'}>Send check-in</button>`:''}
-      ${admin?`<a class="btn" href="tracking.html">Invite to tracking</a><a class="btn" href="panicalarm.html">Invite to panic alarm</a>`:''}`;
+      ${admin?`<a class="btn primary" href="checkin.html${inviteQuery}">Invite to check-in</a><a class="btn primary" href="tracking.html${inviteQuery}">Invite to tracking</a><a class="btn primary" href="panicalarm.html${inviteQuery}">Invite to panic alarm</a>`:''}
+      ${!admin?`<span class="muted">Invite actions are admin only.</span>`:''}`;
     if($('ackAlarmBtn')) $('ackAlarmBtn').onclick=()=>ackAlarm(panic.id);
     if($('resetAlarmBtn')) $('resetAlarmBtn').onclick=()=>resetAlarm(panic.id);
     if($('sendCheckinBtn')) $('sendCheckinBtn').onclick=()=>sendCheckin(sch.id);
@@ -768,7 +797,8 @@
 
   $('refreshBtn').onclick=loadAll;
   $('personSearch').oninput=renderPeople;
-  $('clearSearch').onclick=()=>{ $('personSearch').value=''; renderPeople(); };
+  $('clearSearch').onclick=()=>{ $('personSearch').value=''; state.peopleExpanded=false; renderPeople(); };
+  if($('togglePeopleBtn')) $('togglePeopleBtn').onclick=()=>{ state.peopleExpanded=!state.peopleExpanded; renderPeople(); };
   document.querySelectorAll('#issueFilters .filter-btn').forEach(btn=>btn.onclick=()=>{ state.filter=btn.dataset.filter; renderIssues(); });
   document.querySelectorAll('.stat-card[data-filter]').forEach(card=>card.onclick=()=>{ state.filter=card.dataset.filter; renderIssues(); document.getElementById('alertRail')?.scrollIntoView({behavior:'smooth',block:'nearest'}); });
   renderTopUser(); initMobileNav(); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
