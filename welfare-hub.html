@@ -195,8 +195,6 @@
     </main>
   </div>
 
-<script src="shared-chip.js"></script>
-
 <script>
 (function(){
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
@@ -229,9 +227,33 @@
   function statusClass(sev){ return sev==='critical'?'danger':sev==='warning'?'warn':'info'; }
   function severityRank(s){ return s==='critical'?3:s==='warning'?2:1; }
   function typeGroup(t){ if(String(t).startsWith('tracking')) return 'tracking'; if(String(t).startsWith('checkin')) return 'checkin'; if(String(t).startsWith('traveller')) return 'traveller'; if(String(t).startsWith('panic')) return 'panic'; return t; }
-  function personKey(obj){ const email=norm(obj.email||obj.employee_email||obj.workEmail); if(email) return 'e:'+email; const name=norm(obj.name||obj.employee_name||obj.fullName||obj.traveller); return name ? 'n:'+name : 'id:'+(obj.id||Math.random()); }
-  function getName(x){ return x.name || x.fullName || x.traveller || x.employee_name || [x.firstName,x.first_name,x.surname].filter(Boolean).join(' ') || x.email || x.employee_email || 'Unknown person'; }
-  function getEmail(x){ return x.email || x.employee_email || x.workEmail || x.actorEmail || ''; }
+  function safeText(v){
+    if(v === null || v === undefined) return '';
+    if(typeof v === 'string'){
+      const s=v.trim();
+      return (s && s !== '[object Object]' && s !== 'undefined' && s !== 'null') ? s : '';
+    }
+    if(typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if(typeof v === 'object'){
+      return safeText(v.name || v.fullName || v.full_name || v.displayName || v.employee_name || v.traveller || v.email || v.employee_email || v.workEmail || v.phone);
+    }
+    return '';
+  }
+  function personKey(obj){
+    const email=norm(getEmail(obj));
+    if(email) return 'e:'+email;
+    const name=norm(getName(obj));
+    return name && name !== 'unknown person' ? 'n:'+name : 'id:'+(safeText(obj.id||obj.traveller_id||obj.session_id)||Math.random());
+  }
+  function getName(x){
+    if(!x) return 'Unknown person';
+    const joined=[safeText(x.firstName||x.first_name), safeText(x.surname||x.lastName||x.last_name)].filter(Boolean).join(' ');
+    const name=safeText(x.name) || safeText(x.fullName) || safeText(x.full_name) || safeText(x.displayName) || safeText(x.traveller) || safeText(x.employee_name) || joined || safeText(x.actorName);
+    if(name) return name;
+    const email=getEmail(x);
+    return email ? email.split('@')[0] : 'Unknown person';
+  }
+  function getEmail(x){ return safeText(x?.email || x?.employee_email || x?.workEmail || x?.actorEmail || x?.traveller?.email || ''); }
   function getPhone(x){ return x.phone || x.employee_phone || x.actorPhone || ''; }
   function getTravellerDates(t){ return { from:t.from||t.start||t.startDate||t.departureDate||t.departure_date||'', to:t.to||t.end||t.endDate||t.returnDate||t.return_date||'' }; }
   function travellerActive(t){ const st=norm(t.travelStatus||t.travel_status||t.status); if(st.includes('in country')||st.includes('active')||st.includes('travelling')||st.includes('abroad')) return true; const {from,to}=getTravellerDates(t); const now=Date.now(); const a=dateMs(from), b=dateMs(to); return !!(a && b && a<=now && now<=b); }
@@ -335,7 +357,7 @@
       if(dayKey(d.from)===todayKey()) out.push({severity:'info',type:'traveller',name:getName(t),email:getEmail(t),message:'Departing today',when:d.from,ref:t,note:[t.city,t.country].filter(Boolean).join(', ')});
       if(dayKey(d.to)===todayKey()) out.push({severity:'info',type:'traveller',name:getName(t),email:getEmail(t),message:'Returning today',when:d.to,ref:t,note:[t.city,t.country].filter(Boolean).join(', ')});
     }
-    state.issues = out.sort((a,b)=>severityRank(b.severity)-severityRank(a.severity) || dateMs(b.when)-dateMs(a.when));
+    state.issues = out.filter(i=>!isResolvedIssue(i)).sort((a,b)=>severityRank(b.severity)-severityRank(a.severity) || dateMs(b.when)-dateMs(a.when));
   }
 
   function setDot(id, ok, warn=false){ const el=$(id); if(!el) return; el.className='dot '+(ok?'ok':warn?'warn':'danger'); }
@@ -358,7 +380,7 @@
     const next = state.checkinSchedules.map(s=>s.next_checkin_at).filter(Boolean).sort((a,b)=>dateMs(a)-dateMs(b))[0]; $('checkinNext').textContent=fmt(next);
     $('checkinBadge').className='pill '+(missed?'danger':'ok'); $('checkinBadge').textContent=missed?'Attention':'Live';
 
-    const normalizedTracking=state.tracking.map(s=>({...s,freshness:trackingFreshness(s)}));
+    const normalizedTracking=visibleTrackingSessions().map(s=>({...s,freshness:trackingFreshness(s)}));
     const fresh=normalizedTracking.filter(s=>s.freshness==='fresh').length, stale=normalizedTracking.filter(s=>s.freshness==='stale').length, off=normalizedTracking.filter(s=>s.freshness==='offline').length;
     $('trackingFresh').textContent=fresh; $('trackingStale').textContent=stale; $('trackingOffline').textContent=off;
     $('trackingBadge').className='pill '+(off?'danger':stale?'warn':'ok'); $('trackingBadge').textContent=off?'Offline':stale?'Stale':'Sessions';
@@ -462,6 +484,30 @@
   async function sendCheckin(scheduleId){ try{ await api('/api/org/checkin/send',{method:'POST',body:JSON.stringify({scheduleId})}); toast('Check-in sent.'); await loadAll(); }catch(e){ toast(e.message,false); } }
 
   function issueSignature(i){ return `${i.type||'issue'}:${norm(i.email||i.name)}:${norm(i.message||'')}`.slice(0,500); }
+  function resolvedIssueSignatures(){
+    const set=new Set();
+    for(const incident of (state.welfareIncidents||[])){
+      if(norm(incident.status)!=='resolved') continue;
+      if(incident.issue_signature) set.add(String(incident.issue_signature));
+      set.add(issueSignature({type:incident.source_type,name:incident.person_name,email:incident.person_email,message:incident.title}));
+    }
+    return set;
+  }
+  function isResolvedIssue(i){
+    const sig=issueSignature(i);
+    if(resolvedIssueSignatures().has(sig)) return true;
+    const type=norm(i.type), email=norm(i.email), msg=norm(i.message);
+    return (state.welfareIncidents||[]).some(r => norm(r.status)==='resolved' && norm(r.source_type)===type && norm(r.person_email)===email && norm(r.title)===msg);
+  }
+  function visibleTrackingSessions(){
+    const suppressed=resolvedIssueSignatures();
+    return (state.tracking||[]).filter(s=>{
+      const f=trackingFreshness(s);
+      const msg=f==='offline'?'Tracking offline':f==='stale'?'Tracking stale':'';
+      if(!msg) return true;
+      return !suppressed.has(issueSignature({type:'tracking',name:getName(s),email:s.employee_email,message:msg}));
+    });
+  }
   function issuePayloads(){
     return (state.issues||[]).filter(i=>i.severity!=='info').map(i=>({
       issue_signature: issueSignature(i),
@@ -477,7 +523,7 @@
   }
   async function loadWelfareIncidents(){
     try{
-      const data = await api('/api/org/welfare/incidents?status=active&limit=200');
+      const data = await api('/api/org/welfare/incidents?status=all&limit=500');
       state.source.welfare=true;
       state.welfareIncidents=data.incidents||[];
       state.welfareNotes=data.notes||[];
@@ -530,7 +576,7 @@
         if(status==='resolved') state.selectedIncident=null;
         toast(`Incident ${status}.`);
       }
-      await loadWelfareIncidents(); renderIncidents(); buildPeople(); renderPeople(); if(state.selected) renderOverview();
+      await loadWelfareIncidents(); buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople(); renderIncidents(); if(state.selected) renderOverview();
     }catch(e){ toast(e.message,false); }
   }
 
@@ -549,7 +595,7 @@
       api('/api/org/checkin/schedules').catch(e=>({ok:false,error:e.message,schedules:[]})),
       wrap('tracking', api('/api/org/tracking/sessions'), {ok:false,sessions:[]}),
       wrap('travellers', api('/api/org/travellers'), {ok:false,data:[]}),
-      wrap('welfare', api('/api/org/welfare/incidents?status=active&limit=200'), {ok:false,incidents:[],notes:[]})
+      wrap('welfare', api('/api/org/welfare/incidents?status=all&limit=500'), {ok:false,incidents:[],notes:[]})
     ]);
     state.panic=panic;
     state.panicLog=panicLog.alarms||panicLog.log||panicLog.data||[];
