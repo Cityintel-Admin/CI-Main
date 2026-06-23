@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Welfare Hub v3.7</title>
+  <title>CityIntel — Welfare Hub v3.8</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -109,6 +109,14 @@
     .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;display:inline-block}.legend-dot.fresh{background:var(--ok)}.legend-dot.stale{background:var(--warn)}.legend-dot.offline{background:var(--danger)}.legend-dot.panic{background:#fff;border:2px solid #fff}
 
     .legend-dot.traveller{background:#93c5fd;border:2px solid rgba(255,255,255,.55)}
+    .map-search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+    .map-search-row input{min-width:260px;max-width:420px;background:#101216;border:1px solid var(--gray-600);border-radius:10px;color:var(--text);padding:9px 10px;font:inherit}
+    .route-status{font-size:12px;color:var(--muted);margin-left:auto}
+    .route-marker{width:24px;height:24px;border-radius:50%;background:#93c5fd;color:#08111f;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.55);display:grid;place-items:center;font-size:11px;font-weight:950}
+    .route-marker.latest{background:var(--ok);color:#03120b}
+    .route-marker.offline{background:var(--danger);color:#210406}
+    .route-marker.stale{background:var(--warn);color:#1f1600}
+    .leaflet-div-icon.route-div-icon{background:transparent;border:0}
     .contact-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;display:none}
     .contact-drawer-backdrop.show{display:block}
     .contact-drawer{position:fixed;top:0;right:0;height:100vh;width:min(420px,92vw);background:#111214;border-left:1px solid var(--gray-600);box-shadow:-12px 0 32px rgba(0,0,0,.45);z-index:10002;transform:translateX(105%);transition:transform .18s ease;display:flex;flex-direction:column}
@@ -252,6 +260,9 @@
           <input id="mapSearchInput" placeholder="Search address, city, hotel, airport or country…" autocomplete="off">
           <button class="btn" id="mapSearchBtn" type="button">Go to location</button>
           <button class="btn" id="mapResetBtn" type="button">Reset map</button>
+          <button class="btn" id="mapRouteBtn" type="button">Show selected route</button>
+          <button class="btn" id="mapShowAllBtn" type="button" style="display:none">Show all markers</button>
+          <span class="route-status" id="mapRouteStatus">Select a person to view route history.</span>
         </div>
         <div id="welfareMap" class="welfare-map"></div>
         <div class="map-legend">
@@ -311,7 +322,7 @@
 <script>
 (function(){
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], escalationContacts:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{}, peopleExpanded:false };
+  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], escalationContacts:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{}, peopleExpanded:false, mapRouteMode:false, routeLoading:false, routeLocations:[] };
 
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -367,7 +378,7 @@
       state.source.panic=true;
       renderPanicBanner(panic);
       buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople(); renderWelfareMap();
-      if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||state.selected; renderOverview(); }
+      if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||state.selected; renderOverview(); if(!state.mapRouteMode) setRouteButtons(); }
     }catch(e){
       state.errors.panic=e.message;
     }
@@ -378,7 +389,7 @@
     document.querySelectorAll('.sidebar a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
   }
 
-  let welfareMap=null, welfareMapLayer=null, welfareSearchMarker=null;
+  let welfareMap=null, welfareMapLayer=null, welfareSearchMarker=null, welfareRouteLayer=null, welfareRouteLine=null;
   // Initial map framing: this is the "one plus click" bump for first/auto-fit view.
   // Set to 0 to disable, 1 for one zoom level closer, 2 for two levels closer.
   const WELFARE_INITIAL_MAP_ZOOM_BUMP = 1;
@@ -410,6 +421,7 @@
         maxZoom:20
       }).addTo(welfareMap);
       welfareMapLayer=L.layerGroup().addTo(welfareMap);
+      welfareRouteLayer=L.layerGroup().addTo(welfareMap);
       welfareMap.on('movestart zoomstart',()=>{ if(!welfareMapProgrammatic) welfareMapUserMoved=true; });
       setTimeout(()=>welfareMap.invalidateSize(),150);
     }
@@ -451,9 +463,121 @@
       setTimeout(()=>{ welfareMapProgrammatic=false; }, 250);
     }
   }
-  function renderWelfareMap(){
+  function selectedTrackingSession(person){
+    if(!person) return null;
+    if(person.tracking && (person.tracking.id || person.tracking.session_id)) return person.tracking;
+    const email=norm(person.email);
+    if(email) return visibleTrackingSessions().find(s=>norm(s.employee_email)===email) || null;
+    const name=norm(person.name);
+    return visibleTrackingSessions().find(s=>norm(getName(s))===name) || null;
+  }
+  function routePointOf(row){
+    if(!row) return null;
+    const lat=Number(row.lat ?? row.latitude ?? row.last_lat);
+    const lng=Number(row.lng ?? row.lon ?? row.longitude ?? row.last_lng);
+    if(Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180 && !(lat===0 && lng===0)) return [lat,lng];
+    return null;
+  }
+  function routeMarkerIcon(n, status='', latest=false){
+    const cls = latest ? 'latest' : norm(status)==='offline' ? 'offline' : norm(status)==='stale' ? 'stale' : '';
+    return L.divIcon({
+      className:'route-div-icon',
+      html:`<div class="route-marker ${cls}">${n}</div>`,
+      iconSize:[24,24],
+      iconAnchor:[12,12],
+      popupAnchor:[0,-12]
+    });
+  }
+  function setRouteStatus(text){ const el=$('mapRouteStatus'); if(el) el.textContent=text || ''; }
+  function setRouteButtons(){
+    const routeBtn=$('mapRouteBtn'), allBtn=$('mapShowAllBtn');
+    if(routeBtn) routeBtn.disabled=!state.selected || state.routeLoading;
+    if(allBtn) allBtn.style.display=state.mapRouteMode?'inline-flex':'none';
+  }
+  async function showSelectedRoute(force=false){
+    const p=state.selected;
+    if(!p){ toast('Select a person first.', false); setRouteButtons(); return; }
+    const session=selectedTrackingSession(p);
+    if(!session || !(session.id || session.session_id)){
+      state.mapRouteMode=true;
+      state.routeLocations=[];
+      drawSelectedRoute(p, []);
+      setRouteStatus('No active tracking session found for selected person.');
+      setRouteButtons();
+      return;
+    }
+    state.mapRouteMode=true;
+    state.routeLoading=true;
+    setRouteButtons();
+    setRouteStatus('Loading route history…');
+    try{
+      const sessionId=session.id || session.session_id;
+      const data=await api('/api/org/tracking/history?session_id='+encodeURIComponent(sessionId)+'&limit=100');
+      const rows=Array.isArray(data.locations)?data.locations:[];
+      state.routeLocations=rows;
+      drawSelectedRoute(p, rows);
+    }catch(e){
+      state.routeLocations=[];
+      drawSelectedRoute(p, []);
+      setRouteStatus('Route history unavailable.');
+      toast(e.message || 'Could not load route history.', false);
+    }finally{
+      state.routeLoading=false;
+      setRouteButtons();
+    }
+  }
+  function drawSelectedRoute(person, rows){
     if(!ensureWelfareMap()) return;
     welfareMapLayer.clearLayers();
+    welfareRouteLayer.clearLayers();
+    const session=selectedTrackingSession(person) || {};
+    const sorted=(rows||[]).slice().sort((a,b)=>dateMs(a.created_at)-dateMs(b.created_at));
+    let route=sorted.map(r=>({row:r, coords:routePointOf(r)})).filter(x=>x.coords);
+    if(!route.length){
+      const c=coordOf(session) || coordOf(person.traveller);
+      if(c) route=[{row:{created_at:session.last_ping_at||person.traveller?.updated_at||'', source:'current'}, coords:c}];
+    }
+    const label=person.name || getName(session) || 'Selected person';
+    const email=person.email || session.employee_email || '';
+    const freshness=trackingFreshness(session);
+    route.forEach((pt,idx)=>{
+      const latest=idx===route.length-1;
+      const marker=L.marker(pt.coords,{icon:routeMarkerIcon(idx+1, latest?freshness:'', latest)});
+      marker.bindPopup(`<strong>${esc(label)}</strong><br>${esc(email||'No email')}<br>Ping ${idx+1} of ${route.length}<br>${esc(fmt(pt.row.created_at || session.last_ping_at))}${pt.row.accuracy?`<br>Accuracy: ${esc(pt.row.accuracy)}m`:''}${pt.row.battery?`<br>Battery: ${esc(pt.row.battery)}%`:''}`);
+      marker.addTo(welfareRouteLayer);
+    });
+    if(route.length>1){
+      welfareRouteLine=L.polyline(route.map(p=>p.coords),{weight:3,opacity:.85,dashArray:'6 6'}).addTo(welfareRouteLayer);
+    }
+    if(route.length){
+      const bounds=L.latLngBounds(route.map(p=>p.coords));
+      welfareMapProgrammatic=true;
+      welfareMap.fitBounds(bounds.pad(.18),{maxZoom:16});
+      setTimeout(()=>{ welfareMapProgrammatic=false; },250);
+      setRouteStatus(`Route mode: ${label} · ${route.length} ping${route.length===1?'':'s'} shown. Other markers hidden.`);
+      $('mapCount').textContent=`${route.length} route point${route.length===1?'':'s'}`;
+    }else{
+      setRouteStatus(`Route mode: ${label} · no mappable tracking pings found.`);
+      $('mapCount').textContent='0 route points';
+    }
+    setRouteButtons();
+  }
+  function clearSelectedRoute(){
+    state.mapRouteMode=false;
+    state.routeLocations=[];
+    if(welfareRouteLayer) welfareRouteLayer.clearLayers();
+    setRouteStatus(state.selected ? 'Selected person available. Use Show selected route to isolate their history.' : 'Select a person to view route history.');
+    setRouteButtons();
+    welfareMapUserMoved=false;
+    welfareMapFittedOnce=false;
+    renderWelfareMap();
+  }
+
+  function renderWelfareMap(){
+    if(!ensureWelfareMap()) return;
+    if(state.mapRouteMode && state.selected){ drawSelectedRoute(state.selected, state.routeLocations || []); return; }
+    welfareMapLayer.clearLayers();
+    if(welfareRouteLayer) welfareRouteLayer.clearLayers();
     const activePanic=panicRecords(state.panic);
     const panicByEmail=new Map(activePanic.map(a=>[norm(getEmail(a)),a]).filter(x=>x[0]));
     const points=[];
@@ -516,7 +640,10 @@
   function initWelfareMapControls(){
     const btn=$('mapSearchBtn'); if(btn) btn.onclick=searchWelfareMapLocation;
     const input=$('mapSearchInput'); if(input) input.addEventListener('keydown',e=>{ if(e.key==='Enter') searchWelfareMapLocation(); });
-    const reset=$('mapResetBtn'); if(reset) reset.onclick=()=>{ welfareMapUserMoved=false; welfareMapFittedOnce=false; renderWelfareMap(); };
+    const reset=$('mapResetBtn'); if(reset) reset.onclick=()=>{ welfareMapUserMoved=false; welfareMapFittedOnce=false; if(state.mapRouteMode && state.selected) showSelectedRoute(true); else renderWelfareMap(); };
+    const routeBtn=$('mapRouteBtn'); if(routeBtn) routeBtn.onclick=()=>showSelectedRoute(true);
+    const allBtn=$('mapShowAllBtn'); if(allBtn) allBtn.onclick=clearSelectedRoute;
+    setRouteButtons();
   }
 
 
@@ -742,7 +869,7 @@
   }
 
   function primaryCheckin(p){ return (p.checkins||[]).slice().sort((a,b)=>dateMs(b.latest_event?.sent_at||b.latest_event?.due_at)-dateMs(a.latest_event?.sent_at||a.latest_event?.due_at))[0] || null; }
-  function selectPerson(key){ const p=state.people.find(x=>x.key===key); if(!p) return; state.selected=p; renderOverview(); renderPeople(); }
+  function selectPerson(key){ const p=state.people.find(x=>x.key===key); if(!p) return; state.selected=p; renderOverview(); renderPeople(); setRouteStatus('Loading selected route…'); showSelectedRoute(); }
 
   function renderOverview(){
     const p=state.selected; const box=$('personOverview'), actions=$('quickActions');
@@ -983,7 +1110,7 @@
     await syncWelfareIncidents();
     buildPeople(); buildIssues();
     renderSummary(); renderIssues(); renderPeople(); renderIncidents(); renderWelfareMap(); renderPanicBanner(state.panic);
-    if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||null; renderOverview(); }
+    if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||null; renderOverview(); if(state.mapRouteMode && state.selected) showSelectedRoute(true); else setRouteButtons(); }
   }
 
   $('refreshBtn').onclick=loadAll;
