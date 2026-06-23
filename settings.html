@@ -176,6 +176,14 @@ html,body{overflow-x:hidden;max-width:100vw}
   .billing-card{max-width:100%}
 }
 
+
+    .ci-audit-detail-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:center;z-index:9999;padding:24px 16px;overflow:auto}
+    .ci-audit-detail-modal{width:min(920px,100%);background:#16171a;border:1px solid var(--gray-600);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:18px}
+    .ci-audit-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .ci-audit-detail-box{border:1px solid var(--gray-600);background:#101114;border-radius:10px;padding:10px;min-width:0}
+    .ci-audit-detail-box b{display:block;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+    .ci-audit-json{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#dbe4ee;max-height:260px;overflow:auto}
+    @media(max-width:720px){.ci-audit-detail-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -749,7 +757,7 @@ html,body{overflow-x:hidden;max-width:100vw}
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:180px 1fr auto;gap:10px;margin-top:14px;align-items:end">
+  <div style="display:grid;grid-template-columns:180px 220px 1fr auto auto;gap:10px;margin-top:14px;align-items:end">
     <div>
       <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Category</label>
       <select id="ciAuditCategory" style="width:100%;background:#0f1012;color:var(--text);border:1px solid var(--gray-600);border-radius:10px;padding:9px">
@@ -768,14 +776,19 @@ html,body{overflow-x:hidden;max-width:100vw}
       </select>
     </div>
     <div>
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Action</label>
+      <input id="ciAuditAction" placeholder="e.g. user.invited" style="width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--gray-600);border-radius:10px;padding:10px">
+    </div>
+    <div>
       <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Search</label>
       <input id="ciAuditSearch" placeholder="Search actor, email, action, entity or summary" style="width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--gray-600);border-radius:10px;padding:10px">
     </div>
     <button id="ciAuditSearchBtn" type="button" style="height:40px">Search</button>
+    <button id="ciAuditExportBtn" type="button" style="height:40px">Export CSV</button>
   </div>
 
   <div style="overflow:auto;border:1px solid var(--gray-600);border-radius:12px;margin-top:14px">
-    <table style="width:100%;border-collapse:collapse;min-width:860px">
+    <table style="width:100%;border-collapse:collapse;min-width:1040px">
       <thead>
         <tr style="background:#1c1e22">
           <th style="padding:9px 10px;text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase">Time</th>
@@ -784,9 +797,10 @@ html,body{overflow-x:hidden;max-width:100vw}
           <th style="padding:9px 10px;text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase">Action</th>
           <th style="padding:9px 10px;text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase">Entity</th>
           <th style="padding:9px 10px;text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase">Summary</th>
+          <th style="padding:9px 10px;text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase">Details</th>
         </tr>
       </thead>
-      <tbody id="ciAuditRows"><tr><td colspan="6" class="muted" style="padding:12px">Loading activity…</td></tr></tbody>
+      <tbody id="ciAuditRows"><tr><td colspan="7" class="muted" style="padding:12px">Loading activity…</td></tr></tbody>
     </table>
   </div>
   <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap">
@@ -795,6 +809,20 @@ html,body{overflow-x:hidden;max-width:100vw}
     <button id="ciAuditNextBtn" type="button">Next</button>
   </div>
 </section>
+
+
+<div id="ciAuditDetailBackdrop" class="ci-audit-detail-backdrop" role="dialog" aria-modal="true" aria-labelledby="ciAuditDetailTitle">
+  <div class="ci-audit-detail-modal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div>
+        <h3 id="ciAuditDetailTitle" style="margin:0 0 4px">Audit Event Detail</h3>
+        <div id="ciAuditDetailSubtitle" class="muted" style="font-size:13px">Loading…</div>
+      </div>
+      <button id="ciAuditDetailClose" type="button">Close</button>
+    </div>
+    <div id="ciAuditDetailBody" style="margin-top:12px"></div>
+  </div>
+</div>
 
 </main>
   </div>
@@ -2565,30 +2593,38 @@ else run();
 <script>
 (function ciAuditActivityCentre(){
   const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state={offset:0,limit:25,total:0};
+  const state={offset:0,limit:25,total:0,lastRows:[]};
   function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
   function me(){try{return (window.CIAuth&&CIAuth.who&&CIAuth.who())||JSON.parse(localStorage.getItem('ci_profile')||'{}')||{};}catch(_){return {};}}
   function orgId(){const u=me();return String(u.org_id||u.orgId||localStorage.getItem('ci_org_id')||localStorage.getItem('org_id')||'').trim();}
   function headers(){const u=me();return {'Content-Type':'application/json','X-User-Email':u.email||'','X-User-Name':u.name||'','X-User-Id':u.id||'','X-User-Role':u.roleKey||u.role||'','X-User-Role-Key':u.roleKey||'','X-Org-Id':orgId()};}
   function fmtTime(v){const d=new Date(v);return Number.isFinite(d.getTime())?d.toLocaleString():esc(v||'—');}
   function pretty(v){return String(v||'').replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());}
+  function parseMaybeJson(v){
+    if(v===null||v===undefined||v==='') return '—';
+    try{return JSON.stringify(JSON.parse(v),null,2);}catch(_){return String(v);}
+  }
+  function csvEscape(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
   async function load(){
     const rows=document.getElementById('ciAuditRows'); if(!rows) return;
-    rows.innerHTML='<tr><td colspan="6" class="muted" style="padding:12px">Loading activity…</td></tr>';
+    rows.innerHTML='<tr><td colspan="7" class="muted" style="padding:12px">Loading activity…</td></tr>';
     const cat=document.getElementById('ciAuditCategory')?.value||'all';
+    const action=document.getElementById('ciAuditAction')?.value?.trim()||'';
     const q=document.getElementById('ciAuditSearch')?.value||'';
     const params=new URLSearchParams({limit:String(state.limit),offset:String(state.offset),category:cat,q});
+    if(action) params.set('action',action.toLowerCase());
     if(orgId()) params.set('org_id',orgId());
     try{
       const res=await fetch(API+'/api/admin/audit/activity?'+params.toString(),{headers:headers()});
       const data=await res.json().catch(()=>({}));
       if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText);
       state.total=Number(data.pagination?.total||0);
+      state.lastRows=data.audit||[];
       document.getElementById('ciAuditToday').textContent=Number(data.summary?.today||0).toLocaleString();
       document.getElementById('ciAuditWeek').textContent=Number(data.summary?.week||0).toLocaleString();
       document.getElementById('ciAuditTotal').textContent=state.total.toLocaleString();
-      const list=data.audit||[];
-      if(!list.length){rows.innerHTML='<tr><td colspan="6" class="muted" style="padding:12px">No audit activity found yet. New actions will appear here as audit events are recorded.</td></tr>';}
+      const list=state.lastRows;
+      if(!list.length){rows.innerHTML='<tr><td colspan="7" class="muted" style="padding:12px">No audit activity found yet. New actions will appear here as audit events are recorded.</td></tr>';}
       else{
         rows.innerHTML=list.map(r=>`<tr style="border-top:1px solid var(--gray-600)">
           <td style="padding:10px;white-space:nowrap;color:#cbd5e1">${fmtTime(r.created_at)}</td>
@@ -2597,7 +2633,9 @@ else run();
           <td style="padding:10px;color:#e9edf2">${esc(pretty(r.action))}</td>
           <td style="padding:10px"><div>${esc(r.entity_name||r.entity_type||'—')}</div><div class="muted" style="font-size:12px">${esc(r.entity_id||'')}</div></td>
           <td style="padding:10px;color:#cbd5e1">${esc(r.summary||'—')}</td>
+          <td style="padding:10px"><button type="button" class="ciAuditViewBtn" data-audit-id="${esc(r.id)}" style="padding:6px 10px">View</button></td>
         </tr>`).join('');
+        rows.querySelectorAll('.ciAuditViewBtn').forEach(btn=>btn.addEventListener('click',()=>viewDetail(btn.getAttribute('data-audit-id'))));
       }
       const page=document.getElementById('ciAuditPage');
       if(page) page.textContent=`${state.total?state.offset+1:0}-${Math.min(state.offset+state.limit,state.total)} of ${state.total}`;
@@ -2605,15 +2643,54 @@ else run();
       if(prev) prev.disabled=state.offset<=0;
       if(next) next.disabled=state.offset+state.limit>=state.total;
     }catch(e){
-      rows.innerHTML=`<tr><td colspan="6" style="padding:12px;color:#fecaca">Audit load failed: ${esc(e.message||e)}</td></tr>`;
+      rows.innerHTML=`<tr><td colspan="7" style="padding:12px;color:#fecaca">Audit load failed: ${esc(e.message||e)}</td></tr>`;
     }
+  }
+  async function viewDetail(id){
+    const back=document.getElementById('ciAuditDetailBackdrop'), body=document.getElementById('ciAuditDetailBody'), sub=document.getElementById('ciAuditDetailSubtitle');
+    if(!back||!body) return;
+    back.style.display='flex'; body.innerHTML='<div class="muted">Loading audit event…</div>'; if(sub) sub.textContent=id||'';
+    const params=new URLSearchParams(); if(orgId()) params.set('org_id',orgId());
+    try{
+      const res=await fetch(API+'/api/admin/audit/activity/'+encodeURIComponent(id)+(params.toString()?('?'+params.toString()):''),{headers:headers()});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||data.ok===false) throw new Error(data.error||res.statusText);
+      const r=data.audit||{};
+      if(sub) sub.textContent=`${fmtTime(r.created_at)} · ${pretty(r.category)} · ${pretty(r.action)}`;
+      body.innerHTML=`
+        <div class="ci-audit-detail-grid">
+          <div class="ci-audit-detail-box"><b>Actor</b><div>${esc(r.actor_name||r.actor_email||'System')}</div><div class="muted" style="font-size:12px">${esc(r.actor_email||'')} ${esc(r.actor_role||'')}</div></div>
+          <div class="ci-audit-detail-box"><b>Entity</b><div>${esc(r.entity_name||r.entity_type||'—')}</div><div class="muted" style="font-size:12px">${esc(r.entity_type||'')} · ${esc(r.entity_id||'')}</div></div>
+          <div class="ci-audit-detail-box"><b>Organisation</b><div>${esc(r.org_id||'—')}</div></div>
+          <div class="ci-audit-detail-box"><b>Source</b><div>${esc(r.source||'worker')}</div><div class="muted" style="font-size:12px">IP: ${esc(r.ip_address||'—')}</div></div>
+          <div class="ci-audit-detail-box" style="grid-column:1/-1"><b>Summary</b><div>${esc(r.summary||'—')}</div></div>
+          <div class="ci-audit-detail-box"><b>Old Value</b><pre class="ci-audit-json">${esc(parseMaybeJson(r.old_value))}</pre></div>
+          <div class="ci-audit-detail-box"><b>New Value</b><pre class="ci-audit-json">${esc(parseMaybeJson(r.new_value))}</pre></div>
+        </div>`;
+    }catch(e){body.innerHTML=`<div style="color:#fecaca">Unable to load audit detail: ${esc(e.message||e)}</div>`;}
+  }
+  function closeDetail(){const el=document.getElementById('ciAuditDetailBackdrop'); if(el) el.style.display='none';}
+  function exportCsv(){
+    const rows=state.lastRows||[];
+    if(!rows.length){alert('No visible audit rows to export.');return;}
+    const header=['created_at','actor_email','actor_name','category','action','entity_type','entity_id','entity_name','summary','source'];
+    const csv=[header.join(',')].concat(rows.map(r=>header.map(k=>csvEscape(r[k])).join(','))).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='cityintel-audit-visible-rows.csv';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   }
   document.getElementById('ciAuditRefreshBtn')?.addEventListener('click',()=>load());
   document.getElementById('ciAuditSearchBtn')?.addEventListener('click',()=>{state.offset=0;load();});
+  document.getElementById('ciAuditExportBtn')?.addEventListener('click',exportCsv);
   document.getElementById('ciAuditCategory')?.addEventListener('change',()=>{state.offset=0;load();});
+  document.getElementById('ciAuditAction')?.addEventListener('keydown',e=>{if(e.key==='Enter'){state.offset=0;load();}});
   document.getElementById('ciAuditSearch')?.addEventListener('keydown',e=>{if(e.key==='Enter'){state.offset=0;load();}});
   document.getElementById('ciAuditPrevBtn')?.addEventListener('click',()=>{state.offset=Math.max(0,state.offset-state.limit);load();});
   document.getElementById('ciAuditNextBtn')?.addEventListener('click',()=>{if(state.offset+state.limit<state.total){state.offset+=state.limit;load();}});
+  document.getElementById('ciAuditDetailClose')?.addEventListener('click',closeDetail);
+  document.getElementById('ciAuditDetailBackdrop')?.addEventListener('click',e=>{if(e.target&&e.target.id==='ciAuditDetailBackdrop') closeDetail();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDetail();});
   document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('ciAuditActivityCentre')) load();});
 })();
 </script>
