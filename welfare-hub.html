@@ -14,6 +14,8 @@
   <script src="auth-guard.js"></script>
   <script src="metrics.js"></script>
   <script src="support-widget.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
   <script>
   (function pageGuard(){
@@ -90,6 +92,22 @@
     .contact-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.two-col,.overview-shell{grid-template-columns:1fr}.api-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:720px){.app{grid-template-columns:1fr}.sidebar{display:none}.cards,.health,.api-strip{grid-template-columns:1fr}.overview-grid{grid-template-columns:1fr}.main{padding:12px}}
+
+    @media(max-width:720px){
+      .brandbar{position:sticky;top:0;z-index:10000;padding:10px 12px}
+      .brandbar img{height:38px}.brandbar .title{font-size:16px}
+      .mobile-nav-toggle{display:inline-flex}
+      .app{display:block;min-height:auto}
+      .sidebar{display:none;position:fixed;inset:60px 10px auto 10px;z-index:9998;border:1px solid var(--gray-600);border-radius:14px;box-shadow:var(--shadow);max-height:70vh;overflow:auto}
+      body.nav-open .sidebar{display:block}
+      .sidebar nav{display:flex;flex-direction:column;gap:3px}
+      .panic-banner{top:58px}
+      .panic-banner-inner{grid-template-columns:auto 1fr;align-items:start}
+      .panic-actions{grid-column:1/-1;justify-content:flex-start}
+      .panic-meta{white-space:normal}
+      .welfare-map{height:300px}
+    }
+
   </style>
 </head>
 <body>
@@ -97,7 +115,23 @@
     <img src="CityintLogo.jpg" alt="CityIntel Logo">
     <div class="title">CityIntel</div>
     <div id="trial-banner" style="display:none;position:absolute;left:50%;transform:translateX(-50%);color:#fecaca;padding:8px 12px;text-align:center;"><span id="trial-text">Your trial ends soon.</span></div>
+    <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation">☰</button>
     <div id="topActions"></div>
+  </div>
+
+
+  <div id="panicBanner" class="panic-banner" role="alert" aria-live="assertive">
+    <div class="panic-banner-inner">
+      <span class="panic-beacon" aria-hidden="true"></span>
+      <div>
+        <div class="panic-title">Panic alarm active</div>
+        <div id="panicBannerMeta" class="panic-meta">Loading panic alarm details…</div>
+      </div>
+      <div class="panic-actions">
+        <a class="panic-action primary" href="panicalarm.html">Open Panic Alarm</a>
+        <button class="panic-action" id="panicBannerRefresh" type="button">Refresh Welfare</button>
+      </div>
+    </div>
   </div>
 
   <div class="app">
@@ -147,6 +181,24 @@
           <div class="health-item"><div class="health-num" id="healthHealthy">0</div><div class="health-label">Healthy</div></div>
           <div class="health-item"><div class="health-num" id="healthWarning">0</div><div class="health-label">Warning</div></div>
           <div class="health-item"><div class="health-num" id="healthCritical">0</div><div class="health-label">Critical</div></div>
+        </div>
+      </section>
+
+
+      <section class="card" id="welfareMapCard">
+        <div class="toprow">
+          <div>
+            <h3>Welfare Location Map</h3>
+            <span class="muted">Last known tracking, check-in and panic locations for monitored people.</span>
+          </div>
+          <span class="muted" id="mapCount">0 mapped people</span>
+        </div>
+        <div id="welfareMap" class="welfare-map"></div>
+        <div class="map-legend">
+          <span><i class="legend-dot fresh"></i>Fresh</span>
+          <span><i class="legend-dot stale"></i>Stale</span>
+          <span><i class="legend-dot offline"></i>Offline / old</span>
+          <span><i class="legend-dot panic"></i>Active panic</span>
         </div>
       </section>
 
@@ -215,6 +267,108 @@
   function isAdmin(){ const r=norm(roleText()); return ['master','master_admin','admin','org_admin'].some(x=>r.includes(x)); }
   function authHeaders(){ const u=who()||{}; return {'Content-Type':'application/json','X-User-Email':u.email||localStorage.getItem('ci_user_email')||'','X-User-Name':u.name||localStorage.getItem('ci_user_name')||'','X-User-Id':u.id||localStorage.getItem('ci_user_id')||u.email||'','X-User-Role':u.role||localStorage.getItem('ci_user_role')||''}; }
   async function api(path, opts={}){ const res = await fetch(API+path, { ...opts, headers:{...authHeaders(), ...(opts.headers||{})} }); const data = await res.json().catch(()=>({ok:false,error:'Invalid JSON'})); if(!res.ok || data.ok===false) throw new Error(data.error || res.statusText || 'Request failed'); return data; }
+
+
+  function panicRecords(data){
+    if(!data) return [];
+    if(Array.isArray(data.activeAlarms)) return data.activeAlarms;
+    if(Array.isArray(data.alarms)) return data.alarms.filter(a=>a.active || norm(a.status)==='active' || !a.resolved_at);
+    if(Array.isArray(data.data)) return data.data.filter(a=>a.active || norm(a.status)==='active' || !a.resolved_at);
+    if(data.data && typeof data.data==='object') return panicRecords(data.data);
+    if(data.active) return [data];
+    return [];
+  }
+  function formatPanicWhen(input) {
+    if (!input) return '';
+    const d = new Date(input);
+    if (Number.isNaN(d.getTime())) return String(input);
+    return d.toLocaleString([], { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+  function renderPanicBanner(data){
+    const banner=$('panicBanner'), meta=$('panicBannerMeta'); if(!banner || !meta) return;
+    const alarms=panicRecords(data || state.panic);
+    if(!alarms.length){ banner.classList.remove('show'); return; }
+    const a=alarms[0] || {};
+    const name=getName(a) || a.actorName || a.fullName || 'Unknown person';
+    const email=getEmail(a);
+    const phone=getPhone(a);
+    const loc=a.location || a.loc || [a.lat,a.lng].filter(Boolean).join(', ');
+    const msg=a.message || a.msg || a.note || '';
+    const when=formatPanicWhen(a.activated_at || a.activatedAt || a.created_at || a.time);
+    const parts=[name, loc && `at ${loc}`, msg, email, phone, when && `activated ${when}`].filter(Boolean);
+    meta.textContent=parts.join(' · ');
+    banner.classList.add('show');
+  }
+  async function pollPanicBanner(){
+    try{
+      const panic=await api('/api/org/panic');
+      state.panic=panic;
+      state.source.panic=true;
+      renderPanicBanner(panic);
+      buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople();
+      if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||state.selected; renderOverview(); }
+    }catch(e){
+      state.errors.panic=e.message;
+    }
+  }
+  function initMobileNav(){
+    const btn=$('mobileNavToggle'); if(!btn) return;
+    btn.onclick=()=>document.body.classList.toggle('nav-open');
+    document.querySelectorAll('.sidebar a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
+  }
+
+  let welfareMap=null, welfareMapLayer=null;
+  function coordOf(obj){
+    if(!obj) return null;
+    const lat = Number(obj.last_lat ?? obj.lat ?? obj.latitude ?? obj.checkin_lat ?? obj.location_lat);
+    const lng = Number(obj.last_lng ?? obj.lng ?? obj.lon ?? obj.longitude ?? obj.checkin_lng ?? obj.location_lng);
+    if(Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180 && !(lat===0 && lng===0)) return [lat,lng];
+    return null;
+  }
+  function mapColour(status, hasPanic){
+    if(hasPanic) return '#ffffff';
+    const s=norm(status);
+    if(s==='fresh' || s==='active') return '#33c48d';
+    if(s==='stale' || s==='paused') return '#f0b429';
+    return '#ff5a5f';
+  }
+  function renderWelfareMap(){
+    const mapEl=$('welfareMap'); if(!mapEl || !window.L) return;
+    if(!welfareMap){
+      welfareMap=L.map(mapEl,{scrollWheelZoom:false});
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(welfareMap);
+      welfareMapLayer=L.layerGroup().addTo(welfareMap);
+    }
+    welfareMapLayer.clearLayers();
+    const activePanic=panicRecords(state.panic);
+    const panicByEmail=new Map(activePanic.map(a=>[norm(getEmail(a)),a]).filter(x=>x[0]));
+    const points=[];
+    for(const s of state.tracking||[]){
+      const c=coordOf(s); if(!c) continue;
+      const p=state.people.find(x=>norm(x.email)===norm(s.employee_email) || norm(x.name)===norm(getName(s))) || {};
+      const hasPanic=panicByEmail.has(norm(s.employee_email || p.email));
+      const label=getName(s) || p.name || s.employee_email || 'Tracked person';
+      points.push({coords:c,label,email:s.employee_email||p.email||'',status:s.freshness||trackingFreshness(s),last:s.last_ping_at,hasPanic});
+    }
+    for(const a of activePanic){
+      const c=coordOf(a); if(!c) continue;
+      points.push({coords:c,label:getName(a)||'Panic alarm',email:getEmail(a),status:'panic',last:a.activated_at||a.created_at,hasPanic:true});
+    }
+    for(const pt of points){
+      const colour=mapColour(pt.status,pt.hasPanic);
+      const marker=L.circleMarker(pt.coords,{radius:8,color:colour,fillColor:colour,fillOpacity:.75,weight:2});
+      marker.bindPopup(`<strong>${esc(pt.label)}</strong><br>${esc(pt.email||'No email')}<br>Status: ${esc(pt.hasPanic?'panic':pt.status)}<br>Last: ${esc(fmt(pt.last))}`);
+      marker.addTo(welfareMapLayer);
+    }
+    $('mapCount').textContent=`${points.length} mapped ${points.length===1?'person':'people'}`;
+    if(points.length){
+      const group=L.featureGroup(welfareMapLayer.getLayers());
+      welfareMap.fitBounds(group.getBounds().pad(.2),{maxZoom:12});
+    } else {
+      welfareMap.setView([20,0],2);
+    }
+    setTimeout(()=>welfareMap.invalidateSize(),150);
+  }
 
   function renderTopUser(){
     const top = $('topActions'); if(!top) return; const u=who(); if(!u){ top.innerHTML='<a class="btn primary" href="login.html">Login</a>'; return; }
@@ -576,7 +730,7 @@
         if(status==='resolved') state.selectedIncident=null;
         toast(`Incident ${status}.`);
       }
-      await loadWelfareIncidents(); buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople(); renderIncidents(); if(state.selected) renderOverview();
+      await loadWelfareIncidents(); buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople(); renderIncidents(); renderWelfareMap(); renderPanicBanner(state.panic); if(state.selected) renderOverview();
     }catch(e){ toast(e.message,false); }
   }
 
@@ -608,7 +762,7 @@
     buildPeople(); buildIssues();
     await syncWelfareIncidents();
     buildPeople(); buildIssues();
-    renderSummary(); renderIssues(); renderPeople(); renderIncidents();
+    renderSummary(); renderIssues(); renderPeople(); renderIncidents(); renderWelfareMap(); renderPanicBanner(state.panic);
     if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||null; renderOverview(); }
   }
 
@@ -617,7 +771,7 @@
   $('clearSearch').onclick=()=>{ $('personSearch').value=''; renderPeople(); };
   document.querySelectorAll('#issueFilters .filter-btn').forEach(btn=>btn.onclick=()=>{ state.filter=btn.dataset.filter; renderIssues(); });
   document.querySelectorAll('.stat-card[data-filter]').forEach(card=>card.onclick=()=>{ state.filter=card.dataset.filter; renderIssues(); document.getElementById('alertRail')?.scrollIntoView({behavior:'smooth',block:'nearest'}); });
-  renderTopUser(); renderSourceHealth(); loadAll(); setInterval(loadAll, 60000);
+  renderTopUser(); initMobileNav(); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
 })();
 </script>
 </body>
