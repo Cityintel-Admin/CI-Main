@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Welfare Hub v3.2</title>
+  <title>CityIntel — Welfare Hub v3.7</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -382,7 +382,7 @@
   // Initial map framing: this is the "one plus click" bump for first/auto-fit view.
   // Set to 0 to disable, 1 for one zoom level closer, 2 for two levels closer.
   const WELFARE_INITIAL_MAP_ZOOM_BUMP = 1;
-  const WELFARE_INITIAL_MAP_MAX_ZOOM = 13;
+  const WELFARE_INITIAL_MAP_MAX_ZOOM = 14;
   let welfareMapUserMoved=false, welfareMapFittedOnce=false, welfareMapProgrammatic=false;
   function coordOf(obj){
     if(!obj) return null;
@@ -415,15 +415,28 @@
     }
     return welfareMap;
   }
+  function welfareMapFocusPoints(points){
+    const arr = Array.isArray(points) ? points : [];
+    const activePanic = arr.filter(p => p && p.hasPanic);
+    if(activePanic.length) return activePanic;
+    const offlineTracking = arr.filter(p => p && p.kind === 'tracking' && norm(p.status) === 'offline');
+    if(offlineTracking.length) return offlineTracking;
+    const staleTracking = arr.filter(p => p && p.kind === 'tracking' && norm(p.status) === 'stale');
+    if(staleTracking.length) return staleTracking;
+    return arr;
+  }
+
   function fitWelfareMapToPoints(points, force=false){
     if(!welfareMap) return;
     if(!force && welfareMapUserMoved && welfareMapFittedOnce) return;
     welfareMapProgrammatic=true;
     try{
       if(points.length){
-        const group=L.featureGroup(welfareMapLayer.getLayers());
-        welfareMap.fitBounds(group.getBounds().pad(.10),{maxZoom:WELFARE_INITIAL_MAP_MAX_ZOOM});
-        if(WELFARE_INITIAL_MAP_ZOOM_BUMP){
+        const focusPoints = welfareMapFocusPoints(points);
+        const bounds = L.latLngBounds(focusPoints.map(p => p.coords));
+        const focusMaxZoom = focusPoints.length <= 2 ? Math.max(WELFARE_INITIAL_MAP_MAX_ZOOM, 15) : WELFARE_INITIAL_MAP_MAX_ZOOM;
+        welfareMap.fitBounds(bounds.pad(.10),{maxZoom:focusMaxZoom});
+        if(WELFARE_INITIAL_MAP_ZOOM_BUMP && focusPoints.length > 2){
           const nextZoom = Math.min(
             WELFARE_INITIAL_MAP_MAX_ZOOM,
             welfareMap.getZoom() + WELFARE_INITIAL_MAP_ZOOM_BUMP
@@ -447,7 +460,7 @@
     const trackedEmails=new Set();
 
     // Tracking sessions have priority over the static traveller record location.
-    for(const s of state.tracking||[]){
+    for(const s of visibleTrackingSessions()){
       const c=coordOf(s); if(!c) continue;
       const p=state.people.find(x=>norm(x.email)===norm(s.employee_email) || norm(x.name)===norm(getName(s))) || {};
       const email=s.employee_email||p.email||'';
@@ -471,7 +484,7 @@
     for(const pt of points){
       const colour=mapColour(pt.kind,pt.status,pt.hasPanic);
       const marker=L.circleMarker(pt.coords,{radius:8,color:colour,fillColor:colour,fillOpacity:.78,weight:2});
-      const statusLabel = pt.kind==='traveller' ? 'traveller record location' : pt.hasPanic ? 'active panic' : `tracking ${pt.status}`;
+      const statusLabel = pt.kind==='traveller' ? 'traveller accommodation / base' : pt.hasPanic ? 'active panic' : `tracking ${pt.status}`;
       marker.bindPopup(`<strong>${esc(pt.label)}</strong><br>${esc(pt.email||'No email')}<br>Status: ${esc(statusLabel)}<br>Last: ${esc(fmt(pt.last))}`);
       marker.addTo(welfareMapLayer);
     }
@@ -982,8 +995,6 @@
   renderTopUser(); initMobileNav(); initWelfareMapControls(); if($('openContactsDrawer')) $('openContactsDrawer').onclick=()=>setContactsDrawer(true); if($('closeContactsDrawer')) $('closeContactsDrawer').onclick=()=>setContactsDrawer(false); if($('contactDrawerBackdrop')) $('contactDrawerBackdrop').onclick=()=>setContactsDrawer(false); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
 })();
 </script>
-
- <script src="shared-chip.js"></script>
-  
+  <script src="shared-chip.js"></script>
 </body>
 </html>
