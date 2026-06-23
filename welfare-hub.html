@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Welfare Hub v2</title>
+  <title>CityIntel — Welfare Hub v3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -90,7 +90,19 @@
     .contact-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.two-col,.overview-shell{grid-template-columns:1fr}.api-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:720px){.app{grid-template-columns:1fr}.sidebar{display:none}.cards,.health,.api-strip{grid-template-columns:1fr}.overview-grid{grid-template-columns:1fr}.main{padding:12px}}
-  </style>
+  
+    .incident-board{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);gap:14px;align-items:start}
+    .incident-list{display:flex;flex-direction:column;gap:9px;max-height:460px;overflow:auto;padding-right:4px}
+    .incident-item{border:1px solid var(--gray-600);background:rgba(255,255,255,.025);border-radius:13px;padding:11px 12px;cursor:pointer}
+    .incident-item:hover,.incident-item.active{border-color:rgba(208,22,22,.7);background:rgba(208,22,22,.06)}
+    .incident-title{font-weight:950}.incident-meta{font-size:12px;color:var(--muted);margin-top:3px}.incident-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .note-box{display:flex;gap:8px;margin-top:10px}.note-box input{flex:1;background:#0f1012;border:1px solid var(--gray-600);border-radius:10px;color:var(--text);padding:9px 10px;min-width:0}
+    .note-list{display:grid;gap:8px;margin-top:10px}.note-item{border:1px solid var(--gray-600);border-radius:10px;padding:9px;background:rgba(0,0,0,.15)}
+    .note-item b{display:block;font-size:12px}.note-item span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+    .status-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 8px;font-size:11px;border:1px solid var(--gray-500);text-transform:capitalize}
+    .status-open{color:var(--danger);border-color:rgba(255,90,95,.45);background:rgba(255,90,95,.08)}.status-acknowledged{color:var(--warn);border-color:rgba(240,180,41,.45);background:rgba(240,180,41,.08)}.status-escalated{color:var(--danger);border-color:rgba(255,90,95,.65);background:rgba(255,90,95,.12)}.status-resolved{color:var(--ok);border-color:rgba(51,196,141,.45);background:rgba(51,196,141,.08)}
+    @media(max-width:980px){.incident-board{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
   <div class="brandbar">
@@ -178,13 +190,27 @@
         <div id="quickActions" class="actions"></div>
         <div id="toast" class="toast"></div>
       </section>
+
+      <section class="card" id="incidentSection">
+        <div class="toprow">
+          <div><h3>Persistent Welfare Incidents</h3><span class="muted">V3 incident records, acknowledgement, escalation, resolution and operator notes.</span></div>
+          <span class="muted" id="incidentCount">0 active incidents</span>
+        </div>
+        <div class="incident-board">
+          <div>
+            <div id="incidentList" class="incident-list"><div class="empty">Loading incident records…</div></div>
+          </div>
+          <div id="incidentDetail" class="empty">Select an incident record to manage it.</div>
+        </div>
+      </section>
+
     </main>
   </div>
 
 <script>
 (function(){
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], people:[], issues:[], selected:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false}, errors:{} };
+  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{} };
 
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -279,6 +305,16 @@
       const p=ensure({name:getName(a), email:getEmail(a), phone:getPhone(a)});
       p.panic.push(a); p.critical.push('Active panic alarm');
       addTimeline(p,a.activated_at,'Panic alarm active',a.location||a.message||'Requires immediate attention','critical');
+    }
+
+    for(const inc of state.welfareIncidents||[]){
+      if(norm(inc.status)==='resolved') continue;
+      const p=ensure({name:inc.person_name, email:inc.person_email, phone:inc.person_phone});
+      if(!p.welfareIncidents) p.welfareIncidents=[];
+      p.welfareIncidents.push(inc);
+      if(norm(inc.severity)==='critical') p.critical.push('Persistent welfare incident');
+      else p.warnings.push('Persistent welfare incident');
+      addTimeline(p,inc.updated_at||inc.last_seen_at||inc.created_at,`Welfare incident: ${inc.title||'Issue'}`,`Status: ${inc.status||'open'}`,norm(inc.severity)==='critical'?'critical':'warning');
     }
 
     for(const p of map.values()){
@@ -435,21 +471,94 @@
   async function resetAlarm(logId){ if(!confirm('Reset this panic alarm after confirming the person is safe?')) return; try{ await api('/api/org/panic',{method:'PUT',body:JSON.stringify({active:false,logId,resetReason:'Confirmed safe from Welfare Hub'})}); toast('Alarm reset.'); await loadAll(); }catch(e){ toast(e.message,false); } }
   async function sendCheckin(scheduleId){ try{ await api('/api/org/checkin/send',{method:'POST',body:JSON.stringify({scheduleId})}); toast('Check-in sent.'); await loadAll(); }catch(e){ toast(e.message,false); } }
 
+  function issueSignature(i){ return `${i.type||'issue'}:${norm(i.email||i.name)}:${norm(i.message||'')}`.slice(0,500); }
+  function issuePayloads(){
+    return (state.issues||[]).filter(i=>i.severity!=='info').map(i=>({
+      issue_signature: issueSignature(i),
+      source_type: i.type || 'welfare',
+      source_id: i.ref?.id || i.ref?.schedule?.id || i.ref?.latest_event?.id || '',
+      title: i.message || 'Welfare issue',
+      severity: i.severity || 'warning',
+      person_name: i.name || '',
+      person_email: i.email || '',
+      person_phone: i.ref?.phone || i.ref?.employee_phone || i.ref?.schedule?.employee_phone || '',
+      metadata: { when:i.when||'', note:i.note||'', type:i.type||'', detected_by:'welfare_hub_v3' }
+    }));
+  }
+  async function loadWelfareIncidents(){
+    try{
+      const data = await api('/api/org/welfare/incidents?status=active&limit=200');
+      state.source.welfare=true;
+      state.welfareIncidents=data.incidents||[];
+      state.welfareNotes=data.notes||[];
+    }catch(e){ state.errors.welfare=e.message; state.source.welfare=false; state.welfareIncidents=[]; state.welfareNotes=[]; }
+  }
+  async function syncWelfareIncidents(){
+    const issues=issuePayloads();
+    if(!issues.length) return;
+    try{
+      const data = await api('/api/org/welfare/incidents/sync',{method:'POST',body:JSON.stringify({issues})});
+      state.source.welfare=true;
+      state.welfareIncidents=data.incidents||state.welfareIncidents||[];
+    }catch(e){ state.errors.welfare=e.message; }
+  }
+  function incidentNotes(id){ return (state.welfareNotes||[]).filter(n=>n.incident_id===id).sort((a,b)=>dateMs(b.created_at)-dateMs(a.created_at)); }
+  function renderIncidents(){
+    const list=$('incidentList'), count=$('incidentCount'); if(!list||!count) return;
+    const active=(state.welfareIncidents||[]).filter(i=>norm(i.status)!=='resolved');
+    count.textContent=`${active.length} active incident${active.length===1?'':'s'}`;
+    if(!active.length){ list.innerHTML='<div class="empty">No persistent welfare incidents yet.</div>'; $('incidentDetail').className='empty'; $('incidentDetail').innerHTML='No incident selected.'; return; }
+    list.innerHTML=active.map(i=>`<div class="incident-item ${state.selectedIncident?.id===i.id?'active':''}" data-incident="${esc(i.id)}"><div class="person-top"><div><div class="incident-title">${esc(i.title||'Welfare issue')}</div><div class="incident-meta">${esc(i.person_name||'Unknown person')} · ${esc(i.person_email||'No email')} · updated ${timeAgo(i.updated_at||i.last_seen_at)}</div></div><span class="status-badge status-${esc(i.status||'open')}">${esc(i.status||'open')}</span></div><div class="person-tags" style="margin-top:8px"><span class="pill ${i.severity==='critical'?'danger':'warn'}">${esc(i.severity||'warning')}</span><span class="pill info">${esc(i.source_type||'manual')}</span></div></div>`).join('');
+    list.querySelectorAll('[data-incident]').forEach(el=>el.onclick=()=>selectIncident(el.dataset.incident));
+    if(state.selectedIncident){ const fresh=active.find(i=>i.id===state.selectedIncident.id); state.selectedIncident=fresh||null; }
+    renderIncidentDetail();
+  }
+  function selectIncident(id){ state.selectedIncident=(state.welfareIncidents||[]).find(i=>i.id===id)||null; renderIncidents(); const p=findPersonByIssue({email:state.selectedIncident?.person_email,name:state.selectedIncident?.person_name}); if(p) { state.selected=p; renderOverview(); renderPeople(); } }
+  function renderIncidentDetail(){
+    const box=$('incidentDetail'); if(!box) return;
+    const i=state.selectedIncident; if(!i){ box.className='empty'; box.innerHTML='Select an incident record to manage it.'; return; }
+    const notes=incidentNotes(i.id);
+    box.className='card'; box.style.boxShadow='none';
+    box.innerHTML=`<div class="toprow"><div><h3>${esc(i.title||'Welfare issue')}</h3><span class="muted">${esc(i.person_name||'Unknown person')} · ${esc(i.person_email||'No email')}</span></div><span class="status-badge status-${esc(i.status||'open')}">${esc(i.status||'open')}</span></div>
+      <div class="overview-grid" style="margin-top:10px"><div class="overview-cell"><b>Severity</b><span>${esc(i.severity||'warning')}</span></div><div class="overview-cell"><b>Source</b><span>${esc(i.source_type||'manual')}</span></div><div class="overview-cell"><b>First seen</b><span>${fmt(i.first_seen_at)}</span></div><div class="overview-cell"><b>Last seen</b><span>${fmt(i.last_seen_at||i.updated_at)}</span></div></div>
+      <div class="incident-actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button></div>
+      <div class="note-box"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" data-act="note">Add note</button></div>
+      <h3 style="margin-top:14px">Notes</h3><div class="note-list">${notes.length?notes.map(n=>`<div class="note-item"><b>${esc(n.author_name||n.author_email||'Operator')}</b>${esc(n.note)}<span>${fmt(n.created_at)} · ${esc(n.note_type||'note')}</span></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>`;
+    box.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>incidentAction(btn.dataset.act,i.id));
+  }
+  async function incidentAction(action,id){
+    try{
+      if(action==='note'){
+        const note=$('incidentNoteInput')?.value?.trim(); if(!note) return toast('Enter a note first.',false);
+        await api('/api/org/welfare/incidents/note',{method:'POST',body:JSON.stringify({incident_id:id,note})});
+        toast('Note added.');
+      } else {
+        let status=action==='ack'?'acknowledged':action==='escalate'?'escalated':'resolved';
+        let note='';
+        if(status==='resolved') note=prompt('Resolution note:', 'Confirmed safe / no further action required')||'Resolved from Welfare Hub';
+        await api('/api/org/welfare/incidents',{method:'PUT',body:JSON.stringify({id,status,note,resolution_note:note})});
+        toast(`Incident ${status}.`);
+      }
+      await loadWelfareIncidents(); renderIncidents(); buildPeople(); renderPeople(); if(state.selected) renderOverview();
+    }catch(e){ toast(e.message,false); }
+  }
+
   async function loadAll(){
     $('lastUpdated').textContent='Refreshing…';
-    state.source={panic:false,checkin:false,tracking:false,travellers:false}; state.errors={};
+    state.source={panic:false,checkin:false,tracking:false,travellers:false,welfare:false}; state.errors={};
     const wrap = async (key, promise, fallback) => {
       try { const data=await promise; state.source[key]=true; return data; }
       catch(e){ state.errors[key]=e.message; return fallback; }
     };
-    const [panic,panicLog,checkinStatus,checkinEvents,checkinSchedules,tracking,travellers] = await Promise.all([
+    const [panic,panicLog,checkinStatus,checkinEvents,checkinSchedules,tracking,travellers,welfare] = await Promise.all([
       wrap('panic', api('/api/org/panic'), {ok:false,activeAlarms:[]}),
       api('/api/org/panic/log?limit=50').catch(e=>({ok:false,error:e.message,alarms:[],log:[]})),
       wrap('checkin', api('/api/org/checkin/status'), {ok:false,summary:{},schedules:[]}),
       api('/api/org/checkin/events?limit=100').catch(e=>({ok:false,error:e.message,events:[]})),
       api('/api/org/checkin/schedules').catch(e=>({ok:false,error:e.message,schedules:[]})),
       wrap('tracking', api('/api/org/tracking/sessions'), {ok:false,sessions:[]}),
-      wrap('travellers', api('/api/org/travellers'), {ok:false,data:[]})
+      wrap('travellers', api('/api/org/travellers'), {ok:false,data:[]}),
+      wrap('welfare', api('/api/org/welfare/incidents?status=active&limit=200'), {ok:false,incidents:[],notes:[]})
     ]);
     state.panic=panic;
     state.panicLog=panicLog.alarms||panicLog.log||panicLog.data||[];
@@ -458,7 +567,11 @@
     state.checkinSchedules=checkinSchedules.schedules||checkinSchedules.data||[];
     state.tracking=(tracking.sessions||tracking.data||[]).map(s=>({...s,freshness:trackingFreshness(s)}));
     state.travellers=Array.isArray(travellers.data)?travellers.data:(travellers.travellers||[]);
-    buildPeople(); buildIssues(); renderSummary(); renderIssues(); renderPeople();
+    state.welfareIncidents=welfare.incidents||[]; state.welfareNotes=welfare.notes||[];
+    buildPeople(); buildIssues();
+    await syncWelfareIncidents();
+    buildPeople(); buildIssues();
+    renderSummary(); renderIssues(); renderPeople(); renderIncidents();
     if(state.selected){ const old=state.selected.key; state.selected=state.people.find(p=>p.key===old)||null; renderOverview(); }
   }
 
