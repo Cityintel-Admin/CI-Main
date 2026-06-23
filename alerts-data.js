@@ -20,6 +20,21 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+  {
+    "title": "Anti-War and Anti-NATO Demonstrations",
+    "city": "Ankara",
+    "lat": 39.9334,
+    "lng": 32.8597,
+    "address": "Citywide / Near Summit Venues",
+    "postcode": "06000",
+    "country": "Turkey",
+    "continent": "Asia",
+    "risk": "High",
+    "time": "2026-07-07T08:00:00",
+    "source": "https://caliber.az/en/post/ankara-imposes-13-day-ban-on-protests-drone-flights-ahead-of-nato-summit",
+    "summary": "The 36th annual NATO Summit is taking place in Ankara from 7–8 July 2026. In response, left-wing, anti-war, and pro-Palestine factions have organized localized rallies, leading Turkish authorities to issue a strict 13-day ban on public assemblies and drone flights across the capital. Police have executed sweeping pre-emptive raids, detaining over 200 activists. Despite the official protest ban, spontaneous flash demonstrations remain highly likely. Given the heavy security presence, international spotlight, and potential for clashes, the risk is assessed as High."
+  },
+
   
 
 {
