@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Travel & Infrastructure Hub</title>
+  <title>CityIntel — Travel & Infrastructure Hub v3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -69,6 +69,18 @@
     .overview-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.overview-item{border:1px solid var(--gray-600);border-radius:12px;padding:10px;background:#101216}.overview-item b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}.overview-item span{word-break:break-word}
     table{width:100%;border-collapse:collapse;min-width:760px}th{color:var(--muted);font-size:12px;text-align:left;background:#101216}th,td{padding:10px;border-bottom:1px solid var(--gray-600);vertical-align:top}tr:hover td{background:rgba(255,255,255,.02)}
     .table-wrap{overflow:auto;border:1px solid var(--gray-600);border-radius:12px}
+
+    .incident-board{display:grid;grid-template-columns:minmax(280px,.95fr) minmax(320px,1.05fr);gap:14px;margin-top:12px}
+    .incident-list{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;padding-right:4px}
+    .incident-card{border:1px solid var(--gray-600);border-left-width:4px;border-radius:12px;background:#101216;padding:11px;cursor:pointer}
+    .incident-card:hover,.incident-card.selected{border-color:rgba(208,22,22,.72);background:rgba(208,22,22,.06)}
+    .incident-card.critical{border-left-color:var(--danger)}.incident-card.warning{border-left-color:var(--warn)}.incident-card.info{border-left-color:var(--info)}
+    .incident-title{font-weight:950}.incident-sub{color:var(--muted);font-size:12px;margin-top:3px}.incident-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .incident-detail{border:1px solid var(--gray-600);border-radius:14px;background:#101216;padding:14px;min-height:240px}
+    .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.detail-cell{border:1px solid var(--gray-600);border-radius:10px;background:#0d0f13;padding:9px}.detail-cell b{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.detail-cell span{font-weight:800;word-break:break-word}
+    .note-row{display:flex;gap:8px;margin-top:10px}.note-row input{flex:1;min-width:0;background:#0d0f13;border:1px solid var(--gray-600);border-radius:10px;color:var(--text);padding:9px 10px;font:inherit}.note-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.note-item{border:1px solid var(--gray-600);border-radius:10px;background:rgba(255,255,255,.025);padding:8px}.note-meta{font-size:11px;color:var(--muted);margin-top:2px}
+    .btn.good{border-color:rgba(51,196,141,.45);color:#bbf7d0}.btn.warn{border-color:rgba(240,180,41,.45);color:#fde68a}.btn.danger{border-color:rgba(255,90,95,.45);color:#fecaca}
+    @media(max-width:1160px){.incident-board{grid-template-columns:1fr}}
     @media(max-width:1160px){.cards{grid-template-columns:repeat(2,1fr)}.layout-2,.split{grid-template-columns:1fr}.status-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{border-right:none;border-top:1px solid var(--gray-600);flex-direction:row;overflow:auto}.sidebar nav{display:flex;gap:8px}.sidebar nav a{white-space:nowrap;font-size:12px;padding:7px 10px}.cards,.person-list,.health-grid{grid-template-columns:1fr}.main{padding:12px}.brandbar img{height:40px}.actions{width:100%}.btn{flex:1;justify-content:center}}
   </style>
@@ -205,6 +217,17 @@
         </article>
       </section>
 
+      <section class="card" id="disruptionIncidentSection">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+          <div><h3>Persistent Disruption Incidents</h3><div class="muted">V3 incident records for infrastructure disruption, affected travellers/assets, operator notes and resolution workflow. Stored in the shared backend where available, with local fallback if the endpoint is unavailable.</div></div>
+          <div class="actions"><button class="btn" id="createTopIncident" type="button">Create from top issue</button><span class="pill" id="incidentMeta">0 active incidents</span></div>
+        </div>
+        <div class="incident-board">
+          <div id="incidentList" class="incident-list"><div class="empty">No incident records yet.</div></div>
+          <div id="incidentDetail" class="incident-detail empty">Select an incident record to manage it.</div>
+        </div>
+      </section>
+
       <section class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
           <div><h3>Recent Infrastructure Signals</h3><div class="muted">Latest normalised disruption items collected by the hub.</div></div>
@@ -225,7 +248,7 @@
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
   const state = {
     flights:null, nas:null, transport:null, power:null, travellers:[], assets:[],
-    issues:[], signals:[], people:[], exposures:[], issueFilter:'all', selectedKey:''
+    issues:[], signals:[], people:[], exposures:[], issueFilter:'all', selectedKey:'', incidents:[], selectedIncidentId:''
   };
 
   const $ = id => document.getElementById(id);
@@ -275,6 +298,146 @@
 
   function loadLocal(key){
     try { const v = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+  }
+
+
+  const INCIDENT_KEY = 'ci_travel_infra_incidents_v3';
+  function saveIncidents(){ try { localStorage.setItem(INCIDENT_KEY, JSON.stringify(state.incidents || [])); } catch(_) {} }
+  function actorName(){ const p=profile(); return txt(p.name || p.email || 'Operator'); }
+  function uid(){ return 'ti_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
+  function issueKey(i){ return [i?.type,i?.source,i?.title,i?.sub].map(low).join('|'); }
+  function activeIncidents(){ return (state.incidents||[]).filter(i=>low(i.status)!=='resolved'); }
+  function findLinkedIncident(i){ const k=issueKey(i); return activeIncidents().find(x=>x.issueKey===k || x.issue_signature===k); }
+  async function postJson(path, body){
+    const res = await fetch(API + path, { method:'POST', headers:headers(), body:JSON.stringify(body || {}) });
+    const json = await res.json().catch(()=>({}));
+    if(!res.ok || json.ok === false) throw new Error(json.error || json.message || ('HTTP ' + res.status));
+    return json;
+  }
+  async function putJson(path, body){
+    const res = await fetch(API + path, { method:'PUT', headers:headers(), body:JSON.stringify(body || {}) });
+    const json = await res.json().catch(()=>({}));
+    if(!res.ok || json.ok === false) throw new Error(json.error || json.message || ('HTTP ' + res.status));
+    return json;
+  }
+  function normalizeBackendIncident(row){
+    if(!row) return null;
+    const meta = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+    const affected = Array.isArray(row.affected) ? row.affected : (Array.isArray(meta.affected) ? meta.affected : []);
+    const notes = Array.isArray(row.notes) ? row.notes.map(n=>({at:n.created_at||n.at, by:n.author_name||n.author_email||n.by, text:n.note||n.text})) : [];
+    const timeline = Array.isArray(row.timeline) ? row.timeline : [];
+    return {
+      ...row,
+      id: row.id,
+      issueKey: row.issue_signature || meta.issueKey || row.issueKey || '',
+      title: row.title || 'Infrastructure disruption',
+      source: row.source_type || row.source || meta.source || 'Hub',
+      severity: row.severity || 'warning',
+      status: row.status || 'open',
+      location: row.location || meta.location || '',
+      createdAt: row.created_at || row.createdAt,
+      updatedAt: row.updated_at || row.updatedAt,
+      createdBy: row.created_by || row.createdBy || '',
+      affected,
+      notes,
+      timeline: timeline.length ? timeline : [
+        row.resolved_at ? {at:row.resolved_at, by:row.resolved_by||'', text:'Incident resolved.'} : null,
+        row.escalated_at ? {at:row.escalated_at, by:row.escalated_by||'', text:'Incident escalated.'} : null,
+        row.acknowledged_at ? {at:row.acknowledged_at, by:row.acknowledged_by||'', text:'Incident acknowledged.'} : null,
+        row.created_at ? {at:row.created_at, by:row.created_by||'', text:'Incident record created.'} : null
+      ].filter(Boolean)
+    };
+  }
+  async function loadIncidents(){
+    try{
+      const data = await getJson('/api/org/travel-infrastructure/incidents?status=active&limit=200');
+      const notes = Array.isArray(data.notes) ? data.notes : [];
+      const byId = new Map();
+      notes.forEach(n => { const k=n.incident_id; if(!byId.has(k)) byId.set(k, []); byId.get(k).push(n); });
+      state.incidents = asArr(data.incidents).map(r => normalizeBackendIncident({...r, notes:byId.get(r.id)||[]})).filter(Boolean);
+      saveIncidents();
+    }catch(e){
+      console.warn('travel infrastructure incidents backend unavailable, using local cache', e);
+      state.incidents = loadLocal(INCIDENT_KEY);
+    }
+  }
+  async function createIncidentFromIssue(issue, subject=null){
+    if(!issue) return null;
+    const existing = findLinkedIncident(issue);
+    if(existing){ state.selectedIncidentId = existing.id; renderIncidents(); return existing; }
+    const affected = subject ? [{key:subject.key,kind:subject.kind,name:subject.name,email:subject.email,location:subject.location}] : [];
+    const payload={
+      issue_signature: issueKey(issue), title:txt(issue.title||'Infrastructure disruption'), source_type:txt(issue.source||issue.type||'Hub'), source_id:txt(issue.key||issue.id||issueKey(issue)),
+      severity:txt(issue.severity||'warning'), status:'open', location:txt(issue.sub||issue.location||''), affected,
+      metadata:{ issue, affected, issueKey:issueKey(issue), source:txt(issue.source||issue.type||'Hub'), location:txt(issue.sub||issue.location||'') },
+      note:'Incident record created from Travel & Infrastructure Hub signal.'
+    };
+    try{
+      const res = await postJson('/api/org/travel-infrastructure/incidents', payload);
+      await loadIncidents();
+      state.selectedIncidentId=res.id || (state.incidents[0]||{}).id || '';
+    }catch(e){
+      console.warn('backend incident create failed, storing locally', e);
+      const inc={ id:uid(), issueKey:issueKey(issue), title:payload.title, source:payload.source_type, severity:payload.severity, status:'open', location:payload.location, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(), createdBy:actorName(), affected, timeline:[{at:new Date().toISOString(), by:actorName(), text:payload.note}], notes:[] };
+      state.incidents.unshift(inc); state.selectedIncidentId=inc.id; saveIncidents();
+    }
+    renderIncidents(); renderHealth(); return state.incidents.find(x=>x.id===state.selectedIncidentId) || null;
+  }
+  async function setIncidentStatus(id,status,note=''){
+    const inc=state.incidents.find(x=>x.id===id); if(!inc) return;
+    try{
+      await putJson('/api/org/travel-infrastructure/incidents', {id, status, note: status==='resolved' ? (note||'No further action required') : ('Status updated to '+status), resolution_note: note});
+      await loadIncidents();
+    }catch(e){
+      console.warn('backend incident update failed, updating local cache', e);
+      inc.status=status; inc.updatedAt=new Date().toISOString();
+      inc.timeline=inc.timeline||[]; inc.timeline.unshift({at:new Date().toISOString(), by:actorName(), text:status==='resolved' ? ('Resolved: '+(note||'No further action required')) : ('Status updated to '+status)});
+      saveIncidents();
+    }
+    renderIncidents(); renderHealth();
+  }
+  async function addIncidentNote(id,text){
+    const inc=state.incidents.find(x=>x.id===id); if(!inc || !txt(text)) return;
+    try{
+      await postJson('/api/org/travel-infrastructure/incidents/note', {incident_id:id, note:txt(text)});
+      await loadIncidents();
+    }catch(e){
+      console.warn('backend incident note failed, updating local cache', e);
+      inc.notes=inc.notes||[]; inc.notes.unshift({at:new Date().toISOString(), by:actorName(), text:txt(text)});
+      inc.timeline=inc.timeline||[]; inc.timeline.unshift({at:new Date().toISOString(), by:actorName(), text:'Operator note added.'});
+      inc.updatedAt=new Date().toISOString(); saveIncidents();
+    }
+    renderIncidents();
+  }
+  function fmtWhen(v){ const t=Date.parse(v||''); return Number.isFinite(t)?new Date(t).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'; }
+  function renderIncidents(){
+    const listEl=$('incidentList'), detailEl=$('incidentDetail'), meta=$('incidentMeta'); if(!listEl||!detailEl) return;
+    const active=activeIncidents(); if(meta) meta.textContent=`${active.length} active incident${active.length===1?'':'s'}`;
+    if(!state.selectedIncidentId && active[0]) state.selectedIncidentId=active[0].id;
+    if(!active.length){ listEl.innerHTML='<div class="empty">No active disruption incidents.</div>'; detailEl.className='incident-detail empty'; detailEl.innerHTML='No incident selected.'; return; }
+    listEl.innerHTML=active.map(inc=>`
+      <div class="incident-card ${esc(inc.severity)} ${state.selectedIncidentId===inc.id?'selected':''}" data-id="${esc(inc.id)}">
+        <div style="display:flex;justify-content:space-between;gap:8px"><div class="incident-title">${esc(inc.title)}</div><span class="pill ${severityClass(inc.severity)}">${esc(inc.status)}</span></div>
+        <div class="incident-sub">${esc(inc.source)} · ${esc(inc.location||'No location')} · updated ${esc(fmtWhen(inc.updatedAt))}</div>
+        <div class="incident-tags"><span class="pill ${severityClass(inc.severity)}">${esc(inc.severity)}</span><span class="pill info">${(inc.affected||[]).length} affected</span></div>
+      </div>`).join('');
+    listEl.querySelectorAll('.incident-card').forEach(el=>el.addEventListener('click',()=>{state.selectedIncidentId=el.dataset.id; renderIncidents();}));
+    const inc=active.find(x=>x.id===state.selectedIncidentId)||active[0]; state.selectedIncidentId=inc.id; detailEl.className='incident-detail';
+    const affected=(inc.affected||[]).map(a=>`<div class="note-item"><b>${esc(a.name||a.kind)}</b><div class="note-meta">${esc(a.kind||'record')} · ${esc(a.email||a.location||'No contact/location')}</div></div>`).join('') || '<div class="empty">No affected record linked yet.</div>';
+    const notes=(inc.notes||[]).map(n=>`<div class="note-item">${esc(n.text)}<div class="note-meta">${esc(n.by)} · ${esc(fmtWhen(n.at))}</div></div>`).join('') || '<div class="empty">No notes yet.</div>';
+    const timeline=(inc.timeline||[]).slice(0,8).map(n=>`<div class="note-item">${esc(n.text)}<div class="note-meta">${esc(n.by)} · ${esc(fmtWhen(n.at))}</div></div>`).join('');
+    detailEl.innerHTML=`
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h3 style="margin:0 0 4px">${esc(inc.title)}</h3><div class="muted">${esc(inc.source)} · ${esc(inc.location||'No location')}</div></div><span class="pill ${severityClass(inc.severity)}">${esc(inc.severity)}</span></div>
+      <div class="detail-grid"><div class="detail-cell"><b>Status</b><span>${esc(inc.status)}</span></div><div class="detail-cell"><b>Created</b><span>${esc(fmtWhen(inc.createdAt))}</span></div><div class="detail-cell"><b>Created by</b><span>${esc(inc.createdBy||'—')}</span></div><div class="detail-cell"><b>Affected records</b><span>${(inc.affected||[]).length}</span></div></div>
+      <div class="actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button><a class="btn" href="flight-status.html">Flights</a><a class="btn" href="transport-status.html">Transport</a><a class="btn" href="power-outages.html">Power</a></div>
+      <div class="note-row"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" id="incidentNoteBtn">Add note</button></div>
+      <h3 style="margin:14px 0 8px">Affected travellers / assets</h3><div class="note-list">${affected}</div>
+      <h3 style="margin:14px 0 8px">Notes</h3><div class="note-list">${notes}</div>
+      <h3 style="margin:14px 0 8px">Timeline</h3><div class="note-list">${timeline}</div>`;
+    detailEl.querySelector('[data-act="ack"]')?.addEventListener('click',()=>setIncidentStatus(inc.id,'acknowledged'));
+    detailEl.querySelector('[data-act="escalate"]')?.addEventListener('click',()=>setIncidentStatus(inc.id,'escalated'));
+    detailEl.querySelector('[data-act="resolve"]')?.addEventListener('click',()=>{ const note=prompt('Resolution note:','Disruption reviewed / no further action required'); if(note!==null) setIncidentStatus(inc.id,'resolved',note); });
+    detailEl.querySelector('#incidentNoteBtn')?.addEventListener('click',()=>{ const inp=$('incidentNoteInput'); addIncidentNote(inc.id, inp?.value||''); if(inp) inp.value=''; });
   }
 
   function getLat(o){ return toNum(o?.lat ?? o?.latitude ?? o?.geo_lat ?? o?.last_lat ?? o?.location?.lat ?? o?.geopoint?.lat); }
@@ -475,6 +638,7 @@
     state.travellers = asArr(tData).length ? asArr(tData) : loadLocal('ci_travellers');
     state.assets = asArr(aData).length ? asArr(aData) : loadLocal('ci_assets');
 
+    await loadIncidents();
     build();
     $('refreshBtn').disabled = false;
   }
@@ -530,6 +694,7 @@
     renderIssues();
     renderPeople();
     renderSignals();
+    renderIncidents();
 
     const errors = [
       state.flights.error && 'flight',
@@ -641,9 +806,15 @@
       <div class="issue ${i.severity==='critical'?'critical':i.severity==='warning'?'warning':'info'}">
         <span class="pill ${severityClass(i.severity)}">${esc(i.severity)}</span>
         <div><div class="issue-title">${esc(i.title)}</div><div class="issue-sub">${esc(i.source)} · ${esc(i.sub)}</div></div>
-        <a class="btn" href="${esc(i.href)}">${esc(i.action)}</a>
+        <div class="actions"><button class="btn" data-issue-key="${esc(issueKey(i))}" type="button">Create incident</button><a class="btn" href="${esc(i.href)}">${esc(i.action)}</a></div>
       </div>
     `).join('');
+    el.querySelectorAll('[data-issue-key]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const issue = state.issues.find(x => issueKey(x) === btn.getAttribute('data-issue-key'));
+        if (issue) createIncidentFromIssue(issue);
+      });
+    });
   }
 
   function peopleWithExposure(){
@@ -734,8 +905,10 @@
         <a class="btn" href="flight-status.html">Check Flights</a>
         <a class="btn" href="transport-status.html">Check Transport</a>
         <a class="btn" href="power-outages.html">Check Power</a>
+        ${top ? `<button class="btn primary" id="createPersonIncident" type="button">Create incident for ${esc(r.kind)}</button>` : ''}
       </div>
     `;
+    $('createPersonIncident')?.addEventListener('click',()=>{ if(top) createIncidentFromIssue({severity:top.severity,type:'exposure',source:top.source,title:top.title,sub:top.location,action:'Manage',href:'#incidentSection'}, r); });
     renderPeople();
   }
 
@@ -787,6 +960,7 @@
     });
 
     $('refreshBtn').addEventListener('click', load);
+    $('createTopIncident')?.addEventListener('click',()=>{ if(state.issues[0]) createIncidentFromIssue(state.issues[0]); });
     $('personSearch').addEventListener('input', renderPeople);
     $('personFilter').addEventListener('change', renderPeople);
     document.querySelectorAll('#issueFilters .filter-chip').forEach(btn => {
