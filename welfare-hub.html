@@ -107,6 +107,20 @@
     .map-legend{display:flex;gap:16px;flex-wrap:wrap;padding:8px 0;margin-top:8px;color:var(--muted);font-size:12px;font-weight:800}
     .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
     .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;display:inline-block}.legend-dot.fresh{background:var(--ok)}.legend-dot.stale{background:var(--warn)}.legend-dot.offline{background:var(--danger)}.legend-dot.panic{background:#fff;border:2px solid #fff}
+
+    .legend-dot.traveller{background:#93c5fd;border:2px solid rgba(255,255,255,.55)}
+    .contact-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;display:none}
+    .contact-drawer-backdrop.show{display:block}
+    .contact-drawer{position:fixed;top:0;right:0;height:100vh;width:min(420px,92vw);background:#111214;border-left:1px solid var(--gray-600);box-shadow:-12px 0 32px rgba(0,0,0,.45);z-index:10002;transform:translateX(105%);transition:transform .18s ease;display:flex;flex-direction:column}
+    .contact-drawer.show{transform:translateX(0)}
+    .contact-drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px;border-bottom:1px solid var(--gray-600);background:linear-gradient(90deg,rgba(208,22,22,.18),rgba(208,22,22,0))}
+    .contact-drawer-head h3{margin:0 0 3px}
+    .contact-drawer-body{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+    .contact-card{background:#15171b;border:1px solid var(--gray-600);border-radius:12px;padding:12px}
+    .contact-card strong{display:block;margin-bottom:2px}
+    .contact-meta{color:var(--muted);font-size:12px;margin-bottom:8px}
+    .contact-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
     .person-list.collapsed .person-item:nth-of-type(n+2){display:none}
     .person-list.collapsed{max-height:120px;overflow:hidden}
 
@@ -154,6 +168,21 @@
     </div>
   </div>
 
+
+  <div id="contactDrawerBackdrop" class="contact-drawer-backdrop"></div>
+  <aside id="contactDrawer" class="contact-drawer" aria-label="Escalation contacts" aria-hidden="true">
+    <div class="contact-drawer-head">
+      <div>
+        <h3>Escalation Contacts</h3>
+        <div class="muted">Emergency contacts available to operators from Welfare Hub.</div>
+      </div>
+      <button class="btn" id="closeContactsDrawer" type="button">Close</button>
+    </div>
+    <div id="contactDrawerBody" class="contact-drawer-body">
+      <div class="empty">Loading contacts…</div>
+    </div>
+  </aside>
+
   <div class="app">
     <aside class="sidebar">
       <nav>
@@ -174,7 +203,7 @@
           <p class="page-sub">Duty-of-care command view for panic alarms, check-ins, traveller tracking and travel records.</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button class="btn" id="refreshBtn">↻ Refresh</button>
+          <button class="btn" id="refreshBtn">↻ Refresh</button><button class="btn" id="openContactsDrawer" type="button">Emergency Contacts</button>
           <span class="pill info" id="lastUpdated">Loading…</span>
         </div>
       </div>
@@ -220,7 +249,7 @@
         </div>
         <div id="welfareMap" class="welfare-map"></div>
         <div class="map-legend">
-          <div class="legend-item"><span class="legend-dot traveller"></span>Traveller record location</div>
+          <div class="legend-item"><span class="legend-dot traveller"></span>Traveller accommodation / base</div>
           <div class="legend-item"><span class="legend-dot fresh"></span>Active tracking — fresh</div>
           <div class="legend-item"><span class="legend-dot stale"></span>Active tracking — stale</div>
           <div class="legend-item"><span class="legend-dot offline"></span>Active tracking — offline / old</div>
@@ -276,7 +305,7 @@
 <script>
 (function(){
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{}, peopleExpanded:false };
+  const state = { panic:null, panicLog:[], checkinStatus:null, checkinEvents:[], checkinSchedules:[], tracking:[], travellers:[], welfareIncidents:[], welfareNotes:[], escalationContacts:[], people:[], issues:[], selected:null, selectedIncident:null, filter:'all', source:{panic:false,checkin:false,tracking:false,travellers:false,welfare:false}, errors:{}, peopleExpanded:false };
 
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -802,14 +831,16 @@
     const i=state.selectedIncident; if(!i){ box.className='empty'; box.innerHTML='Select an incident record to manage it.'; return; }
     const notes=incidentNotes(i.id);
     box.className='card'; box.style.boxShadow='none';
+    const canManageIncident = isAdmin();
     box.innerHTML=`<div class="toprow"><div><h3>${esc(i.title||'Welfare issue')}</h3><span class="muted">${esc(i.person_name||'Unknown person')} · ${esc(i.person_email||'No email')}</span></div><span class="status-badge status-${esc(i.status||'open')}">${esc(i.status||'open')}</span></div>
       <div class="overview-grid" style="margin-top:10px"><div class="overview-cell"><b>Severity</b><span>${esc(i.severity||'warning')}</span></div><div class="overview-cell"><b>Source</b><span>${esc(i.source_type||'manual')}</span></div><div class="overview-cell"><b>First seen</b><span>${fmt(i.first_seen_at)}</span></div><div class="overview-cell"><b>Last seen</b><span>${fmt(i.last_seen_at||i.updated_at)}</span></div></div>
-      <div class="incident-actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button></div>
-      <div class="note-box"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" data-act="note">Add note</button></div>
+      ${canManageIncident ? `<div class="incident-actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button></div>
+      <div class="note-box"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" data-act="note">Add note</button></div>` : `<div class="empty" style="margin-top:10px;text-align:left">Incident actions and note adding are restricted to Org Admin and Master Admin roles.</div>`}
       <h3 style="margin-top:14px">Notes</h3><div class="note-list">${notes.length?notes.map(n=>`<div class="note-item"><b>${esc(n.author_name||n.author_email||'Operator')}</b>${esc(n.note)}<span>${fmt(n.created_at)} · ${esc(n.note_type||'note')}</span></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>`;
     box.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>incidentAction(btn.dataset.act,i.id));
   }
   async function incidentAction(action,id){
+    if(!isAdmin()) return toast('Incident management actions are admin only.', false);
     try{
       if(action==='note'){
         const note=$('incidentNoteInput')?.value?.trim(); if(!note) return toast('Enter a note first.',false);
@@ -827,6 +858,47 @@
     }catch(e){ toast(e.message,false); }
   }
 
+
+  function renderEscalationContacts(){
+    const body=$('contactDrawerBody'); if(!body) return;
+    const contacts=(state.escalationContacts||[]).filter(c=>c && (c.active===undefined || c.active===1 || c.active===true || String(c.active)==='1'));
+    if(!contacts.length){ body.innerHTML='<div class="empty">No escalation contacts found.</div><a class="btn" href="escalation-contacts.html">Open Escalation Contacts</a>'; return; }
+    body.innerHTML=contacts.slice(0,30).map(c=>{
+      const name=safeText(c.name||c.fullName||c.full_name)||safeText(c.email)||'Escalation contact';
+      const role=safeText(c.role||c.title||c.team||'');
+      const sev=safeText(c.severity||c.minSeverity||c.min_severity||'');
+      const email=safeText(c.email);
+      const phone=safeText(c.phone);
+      const loc=[safeText(c.city),safeText(c.country)].filter(Boolean).join(', ');
+      return `<div class="contact-card">
+        <strong>${esc(name)}</strong>
+        <div class="contact-meta">${esc([role,sev&&('severity: '+sev),loc].filter(Boolean).join(' · ') || 'Escalation contact')}</div>
+        ${safeText(c.notes)?`<div class="muted">${esc(safeText(c.notes))}</div>`:''}
+        <div class="contact-actions">
+          ${email?`<a class="btn" href="mailto:${encodeURIComponent(email)}">Email</a>`:''}
+          ${phone?`<a class="btn" href="tel:${encodeURIComponent(phone)}">Call</a>`:''}
+        </div>
+      </div>`;
+    }).join('') + `<a class="btn" href="escalation-contacts.html">Manage contacts</a>`;
+  }
+  async function loadEscalationContacts(){
+    try{
+      const data=await api('/api/org/escalation-contacts');
+      state.escalationContacts=Array.isArray(data.data)?data.data:(data.contacts||[]);
+    }catch(e){
+      state.escalationContacts=[];
+    }
+    renderEscalationContacts();
+  }
+  function setContactsDrawer(open){
+    const d=$('contactDrawer'), b=$('contactDrawerBackdrop');
+    if(!d || !b) return;
+    d.classList.toggle('show', !!open);
+    b.classList.toggle('show', !!open);
+    d.setAttribute('aria-hidden', open?'false':'true');
+    if(open) renderEscalationContacts();
+  }
+
   async function loadAll(){
     $('lastUpdated').textContent='Refreshing…';
     state.source={panic:false,checkin:false,tracking:false,travellers:false,welfare:false}; state.errors={};
@@ -834,7 +906,7 @@
       try { const data=await promise; state.source[key]=true; return data; }
       catch(e){ state.errors[key]=e.message; return fallback; }
     };
-    const [panic,panicLog,checkinStatus,checkinEvents,checkinSchedules,tracking,travellers,welfare] = await Promise.all([
+    const [panic,panicLog,checkinStatus,checkinEvents,checkinSchedules,tracking,travellers,welfare,contacts] = await Promise.all([
       wrap('panic', api('/api/org/panic'), {ok:false,activeAlarms:[]}),
       api('/api/org/panic/log?limit=50').catch(e=>({ok:false,error:e.message,alarms:[],log:[]})),
       wrap('checkin', api('/api/org/checkin/status'), {ok:false,summary:{},schedules:[]}),
@@ -842,7 +914,8 @@
       api('/api/org/checkin/schedules').catch(e=>({ok:false,error:e.message,schedules:[]})),
       wrap('tracking', api('/api/org/tracking/sessions'), {ok:false,sessions:[]}),
       wrap('travellers', api('/api/org/travellers'), {ok:false,data:[]}),
-      wrap('welfare', api('/api/org/welfare/incidents?status=all&limit=500'), {ok:false,incidents:[],notes:[]})
+      wrap('welfare', api('/api/org/welfare/incidents?status=all&limit=500'), {ok:false,incidents:[],notes:[]}),
+      api('/api/org/escalation-contacts').catch(e=>({ok:false,data:[],contacts:[]}))
     ]);
     state.panic=panic;
     state.panicLog=panicLog.alarms||panicLog.log||panicLog.data||[];
@@ -851,7 +924,7 @@
     state.checkinSchedules=checkinSchedules.schedules||checkinSchedules.data||[];
     state.tracking=(tracking.sessions||tracking.data||[]).map(s=>({...s,freshness:trackingFreshness(s)}));
     state.travellers=Array.isArray(travellers.data)?travellers.data:(travellers.travellers||[]);
-    state.welfareIncidents=welfare.incidents||[]; state.welfareNotes=welfare.notes||[];
+    state.welfareIncidents=welfare.incidents||[]; state.welfareNotes=welfare.notes||[]; state.escalationContacts=Array.isArray(contacts.data)?contacts.data:(contacts.contacts||[]); renderEscalationContacts();
     buildPeople(); buildIssues();
     await syncWelfareIncidents();
     buildPeople(); buildIssues();
@@ -865,7 +938,7 @@
   if($('togglePeopleBtn')) $('togglePeopleBtn').onclick=()=>{ state.peopleExpanded=!state.peopleExpanded; renderPeople(); };
   document.querySelectorAll('#issueFilters .filter-btn').forEach(btn=>btn.onclick=()=>{ state.filter=btn.dataset.filter; renderIssues(); });
   document.querySelectorAll('.stat-card[data-filter]').forEach(card=>card.onclick=()=>{ state.filter=card.dataset.filter; renderIssues(); document.getElementById('alertRail')?.scrollIntoView({behavior:'smooth',block:'nearest'}); });
-  renderTopUser(); initMobileNav(); initWelfareMapControls(); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
+  renderTopUser(); initMobileNav(); initWelfareMapControls(); if($('openContactsDrawer')) $('openContactsDrawer').onclick=()=>setContactsDrawer(true); if($('closeContactsDrawer')) $('closeContactsDrawer').onclick=()=>setContactsDrawer(false); if($('contactDrawerBackdrop')) $('contactDrawerBackdrop').onclick=()=>setContactsDrawer(false); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
 })();
 </script>
 <script src="shared-chip.js"></script>
