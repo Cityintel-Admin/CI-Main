@@ -213,11 +213,17 @@
           </div>
           <span class="muted" id="mapCount">0 mapped people</span>
         </div>
+        <div class="map-search-row">
+          <input id="mapSearchInput" placeholder="Search address, city, hotel, airport or country…" autocomplete="off">
+          <button class="btn" id="mapSearchBtn" type="button">Go to location</button>
+          <button class="btn" id="mapResetBtn" type="button">Reset map</button>
+        </div>
         <div id="welfareMap" class="welfare-map"></div>
         <div class="map-legend">
-          <div class="legend-item"><span class="legend-dot fresh"></span>Traveller fresh</div>
-          <div class="legend-item"><span class="legend-dot stale"></span>Traveller stale</div>
-          <div class="legend-item"><span class="legend-dot offline"></span>Traveller offline / old</div>
+          <div class="legend-item"><span class="legend-dot traveller"></span>Traveller record location</div>
+          <div class="legend-item"><span class="legend-dot fresh"></span>Active tracking — fresh</div>
+          <div class="legend-item"><span class="legend-dot stale"></span>Active tracking — stale</div>
+          <div class="legend-item"><span class="legend-dot offline"></span>Active tracking — offline / old</div>
           <div class="legend-item"><span class="legend-dot panic"></span>Active panic</div>
         </div>
       </section>
@@ -337,7 +343,8 @@
     document.querySelectorAll('.sidebar a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
   }
 
-  let welfareMap=null, welfareMapLayer=null;
+  let welfareMap=null, welfareMapLayer=null, welfareSearchMarker=null;
+  let welfareMapUserMoved=false, welfareMapFittedOnce=false, welfareMapProgrammatic=false;
   function coordOf(obj){
     if(!obj) return null;
     const lat = Number(obj.last_lat ?? obj.lat ?? obj.latitude ?? obj.checkin_lat ?? obj.location_lat);
@@ -345,62 +352,114 @@
     if(Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180 && !(lat===0 && lng===0)) return [lat,lng];
     return null;
   }
-  function mapColour(status, hasPanic){
-    if(hasPanic) return '#ffffff';
+  function mapColour(kind, status, hasPanic){
+    if(hasPanic || kind==='panic') return '#ffffff';
+    if(kind==='traveller') return '#93c5fd';
     const s=norm(status);
     if(s==='fresh' || s==='active') return '#33c48d';
     if(s==='stale' || s==='paused') return '#f0b429';
     return '#ff5a5f';
   }
-  function renderWelfareMap(){
-    const mapEl=$('welfareMap'); if(!mapEl || !window.L) return;
+  function ensureWelfareMap(){
+    const mapEl=$('welfareMap'); if(!mapEl || !window.L) return null;
     if(!welfareMap){
-      if(!mapEl.style.height) mapEl.style.height='420px';
-      welfareMap=L.map(mapEl,{zoomControl:true,scrollWheelZoom:false});
+      if(!mapEl.style.height) mapEl.style.height='480px';
+      welfareMap=L.map(mapEl,{zoomControl:true,scrollWheelZoom:true});
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
         attribution:'&copy; OpenStreetMap &copy; CARTO',
         subdomains:'abcd',
         maxZoom:20
       }).addTo(welfareMap);
       welfareMapLayer=L.layerGroup().addTo(welfareMap);
+      welfareMap.on('movestart zoomstart',()=>{ if(!welfareMapProgrammatic) welfareMapUserMoved=true; });
+      setTimeout(()=>welfareMap.invalidateSize(),150);
     }
+    return welfareMap;
+  }
+  function fitWelfareMapToPoints(points, force=false){
+    if(!welfareMap) return;
+    if(!force && welfareMapUserMoved && welfareMapFittedOnce) return;
+    welfareMapProgrammatic=true;
+    try{
+      if(points.length){
+        const group=L.featureGroup(welfareMapLayer.getLayers());
+        welfareMap.fitBounds(group.getBounds().pad(.2),{maxZoom:12});
+      } else {
+        welfareMap.setView([20,0],2);
+      }
+      welfareMapFittedOnce=true;
+    } finally {
+      setTimeout(()=>{ welfareMapProgrammatic=false; }, 250);
+    }
+  }
+  function renderWelfareMap(){
+    if(!ensureWelfareMap()) return;
     welfareMapLayer.clearLayers();
     const activePanic=panicRecords(state.panic);
     const panicByEmail=new Map(activePanic.map(a=>[norm(getEmail(a)),a]).filter(x=>x[0]));
     const points=[];
+    const trackedEmails=new Set();
+
+    // Tracking sessions have priority over the static traveller record location.
     for(const s of state.tracking||[]){
       const c=coordOf(s); if(!c) continue;
       const p=state.people.find(x=>norm(x.email)===norm(s.employee_email) || norm(x.name)===norm(getName(s))) || {};
-      const hasPanic=panicByEmail.has(norm(s.employee_email || p.email));
-      const label=getName(s) || p.name || s.employee_email || 'Tracked person';
-      points.push({coords:c,label,email:s.employee_email||p.email||'',status:s.freshness||trackingFreshness(s),last:s.last_ping_at,hasPanic});
+      const email=s.employee_email||p.email||'';
+      if(email) trackedEmails.add(norm(email));
+      const hasPanic=panicByEmail.has(norm(email));
+      const label=getName(s) || p.name || email || 'Tracked person';
+      points.push({coords:c,label,email,status:s.freshness||trackingFreshness(s),last:s.last_ping_at,hasPanic,kind:'tracking'});
     }
+
+    // Traveller records are shown separately only when there is no active tracking coordinate for that person.
     for(const t of state.travellers||[]){
       const c=coordOf(t); if(!c) continue;
       const email=getEmail(t);
-      const already=points.some(pt=>norm(pt.email) && norm(pt.email)===norm(email));
-      if(already) continue;
-      points.push({coords:c,label:getName(t)||email||'Traveller',email:email||'',status:travellerRisk(t)?'stale':'fresh',last:getTravellerDates(t).from||t.updated_at||'',hasPanic:panicByEmail.has(norm(email))});
+      if(email && trackedEmails.has(norm(email))) continue;
+      points.push({coords:c,label:getName(t)||email||'Traveller',email:email||'',status:'traveller',last:getTravellerDates(t).from||t.updated_at||'',hasPanic:panicByEmail.has(norm(email)),kind:'traveller'});
     }
     for(const a of activePanic){
       const c=coordOf(a); if(!c) continue;
-      points.push({coords:c,label:getName(a)||'Panic alarm',email:getEmail(a),status:'panic',last:a.activated_at||a.created_at,hasPanic:true});
+      points.push({coords:c,label:getName(a)||'Panic alarm',email:getEmail(a),status:'panic',last:a.activated_at||a.created_at,hasPanic:true,kind:'panic'});
     }
     for(const pt of points){
-      const colour=mapColour(pt.status,pt.hasPanic);
-      const marker=L.circleMarker(pt.coords,{radius:8,color:colour,fillColor:colour,fillOpacity:.75,weight:2});
-      marker.bindPopup(`<strong>${esc(pt.label)}</strong><br>${esc(pt.email||'No email')}<br>Status: ${esc(pt.hasPanic?'panic':pt.status)}<br>Last: ${esc(fmt(pt.last))}`);
+      const colour=mapColour(pt.kind,pt.status,pt.hasPanic);
+      const marker=L.circleMarker(pt.coords,{radius:8,color:colour,fillColor:colour,fillOpacity:.78,weight:2});
+      const statusLabel = pt.kind==='traveller' ? 'traveller record location' : pt.hasPanic ? 'active panic' : `tracking ${pt.status}`;
+      marker.bindPopup(`<strong>${esc(pt.label)}</strong><br>${esc(pt.email||'No email')}<br>Status: ${esc(statusLabel)}<br>Last: ${esc(fmt(pt.last))}`);
       marker.addTo(welfareMapLayer);
     }
     $('mapCount').textContent=`${points.length} mapped ${points.length===1?'person':'people'}`;
-    if(points.length){
-      const group=L.featureGroup(welfareMapLayer.getLayers());
-      welfareMap.fitBounds(group.getBounds().pad(.2),{maxZoom:12});
-    } else {
-      welfareMap.setView([20,0],2);
-    }
+    fitWelfareMapToPoints(points,false);
     setTimeout(()=>welfareMap.invalidateSize(),150); setTimeout(()=>welfareMap.invalidateSize(),700);
   }
+
+  async function searchWelfareMapLocation(){
+    const input=$('mapSearchInput');
+    const q=(input?.value||'').trim();
+    if(!q) return toast('Enter a location to search.');
+    const map=ensureWelfareMap(); if(!map) return;
+    try{
+      const res=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}});
+      const data=await res.json().catch(()=>[]);
+      const hit=Array.isArray(data)?data[0]:null;
+      if(!hit) return toast('Location not found.');
+      const lat=Number(hit.lat), lon=Number(hit.lon);
+      if(!Number.isFinite(lat)||!Number.isFinite(lon)) return toast('Location not found.');
+      welfareMapUserMoved=true;
+      welfareMapProgrammatic=true;
+      map.setView([lat,lon],13);
+      setTimeout(()=>{ welfareMapProgrammatic=false; },250);
+      if(welfareSearchMarker) welfareSearchMarker.remove();
+      welfareSearchMarker=L.marker([lat,lon]).addTo(map).bindPopup(`<strong>${esc(q)}</strong><br>${esc(hit.display_name||'')}`).openPopup();
+    }catch(e){ toast('Location search failed.'); }
+  }
+  function initWelfareMapControls(){
+    const btn=$('mapSearchBtn'); if(btn) btn.onclick=searchWelfareMapLocation;
+    const input=$('mapSearchInput'); if(input) input.addEventListener('keydown',e=>{ if(e.key==='Enter') searchWelfareMapLocation(); });
+    const reset=$('mapResetBtn'); if(reset) reset.onclick=()=>{ welfareMapUserMoved=false; welfareMapFittedOnce=false; renderWelfareMap(); };
+  }
+
 
   function renderTopUser(){
     const top = $('topActions'); if(!top) return; const u=who(); if(!u){ top.innerHTML='<a class="btn primary" href="login.html">Login</a>'; return; }
@@ -806,8 +865,9 @@
   if($('togglePeopleBtn')) $('togglePeopleBtn').onclick=()=>{ state.peopleExpanded=!state.peopleExpanded; renderPeople(); };
   document.querySelectorAll('#issueFilters .filter-btn').forEach(btn=>btn.onclick=()=>{ state.filter=btn.dataset.filter; renderIssues(); });
   document.querySelectorAll('.stat-card[data-filter]').forEach(card=>card.onclick=()=>{ state.filter=card.dataset.filter; renderIssues(); document.getElementById('alertRail')?.scrollIntoView({behavior:'smooth',block:'nearest'}); });
-  renderTopUser(); initMobileNav(); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
+  renderTopUser(); initMobileNav(); initWelfareMapControls(); renderSourceHealth(); loadAll(); pollPanicBanner(); setInterval(pollPanicBanner, 10000); setInterval(loadAll, 60000); if($('panicBannerRefresh')) $('panicBannerRefresh').onclick=loadAll;
 })();
 </script>
+<script src="shared-chip.js"></script>
 </body>
 </html>
