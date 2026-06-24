@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Travel & Infrastructure Hub v3</title>
+  <title>CityIntel — Travel & Infrastructure Hub v3.2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -80,6 +80,7 @@
     .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.detail-cell{border:1px solid var(--gray-600);border-radius:10px;background:#0d0f13;padding:9px}.detail-cell b{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.detail-cell span{font-weight:800;word-break:break-word}
     .note-row{display:flex;gap:8px;margin-top:10px}.note-row input{flex:1;min-width:0;background:#0d0f13;border:1px solid var(--gray-600);border-radius:10px;color:var(--text);padding:9px 10px;font:inherit}.note-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.note-item{border:1px solid var(--gray-600);border-radius:10px;background:rgba(255,255,255,.025);padding:8px}.note-meta{font-size:11px;color:var(--muted);margin-top:2px}
     .btn.good{border-color:rgba(51,196,141,.45);color:#bbf7d0}.btn.warn{border-color:rgba(240,180,41,.45);color:#fde68a}.btn.danger{border-color:rgba(255,90,95,.45);color:#fecaca}
+    .table-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.table-controls .btn{padding:6px 10px;font-size:12px}
     @media(max-width:1160px){.incident-board{grid-template-columns:1fr}}
     @media(max-width:1160px){.cards{grid-template-columns:repeat(2,1fr)}.layout-2,.split{grid-template-columns:1fr}.status-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{border-right:none;border-top:1px solid var(--gray-600);flex-direction:row;overflow:auto}.sidebar nav{display:flex;gap:8px}.sidebar nav a{white-space:nowrap;font-size:12px;padding:7px 10px}.cards,.person-list,.health-grid{grid-template-columns:1fr}.main{padding:12px}.brandbar img{height:40px}.actions{width:100%}.btn{flex:1;justify-content:center}}
@@ -231,7 +232,7 @@
       <section class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
           <div><h3>Recent Infrastructure Signals</h3><div class="muted">Latest normalised disruption items collected by the hub.</div></div>
-          <span class="pill" id="tableMeta">—</span>
+          <div class="table-controls"><button class="btn" id="signalsPrev" type="button">Previous</button><span class="pill" id="tableMeta">—</span><button class="btn" id="signalsNext" type="button">Next</button></div>
         </div>
         <div class="table-wrap" style="margin-top:10px">
           <table>
@@ -248,7 +249,7 @@
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
   const state = {
     flights:null, nas:null, transport:null, power:null, travellers:[], assets:[],
-    issues:[], signals:[], people:[], exposures:[], issueFilter:'all', selectedKey:'', incidents:[], selectedIncidentId:''
+    issues:[], signals:[], signalPage:0, signalPageSize:10, people:[], exposures:[], issueFilter:'all', selectedKey:'', incidents:[], selectedIncidentId:''
   };
 
   const $ = id => document.getElementById(id);
@@ -322,8 +323,11 @@
   }
   function normalizeBackendIncident(row){
     if(!row) return null;
-    const meta = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
-    const affected = Array.isArray(row.affected) ? row.affected : (Array.isArray(meta.affected) ? meta.affected : []);
+    let meta = {};
+    try {
+      meta = row.metadata && typeof row.metadata === 'object' ? row.metadata : JSON.parse(row.metadata || '{}');
+    } catch(_) { meta = {}; }
+    const affected = Array.isArray(row.affected) && row.affected.length ? row.affected : (Array.isArray(meta.affected) ? meta.affected : []);
     const notes = Array.isArray(row.notes) ? row.notes.map(n=>({at:n.created_at||n.at, by:n.author_name||n.author_email||n.by, text:n.note||n.text})) : [];
     const timeline = Array.isArray(row.timeline) ? row.timeline : [];
     return {
@@ -363,9 +367,10 @@
   }
   async function createIncidentFromIssue(issue, subject=null){
     if(!issue) return null;
+    subject = subject || issue.subject || issue.exposure?.subject || null;
     const existing = findLinkedIncident(issue);
     if(existing){ state.selectedIncidentId = existing.id; renderIncidents(); return existing; }
-    const affected = subject ? [{key:subject.key,kind:subject.kind,name:subject.name,email:subject.email,location:subject.location}] : [];
+    const affected = subject ? [{key:subject.key,kind:subject.kind,name:subject.name,email:subject.email,phone:subject.phone,location:subject.location,city:subject.city,country:subject.country,flight:subject.flight,status:subject.status}] : [];
     const payload={
       issue_signature: issueKey(issue), title:txt(issue.title||'Infrastructure disruption'), source_type:txt(issue.source||issue.type||'Hub'), source_id:txt(issue.key||issue.id||issueKey(issue)),
       severity:txt(issue.severity||'warning'), status:'open', location:txt(issue.sub||issue.location||''), affected,
@@ -375,7 +380,7 @@
     try{
       const res = await postJson('/api/org/travel-infrastructure/incidents', payload);
       await loadIncidents();
-      state.selectedIncidentId=res.id || (state.incidents[0]||{}).id || '';
+      state.selectedIncidentId=res.id || res.incident?.id || (state.incidents[0]||{}).id || '';
     }catch(e){
       console.warn('backend incident create failed, storing locally', e);
       const inc={ id:uid(), issueKey:issueKey(issue), title:payload.title, source:payload.source_type, severity:payload.severity, status:'open', location:payload.location, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(), createdBy:actorName(), affected, timeline:[{at:new Date().toISOString(), by:actorName(), text:payload.note}], notes:[] };
@@ -723,7 +728,10 @@
         title:`${e.source} disruption affecting ${e.subject.name}`,
         sub:`${e.subject.kind} · ${e.location || e.subject.location || 'location'} · ${e.reason || 'possible exposure'}`,
         action:e.source === 'Power' ? 'Open Power' : e.source === 'Transport' ? 'Open Transport' : 'Open Flights',
-        href:e.source === 'Power' ? 'power-outages.html' : e.source === 'Transport' ? 'transport-status.html' : 'flight-status.html'
+        href:e.source === 'Power' ? 'power-outages.html' : e.source === 'Transport' ? 'transport-status.html' : 'flight-status.html',
+        subject:e.subject,
+        exposure:e,
+        key:`${e.source}|${e.subject.key}|${e.title}|${e.location}`
       });
     }
 
@@ -763,6 +771,8 @@
     }).sort((a,b)=>severityRank(b.severity)-severityRank(a.severity));
 
     state.signals = signals.sort((a,b)=>severityRank(b.severity)-severityRank(a.severity));
+    const maxPage = Math.max(0, Math.ceil(state.signals.length / state.signalPageSize) - 1);
+    if(state.signalPage > maxPage) state.signalPage = maxPage;
   }
 
   function renderHealth(){
@@ -812,7 +822,7 @@
     el.querySelectorAll('[data-issue-key]').forEach(btn => {
       btn.addEventListener('click', () => {
         const issue = state.issues.find(x => issueKey(x) === btn.getAttribute('data-issue-key'));
-        if (issue) createIncidentFromIssue(issue);
+        if (issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null).then(()=>document.getElementById('disruptionIncidentSection')?.scrollIntoView({behavior:'smooth',block:'start'}));
       });
     });
   }
@@ -908,18 +918,27 @@
         ${top ? `<button class="btn primary" id="createPersonIncident" type="button">Create incident for ${esc(r.kind)}</button>` : ''}
       </div>
     `;
-    $('createPersonIncident')?.addEventListener('click',()=>{ if(top) createIncidentFromIssue({severity:top.severity,type:'exposure',source:top.source,title:top.title,sub:top.location,action:'Manage',href:'#incidentSection'}, r); });
+    $('createPersonIncident')?.addEventListener('click',()=>{ if(top) createIncidentFromIssue({severity:top.severity,type:'exposure',source:top.source,title:top.title,sub:top.location,action:'Manage',href:'#disruptionIncidentSection'}, r); });
     renderPeople();
   }
 
   function renderSignals(){
-    $('tableMeta').textContent = `${state.signals.length} signal${state.signals.length===1?'':'s'}`;
     const body = $('signalsBody');
-    if (!state.signals.length) {
+    const total = state.signals.length;
+    const size = state.signalPageSize || 10;
+    const maxPage = Math.max(0, Math.ceil(total / size) - 1);
+    state.signalPage = Math.max(0, Math.min(state.signalPage || 0, maxPage));
+    const start = state.signalPage * size;
+    const pageRows = state.signals.slice(start, start + size);
+    $('tableMeta').textContent = total ? `Page ${state.signalPage + 1}/${maxPage + 1} · ${total} signals` : '0 signals';
+    const prev = $('signalsPrev'), next = $('signalsNext');
+    if(prev) prev.disabled = state.signalPage <= 0;
+    if(next) next.disabled = state.signalPage >= maxPage;
+    if (!total) {
       body.innerHTML = '<tr><td colspan="5" class="empty">No current infrastructure signals to show.</td></tr>';
       return;
     }
-    body.innerHTML = state.signals.slice(0,28).map(s => `
+    body.innerHTML = pageRows.map(s => `
       <tr>
         <td><span class="pill ${severityClass(s.severity)}">${esc(s.severity)}</span></td>
         <td>${esc(s.source)}</td>
@@ -960,9 +979,11 @@
     });
 
     $('refreshBtn').addEventListener('click', load);
-    $('createTopIncident')?.addEventListener('click',()=>{ if(state.issues[0]) createIncidentFromIssue(state.issues[0]); });
+    $('createTopIncident')?.addEventListener('click',()=>{ const issue = state.issues.find(i=>!findLinkedIncident(i)) || state.issues[0]; if(issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null).then(()=>document.getElementById('disruptionIncidentSection')?.scrollIntoView({behavior:'smooth',block:'start'})); });
     $('personSearch').addEventListener('input', renderPeople);
     $('personFilter').addEventListener('change', renderPeople);
+    $('signalsPrev')?.addEventListener('click',()=>{ state.signalPage=Math.max(0,(state.signalPage||0)-1); renderSignals(); });
+    $('signalsNext')?.addEventListener('click',()=>{ const maxPage=Math.max(0,Math.ceil(state.signals.length/(state.signalPageSize||10))-1); state.signalPage=Math.min(maxPage,(state.signalPage||0)+1); renderSignals(); });
     document.querySelectorAll('#issueFilters .filter-chip').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#issueFilters .filter-chip').forEach(b=>b.classList.remove('active'));
