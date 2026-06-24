@@ -5871,6 +5871,162 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+
+
+<!-- ======================================================================
+     Phase 14C — Platform Health Centre
+     ====================================================================== -->
+<section class="card" id="ciPlatformHealthCentre" style="margin-top:16px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div>
+      <h3 style="margin:0 0 4px">Platform Health Centre</h3>
+      <div class="legend">Master Admin view of Worker, D1, audit, LLM, support, tracking, Resend and Stripe readiness.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn primary" type="button" onclick="ciLoadPlatformHealthCentre()">Refresh Health</button>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Overall Status</div><div class="kpi"><span class="value" id="ci14cOverall" style="font-size:22px">—</span></div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">D1 Latency</div><div class="kpi"><span class="value" id="ci14cD1Latency">—</span></div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Active Users</div><div class="kpi"><span class="value" id="ci14cActiveUsers">—</span></div><div class="legend">Last 15 minutes</div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Audit Events</div><div class="kpi"><span class="value" id="ci14cAudit24">—</span></div><div class="legend">Last 24 hours</div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">LLM Cost</div><div class="kpi"><span class="value" id="ci14cLlmCost">—</span></div><div class="legend">Last 30 days</div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Open Support</div><div class="kpi"><span class="value" id="ci14cSupportOpen">—</span></div></section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" style="grid-column:span 6">
+      <h3>Service Checks</h3>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>Service</th><th>Status</th><th>Detail</th><th>Checked</th></tr></thead>
+          <tbody id="ci14cServiceRows"><tr><td colspan="4" class="lead-muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card" style="grid-column:span 6">
+      <h3>Integration Bindings</h3>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>Binding</th><th>Status</th><th>Purpose</th></tr></thead>
+          <tbody id="ci14cBindingRows"><tr><td colspan="3" class="lead-muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" style="grid-column:span 4">
+      <h3>Operational Usage</h3>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+          <tbody id="ci14cUsageRows"><tr><td colspan="2" class="lead-muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card" style="grid-column:span 4">
+      <h3>Recent LLM Errors</h3>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>Time</th><th>Function</th><th>Error</th></tr></thead>
+          <tbody id="ci14cLlmErrorRows"><tr><td colspan="3" class="lead-muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card" style="grid-column:span 4">
+      <h3>Recent Ops Cooldowns</h3>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>Operation</th><th>Last Run</th><th>Run By</th></tr></thead>
+          <tbody id="ci14cCooldownRows"><tr><td colspan="3" class="lead-muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="legend" id="ci14cGenerated" style="margin-top:10px">Loading…</div>
+</section>
+
+<script>
+(function(){
+  const API_BASE='https://api.cityintelapi.com';
+  function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function fmtDate(v){try{return v?new Date(v).toLocaleString():'—'}catch(_){return '—'}}
+  function money(v){const n=Number(v||0);return '$'+n.toFixed(4)}
+  function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+  function statusBadge(s){
+    const v=String(s||'unknown').toLowerCase();
+    const color=v==='ok'?'#bbf7d0':v==='warning'?'#fde68a':'#fecaca';
+    const border=v==='ok'?'#33c48d':v==='warning'?'#f0b429':'#ff5a5f';
+    return `<span class="lead-status" style="border-color:${border};color:${color};background:rgba(255,255,255,.04)">${esc(v.toUpperCase())}</span>`;
+  }
+  function authHeaders(){
+    const h={'Accept':'application/json'};
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(JSON.parse(localStorage.getItem('ci_user')||'{}'));
+      if(u.email)h['X-User-Email']=u.email;
+      if(u.name)h['X-User-Name']=u.name;
+      if(u.id)h['X-User-Id']=u.id;
+      h['X-User-Role']=u.role||'MasterAdmin';
+      h['X-User-Role-Key']=u.roleKey||u.role_key||'master-admin';
+    }catch(_){}
+    return h;
+  }
+  function rows(id,html,colspan){
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML=html||`<tr><td colspan="${colspan}" class="lead-muted">No data yet.</td></tr>`;
+  }
+  window.ciLoadPlatformHealthCentre=async function(){
+    try{
+      const res=await fetch(`${API_BASE}/api/admin/platform/health`,{headers:authHeaders()});
+      const j=await res.json().catch(()=>({}));
+      if(!res.ok||j.ok===false)throw new Error(j.error||`HTTP ${res.status}`);
+      const s=j.summary||{};
+      set('ci14cOverall',String(j.overall_status||'unknown').toUpperCase());
+      set('ci14cD1Latency',s.d1_latency_ms!=null?`${s.d1_latency_ms}ms`:'—');
+      set('ci14cActiveUsers',s.active_users_15m??0);
+      set('ci14cAudit24',s.audit_events_24h??0);
+      set('ci14cLlmCost',money(s.llm_cost_30d));
+      set('ci14cSupportOpen',s.open_support_threads??0);
+      set('ci14cGenerated','Generated '+fmtDate(j.generated_at));
+
+      rows('ci14cServiceRows',(j.services||[]).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${statusBadge(x.status)}</td><td>${esc(x.detail||'')}</td><td>${fmtDate(x.checked_at)}</td></tr>`).join(''),4);
+
+      const purposes={d1:'D1 database access',resend:'Transactional email via Resend',stripe_secret:'Stripe billing API',stripe_webhook:'Stripe webhook verification',openai:'OpenAI intelligence calls',anthropic:'Anthropic intelligence calls'};
+      rows('ci14cBindingRows',Object.entries(j.bindings||{}).map(([k,v])=>`<tr><td><b>${esc(k)}</b></td><td>${statusBadge(v?'ok':'warning')}</td><td>${esc(purposes[k]||'Environment binding')}</td></tr>`).join(''),3);
+
+      const usage=[
+        ['Audit events 7d',s.audit_events_7d??0],
+        ['Audit events 30d',s.audit_events_30d??0],
+        ['LLM calls 24h',s.llm_calls_24h??0],
+        ['LLM errors 24h',s.llm_errors_24h??0],
+        ['LLM calls 30d',s.llm_calls_30d??0],
+        ['Support messages 24h',s.support_messages_24h??0],
+        ['Active tracking sessions',s.active_tracking_sessions??0],
+        ['Active tracking alerts',s.active_tracking_alerts??0],
+        ['Warnings',s.warning_count??0],
+        ['Errors',s.error_count??0]
+      ];
+      rows('ci14cUsageRows',usage.map(([k,v])=>`<tr><td>${esc(k)}</td><td><b>${esc(v)}</b></td></tr>`).join(''),2);
+
+      rows('ci14cLlmErrorRows',(j.recent_llm_errors||[]).map(e=>`<tr><td>${fmtDate(e.called_at)}</td><td><b>${esc(e.call_function||'—')}</b><div class="lead-muted">${esc(e.model||'')}</div></td><td>${esc(e.error_summary||e.status||'—')}</td></tr>`).join(''),3);
+      rows('ci14cCooldownRows',(j.ops_cooldowns||[]).map(o=>`<tr><td><b>${esc(o.op_key||'—')}</b></td><td>${fmtDate(o.last_run)}</td><td>${esc(o.run_by||'—')}</td></tr>`).join(''),3);
+    }catch(e){
+      const msg=esc(e.message||String(e));
+      rows('ci14cServiceRows',`<tr><td colspan="4" class="lead-muted">${msg}</td></tr>`,4);
+      rows('ci14cBindingRows','',3); rows('ci14cUsageRows','',2); rows('ci14cLlmErrorRows','',3); rows('ci14cCooldownRows','',3);
+      set('ci14cGenerated','Failed to load platform health.');
+    }
+  };
+  document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('ciPlatformHealthCentre')) ciLoadPlatformHealthCentre();});
+})();
+</script>
+
+
 </body>
 </html>
 
