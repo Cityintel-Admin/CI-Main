@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Travel & Infrastructure Hub v3.2</title>
+  <title>CityIntel — Travel & Infrastructure Hub v3.4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -83,6 +83,8 @@
     .table-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.table-controls .btn{padding:6px 10px;font-size:12px}
     .health-explain{margin-top:12px;border:1px solid var(--gray-600);border-radius:12px;background:#101216;padding:10px;color:var(--muted);font-size:12px;line-height:1.55}
     .health-explain b{color:var(--text)}
+    .permission-note{border:1px solid var(--gray-600);border-radius:10px;background:rgba(147,197,253,.06);padding:9px 10px;color:var(--muted);font-size:12px;margin-top:10px}
+    .affected-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.affected-card{border:1px solid var(--gray-600);border-radius:10px;background:rgba(255,255,255,.025);padding:9px}.affected-card b{display:block}.affected-meta{color:var(--muted);font-size:12px;margin-top:2px}.tiny{font-size:11px;color:var(--muted)}
     @media(max-width:1160px){.incident-board{grid-template-columns:1fr}}
     @media(max-width:1160px){.cards{grid-template-columns:repeat(2,1fr)}.layout-2,.split{grid-template-columns:1fr}.status-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{border-right:none;border-top:1px solid var(--gray-600);flex-direction:row;overflow:auto}.sidebar nav{display:flex;gap:8px}.sidebar nav a{white-space:nowrap;font-size:12px;padding:7px 10px}.cards,.person-list,.health-grid{grid-template-columns:1fr}.main{padding:12px}.brandbar img{height:40px}.actions{width:100%}.btn{flex:1;justify-content:center}}
@@ -181,7 +183,7 @@
             <div style="text-align:right"><div class="stat-main" id="riskScore">—</div><div class="muted">Risk score</div></div>
           </div>
           <div class="bar"><span id="healthBar"></span></div>
-          <div class="health-explain"><b>Purpose:</b> this score is a quick triage indicator. It combines critical issues, warnings, affected people/assets and total disruption signals so operators can see whether the hub needs immediate review before opening the individual Flights, Transport or Power pages.</div>
+          <div class="health-explain"><b>Purpose:</b> this score is a quick triage indicator. It combines critical issues, warnings, affected people/assets and total disruption signals so operators can see whether the hub needs immediate review before opening the individual Flights, Transport or Power pages.<br><b>Formula:</b> critical × 22, warning × 8, affected record × 14, plus up to 20 signals × 2, capped at 100.</div>
           <div class="health-grid" style="margin-top:12px">
             <div class="health-box"><b id="healthCritical">0</b><span>Critical</span></div>
             <div class="health-box"><b id="healthWarning">0</b><span>Warning</span></div>
@@ -224,7 +226,7 @@
       <section class="card" id="disruptionIncidentSection">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
           <div><h3>Persistent Disruption Incidents</h3><div class="muted">V3 incident records for infrastructure disruption, affected travellers/assets, operator notes and resolution workflow. Stored in the shared backend where available, with local fallback if the endpoint is unavailable.</div></div>
-          <div class="actions"><button class="btn" id="createTopIncident" type="button">Create from top issue</button><span class="pill" id="incidentMeta">0 active incidents</span></div>
+          <div class="actions"><button class="btn" id="createTopIncident" type="button">Create from top issue</button><button class="btn" id="incidentHistoryToggle" type="button">Show history</button><span class="pill" id="incidentMeta">0 active incidents</span></div>
         </div>
         <div class="incident-board">
           <div id="incidentList" class="incident-list"><div class="empty">No incident records yet.</div></div>
@@ -252,7 +254,7 @@
   const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
   const state = {
     flights:null, nas:null, transport:null, power:null, travellers:[], assets:[],
-    issues:[], signals:[], signalPage:0, signalPageSize:10, people:[], exposures:[], issueFilter:'all', selectedKey:'', incidents:[], selectedIncidentId:''
+    issues:[], signals:[], signalPage:0, signalPageSize:10, people:[], exposures:[], issueFilter:'all', selectedKey:'', incidents:[], selectedIncidentId:'', showIncidentHistory:false
   };
 
   const $ = id => document.getElementById(id);
@@ -281,6 +283,12 @@
     return p.roleLabel || p.role || 'User';
   }
 
+
+
+  function isAdmin(){
+    try { return !!(window.CIAuth?.isMasterAdmin?.() || window.CIAuth?.isOrgAdmin?.()); } catch(_) { return false; }
+  }
+  function canManageIncidents(){ return isAdmin(); }
   function headers(){
     const p = profile();
     const h = { 'Content-Type':'application/json' };
@@ -310,6 +318,11 @@
   function actorName(){ const p=profile(); return txt(p.name || p.email || 'Operator'); }
   function uid(){ return 'ti_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
   function issueKey(i){ return [i?.type,i?.source,i?.title,i?.sub].map(low).join('|'); }
+  const RESOLVED_SIG_KEY = 'ci_travel_infra_resolved_signatures_v3';
+  function resolvedSigs(){ try { return new Set(JSON.parse(localStorage.getItem(RESOLVED_SIG_KEY) || '[]')); } catch(_) { return new Set(); } }
+  function saveResolvedSigs(set){ try { localStorage.setItem(RESOLVED_SIG_KEY, JSON.stringify(Array.from(set || []))); } catch(_) {} }
+  function markIssueResolved(sig){ if(!sig) return; const set=resolvedSigs(); set.add(sig); saveResolvedSigs(set); }
+  function isIssueSuppressed(issue){ const sig = issue?.issueKey || issue?.issue_signature || issueKey(issue); return !!sig && resolvedSigs().has(sig); }
   function activeIncidents(){ return (state.incidents||[]).filter(i=>low(i.status)!=='resolved'); }
   function findLinkedIncident(i){ const k=issueKey(i); return activeIncidents().find(x=>x.issueKey===k || x.issue_signature===k); }
   async function postJson(path, body){
@@ -360,7 +373,8 @@
   }
   async function loadIncidents(){
     try{
-      const data = await getJson('/api/org/travel-infrastructure/incidents?status=active&limit=200');
+      const mode = state.showIncidentHistory ? 'all' : 'active';
+      const data = await getJson('/api/org/travel-infrastructure/incidents?status=' + encodeURIComponent(mode) + '&limit=200');
       const notes = Array.isArray(data.notes) ? data.notes : [];
       const byId = new Map();
       notes.forEach(n => { const k=n.incident_id; if(!byId.has(k)) byId.set(k, []); byId.get(k).push(n); });
@@ -448,14 +462,18 @@
     const inc=state.incidents.find(x=>x.id===id); if(!inc) return;
     try{
       await putJson('/api/org/travel-infrastructure/incidents', {id, status, note: status==='resolved' ? (note||'No further action required') : ('Status updated to '+status), resolution_note: note});
+      if(status === 'resolved') markIssueResolved(inc.issueKey || inc.issue_signature);
       await loadIncidents();
     }catch(e){
       console.warn('backend incident update failed, updating local cache', e);
       inc.status=status; inc.updatedAt=new Date().toISOString();
       inc.timeline=inc.timeline||[]; inc.timeline.unshift({at:new Date().toISOString(), by:actorName(), text:status==='resolved' ? ('Resolved: '+(note||'No further action required')) : ('Status updated to '+status)});
+      if(status === 'resolved') markIssueResolved(inc.issueKey || inc.issue_signature);
       saveIncidents();
     }
-    renderIncidents(); renderHealth();
+    if(status === 'resolved') state.selectedIncidentId = '';
+    buildIssues({airports:airportArray(state.flights),flightIssueItems:airportArray(state.flights).filter(isAirportIssue),nasEvents:nasArray(state.nas),disruptions:transportArray(state.transport),outages:outageArray(state.power),tCritical:transportArray(state.transport).filter(d => transportSeverity(d)==='critical').length,tWarning:transportArray(state.transport).filter(d => transportSeverity(d)==='warning').length,planned:transportArray(state.transport).filter(d => /planned|part closure|engineering/i.test([d.is_planned,d.severity,d.status,d.reason,d.description].join(' '))).length,unplanned:outageArray(state.power).filter(o => outageType(o)==='unplanned').length,powerPlanned:outageArray(state.power).filter(o => outageType(o)==='planned').length,restored:outageArray(state.power).filter(o => outageType(o)==='restored').length});
+    renderIncidents(); renderHealth(); renderIssues();
   }
   async function addIncidentNote(id,text){
     const inc=state.incidents.find(x=>x.id===id); if(!inc || !txt(text)) return;
@@ -473,26 +491,39 @@
   function fmtWhen(v){ const t=Date.parse(v||''); return Number.isFinite(t)?new Date(t).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'; }
   function renderIncidents(){
     const listEl=$('incidentList'), detailEl=$('incidentDetail'), meta=$('incidentMeta'); if(!listEl||!detailEl) return;
-    const active=activeIncidents(); if(meta) meta.textContent=`${active.length} active incident${active.length===1?'':'s'}`;
-    if(!state.selectedIncidentId && active[0]) state.selectedIncidentId=active[0].id;
-    if(!active.length){ listEl.innerHTML='<div class="empty">No active disruption incidents.</div>'; detailEl.className='incident-detail empty'; detailEl.innerHTML='No incident selected.'; return; }
-    listEl.innerHTML=active.map(inc=>`
+    const active=activeIncidents();
+    const display = state.showIncidentHistory ? (state.incidents||[]) : active;
+    if(meta) meta.textContent=`${active.length} active incident${active.length===1?'':'s'}`;
+    const toggle=$('incidentHistoryToggle'); if(toggle) toggle.textContent = state.showIncidentHistory ? 'Hide history' : 'Show history';
+    if(!state.selectedIncidentId && display[0]) state.selectedIncidentId=display[0].id;
+    if(!display.length){ listEl.innerHTML=`<div class="empty">${state.showIncidentHistory?'No disruption incident history.':'No active disruption incidents.'}</div>`; detailEl.className='incident-detail empty'; detailEl.innerHTML='No incident selected.'; return; }
+    listEl.innerHTML=display.map(inc=>`
       <div class="incident-card ${esc(inc.severity)} ${state.selectedIncidentId===inc.id?'selected':''}" data-id="${esc(inc.id)}">
-        <div style="display:flex;justify-content:space-between;gap:8px"><div class="incident-title">${esc(inc.title)}</div><span class="pill ${severityClass(inc.severity)}">${esc(inc.status)}</span></div>
+        <div style="display:flex;justify-content:space-between;gap:8px"><div class="incident-title">${esc(inc.title)}</div><span class="pill ${severityClass(inc.status==='resolved'?'ok':inc.severity)}">${esc(inc.status)}</span></div>
         <div class="incident-sub">${esc(inc.source)} · ${esc(inc.location||'No location')} · updated ${esc(fmtWhen(inc.updatedAt))}</div>
-        <div class="incident-tags"><span class="pill ${severityClass(inc.severity)}">${esc(inc.severity)}</span><span class="pill info">${(inc.affected||[]).length} affected</span></div>
+        <div class="incident-tags"><span class="pill ${severityClass(inc.severity)}">${esc(inc.severity)}</span><span class="pill info">${(inc.affected||[]).length} affected</span>${inc.status==='resolved'?'<span class="pill ok">History</span>':''}</div>
       </div>`).join('');
     listEl.querySelectorAll('.incident-card').forEach(el=>el.addEventListener('click',()=>{state.selectedIncidentId=el.dataset.id; renderIncidents();}));
-    const inc=active.find(x=>x.id===state.selectedIncidentId)||active[0]; state.selectedIncidentId=inc.id; detailEl.className='incident-detail';
-    const affected=(inc.affected||[]).map(a=>`<div class="note-item"><b>${esc(a.name||a.kind)}</b><div class="note-meta">${esc(a.kind||'record')} · ${esc(a.email||a.location||'No contact/location')}</div></div>`).join('') || '<div class="empty">No affected record linked yet.</div>';
+    const inc=display.find(x=>x.id===state.selectedIncidentId)||display[0]; state.selectedIncidentId=inc.id; detailEl.className='incident-detail';
+    const affected=(inc.affected||[]).map(a=>`
+      <div class="affected-card">
+        <b>${esc(a.name||a.kind||'Affected record')}</b>
+        <div class="affected-meta">${esc(a.kind||'record')} · ${esc(a.email||'No email')} ${a.phone ? '· '+esc(a.phone) : ''}</div>
+        <div class="affected-meta">${esc([a.city,a.country].filter(Boolean).join(', ') || a.location || 'No location')}</div>
+        ${a.flight ? `<div class="affected-meta">Flight: ${esc(a.flight)}</div>` : ''}
+        ${a.status ? `<div class="affected-meta">Status: ${esc(a.status)}</div>` : ''}
+      </div>`).join('') || '<div class="empty">No affected record linked yet.</div>';
     const notes=(inc.notes||[]).map(n=>`<div class="note-item">${esc(n.text)}<div class="note-meta">${esc(n.by)} · ${esc(fmtWhen(n.at))}</div></div>`).join('') || '<div class="empty">No notes yet.</div>';
-    const timeline=(inc.timeline||[]).slice(0,8).map(n=>`<div class="note-item">${esc(n.text)}<div class="note-meta">${esc(n.by)} · ${esc(fmtWhen(n.at))}</div></div>`).join('');
+    const timeline=(inc.timeline||[]).slice(0,10).map(n=>`<div class="note-item">${esc(n.text)}<div class="note-meta">${esc(n.by)} · ${esc(fmtWhen(n.at))}</div></div>`).join('') || '<div class="empty">No timeline events yet.</div>';
+    const admin = canManageIncidents();
+    const isResolved = low(inc.status)==='resolved';
+    const workflow = admin && !isResolved ? `<div class="actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button><a class="btn" href="flight-status.html">Flights</a><a class="btn" href="transport-status.html">Transport</a><a class="btn" href="power-outages.html">Power</a></div>
+      <div class="note-row"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" id="incidentNoteBtn">Add note</button></div>` : `<div class="actions"><a class="btn" href="flight-status.html">Flights</a><a class="btn" href="transport-status.html">Transport</a><a class="btn" href="power-outages.html">Power</a></div><div class="permission-note">${isResolved?'This incident is resolved and shown for history only.':'Incident workflow actions are available to Org Admin and Master Admin users only.'}</div>`;
     detailEl.innerHTML=`
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h3 style="margin:0 0 4px">${esc(inc.title)}</h3><div class="muted">${esc(inc.source)} · ${esc(inc.location||'No location')}</div></div><span class="pill ${severityClass(inc.severity)}">${esc(inc.severity)}</span></div>
       <div class="detail-grid"><div class="detail-cell"><b>Status</b><span>${esc(inc.status)}</span></div><div class="detail-cell"><b>Created</b><span>${esc(fmtWhen(inc.createdAt))}</span></div><div class="detail-cell"><b>Created by</b><span>${esc(inc.createdBy||'—')}</span></div><div class="detail-cell"><b>Affected records</b><span>${(inc.affected||[]).length}</span></div></div>
-      <div class="actions"><button class="btn good" data-act="ack">Acknowledge</button><button class="btn warn" data-act="escalate">Escalate</button><button class="btn danger" data-act="resolve">Resolve</button><a class="btn" href="flight-status.html">Flights</a><a class="btn" href="transport-status.html">Transport</a><a class="btn" href="power-outages.html">Power</a></div>
-      <div class="note-row"><input id="incidentNoteInput" placeholder="Add operator note…"><button class="btn" id="incidentNoteBtn">Add note</button></div>
-      <h3 style="margin:14px 0 8px">Affected travellers / assets</h3><div class="note-list">${affected}</div>
+      ${workflow}
+      <h3 style="margin:14px 0 8px">Affected travellers / assets</h3><div class="affected-grid">${affected}</div>
       <h3 style="margin:14px 0 8px">Notes</h3><div class="note-list">${notes}</div>
       <h3 style="margin:14px 0 8px">Timeline</h3><div class="note-list">${timeline}</div>`;
     detailEl.querySelector('[data-act="ack"]')?.addEventListener('click',()=>setIncidentStatus(inc.id,'acknowledged'));
@@ -823,7 +854,7 @@
       const key = [i.severity,i.type,i.title,i.sub].map(low).join('|');
       if (seen.has(key)) return false;
       seen.add(key);
-      return true;
+      return !isIssueSuppressed(i);
     }).sort((a,b)=>severityRank(b.severity)-severityRank(a.severity));
 
     state.signals = signals.sort((a,b)=>severityRank(b.severity)-severityRank(a.severity));
@@ -1036,6 +1067,7 @@
 
     $('refreshBtn').addEventListener('click', load);
     $('createTopIncident')?.addEventListener('click',()=>{ const issue = state.issues.find(i=>!findLinkedIncident(i)) || state.issues[0]; if(issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null); else alert('No current top issue is available to create an incident from.'); });
+    $('incidentHistoryToggle')?.addEventListener('click', async ()=>{ state.showIncidentHistory = !state.showIncidentHistory; await loadIncidents(); state.selectedIncidentId=''; renderIncidents(); });
     $('personSearch').addEventListener('input', renderPeople);
     $('personFilter').addEventListener('change', renderPeople);
     $('signalsPrev')?.addEventListener('click',()=>{ state.signalPage=Math.max(0,(state.signalPage||0)-1); renderSignals(); });
