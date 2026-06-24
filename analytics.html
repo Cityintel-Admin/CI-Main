@@ -5759,6 +5759,118 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+
+<!-- ======================================================================
+     Phase 14A.3 — Executive Audit Reporting
+     ====================================================================== -->
+<section class="card" id="ciExecutiveAuditReporting" style="margin-top:16px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div>
+      <h3 style="margin:0 0 4px">Executive Audit Reporting</h3>
+      <div class="legend">Master Admin oversight of platform activity, audit volume, active users, organisations, and action categories.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="ciAuditExecWindow" class="btn" style="background:#111214;color:var(--text)">
+        <option value="30" selected>30 days</option>
+        <option value="60">60 days</option>
+        <option value="90">90 days</option>
+        <option value="180">180 days</option>
+      </select>
+      <button class="btn primary" type="button" onclick="ciLoadExecutiveAuditReporting()">Refresh</button>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Activity Today</div><div class="kpi"><span class="value" id="ciAuditExecToday">—</span></div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Activity This Week</div><div class="kpi"><span class="value" id="ciAuditExecWeek">—</span></div><div class="legend" id="ciAuditExecWeekTrend">—</div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Unique Active Users</div><div class="kpi"><span class="value" id="ciAuditExecUsers">—</span></div></section>
+    <section class="card" style="grid-column:span 2;background:#111214"><div class="legend">Events This Month</div><div class="kpi"><span class="value" id="ciAuditExecMonth">—</span></div><div class="legend" id="ciAuditExecMonthTrend">—</div></section>
+    <section class="card" style="grid-column:span 4;background:#111214"><div class="legend">Top Activity Category</div><div class="kpi"><span class="value" id="ciAuditExecTopCategory" style="font-size:22px">—</span></div><div class="legend" id="ciAuditExecGenerated">Loading…</div></section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" style="grid-column:span 6">
+      <h3>Most Active Users</h3>
+      <div class="lead-table-wrap"><table class="lead-table"><thead><tr><th>User</th><th>Role</th><th>Actions</th><th>Last Activity</th></tr></thead><tbody id="ciAuditExecUserRows"><tr><td colspan="4" class="lead-muted">Loading…</td></tr></tbody></table></div>
+    </section>
+    <section class="card" style="grid-column:span 6">
+      <h3>Most Active Organisations</h3>
+      <div class="lead-table-wrap"><table class="lead-table"><thead><tr><th>Organisation</th><th>Events</th><th>Users</th><th>Last Activity</th></tr></thead><tbody id="ciAuditExecOrgRows"><tr><td colspan="4" class="lead-muted">Loading…</td></tr></tbody></table></div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" style="grid-column:span 4">
+      <h3>Category Breakdown</h3>
+      <div class="lead-table-wrap"><table class="lead-table" style="min-width:520px"><thead><tr><th>Category</th><th>Total</th><th>%</th></tr></thead><tbody id="ciAuditExecCategoryRows"><tr><td colspan="3" class="lead-muted">Loading…</td></tr></tbody></table></div>
+    </section>
+    <section class="card" style="grid-column:span 4">
+      <h3>Top Actions</h3>
+      <div class="lead-table-wrap"><table class="lead-table" style="min-width:560px"><thead><tr><th>Action</th><th>Category</th><th>Total</th></tr></thead><tbody id="ciAuditExecActionRows"><tr><td colspan="3" class="lead-muted">Loading…</td></tr></tbody></table></div>
+    </section>
+    <section class="card" style="grid-column:span 4">
+      <h3>Daily Activity</h3>
+      <div id="ciAuditExecDailyRows" style="display:grid;gap:8px"><div class="lead-muted">Loading…</div></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:14px;background:#111214">
+    <h3>Recent Audit Events</h3>
+    <div class="lead-table-wrap"><table class="lead-table"><thead><tr><th>Time</th><th>Actor</th><th>Category</th><th>Action</th><th>Entity</th><th>Summary</th></tr></thead><tbody id="ciAuditExecRecentRows"><tr><td colspan="6" class="lead-muted">Loading…</td></tr></tbody></table></div>
+  </section>
+</section>
+
+<script>
+(function(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function fmtDate(v){try{return v?new Date(v).toLocaleString():'—';}catch(_){return v||'—';}}
+  function set(id,v){const el=document.getElementById(id); if(el) el.textContent=v;}
+  function headers(){
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):{};
+      const role=u.roleKey||u.role||'master-admin';
+      return {'Accept':'application/json','Content-Type':'application/json','X-User-Email':u.email||'','X-User-Name':u.name||'','X-User-Id':u.id||u.email||'','X-User-Role':role,'X-User-Role-Key':role,'X-CI-Role':role,'X-CI-Role-Key':role};
+    }catch(_){return {'Accept':'application/json','Content-Type':'application/json','X-User-Role':'master-admin','X-User-Role-Key':'master-admin'};}
+  }
+  function tableRows(id, html, cols){const el=document.getElementById(id); if(el) el.innerHTML=html||`<tr><td colspan="${cols}" class="lead-muted">No records.</td></tr>`;}
+  function trendText(label, previous){return `${label||'Stable'} vs previous period${Number.isFinite(Number(previous))?` (${Number(previous)} previous)`:''}`;}
+  window.ciLoadExecutiveAuditReporting=async function(){
+    const panel=document.getElementById('ciExecutiveAuditReporting'); if(!panel) return;
+    const days=document.getElementById('ciAuditExecWindow')?.value||'30';
+    try{
+      const res=await fetch(`${API}/api/admin/audit/executive?days=${encodeURIComponent(days)}`,{headers:headers()});
+      const j=await res.json().catch(()=>({}));
+      if(!j.ok) throw new Error(j.error||'Executive audit reporting unavailable');
+      const s=j.summary||{};
+      set('ciAuditExecToday',s.activity_today||0);
+      set('ciAuditExecWeek',s.activity_this_week||0);
+      set('ciAuditExecWeekTrend',trendText(s.week_trend,s.previous_week));
+      set('ciAuditExecUsers',s.unique_active_users||0);
+      set('ciAuditExecMonth',s.audit_events_this_month||0);
+      set('ciAuditExecMonthTrend',trendText(s.month_trend,s.previous_month));
+      set('ciAuditExecTopCategory',s.top_activity_category||'none');
+      set('ciAuditExecGenerated','Generated '+fmtDate(j.generated_at));
+
+      tableRows('ciAuditExecUserRows',(j.top_users||[]).map(u=>`<tr><td><b>${esc(u.actor_name||u.actor_email||'Unknown')}</b><div class="lead-muted">${esc(u.actor_email||'')}</div></td><td>${esc(u.actor_role||'—')}</td><td>${esc(u.count||0)}</td><td>${esc(fmtDate(u.last_activity))}</td></tr>`).join(''),4);
+      tableRows('ciAuditExecOrgRows',(j.top_organisations||[]).map(o=>`<tr><td><b>${esc(o.org_id||'Platform / unassigned')}</b></td><td>${esc(o.count||0)}</td><td>${esc(o.users||0)}</td><td>${esc(fmtDate(o.last_activity))}</td></tr>`).join(''),4);
+      tableRows('ciAuditExecCategoryRows',(j.categories||[]).map(c=>`<tr><td><span class="lead-status">${esc(c.category||'system')}</span></td><td>${esc(c.count||0)}</td><td>${esc(c.percent||0)}%</td></tr>`).join(''),3);
+      tableRows('ciAuditExecActionRows',(j.actions||[]).map(a=>`<tr><td><b>${esc(a.action||'—')}</b></td><td>${esc(a.category||'system')}</td><td>${esc(a.count||0)}</td></tr>`).join(''),3);
+      const daily=j.daily_activity||[]; const max=Math.max(1,...daily.map(d=>Number(d.count||0)));
+      const dailyEl=document.getElementById('ciAuditExecDailyRows');
+      if(dailyEl) dailyEl.innerHTML=daily.length?daily.slice(-14).map(d=>{const pct=Math.max(4,Math.round((Number(d.count||0)/max)*100));return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span class="lead-muted">${esc(d.day)}</span><b>${esc(d.count||0)}</b></div><div class="bar"><span style="width:${pct}%;background:rgba(208,22,22,.65)"></span></div></div>`;}).join(''):'<div class="lead-muted">No daily activity yet.</div>';
+      tableRows('ciAuditExecRecentRows',(j.recent_events||[]).map(e=>`<tr><td>${esc(fmtDate(e.created_at))}</td><td><b>${esc(e.actor_name||e.actor_email||'System')}</b><div class="lead-muted">${esc(e.actor_email||'')}</div></td><td>${esc(e.category||'system')}</td><td>${esc(e.action||'—')}</td><td>${esc(e.entity_name||e.entity_id||e.entity_type||'—')}</td><td>${esc(e.summary||'')}</td></tr>`).join(''),6);
+    }catch(e){
+      const msg=esc(e.message||String(e));
+      tableRows('ciAuditExecUserRows',`<tr><td colspan="4" class="lead-muted">${msg}</td></tr>`,4);
+      tableRows('ciAuditExecOrgRows','',4); tableRows('ciAuditExecCategoryRows','',3); tableRows('ciAuditExecActionRows','',3); tableRows('ciAuditExecRecentRows','',6);
+      const dailyEl=document.getElementById('ciAuditExecDailyRows'); if(dailyEl) dailyEl.innerHTML=`<div class="lead-muted">${msg}</div>`;
+    }
+  };
+  document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('ciExecutiveAuditReporting')) ciLoadExecutiveAuditReporting();});
+})();
+</script>
+
 </body>
 </html>
 
