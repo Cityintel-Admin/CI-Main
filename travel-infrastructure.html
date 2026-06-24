@@ -81,6 +81,8 @@
     .note-row{display:flex;gap:8px;margin-top:10px}.note-row input{flex:1;min-width:0;background:#0d0f13;border:1px solid var(--gray-600);border-radius:10px;color:var(--text);padding:9px 10px;font:inherit}.note-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.note-item{border:1px solid var(--gray-600);border-radius:10px;background:rgba(255,255,255,.025);padding:8px}.note-meta{font-size:11px;color:var(--muted);margin-top:2px}
     .btn.good{border-color:rgba(51,196,141,.45);color:#bbf7d0}.btn.warn{border-color:rgba(240,180,41,.45);color:#fde68a}.btn.danger{border-color:rgba(255,90,95,.45);color:#fecaca}
     .table-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.table-controls .btn{padding:6px 10px;font-size:12px}
+    .health-explain{margin-top:12px;border:1px solid var(--gray-600);border-radius:12px;background:#101216;padding:10px;color:var(--muted);font-size:12px;line-height:1.55}
+    .health-explain b{color:var(--text)}
     @media(max-width:1160px){.incident-board{grid-template-columns:1fr}}
     @media(max-width:1160px){.cards{grid-template-columns:repeat(2,1fr)}.layout-2,.split{grid-template-columns:1fr}.status-strip{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{border-right:none;border-top:1px solid var(--gray-600);flex-direction:row;overflow:auto}.sidebar nav{display:flex;gap:8px}.sidebar nav a{white-space:nowrap;font-size:12px;padding:7px 10px}.cards,.person-list,.health-grid{grid-template-columns:1fr}.main{padding:12px}.brandbar img{height:40px}.actions{width:100%}.btn{flex:1;justify-content:center}}
@@ -179,6 +181,7 @@
             <div style="text-align:right"><div class="stat-main" id="riskScore">—</div><div class="muted">Risk score</div></div>
           </div>
           <div class="bar"><span id="healthBar"></span></div>
+          <div class="health-explain"><b>Purpose:</b> this score is a quick triage indicator. It combines critical issues, warnings, affected people/assets and total disruption signals so operators can see whether the hub needs immediate review before opening the individual Flights, Transport or Power pages.</div>
           <div class="health-grid" style="margin-top:12px">
             <div class="health-box"><b id="healthCritical">0</b><span>Critical</span></div>
             <div class="health-box"><b id="healthWarning">0</b><span>Warning</span></div>
@@ -327,7 +330,10 @@
     try {
       meta = row.metadata && typeof row.metadata === 'object' ? row.metadata : JSON.parse(row.metadata || '{}');
     } catch(_) { meta = {}; }
-    const affected = Array.isArray(row.affected) && row.affected.length ? row.affected : (Array.isArray(meta.affected) ? meta.affected : []);
+    let affected = [];
+    if (Array.isArray(row.affected)) affected = row.affected;
+    else if (typeof row.affected === 'string') { try { const parsed = JSON.parse(row.affected); affected = Array.isArray(parsed) ? parsed : []; } catch(_) {} }
+    if (!affected.length && Array.isArray(meta.affected)) affected = meta.affected;
     const notes = Array.isArray(row.notes) ? row.notes.map(n=>({at:n.created_at||n.at, by:n.author_name||n.author_email||n.by, text:n.note||n.text})) : [];
     const timeline = Array.isArray(row.timeline) ? row.timeline : [];
     return {
@@ -365,28 +371,78 @@
       state.incidents = loadLocal(INCIDENT_KEY);
     }
   }
+  function upsertIncidentLocal(inc){
+    if(!inc || !inc.id) return;
+    const idx = state.incidents.findIndex(x => x.id === inc.id);
+    if(idx >= 0) state.incidents[idx] = {...state.incidents[idx], ...inc};
+    else state.incidents.unshift(inc);
+    saveIncidents();
+  }
+
+  function focusIncidentSection(){
+    setTimeout(() => {
+      const section = document.getElementById('disruptionIncidentSection');
+      section?.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 80);
+  }
+
   async function createIncidentFromIssue(issue, subject=null){
     if(!issue) return null;
     subject = subject || issue.subject || issue.exposure?.subject || null;
     const existing = findLinkedIncident(issue);
-    if(existing){ state.selectedIncidentId = existing.id; renderIncidents(); return existing; }
-    const affected = subject ? [{key:subject.key,kind:subject.kind,name:subject.name,email:subject.email,phone:subject.phone,location:subject.location,city:subject.city,country:subject.country,flight:subject.flight,status:subject.status}] : [];
+    if(existing){
+      state.selectedIncidentId = existing.id;
+      renderIncidents();
+      focusIncidentSection();
+      return existing;
+    }
+
+    const affected = subject ? [{
+      key:subject.key, kind:subject.kind, name:subject.name, email:subject.email, phone:subject.phone,
+      location:subject.location, city:subject.city, country:subject.country, flight:subject.flight, status:subject.status
+    }] : [];
+
+    const signature = issueKey(issue);
     const payload={
-      issue_signature: issueKey(issue), title:txt(issue.title||'Infrastructure disruption'), source_type:txt(issue.source||issue.type||'Hub'), source_id:txt(issue.key||issue.id||issueKey(issue)),
-      severity:txt(issue.severity||'warning'), status:'open', location:txt(issue.sub||issue.location||''), affected,
-      metadata:{ issue, affected, issueKey:issueKey(issue), source:txt(issue.source||issue.type||'Hub'), location:txt(issue.sub||issue.location||'') },
+      issue_signature: signature,
+      title:txt(issue.title||'Infrastructure disruption'),
+      source_type:txt(issue.source||issue.type||'Hub'),
+      source_id:txt(issue.key||issue.id||signature),
+      severity:txt(issue.severity||'warning'),
+      status:'open',
+      location:txt(issue.sub||issue.location||''),
+      affected,
+      metadata:{ issue, affected, issueKey:signature, source:txt(issue.source||issue.type||'Hub'), location:txt(issue.sub||issue.location||'') },
       note:'Incident record created from Travel & Infrastructure Hub signal.'
     };
+
+    let selectedId = '';
     try{
       const res = await postJson('/api/org/travel-infrastructure/incidents', payload);
+      selectedId = res.id || res.incident?.id || res.record?.id || '';
+      const returned = normalizeBackendIncident(res.incident || res.record || (selectedId ? {...payload, id:selectedId, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), created_by:actorName()} : null));
+      if(returned) upsertIncidentLocal(returned);
       await loadIncidents();
-      state.selectedIncidentId=res.id || res.incident?.id || (state.incidents[0]||{}).id || '';
+
+      // Some backends de-dupe or reopen records without returning them in the active query immediately.
+      // Keep an optimistic visible record so the detail/actions open straight away.
+      if(selectedId && !state.incidents.some(x => x.id === selectedId) && returned) upsertIncidentLocal(returned);
+      if(!selectedId){
+        const match = state.incidents.find(x => x.issueKey === signature || x.issue_signature === signature);
+        selectedId = match?.id || '';
+      }
+      if(!selectedId && returned) selectedId = returned.id;
     }catch(e){
       console.warn('backend incident create failed, storing locally', e);
-      const inc={ id:uid(), issueKey:issueKey(issue), title:payload.title, source:payload.source_type, severity:payload.severity, status:'open', location:payload.location, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(), createdBy:actorName(), affected, timeline:[{at:new Date().toISOString(), by:actorName(), text:payload.note}], notes:[] };
-      state.incidents.unshift(inc); state.selectedIncidentId=inc.id; saveIncidents();
+      const inc={ id:uid(), issueKey:signature, title:payload.title, source:payload.source_type, severity:payload.severity, status:'open', location:payload.location, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(), createdBy:actorName(), affected, timeline:[{at:new Date().toISOString(), by:actorName(), text:payload.note}], notes:[] };
+      state.incidents.unshift(inc); selectedId=inc.id; saveIncidents();
     }
-    renderIncidents(); renderHealth(); return state.incidents.find(x=>x.id===state.selectedIncidentId) || null;
+
+    state.selectedIncidentId = selectedId || (activeIncidents()[0]||{}).id || '';
+    renderIncidents();
+    renderHealth();
+    focusIncidentSection();
+    return state.incidents.find(x=>x.id===state.selectedIncidentId) || null;
   }
   async function setIncidentStatus(id,status,note=''){
     const inc=state.incidents.find(x=>x.id===id); if(!inc) return;
@@ -822,7 +878,7 @@
     el.querySelectorAll('[data-issue-key]').forEach(btn => {
       btn.addEventListener('click', () => {
         const issue = state.issues.find(x => issueKey(x) === btn.getAttribute('data-issue-key'));
-        if (issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null).then(()=>document.getElementById('disruptionIncidentSection')?.scrollIntoView({behavior:'smooth',block:'start'}));
+        if (issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null);
       });
     });
   }
@@ -979,7 +1035,7 @@
     });
 
     $('refreshBtn').addEventListener('click', load);
-    $('createTopIncident')?.addEventListener('click',()=>{ const issue = state.issues.find(i=>!findLinkedIncident(i)) || state.issues[0]; if(issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null).then(()=>document.getElementById('disruptionIncidentSection')?.scrollIntoView({behavior:'smooth',block:'start'})); });
+    $('createTopIncident')?.addEventListener('click',()=>{ const issue = state.issues.find(i=>!findLinkedIncident(i)) || state.issues[0]; if(issue) createIncidentFromIssue(issue, issue.subject || issue.exposure?.subject || null); else alert('No current top issue is available to create an incident from.'); });
     $('personSearch').addEventListener('input', renderPeople);
     $('personFilter').addEventListener('change', renderPeople);
     $('signalsPrev')?.addEventListener('click',()=>{ state.signalPage=Math.max(0,(state.signalPage||0)-1); renderSignals(); });
