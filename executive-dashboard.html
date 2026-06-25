@@ -153,7 +153,43 @@
   function kpis(){const active=state.alerts.filter(a=>low(a.status)!=='resolved');const tm=taskMetrics();return {cases:activeCases().length,critical:active.filter(a=>sevRank(a.severity)>=4).length,briefing:active.filter(a=>/briefing/i.test(JSON.stringify(a.raw))).length,escalation:active.filter(a=>sevRank(a.severity)>=4||/escalat/i.test(JSON.stringify(a.raw))).length,welfare:active.filter(a=>a.source==='welfare'&&sevRank(a.severity)>=3).length,tracking:active.filter(a=>/tracking/i.test(a.type)).length,travel:active.filter(a=>a.source==='travel').length,unack:state.workflow.filter(w=>/unacknowledged/i.test(w.status||'')).length,tasks:tm,active};}
   function riskScore(m){let score=0;score+=Math.min(30,m.critical*8);score+=Math.min(16,m.escalation*5);score+=Math.min(12,m.tracking*4);score+=Math.min(12,m.travel*2);score+=Math.min(8,m.unack*2);score+=Math.min(8,m.cases);score+=Math.min(8,m.tasks.blocked*6);score+=Math.min(6,m.tasks.critical*4);score+=Math.min(4,m.tasks.sla*3);return Math.min(100,Math.round(score));}
   function renderKpis(m){const data=[['Active Cases',m.cases,'open cases','cases'],['Open Tasks',m.tasks.active.length,'operator workload','tasks'],['Blocked Tasks',m.tasks.blocked,'needs management','blockedtasks'],['Critical Tasks',m.tasks.critical,'highest priority','criticaltasks'],['SLA Watch',m.tasks.sla,'optional SLA risk','slawatch'],['Critical Events',m.critical,'immediate attention','critical'],['Escalation Candidates',m.escalation,'likely escalation','escalation'],['Tracking Risks',m.tracking,'offline/stale/risk','tracking'],['Infrastructure Signals',m.travel,'active signals/disruptions','travel'],['Welfare Critical',m.welfare,'welfare pressure','welfare'],['Unacknowledged',m.unack,'notification workflow','unack'],['My Tasks',m.tasks.mine,'assigned to you','mytasks']];$('kpiGrid').innerHTML=data.map(([l,v,n,k])=>`<article class="kpi ${v>0?(v>=3||/blocked|critical|sla/.test(k)?'hot':'warn'):'ok'}"><div class="label">${l}</div><div class="value" id="kpi-${k}">${v}</div><div class="note">${n}</div></article>`).join('');}
-  function renderQueue(m){const q=m.active.filter(a=>sevRank(a.severity)>=2||/unack|open|escalat|blocked/i.test(a.status)).sort((a,b)=>sevRank(b.severity)-sevRank(a.severity)||ageMins(b.when)-ageMins(a.when)).slice(0,22);const el=$('actionQueue');if(!q.length){el.innerHTML='<div class="empty">No immediate action items found.</div>';return}el.innerHTML=q.map(a=>`<div class="item ${a.severity}"><div style="display:flex;justify-content:space-between;gap:8px"><div class="item-title">${esc(a.title)}</div><span class="pill ${sevRank(a.severity)>=3?'danger':'warn'}">${esc(a.severity)}</span></div><div class="item-sub">${esc(a.source)} · ${esc(a.type)} · ${esc(ageText(a.when))}</div><div class="item-tags"><span class="pill info">${esc(a.status)}</span>${a.entityName?`<span class="pill ok">${esc(a.entityName)}</span>`:''}<a class="pill warn" href="${esc(a.link)}">Open source</a></div></div>`).join('');}
+  function renderQueue(m){
+    const candidates=m.active
+      .filter(a=>sevRank(a.severity)>=2||/unack|open|escalat|blocked/i.test(a.status))
+      .sort((a,b)=>sevRank(b.severity)-sevRank(a.severity)||Date.parse(b.when||0)-Date.parse(a.when||0));
+    const grouped=[];
+    const byKey=new Map();
+    candidates.forEach(a=>{
+      const noisy=/^(travel)$/i.test(a.source||'') && /transport signal|power outage|flight signal/i.test(a.type||'');
+      const titleKey=low(a.title).replace(/\s+/g,' ').trim();
+      const summaryKey=low(a.summary).replace(/\s+/g,' ').slice(0,90);
+      const key=noisy ? [low(a.source),low(a.type),sevLabel(a.severity),titleKey].join('|') : [low(a.source),low(a.type),titleKey,summaryKey].join('|');
+      if(byKey.has(key)){
+        const g=byKey.get(key);
+        g.count=(g.count||1)+1;
+        if(Date.parse(a.when||0)>Date.parse(g.when||0)) g.when=a.when;
+        if(sevRank(a.severity)>sevRank(g.severity)) g.severity=a.severity;
+        if(!g.sampleSummaries)g.sampleSummaries=[];
+        if(a.summary && !g.sampleSummaries.includes(a.summary) && g.sampleSummaries.length<3)g.sampleSummaries.push(a.summary);
+        return;
+      }
+      const clone={...a,count:1,sampleSummaries:a.summary?[a.summary]:[]};
+      byKey.set(key,clone);
+      grouped.push(clone);
+    });
+    const q=grouped
+      .sort((a,b)=>sevRank(b.severity)-sevRank(a.severity)||((b.count||1)-(a.count||1))||Date.parse(b.when||0)-Date.parse(a.when||0))
+      .slice(0,16);
+    const el=$('actionQueue');
+    if(!q.length){el.innerHTML='<div class="empty">No immediate action items found.</div>';return}
+    el.innerHTML=q.map(a=>{
+      const groupedLabel=(a.count&&a.count>1)?`<span class="pill warn">${a.count} similar</span>`:'';
+      const summary=(a.count&&a.count>1&&a.sampleSummaries?.length)
+        ? `${a.sampleSummaries[0]}${a.sampleSummaries.length>1?' · more similar signals grouped':''}`
+        : a.summary;
+      return `<div class="item ${a.severity}"><div style="display:flex;justify-content:space-between;gap:8px"><div class="item-title">${esc(a.title)}</div><span class="pill ${sevRank(a.severity)>=3?'danger':'warn'}">${esc(a.severity)}</span></div><div class="item-sub">${esc(a.source)} · ${esc(a.type)} · ${esc(ageText(a.when))}</div>${summary?`<div class="item-sub" style="margin-top:6px">${esc(summary)}</div>`:''}<div class="item-tags"><span class="pill info">${esc(a.status)}</span>${groupedLabel}${a.entityName?`<span class="pill ok">${esc(a.entityName)}</span>`:''}<a class="pill warn" href="${esc(a.link)}">Open source</a></div></div>`
+    }).join('');
+  }
   function renderTaskAttention(m){const el=$('taskAttention');if(!el)return;const tasks=m.tasks.active.slice().sort((a,b)=>{const ar=(a.status==='blocked'?10:0)+sevRank(taskSeverity(a))*3+(slaState(a)==='breached'?8:slaState(a)==='at risk'?4:0);const br=(b.status==='blocked'?10:0)+sevRank(taskSeverity(b))*3+(slaState(b)==='breached'?8:slaState(b)==='at risk'?4:0);return br-ar||ageMins(b.updated_at)-ageMins(a.updated_at)}).slice(0,10);if(!tasks.length){el.innerHTML='<div class="empty">No active operations tasks requiring attention.</div>';return}el.innerHTML=tasks.map(t=>{const sla=slaState(t);const cls=t.status==='blocked'?'blocked':sla==='breached'?'breached':t.priority;return `<div class="task-row ${esc(cls)}"><div style="display:flex;justify-content:space-between;gap:8px"><div class="task-title">${esc(t.title)}</div><span class="pill ${sevRank(taskSeverity(t))>=3?'danger':'warn'}">${esc(taskSeverity(t))}</span></div><div class="task-meta">${esc(taskNo(t))} · ${esc(t.status.replace(/_/g,' '))} · ${esc(t.owner_name||t.owner_email||'Unassigned')} · updated ${esc(ageText(t.updated_at))}</div><div class="item-tags" style="margin-top:8px"><span class="pill info">${esc(t.source||'manual')}</span>${sla!=='none'?`<span class="pill ${sla==='within'?'ok':sla==='at risk'?'warn':'danger'}">SLA ${esc(sla)}</span>`:''}${t.case_id?'<span class="pill warn">linked case</span>':''}<a class="pill warn" href="operations-tasks.html">Open task</a></div></div>`}).join('');}
   function renderFunnel(){const statuses=['open','acknowledged','investigating','escalated','resolved'];const rows=arr(state.cases);$('caseFunnel').innerHTML=statuses.map(s=>`<div class="stage ${s}"><b>${rows.filter(c=>low(c.status||'open').includes(s)).length}</b><span>${s}</span></div>`).join('');const avg=rows.length?Math.round(rows.reduce((sum,c)=>sum+ageMins(c.created_at||c.createdAt||c.updated_at||c.updatedAt),0)/rows.length):0;$('caseFunnelMeta').textContent=rows.length?`${rows.length} total cases loaded · average visible case age ${avg===99999?'unknown':avg+' minutes'}`:'No case data loaded yet.';}
   function renderHealth(m){const check=(label)=>!state.errors.includes(label);const rows=[['Notification Centre',check('notification workflow'),`${m.unack} unacknowledged`],['Operations Cases',check('operations cases'),`${m.cases} active cases`],['Operations Tasks',check('operations tasks'),`${m.tasks.active.length} open tasks`],['Welfare Hub',check('welfare'),`${m.welfare} critical`],['Monitoring Hub',check('tracking'),`${m.tracking} tracking risks`],['Travel Infrastructure',check('travel incidents'),`${m.travel} signals`],['Intel Hub',true,`${m.briefing} briefing candidates`],['Transport Feed',check('transport'),'Live feed'],['Power Feed',check('power'),'Live feed'],['Panic Log',check('panic log'),m.welfare?'Review':'Clear']];const html=rows.map(([name,ok,detail])=>{const cls=!ok?'danger':(/critical|risk|signals|open tasks/.test(String(detail).toLowerCase())&&!/^0 /.test(String(detail))?'warn':'ok');return `<div class="health-chip ${cls}"><span class="pill ${ok?'ok':'danger'}">${ok?'Online':'Degraded'}</span><strong>${esc(name)}</strong><small>${esc(detail)}</small></div>`}).join('');const el=$('healthRibbon');if(el)el.innerHTML=html;}
@@ -195,4 +231,3 @@
   
 </body>
 </html>
- 
