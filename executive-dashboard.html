@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   
-  <title>CityIntel — Executive Dashboard v3.4</title>
+  <title>CityIntel — Executive Dashboard v3.5</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -118,7 +118,7 @@
 <script>
 (function(){
   const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state={cases:[],tasks:[],workflow:[],alerts:[],sources:{},errors:[],latencies:{},map:null,markers:[]};
+  const state={cases:[],tasks:[],workflow:[],alerts:[],sources:{},errors:[],latencies:{},map:null,markers:[],commandRows:[]};
   const $=id=>document.getElementById(id);
   const arr=v=>Array.isArray(v)?v:[];
   const low=s=>String(s??'').toLowerCase();
@@ -210,10 +210,90 @@
     set('drawerTitle',`${title} (${rows.length})`);
     set('drawerSub',key==='critical'||key==='escalation'?'Filtered to actionable/relevant items; broad unlinked infrastructure remains in Infrastructure Signals, map and activity feed.':'Items currently feeding this KPI.');
     const body=$('drawerBody');
-    body.innerHTML=rows.length?rows.slice(0,80).map(a=>`<div class="drawer-item ${esc(sevLabel(a.severity))}"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(a.title)}</b><span class="pill ${sevRank(a.severity)>=4?'danger':sevRank(a.severity)>=2?'warn':'info'}">${esc(sevLabel(a.severity))}</span></div><div class="item-sub">${esc(a.source)} · ${esc(a.type)} · ${esc(ageText(a.when))}</div>${a.summary?`<div class="item-sub" style="margin-top:6px">${esc(a.summary)}</div>`:''}<div class="item-tags"><span class="pill info">${esc(String(a.status||'active').replace(/_/g,' '))}</span>${a.link?`<a class="pill warn" href="${esc(a.link)}">Open source</a>`:''}</div></div>`).join(''):'<div class="empty">No items currently feed this KPI.</div>';
+    const shown=rows.slice(0,80);state.commandRows=shown;
+    body.innerHTML=shown.length?shown.map((a,i)=>`<div class="drawer-item ${esc(sevLabel(a.severity))}"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(a.title)}</b><span class="pill ${sevRank(a.severity)>=4?'danger':sevRank(a.severity)>=2?'warn':'info'}">${esc(sevLabel(a.severity))}</span></div><div class="item-sub">${esc(a.source)} · ${esc(a.type)} · ${esc(ageText(a.when))}</div>${a.summary?`<div class="item-sub" style="margin-top:6px">${esc(a.summary)}</div>`:''}<div class="item-tags"><span class="pill info">${esc(String(a.status||'active').replace(/_/g,' '))}</span>${commandButtons(a,i,'drawer')}</div></div>`).join(''):'<div class="empty">No items currently feed this KPI.</div>';
+    bindCommandButtons(body,shown,'drawer');
     $('kpiDrawerBackdrop')?.classList.add('open');$('kpiDrawer')?.classList.add('open');$('kpiDrawer')?.setAttribute('aria-hidden','false');
   }
   function closeKpiDrawer(){$('kpiDrawerBackdrop')?.classList.remove('open');$('kpiDrawer')?.classList.remove('open');$('kpiDrawer')?.setAttribute('aria-hidden','true');}
+
+  function sourceSlugFor(a={}){
+    const source=low(a.source), type=low(a.type), link=low(a.link);
+    if(source.includes('maritime')||link.includes('maritime')) return 'maritime';
+    if(source.includes('welfare')||type.includes('welfare')||type.includes('panic')||link.includes('welfare')) return 'welfare';
+    if(source.includes('tracking')||type.includes('tracking')||source.includes('monitoring')||link.includes('monitoring')) return 'monitoring';
+    if(source.includes('travel')||type.includes('transport')||type.includes('power')||type.includes('flight')||link.includes('travel-infrastructure')) return 'travel';
+    if(source.includes('notification')||link.includes('notification')) return 'notification';
+    if(source.includes('case')||link.includes('operations-cases')) return 'case';
+    if(source.includes('task')||link.includes('operations-tasks')) return 'task';
+    if(source.includes('intel')||link.includes('intel-hub')) return 'intel';
+    return source||'executive-dashboard';
+  }
+  function absoluteSourceLink(link=''){
+    const clean=txt(link,'executive-dashboard.html');
+    try{return new URL(clean,location.href).pathname.split('/').pop()+new URL(clean,location.href).search+new URL(clean,location.href).hash}catch(_){return clean}
+  }
+  function itemSourceId(a={}){return txt(a.caseId,a.id,a.source_id,a.notification_id,a.raw?.id,a.raw?.case_id,a.raw?.caseId,a.raw?.notification_id,a.raw?.notificationId,a.raw?.mmsi,a.raw?.imo,a.title)}
+  function commandPayload(a={}){
+    const source=sourceSlugFor(a);
+    const sourceLink=absoluteSourceLink(a.link||`${source}.html`);
+    const severity=sevLabel(a.severity||a.status||'medium');
+    const title=txt(a.title,'Operational item');
+    const summary=txt(a.summary,`Review ${title} from Executive Dashboard.`);
+    const entityName=txt(a.entityName,a.raw?.entity_name,a.raw?.entityName,a.raw?.person_name,a.raw?.employee_name,a.raw?.vessel_name,a.raw?.name,'');
+    const entityEmail=txt(a.raw?.entity_email,a.raw?.entityEmail,a.raw?.person_email,a.raw?.employee_email,a.raw?.email,'');
+    return {
+      id:'exec_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),
+      source, sourceSubtype:txt(a.type,a.kind,source), sourceType:txt(a.type,a.kind,source),
+      sourceId:itemSourceId(a), sourceLink, title, summary, severity,
+      priority:severity==='critical'?'critical':severity==='high'?'high':severity==='medium'?'medium':'low',
+      status:txt(a.status,'open'), entityName, entityEmail,
+      caseId:txt(a.caseId,a.raw?.case_id,a.raw?.caseId,''),
+      notificationId:txt(a.raw?.notification_id,a.raw?.notificationId,a.raw?.alert_id,a.raw?.alertId,''),
+      location:txt(a.raw?.location,a.raw?.city,a.raw?.country,''),
+      createdAt:new Date().toISOString(), raw:a.raw||a
+    };
+  }
+  function appendIntake(key,payload){
+    try{const rows=JSON.parse(localStorage.getItem(key)||'[]');rows.unshift(payload);localStorage.setItem(key,JSON.stringify(rows.slice(0,50)));return true}catch(e){console.warn('intake_failed',key,e);return false}
+  }
+  function createTaskFromExecutiveItem(a={}){
+    const p=commandPayload(a);
+    appendIntake('ci_ops_task_intake',{...p,description:p.summary,reason:'Created from Executive Dashboard action'});
+    location.href='operations-tasks.html';
+  }
+  function createCaseFromExecutiveItem(a={}){
+    const p=commandPayload(a);
+    appendIntake('ci_ops_case_intake',{...p,description:p.summary,reason:'Created from Executive Dashboard action'});
+    location.href='operations-cases.html';
+  }
+  function notifyTeamFromExecutiveItem(a={}){
+    const p=commandPayload(a);
+    appendIntake('ci_notification_intake',{...p,message:p.summary,reason:'Notification requested from Executive Dashboard'});
+    location.href='notification-centre.html';
+  }
+  function commandButtons(a={},idx=0,scope='activity'){
+    const source=sourceSlugFor(a);
+    const sev=sevRank(a.severity);
+    const parts=[];
+    if(source!=='task') parts.push(`<button class="pill ok cmd-action" data-${scope}-cmd="task" data-idx="${idx}" type="button">Create task</button>`);
+    if(source!=='case' && sev>=2) parts.push(`<button class="pill info cmd-action" data-${scope}-cmd="case" data-idx="${idx}" type="button">Create case</button>`);
+    if(sev>=3) parts.push(`<button class="pill danger cmd-action" data-${scope}-cmd="notify" data-idx="${idx}" type="button">Notify team</button>`);
+    if(a.link) parts.push(`<a class="pill warn" href="${esc(a.link)}">Open source</a>`);
+    return parts.join('');
+  }
+  function bindCommandButtons(root,rows=[],scope='activity'){
+    if(!root)return;
+    root.querySelectorAll(`[data-${scope}-cmd]`).forEach(btn=>btn.addEventListener('click',ev=>{
+      ev.preventDefault();ev.stopPropagation();
+      const a=rows[Number(btn.dataset.idx)]||{};
+      const cmd=btn.getAttribute(`data-${scope}-cmd`);
+      if(cmd==='task') return createTaskFromExecutiveItem(a);
+      if(cmd==='case') return createCaseFromExecutiveItem(a);
+      if(cmd==='notify') return notifyTeamFromExecutiveItem(a);
+    }));
+  }
+
 
   function orgLocationTerms(){
     const terms=new Set();
@@ -317,12 +397,13 @@
     const items=dedupeActivities(feed).map(a=>({...a,_score:(a.sortBoost||0)+(sevRank(a.severity)*8)-Math.min(24,ageMins(a.when)/60)})).sort((a,b)=>b._score-a._score||Date.parse(b.when||0)-Date.parse(a.when||0)).slice(0,36);
     const el=$('activityFeed');
     if(!items.length){el.innerHTML='<div class="empty">No recent cross-platform activity loaded.</div>';return}
-    el.innerHTML=items.map(a=>`<div class="activity-item ${esc(activityClass(a))}"><div class="activity-icon">${activityIcon(a)}</div><div><div class="activity-head"><div class="activity-title">${esc(a.title)}</div><span class="pill ${sevRank(a.severity)>=4?'danger':sevRank(a.severity)>=2?'warn':'info'}">${esc(a.severity)}</span></div><div class="activity-meta">${esc(a.source)} · ${esc(a.type)} · ${esc(ageText(a.when))}</div>${a.summary?`<div class="activity-summary">${esc(a.summary)}</div>`:''}<div class="activity-actions">${a.status?`<span class="pill info">${esc(String(a.status).replace(/_/g,' '))}</span>`:''}${a.entityName?`<span class="pill ok">${esc(a.entityName)}</span>`:''}${a.link?`<a class="pill warn" href="${esc(a.link)}">Open source</a>`:''}</div></div></div>`).join('');
+    el.innerHTML=items.map(a=>`<div class="activity-item ${esc(activityClass(a))}"><div class="activity-icon">${activityIcon(a)}</div><div><div class="activity-head"><div class="activity-title">${esc(a.title)}</div><span class="pill ${sevRank(a.severity)>=4?'danger':sevRank(a.severity)>=2?'warn':'info'}">${esc(a.severity)}</span></div><div class="activity-meta">${esc(a.source)} · ${esc(a.type)} · ${esc(ageText(a.when))}</div>${a.summary?`<div class="activity-summary">${esc(a.summary)}</div>`:''}<div class="activity-actions">${a.status?`<span class="pill info">${esc(String(a.status).replace(/_/g,' '))}</span>`:''}${a.entityName?`<span class="pill ok">${esc(a.entityName)}</span>`:''}${commandButtons(a,i,'activity')}</div></div></div>`).join('');
+    bindCommandButtons(el,items,'activity');
   }
   function renderMap(m){if(!window.L)return;if(!state.map){state.map=L.map('riskMap',{zoomControl:true,scrollWheelZoom:true,worldCopyJump:false,minZoom:2,maxBounds:[[-90,-180],[90,180]],maxBoundsViscosity:1});L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,noWrap:true,attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(state.map);state.map.setView([20,0],2);}state.markers.forEach(x=>x.remove());state.markers=[];const pts=m.active.filter(a=>Number.isFinite(Number(a.lat))&&Number.isFinite(Number(a.lng))).slice(0,100);pts.forEach(a=>{const color=sevRank(a.severity)>=3?'#ff5a5f':sevRank(a.severity)>=2?'#f0b429':'#93c5fd';const icon=L.divIcon({className:'',html:`<div style="width:14px;height:14px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px rgba(0,0,0,.8)"></div>`,iconSize:[14,14]});state.markers.push(L.marker([Number(a.lat),Number(a.lng)],{icon}).addTo(state.map).bindPopup(`<b>${esc(a.title)}</b><br>${esc(a.source)} · ${esc(a.severity)}<br><a href="${esc(a.link)}">Open source</a>`));});if(pts.length){const group=L.featureGroup(state.markers);state.map.fitBounds(group.getBounds().pad(.25),{maxZoom:6});}else state.map.setView([20,0],2);setTimeout(()=>state.map.invalidateSize(),80);}
   function riskBand(score){return score>=70?'high':score>=30?'moderate':'low'}
   function renderSummary(m,score){const band=riskBand(score);const bandLabel=band==='high'?'HIGH':band==='moderate'?'MODERATE':'LOW';let driver='Stable platform picture.';if(m.tasks.blocked>0)driver='Blocked operational tasks require management attention.';else if(m.tasks.critical>0)driver='Critical operational tasks are active.';else if((m.maritime||0)>0)driver='Maritime watchlist, port or chokepoint pressure.';else if(m.travel>0)driver='Infrastructure and travel disruption volume.';if(m.critical>0)driver='Critical event pressure across active sources.';if(m.welfare>0)driver='Welfare pressure requiring review.';if(m.cases>0)driver='Open operations cases requiring management.';const el=$('riskBanner');el.className=`card summary-card ${band}`;el.innerHTML=`<div class="summary-title">Executive Summary</div><div class="summary-main">Organisation Risk: ${bandLabel} (${score}/100)</div><div class="summary-points"><span>${m.critical} critical events</span><span>${m.tasks.active.length} open tasks</span><span>${m.tasks.blocked} blocked tasks</span><span>${m.travel} infrastructure signals</span><span>${m.maritime||0} maritime signals</span><span>${m.welfare?m.welfare+' welfare critical':'No welfare emergencies'}</span><span>${m.cases?m.cases+' open cases':'No open operations cases'}</span><span>Primary pressure: ${esc(driver)}</span></div>`;}
-  function renderDiagnostics(){const labels=Object.values(state.latencies||{}).filter(v=>Number.isFinite(Number(v)));const avg=labels.length?Math.round(labels.reduce((a,b)=>a+b,0)/labels.length):0;const connected=13-state.errors.length;const html=[['Platform Version','Executive Dashboard v3.4'],['Connected Sources',`${connected}/13`],['Average API Latency',avg?avg+' ms':'—'],['Cloudflare Worker',state.errors.length?'Partial / degraded':'Healthy']].map(([a,b])=>`<div class="strip-card"><b>${a}</b><span>${b}</span></div>`).join('');const el=$('diagnosticStrip');if(el)el.innerHTML=html;}
+  function renderDiagnostics(){const labels=Object.values(state.latencies||{}).filter(v=>Number.isFinite(Number(v)));const avg=labels.length?Math.round(labels.reduce((a,b)=>a+b,0)/labels.length):0;const connected=13-state.errors.length;const html=[['Platform Version','Executive Dashboard v3.5'],['Connected Sources',`${connected}/13`],['Average API Latency',avg?avg+' ms':'—'],['Cloudflare Worker',state.errors.length?'Partial / degraded':'Healthy']].map(([a,b])=>`<div class="strip-card"><b>${a}</b><span>${b}</span></div>`).join('');const el=$('diagnosticStrip');if(el)el.innerHTML=html;}
   function render(){const m=kpis();const score=riskScore(m);set('dataStatus',state.errors.length?'Partial':'Live');set('lastUpdated',new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));set('roleLabel',roleLabel());set('sourceErrors',state.errors.length);renderSummary(m,score);set('riskScore',score);$('riskBar').style.width=score+'%';$('riskSummary').textContent=score>=70?'High operational pressure. Immediate review recommended.':score>=35?'Moderate pressure. Monitor queue, tasks and unresolved cases.':'Low current pressure from loaded sources.';renderKpis(m);renderQueue(m);renderTaskAttention(m);renderFunnel();renderHealth(m);renderTimeline(m);renderMap(m);renderDiagnostics();}
   $('refreshBtn').addEventListener('click',load);$('drawerClose')?.addEventListener('click',closeKpiDrawer);$('kpiDrawerBackdrop')?.addEventListener('click',closeKpiDrawer);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKpiDrawer();});load().catch(e=>{console.error(e);set('dataStatus','Failed');$('actionQueue').innerHTML='<div class="empty">Dashboard failed to load. Check console.</div>';});
 })();
