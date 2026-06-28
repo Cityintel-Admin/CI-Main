@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>CityIntel — Maritime Intel v3C AISStream Debug</title>
+  <title>CityIntel — Maritime Intel v3D CORS Fix</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta property="og:title" content="CityIntel – Maritime Intel" />
   <meta property="og:description" content="Maritime vessel, port, route and chokepoint intelligence for travel and infrastructure monitoring." />
@@ -179,7 +179,7 @@ function sevClass(s){const r=sevRank(s); return r>=4?'danger':r>=3?'warn':r>=2?'
 function dotColor(r){ if(r.type==='watchlist'||sevRank(r.severity)>=4) return '#ff5a5f'; if(r.type==='port') return '#f0b429'; if(r.type==='chokepoint') return '#33c48d'; return '#93c5fd'; }
 function nowShort(){return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
 function role(){try{return (CIAuth.who()?.roleLabel||CIAuth.who()?.role||'Member')}catch(_){return 'Member'}}
-async function fetchJson(path){const sep=path.includes('?')?'&':'?'; const r=await fetch(API_BASE+path+sep+'_ts='+Date.now(),{cache:'no-store',headers:{'Accept':'application/json','Cache-Control':'no-cache'}}); if(!r.ok) throw new Error(path+' '+r.status); return r.json();}
+async function fetchJson(path){const sep=path.includes('?')?'&':'?'; const r=await fetch(API_BASE+path+sep+'_ts='+Date.now(),{cache:'no-store',headers:{'Accept':'application/json'}}); if(!r.ok) throw new Error(path+' '+r.status); return r.json();}
 
 const WATCH_KEY='cityintel_maritime_watchlists_v2b';
 function normWatch(v){return String(v||'').toLowerCase().trim().replace(/\s+/g,' ');}
@@ -299,7 +299,15 @@ function portDetailHtml(r){
 }
 function requestedRecordKey(){try{const p=new URLSearchParams(location.search);return normWatch(p.get('record')||p.get('id')||p.get('mmsi')||p.get('imo')||location.hash.replace(/^#/,''));}catch(_){return '';}}
 function matchRequestedRecord(key,r){if(!key||!r)return false;return [r.id,r.mmsi,r.imo,r.name,r.vessel_name,r.port,r.item].some(v=>normWatch(v)===key)||recordWatchHaystack(r).includes(key);}
-function selectRequestedRecord(){const key=requestedRecordKey();if(!key)return false;const rec=state.records.find(r=>matchRequestedRecord(key,r));if(rec){select(rec.id,{updateUrl:false,fromDeepLink:true});const detail=document.getElementById('detailPanel');if(detail&&detail.scrollIntoView) setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'start'}),120);return true;}return false;}
+function clearRecordDeepLink(){
+ try{
+  const url=new URL(location.href);
+  ['record','id','mmsi','imo'].forEach(k=>url.searchParams.delete(k));
+  url.hash='';
+  history.replaceState(null,'',url.pathname+(url.searchParams.toString()?('?'+url.searchParams.toString()):''));
+ }catch(_){}
+}
+function selectRequestedRecord(){const key=requestedRecordKey();if(!key)return false;const rec=state.records.find(r=>matchRequestedRecord(key,r));if(rec){select(rec.id,{updateUrl:false,fromDeepLink:true});clearRecordDeepLink();const detail=document.getElementById('detailPanel');if(detail&&detail.scrollIntoView) setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'start'}),120);return true;}return false;}
 function render(){const recs=filtered(); const watch=recs.filter(r=>r.type==='watchlist'||sevRank(r.severity)>=4).length; const ports=recs.filter(r=>r.type==='port'||r.type==='chokepoint').length; document.getElementById('vesselCount').textContent=recs.filter(r=>r.type==='vessel'||r.type==='watchlist').length; document.getElementById('watchCount').textContent=watch; document.getElementById('portCount').textContent=ports; document.getElementById('freshCount').textContent=recs.filter(r=>/min|live|recent/i.test(r.lastSeen)).length; renderMap(recs); renderRail(recs); renderSignals(); renderWatchRules(); renderRelationshipOverview(state.selected || recs[0]); renderChokepointIntelligence(); renderPortIntelligence(); if(state.selected) renderDetail(state.selected);}
 function renderRail(recs){const box=document.getElementById('watchRail'); const sorted=[...recs].sort((a,b)=>sevRank(b.severity)-sevRank(a.severity)); document.getElementById('railCount').textContent=sorted.length+' Items'; if(!sorted.length){box.innerHTML='<div class="empty">No maritime records match this filter.</div>';return;} box.innerHTML=sorted.map(r=>`<div class="item ${state.selected?.id===r.id?'active':''} ${(r.watchMatches||[]).length?'watch-hit':''}" data-id="${esc(r.id)}"><div class="item-head"><div><div class="item-title">${esc(r.name)}</div><div class="item-meta">${esc(r.type)} · ${esc(r.location)} · ${esc(r.lastSeen)}</div></div><span class="pill ${sevClass(r.severity)}">${esc(r.severity)}</span></div><div class="item-meta" style="margin-top:6px">${esc(r.summary)}</div>${(r.watchMatches||[]).length?`<div class="match-note">Matched watchlist: ${esc(r.watchMatches.map(w=>w.value).slice(0,3).join(', '))}</div>`:''}</div>`).join(''); box.querySelectorAll('.item').forEach(el=>el.onclick=()=>select(el.dataset.id,{updateUrl:false}));}
 function select(id,opts={}){state.selected=state.records.find(r=>r.id===id)||null; if(state.selected&&opts.updateUrl){try{history.replaceState(null,'',`?record=${encodeURIComponent(state.selected.id)}`);}catch(_){}} renderRail(filtered()); renderDetail(state.selected); renderRelationshipOverview(state.selected); renderChokepointIntelligence(); renderPortIntelligence(); if(state.selected&&Number.isFinite(state.selected.lat)){state.map.setView([state.selected.lat,state.selected.lng],8);}}
