@@ -439,12 +439,24 @@
   </div>
 
   <div class="commercial-grid" style="margin-top:14px">
+    <div class="commercial-kpi" style="grid-column:span 2">
+      <div class="label">Website Visitors</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div id="ci14eWebsiteVisitors" class="money">—</div>
+        <select id="ci14eWebsiteRange" class="btn" style="padding:5px 8px;background:#0f1012;color:var(--text)">
+          <option value="today">24h</option>
+          <option value="7d">7d</option>
+          <option value="30d" selected>30d</option>
+        </select>
+      </div>
+      <div class="legend" id="ci14eWebsiteViews">Page views —</div>
+    </div>
     <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Customers</div><div id="ci14eCustomers" class="money">—</div></div>
     <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Enterprise</div><div id="ci14eEnterprise" class="money">—</div></div>
     <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Open Support</div><div id="ci14eSupport" class="money">—</div></div>
     <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Tracked Travellers</div><div id="ci14eTravellers" class="money">—</div></div>
-    <div class="commercial-kpi" style="grid-column:span 2"><div class="label">AI Runs 30d</div><div id="ci14eAiRuns" class="money">—</div></div>
-    <div class="commercial-kpi" style="grid-column:span 2"><div class="label">AI Cost 30d</div><div id="ci14eAiCost" class="money">—</div></div>
+    <div class="commercial-kpi" style="grid-column:span 1"><div class="label">AI Runs 30d</div><div id="ci14eAiRuns" class="money">—</div></div>
+    <div class="commercial-kpi" style="grid-column:span 1"><div class="label">AI Cost 30d</div><div id="ci14eAiCost" class="money">—</div></div>
   </div>
 
   <div class="commercial-grid" style="margin-top:14px">
@@ -489,6 +501,90 @@
     <div id="ci14eTrendRows" style="display:grid;gap:8px"></div>
   </div>
 </section>
+
+<script>
+(function(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function set(id,v){const el=document.getElementById(id); if(el) el.textContent=v;}
+  function fmtDate(v){try{return v?new Date(v).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'—';}catch(_){return v||'—';}}
+  function money(v){const n=Number(v||0);return '$'+n.toFixed(4);}
+  function pct(v){const n=Number(v||0);return Number.isFinite(n)?`${Math.round(n)}%`:'—';}
+  function authHeaders(){
+    try{
+      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(JSON.parse(localStorage.getItem('ci_user')||'{}'));
+      const r=u.roleKey||u.role_key||u.role||'master-admin';
+      return {'Accept':'application/json','Content-Type':'application/json','X-User-Email':u.email||'','X-User-Name':u.name||'','X-User-Id':u.id||u.email||'','X-User-Role':r,'X-User-Role-Key':r,'X-CI-Role':r,'X-CI-Role-Key':r};
+    }catch(_){return {'Accept':'application/json','Content-Type':'application/json','X-User-Role':'master-admin','X-User-Role-Key':'master-admin'};}
+  }
+  function statusLabel(status,score){
+    const s=String(status||'').toLowerCase();
+    const icon=s.includes('healthy')?'🟢':s.includes('watch')?'🟡':'🔴';
+    return `${icon} ${score ? score + '%' : (status||'—')}`;
+  }
+  function tableRows(id, html, cols){
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=html||`<tr><td colspan="${cols}" class="lead-muted">No records yet.</td></tr>`;
+  }
+  function renderWebsite(summary){
+    const range=document.getElementById('ci14eWebsiteRange')?.value||'30d';
+    const ranges=summary.website?.ranges||{};
+    const picked=range==='today'?ranges.today:(range==='7d'?ranges.seven_days:ranges.thirty_days);
+    set('ci14eWebsiteVisitors', Number(picked?.visitors||0).toLocaleString());
+    set('ci14eWebsiteViews', `Page views ${Number(picked?.views||0).toLocaleString()}`);
+  }
+  window.ciLoadExecutiveOperationsDashboard=async function(){
+    const panel=document.getElementById('ciExecutiveOperationsDashboard'); if(!panel) return;
+    set('ci14eGenerated','Loading…');
+    try{
+      const res=await fetch(`${API}/api/admin/executive/overview`,{headers:authHeaders()});
+      const j=await res.json().catch(()=>({}));
+      if(!res.ok || !j.ok) throw new Error(j.error||`Executive dashboard failed: ${res.status}`);
+      const s=j.summary||{};
+      set('ci14eGenerated',`Updated ${fmtDate(j.generated_at)}`);
+      set('ci14eOverallStatus',statusLabel(s.overall_status,s.overall_score));
+      set('ci14ePlatformScore',pct(s.platform_score));
+      set('ci14eAiSuccess',pct(s.ai_success_rate));
+      set('ci14eAuditToday',Number(s.audit_today||0).toLocaleString());
+      set('ci14eCustomers',Number(s.customers||0).toLocaleString());
+      set('ci14eEnterprise',Number(s.enterprise_accounts||0).toLocaleString());
+      set('ci14eSupport',Number(s.open_support||0).toLocaleString());
+      set('ci14eTravellers',Number(s.tracked_travellers||0).toLocaleString());
+      set('ci14eAiRuns',Number(s.ai_runs_30d||0).toLocaleString());
+      set('ci14eAiCost',money(s.ai_cost_30d));
+      renderWebsite(j);
+
+      const alerts=j.alerts||[];
+      const alertEl=document.getElementById('ci14eAlerts');
+      if(alertEl) alertEl.innerHTML=alerts.length?alerts.map(a=>{
+        const sev=String(a.severity||'ok').toLowerCase();
+        const border=sev==='critical'?'#ff5a5f':sev==='warning'?'#f0b429':'#33c48d';
+        return `<div style="border:1px solid ${border};border-radius:10px;padding:9px;background:rgba(255,255,255,.03)"><b>${esc(a.area||'Operations')}</b><div class="legend">${esc(a.summary||'')}</div></div>`;
+      }).join(''):'<div class="lead-muted">No executive alerts.</div>';
+
+      tableRows('ci14eScorecardRows',(j.scorecard||[]).map(r=>`<tr><td><b>${esc(r.area)}</b></td><td>${esc(r.status)}</td><td>${esc(r.score)}%</td><td>${esc(r.detail)}</td></tr>`).join(''),4);
+      tableRows('ci14eOrgRows',(j.organisations||[]).map(o=>`<tr><td><b>${esc(o.organisation)}</b></td><td>${esc(o.health)}</td><td>${esc(o.activity)}</td><td>${esc(fmtDate(o.last_activity))}</td><td>${esc(o.risk)}</td></tr>`).join(''),5);
+      tableRows('ci14eFeedRows',(j.feed||[]).map(f=>`<tr><td>${esc(fmtDate(f.time))}</td><td>${esc(f.area)}</td><td>${esc(f.action)}</td><td>${esc(f.summary)}</td></tr>`).join(''),4);
+
+      const trendEl=document.getElementById('ci14eTrendRows');
+      if(trendEl) trendEl.innerHTML=(j.trends||[]).length?(j.trends||[]).map(t=>`<div class="revenue-mini-row"><span>${esc(t.label)}<div class="legend">${esc(t.detail)}</div></span><strong>${Number(t.value||0).toLocaleString()}</strong></div>`).join(''):'<div class="lead-muted">No trend data yet.</div>';
+    }catch(e){
+      const msg=e.message||String(e);
+      set('ci14eGenerated','Unable to load executive view');
+      tableRows('ci14eScorecardRows',`<tr><td colspan="4" style="color:#fecaca">${esc(msg)}</td></tr>`,4);
+      tableRows('ci14eOrgRows','',5);
+      tableRows('ci14eFeedRows','',4);
+      const alertEl=document.getElementById('ci14eAlerts'); if(alertEl) alertEl.innerHTML=`<div style="color:#fecaca">${esc(msg)}</div>`;
+    }
+  };
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(document.getElementById('ciExecutiveOperationsDashboard')) ciLoadExecutiveOperationsDashboard();
+    const range=document.getElementById('ci14eWebsiteRange');
+    if(range) range.addEventListener('change',ciLoadExecutiveOperationsDashboard);
+  });
+})();
+</script>
+
 
 
 
@@ -1166,6 +1262,13 @@
       <div class="lead-inbox-compose">
         <input id="leadInboxSubject" type="text" placeholder="Subject" />
         <textarea id="leadInboxReply" placeholder="Type a reply to the lead..."></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <label class="lead-action-btn reply" style="cursor:pointer;margin:0">
+            📎 Attach files
+            <input id="leadInboxAttachments" type="file" multiple style="display:none">
+          </label>
+          <div id="leadInboxAttachmentList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
         <div class="lead-inbox-actions">
           <button id="leadInboxViewBtn" class="lead-action-btn reply" type="button">View details</button>
           <button id="leadInboxContactedBtn" class="lead-action-btn contact" type="button">Mark contacted</button>
@@ -2234,6 +2337,8 @@ const makeBar = (label, count, color) => {
   const inboxRefresh = document.getElementById('leadInboxRefreshBtn');
   const inboxSubject = document.getElementById('leadInboxSubject');
   const inboxReply = document.getElementById('leadInboxReply');
+  const inboxAttachments = document.getElementById('leadInboxAttachments');
+  const inboxAttachmentList = document.getElementById('leadInboxAttachmentList');
   const inboxSend = document.getElementById('leadInboxSendBtn');
   const inboxViewBtn = document.getElementById('leadInboxViewBtn');
   const inboxOnboardBtn = document.getElementById('leadInboxOnboardBtn');
@@ -2260,6 +2365,7 @@ const makeBar = (label, count, color) => {
     'morrism': 'Morris Martin <MorrisM@city-intel.com>',
   };
   let pendingAttachments = []; // [{filename, content_type, content (base64)}]
+  let inboxPendingAttachments = []; // lead inbox quick-reply attachments
 
   const historyModal = document.getElementById('leadHistoryModal');
   const historyBody = document.getElementById('leadHistoryBody');
@@ -2449,6 +2555,8 @@ const makeBar = (label, count, color) => {
     if (inboxMessages) inboxMessages.innerHTML = `<div class="lead-muted">No lead selected.</div>`;
     if (inboxSubject) inboxSubject.value = '';
     if (inboxReply) inboxReply.value = '';
+    inboxPendingAttachments = [];
+    renderInboxAttachmentList();
   }
 
   function getSelectedLead(){
@@ -2518,11 +2626,24 @@ const makeBar = (label, count, color) => {
       const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(row.id)}/message`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ type:'reply', subject, message, status:'contacted', from:'contact', attachments:[] })
+        body: JSON.stringify({
+          type:'reply',
+          subject,
+          message,
+          status:'contacted',
+          from:'contact',
+          attachments: inboxPendingAttachments.map(a => ({
+            filename: a.filename,
+            content_type: a.content_type,
+            content: a.content,
+          }))
+        })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `Message failed: ${res.status}`);
       if (inboxReply) inboxReply.value = '';
+      inboxPendingAttachments = [];
+      renderInboxAttachmentList();
       await loadLeads();
       await loadLeadInboxMessages(row.id);
     } catch (e) {
@@ -3215,6 +3336,57 @@ const makeBar = (label, count, color) => {
 
   const MAX_ATTACHMENTS = 3;
   const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // ~5MB combined, mirrors worker limit
+
+  function renderInboxAttachmentList(){
+    if (!inboxAttachmentList) return;
+    inboxAttachmentList.innerHTML = inboxPendingAttachments.length
+      ? inboxPendingAttachments.map((a, i) => `<span class="lead-attachment-chip">📎 ${esc(a.filename)} <button type="button" data-remove-inbox-attachment="${i}" title="Remove">×</button></span>`).join('')
+      : '';
+  }
+
+  if (inboxAttachments) {
+    inboxAttachments.addEventListener('change', async () => {
+      const files = Array.from(inboxAttachments.files || []);
+      if (!files.length) return;
+      if (inboxPendingAttachments.length + files.length > MAX_ATTACHMENTS) {
+        alert(`You can attach up to ${MAX_ATTACHMENTS} files.`);
+        inboxAttachments.value = '';
+        return;
+      }
+      const currentTotal = inboxPendingAttachments.reduce((sum, a) => sum + (a.size_bytes || 0), 0);
+      const newTotal = currentTotal + files.reduce((sum, f) => sum + f.size, 0);
+      if (newTotal > MAX_TOTAL_BYTES) {
+        alert('Attachments are too large — please keep the combined total under 5MB.');
+        inboxAttachments.value = '';
+        return;
+      }
+      for (const file of files) {
+        try {
+          const content = await fileToBase64(file);
+          inboxPendingAttachments.push({
+            filename: file.name,
+            content_type: file.type || 'application/octet-stream',
+            size_bytes: file.size,
+            content,
+          });
+        } catch (e) {
+          console.error('Failed to read inbox attachment', file.name, e);
+        }
+      }
+      inboxAttachments.value = '';
+      renderInboxAttachmentList();
+    });
+  }
+
+  if (inboxAttachmentList) {
+    inboxAttachmentList.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-remove-inbox-attachment]');
+      if (!btn) return;
+      const idx = Number(btn.getAttribute('data-remove-inbox-attachment'));
+      inboxPendingAttachments.splice(idx, 1);
+      renderInboxAttachmentList();
+    });
+  }
 
   if (modalAttachments) {
     modalAttachments.addEventListener('change', async () => {
@@ -6306,6 +6478,29 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+
+
+<script>
+(function ciRecordAnalyticsPageView(){
+  try{
+    const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+    const key='ci_visitor_id';
+    const skey='ci_session_id';
+    let visitor=localStorage.getItem(key);
+    if(!visitor){visitor='vis_'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem(key,visitor);}
+    let session=sessionStorage.getItem(skey);
+    if(!session){session='ses_'+Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem(skey,session);}
+    const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):{};
+    const payload={visitor_id:visitor,session_id:session,page_path:location.pathname,page_url:location.href,referrer:document.referrer||'',is_logged_in:!!(u&&u.email),user_email:u.email||'',org_id:u.orgId||u.org_id||''};
+    if(navigator.sendBeacon){
+      const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+      navigator.sendBeacon(`${API}/api/metrics/page-view`,blob);
+    }else{
+      fetch(`${API}/api/metrics/page-view`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true}).catch(()=>{});
+    }
+  }catch(_){}
+})();
+</script>
 
 </body>
 </html>
