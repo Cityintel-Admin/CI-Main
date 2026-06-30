@@ -97,6 +97,15 @@
     .btn:hover{border-color:#D01616;background:#1c1e22}
     .btn.primary{background:#D01616;border-color:#D01616;color:#fff;font-weight:700}
     .btn.primary:hover{filter:brightness(1.08);background:#D01616}
+    .org-status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;border:1px solid var(--g500);font-size:12px;font-weight:800;text-transform:capitalize;background:#1c1e22;color:#cbd5e1;white-space:nowrap}
+    .org-status-badge.trial{border-color:#60a5fa;color:#bfdbfe;background:rgba(96,165,250,.12)}
+    .org-status-badge.active{border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)}
+    .org-status-badge.grace{border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)}
+    .org-status-badge.suspended{border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)}
+    .org-status-badge.archived{border-color:#64748b;color:#cbd5e1;background:rgba(100,116,139,.12)}
+    .org-lifecycle-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .org-lifecycle-actions .lead-action-btn{white-space:nowrap}
+
 
     /* simple bars */
     .bar{height:24px;border-radius:8px;background:#222;position:relative;overflow:hidden;border:1px solid var(--g600)}
@@ -1080,6 +1089,24 @@
 </section>
 
 
+
+<section class="card" id="orgLifecycleSummaryCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Organisation Lifecycle</h3>
+      <div class="legend">Master Admin access governance across trial, active, grace, suspended and archived organisations.</div>
+    </div>
+    <button class="btn" type="button" onclick="loadPlatformStats()">Refresh lifecycle</button>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+    <div class="commercial-kpi"><div class="label">Trial</div><div class="money" id="orgLifecycle_trial">0</div><div class="legend">Onboarding / pilot</div></div>
+    <div class="commercial-kpi"><div class="label">Active</div><div class="money" id="orgLifecycle_active">0</div><div class="legend">Full access</div></div>
+    <div class="commercial-kpi"><div class="label">Grace</div><div class="money" id="orgLifecycle_grace">0</div><div class="legend">Payment / renewal grace</div></div>
+    <div class="commercial-kpi"><div class="label">Suspended</div><div class="money" id="orgLifecycle_suspended">0</div><div class="legend">Access blocked</div></div>
+    <div class="commercial-kpi"><div class="label">Archived</div><div class="money" id="orgLifecycle_archived">0</div><div class="legend">Hidden / closed</div></div>
+  </div>
+</section>
+
 <section class="card" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
     <div>
@@ -1098,12 +1125,13 @@
           <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em">Assets</th>
           <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em">Travellers</th>
           <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em">Active Travel</th>
+          <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em">Status</th>
           <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em">Created</th>
           <th style="padding:9px 12px;text-align:left;color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.04em">Action</th>
         </tr>
       </thead>
       <tbody id="orgListBody">
-        <tr><td colspan="8" style="padding:16px;color:var(--muted)">Loading organisations…</td></tr>
+        <tr><td colspan="9" style="padding:16px;color:var(--muted)">Loading organisations…</td></tr>
       </tbody>
     </table>
   </div>
@@ -1325,7 +1353,6 @@
           <option value="contact" selected>CityIntel Team &lt;contact@city-intel.com&gt;</option>
           <option value="carltonjl">Carlton John-Lewis &lt;carltonjl@city-intel.com&gt;</option>
           <option value="morrism">Morris Martin &lt;MorrisM@city-intel.com&gt;</option>
-		  <option value="sales" selected>CityIntel Sales Team &lt;sales@city-intel.com&gt;</option>
         </select>
         <div id="leadInboxFromNote" class="lead-modal-note">This reply will be sent from CityIntel &lt;contact@city-intel.com&gt;.</div>
         <textarea id="leadInboxReply" placeholder="Type a reply to the lead..."></textarea>
@@ -3691,6 +3718,7 @@ const makeBar = (label, count, color) => {
         }).catch(()=>{});
 
       allOrgs = d.orgs || [];
+      renderOrgLifecycleSummary(allOrgs);
       renderOrgTable(allOrgs);
 
       document.getElementById('platformLastChecked').textContent = 'Last updated '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -3701,29 +3729,81 @@ const makeBar = (label, count, color) => {
   }
 
   // ── Org table ────────────────────────────────────────────────────
+  function orgLifecycleStatusBadge(status){
+    const s = String(status || 'active').toLowerCase().replace(/\s+/g,'_');
+    const label = s.replace(/_/g,' ');
+    return `<span class="org-status-badge ${esc(s)}">${esc(label)}</span>`;
+  }
+
   function renderOrgTable(orgs){
     const body = document.getElementById('orgListBody');
-    if(!orgs.length){ body.innerHTML=`<tr><td colspan="8" style="padding:16px;color:var(--muted)">No organisations found.</td></tr>`; return; }
-    body.innerHTML = orgs.map(o => `
-      <tr style="border-bottom:1px solid var(--g600);cursor:pointer" data-org-id="${esc(o.id)}" class="org-row">
+    if(!orgs.length){ body.innerHTML=`<tr><td colspan="9" style="padding:16px;color:var(--muted)">No organisations found.</td></tr>`; return; }
+    body.innerHTML = orgs.map(o => {
+      const st = String(o.org_status || o.organisationStatus || o.status || 'active').toLowerCase();
+      const suspended = st === 'suspended' || st === 'archived';
+      const nextBtn = st === 'suspended'
+        ? `<button class="lead-action-btn approve" data-org-status-action="active" data-org-status-id="${esc(o.id)}">Reactivate</button>`
+        : st === 'archived'
+          ? `<button class="lead-action-btn approve" data-org-status-action="active" data-org-status-id="${esc(o.id)}">Restore</button>`
+          : `<button class="lead-action-btn reject" data-org-status-action="suspended" data-org-status-id="${esc(o.id)}">Suspend</button>`;
+      const archiveBtn = st === 'archived' ? '' : `<button class="lead-action-btn" data-org-status-action="archived" data-org-status-id="${esc(o.id)}">Archive</button>`;
+      return `
+      <tr style="border-bottom:1px solid var(--g600);cursor:pointer" data-org-id="${esc(o.id)}" class="org-row ${suspended?'org-row-suspended':''}">
         <td style="padding:9px 12px"><strong>${esc(o.name||'Unnamed')}</strong><div style="font-size:11px;color:var(--muted)">${esc(o.id)}</div></td>
         <td style="padding:9px 12px;font-family:monospace;font-size:12px">${esc(o.invite_code||'—')}</td>
         <td style="padding:9px 12px">${o.users||0}</td>
         <td style="padding:9px 12px">${o.assets||0}</td>
         <td style="padding:9px 12px">${o.travellers||0}</td>
         <td style="padding:9px 12px">${o.active_travellers>0?`<span style="color:#33c48d;font-weight:700">${o.active_travellers}</span>`:'0'}</td>
+        <td style="padding:9px 12px">${orgLifecycleStatusBadge(st)}<div class="lead-muted">${esc(o.status_reason||'')}</div></td>
         <td style="padding:9px 12px;color:var(--muted);font-size:12px">${fmtDate(o.created_at)}</td>
-        <td style="padding:9px 12px"><button class="btn" style="font-size:12px;padding:4px 10px" data-drill-id="${esc(o.id)}">View →</button></td>
-      </tr>`).join('');
+        <td style="padding:9px 12px"><div class="org-lifecycle-actions"><button class="btn" style="font-size:12px;padding:4px 10px" data-drill-id="${esc(o.id)}">View →</button>${nextBtn}${archiveBtn}</div></td>
+      </tr>`;
+    }).join('');
 
     body.querySelectorAll('[data-drill-id]').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); openOrgDrill(btn.dataset.drillId); });
+    });
+    body.querySelectorAll('[data-org-status-action]').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); updateOrgLifecycleStatus(btn.dataset.orgStatusId, btn.dataset.orgStatusAction, btn); });
     });
     body.querySelectorAll('.org-row').forEach(tr => {
       tr.addEventListener('click', () => openOrgDrill(tr.dataset.orgId));
       tr.addEventListener('mouseenter', () => tr.style.background='rgba(255,255,255,.03)');
       tr.addEventListener('mouseleave', () => tr.style.background='');
     });
+  }
+
+  async function updateOrgLifecycleStatus(orgId, status, btn){
+    if(!orgId || !status) return;
+    const label = status === 'suspended' ? 'suspend' : status === 'archived' ? 'archive' : 'reactivate';
+    const reason = prompt(`Reason to ${label} this organisation?`, status === 'suspended' ? 'Manual suspension' : status === 'archived' ? 'Administrative archive' : 'Manual reactivation');
+    if(reason === null) return;
+    const notes = prompt('Optional internal notes for the lifecycle timeline:', '') || '';
+    const old = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.textContent = 'Saving…'; }
+    try{
+      const res = await fetch(`${API}/api/admin/org-lifecycle/status`, {
+        method:'POST',
+        headers:{...authH(),'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({ org_id:orgId, status, reason, notes })
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || !data.ok) throw new Error(data.error || `Status update failed: ${res.status}`);
+      await loadPlatformStats();
+    }catch(e){
+      alert('Unable to update organisation lifecycle: '+(e.message||e));
+      if(btn){ btn.disabled = false; btn.textContent = old; }
+    }
+
+
+  function renderOrgLifecycleSummary(orgs=[]){
+    const counts = {trial:0, active:0, grace:0, suspended:0, archived:0};
+    (orgs||[]).forEach(o=>{ const s=String(o.org_status||'active').toLowerCase(); counts[counts[s]===undefined?'active':s]++; });
+    ['trial','active','grace','suspended','archived'].forEach(k=>{
+      const el=document.getElementById('orgLifecycle_'+k); if(el) el.textContent = counts[k] || 0;
+    });
+  }
   }
 
   // Search filter
