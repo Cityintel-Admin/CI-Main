@@ -1322,12 +1322,11 @@
       <div class="lead-inbox-compose">
         <input id="leadInboxSubject" type="text" placeholder="Subject" />
         <select id="leadInboxSender" title="Send as">
-          <option value="contact" selected>City-Intel Team &lt;contact@city-intel.com&gt;</option>
+          <option value="contact" selected>CityIntel Team &lt;contact@city-intel.com&gt;</option>
           <option value="carltonjl">Carlton John-Lewis &lt;carltonjl@city-intel.com&gt;</option>
           <option value="morrism">Morris Martin &lt;MorrisM@city-intel.com&gt;</option>
-		  <option value="sales" selected>City-Intel Sales Team &lt;sales@city-intel.com&gt;</option>
         </select>
-        <div id="leadInboxFromNote" class="lead-modal-note">This reply will be sent from City-Intel &lt;contact@city-intel.com&gt;.</div>
+        <div id="leadInboxFromNote" class="lead-modal-note">This reply will be sent from CityIntel &lt;contact@city-intel.com&gt;.</div>
         <textarea id="leadInboxReply" placeholder="Type a reply to the lead..."></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
           <label class="lead-action-btn reply" style="cursor:pointer;margin:0">
@@ -6574,6 +6573,144 @@ document.addEventListener('DOMContentLoaded',function(){
       fetch(`${API}/api/metrics/page-view`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true}).catch(()=>{});
     }
   }catch(_){}
+})();
+</script>
+
+
+
+<style>
+/* Phase 14E.4 — Analytics layout polish + collapsible commercial sections */
+.ci-section-collapse-toggle{margin-left:auto;white-space:nowrap}
+.ci-collapsible-section{position:relative}
+.ci-collapsible-section.ci-is-collapsed{padding-bottom:14px}
+.ci-collapsible-section.ci-is-collapsed > .ci-collapsible-hidden{display:none!important}
+.ci-section-summary{color:var(--muted);font-size:12px;margin-top:6px}
+.ci-access-lifecycle-label{margin:18px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ci-access-lifecycle-label h2{margin:0;font-size:18px;font-weight:800}
+.ci-access-lifecycle-label .legend{margin-top:2px}
+</style>
+<script>
+/* Phase 14E.4 — Re-order the admin lifecycle sections and collapse lower-frequency commercial areas. */
+(function(){
+  if(window.__ciAnalyticsLayoutPolish144) return;
+  window.__ciAnalyticsLayoutPolish144 = true;
+
+  function norm(s){ return String(s||'').replace(/\s+/g,' ').trim().toLowerCase(); }
+  function titleOf(section){
+    const h = section && section.querySelector && section.querySelector('h1,h2,h3,h4');
+    return norm(h ? h.textContent : '');
+  }
+  function findSectionByTitle(title){
+    const target = norm(title);
+    return Array.from(document.querySelectorAll('section.card,.card')).find(el => titleOf(el) === target) || null;
+  }
+  function findFirstSectionContaining(title){
+    const target = norm(title);
+    return Array.from(document.querySelectorAll('section.card,.card')).find(el => titleOf(el).includes(target)) || null;
+  }
+  function parentGridForCardTitle(title){
+    const card = findSectionByTitle(title);
+    return card ? card.closest('.grid') : null;
+  }
+  function insertLifecycleAnchor(beforeEl){
+    let anchor = document.getElementById('ciAccessLifecycleAnchor');
+    if(anchor) return anchor;
+    anchor = document.createElement('div');
+    anchor.id = 'ciAccessLifecycleAnchor';
+    anchor.className = 'ci-access-lifecycle-label';
+    anchor.innerHTML = '<div><h2>Access, Customer Health & Lead Operations</h2><div class="legend">Daily review area for lead health, request pipeline, trial activation, review queue and lead replies.</div></div>';
+    if(beforeEl && beforeEl.parentNode) beforeEl.parentNode.insertBefore(anchor, beforeEl);
+    return anchor;
+  }
+  function moveAfter(anchor, el){
+    if(!anchor || !el || !anchor.parentNode) return anchor;
+    anchor.parentNode.insertBefore(el, anchor.nextSibling);
+    return el;
+  }
+  function rearrangeDailySections(){
+    const llm = document.getElementById('llmUsageCard') || findSectionByTitle('AI Token Usage');
+    const before = llm || document.getElementById('liveSessionsCard') || document.querySelector('main .card');
+    const anchor = insertLifecycleAnchor(before);
+    let cursor = anchor;
+
+    const customerHealth = document.getElementById('customerHealthCard') || findSectionByTitle('Customer Health');
+    const leadKpis = parentGridForCardTitle('Access Requests');
+    const trialAudit = document.getElementById('trialAuditCard') || findSectionByTitle('Trial Activation Audit');
+    const reviewQueue = findSectionByTitle('Access Request Review Queue');
+    const leadInbox = findSectionByTitle('Access / Lead Inbox');
+
+    [customerHealth, leadKpis, trialAudit, reviewQueue, leadInbox].forEach(el => { if(el) cursor = moveAfter(cursor, el); });
+  }
+
+  function addCollapse(section, label){
+    if(!section || section.dataset.ciCollapsedReady === '1') return;
+    section.dataset.ciCollapsedReady = '1';
+    section.classList.add('ci-collapsible-section');
+    const key = 'ci.analytics.section.open.' + (section.id || norm(label).replace(/[^a-z0-9]+/g,'-'));
+    const header = Array.from(section.children).find(ch => ch.querySelector && ch.querySelector('h2,h3,h4')) || section.firstElementChild;
+    Array.from(section.children).forEach(ch => { if(ch !== header) ch.classList.add('ci-collapsible-hidden'); });
+    if(header){
+      header.classList.add('ci-original-head');
+      let btn = section.querySelector(':scope .ci-section-collapse-toggle');
+      if(!btn){
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn ci-section-collapse-toggle';
+        btn.style.float = 'right';
+        btn.style.marginLeft = '8px';
+        btn.setAttribute('aria-expanded','false');
+        const target = header.querySelector('[style*="justify-content:space-between"], div') || header;
+        if(target && target.appendChild) target.appendChild(btn); else header.appendChild(btn);
+      }
+      const summary = document.createElement('div');
+      summary.className = 'ci-section-summary ci-collapsed-summary';
+      summary.textContent = 'Collapsed by default to keep Analytics focused on daily lead/customer operations. Open when needed.';
+      if(!section.querySelector(':scope > .ci-collapsed-summary')) section.appendChild(summary);
+      function apply(open){
+        section.classList.toggle('ci-is-collapsed', !open);
+        btn.textContent = open ? 'Collapse' : 'Open';
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        localStorage.setItem(key, open ? '1' : '0');
+      }
+      btn.addEventListener('click', ()=>apply(section.classList.contains('ci-is-collapsed')));
+      apply(localStorage.getItem(key) === '1');
+    }
+  }
+
+  function collapseCommercialSections(){
+    const sections = [
+      document.getElementById('customerSuccessCard'),
+      document.getElementById('customerSuccessDashboardCard'),
+      document.getElementById('contractManagementCard'),
+      document.getElementById('slaManagementCard'),
+      document.getElementById('creditNotesManagementCard'),
+      document.getElementById('procurementManagementCard'),
+      findFirstSectionContaining('Revenue & Pricing'),
+      findFirstSectionContaining('Executive Commercial Dashboard'),
+      findFirstSectionContaining('Enterprise Account Management')
+    ].filter(Boolean);
+    Array.from(new Set(sections)).forEach(sec => addCollapse(sec, titleOf(sec)));
+  }
+
+  function polishAccessReviewQueue(){
+    const reviewQueue = findSectionByTitle('Access Request Review Queue');
+    if(!reviewQueue || reviewQueue.dataset.ciReviewPolished === '1') return;
+    reviewQueue.dataset.ciReviewPolished = '1';
+    const note = document.createElement('div');
+    note.className = 'legend';
+    note.style.margin = '8px 0 0';
+    note.innerHTML = '<b>Note:</b> rejecting a request only removes/rejects the access request. It does not delete an already-created organisation or user account.';
+    const head = Array.from(reviewQueue.children).find(ch => ch.querySelector && ch.querySelector('h3')) || reviewQueue.firstElementChild;
+    if(head && !reviewQueue.querySelector('.ci-review-request-note')){ note.classList.add('ci-review-request-note'); head.appendChild(note); }
+  }
+
+  function init(){
+    rearrangeDailySections();
+    collapseCommercialSections();
+    polishAccessReviewQueue();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.addEventListener('load', init);
 })();
 </script>
 
