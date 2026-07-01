@@ -1193,6 +1193,48 @@
   </div>
 </section>
 
+<!-- ── Visitor Analytics (Phase 16B) — public marketing site telemetry ──── -->
+<section class="card" id="visitorAnalyticsCard" style="margin-bottom:20px;display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Visitor Analytics</h3>
+      <div class="legend">Anonymous, pre-login traffic on city-intel.com — who's landing on the site and whether they go beyond the first page.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <select id="visitorAnalyticsWindow" style="background:#1c1e22;border:1px solid var(--g600);color:var(--text);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none">
+        <option value="1">Today</option>
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+      <button id="visitorAnalyticsRefreshBtn" class="btn" style="font-size:12px;padding:5px 10px">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="commercial-grid">
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Unique visitors</div><div id="vaUniqueVisitors" class="money">—</div><div class="legend">Anonymous + logged-in</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Page views</div><div id="vaPageViews" class="money">—</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Single-page visits</div><div id="vaBounceRate" class="money" style="color:#f0b429">—</div><div class="legend">Landed, viewed one page, left</div></div>
+    <div class="commercial-kpi" style="grid-column:span 3"><div class="label">Went beyond page 1</div><div id="vaEngagedVisitors" class="money" style="color:#33c48d">—</div><div class="legend">Anonymous visitors, this window</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Most-viewed pages</div>
+      <div id="vaTopPages" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden"></div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Where people leave (single-page-only)</div>
+      <div id="vaBouncePages" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px">
+    <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Visitors by country</div>
+    <div id="vaCountries" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden"></div>
+  </div>
+</section>
+
 <section class="card" id="supportInboxCard" style="margin-bottom:20px;display:none">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
     <div>
@@ -4595,6 +4637,75 @@ const makeBar = (label, count, color) => {
 })();
 </script>
 
+<!-- ── Visitor Analytics Panel (Phase 16B) ─────────────────────────────── -->
+<script>
+(function(){
+  if(!window.CIAuth || !CIAuth.isMasterAdmin()) return;
+  const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const card = document.getElementById('visitorAnalyticsCard');
+  if(!card) return;
+  card.style.display = '';
+
+  const windowSel = document.getElementById('visitorAnalyticsWindow');
+  const refreshBtn = document.getElementById('visitorAnalyticsRefreshBtn');
+
+  function who(){ try{return(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(JSON.parse(localStorage.getItem('ci_user')||'{}'));}catch{return{};} }
+  function authH(){
+    const u=who(),h={'Content-Type':'application/json','Accept':'application/json'};
+    if(u.email)h['X-User-Email']=u.email;
+    if(u.name)h['X-User-Name']=u.name;
+    if(u.id)h['X-User-Id']=u.id;
+    if(window.CIAuth?.isMasterAdmin?.())h['X-User-Role']='MasterAdmin';
+    return h;
+  }
+  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+  function listRows(id, rows, valueKey, labelFmt){
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(!rows || !rows.length){ el.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:13px">No data for this window yet.</div>`; return; }
+    el.innerHTML = rows.map(r => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--g600);font-size:13px">
+        <span>${esc(labelFmt(r))}</span>
+        <strong>${Number(r[valueKey]||0).toLocaleString()}</strong>
+      </div>`).join('');
+  }
+
+  async function loadVisitorAnalytics(){
+    const days = windowSel ? windowSel.value : '30';
+    try {
+      const res = await fetch(`${API}/api/admin/website/analytics?days=${encodeURIComponent(days)}`, { headers: authH() });
+      const d = await res.json().catch(()=>({}));
+      if(!d.ok) throw new Error(d.error||'Failed to load visitor analytics');
+
+      set('vaUniqueVisitors', Number(d.unique_visitors||0).toLocaleString());
+      set('vaPageViews', Number(d.page_views||0).toLocaleString());
+
+      const eng = d.engagement || {};
+      const bouncePct = Number(eng.bounce_rate_pct||0);
+      set('vaBounceRate', `${bouncePct}%`);
+      set('vaEngagedVisitors', Number(eng.multi_page_visitors||0).toLocaleString());
+
+      listRows('vaTopPages', d.top_pages, 'views', r => r.page || '/');
+      listRows('vaBouncePages', eng.top_single_page_only, 'visitors', r => r.page || '/');
+      listRows('vaCountries', d.countries, 'views', r => r.country || 'Unknown');
+    } catch(e){
+      set('vaUniqueVisitors', '—');
+      set('vaPageViews', '—');
+      set('vaBounceRate', '—');
+      set('vaEngagedVisitors', '—');
+      const err = `<div style="padding:12px;color:#fca5a5;font-size:13px">Failed to load: ${esc(String(e?.message||e))}</div>`;
+      ['vaTopPages','vaBouncePages','vaCountries'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML = err; });
+    }
+  }
+
+  if(windowSel) windowSel.addEventListener('change', loadVisitorAnalytics);
+  if(refreshBtn) refreshBtn.addEventListener('click', loadVisitorAnalytics);
+
+  loadVisitorAnalytics();
+})();
+</script>
+
 <!-- ── Support Inbox Panel ──────────────────────────────────────────────── -->
 <script>
 (function(){
@@ -7218,6 +7329,14 @@ document.addEventListener('DOMContentLoaded',function(){
     if(customerHealth && live && live.previousElementSibling !== customerHealth){
       insertAfter(customerHealth, live);
       live.style.display = '';
+    }
+
+    // Visitor Analytics travels with Live Sessions — both are "who's around
+    // right now" telemetry, kept adjacent regardless of where Live Sessions
+    // ends up.
+    const visitorAnalytics = document.getElementById('visitorAnalyticsCard');
+    if(live && visitorAnalytics && visitorAnalytics.previousElementSibling !== live){
+      insertAfter(live, visitorAnalytics);
     }
 
     // Nest AI Token Usage inside AI Operations Centre so the whole AI layer
