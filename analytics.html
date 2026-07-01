@@ -102,6 +102,8 @@
     .org-status-badge.active{border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.12)}
     .org-status-badge.grace{border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)}
     .org-status-badge.suspended{border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)}
+    .org-grace-countdown{display:inline-block;margin-top:3px;font-size:11px;color:#fde68a}
+    .org-grace-countdown.org-grace-expired{color:#fecaca}
     .org-status-badge.archived{border-color:#64748b;color:#cbd5e1;background:rgba(100,116,139,.12)}
     .org-lifecycle-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
     .org-lifecycle-actions .lead-action-btn{white-space:nowrap}
@@ -3934,6 +3936,23 @@ const makeBar = (label, count, color) => {
     return `<span class="org-status-badge ${esc(s)}">${esc(label)}</span>`;
   }
 
+  // Phase 16A grace period — renders a small "X days left" indicator for
+  // orgs currently in grace, using the grace_ends_at already returned by
+  // /api/admin/platform-stats and /api/admin/org-lifecycle/overview.
+  function graceCountdownLabel(graceEndsAt){
+    if(!graceEndsAt) return '';
+    const end = new Date(graceEndsAt).getTime();
+    if(!Number.isFinite(end)) return '';
+    const msLeft = end - Date.now();
+    if(msLeft <= 0){
+      return `<span class="org-grace-countdown org-grace-expired">Grace period expired — awaiting auto-suspend</span>`;
+    }
+    const days = Math.floor(msLeft / 86400000);
+    const hours = Math.floor((msLeft % 86400000) / 3600000);
+    const remaining = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+    return `<span class="org-grace-countdown">⏳ Grace ends in ${esc(remaining)} (${esc(fmtDate(graceEndsAt))})</span>`;
+  }
+
   function renderOrgTable(orgs){
     const body = document.getElementById('orgListBody');
     if(!orgs.length){ body.innerHTML=`<tr><td colspan="9" style="padding:16px;color:var(--muted)">No organisations found.</td></tr>`; return; }
@@ -3954,7 +3973,7 @@ const makeBar = (label, count, color) => {
         <td style="padding:9px 12px">${o.assets||0}</td>
         <td style="padding:9px 12px">${o.travellers||0}</td>
         <td style="padding:9px 12px">${o.active_travellers>0?`<span style="color:#33c48d;font-weight:700">${o.active_travellers}</span>`:'0'}</td>
-        <td style="padding:9px 12px">${orgLifecycleStatusBadge(st)}<div class="lead-muted">${esc(o.status_reason||'')}</div></td>
+        <td style="padding:9px 12px">${orgLifecycleStatusBadge(st)}<div class="lead-muted">${esc(o.status_reason||'')}</div>${st==='grace'?graceCountdownLabel(o.grace_ends_at):''}</td>
         <td style="padding:9px 12px;color:var(--muted);font-size:12px">${fmtDate(o.created_at)}</td>
         <td style="padding:9px 12px"><div class="org-lifecycle-actions"><button class="btn" style="font-size:12px;padding:4px 10px" data-drill-id="${esc(o.id)}">View →</button>${nextBtn}${archiveBtn}</div></td>
       </tr>`;
@@ -4134,7 +4153,8 @@ const makeBar = (label, count, color) => {
 
       const o = d.org||{};
       document.getElementById('orgDrillTitle').textContent = o.name||orgId;
-      document.getElementById('orgDrillMeta').innerHTML = `ID: ${esc(o.id)} · Invite: ${esc(o.invite_code||'—')} · Status: ${orgLifecycleStatusBadge(o.org_status||'active')} · Created: ${fmtDate(o.created_at)}`;
+      const drillGrace = String(o.org_status||'').toLowerCase()==='grace' ? ` · ${graceCountdownLabel(o.grace_ends_at)}` : '';
+      document.getElementById('orgDrillMeta').innerHTML = `ID: ${esc(o.id)} · Invite: ${esc(o.invite_code||'—')} · Status: ${orgLifecycleStatusBadge(o.org_status||'active')} · Created: ${fmtDate(o.created_at)}${drillGrace}`;
 
       // Show Onboard button if we can link to a lead request
       // Fetch the org's onboarding config to get the lead_id
