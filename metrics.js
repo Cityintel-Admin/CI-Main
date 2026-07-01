@@ -7,6 +7,9 @@
   const HEARTBEAT_INTERVAL_MS = 60 * 1000;
   const HEARTBEAT_RETRY_MS = 2500;
   const HEARTBEAT_MAX_BOOT_WAIT_MS = 15000;
+  const PAGEVIEW_PATH = '/api/metrics/page-view';
+  const VISITOR_ID_KEY = 'ci_visitor_id';
+  const SESSION_ID_KEY = 'ci_session_id';
 
   function read() {
     try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; }
@@ -198,6 +201,65 @@
     } catch { return ''; }
   }
 
+  function genId(){
+    try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (_) {}
+    return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+  }
+
+  // Persistent per-browser visitor id (survives across visits/sessions) and
+  // a per-tab session id — this is what lets the server tell "one visitor
+  // who viewed 3 pages" apart from "three separate visitors who viewed 1
+  // page each", which is the actual question behind bounce/engagement.
+  function getOrCreateVisitorId(){
+    try {
+      let id = localStorage.getItem(VISITOR_ID_KEY);
+      if (!id) { id = genId(); localStorage.setItem(VISITOR_ID_KEY, id); }
+      return id;
+    } catch (_) { return genId(); }
+  }
+
+  function getOrCreateSessionId(){
+    try {
+      let id = sessionStorage.getItem(SESSION_ID_KEY);
+      if (!id) { id = genId(); sessionStorage.setItem(SESSION_ID_KEY, id); }
+      return id;
+    } catch (_) { return genId(); }
+  }
+
+  function pageViewPayload(){
+    const p = readPossibleProfile();
+    return {
+      visitor_id: getOrCreateVisitorId(),
+      session_id: getOrCreateSessionId(),
+      page_path: (location.pathname || '/'),
+      page_url: location.href,
+      referrer: document.referrer || '',
+      is_logged_in: !!p.email,
+      user_email: p.email || '',
+      org_id: p.orgId || ''
+    };
+  }
+
+  // Fire-and-forget page view beacon. Uses sendBeacon when available so it
+  // reliably fires even if the visitor navigates away immediately (the
+  // whole point of measuring single-page visits), falling back to a
+  // keepalive fetch on older browsers.
+  function sendPageView(){
+    let body;
+    try { body = JSON.stringify(pageViewPayload()); } catch (_) { return false; }
+    const url = `${API_BASE}${PAGEVIEW_PATH}`;
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: 'application/json' });
+        if (navigator.sendBeacon(url, blob)) return true;
+      }
+    } catch (_) {}
+    try {
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(()=>{});
+      return true;
+    } catch (_) { return false; }
+  }
+
   function heartbeatPayload(){
     const p = readPossibleProfile();
     return {
@@ -280,13 +342,16 @@
       const list = read(); list.push(ev); write(list);
     },
     sendHeartbeat,
+    sendPageView,
     getHeartbeatPayload: heartbeatPayload,
+    getPageViewPayload: pageViewPayload,
     getEvents() { return read(); }
   };
 
   window.CIMetrics = CIMetrics;
 
   try { CIMetrics.logVisit(); } catch(e) {}
+  try { sendPageView(); } catch(e) {}
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', startHeartbeat, { once: true });
