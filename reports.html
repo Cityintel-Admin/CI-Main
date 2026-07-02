@@ -223,6 +223,14 @@
     .verify-table th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
     .verify-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
     .verify-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--gray-600);border-radius:999px;padding:3px 8px;font-size:11px;color:var(--muted)}
+    .evidence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .evidence-card{border:1px solid var(--gray-600);border-radius:12px;background:rgba(255,255,255,.02);padding:12px}
+    .evidence-card b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}.evidence-card span{font-size:22px;font-weight:900}
+    .confidence-bar{height:9px;background:#101216;border:1px solid var(--gray-600);border-radius:999px;overflow:hidden;margin-top:8px}.confidence-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--warn),var(--ok));border-radius:999px}
+    .evidence-level{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(51,196,141,.45);background:rgba(51,196,141,.08);color:#bbf7d0;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900}
+    .star-rating{letter-spacing:1px;color:#fde68a;font-weight:900}
+    @media(max-width:900px){.evidence-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:640px){.evidence-grid{grid-template-columns:1fr}}
     @media(max-width:1100px){.framework-grid .field,.framework-grid .field.wide{grid-column:span 6}}
     @media(max-width:640px){.framework-grid .field,.framework-grid .field.wide{grid-column:1/-1}}
 
@@ -340,7 +348,7 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px">
           <div>
             <h2 style="margin-bottom:4px">Intelligence Report Framework</h2>
-            <div class="subtle">Phase 15B.2 expands the verified-data model beyond crime, allowing high-trust report subjects to use the same Master Admin review workflow before records enter client-facing reports.</div>
+            <div class="subtle">Phase 15C.1 adds the Intelligence Evidence Builder: verified records are converted into an evidence pack, confidence score, evidence level, intelligence gaps and collection priorities before the report narrative is produced.</div>
           </div>
           <span class="source-lock">Verified CityIntel baseline protected</span>
         </div>
@@ -393,7 +401,7 @@
         <div class="framework-actions">
           <button class="btn primary" id="frameworkBuildBtn">Build selected report</button>
           <button class="btn" id="frameworkScopeBtn">Open scope tools after build</button>
-          <span class="subtle">High-trust subjects use verified records only. Lower-risk supporting categories remain planned for mixed-source workflows later.</span>
+          <span class="subtle">High-trust subjects use verified records only. Evidence packs now show source strength, confidence, gaps and collection priorities before analyst publication.</span>
         </div>
       </section>
 
@@ -2191,12 +2199,12 @@
       } catch(err) { alert(`Unable to seed review queue: ${err.message || err}`); }
       finally { if (el.seedCrimeReviewBtn) el.seedCrimeReviewBtn.disabled = false; }
     }
-    async function updateSourceReview(id, status){
+    async function updateSourceReview(id, status, quality=3){
       try {
         const res = await fetch(`${API_BASE}/api/report-sources/review/${encodeURIComponent(id)}`, {
           method:'PUT',
           headers: authHeaders({ 'Content-Type':'application/json' }),
-          body: JSON.stringify({ status, notes: status === 'verified' ? 'Verified for CityIntel report use.' : 'Rejected from verified report dataset.' })
+          body: JSON.stringify({ status, verification_quality: quality, notes: status === 'verified' ? `Verified for CityIntel report use. Quality ${quality}/5.` : 'Rejected from verified report dataset.' })
         });
         const data = await res.json().catch(()=>null);
         if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
@@ -2209,32 +2217,56 @@
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       return Array.isArray(data.data) ? data.data : [];
     }
+    async function fetchReportEvidencePack(subject){
+      const res = await fetch(`${API_BASE}/api/reports/evidence-pack?subject=${encodeURIComponent(subject)}&sourceMode=verified&limit=160`, { headers: authHeaders() });
+      const data = await res.json().catch(()=>null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      return data.evidence_pack || null;
+    }
+    function stars(n){ n = Math.max(1, Math.min(5, Math.round(Number(n||3)))); return '★★★★★'.slice(0,n) + '☆☆☆☆☆'.slice(0,5-n); }
+    function evidenceList(items, empty='No items identified yet.'){
+      return Array.isArray(items) && items.length ? `<ul>${items.map(x=>`<li>${esc(typeof x === 'string' ? x : `${x.name || x.label || 'Item'} — ${x.count || x.value || ''}`)}</li>`).join('')}</ul>` : `<div class="muted">${esc(empty)}</div>`;
+    }
     function countBy(rows, getter){
       const m = new Map();
       rows.forEach(r => { const k = getter(r) || 'Unspecified'; m.set(k, (m.get(k) || 0) + 1); });
       return [...m.entries()].sort((a,b)=>b[1]-a[1]);
     }
-    function buildVerifiedSubjectDraftFromRows(rows, type, subject){
+    function buildVerifiedSubjectDraftFromRows(rows, type, subject, evidencePack=null){
       const meta = subjectMeta(subject);
       const now = new Date();
       const periodLabel = type === 'weekly' ? 'Verified queue — current weekly view' : 'Verified queue — latest reviewed period';
-      const riskCounts = { High:0, Medium:0, Low:0 };
-      rows.forEach(r => { const rk = normaliseRisk(r.risk || 'Low'); riskCounts[rk] = (riskCounts[rk] || 0) + 1; });
-      const topCities = countBy(rows, r => r.city || r.country).slice(0,6);
-      const topSources = countBy(rows, r => r.src || 'Source').slice(0,5);
-      const highRows = rows.filter(r => normaliseRisk(r.risk) === 'High').slice(0,10);
+      const pack = evidencePack || {};
+      const stats = pack.statistics || {};
+      const confidence = pack.confidence || { score: 0, band: 'Low', reasons: [] };
+      const evidence = pack.evidence_level || { level:'Level B', label:'Verified CityIntel Data', description:'Master Admin verified records' };
+      const quality = pack.verification_quality || { average: 3, label: 'Verified' };
+      const patterns = pack.patterns || {};
+      const sourceBreakdown = pack.source_breakdown || [];
+      const highRows = (rows || []).filter(r => normaliseRisk(r.risk) === 'High').slice(0,10);
       const title = `${meta.label} — ${now.toLocaleDateString('en-GB', { month:'long', year:'numeric' })}`;
-      const summaryHtml = `<p>This ${esc(meta.label)} draft uses <strong>${rows.length}</strong> Master Admin verified source item${rows.length===1?'':'s'} from the CityIntel review queue. It separates analyst-verified reporting inputs from unreviewed API/live-alert data.</p>`;
-      const statHtml = `<div class="mini-grid"><div class="mini-card"><div class="k">Verified items</div><div class="v">${rows.length}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${riskCounts.High || 0}</div></div><div class="mini-card"><div class="k">Locations</div><div class="v">${topCities.length}</div></div></div>`;
-      const topCityHtml = topCities.length ? `<ul>${topCities.map(([k,v])=>`<li><strong>${esc(k)}</strong> — ${v} verified item${v===1?'':'s'}</li>`).join('')}</ul>` : '<div class="muted">No location concentration available yet.</div>';
-      const highHtml = highRows.length ? highRows.map(r => `<div class="event-card"><div class="title">${esc(r.title || 'Untitled')}</div><div class="meta">${esc([r.city,r.country].filter(Boolean).join(', ') || '—')} · ${esc(fmtShortDateTime(r.event_when || r.created_at))} · ${esc(r.src || 'source')} · ${sourceStatusPill(r.status)}</div><div class="sum">${esc(r.summary || '')}</div></div>`).join('') : `<div class="muted">No high-risk verified ${esc(meta.label.toLowerCase())} items in the selected dataset.</div>`;
-      const sourceHtml = topSources.length ? `<ul>${topSources.map(([k,v])=>`<li>${esc(k)} — ${v}</li>`).join('')}</ul>` : '<div class="muted">No source breakdown available.</div>';
+      const riskCounts = stats.risk_counts || { High:0, Medium:0, Low:0 };
+      const sourceHtml = sourceBreakdown.length ? `<ul>${sourceBreakdown.map(s=>`<li><strong>${esc(s.source || s.name || 'Source')}</strong> — ${Number(s.count||0)} verified item${Number(s.count||0)===1?'':'s'}</li>`).join('')}</ul>` : '<div class="muted">No source breakdown available.</div>';
+      const locationHtml = evidenceList((patterns.top_locations || []).map(x => ({ name:x.location || x.name, count:x.count })), 'No location concentration available yet.');
+      const timelineHtml = evidenceList((pack.timeline || []).map(x => ({ name:x.label || x.period, count:x.count })), 'Timeline will populate once verified records contain event dates.');
+      const highHtml = highRows.length ? highRows.map(r => `<div class="event-card"><div class="title">${esc(r.title || 'Untitled')}</div><div class="meta">${esc([r.city,r.country].filter(Boolean).join(', ') || '—')} · ${esc(fmtShortDateTime(r.event_when || r.created_at))} · ${esc(r.src || 'source')} · ${sourceStatusPill(r.status)} · <span class="star-rating">${stars(r.verification_quality || quality.average)}</span></div><div class="sum">${esc(r.summary || '')}</div></div>`).join('') : `<div class="muted">No high-risk verified ${esc(meta.label.toLowerCase())} items in the selected dataset.</div>`;
+      const summaryHtml = `<p>This ${esc(meta.label)} draft uses <strong>${Number(stats.total || rows.length || 0)}</strong> Master Admin verified source item${Number(stats.total || rows.length || 0)===1?'':'s'}. The report has been assembled from a structured evidence pack before narrative drafting, preserving the distinction between verified CityIntel intelligence and unreviewed live/API candidates.</p>`;
       el.draftTitle.textContent = title;
-      el.draftSubtitle.textContent = `Generated from Master Admin verified ${meta.label} source-review records.`;
-      el.draftBadges.innerHTML = `<span class="pill high">${esc(meta.label)}</span><span class="source-lock">Verified CityIntel review queue</span><span class="pill med">${reportTypeLabel(type)}</span>`;
-      el.draftBody.innerHTML = `<div class="section"><h3>Source assurance</h3><p>This draft only uses items that have been reviewed and marked verified by a CityIntel Master Admin. Unverified API/live-alert candidates remain outside the report dataset until approved.</p></div><div class="section"><h3>Executive summary</h3>${summaryHtml}</div><div class="section"><h3>Key metrics</h3>${statHtml}</div><div class="section"><h3>Location concentration</h3>${topCityHtml}</div><div class="section"><h3>High-risk verified items</h3><div class="list-tight">${highHtml}</div></div><div class="section"><h3>Source breakdown</h3>${sourceHtml}</div><div class="section"><h3>Analyst recommendations</h3><ul><li>${esc(meta.recommendation || 'Review verified items before client publication.')}</li><li>Check for repeated themes, geography and severity concentration.</li><li>Keep source assurance visible in final reports to preserve the CityIntel verified-data trust model.</li></ul></div>`;
+      el.draftSubtitle.textContent = `Generated from a CityIntel evidence pack built from verified ${meta.label} records.`;
+      el.draftBadges.innerHTML = `<span class="pill high">${esc(meta.label)}</span><span class="evidence-level">${esc(evidence.level || 'Level A')} — ${esc(evidence.label || 'Verified')}</span><span class="source-lock">Confidence ${Number(confidence.score || 0)}%</span><span class="pill med">${reportTypeLabel(type)}</span>`;
+      el.draftBody.innerHTML = `
+        <div class="section"><h3>Source assurance</h3><p>This draft only uses items reviewed and marked verified by a CityIntel Master Admin. Unverified API/live-alert candidates remain outside the report dataset until approved.</p><p><strong>${esc(evidence.level || 'Evidence Level')}</strong>: ${esc(evidence.description || 'Verified CityIntel intelligence.')}</p></div>
+        <div class="section"><h3>Evidence pack</h3><div class="evidence-grid"><div class="evidence-card"><b>Verified records</b><span>${Number(stats.total || rows.length || 0)}</span></div><div class="evidence-card"><b>High risk</b><span>${Number(riskCounts.High || 0)}</span></div><div class="evidence-card"><b>Locations</b><span>${Number(stats.location_count || (patterns.top_locations||[]).length || 0)}</span></div><div class="evidence-card"><b>Verification quality</b><span class="star-rating">${stars(quality.average)}</span></div></div></div>
+        <div class="section"><h3>Confidence assessment</h3><div class="evidence-grid"><div class="evidence-card"><b>Overall confidence</b><span>${Number(confidence.score || 0)}%</span><div class="confidence-bar"><span style="width:${Math.max(0, Math.min(100, Number(confidence.score || 0)))}%"></span></div></div><div class="evidence-card"><b>Confidence band</b><span>${esc(confidence.band || 'Low')}</span></div><div class="evidence-card"><b>Evidence level</b><span>${esc(evidence.level || '—')}</span></div><div class="evidence-card"><b>Source diversity</b><span>${Number(stats.source_count || sourceBreakdown.length || 0)}</span></div></div>${evidenceList(confidence.reasons || [], 'No confidence notes available.')}</div>
+        <div class="section"><h3>Executive summary</h3>${summaryHtml}</div>
+        <div class="section"><h3>Pattern analysis</h3><div class="mini-grid"><div class="mini-card"><div class="k">Most active area</div><div class="v">${esc(patterns.most_active_area || '—')}</div></div><div class="mini-card"><div class="k">Dominant risk</div><div class="v">${esc(patterns.dominant_risk || '—')}</div></div><div class="mini-card"><div class="k">Top source</div><div class="v">${esc(patterns.top_source || '—')}</div></div></div><h3 style="margin-top:12px">Location concentration</h3>${locationHtml}</div>
+        <div class="section"><h3>Timeline</h3>${timelineHtml}</div>
+        <div class="section"><h3>High-risk verified items</h3><div class="list-tight">${highHtml}</div></div>
+        <div class="section"><h3>Source breakdown</h3>${sourceHtml}</div>
+        <div class="section"><h3>Intelligence gaps</h3>${evidenceList(pack.intelligence_gaps || [], 'No major intelligence gaps identified from the current verified dataset.')}</div>
+        <div class="section"><h3>Collection priorities</h3>${evidenceList(pack.collection_priorities || [meta.recommendation || 'Review verified items before client publication.', 'Check for repeated themes, geography and severity concentration.', 'Keep source assurance visible in final reports to preserve the CityIntel verified-data trust model.'])}</div>`;
       const brandedFallback = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body>${el.draftBody.innerHTML}</body></html>`;
-      currentDraftState = { buildType:type, reportSubject:subject, reportSubjectLabel:meta.label, sourceMode:'verified', sourceTrust:meta.trustNote || 'CityIntel verified by Master Admin review queue', audience:currentReportDefinition.audience || 'ops', monthKey:new Date().toISOString().slice(0,7), regionFilter:'', scopeMode:'global', selectedRegions:[], scopeSelectionKey:'global', title, exportTitle:title, typeLabel:reportTypeLabel(type), periodLabel, subtitle:`${meta.label} generated from verified CityIntel review queue records.`, risk:(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), riskClass:riskClass(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), notes:`Generated from Master Admin verified ${meta.label} source-review records.`, keywords:[subject,'verified','source-review'], metrics:{events:rows.length, high:riskCounts.High || 0, countries:topCities.length}, compareMeta:null, compareScope:`verified ${meta.label} source queue`, comparePreviousId:'', comparePreviousTitle:'', summaryHtml, deltaHtml:'', eventsHtml:highHtml, themesHtml:'', regionalHtml:topCityHtml, recommendationsHtml:'', namedRegionsLine:topCities.map(([k,v])=>`${k} (${v})`).join(', '), thematicWatch:meta.watch || `${meta.label} verified source review`, exportFilename:`CityIntel_${slugify(title)}.html`, savedHtml:brandedFallback };
+      currentDraftState = { buildType:type, reportSubject:subject, reportSubjectLabel:meta.label, sourceMode:'verified', sourceTrust:meta.trustNote || 'CityIntel verified by Master Admin review queue', evidenceLevel:evidence.level || '', evidenceLabel:evidence.label || '', confidenceScore:Number(confidence.score || 0), verificationQuality:Number(quality.average || 3), audience:currentReportDefinition.audience || 'ops', monthKey:new Date().toISOString().slice(0,7), regionFilter:'', scopeMode:'global', selectedRegions:[], scopeSelectionKey:'global', title, exportTitle:title, typeLabel:reportTypeLabel(type), periodLabel, subtitle:`${meta.label} generated from a CityIntel verified evidence pack.`, risk:(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), riskClass:riskClass(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), notes:`Generated from Intelligence Evidence Builder using Master Admin verified ${meta.label} records.`, keywords:[subject,'verified','source-review','evidence-pack'], metrics:{events:Number(stats.total || rows.length || 0), high:riskCounts.High || 0, countries:Number(stats.location_count || 0)}, compareMeta:null, compareScope:`verified ${meta.label} evidence pack`, comparePreviousId:'', comparePreviousTitle:'', summaryHtml, deltaHtml:'', eventsHtml:highHtml, themesHtml:'', regionalHtml:locationHtml, recommendationsHtml:'', namedRegionsLine:(patterns.top_locations || []).map(x=>`${x.location || x.name} (${x.count})`).join(', '), thematicWatch:meta.watch || `${meta.label} verified source review`, exportFilename:`CityIntel_${slugify(title)}.html`, savedHtml:brandedFallback };
       currentDraftState.brandedHtml = buildBrandedReportHtml(currentDraftState);
       el.saveOrgDraftBtn.disabled = false; el.publishOrgBtn.disabled = false; el.saveMasterBtn.style.display = isAdmin() ? '' : 'none';
       el.draftShell.classList.add('active');
@@ -2248,7 +2280,8 @@
         if (meta.status !== 'active') return alert(`${meta.label} is not enabled yet.`);
         try {
           el.frameworkBuildBtn.disabled = true;
-          const rows = await fetchVerifiedReportDataset(def.subject);
+          const evidencePack = await fetchReportEvidencePack(def.subject);
+          const rows = evidencePack && Array.isArray(evidencePack.records) ? evidencePack.records : [];
           if (!rows.length) {
             alert(`No verified ${meta.label} records are available yet. Master Admins should seed and verify source candidates first.`);
             if (isMasterAdminReportUser()) {
@@ -2257,7 +2290,7 @@
             }
             return;
           }
-          buildVerifiedSubjectDraftFromRows(rows, type, def.subject);
+          buildVerifiedSubjectDraftFromRows(rows, type, def.subject, evidencePack);
         } catch(err) { alert(`${meta.label} build failed: ${err.message || err}`); }
         finally { el.frameworkBuildBtn.disabled = false; }
         return;
@@ -2279,7 +2312,7 @@
     if (el.refreshSourceReviewBtn) el.refreshSourceReviewBtn.addEventListener('click', fetchSourceReviewQueue);
     if (el.sourceReviewSubjectSelect) el.sourceReviewSubjectSelect.addEventListener('change', fetchSourceReviewQueue);
     if (el.seedCrimeReviewBtn) el.seedCrimeReviewBtn.addEventListener('click', seedCrimeReviewQueue);
-    if (el.sourceReviewBody) el.sourceReviewBody.addEventListener('click', e => { const btn = e.target.closest('[data-source-action]'); if (!btn) return; updateSourceReview(btn.dataset.sourceId, btn.dataset.sourceAction === 'verify' ? 'verified' : 'rejected'); });
+    if (el.sourceReviewBody) el.sourceReviewBody.addEventListener('click', e => { const btn = e.target.closest('[data-source-action]'); if (!btn) return; updateSourceReview(btn.dataset.sourceId, btn.dataset.sourceAction === 'verify' ? 'verified' : 'rejected', Number(btn.dataset.quality || 3)); });
     fetchSourceReviewQueue();
     document.querySelectorAll('[data-template]').forEach(btn => btn.addEventListener('click', () => {
       const type = btn.dataset.template;
