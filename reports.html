@@ -2223,6 +2223,38 @@
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       return data.evidence_pack || null;
     }
+    async function fetchReportEvidenceNarrative(subject, evidencePack){
+      const res = await fetch(`${API_BASE}/api/reports/evidence-narrative`, {
+        method:'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ subject, audience:(currentReportDefinition.audience || 'ops'), evidence_pack:evidencePack })
+      });
+      const data = await res.json().catch(()=>null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      return data.narrative || null;
+    }
+    function fallbackEvidenceNarrative(subject, pack){
+      const meta = subjectMeta(subject);
+      const stats = pack?.statistics || {};
+      const risk = stats.risk_counts || {};
+      const confidence = pack?.confidence || {};
+      const evidence = pack?.evidence_level || {};
+      const patterns = pack?.patterns || {};
+      return {
+        executive_summary:[
+          `${meta.label} is supported by ${Number(stats.total || 0)} Master Admin verified record${Number(stats.total || 0)===1?'':'s'}.`,
+          `Risk distribution is High ${Number(risk.High||0)}, Medium ${Number(risk.Medium||0)}, Low ${Number(risk.Low||0)}.`,
+          `Overall confidence is ${confidence.band || 'Low'} (${Number(confidence.score || 0)}%) with ${evidence.level || 'Level B'} source assurance.`
+        ],
+        intelligence_assessment:[
+          'This assessment is built from verified CityIntel evidence only. Unverified candidates remain outside the report dataset.',
+          patterns.most_active_area && patterns.most_active_area !== '—' ? `The strongest location concentration is ${patterns.most_active_area}.` : 'Location concentration remains limited in the verified dataset.'
+        ],
+        outlook:[confidence.score >= 80 ? 'Evidence strength is suitable for client-facing draft review.' : 'Additional verified records would strengthen the assessment before client-facing publication.'],
+        recommendations:['Review high-risk verified items before publication.','Keep source assurance, evidence level and confidence score visible in the final report.'],
+        analyst_note:'Fallback narrative generated locally from the evidence pack.'
+      };
+    }
     function stars(n){ n = Math.max(1, Math.min(5, Math.round(Number(n||3)))); return '★★★★★'.slice(0,n) + '☆☆☆☆☆'.slice(0,5-n); }
     function evidenceList(items, empty='No items identified yet.'){
       return Array.isArray(items) && items.length ? `<ul>${items.map(x=>`<li>${esc(typeof x === 'string' ? x : `${x.name || x.label || 'Item'} — ${x.count || x.value || ''}`)}</li>`).join('')}</ul>` : `<div class="muted">${esc(empty)}</div>`;
@@ -2232,7 +2264,7 @@
       rows.forEach(r => { const k = getter(r) || 'Unspecified'; m.set(k, (m.get(k) || 0) + 1); });
       return [...m.entries()].sort((a,b)=>b[1]-a[1]);
     }
-    function buildVerifiedSubjectDraftFromRows(rows, type, subject, evidencePack=null){
+    function buildVerifiedSubjectDraftFromRows(rows, type, subject, evidencePack=null, narrative=null){
       const meta = subjectMeta(subject);
       const now = new Date();
       const periodLabel = type === 'weekly' ? 'Verified queue — current weekly view' : 'Verified queue — latest reviewed period';
@@ -2247,6 +2279,15 @@
       const title = `${meta.label} — ${now.toLocaleDateString('en-GB', { month:'long', year:'numeric' })}`;
       const riskCounts = stats.risk_counts || { High:0, Medium:0, Low:0 };
       const sourceHtml = sourceBreakdown.length ? `<ul>${sourceBreakdown.map(s=>`<li><strong>${esc(s.source || s.name || 'Source')}</strong> — ${Number(s.count||0)} verified item${Number(s.count||0)===1?'':'s'}</li>`).join('')}</ul>` : '<div class="muted">No source breakdown available.</div>';
+      const narrativePack = narrative || fallbackEvidenceNarrative(subject, pack);
+      const narrativeHtml = `
+        <div class="section"><h3>Intelligence narrative</h3>
+          <h4 style="margin:6px 0">Executive summary</h4>${evidenceList(narrativePack.executive_summary || [], 'No executive summary available.')}
+          <h4 style="margin:12px 0 6px">Assessment</h4>${evidenceList(narrativePack.intelligence_assessment || [], 'No assessment available.')}
+          <h4 style="margin:12px 0 6px">Outlook</h4>${evidenceList(narrativePack.outlook || [], 'No outlook available.')}
+          <h4 style="margin:12px 0 6px">Recommendations</h4>${evidenceList(narrativePack.recommendations || [], 'No recommendations available.')}
+          <div class="muted" style="margin-top:10px">${esc(narrativePack.analyst_note || 'Narrative produced from structured evidence only.')}</div>
+        </div>`;
       const locationHtml = evidenceList((patterns.top_locations || []).map(x => ({ name:x.location || x.name, count:x.count })), 'No location concentration available yet.');
       const timelineHtml = evidenceList((pack.timeline || []).map(x => ({ name:x.label || x.period, count:x.count })), 'Timeline will populate once verified records contain event dates.');
       const highHtml = highRows.length ? highRows.map(r => `<div class="event-card"><div class="title">${esc(r.title || 'Untitled')}</div><div class="meta">${esc([r.city,r.country].filter(Boolean).join(', ') || '—')} · ${esc(fmtShortDateTime(r.event_when || r.created_at))} · ${esc(r.src || 'source')} · ${sourceStatusPill(r.status)} · <span class="star-rating">${stars(r.verification_quality || quality.average)}</span></div><div class="sum">${esc(r.summary || '')}</div></div>`).join('') : `<div class="muted">No high-risk verified ${esc(meta.label.toLowerCase())} items in the selected dataset.</div>`;
@@ -2256,6 +2297,7 @@
       el.draftBadges.innerHTML = `<span class="pill high">${esc(meta.label)}</span><span class="evidence-level">${esc(evidence.level || 'Level A')} — ${esc(evidence.label || 'Verified')}</span><span class="source-lock">Confidence ${Number(confidence.score || 0)}%</span><span class="pill med">${reportTypeLabel(type)}</span>`;
       el.draftBody.innerHTML = `
         <div class="section"><h3>Source assurance</h3><p>This draft only uses items reviewed and marked verified by a CityIntel Master Admin. Unverified API/live-alert candidates remain outside the report dataset until approved.</p><p><strong>${esc(evidence.level || 'Evidence Level')}</strong>: ${esc(evidence.description || 'Verified CityIntel intelligence.')}</p></div>
+        ${narrativeHtml}
         <div class="section"><h3>Evidence pack</h3><div class="evidence-grid"><div class="evidence-card"><b>Verified records</b><span>${Number(stats.total || rows.length || 0)}</span></div><div class="evidence-card"><b>High risk</b><span>${Number(riskCounts.High || 0)}</span></div><div class="evidence-card"><b>Locations</b><span>${Number(stats.location_count || (patterns.top_locations||[]).length || 0)}</span></div><div class="evidence-card"><b>Verification quality</b><span class="star-rating">${stars(quality.average)}</span></div></div></div>
         <div class="section"><h3>Confidence assessment</h3><div class="evidence-grid"><div class="evidence-card"><b>Overall confidence</b><span>${Number(confidence.score || 0)}%</span><div class="confidence-bar"><span style="width:${Math.max(0, Math.min(100, Number(confidence.score || 0)))}%"></span></div></div><div class="evidence-card"><b>Confidence band</b><span>${esc(confidence.band || 'Low')}</span></div><div class="evidence-card"><b>Evidence level</b><span>${esc(evidence.level || '—')}</span></div><div class="evidence-card"><b>Source diversity</b><span>${Number(stats.source_count || sourceBreakdown.length || 0)}</span></div></div>${evidenceList(confidence.reasons || [], 'No confidence notes available.')}</div>
         <div class="section"><h3>Executive summary</h3>${summaryHtml}</div>
@@ -2266,7 +2308,7 @@
         <div class="section"><h3>Intelligence gaps</h3>${evidenceList(pack.intelligence_gaps || [], 'No major intelligence gaps identified from the current verified dataset.')}</div>
         <div class="section"><h3>Collection priorities</h3>${evidenceList(pack.collection_priorities || [meta.recommendation || 'Review verified items before client publication.', 'Check for repeated themes, geography and severity concentration.', 'Keep source assurance visible in final reports to preserve the CityIntel verified-data trust model.'])}</div>`;
       const brandedFallback = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body>${el.draftBody.innerHTML}</body></html>`;
-      currentDraftState = { buildType:type, reportSubject:subject, reportSubjectLabel:meta.label, sourceMode:'verified', sourceTrust:meta.trustNote || 'CityIntel verified by Master Admin review queue', evidenceLevel:evidence.level || '', evidenceLabel:evidence.label || '', confidenceScore:Number(confidence.score || 0), verificationQuality:Number(quality.average || 3), audience:currentReportDefinition.audience || 'ops', monthKey:new Date().toISOString().slice(0,7), regionFilter:'', scopeMode:'global', selectedRegions:[], scopeSelectionKey:'global', title, exportTitle:title, typeLabel:reportTypeLabel(type), periodLabel, subtitle:`${meta.label} generated from a CityIntel verified evidence pack.`, risk:(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), riskClass:riskClass(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), notes:`Generated from Intelligence Evidence Builder using Master Admin verified ${meta.label} records.`, keywords:[subject,'verified','source-review','evidence-pack'], metrics:{events:Number(stats.total || rows.length || 0), high:riskCounts.High || 0, countries:Number(stats.location_count || 0)}, compareMeta:null, compareScope:`verified ${meta.label} evidence pack`, comparePreviousId:'', comparePreviousTitle:'', summaryHtml, deltaHtml:'', eventsHtml:highHtml, themesHtml:'', regionalHtml:locationHtml, recommendationsHtml:'', namedRegionsLine:(patterns.top_locations || []).map(x=>`${x.location || x.name} (${x.count})`).join(', '), thematicWatch:meta.watch || `${meta.label} verified source review`, exportFilename:`CityIntel_${slugify(title)}.html`, savedHtml:brandedFallback };
+      currentDraftState = { buildType:type, reportSubject:subject, reportSubjectLabel:meta.label, sourceMode:'verified', sourceTrust:meta.trustNote || 'CityIntel verified by Master Admin review queue', evidenceLevel:evidence.level || '', evidenceLabel:evidence.label || '', confidenceScore:Number(confidence.score || 0), verificationQuality:Number(quality.average || 3), audience:currentReportDefinition.audience || 'ops', monthKey:new Date().toISOString().slice(0,7), regionFilter:'', scopeMode:'global', selectedRegions:[], scopeSelectionKey:'global', title, exportTitle:title, typeLabel:reportTypeLabel(type), periodLabel, subtitle:`${meta.label} generated from a CityIntel verified evidence pack.`, risk:(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), riskClass:riskClass(riskCounts.High?'High':riskCounts.Medium?'Medium':'Low'), notes:`Generated from Intelligence Evidence Builder using Master Admin verified ${meta.label} records.`, keywords:[subject,'verified','source-review','evidence-pack'], metrics:{events:Number(stats.total || rows.length || 0), high:riskCounts.High || 0, countries:Number(stats.location_count || 0)}, compareMeta:null, compareScope:`verified ${meta.label} evidence pack`, comparePreviousId:'', comparePreviousTitle:'', summaryHtml, deltaHtml:'', eventsHtml:highHtml, themesHtml:'', regionalHtml:locationHtml, recommendationsHtml:evidenceList((narrativePack.recommendations || [])), evidenceNarrative:narrativePack, namedRegionsLine:(patterns.top_locations || []).map(x=>`${x.location || x.name} (${x.count})`).join(', '), thematicWatch:meta.watch || `${meta.label} verified source review`, exportFilename:`CityIntel_${slugify(title)}.html`, savedHtml:brandedFallback };
       currentDraftState.brandedHtml = buildBrandedReportHtml(currentDraftState);
       el.saveOrgDraftBtn.disabled = false; el.publishOrgBtn.disabled = false; el.saveMasterBtn.style.display = isAdmin() ? '' : 'none';
       el.draftShell.classList.add('active');
@@ -2282,6 +2324,8 @@
           el.frameworkBuildBtn.disabled = true;
           const evidencePack = await fetchReportEvidencePack(def.subject);
           const rows = evidencePack && Array.isArray(evidencePack.records) ? evidencePack.records : [];
+          let evidenceNarrative = null;
+          try { evidenceNarrative = await fetchReportEvidenceNarrative(def.subject, evidencePack); } catch(_) { evidenceNarrative = fallbackEvidenceNarrative(def.subject, evidencePack); }
           if (!rows.length) {
             alert(`No verified ${meta.label} records are available yet. Master Admins should seed and verify source candidates first.`);
             if (isMasterAdminReportUser()) {
@@ -2290,7 +2334,7 @@
             }
             return;
           }
-          buildVerifiedSubjectDraftFromRows(rows, type, def.subject, evidencePack);
+          buildVerifiedSubjectDraftFromRows(rows, type, def.subject, evidencePack, evidenceNarrative);
         } catch(err) { alert(`${meta.label} build failed: ${err.message || err}`); }
         finally { el.frameworkBuildBtn.disabled = false; }
         return;
