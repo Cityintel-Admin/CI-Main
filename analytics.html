@@ -7256,20 +7256,56 @@ document.addEventListener('DOMContentLoaded',function(){
     const firstHead = section.querySelector('h2,h3');
     const title = opts.title || (firstHead ? firstHead.textContent.trim() : 'Section');
     const desc = opts.desc || (section.querySelector('.legend') ? section.querySelector('.legend').textContent.trim() : 'Open when needed.');
-    const summary = document.createElement('div');
-    summary.className = 'ci-collapse-summary';
-    summary.innerHTML = `<div><h3>${title}</h3><div class="legend">${desc}</div></div><button type="button" class="btn ci-collapse-toggle">${opts.open?'Close':'Open'}</button>`;
-    const body = document.createElement('div');
-    body.className = 'ci-collapse-body';
-    body.style.marginTop = '12px';
-    original.forEach(n => body.appendChild(n));
-    section.appendChild(summary);
-    section.appendChild(body);
-    const btn = summary.querySelector('.ci-collapse-toggle');
+
+    // Many sections already render their own visible header (an h3 + legend,
+    // often alongside action buttons like Refresh/Sync). If the title we're
+    // about to generate would just repeat that header verbatim, reuse the
+    // existing one — appending the toggle to it — instead of stacking a
+    // second, redundant title/desc block above it.
+    const existingHeaderRow = original.find(n =>
+      n.nodeType === 1 && n.querySelector && n.querySelector('h3') &&
+      n.querySelector('h3').textContent.trim().toLowerCase() === title.trim().toLowerCase()
+    );
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn ci-collapse-toggle';
+    btn.textContent = opts.open ? 'Close' : 'Open';
     btn.addEventListener('click', ()=>{
       section.classList.toggle('ci-open');
       btn.textContent = section.classList.contains('ci-open') ? 'Close' : 'Open';
     });
+
+    const body = document.createElement('div');
+    body.className = 'ci-collapse-body';
+    body.style.marginTop = '12px';
+
+    if (existingHeaderRow) {
+      // Put the toggle in the existing header's button row if it has one
+      // (a flex sibling of the h3/legend div); otherwise give it its own
+      // small wrapper so it doesn't get squeezed against the title.
+      const siblingRow = Array.from(existingHeaderRow.children).find(c =>
+        c.tagName === 'DIV' && c !== existingHeaderRow.querySelector('h3')?.parentElement
+      );
+      if (siblingRow) siblingRow.appendChild(btn);
+      else {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;align-items:center;gap:8px';
+        wrap.appendChild(btn);
+        existingHeaderRow.appendChild(wrap);
+      }
+      original.forEach(n => { if (n !== existingHeaderRow) body.appendChild(n); });
+      section.appendChild(existingHeaderRow);
+      section.appendChild(body);
+    } else {
+      const summary = document.createElement('div');
+      summary.className = 'ci-collapse-summary';
+      summary.innerHTML = `<div><h3>${title}</h3><div class="legend">${desc}</div></div>`;
+      summary.appendChild(btn);
+      original.forEach(n => body.appendChild(n));
+      section.appendChild(summary);
+      section.appendChild(body);
+    }
   }
 
   function addLeadDeleteButtons(){
