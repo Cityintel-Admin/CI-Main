@@ -5983,10 +5983,28 @@ document.addEventListener('DOMContentLoaded',function(){
     try{
       if(els.status) els.status.textContent='Syncing profiles…';
       const result = await api('/api/admin/commercial/sync', {method:'POST', body:'{}'});
-      await load();
+      // Render straight from the sync response itself — it was computed via
+      // buildCommercialSummary() in the same request as the writes, so it's
+      // guaranteed consistent. A fresh GET right after (as load() would do)
+      // isn't guaranteed to be: it's a separate request, and can land on a
+      // D1 read replica that hasn't caught up with the write yet — the same
+      // race that briefly hid pricing-catalogue items earlier. Rendering
+      // the POST's own data first avoids a "0, then flips to correct"
+      // flicker, or worse, staying at 0 if the user doesn't reload again.
+      if(result?.profiles){
+        commercialState.profiles = result.profiles || [];
+        if(!commercialState.selectedOrgId && commercialState.profiles.length) commercialState.selectedOrgId = String(commercialState.profiles[0].org_id || '');
+        renderSummary(result.summary||{}, commercialState.profiles);
+        renderInvoiceCustomerList();
+        renderInvoiceBuilder();
+      }
       const n = Number(result?.created_or_updated ?? 0);
       if(els.status) els.status.textContent = n>0 ? `Synced ${n}` : 'Synced (no changes)';
       alert(n>0 ? `Synced ${n} organisation${n===1?'':'s'} into commercial profiles.` : 'Sync ran successfully but found no new organisations to add — either everything is already synced, or check that the deployed worker version is current.');
+      // Background refresh for the rest of the page (invoices, renewals,
+      // health) — delayed slightly to give D1 a moment to reach consistency
+      // across replicas before re-querying what we just wrote.
+      setTimeout(()=>{ load().catch(()=>{}); }, 600);
     }catch(e){ alert(e.message||String(e)); if(els.status) els.status.textContent='Sync failed'; }
   });
   els.seed?.addEventListener('click', async()=>{ try{ await api('/api/admin/commercial/seed', {method:'POST', body:'{}'}); await load(); }catch(e){ alert(e.message||String(e)); } });
