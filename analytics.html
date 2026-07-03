@@ -5740,6 +5740,25 @@ document.addEventListener('DOMContentLoaded',function(){
     }
   }
 
+  // Applies a commercial data payload (pricing/profiles/summary) straight
+  // from a write endpoint's own response, rather than triggering a fresh
+  // GET afterward. Every commercial write endpoint (add/update pricing,
+  // seed, sync, per-row save/toggle) now returns this data computed in the
+  // same request as the write, so it's always consistent — a follow-up GET
+  // is a separate request and isn't guaranteed to see the write yet if it
+  // lands on a D1 read replica that's still catching up. That's the race
+  // that kept intermittently showing correct data then reverting to empty.
+  function applyCommercialData(data={}){
+    if(data.pricing){ commercialState.pricing = data.pricing; renderPricing(commercialState.pricing); }
+    if(data.profiles){
+      commercialState.profiles = data.profiles;
+      if(!commercialState.selectedOrgId && commercialState.profiles.length) commercialState.selectedOrgId = String(commercialState.profiles[0].org_id || '');
+      renderInvoiceCustomerList();
+      renderInvoiceBuilder();
+    }
+    if(data.summary) renderSummary(data.summary, commercialState.profiles);
+  }
+
 
   function healthBadge(status){ const s=String(status||'unknown').toLowerCase(); const label=s.replace(/_/g,' '); return `<span class="health-badge ${escapeHtml(s)}">${escapeHtml(label)}</span>`; }
   function renderHealth(data={}){
@@ -5968,8 +5987,8 @@ document.addEventListener('DOMContentLoaded',function(){
     const get=f=>tr.querySelector(`[data-field="${f}"]`)?.value||'';
     const payload={ id, item_name:get('item_name'), category:get('category'), item_type:get('item_type'), monthly_price:Number(get('monthly_price')||0), annual_price:Number(get('annual_price')||0) };
     if(toggle) payload.toggle_active = true;
-    await api('/api/admin/commercial/pricing/'+encodeURIComponent(id), {method:'PUT', body:JSON.stringify(payload)});
-    await load();
+    const data = await api('/api/admin/commercial/pricing/'+encodeURIComponent(id), {method:'PUT', body:JSON.stringify(payload)});
+    applyCommercialData(data);
   }
   document.addEventListener('click', async e=>{
     const btn=e.target.closest('[data-action="save-price"],[data-action="toggle-price"]');
@@ -5985,19 +6004,10 @@ document.addEventListener('DOMContentLoaded',function(){
       const result = await api('/api/admin/commercial/sync', {method:'POST', body:'{}'});
       // Render straight from the sync response itself — it was computed via
       // buildCommercialSummary() in the same request as the writes, so it's
-      // guaranteed consistent. A fresh GET right after (as load() would do)
-      // isn't guaranteed to be: it's a separate request, and can land on a
-      // D1 read replica that hasn't caught up with the write yet — the same
-      // race that briefly hid pricing-catalogue items earlier. Rendering
-      // the POST's own data first avoids a "0, then flips to correct"
-      // flicker, or worse, staying at 0 if the user doesn't reload again.
-      if(result?.profiles){
-        commercialState.profiles = result.profiles || [];
-        if(!commercialState.selectedOrgId && commercialState.profiles.length) commercialState.selectedOrgId = String(commercialState.profiles[0].org_id || '');
-        renderSummary(result.summary||{}, commercialState.profiles);
-        renderInvoiceCustomerList();
-        renderInvoiceBuilder();
-      }
+      // guaranteed consistent. A fresh GET right after isn't guaranteed to
+      // be: it's a separate request, and can land on a D1 read replica that
+      // hasn't caught up with the write yet.
+      applyCommercialData(result);
       const n = Number(result?.created_or_updated ?? 0);
       if(els.status) els.status.textContent = n>0 ? `Synced ${n}` : 'Synced (no changes)';
       alert(n>0 ? `Synced ${n} organisation${n===1?'':'s'} into commercial profiles.` : 'Sync ran successfully but found no new organisations to add — either everything is already synced, or check that the deployed worker version is current.');
@@ -6012,11 +6022,24 @@ document.addEventListener('DOMContentLoaded',function(){
       loadSuccess().catch(()=>{});
     }catch(e){ alert(e.message||String(e)); if(els.status) els.status.textContent='Sync failed'; }
   });
-  els.seed?.addEventListener('click', async()=>{ try{ await api('/api/admin/commercial/seed', {method:'POST', body:'{}'}); await load(); }catch(e){ alert(e.message||String(e)); } });
+  els.seed?.addEventListener('click', async()=>{
+    try{
+      const data = await api('/api/admin/commercial/seed', {method:'POST', body:'{}'});
+      applyCommercialData(data);
+      loadInvoices().then(()=>{ renderInvoiceCustomerList(); renderInvoiceBuilder(); }).catch(()=>{});
+      loadRenewals().catch(()=>{});
+      loadHealth().catch(()=>{});
+      loadSuccess().catch(()=>{});
+    }catch(e){ alert(e.message||String(e)); }
+  });
   els.add?.addEventListener('click', async()=>{
     const item_name=document.getElementById('priceItemName')?.value||''; const category=document.getElementById('priceCategory')?.value||''; const item_type=document.getElementById('priceItemType')?.value||'addon'; const monthly_price=Number(document.getElementById('priceMonthly')?.value||0);
     if(!item_name.trim()) return alert('Enter an item name first.');
-    try{ await api('/api/admin/commercial/pricing', {method:'POST', body:JSON.stringify({item_name, category, item_type, monthly_price, annual_price:monthly_price*10})}); document.getElementById('priceItemName').value=''; document.getElementById('priceCategory').value=''; document.getElementById('priceMonthly').value=''; await load(); }catch(e){ alert(e.message||String(e)); }
+    try{
+      const data = await api('/api/admin/commercial/pricing', {method:'POST', body:JSON.stringify({item_name, category, item_type, monthly_price, annual_price:monthly_price*10})});
+      document.getElementById('priceItemName').value=''; document.getElementById('priceCategory').value=''; document.getElementById('priceMonthly').value='';
+      applyCommercialData(data);
+    }catch(e){ alert(e.message||String(e)); }
   });
 
   document.addEventListener('click', async e=>{
