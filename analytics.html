@@ -5959,25 +5959,37 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!els.body) return;
     try{
       if(els.status) els.status.textContent='Loading…';
-      let stripeCfg = {};
-      try { stripeCfg = await api('/api/admin/commercial/stripe-config'); commercialState.stripeConfigured = !!stripeCfg.configured; } catch(_) { commercialState.stripeConfigured = false; }
-      const data = await api('/api/admin/commercial/summary');
+      const [stripeCfg, data] = await Promise.all([
+        api('/api/admin/commercial/stripe-config').catch(()=>({configured:false})),
+        api('/api/admin/commercial/summary')
+      ]);
+      commercialState.stripeConfigured = !!stripeCfg.configured;
       commercialState.pricing = data.pricing || [];
       commercialState.profiles = data.profiles || [];
       if(!commercialState.selectedOrgId && commercialState.profiles.length) commercialState.selectedOrgId = String(commercialState.profiles[0].org_id || '');
-      await loadInvoices();
-      if(!commercialState.selectedInvoiceId && commercialState.selectedOrgId){
-        const firstInv = (commercialState.invoices||[]).find(i=>String(i.org_id||'')===String(commercialState.selectedOrgId));
-        if(firstInv?.id){ commercialState.selectedInvoiceId = String(firstInv.id); await loadInvoiceEvents(firstInv.id); }
-      }
+      // Render the catalogue and summary straight away — these came back
+      // with the core summary fetch and shouldn't wait on invoices,
+      // renewals, health or success notes, which are slower, independent
+      // of each other, and previously sat sequentially in front of this.
       renderPricing(commercialState.pricing);
       renderSummary(data.summary||{}, commercialState.profiles);
-      await loadRenewals();
-      await loadHealth();
-      await loadSuccess();
       renderInvoiceCustomerList();
       renderInvoiceBuilder();
       if(els.status) els.status.textContent='Updated';
+
+      await Promise.all([
+        loadInvoices().then(async ()=>{
+          if(!commercialState.selectedInvoiceId && commercialState.selectedOrgId){
+            const firstInv = (commercialState.invoices||[]).find(i=>String(i.org_id||'')===String(commercialState.selectedOrgId));
+            if(firstInv?.id){ commercialState.selectedInvoiceId = String(firstInv.id); await loadInvoiceEvents(firstInv.id); }
+          }
+          renderInvoiceCustomerList();
+          renderInvoiceBuilder();
+        }).catch(e=>console.warn('invoice load failed', e)),
+        loadRenewals().catch(e=>console.warn('renewals load failed', e)),
+        loadHealth().catch(e=>console.warn('health load failed', e)),
+        loadSuccess().catch(e=>console.warn('success load failed', e))
+      ]);
     }catch(e){
       if(els.body) els.body.innerHTML=`<tr><td colspan="7" class="lead-muted">Commercial data unavailable: ${escapeHtml(e.message||String(e))}</td></tr>`;
       if(els.status) els.status.textContent='Error';
