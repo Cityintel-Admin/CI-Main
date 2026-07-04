@@ -7331,16 +7331,6 @@ document.addEventListener('DOMContentLoaded',function(){
     const title = opts.title || (firstHead ? firstHead.textContent.trim() : 'Section');
     const desc = opts.desc || (section.querySelector('.legend') ? section.querySelector('.legend').textContent.trim() : 'Open when needed.');
 
-    // Many sections already render their own visible header (an h3 + legend,
-    // often alongside action buttons like Refresh/Sync). If the title we're
-    // about to generate would just repeat that header verbatim, reuse the
-    // existing one — appending the toggle to it — instead of stacking a
-    // second, redundant title/desc block above it.
-    const existingHeaderRow = original.find(n =>
-      n.nodeType === 1 && n.querySelector && n.querySelector('h3') &&
-      n.querySelector('h3').textContent.trim().toLowerCase() === title.trim().toLowerCase()
-    );
-
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn ci-collapse-toggle';
@@ -7354,22 +7344,69 @@ document.addEventListener('DOMContentLoaded',function(){
     body.className = 'ci-collapse-body';
     body.style.marginTop = '12px';
 
-    if (existingHeaderRow) {
-      // Put the toggle in the existing header's button row if it has one
-      // (a flex sibling of the h3/legend div); otherwise give it its own
-      // small wrapper so it doesn't get squeezed against the title.
-      const siblingRow = Array.from(existingHeaderRow.children).find(c =>
-        c.tagName === 'DIV' && c !== existingHeaderRow.querySelector('h3')?.parentElement
-      );
-      if (siblingRow) siblingRow.appendChild(btn);
-      else {
+    // Groups any existing bare action button together with our toggle into
+    // one flex container, instead of letting the toggle land in its own
+    // space-between slot (which is what pushed "Open" away from "Refresh …"
+    // on Contract/SLA/Procurement/Customer Success Dashboard).
+    function placeToggleNear(actionHost) {
+      if (!actionHost) {
         const wrap = document.createElement('div');
-        wrap.style.cssText = 'display:flex;align-items:center;gap:8px';
+        wrap.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap';
         wrap.appendChild(btn);
-        existingHeaderRow.appendChild(wrap);
+        return wrap;
       }
+      if (actionHost.tagName === 'DIV') {
+        actionHost.appendChild(btn);
+        return null;
+      }
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+      actionHost.parentNode.insertBefore(wrap, actionHost);
+      wrap.appendChild(actionHost);
+      wrap.appendChild(btn);
+      return null;
+    }
+
+    // Case A (most common): title + legend + action(s) all live inside one
+    // flex row that also contains the matching h3.
+    const existingHeaderRow = original.find(n =>
+      n.nodeType === 1 && n.querySelector && n.querySelector('h3') &&
+      n.querySelector('h3').textContent.trim().toLowerCase() === title.trim().toLowerCase()
+    );
+
+    // Case B: the h3 is a bare direct child of the section (not wrapped in a
+    // flex row), with a separate sibling row holding the legend/action
+    // (e.g. Credit Notes & Billing Adjustments). Treat the h3 plus that
+    // following sibling together as the header, so we don't duplicate the
+    // title or hide the existing action button inside the collapsed body.
+    let bareHeadingIdx = -1;
+    if (!existingHeaderRow) {
+      bareHeadingIdx = original.findIndex(n =>
+        n.nodeType === 1 && (n.tagName === 'H2' || n.tagName === 'H3') &&
+        n.textContent.trim().toLowerCase() === title.trim().toLowerCase()
+      );
+    }
+
+    if (existingHeaderRow) {
+      const titleDiv = existingHeaderRow.querySelector('h3')?.parentElement;
+      const actionHost = Array.from(existingHeaderRow.children).find(c => c !== titleDiv) || null;
+      const extraWrap = placeToggleNear(actionHost);
+      if (extraWrap) existingHeaderRow.appendChild(extraWrap);
       original.forEach(n => { if (n !== existingHeaderRow) body.appendChild(n); });
       section.appendChild(existingHeaderRow);
+      section.appendChild(body);
+    } else if (bareHeadingIdx !== -1) {
+      const headingEl = original[bareHeadingIdx];
+      const nextEl = original.slice(bareHeadingIdx + 1).find(n => n.nodeType === 1);
+      const actionHost = nextEl && nextEl.querySelector ? nextEl.querySelector('button') : null;
+      const extraWrap = placeToggleNear(actionHost);
+      if (extraWrap) {
+        if (nextEl) nextEl.appendChild(extraWrap);
+        else section.insertBefore(extraWrap, headingEl.nextSibling);
+      }
+      original.forEach(n => { if (n !== headingEl && n !== nextEl) body.appendChild(n); });
+      section.appendChild(headingEl);
+      if (nextEl) section.appendChild(nextEl);
       section.appendChild(body);
     } else {
       const summary = document.createElement('div');
