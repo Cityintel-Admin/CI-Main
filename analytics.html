@@ -1864,6 +1864,13 @@
       </div>
       <div id="commercialLifecycleSummary" class="legend" style="margin-top:8px">Loading lifecycle summary…</div>
       <div id="commercialLifecycleRows" style="margin-top:10px"><div class="lead-muted">Loading lifecycle timeline…</div></div>
+      <div id="commercialLifecyclePager" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;flex-wrap:wrap">
+        <div id="commercialLifecyclePagerLabel" class="legend"></div>
+        <div style="display:flex;gap:8px">
+          <button id="commercialLifecyclePrevBtn" class="btn" type="button">← Newer</button>
+          <button id="commercialLifecycleNextBtn" class="btn" type="button">Older →</button>
+        </div>
+      </div>
     </div>
 
     <div class="revenue-panel" style="grid-column:span 4"><h4>Conversion funnel</h4><div id="commercialFunnelRows"><div class="lead-muted">Loading…</div></div></div>
@@ -1998,6 +2005,13 @@
   </div>
 </div>
 
+<section class="card" id="ciIntelOverviewCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px">
+    <div>
+      <h3 style="margin:0">Protest Intelligence Overview</h3>
+      <div class="legend">Live alerts, protest candidates, briefing queue, escalations, traveller/asset exposure and risk cluster KPIs.</div>
+    </div>
+  </div>
 <div class="grid" style="margin-bottom:20px;">
   <section class="card" style="grid-column: span 3;">
     <h3>Live Alerts (72h)</h3>
@@ -2072,6 +2086,7 @@
     <div class="legend">Automation policy items awaiting action</div>
   </section>
 </div>
+</section>
 
       <div class="grid">
         <!-- KPIs -->
@@ -6222,29 +6237,46 @@ document.addEventListener('DOMContentLoaded',function(){
     sel.innerHTML = options.join('');
     sel.value = current;
   }
+  const LIFECYCLE_PAGE_SIZE = 20;
+  let lifecyclePage = 0;
   async function loadLifecycle(){
     const el = document.getElementById('commercialLifecycleRows');
     const summaryEl = document.getElementById('commercialLifecycleSummary');
+    const pagerLabel = document.getElementById('commercialLifecyclePagerLabel');
+    const prevBtn = document.getElementById('commercialLifecyclePrevBtn');
+    const nextBtn = document.getElementById('commercialLifecycleNextBtn');
     if(!el) return;
     const filter = document.getElementById('commercialLifecycleOrgFilter')?.value || '';
     try{
+      const offset = lifecyclePage * LIFECYCLE_PAGE_SIZE;
       const qs = new URLSearchParams();
       if(filter) qs.set('org_id', filter);
-      qs.set('limit','180');
+      qs.set('limit', String(LIFECYCLE_PAGE_SIZE));
+      qs.set('offset', String(offset));
       const res = await fetch(`${API_BASE}/api/admin/commercial/lifecycle?${qs.toString()}`, { headers: authHeaders() });
       const data = await res.json().catch(()=>({}));
       if(!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
       populateLifecycleOrgFilter(Array.isArray(data.orgs) ? data.orgs : [], filter);
       const events = Array.isArray(data.events) ? data.events : [];
       const totals = data.totals || {};
+      const page = data.page || { offset, limit: LIFECYCLE_PAGE_SIZE, total: events.length, has_more: false };
       if(summaryEl){
-        summaryEl.textContent = `${events.length} event(s) shown${filter ? ' for selected organisation' : ''} · ${totals.invoices || 0} invoice record(s) · ${totals.leads || 0} lead milestone(s)`;
+        summaryEl.textContent = `${page.total} event(s) total${filter ? ' for selected organisation' : ''} · ${totals.invoices || 0} invoice record(s) · ${totals.leads || 0} lead milestone(s)`;
       }
+      if(pagerLabel){
+        const from = page.total ? offset + 1 : 0;
+        const to = Math.min(offset + events.length, page.total);
+        pagerLabel.textContent = page.total ? `Showing ${from}–${to} of ${page.total} (newest first)` : '';
+      }
+      if(prevBtn) prevBtn.disabled = lifecyclePage === 0;
+      if(nextBtn) nextBtn.disabled = !page.has_more;
       if(!events.length){
-        el.innerHTML = '<div class="lead-muted">No lifecycle events yet. Access requests, trials, invoices and Stripe payment updates will appear here automatically.</div>';
+        el.innerHTML = lifecyclePage === 0
+          ? '<div class="lead-muted">No lifecycle events yet. Access requests, trials, invoices and Stripe payment updates will appear here automatically.</div>'
+          : '<div class="lead-muted">No more events.</div>';
         return;
       }
-      el.innerHTML = events.slice(0,40).map(e => {
+      el.innerHTML = events.map(e => {
         const tone = lifecycleTone(e);
         const amount = Number.isFinite(Number(e.amount)) && Number(e.amount) > 0 ? ` · £${Number(e.amount).toFixed(2)}` : '';
         const statusLine = (e.from_status || e.to_status) ? `<div class="lead-muted">Status: ${esc(e.from_status || '—')} → ${esc(e.to_status || '—')}</div>` : '';
@@ -6263,10 +6295,13 @@ document.addEventListener('DOMContentLoaded',function(){
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLifecycle); else loadLifecycle();
   document.addEventListener('change', e => {
-    if(e.target && e.target.id === 'commercialLifecycleOrgFilter') loadLifecycle();
+    if(e.target && e.target.id === 'commercialLifecycleOrgFilter') { lifecyclePage = 0; loadLifecycle(); }
   });
   document.addEventListener('click', e => {
+    if(e.target && e.target.id === 'commercialLifecyclePrevBtn' && lifecyclePage > 0) { lifecyclePage--; loadLifecycle(); }
+    if(e.target && e.target.id === 'commercialLifecycleNextBtn') { lifecyclePage++; loadLifecycle(); }
     if(e.target && (e.target.id === 'commercialRefreshBtn' || e.target.id === 'invoiceRefreshBtn' || e.target.id === 'commercialLifecycleRefreshBtn')) {
+      lifecyclePage = 0;
       setTimeout(loadLifecycle, 500);
     }
   });
@@ -7517,6 +7552,7 @@ document.addEventListener('DOMContentLoaded',function(){
     // that don't need to be open by default.
     [
       ['riskMixCard', 'Risk Mix', 'Upcoming protest risk breakdown, globally and by region.'],
+      ['ciIntelOverviewCard', 'Protest Intelligence Overview', 'Live alerts, protest candidates, briefing queue, escalations, traveller/asset exposure and risk cluster KPIs.'],
       ['ciExecutiveAuditReporting', 'Executive Audit Reporting', 'Platform activity, audit volume, active users, organisations and action categories.'],
       ['ciAiOperationsCentre', 'AI Operations Centre', 'AI usage, cost, model performance, workflow activity, AI health and token usage.']
     ].forEach(([id,title,desc])=>{
