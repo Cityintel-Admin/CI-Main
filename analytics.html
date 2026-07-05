@@ -390,7 +390,7 @@
     .invoice-panel{border:1px solid var(--g600);border-radius:12px;background:#111214;min-height:280px;padding:14px}
     .invoice-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.invoice-form-grid .full{grid-column:1/-1}
     .invoice-form-grid input,.invoice-form-grid textarea,.invoice-form-grid select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:9px;font:inherit}.invoice-form-grid textarea{min-height:72px;resize:vertical}
-    .invoice-item-row{display:grid;grid-template-columns:auto 1fr 90px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .invoice-item-row{display:grid;grid-template-columns:auto 1fr 70px 90px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .invoice-history-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .invoice-history-row.selected{background:rgba(208,22,22,.08);border-radius:10px;padding-left:8px;padding-right:8px}
     .invoice-event-row{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.025);margin-top:6px}
@@ -1886,8 +1886,8 @@
       </div>
       <div class="pricing-table-wrap">
         <table class="pricing-table">
-          <thead><tr><th>Item</th><th>Category</th><th>Type</th><th>Monthly</th><th>Annual</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody id="commercialPricingBody"><tr><td colspan="7" class="lead-muted">Loading pricing catalogue…</td></tr></tbody>
+          <thead><tr><th>Item</th><th>Category</th><th>Type</th><th>Monthly</th><th>Annual</th><th>Bundle?</th><th>Qty Type</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="commercialPricingBody"><tr><td colspan="9" class="lead-muted">Loading pricing catalogue…</td></tr></tbody>
         </table>
       </div>
       <div class="commercial-form-row">
@@ -1895,6 +1895,7 @@
         <input id="priceCategory" placeholder="Category, e.g. Add-on">
         <select id="priceItemType"><option value="plan">Plan</option><option value="module">Module</option><option value="addon">Add-on</option><option value="seat">Seat</option><option value="service">Service</option></select>
         <input id="priceMonthly" type="number" step="0.01" min="0" placeholder="Monthly £">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="priceIsBundle">Bundle</label>
         <button id="priceAddBtn" class="btn primary" type="button">Add / update</button>
       </div>
     </div>
@@ -5702,15 +5703,32 @@ document.addEventListener('DOMContentLoaded',function(){
   };
   function renderPricing(items=[]){
     if(!els.body) return;
-    if(!items.length){ els.body.innerHTML='<tr><td colspan="7" class="lead-muted">No pricing items yet. Click Seed defaults or add your first item.</td></tr>'; return; }
+    if(!items.length){ els.body.innerHTML='<tr><td colspan="9" class="lead-muted">No pricing items yet. Click Seed defaults or add your first item.</td></tr>'; return; }
+    const pageItems = items.filter(i => Number(i.is_bundle) !== 1);
     els.body.innerHTML = items.map(item=>{
       const id=String(item.id||'');
+      const isBundle = Number(item.is_bundle) === 1;
+      const bundleIds = new Set((item.bundle_item_ids||[]).map(String));
+      const qtyType = String(item.qty_type||'fixed');
+      const bundlePicker = isBundle ? `
+        <div class="lead-muted" style="margin-top:6px;font-size:12px">Includes:</div>
+        <div data-field="bundle_item_ids" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:2px;max-width:320px">
+          ${pageItems.filter(p=>String(p.id)!==id).map(p=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:normal">
+            <input type="checkbox" value="${escapeHtml(String(p.id))}" ${bundleIds.has(String(p.id))?'checked':''}>${escapeHtml(p.item_name||'')}
+          </label>`).join('') || '<span class="lead-muted" style="font-size:12px">No individual pages to include yet</span>'}
+        </div>` : '';
       return `<tr data-price-id="${id}">
-        <td><input data-field="item_name" value="${escapeHtml(item.item_name||'')}"></td>
+        <td><input data-field="item_name" value="${escapeHtml(item.item_name||'')}">${bundlePicker}</td>
         <td><input data-field="category" value="${escapeHtml(item.category||'')}"></td>
         <td><select data-field="item_type">${['plan','module','addon','seat','service'].map(t=>`<option value="${t}" ${String(item.item_type||'')===t?'selected':''}>${t}</option>`).join('')}</select></td>
         <td><input data-field="monthly_price" type="number" step="0.01" min="0" value="${Number(item.monthly_price||0)}"></td>
         <td><input data-field="annual_price" type="number" step="0.01" min="0" value="${Number(item.annual_price||0)}"></td>
+        <td style="text-align:center"><input type="checkbox" data-field="is_bundle" ${isBundle?'checked':''} title="This row's price covers a set of individual pages below — those pages shouldn't be billed separately when this bundle is selected."></td>
+        <td><select data-field="qty_type" title="What an extra quantity of this item means when added to an invoice">
+          <option value="fixed" ${qtyType==='fixed'?'selected':''}>Fixed (no qty)</option>
+          <option value="seat" ${qtyType==='seat'?'selected':''}>Per seat</option>
+          <option value="unit" ${qtyType==='unit'?'selected':''}>Per page/module</option>
+        </select></td>
         <td><span class="commercial-pill ${Number(item.active)!==0?'active':'disabled'}">${Number(item.active)!==0?'active':'disabled'}</span></td>
         <td style="white-space:nowrap"><button class="lead-action-btn approve" data-action="save-price">Save</button> <button class="lead-action-btn ${Number(item.active)!==0?'reject':'approve'}" data-action="toggle-price">${Number(item.active)!==0?'Disable':'Enable'}</button></td>
       </tr>`;
@@ -5948,14 +5966,58 @@ document.addEventListener('DOMContentLoaded',function(){
       <div><label class="lead-muted">Discount</label><select id="invDiscountType"><option value="">No discount</option><option value="percent">Percent %</option><option value="fixed">Fixed £</option></select></div>
       <div><label class="lead-muted">Discount value</label><input id="invDiscountValue" type="number" min="0" step="0.01" value="0"></div>
       <div class="full"><label class="lead-muted">Billing address</label><textarea id="invBillingAddress" placeholder="Client billing address"></textarea></div>
-      <div class="full"><label class="lead-muted">Invoice items</label><div class="lead-muted" style="margin:4px 0 8px">Selected items are saved to the invoice and used to build the Stripe checkout line items automatically.</div><div id="invItemList">${activePrices.map(p=>`<label class="invoice-item-row"><input type="checkbox" data-inv-catalogue="${escapeHtml(p.id)}" ${p.id===defaultPlan?.id?'checked':''}><span>${escapeHtml(p.item_name)} <small class="lead-muted">${escapeHtml(p.category||p.item_type||'')}</small></span><input type="number" min="0" step="0.01" data-inv-price="${escapeHtml(p.id)}" value="${Number(p.monthly_price||0)}"></label>`).join('') || '<div class="lead-muted">No active pricing items. Seed or add items first.</div>'}</div></div>
+      <div class="full"><label class="lead-muted">Invoice items</label><div class="lead-muted" style="margin:4px 0 8px">Selected items are saved to the invoice and used to build the Stripe checkout line items automatically. Selecting a bundle covers the pages it includes — don't also tick those individually.</div><div id="invItemList">${activePrices.map(p=>{
+        const isBundle = Number(p.is_bundle) === 1;
+        const qtyType = String(p.qty_type||'fixed');
+        const bundleNames = isBundle ? (p.bundle_item_ids||[]).map(id=>activePrices.find(x=>String(x.id)===String(id))?.item_name).filter(Boolean) : [];
+        const includesHint = isBundle && bundleNames.length ? `<div class="lead-muted" style="font-size:12px;margin-top:2px">Includes: ${escapeHtml(bundleNames.join(', '))}</div>` : '';
+        const qtyInput = qtyType !== 'fixed'
+          ? `<input type="number" min="1" step="1" data-inv-qty="${escapeHtml(p.id)}" value="1" title="${qtyType==='seat'?'Extra seats':'Extra pages/modules'}" style="width:64px">`
+          : `<span data-inv-qty="${escapeHtml(p.id)}"></span>`;
+        return `<label class="invoice-item-row" data-inv-row="${escapeHtml(p.id)}" data-inv-bundle="${isBundle?'1':'0'}" data-inv-bundle-members="${escapeHtml((p.bundle_item_ids||[]).join(','))}" data-inv-in-bundles="${escapeHtml((p.included_in_bundle_ids||[]).join(','))}">
+          <input type="checkbox" data-inv-catalogue="${escapeHtml(p.id)}" ${p.id===defaultPlan?.id?'checked':''}>
+          <span>${isBundle?'📦 ':''}${escapeHtml(p.item_name)} <small class="lead-muted">${escapeHtml(p.category||p.item_type||'')}</small>${includesHint}</span>
+          ${qtyInput}
+          <input type="number" min="0" step="0.01" data-inv-price="${escapeHtml(p.id)}" value="${Number(p.monthly_price||0)}">
+        </label>`;
+      }).join('') || '<div class="lead-muted">No active pricing items. Seed or add items first.</div>'}</div></div>
       <div class="full"><label class="lead-muted">Notes</label><textarea id="invNotes" placeholder="Optional invoice notes"></textarea></div>
       <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="customerPortalBtn" class="btn" type="button">Open Stripe portal</button><button id="invoiceGenerateBtn" class="btn primary" type="button">Generate draft invoice</button></div>
     </div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Lifecycle audit trail</h3><div id="invoiceAuditTrail">${renderInvoiceEvents(commercialState.selectedInvoiceId)}</div></div>`;
+    syncBundleExclusivity();
   }
+  // If a bundle row is checked, its member pages are covered by that bundle's
+  // price — force them unchecked and disabled so they can't accidentally be
+  // billed twice. Unchecking the bundle frees its members up again.
+  function syncBundleExclusivity(){
+    const rows = Array.from(document.querySelectorAll('#invItemList [data-inv-row]'));
+    const coveredIds = new Set();
+    rows.forEach(row=>{
+      const cb = row.querySelector('[data-inv-catalogue]');
+      if(row.getAttribute('data-inv-bundle')==='1' && cb?.checked){
+        (row.getAttribute('data-inv-bundle-members')||'').split(',').filter(Boolean).forEach(id=>coveredIds.add(id));
+      }
+    });
+    rows.forEach(row=>{
+      const id = row.getAttribute('data-inv-row');
+      const cb = row.querySelector('[data-inv-catalogue]');
+      if(!cb) return;
+      if(coveredIds.has(id)){
+        cb.checked = false;
+        cb.disabled = true;
+        row.title = 'Included in a selected bundle above — not billed separately.';
+      } else {
+        cb.disabled = false;
+        row.title = '';
+      }
+    });
+  }
+  document.addEventListener('change', e=>{
+    if(e.target && e.target.matches('#invItemList [data-inv-catalogue]')) syncBundleExclusivity();
+  });
   async function generateInvoice(){
     const orgId = commercialState.selectedOrgId; if(!orgId) return alert('Select a customer profile first.');
-    const items = Array.from(document.querySelectorAll('[data-inv-catalogue]:checked')).map(cb=>{ const id=cb.getAttribute('data-inv-catalogue'); const price=document.querySelector(`[data-inv-price="${CSS.escape(id)}"]`)?.value||0; const cat=(commercialState.pricing||[]).find(p=>String(p.id)===String(id)); return { catalogue_id:id, description:cat?.item_name||'CityIntel service', quantity:1, unit_price:Number(price||0) }; });
+    const items = Array.from(document.querySelectorAll('[data-inv-catalogue]:checked')).map(cb=>{ const id=cb.getAttribute('data-inv-catalogue'); const price=document.querySelector(`[data-inv-price="${CSS.escape(id)}"]`)?.value||0; const qty=document.querySelector(`[data-inv-qty="${CSS.escape(id)}"]`)?.value||1; const cat=(commercialState.pricing||[]).find(p=>String(p.id)===String(id)); return { catalogue_id:id, description:cat?.item_name||'CityIntel service', quantity:Math.max(1,Number(qty||1)), unit_price:Number(price||0) }; });
     if(!items.length) return alert('Select at least one invoice item.');
     const payload = { org_id:orgId, items, due_days:Number(document.getElementById('invDueDays')?.value||14), vat_rate:Number(document.getElementById('invVatRate')?.value||20), discount_type:document.getElementById('invDiscountType')?.value||'', discount_value:Number(document.getElementById('invDiscountValue')?.value||0), contact_name:document.getElementById('invContactName')?.value||'', contact_email:document.getElementById('invContactEmail')?.value||'', billing_address:document.getElementById('invBillingAddress')?.value||'', notes:document.getElementById('invNotes')?.value||'' };
     const data = await api('/api/admin/commercial/invoices', { method:'POST', body:JSON.stringify(payload) });
@@ -6013,7 +6075,9 @@ document.addEventListener('DOMContentLoaded',function(){
   async function saveRow(tr, toggle=false){
     const id=tr.getAttribute('data-price-id');
     const get=f=>tr.querySelector(`[data-field="${f}"]`)?.value||'';
-    const payload={ id, item_name:get('item_name'), category:get('category'), item_type:get('item_type'), monthly_price:Number(get('monthly_price')||0), annual_price:Number(get('annual_price')||0) };
+    const isBundle = tr.querySelector('[data-field="is_bundle"]')?.checked || false;
+    const bundleItemIds = Array.from(tr.querySelectorAll('[data-field="bundle_item_ids"] input[type="checkbox"]:checked')).map(cb=>cb.value);
+    const payload={ id, item_name:get('item_name'), category:get('category'), item_type:get('item_type'), monthly_price:Number(get('monthly_price')||0), annual_price:Number(get('annual_price')||0), is_bundle:isBundle, qty_type:get('qty_type')||'fixed', bundle_item_ids:bundleItemIds };
     if(toggle) payload.toggle_active = true;
     const data = await api('/api/admin/commercial/pricing/'+encodeURIComponent(id), {method:'PUT', body:JSON.stringify(payload)});
     applyCommercialData(data);
@@ -6061,11 +6125,11 @@ document.addEventListener('DOMContentLoaded',function(){
     }catch(e){ alert(e.message||String(e)); }
   });
   els.add?.addEventListener('click', async()=>{
-    const item_name=document.getElementById('priceItemName')?.value||''; const category=document.getElementById('priceCategory')?.value||''; const item_type=document.getElementById('priceItemType')?.value||'addon'; const monthly_price=Number(document.getElementById('priceMonthly')?.value||0);
+    const item_name=document.getElementById('priceItemName')?.value||''; const category=document.getElementById('priceCategory')?.value||''; const item_type=document.getElementById('priceItemType')?.value||'addon'; const monthly_price=Number(document.getElementById('priceMonthly')?.value||0); const is_bundle=document.getElementById('priceIsBundle')?.checked||false;
     if(!item_name.trim()) return alert('Enter an item name first.');
     try{
-      const data = await api('/api/admin/commercial/pricing', {method:'POST', body:JSON.stringify({item_name, category, item_type, monthly_price, annual_price:monthly_price*10})});
-      document.getElementById('priceItemName').value=''; document.getElementById('priceCategory').value=''; document.getElementById('priceMonthly').value='';
+      const data = await api('/api/admin/commercial/pricing', {method:'POST', body:JSON.stringify({item_name, category, item_type, monthly_price, annual_price:monthly_price*10, is_bundle})});
+      document.getElementById('priceItemName').value=''; document.getElementById('priceCategory').value=''; document.getElementById('priceMonthly').value=''; document.getElementById('priceIsBundle').checked=false;
       applyCommercialData(data);
     }catch(e){ alert(e.message||String(e)); }
   });
