@@ -205,4 +205,136 @@ function updateExposureSummary(exposure){
 }
  function sevClass(s){s=low(s); if(/critical|severe|high/.test(s))return'danger'; if(/warning|medium|moderate/.test(s))return'warn'; if(/info|low/.test(s))return'info'; return'ok'} function sevName(s){s=low(s); if(/critical|severe|high/.test(s))return'critical'; if(/warning|medium|moderate/.test(s))return'warning'; if(/info|low/.test(s))return'info'; return'medium'} function sevRank(s){return sevName(s)==='critical'?4:sevName(s)==='warning'?3:sevName(s)==='medium'?2:1} function color(r){const s=sevName(r.severity); return s==='critical'?'#ff5a5f':s==='warning'?'#f0b429':s==='medium'?'#93c5fd':'#33c48d'} function hazardIcon(r){const t=low([r.type,r.title,r.summary].join(' ')); if(/volcano|eruption/.test(t))return'🌋'; if(/wildfire|fire|smoke/.test(t))return'🔥'; if(/flood|tsunami|surge/.test(t))return'🌊'; if(/storm|cyclone|hurricane|typhoon|wind|rain/.test(t))return'🌪'; if(/snow|ice|blizzard/.test(t))return'❄️'; if(/heat|temperature|drought/.test(t))return'☀️'; if(/earthquake|quake|seismic/.test(t))return'🌍'; return r.icon||'⚠️'} function sourceGrid(payload){const notes=low((payload.notes||[]).join(' ')); const sourceNames=['USGS','GDACS','Open-Meteo']; return '<div class="source-grid">'+sourceNames.map(n=>{const bad=notes.includes(low(n))&&(notes.includes('http 4')||notes.includes('unavailable')||notes.includes('error')); return `<span class="source-pill"><span class="src-dot ${bad?'warn':''}"></span>${n}</span>`}).join('')+'</div>'} function statusHealth(payload){const n=Number(payload.sourceErrors||0); if(!n)return'Healthy'; return n===1?'Degraded':'Review';} function highestThreat(records){if(!records.length)return'—'; const top=[...records].sort((a,b)=>(Number(b.score||0)-Number(a.score||0))||(sevRank(b.severity)-sevRank(a.severity)))[0]; return `${top.icon||hazardIcon(top)} ${top.title||top.type||'Hazard'}`.slice(0,34)} function assessment(r){const parts=[]; parts.push(`${r.icon||hazardIcon(r)} ${r.title||'Environmental event'} detected near ${r.location||'reported location'}.`); if(r.magnitude)parts.push(`Magnitude ${r.magnitude}${r.depthKm?' with depth '+r.depthKm+' km':''}.`); if(r.severity)parts.push(`Current operational severity is ${r.severity}.`); parts.push(r.action||'Review traveller, asset and route exposure.'); return parts.join(' ')} function loadWatch(){try{state.watchRules=JSON.parse(localStorage.getItem('ci_environment_watch_v1')||'[]')||[]}catch{state.watchRules=[]}} function saveWatch(){localStorage.setItem('ci_environment_watch_v1',JSON.stringify(state.watchRules))} function loadReview(){try{state.reviewed=JSON.parse(localStorage.getItem('ci_environment_review_v1')||'{}')||{}}catch{state.reviewed={}}} function saveReview(){localStorage.setItem('ci_environment_review_v1',JSON.stringify(state.reviewed||{}))} function reviewStatus(id){const v=(state.reviewed||{})[String(id)]; return typeof v==='string'?v:(v&&v.status)||''} function setReview(id,status){if(!id)return; if(status){state.reviewed[String(id)]={status,updatedAt:new Date().toISOString()}}else{delete state.reviewed[String(id)]} saveReview(); render(); toast(status==='cleared'?'Environmental signal cleared from operational rail':status==='watch'?'Environmental signal kept on watch':'Environmental signal reset')} function watchMatches(r){const hay=low([r.type,r.title,r.location,r.region,r.source,r.summary].join(' '));return state.watchRules.filter(w=>hay.includes(low(w.value))||hay.includes(low(w.type))).sort((a,b)=>sevRank(b.severity)-sevRank(a.severity))} function applyWatchRules(){state.signals=state.signals.map(s=>{const r=s.record||state.records.find(x=>String(x.id)===String(s.recordId))||{}; const matches=watchMatches(r); if(!matches.length)return {...s,watchMatches:[]}; const top=matches[0]; const upgraded=sevRank(top.severity)>sevRank(s.priority||r.severity); return {...s,watchMatches:matches,priority:upgraded?top.severity:s.priority,reason:[s.reason||r.summary,`Watchlist match: ${top.value}`].filter(Boolean).join(' · '),recommendedAction:top.action||s.recommendedAction||r.action};})} function toast(msg){const old=document.querySelector('.toast'); if(old)old.remove(); const e=document.createElement('div'); e.className='toast'; e.textContent=msg; document.body.appendChild(e); setTimeout(()=>e.remove(),3800)} async function load(){set('dataStatus','Loading'); $('refreshBtn').disabled=true; let payload=null; try{payload=await fetchJson('/api/environmental/status?limit=200')}catch(e){payload={provider:'Fallback',dataStatus:'Demo fallback',sourceErrors:1,records:demoRecords(),signals:[],counts:{},notes:['Environmental endpoint unavailable: '+e.message]}} state.records=(payload.records||[]).map(r=>({...r,icon:hazardIcon(r)})); state.signals=(payload.signals&&payload.signals.length?payload.signals:state.records.map(r=>({record:r,recordId:r.id,priority:r.severity,type:r.type,item:r.title,location:r.location,reason:r.summary,recommendedAction:r.action,score:r.score,exposure:{}}))).sort((a,b)=>(b.score||0)-(a.score||0)); await loadExposureModel(); loadReview(); attachExposure(); loadWatch(); applyWatchRules(); const totalExposed=state.signals.reduce((n,s)=>n+Number(s.exposure?.travellers||0)+Number(s.exposure?.assets||0),0); if(payload.notes)payload.notes.push(`Exposure model: ${state.travellers.length} travellers and ${state.assets.length} assets checked; ${totalExposed} current proximity/text matches.`); set('dataStatus',payload.dataStatus||'Live'); const ps=$('providerStatus'); if(ps)ps.innerHTML=sourceGrid(payload); set('lastUpdated',payload.generatedAt?new Date(payload.generatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})); set('roleVal',(payload.coverage||'Global')); set('sourceErrors',statusHealth(payload)); set('coverageNote',(payload.notes||[]).join(' ')); const c=payload.counts||{}; set('mappedCount',c.mapped??state.records.length); set('criticalCount',c.critical??state.records.filter(r=>sevName(r.severity)==='critical').length); set('warningCount',c.warnings??state.records.filter(r=>sevName(r.severity)==='warning').length); set('quakeCount',c.earthquakes??state.records.filter(r=>/earthquake/i.test(r.type)).length); set('signalCountTop',highestThreat(state.records)); render(); $('refreshBtn').disabled=false} function demoRecords(){return[{id:'demo_eq',type:'earthquake',icon:'🌍',title:'M5.8 earthquake',location:'Demo Pacific Region',region:'Asia Pacific',lat:35,lng:142,severity:'warning',score:62,source:'Demo',summary:'Demo earthquake used when live endpoint is unavailable.',action:'Check travellers and assets nearby',updatedAt:new Date().toISOString()},{id:'demo_storm',type:'storm',icon:'🌪',title:'Severe storm forecast',location:'Demo London',region:'Europe',lat:51.5,lng:-0.12,severity:'medium',score:48,source:'Demo',summary:'Demo weather risk.',action:'Review travel disruption potential',updatedAt:new Date().toISOString()}]} function filteredRecords(){const q=low($('searchInput').value), type=$('typeFilter').value, sev=$('severityFilter').value; return state.records.filter(r=>{const hay=low([r.title,r.type,r.location,r.region,r.source].join(' ')); if(q&&!hay.includes(q))return false; if(type!=='all'&&!hay.includes(type))return false; if(sev!=='all'&&sevName(r.severity)!==sev)return false; return true})} function markerIcon(r){const icon=hazardIcon(r); return L.divIcon({className:'',html:`<div class="env-icon" style="filter:drop-shadow(0 1px 4px #000);">${esc(icon)}</div>`,iconSize:[26,26],iconAnchor:[13,13]})} function initMap(){if(state.map)return; const bounds=L.latLngBounds([[-85,-180],[85,180]]); state.map=L.map('envMap',{worldCopyJump:false,maxBounds:bounds,maxBoundsViscosity:1,minZoom:2}).setView([20,0],2); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',noWrap:true,bounds:bounds}).addTo(state.map); state.layer=L.layerGroup().addTo(state.map)} function renderMap(){initMap(); state.layer.clearLayers(); state.markers=[]; const recs=filteredRecords(); recs.forEach(r=>{if(!Number.isFinite(Number(r.lat))||!Number.isFinite(Number(r.lng)))return; const m=L.marker([r.lat,r.lng],{icon:markerIcon(r)}).addTo(state.layer); m.bindPopup(`<b>${esc(r.icon||'⚠')} ${esc(r.title)}</b><br>${esc(r.location)}<br>${esc(r.severity)} · ${esc(r.source)}`); m.on('click',()=>selectRecord(r.id,true)); state.markers.push(m)}); set('mapCount',state.markers.length)} function signalHtml(s){const r=s.record||state.records.find(x=>x.id===s.recordId)||{}; const id=String(r.id||s.recordId||''); const sev=sevName(s.priority||r.severity); const status=reviewStatus(id); const matches=s.watchMatches||watchMatches(r); const statusPill=status==='cleared'?'<span class="pill ok">cleared</span>':status==='watch'?'<span class="pill warn">watching</span>':''; const matchLine=matches.length?`<div class="item-meta" style="margin-top:6px;color:#fde68a">Watchlist: ${esc(matches.map(m=>m.value).join(', '))}</div>`:''; return `<div class="item ${sev} ${status==='cleared'?'reviewed-cleared':''}" data-id="${esc(id)}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div class="item-title">${esc(hazardIcon(r))} ${esc(String(s.type||r.type||'Hazard').toUpperCase())}</div><div class="item-meta"><b style="color:#e9edf2">${esc(s.item||r.title)}</b> · ${esc(s.location||r.location)} · score ${esc(s.score||r.score||0)}</div></div><div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap"><span class="pill ${sevClass(s.priority||r.severity)}">${esc(s.priority||r.severity)}</span>${statusPill}</div></div><div class="item-meta" style="margin-top:6px">${esc(s.reason||r.summary)}</div>${matchLine}<div class="item-meta" style="margin-top:6px;color:#bfdbfe">Exposure: ${esc(exposureLine(s.exposure))}</div><div class="actions" style="margin-top:8px"><button class="btn" data-action="clear" data-review-id="${esc(id)}">Clear signal</button><button class="btn" data-action="watch" data-review-id="${esc(id)}">Keep on watch</button><button class="btn" data-action="reset" data-review-id="${esc(id)}">Reset</button></div></div>`} 
 function render(){renderMap(); const visibleSignals=state.signals.filter(s=>reviewStatus(s.recordId||s.record?.id)!=='cleared'); const exec=visibleSignals.filter(s=>(s.score||0)>=55||sevRank(s.priority)>=3||(s.watchMatches||[]).length); const cleared=state.signals.length-visibleSignals.length; set('execPill',exec.length+' Signals'+(cleared?' · '+cleared+' cleared':'')); $('execSignals').innerHTML=exec.length?exec.slice(0,12).map(signalHtml).join(''):'<div class="empty">No executive environmental signals.</div>'; set('signalCount',visibleSignals.length+' Signals'+(cleared?' · '+cleared+' cleared':'')); $('signalRail').innerHTML=visibleSignals.length?visibleSignals.slice(0,100).map(signalHtml).join(''):'<div class="empty">No environmental signals.</div>'; document.querySelectorAll('[data-id]').forEach(el=>el.onclick=e=>{if(e.target.closest('button'))return; selectRecord(el.dataset.id,true)}); document.querySelectorAll('[data-review-id]').forEach(btn=>btn.onclick=e=>{e.stopPropagation(); const a=btn.dataset.action; setReview(btn.dataset.reviewId,a==='clear'?'cleared':a==='watch'?'watch':'')}); renderWatchRules()} function selectRecord(id,pan){const r=state.records.find(x=>String(x.id)===String(id)); if(!r)return; state.selected=r; if(pan&&state.map&&Number.isFinite(Number(r.lat))) state.map.setView([r.lat,r.lng],5); const exposure=(state.signals.find(s=>String(s.recordId)===String(r.id))||{}).exposure||computeExposureForRecord(r); updateExposureSummary(exposure); $('detailPanel').innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><h3 style="margin:0">${esc(r.icon||'⚠')} ${esc(r.title)}</h3><div class="muted">${esc(r.type)} · ${esc(r.location)} · ${esc(r.source)}</div></div><span class="pill ${sevClass(r.severity)}">${esc(r.severity)}</span></div><div class="detail-grid"><div class="field"><b>Score</b><span>${esc(r.score)}</span></div><div class="field"><b>Status</b><span>${esc(r.status)}</span></div><div class="field"><b>Region</b><span>${esc(r.region)}</span></div><div class="field"><b>Updated</b><span>${esc(r.updatedAt?new Date(r.updatedAt).toLocaleString('en-GB'):'—')}</span></div><div class="field"><b>Magnitude</b><span>${esc(r.magnitude??'—')}</span></div><div class="field"><b>Depth</b><span>${esc(r.depthKm??'—')}</span></div></div><div class="coverage-note" style="margin-top:10px"><b>Operational assessment:</b> ${esc(assessment(r))}</div><div class="coverage-note" style="margin-top:10px"><b>Exposure check:</b> ${esc(exposureLine(exposure))}${exposure.travellerNames?.length ? '<br>Travellers: '+esc(exposure.travellerNames.join(', ')) : ''}${exposure.assetNames?.length ? '<br>Assets: '+esc(exposure.assetNames.join(', ')) : ''}</div><div class="coverage-note" style="margin-top:10px"><b>Watchlist / review:</b> ${esc((watchMatches(r).map(w=>w.value).join(', ')||'No organisation watch rule match'))} · ${esc(reviewStatus(r.id)?.status||reviewStatus(r.id)||'not reviewed')}</div><div class="actions" style="margin-top:10px"><button class="btn primary" id="taskBtn">Create Task</button><button class="btn" id="caseBtn">Create Case</button><button class="btn" id="clearSignalBtn">Clear Signal</button><button class="btn" id="watchSignalBtn">Keep on Watch</button><button class="btn" onclick="location.href='travel-infrastructure.html'">Open Hub</button></div>`; $('taskBtn').onclick=()=>createTask(r); $('caseBtn').onclick=()=>createCase(r); $('clearSignalBtn').onclick=()=>setReview(r.id,'cleared'); $('watchSignalBtn').onclick=()=>setReview(r.id,'watch')} function createTask(r){localStorage.setItem('ci_ops_task_intake',JSON.stringify({source:'Environmental Intelligence',source_type:'environmental',source_id:r.id,source_link:'environmental-intel.html?record='+encodeURIComponent(r.id),title:`Environmental review: ${r.title}`,description:`${r.summary}\n\nLocation: ${r.location}\nSeverity: ${r.severity}\nExposure: ${exposureLine((state.signals.find(s=>String(s.recordId)===String(r.id))||{}).exposure)}\nRecommended action: ${r.action}`,priority:sevName(r.severity)==='critical'?'critical':sevName(r.severity)==='warning'?'high':'medium',entity_name:r.title,created_at:new Date().toISOString()})); location.href='operations-tasks.html?source=environmental';} function createCase(r){localStorage.setItem('ci_ops_case_intake',JSON.stringify({source:'Environmental Intelligence',source_id:r.id,title:`Environmental case: ${r.title}`,summary:r.summary,severity:r.severity,location:r.location,source_link:'environmental-intel.html?record='+encodeURIComponent(r.id),created_at:new Date().toISOString()})); location.href='operations-cases.html?source=environmental';} function renderWatchRules(){set('watchRuleCount',state.watchRules.length+' Rules'); $('watchRulesList').innerHTML=state.watchRules.length?state.watchRules.map(w=>`<div class="item ${sevName(w.severity)}"><div class="item-title">${esc(w.value)}</div><div class="item-meta">${esc(w.type)} · ${esc(w.severity)} · ${state.records.filter(r=>watchMatches(r).some(x=>x.id===w.id)).length} match(es)</div></div>`).join(''):'<div class="empty">No organisation watch rules yet.</div>'} $('addWatchBtn').onclick=()=>{const value=$('watchValue').value.trim(); if(!value){alert('Enter a watch value.');return} state.watchRules.unshift({id:'ew_'+Date.now(),type:$('watchType').value.trim()||'environmental',value,severity:$('watchSeverity').value,action:$('watchAction').value.trim()||'Review environmental exposure',note:$('watchNote').value.trim()}); saveWatch(); applyWatchRules(); $('watchValue').value=''; $('watchNote').value=''; render(); toast('Environmental watch rule added')}; $('clearWatchBtn').onclick=()=>{if(confirm('Clear environmental watch rules?')){state.watchRules=[];saveWatch();applyWatchRules();render()}}; ['searchInput','typeFilter','severityFilter'].forEach(id=>$(id).addEventListener('input',renderMap)); $('resetMapBtn').onclick=()=>{if(state.map)state.map.setView([20,0],2)}; $('refreshBtn').onclick=load; mountTopActions(); load();})();
-</script></body></html>
+</script><!-- ── CIAccess: tier banner + module enforcement (v129) ─────────────────── -->
+<script>
+(function(){
+'use strict';
+const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+
+// ── Tier labels ────────────────────────────────────────────────────────────
+const TIER_LABELS = {
+  global:'Global',emea:'EMEA',europe:'Europe',uk_only:'UK only',
+  usa_only:'USA only',apac:'APAC',custom:'Custom region',
+};
+
+// ── Module → page map ─────────────────────────────────────────────────────
+const MODULE_PAGES = {
+  live_alerts:'live-alerts.html', assets:'assets.html', travellers:'travellers.html',
+  power_outages:'power-outages.html', transport_status:'transport-status.html',
+  flight_status:'flight-status.html', reports:'reports.html',
+  intelligence_brief:'brief.html', trends:'trends.html',
+  neighbourhood_intel:'neighbourhood-intel.html', check_in_manager:'check-in.html',
+  cityintel_ai:'cityintel-assistant.html', high_risk_events:'high-risk-events.html',
+  all_events:'events.html', alerts:'alerts.html', training:'training-scenarios.html',
+  monitoring_hub:'monitoring-hub.html', intel_hub:'intel-hub.html',
+  welfare_hub:'welfare-hub.html', travel_infrastructure:'travel-infrastructure.html',
+  training_hub:'training-hub.html', maritime_intel:'maritime-intel.html',
+  environmental_intel:'environmental-intel.html', traveller_tracking:'welfare-track.html',
+  panic_alarm:'panic-alarm.html', escalation_contacts:'escalation-contacts.html',
+  executive_dashboard:'executive-dashboard.html', operations_cases:'operations-cases.html',
+  operations_tasks:'operations-tasks.html', notification_centre:'notification-centre.html',
+  training_review:'training-review.html',
+};
+
+// ── Fetch org config (cached in localStorage, TTL 5 min) ──────────────────
+async function getOrgConfig(){
+  const CACHE_KEY='ci_org_onboarding'; const TTL=5*60*1000;
+  try{
+    const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+    if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
+  }catch(_){}
+  try{
+    const hdrs = {};
+    if(window.CIAuth && CIAuth.who){
+      const u=CIAuth.who()||{};
+      hdrs['X-User-Email']=u.email||'';
+      hdrs['X-User-Id']=u.id||u.email||'';
+      hdrs['X-User-Name']=u.name||'';
+    }
+    const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
+    const d=await res.json().catch(()=>({}));
+    const cfg=d.data||{};
+    cfg._ts=Date.now();
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify(cfg));}catch(_){}
+    return cfg;
+  }catch(_){ return {}; }
+}
+
+// ── Render tier banner ─────────────────────────────────────────────────────
+function showTierBanner(tier,extraMsg){
+  if(!tier||tier==='global') return;
+  const id='ci-tier-banner';
+  if(document.getElementById(id)) return;
+  const label=TIER_LABELS[tier]||tier;
+  const el=document.createElement('div');
+  el.id=id;
+  el.style.cssText='position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#1a1400;border-bottom:2px solid #b45309;color:#fbbf24;font:600 13px system-ui,sans-serif';
+  el.innerHTML=`<span>📍 Data tier: <strong>${label}</strong>${extraMsg?' — '+extraMsg:''}</span><button onclick="this.parentNode.remove()" style="background:none;border:none;color:#fbbf24;font-size:16px;cursor:pointer;padding:0 4px;line-height:1">✕</button>`;
+  const main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+  main.insertBefore(el,main.firstChild);
+}
+
+// ── Render module-locked page ─────────────────────────────────────────────
+function showModuleLocked(moduleName){
+  const main=document.querySelector('main.main')||document.querySelector('.main');
+  if(!main) return;
+  main.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px;gap:14px">
+      <div style="font-size:48px">🔒</div>
+      <h2 style="margin:0;font-size:20px;color:#e2e8f0">Not included in your plan</h2>
+      <p style="margin:0;color:#8e97a3;max-width:440px;line-height:1.6">
+        <strong style="color:#e2e8f0">${moduleName}</strong> is not enabled for your organisation.
+        Contact your CityIntel account manager to upgrade or add this module.
+      </p>
+      <a href="mailto:contact@city-intel.com" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 20px;border-radius:999px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.4);color:#fca5a5;font:600 13px system-ui,sans-serif;text-decoration:none">
+        Contact CityIntel →
+      </a>
+      <a href="index.html" style="color:#6b7280;font-size:13px;text-decoration:underline;margin-top:4px">← Back to Dashboard</a>
+    </div>`;
+}
+
+// ── Check module access ────────────────────────────────────────────────────
+function isModuleAllowed(modules, moduleName){
+  if(!Array.isArray(modules)||modules.length===0) return true;
+  return modules.includes(moduleName);
+}
+
+// ── Public API ─────────────────────────────────────────────────────────────
+window.CIAccess = {
+  getOrgConfig,
+  showTierBanner,
+  showModuleLocked,
+  isModuleAllowed,
+  TIER_LABELS,
+  MODULE_PAGES,
+  async initPage(moduleKey, bannerExtraMsg){
+    const cfg = await getOrgConfig();
+    const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+    if(moduleKey && !isModuleAllowed(modules, moduleKey)){
+      const label = Object.keys(MODULE_PAGES).find(k=>k===moduleKey)||moduleKey;
+      showModuleLocked(label.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+      return false;
+    }
+    if(cfg.dataTier && cfg.dataTier!=='global'){
+      showTierBanner(cfg.dataTier, bannerExtraMsg||'');
+    }
+    return true;
+  },
+  handleApiTier(data, moduleBannerMsg){
+    if(data && data.tier && !data.tierIsGlobal){
+      showTierBanner(data.tier, moduleBannerMsg||'Data filtered to your access tier');
+    }
+  },
+};
+})();
+</script>
+<!-- ── /CIAccess ───────────────────────────────────────────────────────── -->
+
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(window.CIAccess) CIAccess.initPage('environmental_intel');
+});
+</script>
+
+</body></html>
