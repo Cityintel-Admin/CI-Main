@@ -24,12 +24,12 @@
   const NAV_LINKS = [
     // ── Core (all users) ────────────────────────────────────────────────────
     { href: 'dashboard.html',           label: 'Dashboard',           role: 'all' },
-    { href: 'alerts.html',              label: 'Protests/Rally/Demo', role: 'all',       module: 'Protests/Rally/Demo' },
-    { href: 'monitoring-hub.html',      label: 'Monitoring Hub',      role: 'all',       module: 'Monitoring Hub' },
-    { href: 'intel-hub.html',           label: 'Intel Hub',           role: 'all',       module: 'Intel Hub' },
-    { href: 'travel-infrastructure.html',   label: 'Travel-Infrastructure Hub',  role: 'all', module: 'Travel-Infrastructure Hub' },
-    { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'Welfare Hub' },
-    { href: 'training-hub.html',        label: 'Training Hub',        role: 'all',       module: 'Training Hub' },
+    { href: 'alerts.html',              label: 'Protests/Rally/Demo', role: 'all',       module: 'alerts' },
+    { href: 'monitoring-hub.html',      label: 'Monitoring Hub',      role: 'all',       module: 'monitoring_hub' },
+    { href: 'intel-hub.html',           label: 'Intel Hub',           role: 'all',       module: 'intel_hub' },
+    { href: 'travel-infrastructure.html',   label: 'Travel-Infrastructure Hub',  role: 'all', module: 'travel_infrastructure' },
+    { href: 'welfare-hub.html',         label: 'Welfare Hub',         role: 'all',       module: 'welfare_hub' },
+    { href: 'training-hub.html',        label: 'Training Hub',        role: 'all',       module: 'training_hub' },
     // ── Info / support ──────────────────────────────────────────────────────
     { href: 'sources.html',             label: 'Sources',             role: 'all' },
     { href: 'settings.html',            label: 'Settings',            role: 'all' },
