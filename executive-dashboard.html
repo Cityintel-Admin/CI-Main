@@ -115,10 +115,187 @@
     <div class="drawer-head"><div><h3 id="drawerTitle">KPI details</h3><div class="muted" id="drawerSub">Items feeding this KPI.</div></div><button class="btn" id="drawerClose" type="button">Close</button></div>
     <div class="drawer-body" id="drawerBody"><div class="empty">Select a KPI.</div></div>
   </aside>
+
+<!-- ── CIAccess: tier banner + module enforcement (v130 — adds lockCard) ──── -->
+<script>
+(function(){
+'use strict';
+const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+
+// ── Tier labels ────────────────────────────────────────────────────────────
+const TIER_LABELS = {
+  global:'Global',emea:'EMEA',europe:'Europe',uk_only:'UK only',
+  usa_only:'USA only',apac:'APAC',custom:'Custom region',
+};
+
+// ── Module → page map ─────────────────────────────────────────────────────
+const MODULE_PAGES = {
+  live_alerts:'live-alerts.html', assets:'assets.html', travellers:'travellers.html',
+  power_outages:'power-outages.html', transport_status:'transport-status.html',
+  flight_status:'flight-status.html', reports:'reports.html',
+  intelligence_brief:'brief.html', trends:'trends.html',
+  neighbourhood_intel:'neighborhood-intel.html', check_in_manager:'checkin.html',
+  cityintel_ai:'cityintel-assistant.html', all_events:'events.html',
+  alerts:'alerts.html', traveller_tracking:'tracking.html',
+  panic_alarm:'panicalarm.html', escalation_contacts:'escalation-contacts.html',
+  monitoring_hub:'monitoring-hub.html', intel_hub:'intel-hub.html',
+  welfare_hub:'welfare-hub.html', travel_infrastructure:'travel-infrastructure.html',
+  training_hub:'training-hub.html', training_review:'training-review.html',
+  training_scenario_admin:'training-scenario-admin.html',
+  executive_dashboard:'executive-dashboard.html', operations_cases:'operations-cases.html',
+  operations_tasks:'operations-tasks.html', notification_centre:'notification-centre.html',
+  maritime_intel:'maritime-intel.html', environmental_intel:'environmental-intel.html',
+};
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// ── Fetch org config (cached in localStorage, TTL 5 min) ──────────────────
+async function getOrgConfig(){
+  const CACHE_KEY='ci_org_onboarding'; const TTL=5*60*1000;
+  try{
+    const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+    if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
+  }catch(_){}
+  try{
+    const hdrs = {};
+    if(window.CIAuth && CIAuth.who){
+      const u=CIAuth.who()||{};
+      hdrs['X-User-Email']=u.email||'';
+      hdrs['X-User-Id']=u.id||u.email||'';
+      hdrs['X-User-Name']=u.name||'';
+    }
+    const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
+    const d=await res.json().catch(()=>({}));
+    const cfg=d.data||{};
+    cfg._ts=Date.now();
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify(cfg));}catch(_){}
+    return cfg;
+  }catch(_){ return {}; }
+}
+
+// ── Render tier banner ─────────────────────────────────────────────────────
+function showTierBanner(tier,extraMsg){
+  if(!tier||tier==='global') return;
+  const id='ci-tier-banner';
+  if(document.getElementById(id)) return;
+  const label=TIER_LABELS[tier]||tier;
+  const el=document.createElement('div');
+  el.id=id;
+  el.style.cssText='position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#1a1400;border-bottom:2px solid #b45309;color:#fbbf24;font:600 13px system-ui,sans-serif';
+  el.innerHTML=`<span>📍 Data tier: <strong>${label}</strong>${extraMsg?' — '+extraMsg:''}</span><button onclick="this.parentNode.remove()" style="background:none;border:none;color:#fbbf24;font-size:16px;cursor:pointer;padding:0 4px;line-height:1">✕</button>`;
+  const main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+  main.insertBefore(el,main.firstChild);
+}
+
+// ── Render module-locked page (full page block — unused on this page,
+//    kept for parity with the rest of the platform) ───────────────────────
+function showModuleLocked(moduleName){
+  const main=document.querySelector('main.main')||document.querySelector('.main');
+  if(!main) return;
+  main.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px;gap:14px">
+      <div style="font-size:48px">🔒</div>
+      <h2 style="margin:0;font-size:20px;color:#e2e8f0">Not included in your plan</h2>
+      <p style="margin:0;color:#8e97a3;max-width:440px;line-height:1.6">
+        <strong style="color:#e2e8f0">${moduleName}</strong> is not enabled for your organisation.
+        Contact your CityIntel account manager to upgrade or add this module.
+      </p>
+      <a href="mailto:contact@city-intel.com" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 20px;border-radius:999px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.4);color:#fca5a5;font:600 13px system-ui,sans-serif;text-decoration:none">
+        Contact CityIntel →
+      </a>
+      <a href="executive-dashboard.html" style="color:#6b7280;font-size:13px;text-decoration:underline;margin-top:4px">← Back to Dashboard</a>
+    </div>`;
+}
+
+// ── Lock a single card/tile in place (does NOT touch the rest of the page) ─
+// cardEl: the container element to replace the contents of
+// moduleKey: the module gating this card (used for the click-through modal)
+// label: human-readable name shown in the lock state + modal
+function lockCard(cardEl, moduleKey, label){
+  if(!cardEl || cardEl.dataset.ciLocked==='1') return;
+  cardEl.dataset.ciLocked='1';
+  cardEl.classList.add('ci-card-locked');
+  cardEl.style.cssText+=';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;cursor:pointer;min-height:70px;opacity:.85';
+  cardEl.innerHTML=`
+    <div style="font-size:20px;line-height:1">🔒</div>
+    <div style="font-size:11px;font-weight:900;color:#8e97a3">${esc(label)}</div>
+    <div style="font-size:10px;color:#6b7280">Not included in your plan</div>`;
+  cardEl.setAttribute('role','button');
+  cardEl.setAttribute('tabindex','0');
+  cardEl.setAttribute('aria-label',`${label} — not included in your plan`);
+  const open=()=>showLockedModal(label);
+  cardEl.addEventListener('click',open);
+  cardEl.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+}
+
+// ── Modal shown when a locked card/tile is clicked ─────────────────────────
+function showLockedModal(label){
+  const existing=document.getElementById('ci-locked-modal');
+  if(existing) existing.remove();
+  const modal=document.createElement('div');
+  modal.id='ci-locked-modal';
+  modal.style.cssText='position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:20px';
+  modal.innerHTML=`
+    <div style="background:#16171a;border:1px solid #2e3238;border-radius:16px;padding:28px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div style="font-size:40px">🔒</div>
+      <h3 style="margin:0;font-size:17px;color:#e2e8f0">Not included in your plan</h3>
+      <p style="margin:0;color:#8e97a3;font-size:13px;line-height:1.6">
+        <strong style="color:#e2e8f0">${esc(label)}</strong> is not enabled for your organisation.
+        Contact your CityIntel account manager to upgrade or add this module.
+      </p>
+      <a href="mailto:contact@city-intel.com" style="margin-top:6px;padding:9px 18px;border-radius:999px;background:rgba(208,22,22,.12);border:1px solid rgba(208,22,22,.4);color:#fca5a5;font:600 13px system-ui,sans-serif;text-decoration:none">Contact CityIntel →</a>
+      <button type="button" id="ci-locked-modal-close" style="margin-top:4px;background:none;border:none;color:#6b7280;font-size:13px;text-decoration:underline;cursor:pointer">Close</button>
+    </div>`;
+  document.body.appendChild(modal);
+  const close=()=>modal.remove();
+  modal.addEventListener('click',e=>{ if(e.target===modal) close(); });
+  document.getElementById('ci-locked-modal-close').addEventListener('click',close);
+  document.addEventListener('keydown',function onEsc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown',onEsc); } });
+}
+
+// ── Check module access ────────────────────────────────────────────────────
+function isModuleAllowed(modules, moduleName){
+  if(!Array.isArray(modules)||modules.length===0) return true;
+  return modules.includes(moduleName);
+}
+
+// ── Public API ─────────────────────────────────────────────────────────────
+window.CIAccess = {
+  getOrgConfig,
+  showTierBanner,
+  showModuleLocked,
+  isModuleAllowed,
+  lockCard,
+  showLockedModal,
+  TIER_LABELS,
+  MODULE_PAGES,
+  async initPage(moduleKey, bannerExtraMsg){
+    const cfg = await getOrgConfig();
+    const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+    if(moduleKey && !isModuleAllowed(modules, moduleKey)){
+      const label = Object.keys(MODULE_PAGES).find(k=>k===moduleKey)||moduleKey;
+      showModuleLocked(label.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+      return false;
+    }
+    if(cfg.dataTier && cfg.dataTier!=='global'){
+      showTierBanner(cfg.dataTier, bannerExtraMsg||'');
+    }
+    return true;
+  },
+  handleApiTier(data, moduleBannerMsg){
+    if(data && data.tier && !data.tierIsGlobal){
+      showTierBanner(data.tier, moduleBannerMsg||'Data filtered to your access tier');
+    }
+  },
+};
+})();
+</script>
+<!-- ── /CIAccess ───────────────────────────────────────────────────────── -->
+
 <script>
 (function(){
   const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
-  const state={cases:[],tasks:[],workflow:[],alerts:[],sources:{},errors:[],latencies:{},map:null,markers:[],commandRows:[]};
+  const state={cases:[],tasks:[],workflow:[],alerts:[],sources:{},errors:[],latencies:{},map:null,markers:[],commandRows:[],modules:[]};
   const $=id=>document.getElementById(id);
   const arr=v=>Array.isArray(v)?v:[];
   const low=s=>String(s??'').toLowerCase();
@@ -190,9 +367,22 @@
     arr(state.workflow).filter(w=>!/resolved|closed/i.test(w.status)).forEach(w=>{if(/unacknowledged|escalated/i.test(w.status||''))addAlert('notifications','notification workflow',txt(w.title,w.alert_id,'Unacknowledged notification'),txt(w.source,w.summary,w.status,'Notification requires review'),txt(w.severity,w.status,'medium'),txt(w.updated_at,w.updatedAt,w.created_at),'notification-centre.html',{status:w.status,caseId:w.case_id||w.caseId,raw:w});});
     arr(state.tasks).filter(t=>!isClosedTask(t)).forEach(t=>{const sev=taskSeverity(t); if(sevRank(sev)>=2||t.status==='blocked')addAlert('tasks','operations task',txt(t.title,'Operations task'),txt(t.description,t.entity_name,t.owner_name,t.status,'Open operational task'),sev,txt(t.updated_at,t.created_at),'operations-tasks.html',{entityName:txt(t.entity_name,t.owner_name,t.owner_email),caseId:t.case_id,raw:t,status:t.status});});
   }
-  async function loadCases(){const data=await getJson('/api/org/operations-cases/shared?limit=250','operations cases');state.cases=firstRows(data||{},['cases','items','results','data']);if(!state.cases.length)state.cases=arr(loadLocal('ci_operations_cases_v2',[]));}
-  async function loadTasks(){const data=await getJson('/api/org/operations-tasks/shared?include_closed=1&limit=500','operations tasks');state.tasks=firstRows(data||{},['tasks','items','results','data']).map(normTask);if(!state.tasks.length)state.tasks=arr(loadLocal('ci_operations_tasks_v1',[])).map(normTask);}
-  async function load(){state.errors=[];state.latencies={};$('refreshBtn').disabled=true;const keys=[['workflow','/api/org/notifications/workflow?limit=500','notification workflow'],['panic','/api/org/panic','panic'],['panicLog','/api/org/panic/log?limit=50','panic log'],['tracking','/api/org/tracking/sessions','tracking'],['welfare','/api/org/welfare/incidents?status=all&limit=500','welfare'],['travelIncidents','/api/org/travel-infrastructure/incidents?status=all&limit=500','travel incidents'],['transport','/api/transport-status?v=3','transport'],['power','/api/power-outages?v=6','power'],['flights','/api/flight-status?mode=airports','flights'],['maritime','/api/maritime/status?limit=100','maritime'],['travellers','/api/org/travellers','travellers'],['assets','/api/org/assets','assets']];const res=await Promise.all(keys.map(k=>getJson(k[1],k[2])));keys.forEach((k,i)=>state.sources[k[0]]=res[i]||{});state.workflow=firstRows(state.sources.workflow,['items','workflow','results','data']);await Promise.all([loadCases(),loadTasks()]);normalise();$('refreshBtn').disabled=false;render();}
+  // Map of source key -> owning module. Sources whose module isn't enabled
+  // are skipped entirely at fetch time — not just hidden in the UI — so
+  // restricted data can never leak into cross-source aggregates like
+  // Critical Events / Escalation Candidates.
+  const SOURCE_MODULE_MAP={workflow:'notification_centre',panic:'panic_alarm',panicLog:'panic_alarm',tracking:'traveller_tracking',welfare:'welfare_hub',travelIncidents:'travel_infrastructure',transport:'transport_status',power:'power_outages',flights:'flight_status',maritime:'maritime_intel',travellers:'travellers',assets:'assets'};
+  async function loadCases(){
+    if(window.CIAccess && !CIAccess.isModuleAllowed(state.modules,'operations_cases')){ state.cases=[]; return; }
+    const data=await getJson('/api/org/operations-cases/shared?limit=250','operations cases');state.cases=firstRows(data||{},['cases','items','results','data']);if(!state.cases.length)state.cases=arr(loadLocal('ci_operations_cases_v2',[]));}
+  async function loadTasks(){
+    if(window.CIAccess && !CIAccess.isModuleAllowed(state.modules,'operations_tasks')){ state.tasks=[]; return; }
+    const data=await getJson('/api/org/operations-tasks/shared?include_closed=1&limit=500','operations tasks');state.tasks=firstRows(data||{},['tasks','items','results','data']).map(normTask);if(!state.tasks.length)state.tasks=arr(loadLocal('ci_operations_tasks_v1',[])).map(normTask);}
+  async function load(){state.errors=[];state.latencies={};$('refreshBtn').disabled=true;
+    if(window.CIAccess){const cfg=await CIAccess.getOrgConfig();state.modules=Array.isArray(cfg.modules)?cfg.modules:[];}
+    const allKeys=[['workflow','/api/org/notifications/workflow?limit=500','notification workflow'],['panic','/api/org/panic','panic'],['panicLog','/api/org/panic/log?limit=50','panic log'],['tracking','/api/org/tracking/sessions','tracking'],['welfare','/api/org/welfare/incidents?status=all&limit=500','welfare'],['travelIncidents','/api/org/travel-infrastructure/incidents?status=all&limit=500','travel incidents'],['transport','/api/transport-status?v=3','transport'],['power','/api/power-outages?v=6','power'],['flights','/api/flight-status?mode=airports','flights'],['maritime','/api/maritime/status?limit=100','maritime'],['travellers','/api/org/travellers','travellers'],['assets','/api/org/assets','assets']];
+    const keys=allKeys.filter(k=>{const mod=SOURCE_MODULE_MAP[k[0]];return !mod||!window.CIAccess||CIAccess.isModuleAllowed(state.modules,mod);});
+    const res=await Promise.all(keys.map(k=>getJson(k[1],k[2])));keys.forEach((k,i)=>state.sources[k[0]]=res[i]||{});state.workflow=firstRows(state.sources.workflow,['items','workflow','results','data']);await Promise.all([loadCases(),loadTasks()]);normalise();$('refreshBtn').disabled=false;render();}
   function taskMetrics(){const all=arr(state.tasks).map(normTask);const active=all.filter(t=>!isClosedTask(t));const me=actorEmail();return {all,active,open:active.filter(t=>t.status==='open').length,inprogress:active.filter(t=>t.status==='in_progress').length,blocked:active.filter(t=>t.status==='blocked').length,critical:active.filter(t=>t.priority==='critical'||taskSeverity(t)==='critical').length,sla:active.filter(t=>['breached','at risk'].includes(slaState(t))).length,mine:active.filter(t=>low(t.owner_email)===me||low(t.owner_name)===low(actorName())).length,completedToday:all.filter(t=>t.status==='completed'&&new Date(t.completed_at||t.updated_at).toDateString()===new Date().toDateString()).length};}
   function isExecutiveKpiRelevant(a){
     const source=low(a.source), type=low(a.type), status=low(a.status);
@@ -208,7 +398,23 @@
   }
   function kpis(){const active=state.alerts.filter(a=>low(a.status)!=='resolved');const actionable=active.filter(isExecutiveKpiRelevant);const maritimeRows=active.filter(a=>a.source==='maritime');const maritimeHigh=maritimeRows.filter(isHighRiskMaritime);const tm=taskMetrics();return {cases:activeCases().length,critical:actionable.filter(a=>sevRank(a.severity)>=4).length,briefing:active.filter(a=>/briefing/i.test(JSON.stringify(a.raw))).length,escalation:actionable.filter(a=>sevRank(a.severity)>=4||/escalat/i.test(JSON.stringify(a.raw))||(a.source==='maritime'&&maritimeExecutiveScore(a)>=70)).length,welfare:active.filter(a=>a.source==='welfare'&&sevRank(a.severity)>=3).length,tracking:active.filter(a=>/tracking/i.test(a.type)).length,travel:active.filter(a=>a.source==='travel').length,maritime:maritimeHigh.length,maritimeAll:maritimeRows.length,unack:state.workflow.filter(w=>/unacknowledged/i.test(w.status||'')).length,tasks:tm,active,actionable};}
   function riskScore(m){let score=0;score+=Math.min(30,m.critical*8);score+=Math.min(16,m.escalation*5);score+=Math.min(12,m.tracking*4);score+=Math.min(12,m.travel*2);score+=maritimeRiskImpact(m);score+=Math.min(8,m.unack*2);score+=Math.min(8,m.cases);score+=Math.min(8,m.tasks.blocked*6);score+=Math.min(6,m.tasks.critical*4);score+=Math.min(4,m.tasks.sla*3);return Math.min(100,Math.round(score));}
-  function renderKpis(m){const data=[['Active Cases',m.cases,'open cases','cases'],['Open Tasks',m.tasks.active.length,'operator workload','tasks'],['Blocked Tasks',m.tasks.blocked,'needs management','blockedtasks'],['Critical Tasks',m.tasks.critical,'highest priority','criticaltasks'],['SLA Watch',m.tasks.sla,'optional SLA risk','slawatch'],['Critical Events',m.critical,'actionable critical items','critical'],['Escalation Candidates',m.escalation,'actionable escalation pressure','escalation'],['Tracking Risks',m.tracking,'offline/stale/risk','tracking'],['Infrastructure Signals',m.travel,'all active signals/disruptions','travel'],['Maritime Signals',m.maritime||0,'vessel/port/chokepoint watch','maritime'],['Welfare Critical',m.welfare,'welfare pressure','welfare'],['Unacknowledged',m.unack,'notification workflow','unack'],['My Tasks',m.tasks.mine,'assigned to you','mytasks']];$('kpiGrid').innerHTML=data.map(([l,v,n,k])=>`<article class="kpi ${v>0?(v>=3||/blocked|critical|sla/.test(k)?'hot':'warn'):'ok'}" data-kpi="${k}" title="Open ${l} details"><div class="label">${l}</div><div class="value" id="kpi-${k}">${v}</div><div class="note">${n}</div></article>`).join('');$('kpiGrid').querySelectorAll('[data-kpi]').forEach(el=>el.addEventListener('click',()=>openKpiDrawer(el.dataset.kpi,m)));}
+  // KPI data-kpi key -> owning module. 'critical' and 'escalation'
+  // deliberately absent — they're cross-platform aggregates, not owned by
+  // a single purchasable module, so they stay visible regardless of package
+  // (per agreed decision — see chat).
+  const KPI_MODULE_MAP={cases:'operations_cases',tasks:'operations_tasks',blockedtasks:'operations_tasks',criticaltasks:'operations_tasks',slawatch:'operations_tasks',mytasks:'operations_tasks',tracking:'traveller_tracking',travel:'travel_infrastructure',maritime:'maritime_intel',welfare:'welfare_hub',unack:'notification_centre'};
+  function renderKpis(m){const data=[['Active Cases',m.cases,'open cases','cases'],['Open Tasks',m.tasks.active.length,'operator workload','tasks'],['Blocked Tasks',m.tasks.blocked,'needs management','blockedtasks'],['Critical Tasks',m.tasks.critical,'highest priority','criticaltasks'],['SLA Watch',m.tasks.sla,'optional SLA risk','slawatch'],['Critical Events',m.critical,'actionable critical items','critical'],['Escalation Candidates',m.escalation,'actionable escalation pressure','escalation'],['Tracking Risks',m.tracking,'offline/stale/risk','tracking'],['Infrastructure Signals',m.travel,'all active signals/disruptions','travel'],['Maritime Signals',m.maritime||0,'vessel/port/chokepoint watch','maritime'],['Welfare Critical',m.welfare,'welfare pressure','welfare'],['Unacknowledged',m.unack,'notification workflow','unack'],['My Tasks',m.tasks.mine,'assigned to you','mytasks']];$('kpiGrid').innerHTML=data.map(([l,v,n,k])=>`<article class="kpi ${v>0?(v>=3||/blocked|critical|sla/.test(k)?'hot':'warn'):'ok'}" data-kpi="${k}" title="Open ${l} details"><div class="label">${l}</div><div class="value" id="kpi-${k}">${v}</div><div class="note">${n}</div></article>`).join('');
+    $('kpiGrid').querySelectorAll('[data-kpi]').forEach(el=>{
+      const key=el.dataset.kpi;
+      const moduleKey=KPI_MODULE_MAP[key];
+      if(moduleKey && window.CIAccess && !CIAccess.isModuleAllowed(state.modules,moduleKey)){
+        const label=el.querySelector('.label')?.textContent||key;
+        CIAccess.lockCard(el,moduleKey,label);
+      } else {
+        el.addEventListener('click',()=>openKpiDrawer(key,m));
+      }
+    });
+  }
 
   function kpiDrawerItems(key,m){
     const active=m.active||[];
@@ -401,7 +607,24 @@
   }
   function renderTaskAttention(m){const el=$('taskAttention');if(!el)return;const tasks=m.tasks.active.slice().sort((a,b)=>{const ar=(a.status==='blocked'?10:0)+sevRank(taskSeverity(a))*3+(slaState(a)==='breached'?8:slaState(a)==='at risk'?4:0);const br=(b.status==='blocked'?10:0)+sevRank(taskSeverity(b))*3+(slaState(b)==='breached'?8:slaState(b)==='at risk'?4:0);return br-ar||ageMins(b.updated_at)-ageMins(a.updated_at)}).slice(0,10);if(!tasks.length){el.innerHTML='<div class="empty">No active operations tasks requiring attention.</div>';return}el.innerHTML=tasks.map(t=>{const sla=slaState(t);const cls=t.status==='blocked'?'blocked':sla==='breached'?'breached':t.priority;return `<div class="task-row ${esc(cls)}"><div style="display:flex;justify-content:space-between;gap:8px"><div class="task-title">${esc(t.title)}</div><span class="pill ${sevRank(taskSeverity(t))>=3?'danger':'warn'}">${esc(taskSeverity(t))}</span></div><div class="task-meta">${esc(taskNo(t))} · ${esc(t.status.replace(/_/g,' '))} · ${esc(t.owner_name||t.owner_email||'Unassigned')} · updated ${esc(ageText(t.updated_at))}</div><div class="item-tags" style="margin-top:8px"><span class="pill info">${esc(t.source||'manual')}</span>${sla!=='none'?`<span class="pill ${sla==='within'?'ok':sla==='at risk'?'warn':'danger'}">SLA ${esc(sla)}</span>`:''}${t.case_id?'<span class="pill warn">linked case</span>':''}<a class="pill warn" href="operations-tasks.html">Open task</a></div></div>`}).join('');}
   function renderFunnel(){const statuses=['open','acknowledged','investigating','escalated','resolved'];const rows=arr(state.cases);$('caseFunnel').innerHTML=statuses.map(s=>`<div class="stage ${s}"><b>${rows.filter(c=>low(c.status||'open').includes(s)).length}</b><span>${s}</span></div>`).join('');const avg=rows.length?Math.round(rows.reduce((sum,c)=>sum+ageMins(c.created_at||c.createdAt||c.updated_at||c.updatedAt),0)/rows.length):0;$('caseFunnelMeta').textContent=rows.length?`${rows.length} total cases loaded · average visible case age ${avg===99999?'unknown':avg+' minutes'}`:'No case data loaded yet.';}
-  function renderHealth(m){const check=(label)=>!state.errors.includes(label);const rows=[['Notification Centre',check('notification workflow'),`${m.unack} unacknowledged`],['Operations Cases',check('operations cases'),`${m.cases} active cases`],['Operations Tasks',check('operations tasks'),`${m.tasks.active.length} open tasks`],['Welfare Hub',check('welfare'),`${m.welfare} critical`],['Monitoring Hub',check('tracking'),`${m.tracking} tracking risks`],['Travel Infrastructure',check('travel incidents'),`${m.travel} signals`],['Maritime Intel',check('maritime'),`${m.maritime||0} high-risk / ${m.maritimeAll||0} total`],['Intel Hub',true,`${m.briefing} briefing candidates`],['Transport Feed',check('transport'),'Live feed'],['Power Feed',check('power'),'Live feed'],['Panic Log',check('panic log'),m.welfare?'Review':'Clear']];const html=rows.map(([name,ok,detail])=>{const cls=!ok?'danger':(/critical|risk|signals|open tasks/.test(String(detail).toLowerCase())&&!/^0 /.test(String(detail))?'warn':'ok');return `<div class="health-chip ${cls}"><span class="pill ${ok?'ok':'danger'}">${ok?'Online':'Degraded'}</span><strong>${esc(name)}</strong><small>${esc(detail)}</small></div>`}).join('');const el=$('healthRibbon');if(el)el.innerHTML=html;}
+  // Ribbon row name -> owning module (label-based, matches what each row
+  // is actually named/represents).
+  const HEALTH_MODULE_MAP={'Notification Centre':'notification_centre','Operations Cases':'operations_cases','Operations Tasks':'operations_tasks','Welfare Hub':'welfare_hub','Monitoring Hub':'monitoring_hub','Travel Infrastructure':'travel_infrastructure','Maritime Intel':'maritime_intel','Intel Hub':'intel_hub','Transport Feed':'transport_status','Power Feed':'power_outages','Panic Log':'panic_alarm'};
+  function renderHealth(m){const check=(label)=>!state.errors.includes(label);const rows=[['Notification Centre',check('notification workflow'),`${m.unack} unacknowledged`],['Operations Cases',check('operations cases'),`${m.cases} active cases`],['Operations Tasks',check('operations tasks'),`${m.tasks.active.length} open tasks`],['Welfare Hub',check('welfare'),`${m.welfare} critical`],['Monitoring Hub',check('tracking'),`${m.tracking} tracking risks`],['Travel Infrastructure',check('travel incidents'),`${m.travel} signals`],['Maritime Intel',check('maritime'),`${m.maritime||0} high-risk / ${m.maritimeAll||0} total`],['Intel Hub',true,`${m.briefing} briefing candidates`],['Transport Feed',check('transport'),'Live feed'],['Power Feed',check('power'),'Live feed'],['Panic Log',check('panic log'),m.welfare?'Review':'Clear']];
+    const html=rows.map(([name,ok,detail])=>{
+      const moduleKey=HEALTH_MODULE_MAP[name];
+      if(moduleKey && window.CIAccess && !CIAccess.isModuleAllowed(state.modules,moduleKey)){
+        return `<div class="health-chip locked" data-locked-module="${esc(moduleKey)}" data-locked-label="${esc(name)}"></div>`;
+      }
+      const cls=!ok?'danger':(/critical|risk|signals|open tasks/.test(String(detail).toLowerCase())&&!/^0 /.test(String(detail))?'warn':'ok');return `<div class="health-chip ${cls}"><span class="pill ${ok?'ok':'danger'}">${ok?'Online':'Degraded'}</span><strong>${esc(name)}</strong><small>${esc(detail)}</small></div>`}).join('');
+    const el=$('healthRibbon');
+    if(el){
+      el.innerHTML=html;
+      el.querySelectorAll('.health-chip.locked').forEach(chip=>{
+        if(window.CIAccess) CIAccess.lockCard(chip,chip.dataset.lockedModule,chip.dataset.lockedLabel);
+      });
+    }
+  }
   function activityIcon(a){const key=low([a.source,a.type,a.kind].join(' '));if(key.includes('task'))return'✓';if(key.includes('case'))return'▣';if(key.includes('welfare')||key.includes('panic'))return'⚕';if(key.includes('intel'))return'◆';if(key.includes('monitor')||key.includes('tracking'))return'⌖';if(key.includes('maritime'))return'⚓';if(key.includes('travel')||key.includes('transport'))return'↔';if(key.includes('power'))return'⚡';if(key.includes('notification'))return'🔔';return'•'}
   function activityClass(a){const key=low([a.source,a.type,a.kind,a.status].join(' '));if(key.includes('completed')||key.includes('resolved'))return'ok completed';if(key.includes('blocked')||key.includes('breach'))return'critical task-blocked';if(key.includes('escalat')||sevRank(a.severity)>=4)return'critical escalation';if(sevRank(a.severity)>=3)return'high';if(sevRank(a.severity)>=2)return'warning';return'info'}
   function eventTime(...vals){for(const v of vals){const d=Date.parse(v||'');if(Number.isFinite(d))return new Date(d).toISOString()}return new Date().toISOString()}
@@ -438,6 +661,7 @@
 </script>
 
 <script src="shared-chip.js"></script>
+<script src="shared-nav.js"></script> 
   
 </body>
 </html>
