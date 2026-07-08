@@ -127,12 +127,24 @@
       const cached = JSON.parse(localStorage.getItem('ci_org_onboarding') || 'null');
       if (cached && Array.isArray(cached.modules)) return cached.modules;
     } catch (_) {}
-    return []; // empty = no restrictions
+    return []; // never cached, or malformed — treated as "never loaded" below
+  }
+
+  // Has this browser ever actually cached a real org config? Set at login
+  // (auth.js). Distinguishes "genuinely no modules enabled" from "config
+  // hasn't loaded yet" — both look like an empty modules array otherwise.
+  function hasLoadedOrgConfigEver() {
+    try {
+      const raw = localStorage.getItem('ci_org_onboarding');
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return !!(parsed && typeof parsed === 'object');
+    } catch (_) { return false; }
   }
 
   function moduleAllowed(modules, moduleKey) {
     if (!moduleKey) return true;
-    if (modules.length === 0) return true; // no restrictions configured
+    if (modules.length === 0) return !hasLoadedOrgConfigEver();
     return modules.includes(moduleKey);
   }
 
