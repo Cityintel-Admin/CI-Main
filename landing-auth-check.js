@@ -7,7 +7,7 @@
   function tryRedirect() {
     try {
       if (window.CIAuth && CIAuth.isLoggedIn()) {
-        location.replace('dashboard.html');
+        location.replace('executive-dashboard.html');
         return true;
       }
     } catch (_) {}
