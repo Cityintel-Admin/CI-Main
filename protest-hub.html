@@ -468,7 +468,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 /* ===== Dashboard intel layer ===== */
 .priority-grid{
   display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
   gap:12px;
 }
 .priority-city-card{
@@ -1066,17 +1066,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
       <div class="grid">
 
-        <section class="card" id="orgIntelProfileCard" style="grid-column:span 12;display:none;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <div>
-              <h3 style="margin:0 0 4px;">Organisation Intelligence Profile</h3>
-              <div id="orgIntelProfileSummary" style="color:var(--muted);font-size:13px;">Loading organisation profile…</div>
-            </div>
-            <a href="settings.html" class="btn" style="text-decoration:none;">Edit in Settings</a>
-          </div>
-          <div id="orgIntelProfileChips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
-        </section>
-
 
 
         <!-- KPIs -->
@@ -1140,9 +1129,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
         <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiTravHighRiskCard"
           tabindex="0" role="link" aria-label="View travellers near high-risk protests">
-          <h3>High Risk Protests</h3>
-          <div class="metric">
-            <div class="value" id="kpi-trav-highrisk">—</div>
+          <h3>Travellers Affected by High Risk Protests</h3>
           </div>
           <small style="color:var(--muted)" id="kpi-trav-highrisk-sub">Travellers near a high-severity protest</small>
           <span class="kpi-open">View details →</span>
@@ -1160,9 +1147,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
         <section class="card kpi-link-card" style="grid-column: span 3;" id="kpiAssetHighRiskCard"
           tabindex="0" role="link" aria-label="View assets near high-risk protests">
-          <h3>High Risk Protests</h3>
-          <div class="metric">
-            <div class="value" id="kpi-asset-highrisk">—</div>
+          <h3>Assets Affected by High Risk Protests</h3>
           </div>
           <small style="color:var(--muted)" id="kpi-asset-highrisk-sub">Assets near a high-severity protest</small>
           <span class="kpi-open">View details →</span>
@@ -1840,6 +1825,10 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 
     const total = counts.low + counts.med + counts.high;
 
+    // No 7-day events for this continent — skip it entirely rather than
+    // show an empty "0" card. Remaining cards reflow to fill the row below.
+    if (!total) return;
+
     const a = document.createElement("a");
     a.className = "continent-pie-card";
     a.href = `risk-detail.html?continent=${encodeURIComponent(cont)}&days=7&from=dashboard`;
@@ -1913,6 +1902,16 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     a.appendChild(meta);
     grid.appendChild(a);
   });
+
+  // Reflow: auto-fit lets however many cards remain stretch to fill the
+  // row evenly, instead of a fixed 3-column grid with empty gaps — and
+  // unlike a hardcoded column count, this stays responsive on mobile
+  // rather than overriding the existing narrow-screen breakpoints below.
+  if (grid.children.length > 0) {
+    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
+  } else {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">No protest activity in the next 7 days.</div>';
+  }
 })();
 </script>
 
@@ -4490,56 +4489,6 @@ function CI_updatePanicMapOverlayIndex(st){
 </script>
 
 
-<script>
-(function ciDashboardIntelligenceProfileCard(){
-  const API_BASE = 'https://api.cityintelapi.com';
-  function esc(v){return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
-  function authHeaders(){
-    try{
-      const u=(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):JSON.parse(localStorage.getItem('ci_user')||'{}');
-      const h={'Accept':'application/json'};
-      if(u.email) h['X-User-Email']=u.email;
-      if(u.name) h['X-User-Name']=u.name;
-      if(u.id||u.email) h['X-User-Id']=u.id||u.email;
-      if(u.roleKey) h['X-User-Role-Key']=u.roleKey;
-      if(u.role) h['X-User-Role']=u.role;
-      return h;
-    }catch{return {'Accept':'application/json'};}
-  }
-  function chip(label,value){
-    if(!value && value !== 0) return '';
-    return `<span style="display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:999px;padding:6px 10px;font-size:12px;"><b>${esc(label)}</b>${esc(value)}</span>`;
-  }
-  async function run(){
-    const card=document.getElementById('orgIntelProfileCard');
-    const summary=document.getElementById('orgIntelProfileSummary');
-    const chips=document.getElementById('orgIntelProfileChips');
-    if(!card||!summary||!chips) return;
-    try{
-      const res=await fetch(API_BASE+'/api/org/onboarding',{headers:authHeaders()});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok||!data.ok||!data.data) throw new Error(data.error||'No profile');
-      const ob=data.data;
-      const feeds=Array.isArray(ob.liveAlertFeeds)?ob.liveAlertFeeds:[];
-      const cats=Array.isArray(ob.sourceCategories)?ob.sourceCategories:[];
-      card.style.display='';
-      summary.innerHTML = `<b>${esc(ob.operationalFocus || 'Operational profile')}</b>${ob.primaryUseCase ? ' · '+esc(ob.primaryUseCase) : ''}`;
-      chips.innerHTML = [
-        chip('Scope', ob.intelligenceScope || 'City'),
-        chip('Radius', (ob.monitoringRadiusKm || ob.defaultRadiusKm || 25) + 'km'),
-        chip('Feed package', ob.feedPackage || ob.operationalFocus || 'Default'),
-        chip('Location', [ob.defaultCity, ob.defaultCountry].filter(Boolean).join(', ')),
-        chip('Feeds', feeds.join(', ')),
-        chip('Categories', cats.join(', '))
-      ].filter(Boolean).join('');
-      try{ localStorage.setItem('ci_org_intelligence_profile', JSON.stringify(ob)); }catch(_){}
-    }catch(e){
-      card.style.display='none';
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
-})();
-</script>
 <!-- ===== PWA Install Modal ===== -->
 <div id="ciInstallModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px">
   <div style="background:#1a1c20;border:1px solid #333;border-radius:18px;max-width:360px;width:100%;padding:24px 20px;position:relative">
@@ -4831,7 +4780,7 @@ document.addEventListener("DOMContentLoaded",function(){
   // Lock the proximity KPI cards individually if this org doesn't have
   // the Travellers / Assets modules — the hub itself may be enabled without
   // either add-on purchased.
-  (async function lockProximityCardsIfNeeded(){
+  (async function lockGatedCardsIfNeeded(){
     if(!window.CIAccess) return;
     const cfg = await CIAccess.getOrgConfig();
     const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
@@ -4840,13 +4789,17 @@ document.addEventListener("DOMContentLoaded",function(){
       const travCard = document.getElementById('kpiTravAffectedCard');
       const travRiskCard = document.getElementById('kpiTravHighRiskCard');
       if(travCard) CIAccess.lockCard(travCard, 'travellers', 'Travellers Affected by Protests');
-      if(travRiskCard) CIAccess.lockCard(travRiskCard, 'travellers', 'High Risk Protests (Travellers)');
+      if(travRiskCard) CIAccess.lockCard(travRiskCard, 'travellers', 'Travellers Affected by High Risk Protests');
     }
     if(!CIAccess.isModuleAllowed(modules, 'assets')){
       const assetCard = document.getElementById('kpiAssetAffectedCard');
       const assetRiskCard = document.getElementById('kpiAssetHighRiskCard');
       if(assetCard) CIAccess.lockCard(assetCard, 'assets', 'Assets Affected by Protests');
-      if(assetRiskCard) CIAccess.lockCard(assetRiskCard, 'assets', 'High Risk Protests (Assets)');
+      if(assetRiskCard) CIAccess.lockCard(assetRiskCard, 'assets', 'Assets Affected by High Risk Protests');
+    }
+    if(!CIAccess.isModuleAllowed(modules, 'intel_hub')){
+      const reportCard = document.getElementById('latestReportCard');
+      if(reportCard) CIAccess.lockCard(reportCard, 'intel_hub', 'Latest Intelligence Report');
     }
   })();
 });
