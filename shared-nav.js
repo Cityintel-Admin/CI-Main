@@ -49,6 +49,19 @@
   // retired once the Protest Hub work lands. Remove this once that happens.
   const LEGACY_HOME_PAGES = ['dashboard.html'];
 
+  // ── Standalone pages ─────────────────────────────────────────────────────
+  // These modules can belong to different hub packages depending on how an
+  // org's plan is put together (e.g. Assets/Travellers might be sold as an
+  // addon independent of which hub the org has), so rather than force them
+  // under one hub's nav family, they show as their own always-visible links
+  // — same visibility rule as Executive Dashboard: shown from anywhere,
+  // regardless of which hub (if any) you're currently in.
+  const STANDALONE = [
+    { href: 'assets.html',              label: 'Assets',              module: 'assets' },
+    { href: 'travellers.html',          label: 'Travellers',          module: 'travellers' },
+    { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', module: 'neighbourhood_intel' },
+  ];
+
   // ── Hub groups (fixed priority order for the landing/home view) ────────
   const HUBS = [
     {
@@ -56,8 +69,8 @@
       members: [
         { href: 'live-alerts.html',        label: 'Live Alerts',         module: 'live_alerts' },
         { href: 'alerts.html',             label: 'Alerts Feed',         module: 'alerts' },
-        { href: 'neighborhood-intel.html', label: 'Neighbourhood Intel', module: 'neighbourhood_intel' },
         { href: 'cityintel-assistant.html', label: 'CityIntel AI',      module: 'cityintel_ai' },
+        // Neighbourhood Intel moved to STANDALONE — see above.
       ]
     },
     {
@@ -74,11 +87,11 @@
     {
       hub: { href: 'welfare-hub.html', label: 'Welfare Hub', module: 'welfare_hub' },
       members: [
-        { href: 'travellers.html',          label: 'Travellers',          module: 'travellers' },
         { href: 'checkin.html',             label: 'Check-in Manager',    module: 'check_in_manager' },
         { href: 'tracking.html',            label: 'Welfare Track',       module: 'traveller_tracking' },
         { href: 'panicalarm.html',          label: 'Panic Alarm',         module: 'panic_alarm' },
         { href: 'escalation-contacts.html', label: 'Escalation Contacts', module: 'escalation_contacts' },
+        // Travellers moved to STANDALONE — see above.
       ]
     },
     {
@@ -89,10 +102,7 @@
         { href: 'power-outages.html',       label: 'Power Outages',      module: 'power_outages' },
         { href: 'environmental-intel.html', label: 'Environmental Intelligence', module: 'environmental_intel' },
         { href: 'maritime-intel.html',      label: 'Maritime Intel',     module: 'maritime_intel' },
-        { href: 'assets.html',              label: 'Assets',             module: 'assets' },
-        // 'travellers' is also checked under this hub in analytics.html
-        // (dual-membership). travellers.html is treated as belonging to
-        // Welfare Hub for nav purposes — flag if you want it here too.
+        // Assets moved to STANDALONE — see above.
       ]
     },
     {
@@ -186,6 +196,10 @@
         });
       }
 
+      STANDALONE.forEach(page => {
+        if (moduleAllowed(modules, page.module)) parts.push(linkHtml(page, here));
+      });
+
       HUBS.forEach(group => {
         if (moduleAllowed(modules, group.hub.module)) parts.push(linkHtml(group.hub, here));
       });
@@ -211,10 +225,14 @@
       }
 
       // Always show the way home, even from pages belonging to no hub
-      // (Sources/Settings/About/Analytics/etc).
+      // (Sources/Settings/About/Analytics/etc) — standalone pages get the
+      // same always-visible treatment, right alongside it.
       if (moduleAllowed(modules, HOME.hub.module)) {
         parts.push(linkHtml(HOME.hub, here));
       }
+      STANDALONE.forEach(page => {
+        if (moduleAllowed(modules, page.module)) parts.push(linkHtml(page, here));
+      });
     }
 
     nav.innerHTML = parts.join('\n');
