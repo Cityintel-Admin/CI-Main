@@ -2720,6 +2720,21 @@ const makeBar = (label, count, color) => {
     return `${row?.first_name || ''} ${row?.surname || ''}`.trim() || 'there';
   }
 
+  // Once a lead is onboarded, the org name/admin email can be edited in the
+  // onboarding form — that save updates onboarding_json but not the original
+  // lead_requests.company/email columns. Everywhere we *display* org name or
+  // admin email should prefer the onboarding data when present, same as the
+  // onboarding form itself already does, so edits actually show up.
+  function parsedOnboarding(row){
+    try{ return JSON.parse(row?.onboarding_json || '{}') || {}; }catch(_){ return {}; }
+  }
+  function displayCompany(row){
+    return parsedOnboarding(row).orgName || row?.company || '';
+  }
+  function displayEmail(row){
+    return parsedOnboarding(row).adminEmail || row?.email || '';
+  }
+
   function templateFor(type, row){
     const name = fullName(row);
     if (type === 'reject') {
@@ -2773,11 +2788,11 @@ const makeBar = (label, count, color) => {
 
     body.innerHTML = rows.map(r => {
       const name = `${r.first_name || ''} ${r.surname || ''}`.trim() || '—';
-      const email = r.email || '';
+      const email = displayEmail(r) || '';
       return `
         <tr class="lead-row-click" data-lead-detail-row="${esc(r.id)}">
           <td><strong>${esc(name)}</strong><div class="lead-muted">${esc(email)}</div></td>
-          <td>${esc(r.company)}</td>
+          <td>${esc(displayCompany(r))}</td>
           <td>${esc(r.role)}</td>
           <td>${esc(r.interest)}</td>
           <td>${esc(r.region)}</td>
@@ -2817,7 +2832,7 @@ const makeBar = (label, count, color) => {
       .filter(r => !status || status === 'all' || String(r.status || 'new').toLowerCase() === status)
       .filter(r => {
         if (!q) return true;
-        const hay = [fullName(r), r.email, r.company, r.role, r.interest, r.region, r.message, r.heard_from, r.status].join(' ').toLowerCase();
+        const hay = [fullName(r), displayEmail(r), displayCompany(r), r.role, r.interest, r.region, r.message, r.heard_from, r.status].join(' ').toLowerCase();
         return hay.includes(q);
       })
       .sort((a,b) => (Date.parse(leadUpdatedAt(b)) || 0) - (Date.parse(leadUpdatedAt(a)) || 0));
@@ -2841,7 +2856,7 @@ const makeBar = (label, count, color) => {
       const id = String(r.id || '');
       const active = id === String(selectedLeadId) ? ' active' : '';
       const name = fullName(r);
-      const company = r.company || 'No company';
+      const company = displayCompany(r) || 'No company';
       const meta = [r.interest, r.region].filter(Boolean).join(' • ') || 'Access request';
       const last = fmtDate(leadUpdatedAt(r));
       return `<button class="lead-thread${active}" type="button" data-lead-thread="${esc(id)}">
@@ -2877,7 +2892,7 @@ const makeBar = (label, count, color) => {
     }
     inboxDetailHead.innerHTML = `<div>
       <strong>${esc(fullName(row))}</strong>
-      <div class="lead-muted">${esc(row.email || 'No email')} • ${esc(row.company || 'No company')} • ${esc(row.region || 'No region')}</div>
+      <div class="lead-muted">${esc(displayEmail(row) || 'No email')} • ${esc(displayCompany(row) || 'No company')} • ${esc(row.region || 'No region')}</div>
       <div style="margin-top:6px">${statusBadge(row.status)} <span class="lead-muted">Submitted ${esc(fmtDate(row.created_at))}</span></div>
     </div>
     <div class="lead-muted" style="text-align:right">${esc(row.interest || 'Access request')}<br>${esc(row.role || '')}</div>`;
@@ -3044,12 +3059,12 @@ const makeBar = (label, count, color) => {
   function openLeadDetail(id){
     const row = latestRows.find(r => String(r.id) === String(id));
     if (!row || !detailModal || !detailBody) return;
-    detailRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    detailRecipient.textContent = `${fullName(row)} • ${displayEmail(row) || 'No email'} • ${displayCompany(row) || 'No company'}`;
     detailBody.innerHTML = `
       <div class="lead-detail-grid">
         <div class="lead-detail-box"><b>Name</b>${esc(fullName(row))}</div>
-        <div class="lead-detail-box"><b>Email</b>${esc(row.email)}</div>
-        <div class="lead-detail-box"><b>Company</b>${esc(row.company)}</div>
+        <div class="lead-detail-box"><b>Email</b>${esc(displayEmail(row))}</div>
+        <div class="lead-detail-box"><b>Company</b>${esc(displayCompany(row))}</div>
         <div class="lead-detail-box"><b>Role</b>${esc(row.role)}</div>
         <div class="lead-detail-box"><b>Team size</b>${esc(row.team_size)}</div>
         <div class="lead-detail-box"><b>Interest</b>${esc(row.interest)}</div>
@@ -3410,7 +3425,7 @@ const makeBar = (label, count, color) => {
     const row = latestRows.find(r => String(r.id) === String(id));
     if (!row || !onboardModal) return;
     activeOnboardLead = row;
-    onboardRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    onboardRecipient.textContent = `${fullName(row)} • ${displayEmail(row) || 'No email'} • ${displayCompany(row) || 'No company'}`;
     onboardStatus.textContent = 'Loading saved onboarding draft…';
     onboardModal.style.display = 'flex';
     onboardModal.setAttribute('aria-hidden','false');
@@ -3471,8 +3486,8 @@ const makeBar = (label, count, color) => {
       document.getElementById('obNotes').value = ob.notes || `Source request: ${row.interest || 'Access request'}\nTeam size: ${row.team_size || row.teamSize || '—'}\nHeard from: ${row.heard_from || row.heardFrom || '—'}${row.message ? `\n\nRequirements:\n${row.message}` : ''}`;
       onboardStatus.textContent = data.ok ? 'Draft loaded. Review location and feed scope before approving access or activating a trial.' : 'No saved draft yet. Values prefilled from the submitted request.';
     }catch(e){
-      document.getElementById('obOrgName').value = row.company || '';
-      document.getElementById('obAdminEmail').value = row.email || '';
+      document.getElementById('obOrgName').value = displayCompany(row) || '';
+      document.getElementById('obAdminEmail').value = displayEmail(row) || '';
       document.getElementById('obAccessRoute').value = row.interest || 'Professional plan';
       document.getElementById('obOperationalFocus').value = row.operational_focus || '';
       document.getElementById('obPrimaryUseCase').value = row.primary_use_case || '';
@@ -3589,7 +3604,7 @@ const makeBar = (label, count, color) => {
 
     historyModal.style.display = 'flex';
     historyModal.setAttribute('aria-hidden', 'false');
-    historyRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    historyRecipient.textContent = `${fullName(row)} • ${displayEmail(row) || 'No email'} • ${displayCompany(row) || 'No company'}`;
     historyBody.innerHTML = `<div class="lead-muted">Loading conversation…</div>`;
 
     try {
@@ -3653,7 +3668,7 @@ const makeBar = (label, count, color) => {
     activeStatusAfterSend = tpl.status;
 
     modalTitle.textContent = tpl.title;
-    modalRecipient.textContent = `${fullName(row)} • ${row.email || 'No email'} • ${row.company || 'No company'}`;
+    modalRecipient.textContent = `${fullName(row)} • ${displayEmail(row) || 'No email'} • ${displayCompany(row) || 'No company'}`;
     modalSubject.value = tpl.subject;
     modalMessage.value = tpl.message;
     if (modalSender) modalSender.value = 'contact';
