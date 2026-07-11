@@ -1115,6 +1115,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
             </div>
           </div>
 
+          <div id="watchlistWindowRow" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+            <button type="button" class="ci-prox-pill" data-window-days="1">Today</button>
+            <button type="button" class="ci-prox-pill active" data-window-days="7">7 days</button>
+            <button type="button" class="ci-prox-pill" data-window-days="30">30 days</button>
+            <button type="button" class="ci-prox-pill" data-window-days="all">All</button>
+          </div>
+
           <div id="watchlistEmpty" style="color:var(--muted);font-size:13px;padding:6px 0 4px;display:none">No groups being watched yet — add one to get started.</div>
           <div id="watchlistList" style="display:grid;gap:10px"></div>
         </section>
@@ -5499,6 +5506,7 @@ document.addEventListener("DOMContentLoaded",function(){
   }
 
   let groups = loadLocal(); // [{ id, name, aliases: [...] }]
+  let watchlistWindowDays = 7; // null = 'All'; matches the default active pill below
 
   async function loadFromServer(){
     try {
@@ -5556,9 +5564,22 @@ document.addEventListener("DOMContentLoaded",function(){
     const terms = matchTerms(group);
     if (!terms.length) return [];
     const protests = getCandidateProtests();
-    return protests.filter(p => {
+    const matched = protests.filter(p => {
       const haystack = `${p.title || ''} ${p.summary || ''}`.toLowerCase();
       return terms.some(t => haystack.includes(t));
+    });
+    const windowed = watchlistWindowDays == null
+      ? matched
+      : matched.filter(p => {
+          const dt = p.time ? new Date(p.time) : null;
+          if (!dt || isNaN(dt)) return true; // no date info — don't hide it under a date filter
+          const now = Date.now();
+          return dt.getTime() >= now && dt.getTime() <= now + watchlistWindowDays * 86400000;
+        });
+    return windowed.sort((a, b) => {
+      const da = a.time ? new Date(a.time).getTime() : Infinity;
+      const db = b.time ? new Date(b.time).getTime() : Infinity;
+      return da - db;
     });
   }
   function isHigh(p){
@@ -5593,7 +5614,8 @@ document.addEventListener("DOMContentLoaded",function(){
       return;
     }
     emptyEl.style.display = 'none';
-    subEl.textContent = `${groups.length} group${groups.length === 1 ? '' : 's'} watched`;
+    const windowLabel = watchlistWindowDays == null ? 'all time' : (watchlistWindowDays === 1 ? 'next 24h' : `next ${watchlistWindowDays} days`);
+    subEl.textContent = `${groups.length} group${groups.length === 1 ? '' : 's'} watched · showing matches for ${windowLabel}`;
 
     listEl.innerHTML = groups.map((g, i) => {
       const matches = matchesForGroup(g);
@@ -5687,6 +5709,16 @@ document.addEventListener("DOMContentLoaded",function(){
       errEl.textContent = serverError;
       errEl.style.display = 'inline';
     }
+  });
+
+  const windowRow = document.getElementById('watchlistWindowRow');
+  windowRow.querySelectorAll('.ci-prox-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      windowRow.querySelectorAll('.ci-prox-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      watchlistWindowDays = pill.dataset.windowDays === 'all' ? null : Number(pill.dataset.windowDays);
+      render();
+    });
   });
 
   render();
