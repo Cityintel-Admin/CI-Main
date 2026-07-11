@@ -2198,6 +2198,8 @@ function loadIncident(){
   const countryQ    = (params.get('country') || '').trim().toLowerCase();
   const timeQ       = (params.get('time') || '').trim();
   const riskQ       = (params.get('risk') || '').trim().toLowerCase();
+  const latQ        = params.get('lat');
+  const lonQ        = params.get('lon');
   const fromBrief   = params.get('from') === 'brief';
   const fromAlerts  = params.get('from') === 'alerts';
   const fromDashboard = params.get('from') === 'dashboard';
@@ -2308,6 +2310,17 @@ function loadIncident(){
     } catch (e) {}
 
     inc = all[incId] || null;
+
+    // Fallback: incidents opened via window.open(...,'noopener') land in a
+    // new tab that doesn't inherit sessionStorage in Chrome. Protest Hub
+    // writes a copy to localStorage for exactly this case.
+    if (!inc) {
+      try {
+        const allX = JSON.parse(localStorage.getItem('ci_incidents_xtab') || '{}');
+        inc = allX[incId] || null;
+      } catch (e) {}
+    }
+
     if (!inc) {
       noData('Incident details not found or have expired. Open My Live Feed and select an incident again.');
       return;
@@ -2386,6 +2399,13 @@ function loadIncident(){
 
     const whenRaw = best.time || best.datetime || best.date || best.when || '';
 
+    // Prefer the matched alert's own coordinates (it's already loaded with
+    // the full alertsData record); fall back to lat/lon passed in the URL.
+    const bestLat = Number(best.lat ?? best.latitude ?? best.Latitude ?? best.event_lat ?? best.eventLat);
+    const bestLon = Number(best.lon ?? best.lng ?? best.longitude ?? best.Longitude ?? best.event_lon ?? best.eventLng);
+    const resolvedLat = Number.isFinite(bestLat) ? bestLat : (latQ !== null && latQ !== '' ? Number(latQ) : NaN);
+    const resolvedLon = Number.isFinite(bestLon) ? bestLon : (lonQ !== null && lonQ !== '' ? Number(lonQ) : NaN);
+
     // Build an "incident-style" object using alert fields
     inc = {
       id:        'brief-' + (best.id || best.title || 'x'),
@@ -2394,6 +2414,8 @@ function loadIncident(){
       country:   best.country || best.Country || '',
       risk:      normRisk,
       when:      whenRaw,
+      lat:       Number.isFinite(resolvedLat) ? resolvedLat : undefined,
+      lon:       Number.isFinite(resolvedLon) ? resolvedLon : undefined,
       summary:   best.summary || '',
       description: best.summary || '',
       location:
