@@ -40,6 +40,7 @@
     hub: { href: 'executive-dashboard.html', label: 'Executive Dashboard', module: 'executive_dashboard' },
     members: [
       { href: 'operations-cases.html',    label: 'Operations Cases',    module: 'operations_cases' },
+      { href: 'protest-hub.html',         label: 'Protest-Hub',         },
       { href: 'operations-tasks.html',    label: 'Operations Tasks',    module: 'operations_tasks' },
       { href: 'notification-centre.html', label: 'Notification Centre', module: 'notification_centre' },
     ]
@@ -57,7 +58,6 @@
   // — same visibility rule as Executive Dashboard: shown from anywhere,
   // regardless of which hub (if any) you're currently in.
   const STANDALONE = [
-    { href: 'protest-hub.html',         label: 'Protest-Hub',         module: 'assets' },
     { href: 'assets.html',              label: 'Assets',              module: 'assets' },
     { href: 'travellers.html',          label: 'Travellers',          module: 'travellers' },
     { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', module: 'neighbourhood_intel' },
