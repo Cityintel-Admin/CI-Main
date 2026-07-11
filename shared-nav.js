@@ -47,7 +47,7 @@
 
   // dashboard.html is legacy — currently still acts as home too, until it's
   // retired once the Protest Hub work lands. Remove this once that happens.
-  const LEGACY_HOME_PAGES = ['dashboard.html'];
+  const LEGACY_HOME_PAGES = ['executive-dashboard'];
 
   // ── Standalone pages ─────────────────────────────────────────────────────
   // These modules can belong to different hub packages depending on how an
@@ -57,6 +57,7 @@
   // — same visibility rule as Executive Dashboard: shown from anywhere,
   // regardless of which hub (if any) you're currently in.
   const STANDALONE = [
+    { href: 'protest-hub.html',         label: 'Protest-Hub',         module: 'assets' },
     { href: 'assets.html',              label: 'Assets',              module: 'assets' },
     { href: 'travellers.html',          label: 'Travellers',          module: 'travellers' },
     { href: 'neighborhood-intel.html',  label: 'Neighbourhood Intel', module: 'neighbourhood_intel' },
