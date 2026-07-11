@@ -75,9 +75,9 @@
     {
       hub: { href: 'protest-hub.html', label: 'Protest Hub', module: 'protest_hub' },
       members: [
-        { href: 'alerts.html', label: 'Alerts Feed', module: 'alerts' },
-        // Moved here from Monitoring Hub — Alerts Feed is now sold/gated
-        // alongside Protest Hub rather than Monitoring Hub.
+        { href: 'alerts.html', label: 'Protest Records', module: 'alerts' },
+        // Moved here from Monitoring Hub — Protest Records (alerts.html) is
+        // now sold/gated alongside Protest Hub rather than Monitoring Hub.
       ]
     },
     {
