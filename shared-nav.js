@@ -40,7 +40,6 @@
     hub: { href: 'executive-dashboard.html', label: 'Executive Dashboard', module: 'executive_dashboard' },
     members: [
       { href: 'operations-cases.html',    label: 'Operations Cases',    module: 'operations_cases' },
-      { href: 'protest-hub.html',         label: 'Protest-Hub',         },
       { href: 'operations-tasks.html',    label: 'Operations Tasks',    module: 'operations_tasks' },
       { href: 'notification-centre.html', label: 'Notification Centre', module: 'notification_centre' },
     ]
@@ -69,9 +68,16 @@
       hub: { href: 'monitoring-hub.html', label: 'Monitoring Hub', module: 'monitoring_hub' },
       members: [
         { href: 'live-alerts.html',        label: 'Live Alerts',         module: 'live_alerts' },
-        { href: 'alerts.html',             label: 'Alerts Feed',         module: 'alerts' },
         { href: 'cityintel-assistant.html', label: 'CityIntel AI',      module: 'cityintel_ai' },
         // Neighbourhood Intel moved to STANDALONE — see above.
+      ]
+    },
+    {
+      hub: { href: 'protest-hub.html', label: 'Protest Hub', module: 'protest_hub' },
+      members: [
+        { href: 'alerts.html', label: 'Alerts Feed', module: 'alerts' },
+        // Moved here from Monitoring Hub — Alerts Feed is now sold/gated
+        // alongside Protest Hub rather than Monitoring Hub.
       ]
     },
     {
