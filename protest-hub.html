@@ -1967,13 +1967,28 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const dt = a._dt || parse(a.time ?? a.datetime ?? a.date ?? a.when);
     const params = new URLSearchParams();
 
-    if (a.id) params.set('id', a.id);
+    // NOTE: deliberately not passing a.id here — it's the alert's own data
+    // id (e.g. a feed post id), not a sessionStorage key. incident.html
+    // treats any id= param as authoritative (PATH A) and won't fall back
+    // to the search= match below, so including it broke this link whenever
+    // the underlying alert happened to carry an id.
     params.set('search', a.title || a.event || '');
     if (a.city) params.set('city', String(a.city).split('/')[0].trim());
     if (a.country || a.Country) params.set('country', a.country || a.Country);
     if (dt && !isNaN(dt)) params.set('time', dt.toISOString());
     if (a.risk) params.set('risk', String(a.risk).toLowerCase());
     if (a.source) params.set('source', a.source);
+
+    // Pass coordinates through when the alert already has them, so the
+    // incident page can plot a precise focused map instead of falling back
+    // to its static city-name lookup table.
+    const latNum = Number(a.lat ?? a.latitude ?? a.Latitude ?? a.event_lat ?? a.eventLat);
+    const lonNum = Number(a.lon ?? a.lng ?? a.longitude ?? a.Longitude ?? a.event_lon ?? a.eventLng);
+    if (Number.isFinite(latNum) && Number.isFinite(lonNum)) {
+      params.set('lat', String(latNum));
+      params.set('lon', String(lonNum));
+    }
+
     params.set('from', from || 'dashboard');
 
     return `incident.html?${params.toString()}`;
@@ -5067,10 +5082,21 @@ document.addEventListener("DOMContentLoaded",function(){
       lon: Array.isArray(p._ll) ? p._ll[1] : (Number.isFinite(Number(p.lon)) ? Number(p.lon) : null)
     };
     const incId = 'inc-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+    // Written to BOTH storages: sessionStorage matches the existing Live
+    // Alerts pattern, but window.open(...,'noopener') puts the new tab in a
+    // separate browsing context that does NOT inherit sessionStorage in
+    // Chrome — so we also drop a copy in localStorage (shared across tabs
+    // of the same origin regardless of opener status) as a reliable
+    // fallback. incident.html checks both.
     let all = {};
     try { all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}'); } catch(e) {}
     all[incId] = incidentData;
     try { sessionStorage.setItem('ci_incidents', JSON.stringify(all)); } catch(e) {}
+    try {
+      const allX = JSON.parse(localStorage.getItem('ci_incidents_xtab') || '{}');
+      allX[incId] = incidentData;
+      localStorage.setItem('ci_incidents_xtab', JSON.stringify(allX));
+    } catch(e) {}
     window.open(`incident.html?id=${encodeURIComponent(incId)}&from=protest-hub`, '_blank', 'noopener');
   }
 
