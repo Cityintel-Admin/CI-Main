@@ -2330,6 +2330,24 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     return true;
   }
 
+  // Generalised version used by the proximity detail panel's date-range
+  // filter: pass 0/falsy for "physically there now" (the KPI-card default),
+  // or a day count to widen to travellers arriving within that horizon.
+  // Trips that have already ended are always excluded either way.
+  function travellersInRange(includeUpcomingDays){
+    const all = Array.isArray(window.CITravellers) ? window.CITravellers : [];
+    if (!includeUpcomingDays) return all.filter(isPhysicallyThere);
+    const nowMs = Date.now();
+    const horizonMs = nowMs + (includeUpcomingDays * 86400000);
+    return all.filter(t => {
+      const fromMs = t.from ? new Date(t.from).getTime() : null;
+      const toMs   = t.to   ? new Date(t.to).getTime()   : null;
+      if (toMs && nowMs > (toMs + 86400000 - 1)) return false; // already ended
+      if (fromMs && fromMs > horizonMs) return false;           // arrives too far out
+      return true;
+    });
+  }
+
   function isHighRisk(protest){
     return String(protest.risk || '').toLowerCase().startsWith('hi');
   }
@@ -2427,6 +2445,18 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   if (window.CIApprovedProtestsReady) window.CIApprovedProtestsReady.then(render).catch(()=>{});
   render();
   setInterval(render, 30000);
+
+  // Exposed so the proximity detail panel (KPI card clicks + affected marker
+  // clicks) can recompute affected sets fresh on demand — e.g. widening the
+  // traveller date range — without duplicating this logic.
+  window.CIProtestProximityAPI = {
+    haversineKm,
+    latLonOf,
+    getWindowedProtests,
+    travellersInRange,
+    isHighRisk,
+    isPhysicallyThere
+  };
 })();
 </script>
 
@@ -3400,9 +3430,12 @@ function renderProtestMarkers(){
     if (!ll) return;
     const pretty = a._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     const cityCountry = [a.city, a.country || a.Country].filter(Boolean).join(', ');
-    L.marker(ll, { icon: protestIconFor(a.risk), keyboard:false })
+    const marker = L.marker(ll, { icon: protestIconFor(a.risk), keyboard:false })
       .addTo(protestLayer)
       .bindPopup(`<b>${escapeHtml(a.title || 'Protest event')}</b><br>${escapeHtml(cityCountry)}${cityCountry ? '<br>' : ''}${escapeHtml(pretty)}<br>Risk: <b>${escapeHtml(String(a.risk || 'low'))}</b>`);
+    marker.on('click', () => {
+      if (window.CIProximityPanel) window.CIProximityPanel.openForProtest(a, ll);
+    });
   });
   updateMapMeta(rows.length);
 }
@@ -3463,12 +3496,15 @@ function renderAssetsAndTravellers(){
     const lon = (typeof a.lon === 'number') ? a.lon : Number(a.lon);
     if (!isFinite(lat) || !isFinite(lon)) return;
 
-    L.marker([lat, lon], { icon: assetIcon })
+    const marker = L.marker([lat, lon], { icon: assetIcon })
       .addTo(assetLayer)
       .bindPopup(
         `<b>${escapeHtml(a.name || 'Asset')}</b><br>` +
         `${escapeHtml([a.city, a.country].filter(Boolean).join(', '))}`
       );
+    marker.on('click', () => {
+      if (window.CIProximityPanel) window.CIProximityPanel.openForItem('asset', a);
+    });
   });
 
   // Group travellers by coordinates so multiple travellers at same hotel/location show as a single marker with a count.
@@ -3495,12 +3531,15 @@ function renderAssetsAndTravellers(){
 
     if (count === 1) {
       const t = items[0];
-      L.marker([lat, lon], { icon: travellerIcon })
+      const marker = L.marker([lat, lon], { icon: travellerIcon })
         .addTo(travellerLayer)
         .bindPopup(
           `<b>${escapeHtml(t.name || 'Traveller')}</b><br>` +
           `${escapeHtml(`${t.role || ''}${t.hotel ? ' — ' + t.hotel : ''}`.trim())}`
         );
+      marker.on('click', () => {
+        if (window.CIProximityPanel) window.CIProximityPanel.openForItem('traveller', t);
+      });
       continue;
     }
 
@@ -3526,7 +3565,7 @@ function renderAssetsAndTravellers(){
       `;
     }).join('');
 
-    L.marker([lat, lon], { icon })
+    const groupMarker = L.marker([lat, lon], { icon })
       .addTo(travellerLayer)
       .bindPopup(
         `<div class="trav-popup">
@@ -3535,6 +3574,9 @@ function renderAssetsAndTravellers(){
          </div>`,
         { maxWidth: 360 }
       );
+    groupMarker.on('click', () => {
+      if (window.CIProximityPanel) window.CIProximityPanel.openForItemGroup('traveller', items);
+    });
   }
   updatePresenceLayerVisibility();
 }
@@ -4809,6 +4851,437 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 </script>
 
+
+<!-- ── Protest proximity detail panel (Protest Hub step 4) ─────────────────
+     Slide-in side panel opened by the four proximity KPI cards, or by
+     clicking an affected asset/traveller/protest marker on the map.
+     List → detail, with a back stack, and a date-range widen filter for
+     traveller lists. Consumes CIProtestProximityAPI + live CITravellers/
+     CIAssets/alertsData rather than duplicating the matching logic. ────── -->
+<style>
+#ciProxOverlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9490;
+  opacity:0; pointer-events:none; transition:opacity .2s ease;
+}
+#ciProxOverlay.open{ opacity:1; pointer-events:auto; }
+
+#ciProximityPanel{
+  position:fixed; top:0; right:0; height:100vh; width:440px; max-width:94vw;
+  background:linear-gradient(180deg,var(--brand-gray-800),var(--brand-gray-900));
+  border-left:1px solid var(--brand-gray-600); box-shadow:-14px 0 44px rgba(0,0,0,.5);
+  z-index:9500; transform:translateX(100%); transition:transform .25s ease;
+  display:flex; flex-direction:column;
+}
+#ciProximityPanel.open{ transform:translateX(0); }
+
+.ci-prox-header{
+  display:flex; align-items:center; gap:10px; padding:16px 18px;
+  border-bottom:1px solid var(--brand-gray-600); flex-shrink:0;
+}
+.ci-prox-back,.ci-prox-close{
+  appearance:none; border:1px solid var(--brand-gray-600); background:rgba(255,255,255,.03);
+  color:var(--text); border-radius:999px; width:32px; height:32px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px;
+}
+.ci-prox-back:hover,.ci-prox-close:hover{ background:rgba(255,255,255,.08); }
+.ci-prox-back[hidden]{ display:none; }
+.ci-prox-titles{ flex:1; min-width:0; }
+.ci-prox-titles h3{ margin:0; font-size:15px; color:var(--text); line-height:1.3; }
+.ci-prox-titles small{ display:block; margin-top:2px; color:var(--muted); font-size:12px; }
+
+.ci-prox-daterow{
+  display:flex; gap:8px; padding:12px 18px; border-bottom:1px solid var(--brand-gray-600);
+  flex-shrink:0; flex-wrap:wrap;
+}
+.ci-prox-pill{
+  appearance:none; border:1px solid var(--brand-gray-600); background:rgba(255,255,255,.03);
+  color:var(--muted); border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700;
+  cursor:pointer;
+}
+.ci-prox-pill.active{ background:rgba(208,22,22,.16); border-color:rgba(208,22,22,.5); color:#fca5a5; }
+
+.ci-prox-body{ flex:1; overflow-y:auto; padding:14px 18px 24px; }
+
+.ci-prox-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:var(--brand-gray-700); border:1px solid var(--brand-gray-600); border-radius:12px;
+  padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:border-color .15s ease,background .15s ease;
+}
+.ci-prox-row:hover{ border-color:rgba(208,22,22,.5); background:rgba(208,22,22,.06); }
+.ci-prox-row .ci-prox-name{ font-weight:700; font-size:13px; color:var(--text); }
+.ci-prox-row .ci-prox-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+.ci-prox-row-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.ci-prox-count{ font-size:11px; color:var(--muted); white-space:nowrap; }
+.ci-prox-chevron{ color:var(--muted); font-size:14px; }
+
+.ci-prox-empty{ color:var(--muted); font-size:13px; text-align:center; padding:30px 10px; }
+
+.ci-prox-detail-card{
+  background:var(--brand-gray-700); border:1px solid var(--brand-gray-600); border-radius:12px;
+  padding:14px; margin-bottom:16px;
+}
+.ci-prox-detail-card .ci-prox-name{ font-size:15px; }
+.ci-prox-detail-card .ci-prox-sub{ margin-top:4px; }
+
+.ci-prox-section-title{
+  font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--muted); margin:0 0 10px;
+}
+.ci-prox-protest-card{
+  border:1px solid var(--brand-gray-600); background:rgba(255,255,255,.02); border-radius:12px;
+  padding:12px 14px; margin-bottom:10px;
+}
+.ci-prox-protest-card .ci-prox-protest-title{ font-weight:700; font-size:13px; color:var(--text); margin-bottom:4px; }
+.ci-prox-protest-card .ci-prox-protest-meta{ font-size:12px; color:var(--muted); margin-bottom:8px; }
+.ci-prox-protest-card a{ color:#fca5a5; text-decoration:none; font-weight:700; font-size:12px; }
+.ci-prox-protest-card a:hover{ text-decoration:underline; }
+
+.ci-prox-group-heading{ font-size:12px; color:var(--muted); margin:16px 0 8px; }
+.ci-prox-group-heading:first-child{ margin-top:0; }
+</style>
+
+<div id="ciProxOverlay"></div>
+<aside id="ciProximityPanel" aria-hidden="true">
+  <div class="ci-prox-header">
+    <button type="button" class="ci-prox-back" id="ciProxBackBtn" hidden aria-label="Back">←</button>
+    <div class="ci-prox-titles">
+      <h3 id="ciProxTitle">Proximity detail</h3>
+      <small id="ciProxSubtitle"></small>
+    </div>
+    <button type="button" class="ci-prox-close" id="ciProxCloseBtn" aria-label="Close">×</button>
+  </div>
+  <div class="ci-prox-daterow" id="ciProxDateRow" style="display:none">
+    <button type="button" class="ci-prox-pill active" data-days="0">Now</button>
+    <button type="button" class="ci-prox-pill" data-days="7">+7 days</button>
+    <button type="button" class="ci-prox-pill" data-days="30">+30 days</button>
+  </div>
+  <div class="ci-prox-body" id="ciProxBody"></div>
+</aside>
+
+<script>
+(function mountProximityPanel(){
+  const panelEl   = document.getElementById('ciProximityPanel');
+  const overlayEl = document.getElementById('ciProxOverlay');
+  const titleEl   = document.getElementById('ciProxTitle');
+  const subEl     = document.getElementById('ciProxSubtitle');
+  const backBtn   = document.getElementById('ciProxBackBtn');
+  const closeBtn  = document.getElementById('ciProxCloseBtn');
+  const dateRow   = document.getElementById('ciProxDateRow');
+  const bodyEl    = document.getElementById('ciProxBody');
+  if (!panelEl) return;
+
+  function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  let viewStack = [];   // stack of render closures for "Back"
+  let currentRender = null;
+  let dateWidenDays = 0; // 0 = "now", else days horizon — only meaningful for traveller lists
+
+  function api(){ return window.CIProtestProximityAPI || null; }
+  function radiusKm(){ return window.CIMapHelpers ? window.CIMapHelpers.getRadiusKm() : 25; }
+
+  function isHigh(p){ const a = api(); return a ? a.isHighRisk(p) : String(p.risk||'').toLowerCase().startsWith('hi'); }
+
+  function matchProtestsForItem(item){
+    const a = api();
+    if (!a) return [];
+    const ll = a.latLonOf(item);
+    if (!ll) return [];
+    const protests = a.getWindowedProtests();
+    const r = radiusKm();
+    return protests.filter(p => a.haversineKm(ll[0], ll[1], p._ll[0], p._ll[1]) <= r);
+  }
+
+  function matchItemsForProtest(protest, ll){
+    const a = api();
+    const r = radiusKm();
+    const travellers = a ? a.travellersInRange(0) : (Array.isArray(window.CITravellers) ? window.CITravellers.filter(()=>true) : []);
+    const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+    const latLonOf = a ? a.latLonOf : (e => {
+      const lat = Number(e.lat), lon = Number(e.lon);
+      return (Number.isFinite(lat) && Number.isFinite(lon)) ? [lat, lon] : null;
+    });
+    const haversine = a ? a.haversineKm : null;
+    const nearTravellers = travellers.filter(t => {
+      const tll = latLonOf(t);
+      return tll && haversine && haversine(tll[0], tll[1], ll[0], ll[1]) <= r;
+    });
+    const nearAssets = assets.filter(as => {
+      const all = latLonOf(as);
+      return all && haversine && haversine(all[0], all[1], ll[0], ll[1]) <= r;
+    });
+    return { travellers: nearTravellers, assets: nearAssets };
+  }
+
+  function protestSnippetHtml(p){
+    const cityCountry = [p.city, p.country || p.Country].filter(Boolean).join(', ');
+    const dt = p._dt || (p.time ? new Date(p.time) : null);
+    const pretty = (dt && !isNaN(dt)) ? dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+    const riskClass = isHigh(p) ? 'high' : (String(p.risk||'').toLowerCase().startsWith('med') ? 'med' : 'low');
+    const url = (window.CIIncidentDrilldownUrl) ? window.CIIncidentDrilldownUrl(p, 'protest-hub-proximity') : 'alerts.html';
+    return `
+      <div class="ci-prox-protest-card">
+        <div class="ci-prox-protest-title">${esc(p.title || 'Protest event')}</div>
+        <div class="ci-prox-protest-meta">
+          ${esc(cityCountry)}${cityCountry && pretty ? ' · ' : ''}${esc(pretty)}
+          <span class="ci-risk-pill ${riskClass}" style="margin-left:6px">${esc(p.risk || 'low')}</span>
+        </div>
+        <a href="${esc(url)}" target="_blank" rel="noopener">View full record →</a>
+      </div>`;
+  }
+
+  function itemLabel(kind, item){
+    if (kind === 'traveller') return item.name || 'Traveller';
+    return item.name || 'Asset';
+  }
+  function itemSub(kind, item){
+    if (kind === 'traveller') return [item.role, item.hotel].filter(Boolean).join(' — ');
+    return [item.city, item.country].filter(Boolean).join(', ');
+  }
+
+  // ── Navigation plumbing ──────────────────────────────────────────────
+  function open(renderFn){
+    viewStack = [];
+    currentRender = renderFn;
+    currentRender();
+    panelEl.classList.add('open');
+    overlayEl.classList.add('open');
+    panelEl.setAttribute('aria-hidden', 'false');
+  }
+  function navigateTo(renderFn){
+    if (currentRender) viewStack.push(currentRender);
+    currentRender = renderFn;
+    currentRender();
+  }
+  function goBack(){
+    const prev = viewStack.pop();
+    if (!prev) return;
+    currentRender = prev;
+    currentRender();
+  }
+  function close(){
+    panelEl.classList.remove('open');
+    overlayEl.classList.remove('open');
+    panelEl.setAttribute('aria-hidden', 'true');
+  }
+  function updateChrome(showDateRow){
+    backBtn.hidden = viewStack.length === 0;
+    dateRow.style.display = showDateRow ? 'flex' : 'none';
+  }
+
+  closeBtn.addEventListener('click', close);
+  overlayEl.addEventListener('click', close);
+  backBtn.addEventListener('click', goBack);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && panelEl.classList.contains('open')) close(); });
+
+  dateRow.querySelectorAll('.ci-prox-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      dateRow.querySelectorAll('.ci-prox-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      dateWidenDays = Number(pill.dataset.days) || 0;
+      if (currentRender) currentRender(); // re-render current list with new range
+    });
+  });
+
+  // ── List view ─────────────────────────────────────────────────────────
+  const KIND_META = {
+    'trav-affected':  { kind:'traveller', title:'Travellers Affected by Protests',            highOnly:false, dateFilter:true },
+    'trav-highrisk':  { kind:'traveller', title:'Travellers Affected by High Risk Protests',   highOnly:true,  dateFilter:true },
+    'asset-affected': { kind:'asset',     title:'Assets Affected by Protests',                 highOnly:false, dateFilter:false },
+    'asset-highrisk': { kind:'asset',     title:'Assets Affected by High Risk Protests',        highOnly:true,  dateFilter:false }
+  };
+
+  function computeListFor(key){
+    const meta = KIND_META[key];
+    const a = api();
+    let items;
+    if (meta.kind === 'traveller') {
+      items = a ? a.travellersInRange(dateWidenDays) : (Array.isArray(window.CITravellers) ? window.CITravellers : []);
+    } else {
+      items = Array.isArray(window.CIAssets) ? window.CIAssets : [];
+    }
+    const rows = [];
+    items.forEach(item => {
+      const protests = matchProtestsForItem(item);
+      const nearbyHigh = protests.filter(isHigh);
+      if (meta.highOnly) {
+        if (nearbyHigh.length) rows.push({ item, protests: nearbyHigh, allProtests: protests });
+      } else if (protests.length) {
+        rows.push({ item, protests, allProtests: protests });
+      }
+    });
+    return { meta, rows };
+  }
+
+  function renderList(key){
+    const { meta, rows } = computeListFor(key);
+    titleEl.textContent = meta.title;
+    subEl.textContent = rows.length
+      ? `${rows.length} within ${radiusKm()}km` + (meta.dateFilter ? (dateWidenDays ? ` · next ${dateWidenDays} days` : ' · currently in-country') : '')
+      : 'No matches for the current radius';
+    updateChrome(meta.dateFilter);
+
+    if (!rows.length) {
+      bodyEl.innerHTML = `<div class="ci-prox-empty">Nothing to show right now.</div>`;
+      return;
+    }
+    bodyEl.innerHTML = rows.map((r, i) => `
+      <div class="ci-prox-row" data-i="${i}">
+        <div>
+          <div class="ci-prox-name">${esc(itemLabel(meta.kind, r.item))}</div>
+          <div class="ci-prox-sub">${esc(itemSub(meta.kind, r.item))}</div>
+        </div>
+        <div class="ci-prox-row-right">
+          <span class="ci-prox-count">${r.protests.length} protest${r.protests.length===1?'':'s'}</span>
+          <span class="ci-prox-chevron">›</span>
+        </div>
+      </div>`).join('');
+    bodyEl.querySelectorAll('.ci-prox-row').forEach(rowEl => {
+      rowEl.addEventListener('click', () => {
+        const r = rows[Number(rowEl.dataset.i)];
+        navigateTo(() => renderDetail(meta.kind, r.item, r.allProtests));
+      });
+    });
+  }
+
+  // ── Detail view (single traveller/asset) ────────────────────────────────
+  function renderDetail(kind, item, protests){
+    titleEl.textContent = itemLabel(kind, item);
+    subEl.textContent = itemSub(kind, item) || (kind === 'traveller' ? 'Traveller' : 'Asset');
+    updateChrome(false);
+    const list = protests && protests.length ? protests : matchProtestsForItem(item);
+    bodyEl.innerHTML = `
+      <div class="ci-prox-detail-card">
+        <div class="ci-prox-name">${esc(itemLabel(kind, item))}</div>
+        <div class="ci-prox-sub">${esc(itemSub(kind, item))}</div>
+      </div>
+      <div class="ci-prox-section-title">Nearby protests (${list.length})</div>
+      ${list.length ? list.map(protestSnippetHtml).join('') : `<div class="ci-prox-empty">No protests currently within radius.</div>`}
+    `;
+  }
+
+  // ── Protest-triggered view (who is this protest affecting) ─────────────
+  function renderForProtest(protest, matches){
+    titleEl.textContent = protest.title || 'Protest event';
+    const cityCountry = [protest.city, protest.country || protest.Country].filter(Boolean).join(', ');
+    subEl.textContent = cityCountry ? `Affecting nearby travellers & assets · ${cityCountry}` : 'Affecting nearby travellers & assets';
+    updateChrome(false);
+
+    const travRows = matches.travellers.map(t => ({ item: t, protests: matchProtestsForItem(t) }));
+    const assetRows = matches.assets.map(a => ({ item: a, protests: matchProtestsForItem(a) }));
+
+    if (!travRows.length && !assetRows.length) {
+      bodyEl.innerHTML = `<div class="ci-prox-empty">No tracked travellers or assets are currently within radius of this protest.</div>`;
+      return;
+    }
+
+    let html = '';
+    if (travRows.length) {
+      html += `<div class="ci-prox-group-heading">Travellers (${travRows.length})</div>`;
+      html += travRows.map((r, i) => `
+        <div class="ci-prox-row" data-group="trav" data-i="${i}">
+          <div>
+            <div class="ci-prox-name">${esc(itemLabel('traveller', r.item))}</div>
+            <div class="ci-prox-sub">${esc(itemSub('traveller', r.item))}</div>
+          </div>
+          <div class="ci-prox-row-right"><span class="ci-prox-chevron">›</span></div>
+        </div>`).join('');
+    }
+    if (assetRows.length) {
+      html += `<div class="ci-prox-group-heading">Assets (${assetRows.length})</div>`;
+      html += assetRows.map((r, i) => `
+        <div class="ci-prox-row" data-group="asset" data-i="${i}">
+          <div>
+            <div class="ci-prox-name">${esc(itemLabel('asset', r.item))}</div>
+            <div class="ci-prox-sub">${esc(itemSub('asset', r.item))}</div>
+          </div>
+          <div class="ci-prox-row-right"><span class="ci-prox-chevron">›</span></div>
+        </div>`).join('');
+    }
+    bodyEl.innerHTML = html;
+
+    bodyEl.querySelectorAll('.ci-prox-row').forEach(rowEl => {
+      rowEl.addEventListener('click', () => {
+        const group = rowEl.dataset.group;
+        const r = (group === 'trav' ? travRows : assetRows)[Number(rowEl.dataset.i)];
+        navigateTo(() => renderDetail(group === 'trav' ? 'traveller' : 'asset', r.item, r.protests));
+      });
+    });
+  }
+
+  // ── Grouped-marker view (several travellers sharing one map bubble) ────
+  function renderForGroup(kind, items){
+    const rows = items.map(item => ({ item, protests: matchProtestsForItem(item) })).filter(r => r.protests.length);
+    titleEl.textContent = kind === 'traveller' ? 'Travellers at this location' : 'Assets at this location';
+    subEl.textContent = `${rows.length} affected by nearby protests`;
+    updateChrome(false);
+    if (!rows.length) {
+      bodyEl.innerHTML = `<div class="ci-prox-empty">None of the travellers here are currently near a protest.</div>`;
+      return;
+    }
+    bodyEl.innerHTML = rows.map((r, i) => `
+      <div class="ci-prox-row" data-i="${i}">
+        <div>
+          <div class="ci-prox-name">${esc(itemLabel(kind, r.item))}</div>
+          <div class="ci-prox-sub">${esc(itemSub(kind, r.item))}</div>
+        </div>
+        <div class="ci-prox-row-right">
+          <span class="ci-prox-count">${r.protests.length} protest${r.protests.length===1?'':'s'}</span>
+          <span class="ci-prox-chevron">›</span>
+        </div>
+      </div>`).join('');
+    bodyEl.querySelectorAll('.ci-prox-row').forEach(rowEl => {
+      rowEl.addEventListener('click', () => {
+        const r = rows[Number(rowEl.dataset.i)];
+        navigateTo(() => renderDetail(kind, r.item, r.protests));
+      });
+    });
+  }
+
+  // ── Public API ───────────────────────────────────────────────────────
+  window.CIProximityPanel = {
+    openList(key){
+      if (!KIND_META[key]) return;
+      dateWidenDays = 0;
+      dateRow.querySelectorAll('.ci-prox-pill').forEach(p => p.classList.toggle('active', p.dataset.days === '0'));
+      open(() => renderList(key));
+    },
+    openForItem(kind, item){
+      const protests = matchProtestsForItem(item);
+      if (!protests.length) return; // not affected — let the normal Leaflet popup handle it
+      open(() => renderDetail(kind, item, protests));
+    },
+    openForItemGroup(kind, items){
+      const anyAffected = items.some(item => matchProtestsForItem(item).length);
+      if (!anyAffected) return;
+      open(() => renderForGroup(kind, items));
+    },
+    openForProtest(protest, ll){
+      const matches = matchItemsForProtest(protest, ll);
+      if (!matches.travellers.length && !matches.assets.length) return; // not affecting anything tracked
+      open(() => renderForProtest(protest, matches));
+    },
+    close
+  };
+
+  // Wire the four KPI cards. Guard against locked cards (CIAccess.lockCard
+  // replaces their content/click-handler with an upgrade-prompt modal —
+  // don't also open the panel underneath it).
+  [
+    ['kpiTravAffectedCard',  'trav-affected'],
+    ['kpiTravHighRiskCard',  'trav-highrisk'],
+    ['kpiAssetAffectedCard', 'asset-affected'],
+    ['kpiAssetHighRiskCard', 'asset-highrisk']
+  ].forEach(([id, key]) => {
+    const cardEl = document.getElementById(id);
+    if (!cardEl) return;
+    cardEl.addEventListener('click', () => {
+      if (cardEl.dataset.ciLocked === '1') return;
+      window.CIProximityPanel.openList(key);
+    });
+  });
+})();
+</script>
+<!-- ── /Protest proximity detail panel ────────────────────────────────── -->
 
 <script src="support-widget.js"></script> 
 <script src="shared-nav.js"></script> 	
