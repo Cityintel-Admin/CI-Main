@@ -4933,8 +4933,11 @@ document.addEventListener("DOMContentLoaded",function(){
 }
 .ci-prox-protest-card .ci-prox-protest-title{ font-weight:700; font-size:13px; color:var(--text); margin-bottom:4px; }
 .ci-prox-protest-card .ci-prox-protest-meta{ font-size:12px; color:var(--muted); margin-bottom:8px; }
-.ci-prox-protest-card a{ color:#fca5a5; text-decoration:none; font-weight:700; font-size:12px; }
-.ci-prox-protest-card a:hover{ text-decoration:underline; }
+.ci-prox-protest-card a,.ci-prox-protest-card .ci-prox-view-record{
+  appearance:none; border:none; background:none; padding:0; margin:0;
+  color:#fca5a5; text-decoration:none; font-weight:700; font-size:12px; cursor:pointer; font-family:inherit;
+}
+.ci-prox-protest-card a:hover,.ci-prox-protest-card .ci-prox-view-record:hover{ text-decoration:underline; }
 
 .ci-prox-group-heading{ font-size:12px; color:var(--muted); margin:16px 0 8px; }
 .ci-prox-group-heading:first-child{ margin-top:0; }
@@ -4988,45 +4991,112 @@ document.addEventListener("DOMContentLoaded",function(){
     if (!ll) return [];
     const protests = a.getWindowedProtests();
     const r = radiusKm();
-    return protests.filter(p => a.haversineKm(ll[0], ll[1], p._ll[0], p._ll[1]) <= r);
+    return protests
+      .map(p => Object.assign({}, p, { _distanceKm: a.haversineKm(ll[0], ll[1], p._ll[0], p._ll[1]) }))
+      .filter(p => p._distanceKm <= r)
+      .sort((x, y) => x._distanceKm - y._distanceKm);
   }
 
+  // Returns { travellers: [{item,_distanceKm}], assets: [{item,_distanceKm}] },
+  // nearest first, for a given protest's coordinates.
   function matchItemsForProtest(protest, ll){
     const a = api();
     const r = radiusKm();
-    const travellers = a ? a.travellersInRange(0) : (Array.isArray(window.CITravellers) ? window.CITravellers.filter(()=>true) : []);
+    const travellers = a ? a.travellersInRange(0) : (Array.isArray(window.CITravellers) ? window.CITravellers : []);
     const assets = Array.isArray(window.CIAssets) ? window.CIAssets : [];
     const latLonOf = a ? a.latLonOf : (e => {
       const lat = Number(e.lat), lon = Number(e.lon);
       return (Number.isFinite(lat) && Number.isFinite(lon)) ? [lat, lon] : null;
     });
     const haversine = a ? a.haversineKm : null;
-    const nearTravellers = travellers.filter(t => {
-      const tll = latLonOf(t);
-      return tll && haversine && haversine(tll[0], tll[1], ll[0], ll[1]) <= r;
-    });
-    const nearAssets = assets.filter(as => {
-      const all = latLonOf(as);
-      return all && haversine && haversine(all[0], all[1], ll[0], ll[1]) <= r;
-    });
-    return { travellers: nearTravellers, assets: nearAssets };
+    const near = (list) => list
+      .map(item => {
+        const ill = latLonOf(item);
+        return (ill && haversine) ? { item, _distanceKm: haversine(ill[0], ill[1], ll[0], ll[1]) } : null;
+      })
+      .filter(x => x && x._distanceKm <= r)
+      .sort((x, y) => x._distanceKm - y._distanceKm);
+    return { travellers: near(travellers), assets: near(assets) };
   }
 
-  function protestSnippetHtml(p){
-    const cityCountry = [p.city, p.country || p.Country].filter(Boolean).join(', ');
+  function distanceLabel(km){
+    if (!Number.isFinite(km)) return '';
+    return (km < 10 ? km.toFixed(1) : Math.round(km)) + 'km';
+  }
+  function prettyDateOf(p){
     const dt = p._dt || (p.time ? new Date(p.time) : null);
-    const pretty = (dt && !isNaN(dt)) ? dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+    return (dt && !isNaN(dt)) ? dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+  }
+
+  // ── Send a protest through to incident.html the same way Live Alerts does:
+  // stash a full incident-shaped object in sessionStorage under a generated
+  // id and open with ?id=... — this is the reliable path (PATH A in
+  // incident.html); it doesn't depend on re-matching a freshly loaded
+  // alertsData array by title, which is what was failing before. ──────────
+  function openIncidentFromProtest(p){
+    const dt = p._dt || (p.time ? new Date(p.time) : null);
+    const normRisk = (r => {
+      const s = String(r || '').toLowerCase();
+      if (s.startsWith('hi')) return 'High';
+      if (s.startsWith('me')) return 'Medium';
+      if (s.startsWith('lo')) return 'Low';
+      return 'Medium';
+    })(p.risk);
+    const whenIso = (dt && !isNaN(dt)) ? dt.toISOString() : (p.time || null);
+    const prettyWhen = prettyDateOf(p);
+    const cityCountry = [p.city, p.country || p.Country].filter(Boolean).join(', ');
+    const incidentData = {
+      title: p.title || 'Protest event',
+      meta: normRisk + (prettyWhen ? ` • ${prettyWhen}` : ''),
+      summary: p.summary || '',
+      location: cityCountry || 'Location refining.',
+      impact: '',
+      earlier: '',
+      url: p.source || null,
+      src: (function(){
+        if (!p.source) return null;
+        try { return new URL(p.source).hostname.replace(/^www\./, ''); }
+        catch(e){ return null; }
+      })(),
+      description: p.summary || '',
+      when: whenIso,
+      city: p.city || null,
+      country: p.country || p.Country || null,
+      risk: normRisk,
+      lat: Array.isArray(p._ll) ? p._ll[0] : (Number.isFinite(Number(p.lat)) ? Number(p.lat) : null),
+      lon: Array.isArray(p._ll) ? p._ll[1] : (Number.isFinite(Number(p.lon)) ? Number(p.lon) : null)
+    };
+    const incId = 'inc-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+    let all = {};
+    try { all = JSON.parse(sessionStorage.getItem('ci_incidents') || '{}'); } catch(e) {}
+    all[incId] = incidentData;
+    try { sessionStorage.setItem('ci_incidents', JSON.stringify(all)); } catch(e) {}
+    window.open(`incident.html?id=${encodeURIComponent(incId)}&from=protest-hub`, '_blank', 'noopener');
+  }
+
+  function protestSnippetHtml(p, idx){
+    const cityCountry = [p.city, p.country || p.Country].filter(Boolean).join(', ');
+    const pretty = prettyDateOf(p);
     const riskClass = isHigh(p) ? 'high' : (String(p.risk||'').toLowerCase().startsWith('med') ? 'med' : 'low');
-    const url = (window.CIIncidentDrilldownUrl) ? window.CIIncidentDrilldownUrl(p, 'protest-hub-proximity') : 'alerts.html';
+    const distTxt = distanceLabel(p._distanceKm);
+    const metaParts = [cityCountry, pretty, distTxt].filter(Boolean).join(' · ');
     return `
       <div class="ci-prox-protest-card">
         <div class="ci-prox-protest-title">${esc(p.title || 'Protest event')}</div>
         <div class="ci-prox-protest-meta">
-          ${esc(cityCountry)}${cityCountry && pretty ? ' · ' : ''}${esc(pretty)}
+          ${esc(metaParts)}
           <span class="ci-risk-pill ${riskClass}" style="margin-left:6px">${esc(p.risk || 'low')}</span>
         </div>
-        <a href="${esc(url)}" target="_blank" rel="noopener">View full record →</a>
+        <button type="button" class="ci-prox-view-record" data-idx="${idx}">View full record →</button>
       </div>`;
+  }
+  function wireProtestRecordLinks(container, protests){
+    container.querySelectorAll('.ci-prox-view-record').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = protests[Number(btn.dataset.idx)];
+        if (p) openIncidentFromProtest(p);
+      });
+    });
   }
 
   function itemLabel(kind, item){
@@ -5090,6 +5160,9 @@ document.addEventListener("DOMContentLoaded",function(){
     'asset-highrisk': { kind:'asset',     title:'Assets Affected by High Risk Protests',        highOnly:true,  dateFilter:false }
   };
 
+  // Rows carry exactly the protest set that produced the count shown on the
+  // row (nearbyHigh for the high-risk views) — the detail view is opened
+  // with that same set, so the badge count and the detail list always match.
   function computeListFor(key){
     const meta = KIND_META[key];
     const a = api();
@@ -5101,13 +5174,9 @@ document.addEventListener("DOMContentLoaded",function(){
     }
     const rows = [];
     items.forEach(item => {
-      const protests = matchProtestsForItem(item);
-      const nearbyHigh = protests.filter(isHigh);
-      if (meta.highOnly) {
-        if (nearbyHigh.length) rows.push({ item, protests: nearbyHigh, allProtests: protests });
-      } else if (protests.length) {
-        rows.push({ item, protests, allProtests: protests });
-      }
+      const protests = matchProtestsForItem(item); // nearest-first
+      const relevant = meta.highOnly ? protests.filter(isHigh) : protests;
+      if (relevant.length) rows.push({ item, protests: relevant });
     });
     return { meta, rows };
   }
@@ -5124,21 +5193,28 @@ document.addEventListener("DOMContentLoaded",function(){
       bodyEl.innerHTML = `<div class="ci-prox-empty">Nothing to show right now.</div>`;
       return;
     }
-    bodyEl.innerHTML = rows.map((r, i) => `
+    bodyEl.innerHTML = rows.map((r, i) => {
+      const nearest = r.protests[0];
+      const nearestLine = nearest
+        ? `<div class="ci-prox-sub" style="margin-top:3px">Nearest: ${esc(nearest.title || 'Protest')} · ${esc(distanceLabel(nearest._distanceKm))} · ${esc(prettyDateOf(nearest))}</div>`
+        : '';
+      return `
       <div class="ci-prox-row" data-i="${i}">
         <div>
           <div class="ci-prox-name">${esc(itemLabel(meta.kind, r.item))}</div>
           <div class="ci-prox-sub">${esc(itemSub(meta.kind, r.item))}</div>
+          ${nearestLine}
         </div>
         <div class="ci-prox-row-right">
           <span class="ci-prox-count">${r.protests.length} protest${r.protests.length===1?'':'s'}</span>
           <span class="ci-prox-chevron">›</span>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     bodyEl.querySelectorAll('.ci-prox-row').forEach(rowEl => {
       rowEl.addEventListener('click', () => {
         const r = rows[Number(rowEl.dataset.i)];
-        navigateTo(() => renderDetail(meta.kind, r.item, r.allProtests));
+        navigateTo(() => renderDetail(meta.kind, r.item, r.protests));
       });
     });
   }
@@ -5148,54 +5224,52 @@ document.addEventListener("DOMContentLoaded",function(){
     titleEl.textContent = itemLabel(kind, item);
     subEl.textContent = itemSub(kind, item) || (kind === 'traveller' ? 'Traveller' : 'Asset');
     updateChrome(false);
-    const list = protests && protests.length ? protests : matchProtestsForItem(item);
+    const list = (protests && protests.length) ? protests : matchProtestsForItem(item);
     bodyEl.innerHTML = `
       <div class="ci-prox-detail-card">
         <div class="ci-prox-name">${esc(itemLabel(kind, item))}</div>
         <div class="ci-prox-sub">${esc(itemSub(kind, item))}</div>
       </div>
       <div class="ci-prox-section-title">Nearby protests (${list.length})</div>
-      ${list.length ? list.map(protestSnippetHtml).join('') : `<div class="ci-prox-empty">No protests currently within radius.</div>`}
+      ${list.length ? list.map((p, i) => protestSnippetHtml(p, i)).join('') : `<div class="ci-prox-empty">No protests currently within radius.</div>`}
     `;
+    wireProtestRecordLinks(bodyEl, list);
   }
 
   // ── Protest-triggered view (who is this protest affecting) ─────────────
   function renderForProtest(protest, matches){
     titleEl.textContent = protest.title || 'Protest event';
     const cityCountry = [protest.city, protest.country || protest.Country].filter(Boolean).join(', ');
-    subEl.textContent = cityCountry ? `Affecting nearby travellers & assets · ${cityCountry}` : 'Affecting nearby travellers & assets';
+    const when = prettyDateOf(protest);
+    subEl.textContent = [cityCountry, when].filter(Boolean).join(' · ') || 'Affecting nearby travellers & assets';
     updateChrome(false);
 
-    const travRows = matches.travellers.map(t => ({ item: t, protests: matchProtestsForItem(t) }));
-    const assetRows = matches.assets.map(a => ({ item: a, protests: matchProtestsForItem(a) }));
+    const travRows = matches.travellers.map(m => ({ item: m.item, distanceKm: m._distanceKm, protests: matchProtestsForItem(m.item) }));
+    const assetRows = matches.assets.map(m => ({ item: m.item, distanceKm: m._distanceKm, protests: matchProtestsForItem(m.item) }));
 
     if (!travRows.length && !assetRows.length) {
       bodyEl.innerHTML = `<div class="ci-prox-empty">No tracked travellers or assets are currently within radius of this protest.</div>`;
       return;
     }
 
+    const rowHtml = (r, group, i) => `
+      <div class="ci-prox-row" data-group="${group}" data-i="${i}">
+        <div>
+          <div class="ci-prox-name">${esc(itemLabel(group === 'trav' ? 'traveller' : 'asset', r.item))}</div>
+          <div class="ci-prox-sub">${esc(itemSub(group === 'trav' ? 'traveller' : 'asset', r.item))}</div>
+          <div class="ci-prox-sub" style="margin-top:3px">${esc(distanceLabel(r.distanceKm))} from this protest</div>
+        </div>
+        <div class="ci-prox-row-right"><span class="ci-prox-chevron">›</span></div>
+      </div>`;
+
     let html = '';
     if (travRows.length) {
       html += `<div class="ci-prox-group-heading">Travellers (${travRows.length})</div>`;
-      html += travRows.map((r, i) => `
-        <div class="ci-prox-row" data-group="trav" data-i="${i}">
-          <div>
-            <div class="ci-prox-name">${esc(itemLabel('traveller', r.item))}</div>
-            <div class="ci-prox-sub">${esc(itemSub('traveller', r.item))}</div>
-          </div>
-          <div class="ci-prox-row-right"><span class="ci-prox-chevron">›</span></div>
-        </div>`).join('');
+      html += travRows.map((r, i) => rowHtml(r, 'trav', i)).join('');
     }
     if (assetRows.length) {
       html += `<div class="ci-prox-group-heading">Assets (${assetRows.length})</div>`;
-      html += assetRows.map((r, i) => `
-        <div class="ci-prox-row" data-group="asset" data-i="${i}">
-          <div>
-            <div class="ci-prox-name">${esc(itemLabel('asset', r.item))}</div>
-            <div class="ci-prox-sub">${esc(itemSub('asset', r.item))}</div>
-          </div>
-          <div class="ci-prox-row-right"><span class="ci-prox-chevron">›</span></div>
-        </div>`).join('');
+      html += assetRows.map((r, i) => rowHtml(r, 'asset', i)).join('');
     }
     bodyEl.innerHTML = html;
 
@@ -5218,17 +5292,24 @@ document.addEventListener("DOMContentLoaded",function(){
       bodyEl.innerHTML = `<div class="ci-prox-empty">None of the travellers here are currently near a protest.</div>`;
       return;
     }
-    bodyEl.innerHTML = rows.map((r, i) => `
+    bodyEl.innerHTML = rows.map((r, i) => {
+      const nearest = r.protests[0];
+      const nearestLine = nearest
+        ? `<div class="ci-prox-sub" style="margin-top:3px">Nearest: ${esc(nearest.title || 'Protest')} · ${esc(distanceLabel(nearest._distanceKm))} · ${esc(prettyDateOf(nearest))}</div>`
+        : '';
+      return `
       <div class="ci-prox-row" data-i="${i}">
         <div>
           <div class="ci-prox-name">${esc(itemLabel(kind, r.item))}</div>
           <div class="ci-prox-sub">${esc(itemSub(kind, r.item))}</div>
+          ${nearestLine}
         </div>
         <div class="ci-prox-row-right">
           <span class="ci-prox-count">${r.protests.length} protest${r.protests.length===1?'':'s'}</span>
           <span class="ci-prox-chevron">›</span>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     bodyEl.querySelectorAll('.ci-prox-row').forEach(rowEl => {
       rowEl.addEventListener('click', () => {
         const r = rows[Number(rowEl.dataset.i)];
