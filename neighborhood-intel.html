@@ -2922,7 +2922,8 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
               <span>📎 Add image</span>
               <input type="file" id="attachFiles" accept="image/*" multiple style="display:none" />
             </label>
-            <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:5px">Up to 5 images · Max 5 MB each · JPG, PNG, WEBP · Image upload will be enabled when Cloudflare Images is activated.</div>
+            <div id="attachUploadStatus" style="font-size:12px;margin-top:6px;display:none"></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:5px">Up to 5 images · Max 5 MB each · JPG, PNG, WEBP</div>
             <input class="ni-input" id="newAttachments" placeholder="Or paste image URLs, comma-separated" style="margin-top:8px" />
         </div>
 
@@ -3038,7 +3039,9 @@ async function loadOrgHQ() {
     newBody: document.getElementById('newBody'),
     newActions: document.getElementById('newActions'),
     newAttachments: document.getElementById('newAttachments'),
-    attachFiles: null, // uploads disabled
+    attachFiles: document.getElementById('attachFiles'),
+    attachPreviewStrip: document.getElementById('attachPreviewStrip'),
+    attachUploadStatus: document.getElementById('attachUploadStatus'),
     newConfirm: document.getElementById('newConfirm'),
     geoHelp: document.getElementById('geoHelp'),
     newWantedFor: document.getElementById('newWantedFor'),
@@ -4941,32 +4944,29 @@ els.btnRefresh.addEventListener('click', refresh);
   // Modal helpers
   
   function renderAttachPreview() {
-    if (!els.attachInfo || !els.attachPreview) return;
+    if (!els.attachPreviewStrip) return;
     const files = Array.from(els.attachFiles?.files || []);
-    if (!files.length) {
-      els.attachInfo.textContent = 'No files selected.';
-      els.attachPreview.innerHTML = '';
-      return;
-    }
-    els.attachInfo.textContent = `${files.length} file${files.length===1?'':'s'} selected`;
-    // lightweight preview thumbnails
-    els.attachPreview.innerHTML = '';
-    files.slice(0, 5).forEach(f => {
+    els.attachPreviewStrip.innerHTML = '';
+    if (!files.length) return;
+
+    const maxCount = 5, maxBytes = 5_000_000;
+    files.slice(0, maxCount).forEach(f => {
+      const oversize = f.size > maxBytes;
       const chip = document.createElement('div');
-      chip.style.cssText = 'padding:6px 8px;border:1px solid rgba(255,255,255,.12);border-radius:10px;font-size:12px;color:rgba(255,255,255,.75)';
-      chip.textContent = f.name;
-      els.attachPreview.appendChild(chip);
+      chip.style.cssText = `padding:6px 8px;border:1px solid ${oversize ? 'rgba(255,90,95,.5)' : 'rgba(255,255,255,.12)'};border-radius:10px;font-size:12px;color:${oversize ? '#ff9a9e' : 'rgba(255,255,255,.75)'}`;
+      chip.textContent = oversize ? `${f.name} (over 5MB)` : `${f.name} (${(f.size/1_000_000).toFixed(1)}MB)`;
+      els.attachPreviewStrip.appendChild(chip);
     });
-    if (files.length > 5) {
+    if (files.length > maxCount) {
       const more = document.createElement('div');
       more.style.cssText = 'padding:6px 8px;border:1px dashed rgba(255,255,255,.18);border-radius:10px;font-size:12px;color:rgba(255,255,255,.65)';
-      more.textContent = `+${files.length-5} more`;
-      els.attachPreview.appendChild(more);
+      more.textContent = `+${files.length - maxCount} more (only first ${maxCount} will be uploaded)`;
+      els.attachPreviewStrip.appendChild(more);
     }
+    setAttachUploadStatus('');
   }
 
-  if (els.attachPick && els.attachFiles) {
-    els.attachPick.addEventListener('click', () => els.attachFiles.click());
+  if (els.attachFiles) {
     els.attachFiles.addEventListener('change', renderAttachPreview);
   }
 
@@ -5036,11 +5036,52 @@ els.btnRefresh.addEventListener('click', refresh);
 
   
   
-// Upload selected images to the Worker (which forwards to Cloudflare Images).
-// Returns an array of image URLs (public variants).
-async function uploadFilesToWorker(){
-    // Cloudflare Images requires a paid plan for uploads. Disabled in this build.
-    return [];
+function setAttachUploadStatus(text, isError){
+    if (!els.attachUploadStatus) return;
+    if (!text) { els.attachUploadStatus.style.display = 'none'; els.attachUploadStatus.textContent = ''; return; }
+    els.attachUploadStatus.style.display = 'block';
+    els.attachUploadStatus.style.color = isError ? '#ff9a9e' : 'rgba(255,255,255,.65)';
+    els.attachUploadStatus.textContent = text;
+  }
+
+  // Upload selected images to the Worker (which forwards to Cloudflare Images).
+  // Returns an array of image URLs (public variants).
+  async function uploadFilesToWorker(fileList, opts = {}){
+    const maxCount = opts.maxCount || 5;
+    const maxBytes = opts.maxBytes || 5_000_000;
+    const files = Array.from(fileList || []).slice(0, maxCount);
+    if (!files.length) return [];
+
+    const oversized = files.find(f => f.size > maxBytes);
+    if (oversized) {
+      const msg = `"${oversized.name}" is over the ${Math.round(maxBytes / 1_000_000)}MB limit — remove it and try again.`;
+      setAttachUploadStatus(msg, true);
+      throw new Error(msg);
+    }
+
+    const form = new FormData();
+    files.forEach(f => form.append('files', f, f.name));
+
+    setAttachUploadStatus(`Uploading ${files.length} image${files.length === 1 ? '' : 's'}…`);
+    try {
+      // Note: no Content-Type header here — the browser sets its own
+      // multipart boundary for FormData bodies; apiFetch() forces
+      // application/json so it can't be used for this call.
+      const res = await fetch(API_BASE + '/api/neighbor/upload', {
+        method: 'POST',
+        headers: { 'X-User-Email': userEmail || '' },
+        body: form
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || `Upload failed (${res.status})`);
+      }
+      setAttachUploadStatus(`${files.length} image${files.length === 1 ? '' : 's'} uploaded.`, false);
+      return Array.isArray(data.urls) ? data.urls : [];
+    } catch (e) {
+      setAttachUploadStatus(e?.message || 'Upload failed — post was not sent.', true);
+      throw e;
+    }
   }
 
 
