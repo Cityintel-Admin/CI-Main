@@ -1084,6 +1084,41 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           </label>
         </section>
 
+        <!-- ── Protest Group Watchlist ──────────────────────────────────────
+             Org-managed list of named groups (name + optional aliases),
+             matched live against current protest data — no separate
+             backend dataset required for matching itself. ────────────── -->
+        <section class="card" id="watchlistCard" style="grid-column: span 12;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+            <div>
+              <h3 style="margin:0 0 4px">Protest Group Watchlist</h3>
+              <small style="color:var(--muted)" id="watchlistSub">Track named groups — matching protests surface automatically below.</small>
+            </div>
+            <button type="button" id="watchlistAddBtn" class="pill" style="cursor:pointer;border:none">+ Add group</button>
+          </div>
+
+          <div id="watchlistAddForm" style="display:none;border:1px solid var(--brand-gray-600);background:rgba(255,255,255,.02);border-radius:12px;padding:14px;margin-bottom:14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-wrap:wrap">
+              <div>
+                <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Group name</label>
+                <input id="watchlistNameInput" type="text" placeholder="e.g. Extinction Rebellion" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;box-sizing:border-box">
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Aliases <span style="opacity:.6">(comma-separated, optional)</span></label>
+                <input id="watchlistAliasInput" type="text" placeholder="e.g. XR" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #2e3238;background:#1c1e22;color:#e9edf2;box-sizing:border-box">
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
+              <button type="button" id="watchlistSaveBtn" class="pill" style="cursor:pointer;border:none">Save</button>
+              <button type="button" id="watchlistCancelBtn" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;text-decoration:underline">Cancel</button>
+              <span id="watchlistFormError" style="color:var(--danger);font-size:12px;display:none"></span>
+            </div>
+          </div>
+
+          <div id="watchlistEmpty" style="color:var(--muted);font-size:13px;padding:6px 0 4px;display:none">No groups being watched yet — add one to get started.</div>
+          <div id="watchlistList" style="display:grid;gap:10px"></div>
+        </section>
+
         <div class="kpi-grid" style="grid-column: span 12;">
 
 
@@ -5367,6 +5402,7 @@ document.addEventListener("DOMContentLoaded",function(){
       if (!matches.travellers.length && !matches.assets.length) return; // not affecting anything tracked
       open(() => renderForProtest(protest, matches));
     },
+    openIncidentFromProtest, // reused by the Protest Group Watchlist card
     close
   };
 
@@ -5389,6 +5425,275 @@ document.addEventListener("DOMContentLoaded",function(){
 })();
 </script>
 <!-- ── /Protest proximity detail panel ────────────────────────────────── -->
+
+<!-- ── Protest Group Watchlist ───────────────────────────────────────────
+     Persists per-org via /api/org/watchlist (mirrors the org/assets and
+     org/travellers pattern — GET returns the array, POST replaces it
+     wholesale). Falls back to localStorage-only if the API call fails, so
+     the feature still works before/without that endpoint deployed.
+     Matching runs client-side against window.alertsData — no separate
+     "known groups" dataset needed for the core feature. ─────────────── -->
+<script>
+(function mountProtestWatchlist(){
+  const cardEl   = document.getElementById('watchlistCard');
+  if (!cardEl) return;
+  const addBtn   = document.getElementById('watchlistAddBtn');
+  const formEl   = document.getElementById('watchlistAddForm');
+  const nameIn   = document.getElementById('watchlistNameInput');
+  const aliasIn  = document.getElementById('watchlistAliasInput');
+  const saveBtn  = document.getElementById('watchlistSaveBtn');
+  const cancelBtn= document.getElementById('watchlistCancelBtn');
+  const errEl    = document.getElementById('watchlistFormError');
+  const emptyEl  = document.getElementById('watchlistEmpty');
+  const listEl   = document.getElementById('watchlistList');
+  const subEl    = document.getElementById('watchlistSub');
+
+  const API_ORIGIN = 'https://api.cityintelapi.com';
+  const STORAGE_KEY = 'ci_protest_watchlist';
+
+  function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function getClientEmail(){
+    try{
+      if (window.CIAuth && CIAuth.who) {
+        const au = CIAuth.who();
+        if (au && au.email) return String(au.email).trim().toLowerCase();
+      }
+    }catch(_){}
+    try{
+      const raw = localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}';
+      const prof = JSON.parse(raw);
+      if (prof && prof.email) return String(prof.email).trim().toLowerCase();
+    }catch(_){}
+    try{ return localStorage.getItem('ci_user_email') || ''; }catch(_){ return ''; }
+  }
+  function withEmailParam(url){
+    const email = getClientEmail();
+    if(!email) return url;
+    try{ const u = new URL(url); u.searchParams.set('email', email); return u.toString(); }catch(_){ return url; }
+  }
+  async function authHeaders(){
+    const email = getClientEmail();
+    let name = '', id = '';
+    try{
+      const prof = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : JSON.parse(localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}');
+      name = prof.name || localStorage.getItem('ci_user_name') || '';
+      id = prof.id || prof.email || localStorage.getItem('ci_user_id') || '';
+    }catch(_){}
+    const h = { 'Content-Type': 'application/json' };
+    if (email) h['X-User-Email'] = email;
+    if (name) h['X-User-Name'] = name;
+    if (id) h['X-User-Id'] = id;
+    return h;
+  }
+
+  function loadLocal(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch(_) { return []; }
+  }
+  function saveLocal(groups){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(groups)); } catch(_) {}
+  }
+
+  let groups = loadLocal(); // [{ id, name, aliases: [...] }]
+
+  async function loadFromServer(){
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/watchlist'), { headers });
+      const json = await res.json().catch(() => null);
+      if (json && json.ok && Array.isArray(json.data)) {
+        groups = json.data;
+        saveLocal(groups);
+        render();
+      }
+    } catch(_) { /* offline / endpoint not deployed yet — local cache stands */ }
+  }
+
+  async function saveToServer(){
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/watchlist'), {
+        method: 'POST', headers, body: JSON.stringify(groups)
+      });
+      const json = await res.json().catch(() => null);
+      if (json && json.ok === false && json.error) return json.error; // e.g. seat-limit message from the server
+    } catch(_) { /* saved locally regardless — will retry sync next load */ }
+    return null;
+  }
+
+  function normaliseAliases(raw){
+    return String(raw || '')
+      .split(',')
+      .map(a => a.trim())
+      .filter(Boolean);
+  }
+
+  // ── Matching ────────────────────────────────────────────────────────
+  function getCandidateProtests(){
+    const feedEvents = (Array.isArray(window.CICityIntelFeedPosts) ? window.CICityIntelFeedPosts : [])
+      .map(p => ({
+        title: p.title || 'CityIntel feed post',
+        summary: p.body || '',
+        city: p.location_label || '',
+        country: '',
+        risk: p.risk || 'info',
+        time: p.event_at || p.created_at,
+        source: 'CityIntel Feed'
+      }));
+    return (Array.isArray(window.alertsData) ? window.alertsData : []).concat(feedEvents);
+  }
+  function matchTerms(group){
+    const terms = [group.name, ...(Array.isArray(group.aliases) ? group.aliases : [])]
+      .map(t => String(t || '').trim().toLowerCase())
+      .filter(Boolean);
+    return terms;
+  }
+  function matchesForGroup(group){
+    const terms = matchTerms(group);
+    if (!terms.length) return [];
+    const protests = getCandidateProtests();
+    return protests.filter(p => {
+      const haystack = `${p.title || ''} ${p.summary || ''}`.toLowerCase();
+      return terms.some(t => haystack.includes(t));
+    });
+  }
+  function isHigh(p){
+    return String(p.risk || '').toLowerCase().startsWith('hi');
+  }
+  function prettyDateOf(p){
+    const dt = p.time ? new Date(p.time) : null;
+    return (dt && !isNaN(dt)) ? dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+  }
+  function protestSnippetHtml(p){
+    const cityCountry = [p.city, p.country].filter(Boolean).join(', ');
+    const pretty = prettyDateOf(p);
+    const riskClass = isHigh(p) ? 'high' : (String(p.risk||'').toLowerCase().startsWith('med') ? 'med' : 'low');
+    const metaParts = [cityCountry, pretty].filter(Boolean).join(' · ');
+    return `
+      <div class="ci-prox-protest-card">
+        <div class="ci-prox-protest-title">${esc(p.title || 'Protest event')}</div>
+        <div class="ci-prox-protest-meta">
+          ${esc(metaParts)}
+          <span class="ci-risk-pill ${riskClass}" style="margin-left:6px">${esc(p.risk || 'low')}</span>
+        </div>
+        <button type="button" class="ci-prox-view-record" data-view-record>View full record →</button>
+      </div>`;
+  }
+
+  // ── Rendering ───────────────────────────────────────────────────────
+  function render(){
+    if (!groups.length) {
+      emptyEl.style.display = 'block';
+      listEl.innerHTML = '';
+      subEl.textContent = 'Track named groups — matching protests surface automatically below.';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    subEl.textContent = `${groups.length} group${groups.length === 1 ? '' : 's'} watched`;
+
+    listEl.innerHTML = groups.map((g, i) => {
+      const matches = matchesForGroup(g);
+      const aliasTxt = (g.aliases && g.aliases.length) ? ` <span style="color:var(--muted);font-weight:400">(${g.aliases.map(esc).join(', ')})</span>` : '';
+      return `
+        <div class="ci-prox-row" data-group-i="${i}" style="cursor:pointer">
+          <div>
+            <div class="ci-prox-name">${esc(g.name)}${aliasTxt}</div>
+          </div>
+          <div class="ci-prox-row-right">
+            <span class="ci-prox-count">${matches.length} match${matches.length===1?'':'es'}</span>
+            <button type="button" class="ci-prox-view-record" data-remove-i="${i}" title="Remove from watchlist" style="color:var(--muted);font-weight:400">✕</button>
+            <span class="ci-prox-chevron" data-chevron-i="${i}">›</span>
+          </div>
+        </div>
+        <div id="watchlistMatches-${i}" style="display:none;padding:4px 4px 4px 14px;border-left:2px solid var(--brand-gray-600);margin:-4px 0 4px 4px"></div>
+      `;
+    }).join('');
+
+    listEl.querySelectorAll('[data-group-i]').forEach(rowEl => {
+      rowEl.addEventListener('click', (e) => {
+        if (e.target.closest('[data-remove-i]')) return; // handled separately below
+        const i = Number(rowEl.dataset.groupI);
+        const panel = document.getElementById(`watchlistMatches-${i}`);
+        const chevron = listEl.querySelector(`[data-chevron-i="${i}"]`);
+        const opening = panel.style.display === 'none';
+        panel.style.display = opening ? 'block' : 'none';
+        if (chevron) chevron.textContent = opening ? '⌄' : '›';
+        if (opening && !panel.dataset.rendered) {
+          const matches = matchesForGroup(groups[i]);
+          panel.innerHTML = matches.length
+            ? matches.map(protestSnippetHtml).join('')
+            : `<div class="ci-prox-empty">No matches for this group in the current data.</div>`;
+          panel.dataset.rendered = '1';
+          panel.querySelectorAll('[data-view-record]').forEach((btn, mi) => {
+            btn.addEventListener('click', () => {
+              if (window.CIProximityPanel && window.CIProximityPanel.openIncidentFromProtest) {
+                window.CIProximityPanel.openIncidentFromProtest(matches[mi]);
+              }
+            });
+          });
+        }
+      });
+    });
+
+    listEl.querySelectorAll('[data-remove-i]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const i = Number(btn.dataset.removeI);
+        groups.splice(i, 1);
+        saveLocal(groups);
+        render();
+        await saveToServer();
+      });
+    });
+  }
+
+  // ── Add-group form ──────────────────────────────────────────────────
+  function showForm(){ formEl.style.display = 'block'; errEl.style.display = 'none'; nameIn.value = ''; aliasIn.value = ''; nameIn.focus(); }
+  function hideForm(){ formEl.style.display = 'none'; }
+
+  addBtn.addEventListener('click', showForm);
+  cancelBtn.addEventListener('click', hideForm);
+
+  saveBtn.addEventListener('click', async () => {
+    const name = nameIn.value.trim();
+    if (!name) {
+      errEl.textContent = 'Enter a group name.';
+      errEl.style.display = 'inline';
+      return;
+    }
+    if (groups.some(g => g.name.toLowerCase() === name.toLowerCase())) {
+      errEl.textContent = 'This group is already being watched.';
+      errEl.style.display = 'inline';
+      return;
+    }
+    const newGroup = { id: 'wl-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, aliases: normaliseAliases(aliasIn.value) };
+    const aliasValueForRetry = aliasIn.value;
+    groups.push(newGroup);
+    saveLocal(groups);
+    hideForm();
+    render();
+    const serverError = await saveToServer();
+    if (serverError) {
+      // e.g. seat-limit reached — roll back and surface why
+      groups.pop();
+      saveLocal(groups);
+      render();
+      showForm();
+      nameIn.value = name; aliasIn.value = aliasValueForRetry;
+      errEl.textContent = serverError;
+      errEl.style.display = 'inline';
+    }
+  });
+
+  render();
+  loadFromServer();
+})();
+</script>
+<!-- ── /Protest Group Watchlist ──────────────────────────────────────── -->
 
 <script src="support-widget.js"></script> 
 <script src="shared-nav.js"></script> 	
