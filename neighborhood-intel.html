@@ -1979,6 +1979,7 @@
   /* Lightweight toast */
   .ni-toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none}
   .ni-toast{pointer-events:none;min-width:260px;max-width:420px;padding:12px 14px;border-radius:12px;background:rgba(20,22,26,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.45);color:#fff;font-size:13px;line-height:1.35}
+  .ni-toast-error{background:rgba(40,16,18,.94);border-color:rgba(255,90,95,.5)}
   .ni-toast small{display:block;opacity:.75;margin-top:4px}
 
   /* Subjects (IC1/IC2/IC3) */
@@ -3693,7 +3694,7 @@ async function loadOrgHQ() {
           if (Array.isArray(tmp) && tmp.length) { data = tmp; break; }
         } catch(_) {}
       }
-      if (!data || !data.length) { toast('Location not found', 'Try a more specific address or place name.'); return; }
+      if (!data || !data.length) { toast('Location not found', 'Try a more specific address or place name.', true); return; }
       const r = data[0];
       const lat = Number(r.lat), lon = Number(r.lon ?? r.lng);
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
@@ -3708,7 +3709,7 @@ async function loadOrgHQ() {
       searchMarker.openPopup();
     } catch(err) {
       console.error('Neighbourhood map search failed', err);
-      toast('Map search failed', 'Please try again.');
+      toast('Map search failed', 'Please try again.', true);
     } finally {
       if (input) input.value = old;
     }
@@ -4408,36 +4409,50 @@ comments = (function dedupe(list){
 
     // ── Status update ──
     if (btnStatus && statusSel) {
-      btnStatus.addEventListener('click', () => {
+      btnStatus.addEventListener('click', async () => {
+        const prevStatus = p.post_status;
         const newStatus = statusSel.value;
         p.post_status = newStatus;
         // Update local cache
         const all = localRead('ni_posts_cache');
         const idx = all.findIndex(x => x.id === p.id);
         if (idx !== -1) { all[idx].post_status = newStatus; localWrite('ni_posts_cache', all); }
-        // Try API
-        apiFetch(ENDPOINT + '/' + encodeURIComponent(p.id), {
-          method: 'PATCH', body: JSON.stringify({ post_status: newStatus })
-        }).catch(() => {});
-        toast('Status updated to: ' + newStatus);
         refresh();
+
+        const ok = await patchPostAndReport(p.id, { post_status: newStatus }, () => {
+          p.post_status = prevStatus;
+          const all2 = localRead('ni_posts_cache');
+          const idx2 = all2.findIndex(x => x.id === p.id);
+          if (idx2 !== -1) { all2[idx2].post_status = prevStatus; localWrite('ni_posts_cache', all2); }
+          if (statusSel) statusSel.value = prevStatus;
+          refresh();
+        });
+        if (ok) toast('Status updated to: ' + newStatus);
       });
     }
 
     // ── BOLO toggle ──
     if (btnBolo && boloToggle) {
-      btnBolo.addEventListener('click', () => {
+      btnBolo.addEventListener('click', async () => {
+        const prevBolo = !!p.bolo;
         const newBolo = !!boloToggle.checked;
         p.bolo = newBolo;
         const all = localRead('ni_posts_cache');
         const idx = all.findIndex(x => x.id === p.id);
         if (idx !== -1) { all[idx].bolo = newBolo; localWrite('ni_posts_cache', all); }
-        apiFetch(ENDPOINT + '/' + encodeURIComponent(p.id), {
-          method: 'PATCH', body: JSON.stringify({ bolo: newBolo })
-        }).catch(() => {});
         updateBoloBanner(all.length ? all : [p]);
-        toast(newBolo ? '⚠ BOLO activated — banner shown to all users' : 'BOLO cleared');
         refresh();
+
+        const ok = await patchPostAndReport(p.id, { bolo: newBolo }, () => {
+          p.bolo = prevBolo;
+          const all2 = localRead('ni_posts_cache');
+          const idx2 = all2.findIndex(x => x.id === p.id);
+          if (idx2 !== -1) { all2[idx2].bolo = prevBolo; localWrite('ni_posts_cache', all2); }
+          if (boloToggle) boloToggle.checked = prevBolo;
+          updateBoloBanner(all2.length ? all2 : [p]);
+          refresh();
+        });
+        if (ok) toast(newBolo ? '⚠ BOLO activated — banner shown to all users' : 'BOLO cleared');
       });
     }
 
@@ -4469,15 +4484,20 @@ comments = (function dedupe(list){
       // Handle severity escalation
       const escalateVal = escalateSel ? escalateSel.value : '';
       if (escalateVal) {
+        const prevSeverity = p.severity;
         p.severity = escalateVal;
         const all = localRead('ni_posts_cache');
         const pi = all.findIndex(x => x.id === p.id);
         if (pi !== -1) { all[pi].severity = escalateVal; localWrite('ni_posts_cache', all); }
-        apiFetch(ENDPOINT + '/' + encodeURIComponent(p.id), {
-          method: 'PATCH', body: JSON.stringify({ severity: escalateVal })
-        }).catch(() => {});
         if (escalateSel) escalateSel.value = '';
-        toast('Severity updated to: ' + escalateVal);
+
+        const ok = await patchPostAndReport(p.id, { severity: escalateVal }, () => {
+          p.severity = prevSeverity;
+          const all2 = localRead('ni_posts_cache');
+          const pi2 = all2.findIndex(x => x.id === p.id);
+          if (pi2 !== -1) { all2[pi2].severity = prevSeverity; localWrite('ni_posts_cache', all2); }
+        });
+        if (ok) toast('Severity updated to: ' + escalateVal);
       }
 
       const c = { author: userEmail || 'User', body, created_at: new Date().toISOString() };
@@ -4494,12 +4514,15 @@ comments = (function dedupe(list){
           method: 'POST',
           body: JSON.stringify({ post_id: p.id, body })
         });
-        if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (res.ok && data?.ok) {
           if (commentStatus) commentStatus.textContent = 'Posted.';
           // refresh the detail panel to show API comments (author_email, ids)
           try { selectPost(p); } catch(e) {}
         } else {
-          if (commentStatus) commentStatus.textContent = 'Saved locally (API error).';
+          const msg = friendlyApiError(data, res.status);
+          if (commentStatus) commentStatus.textContent = msg;
+          toast(msg, '', true);
         }
       } catch (e) {
         if (commentStatus) commentStatus.textContent = 'Saved locally (API unavailable).';
@@ -4744,15 +4767,60 @@ function renderSubjectsStructured(subjectLines){
   // Minimal toast
 
   // Minimal toast so we don't depend on any external UI lib
-  function toast(message, detail=''){
+  function toast(message, detail='', isError=false){
     const host = document.getElementById('niToasts');
     if(!host){ console.warn('toast:', message, detail); return; }
     const el = document.createElement('div');
-    el.className = 'ni-toast';
+    el.className = 'ni-toast' + (isError ? ' ni-toast-error' : '');
     el.innerHTML = `${escapeHtml(message)}${detail?`<small>${escapeHtml(detail)}</small>`:''}`;
     host.appendChild(el);
-    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(6px)'; }, 2600);
-    setTimeout(()=>{ el.remove(); }, 3200);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(6px)'; }, isError ? 4200 : 2600);
+    setTimeout(()=>{ el.remove(); }, isError ? 4800 : 3200);
+  }
+
+  // Turns a worker error response into something a user can actually act on,
+  // instead of the raw error code or a generic silent failure. Server
+  // messages that already read like a sentence (module/seat-limit text etc.)
+  // are shown as-is; short machine codes get mapped to friendly text.
+  function friendlyApiError(data, status){
+    const code = data?.error || '';
+    const KNOWN = {
+      cross_org_forbidden: "You don't have permission to act on this post — it belongs to a different organisation.",
+      missing_org: "Your account isn't linked to an organisation — contact your admin.",
+      missing_user_email: 'Your session looks invalid — please refresh and sign in again.',
+      unknown_user: 'Your session looks invalid — please refresh and sign in again.',
+      inactive_user: 'Your account is not active — contact your admin.',
+      org_suspended: "Your organisation's access is currently suspended.",
+      not_found: 'That post could not be found — it may have been removed.',
+    };
+    if (KNOWN[code]) return KNOWN[code];
+    if (code && code.includes(' ')) return code; // already a human-readable server message
+    if (status === 403) return "You don't have permission to do that.";
+    if (status === 401) return 'Please sign in again to continue.';
+    return data?.detail || code || `Something went wrong${status ? ` (${status})` : ''}.`;
+  }
+
+  // Shared PATCH helper for status/bolo/severity updates — actually checks
+  // the response instead of firing-and-forgetting, and reports failures
+  // (permission, ownership, etc.) instead of silently leaving the UI in an
+  // optimistic state that doesn't match what the server actually has.
+  async function patchPostAndReport(postId, fields, onError){
+    try {
+      const res = await apiFetch(ENDPOINT + '/' + encodeURIComponent(postId), {
+        method: 'PATCH', body: JSON.stringify(fields)
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        if (onError) onError();
+        toast(friendlyApiError(data, res.status), '', true);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      if (onError) onError();
+      toast('Could not reach the server — change was not saved.', '', true);
+      return false;
+    }
   }
 
   // API calls (with local fallback if Worker missing)
@@ -5102,7 +5170,7 @@ btnSubmitPost.addEventListener('click', async () => {
       const uploaded = await uploadFilesToWorker(els.attachFiles?.files, { maxCount: 5, maxBytes: 5_000_000 });
       attachments = attachments.concat(uploaded);
     } catch (e) {
-      toast(e?.message || String(e), true);
+      toast(e?.message || String(e), '', true);
       return;
     }
 
@@ -5138,15 +5206,27 @@ btnSubmitPost.addEventListener('click', async () => {
         method: 'POST',
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('bad_status_' + res.status);
-      const data = await res.json();
-      if (!data?.ok) throw new Error(data?.error || 'bad_payload');
-      bumpCaseSeqIfNeeded((els.newCaseTag?.value || '').trim());
-      closeModal();
-      await refresh();
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok) {
+        bumpCaseSeqIfNeeded((els.newCaseTag?.value || '').trim());
+        closeModal();
+        await refresh();
+        toast('Post published.');
+        return;
+      }
+      // The server responded and rejected it (permission, module gating,
+      // seat limit, validation, etc). Previously this fell through to the
+      // same silent "save locally" fallback as a genuine network failure —
+      // meaning a 403 looked identical to success from the user's POV, and
+      // the post existed only in this browser, invisible to anyone else.
+      // Surface why, and keep the modal open so the draft isn't lost.
+      toast(friendlyApiError(data, res.status), '', true);
+      els.btnSubmitPost.disabled = false;
       return;
     } catch(e) {
-      // local fallback
+      // Genuine network failure (offline / API unreachable) — local-only
+      // fallback is reasonable here, but say so plainly rather than closing
+      // the modal as if it were published normally.
       const all = localRead();
       const id = 'local_' + Math.random().toString(16).slice(2);
       bumpCaseSeqIfNeeded((els.newCaseTag?.value || '').trim());
@@ -5154,6 +5234,7 @@ btnSubmitPost.addEventListener('click', async () => {
       localWrite('ni_posts_cache', all);
       closeModal();
       await refresh();
+      toast('Saved locally only — could not reach the server.', 'This post is only visible on this device until it syncs.', true);
     }
   });
 
