@@ -21,6 +21,270 @@ window.alertsData =[
 },
 
 
+  
+{
+  title: "Marcha de los jubilados (weekly retirees' protest)",
+  city: "Buenos Aires",
+  lat: -34.6097,
+  lng: -58.3905,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-07-15T00:00:00",
+  source: "https://www.infobae.com/sociedad/2026/04/02/se-realizo-la-marcha-de-los-miercoles-frente-al-congreso-y-dos-jubiladas-se-encadenaron-en-un-semaforo/",
+  summary: "Weekly Wednesday protest by retirees and pensioners outside Argentina's National Congress, demanding pension increases and restored medical benefits amid the Milei government's austerity measures. Running continuously for years, with confirmed occurrences through early July 2026. Risk assessed as High — this is not a peaceful stationary vigil like other recurring entries in this dataset; nearly every week has involved a heavy police/gendarmerie operation (the 'anti-piquete protocol'), and multiple recent weeks have escalated to tear gas, water cannon use, and detentions of elderly protesters, including documented injuries. Expect Congress-area streets to be barricaded and partially closed regardless of whether that week's march itself turns confrontational."
+},
+{
+  title: "Marcha de los jubilados (weekly retirees' protest)",
+  city: "Buenos Aires", lat: -34.6097, lng: -58.3905, address: "Plaza del Congreso, outside the National Congress", postcode: "C1033",
+  country: "Argentina", continent: "South America", risk: "High",
+  time: "2026-07-22T00:00:00",
+  source: "https://www.infobae.com/sociedad/2026/04/02/se-realizo-la-marcha-de-los-miercoles-frente-al-congreso-y-dos-jubiladas-se-encadenaron-en-un-semaforo/",
+  summary: "Weekly Wednesday retirees' protest outside Argentina's National Congress. Running continuously for years. Risk assessed as High given the frequent pattern of police confrontation, tear gas, and detentions at these weekly marches."
+},
+{
+  title: "Marcha de los jubilados (weekly retirees' protest)",
+  city: "Buenos Aires", lat: -34.6097, lng: -58.3905, address: "Plaza del Congreso, outside the National Congress", postcode: "C1033",
+  country: "Argentina", continent: "South America", risk: "High",
+  time: "2026-07-29T00:00:00",
+  source: "https://www.infobae.com/sociedad/2026/04/02/se-realizo-la-marcha-de-los-miercoles-frente-al-congreso-y-dos-jubiladas-se-encadenaron-en-un-semaforo/",
+  summary: "Weekly Wednesday retirees' protest outside Argentina's National Congress. Running continuously for years. Risk assessed as High given the frequent pattern of police confrontation, tear gas, and detentions at these weekly marches."
+},
+{
+  title: "Marcha de los jubilados (weekly retirees' protest)",
+  city: "Buenos Aires", lat: -34.6097, lng: -58.3905, address: "Plaza del Congreso, outside the National Congress", postcode: "C1033",
+  country: "Argentina", continent: "South America", risk: "High",
+  time: "2026-08-05T00:00:00",
+  source: "https://www.infobae.com/sociedad/2026/04/02/se-realizo-la-marcha-de-los-miercoles-frente-al-congreso-y-dos-jubiladas-se-encadenaron-en-un-semaforo/",
+  summary: "Weekly Wednesday retirees' protest outside Argentina's National Congress. Running continuously for years. Risk assessed as High given the frequent pattern of police confrontation, tear gas, and detentions at these weekly marches."
+},
+
+{
+  title: "Pega de fichas de búsqueda (Colectivo Luz de Esperanza)",
+  city: "Guadalajara",
+  lat: 20.6744,
+  lng: -103.3877,
+  address: "Glorieta Minerva",
+  postcode: "44100",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-07-12T09:30:00",
+  source: "https://www.infobae.com/mexico/2026/03/29/guadalajara-familiares-de-personas-desaparecidas-convocan-a-pegar-fichas-de-busqueda/",
+  summary: "Weekly Sunday 9:30am action by Colectivo Luz de Esperanza, Jalisco — families of missing persons and search collectives posting 1,500-2,000 missing-persons flyers around the Minerva roundabout, one of Guadalajara's busiest and most visible landmarks. Confirmed as a standing weekly action ('se realiza cada semana'), open to volunteers and solidarity participants. Peaceful and stationary; risk assessed as Low, though the flyer-posting activity spans a high-traffic public monument area."
+},
+{
+  title: "Pega de fichas de búsqueda (Colectivo Luz de Esperanza)",
+  city: "Guadalajara", lat: 20.6744, lng: -103.3877, address: "Glorieta Minerva", postcode: "44100",
+  country: "Mexico", continent: "North America", risk: "Low",
+  time: "2026-07-19T09:30:00",
+  source: "https://www.infobae.com/mexico/2026/03/29/guadalajara-familiares-de-personas-desaparecidas-convocan-a-pegar-fichas-de-busqueda/",
+  summary: "Weekly Sunday 9:30am missing-persons flyer action by Colectivo Luz de Esperanza, Jalisco, at Glorieta Minerva. Standing weekly action, peaceful and stationary. Risk assessed as Low."
+},
+{
+  title: "Pega de fichas de búsqueda (Colectivo Luz de Esperanza)",
+  city: "Guadalajara", lat: 20.6744, lng: -103.3877, address: "Glorieta Minerva", postcode: "44100",
+  country: "Mexico", continent: "North America", risk: "Low",
+  time: "2026-07-26T09:30:00",
+  source: "https://www.infobae.com/mexico/2026/03/29/guadalajara-familiares-de-personas-desaparecidas-convocan-a-pegar-fichas-de-busqueda/",
+  summary: "Weekly Sunday 9:30am missing-persons flyer action by Colectivo Luz de Esperanza, Jalisco, at Glorieta Minerva. Standing weekly action, peaceful and stationary. Risk assessed as Low."
+},
+{
+  title: "Pega de fichas de búsqueda (Colectivo Luz de Esperanza)",
+  city: "Guadalajara", lat: 20.6744, lng: -103.3877, address: "Glorieta Minerva", postcode: "44100",
+  country: "Mexico", continent: "North America", risk: "Low",
+  time: "2026-08-02T09:30:00",
+  source: "https://www.infobae.com/mexico/2026/03/29/guadalajara-familiares-de-personas-desaparecidas-convocan-a-pegar-fichas-de-busqueda/",
+  summary: "Weekly Sunday 9:30am missing-persons flyer action by Colectivo Luz de Esperanza, Jalisco, at Glorieta Minerva. Standing weekly action, peaceful and stationary. Risk assessed as Low."
+},
+
+
+{
+  title: "Acción Global por Ayotzinapa (monthly march)",
+  city: "Mexico City",
+  lat: 19.4270,
+  lng: -99.1676,
+  address: "Ángel de la Independencia to Hemiciclo a Juárez, Paseo de la Reforma",
+  postcode: "06600",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-07-26T16:00:00",
+  source: "https://www.nmas.com.mx/ciudad-de-mexico/movilidad/marchas/a-que-hora-es-marcha-ayotzinapa-hoy-26-de-junio-2026-cdmx-cierres-bloqueos-manifestacion/",
+  summary: "Monthly march by mothers and fathers of the 43 missing Ayotzinapa students (disappeared September 2014, Iguala, Guerrero), demanding truth, justice, and accountability. Confirmed via Mexico City's official SSC-CDMX mobilisation agenda, held consistently on the 26th of each month for over a decade (this will be the 142nd/143rd Global Action, following confirmed occurrences in February, May, and June 2026). Route runs from Ángel de la Independencia to Hemiciclo a Juárez along Paseo de la Reforma. Regularly joined by CNTE (teachers' union), SME (electricians' union), and the local Otomí indigenous community, sometimes swelling turnout significantly. Risk assessed as Medium for total road closures along Reforma and the Historic Centre corridor; the march itself has a long history of being peaceful, though counter-operations by authorities blocking buses from Guerrero have caused friction in recent months."
+},
+{
+  title: "Acción Global por Ayotzinapa (monthly march)",
+  city: "Mexico City",
+  lat: 19.4270,
+  lng: -99.1676,
+  address: "Ángel de la Independencia to Hemiciclo a Juárez, Paseo de la Reforma",
+  postcode: "06600",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-26T16:00:00",
+  source: "https://www.nmas.com.mx/ciudad-de-mexico/movilidad/marchas/a-que-hora-es-marcha-ayotzinapa-hoy-26-de-junio-2026-cdmx-cierres-bloqueos-manifestacion/",
+  summary: "Monthly march by mothers and fathers of the 43 missing Ayotzinapa students, held on the 26th of each month for over a decade. Same route and organisers as other months (Ángel de la Independencia to Hemiciclo a Juárez along Paseo de la Reforma). Risk assessed as Medium for road closures."
+},
+{
+  title: "Acción Global por Ayotzinapa — 12th anniversary march",
+  city: "Mexico City",
+  lat: 19.4270,
+  lng: -99.1676,
+  address: "Ángel de la Independencia to Hemiciclo a Juárez, Paseo de la Reforma",
+  postcode: "06600",
+  country: "Mexico",
+  continent: "North America",
+  risk: "High",
+  time: "2026-09-26T16:00:00",
+  source: "https://www.nmas.com.mx/ciudad-de-mexico/movilidad/marchas/a-que-hora-es-marcha-ayotzinapa-hoy-26-de-junio-2026-cdmx-cierres-bloqueos-manifestacion/",
+  summary: "This particular monthly march falls on the 12th anniversary of the students' disappearance (26 September 2014) — historically the single largest and most heavily attended date in this recurring series, well above a typical month. Same route (Ángel de la Independencia to Hemiciclo a Juárez). Risk upgraded to High for this specific date versus the routine Medium rating, given historically much larger turnout, heavier security operations, and higher likelihood of tension around road closures on this anniversary."
+},
+
+
+  
+{
+  title: "Trump Regime Takedown (weekly protest)", city: "San Francisco", lat: 37.7857, lng: -122.4211,
+  address: "Van Ness Avenue & O'Farrell Street", postcode: "94109", country: "United States", continent: "North America", risk: "Low",
+  time: "2026-08-01T12:00:00",
+  source: "https://indivisiblesf.org/events/2026/5/9/trump-regime-takedown-every-saturday",
+  summary: "Weekly Saturday noon gathering at Van Ness and O'Farrell, hosted by Indivisible SF and 50501 SF. Running continuously since February 2026, no end date announced. Small, established, consistently peaceful; risk assessed as Low."
+},
+{
+  title: "Trump Regime Takedown (weekly protest)", city: "San Francisco", lat: 37.7857, lng: -122.4211,
+  address: "Van Ness Avenue & O'Farrell Street", postcode: "94109", country: "United States", continent: "North America", risk: "Low",
+  time: "2026-08-08T12:00:00",
+  source: "https://indivisiblesf.org/events/2026/5/9/trump-regime-takedown-every-saturday",
+  summary: "Weekly Saturday noon gathering at Van Ness and O'Farrell, hosted by Indivisible SF and 50501 SF. Running continuously since February 2026, no end date announced. Small, established, consistently peaceful; risk assessed as Low."
+},
+
+  
+  {
+  title: "Gaza Square (weekly Palestine solidarity vigil)", 
+  city: "Toronto", 
+  lat: 43.6730, 
+  lng: -79.4280,
+  address: "Davenport", 
+  postcode: "M6H 1V2", 
+  country: "Canada", 
+  continent: "North America", 
+  risk: "Low",
+  time: "2026-07-26T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "Weekly Sunday 11am Palestine solidarity gathering in Davenport, Toronto, organised by Davenport For Palestine. Recurring fixture, no announced end date. Established and consistently low-key; risk assessed as Low."
+},
+{
+  title: "Gaza Square (weekly Palestine solidarity vigil)", city: "Toronto", lat: 43.6730, lng: -79.4280,
+  address: "Davenport", postcode: "M6H 1V2", country: "Canada", continent: "North America", risk: "Low",
+  time: "2026-08-02T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "Weekly Sunday 11am Palestine solidarity gathering in Davenport, Toronto, organised by Davenport For Palestine. Recurring fixture, no announced end date. Established and consistently low-key; risk assessed as Low."
+},
+{
+  title: "Gaza Square (weekly Palestine solidarity vigil)", city: "Toronto", lat: 43.6730, lng: -79.4280,
+  address: "Davenport", postcode: "M6H 1V2", country: "Canada", continent: "North America", risk: "Low",
+  time: "2026-08-09T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "Weekly Sunday 11am Palestine solidarity gathering in Davenport, Toronto, organised by Davenport For Palestine. Recurring fixture, no announced end date. Established and consistently low-key; risk assessed as Low."
+},
+
+  {
+  title: "Vancouver Stands United For Palestine (weekly rally)", city: "Vancouver", lat: 49.2827, lng: -123.1207,
+  address: "Downtown Vancouver", postcode: "V6B", country: "Canada", continent: "North America", risk: "Low",
+  time: "2026-07-25T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Weekly Saturday 2pm Palestine solidarity rally in downtown Vancouver, organised by Metro Vancouver United 4 Palestine. Established recurring fixture, no end date listed. Risk assessed as Low given its consistent, peaceful, community-organised nature."
+},
+{
+  title: "Vancouver Stands United For Palestine (weekly rally)", city: "Vancouver", lat: 49.2827, lng: -123.1207,
+  address: "Downtown Vancouver", postcode: "V6B", country: "Canada", continent: "North America", risk: "Low",
+  time: "2026-08-01T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Weekly Saturday 2pm Palestine solidarity rally in downtown Vancouver, organised by Metro Vancouver United 4 Palestine. Established recurring fixture, no end date listed. Risk assessed as Low given its consistent, peaceful, community-organised nature."
+},
+{
+  title: "Vancouver Stands United For Palestine (weekly rally)", city: "Vancouver", lat: 49.2827, lng: -123.1207,
+  address: "Downtown Vancouver", postcode: "V6B", country: "Canada", continent: "North America", risk: "Low",
+  time: "2026-08-08T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Weekly Saturday 2pm Palestine solidarity rally in downtown Vancouver, organised by Metro Vancouver United 4 Palestine. Established recurring fixture, no end date listed. Risk assessed as Low given its consistent, peaceful, community-organised nature."
+},
+
+  
+{
+  title: "Gaza Square (weekly Palestine solidarity vigil)",
+  city: "Toronto",
+  lat: 43.6730,
+  lng: -79.4280,
+  address: "Davenport",
+  postcode: "M6H 1V2",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-07-19T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "A weekly Sunday 11am Palestine solidarity gathering in the Davenport area of Toronto, organised by Davenport For Palestine. Listed as a recurring fixture with no announced end date. Established, community-organised, and consistently low-key; risk assessed as Low. Recurring weekly — expect a similar gathering most Sundays at this location."
+},
+{
+  title: "Vancouver Stands United For Palestine (weekly rally)",
+  city: "Vancouver",
+  lat: 49.2827,
+  lng: -123.1207,
+  address: "Downtown Vancouver",
+  postcode: "V6B",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-07-18T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "A weekly Saturday 2pm Palestine solidarity rally in downtown Vancouver, organised by Metro Vancouver United 4 Palestine. Established recurring fixture, listed with no end date. Risk assessed as Low given its consistent, peaceful, community-organised nature. Recurring weekly — expect a similar gathering most Saturdays downtown."
+},
+{
+  title: "River Run Rally 2026",
+  city: "Toronto",
+  lat: 43.6532,
+  lng: -79.3832,
+  address: "Downtown Toronto (exact route TBC)",
+  postcode: "M5H",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-23T12:00:00",
+  source: "https://www.findaprotest.info/event/toronto/evt-blk-d85b62abe64ea4ad",
+  summary: "A rally organised by Tkaronto/Toronto World Beyond War, confirmed for Wednesday 23 September 2026 at noon, focused on Indigenous rights and human rights themes. Fixed date, single organiser, no history of disruption; risk assessed as Low."
+},
+
+  {
+  title: "Trump Regime Takedown (weekly protest)",
+  city: "San Francisco",
+  lat: 37.7857,
+  lng: -122.4211,
+  address: "Van Ness Avenue & O'Farrell Street",
+  postcode: "94109",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-07-18T12:00:00",
+  source: "https://indivisiblesf.org/events/2026/5/9/trump-regime-takedown-every-saturday",
+  summary: "A weekly Saturday noon gathering at Van Ness and O'Farrell, hosted by Indivisible SF and 50501 SF — the same organisers behind San Francisco's No Kings marches. Originally 'Tesla Takedown,' renamed as the protest broadened beyond Musk to general opposition to the administration. Running continuously since February 2026 with no end date announced. Small, established, and consistently peaceful (organisers explicitly discourage confrontation); risk is assessed as Low. Included as a recurring fixture rather than a one-off — expect a similar gathering most Saturdays at this corner."
+},
+{
+  title: "Los Angeles/Long Beach Harbor Labor Day Parade, Picnic & Rally",
+  city: "San Pedro",
+  lat: 33.7361,
+  lng: -118.2923,
+  address: "Banning Park / Harbor Area parade route",
+  postcode: "90731",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-07T10:00:00",
+  source: "https://ilwu13.com/los-angeles-long-beach-harbor-labor-coalition-labor-day-parade-picnic-rally-september-7-2026-2/",
+  summary: "The Los Angeles/Long Beach Harbor Labor Coalition's annual Labor Day parade, picnic and rally, organised by ILWU Local 13 (the dockworkers' union) and confirmed on the union's own site for 7 September 2026. This is a long-running, well-established annual event (billed regionally as one of the largest Labor Day parades in the country) rather than a protest against a specific policy — expect a parade route through San Pedro ending at Banning Park, with road closures and heavy foot traffic. Risk is assessed as Medium primarily for scale and traffic disruption, not unrest; the event has a decades-long peaceful track record."
+},
 
   {
     "title": "Anti-War and Anti-NATO Demonstrations",
