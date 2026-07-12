@@ -1560,6 +1560,7 @@
         <option value="rejected">Rejected</option>
       </select>
       <button id="leadInboxComposeBtn" class="btn" type="button">✉️ Compose new email</button>
+      <button id="leadInboxBulkToggleBtn" class="btn" type="button">📢 Bulk send</button>
       <button id="leadInboxRefreshBtn" class="btn" type="button">Refresh</button>
     </div>
   </div>
@@ -1583,7 +1584,21 @@
         <div class="lead-muted">No lead selected.</div>
       </div>
       <div class="lead-inbox-compose">
+        <div id="leadInboxBulkRecipients" style="display:none">
+          <div id="leadInboxBulkSummary" class="lead-modal-note">0 recipients selected — tick threads on the left and/or paste addresses below.</div>
+          <textarea id="leadInboxBulkPaste" placeholder="Paste extra email addresses, comma or newline separated..." style="min-height:60px"></textarea>
+        </div>
         <input id="leadInboxToOverride" type="email" placeholder="To (recipient email address)" style="display:none" />
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="leadInboxTemplateSelect" style="flex:1;min-width:160px">
+            <option value="">— Load template —</option>
+          </select>
+          <button id="leadInboxSaveTemplateBtn" class="lead-action-btn reply" type="button">💾 Save as template</button>
+          <select id="leadInboxDraftSelect" style="flex:1;min-width:160px">
+            <option value="">— Load draft —</option>
+          </select>
+          <button id="leadInboxSaveDraftBtn" class="lead-action-btn reply" type="button">📥 Save draft</button>
+        </div>
         <input id="leadInboxSubject" type="text" placeholder="Subject" />
         <select id="leadInboxSender" title="Send as">
           <option value="contact" selected>CityIntel Team &lt;contact@city-intel.com&gt;</option>
@@ -2654,6 +2669,14 @@ const makeBar = (label, count, color) => {
   const inboxRefresh = document.getElementById('leadInboxRefreshBtn');
   const inboxComposeBtn = document.getElementById('leadInboxComposeBtn');
   const inboxToOverride = document.getElementById('leadInboxToOverride');
+  const inboxBulkToggleBtn = document.getElementById('leadInboxBulkToggleBtn');
+  const inboxBulkRecipients = document.getElementById('leadInboxBulkRecipients');
+  const inboxBulkSummary = document.getElementById('leadInboxBulkSummary');
+  const inboxBulkPaste = document.getElementById('leadInboxBulkPaste');
+  const inboxTemplateSelect = document.getElementById('leadInboxTemplateSelect');
+  const inboxSaveTemplateBtn = document.getElementById('leadInboxSaveTemplateBtn');
+  const inboxDraftSelect = document.getElementById('leadInboxDraftSelect');
+  const inboxSaveDraftBtn = document.getElementById('leadInboxSaveDraftBtn');
   const inboxSubject = document.getElementById('leadInboxSubject');
   const inboxSender = document.getElementById('leadInboxSender');
   const inboxFromNote = document.getElementById('leadInboxFromNote');
@@ -2710,6 +2733,11 @@ const makeBar = (label, count, color) => {
   let latestRows = [];
   let selectedLeadId = '';
   let composeMode = false; // true when composing a fresh email not tied to any lead
+  let bulkMode = false; // true when selecting multiple recipients for one send
+  const bulkCheckedLeadIds = new Set(); // lead ids ticked in the Threads list while in bulk mode
+  let loadedDraftId = ''; // set when the current compose panel was loaded from a saved draft
+  let cachedTemplates = [];
+  let cachedDrafts = [];
   let activeLead = null;
   let activeMessageType = 'reply';
   let activeStatusAfterSend = 'contacted';
@@ -2864,7 +2892,7 @@ const makeBar = (label, count, color) => {
       return;
     }
 
-    if (!selectedLeadId || !rows.some(r => String(r.id) === String(selectedLeadId))) {
+    if (!bulkMode && !composeMode && (!selectedLeadId || !rows.some(r => String(r.id) === String(selectedLeadId)))) {
       selectedLeadId = String(rows[0].id || '');
       setTimeout(() => loadLeadInboxMessages(selectedLeadId), 0);
     }
@@ -2876,19 +2904,24 @@ const makeBar = (label, count, color) => {
       const company = displayCompany(r) || 'No company';
       const meta = [r.interest, r.region].filter(Boolean).join(' • ') || 'Access request';
       const last = fmtDate(leadUpdatedAt(r));
+      const checkbox = bulkMode
+        ? `<input type="checkbox" data-lead-bulk-check="${esc(id)}" ${bulkCheckedLeadIds.has(id) ? 'checked' : ''} style="margin-right:8px;transform:scale(1.15)" />`
+        : '';
       return `<button class="lead-thread${active}" type="button" data-lead-thread="${esc(id)}">
-        <div class="lead-thread-title"><span>${esc(name)}</span>${statusBadge(r.status)}</div>
+        <div class="lead-thread-title">${checkbox}<span>${esc(name)}</span>${statusBadge(r.status)}</div>
         <div class="lead-thread-meta">${esc(company)}<br>${esc(meta)} · ${esc(last)}</div>
         <div class="lead-thread-preview">${esc(r.message || 'No message provided')}</div>
       </button>`;
     }).join('');
 
-    renderLeadInboxHeader();
+    if (!bulkMode) renderLeadInboxHeader();
   }
 
   function clearLeadInboxSelection(){
     selectedLeadId = '';
     composeMode = false;
+    loadedDraftId = '';
+    if (bulkMode) exitBulkMode();
     if (inboxToOverride) { inboxToOverride.style.display = 'none'; inboxToOverride.value = ''; }
     if (inboxViewBtn) inboxViewBtn.style.display = '';
     if (inboxContactedBtn) inboxContactedBtn.style.display = '';
@@ -2902,6 +2935,8 @@ const makeBar = (label, count, color) => {
   }
 
   function enterComposeMode(){
+    exitBulkMode(); // modes are mutually exclusive
+    loadedDraftId = '';
     selectedLeadId = '';
     composeMode = true;
     // Deselect any active thread in the list UI
@@ -2917,6 +2952,71 @@ const makeBar = (label, count, color) => {
     if (inboxContactedBtn) inboxContactedBtn.style.display = 'none';
     inboxPendingAttachments = [];
     renderInboxAttachmentList();
+  }
+
+  function parsePastedEmails(text){
+    return String(text || '')
+      .split(/[,\n;]+/)
+      .map(s => s.trim())
+      .filter(s => s && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s));
+  }
+
+  function getBulkRecipients(){
+    const fromLeads = Array.from(bulkCheckedLeadIds)
+      .map(id => latestRows.find(r => String(r.id) === String(id)))
+      .filter(Boolean)
+      .map(r => ({ email: displayEmail(r) || r.email || '', name: fullName(r) || '' }))
+      .filter(r => r.email);
+    const pasted = parsePastedEmails(inboxBulkPaste ? inboxBulkPaste.value : '').map(e => ({ email: e, name: '' }));
+    const seen = new Set();
+    const combined = [];
+    for (const r of [...fromLeads, ...pasted]) {
+      const key = r.email.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      combined.push(r);
+    }
+    return combined;
+  }
+
+  function renderBulkSummary(){
+    if (!inboxBulkSummary) return;
+    const n = getBulkRecipients().length;
+    inboxBulkSummary.textContent = n
+      ? `${n} recipient${n === 1 ? '' : 's'} selected.`
+      : '0 recipients selected — tick threads on the left and/or paste addresses below.';
+    if (inboxSend) inboxSend.textContent = n ? `Send to ${n} recipient${n === 1 ? '' : 's'}` : 'Send to 0 recipients';
+  }
+
+  function enterBulkMode(){
+    if (bulkMode) return;
+    composeMode = false; // mutually exclusive
+    bulkMode = true;
+    selectedLeadId = '';
+    bulkCheckedLeadIds.clear();
+    loadedDraftId = '';
+    if (inboxBulkRecipients) inboxBulkRecipients.style.display = '';
+    if (inboxToOverride) { inboxToOverride.style.display = 'none'; inboxToOverride.value = ''; }
+    if (inboxBulkPaste) inboxBulkPaste.value = '';
+    if (inboxDetailHead) inboxDetailHead.innerHTML = `<div><strong>Bulk send</strong><div class="lead-muted">Tick threads on the left to add them as recipients, or paste extra addresses below.</div></div>`;
+    if (inboxMessages) inboxMessages.innerHTML = `<div class="lead-muted">Sends one email per recipient — each becomes its own lead thread.</div>`;
+    if (inboxSubject) inboxSubject.value = '';
+    if (inboxReply) inboxReply.value = '';
+    if (inboxViewBtn) inboxViewBtn.style.display = 'none';
+    if (inboxContactedBtn) inboxContactedBtn.style.display = 'none';
+    inboxPendingAttachments = [];
+    renderInboxAttachmentList();
+    renderLeadInbox();
+    renderBulkSummary();
+  }
+
+  function exitBulkMode(){
+    if (!bulkMode) return;
+    bulkMode = false;
+    bulkCheckedLeadIds.clear();
+    loadedDraftId = '';
+    if (inboxBulkRecipients) inboxBulkRecipients.style.display = 'none';
+    renderLeadInbox();
   }
 
   function getSelectedLead(){
@@ -2941,6 +3041,8 @@ const makeBar = (label, count, color) => {
 
   async function loadLeadInboxMessages(id){
     composeMode = false;
+    loadedDraftId = '';
+    if (bulkMode) exitBulkMode();
     if (inboxToOverride) { inboxToOverride.style.display = 'none'; inboxToOverride.value = ''; }
     if (inboxViewBtn) inboxViewBtn.style.display = '';
     if (inboxContactedBtn) inboxContactedBtn.style.display = '';
@@ -3047,6 +3149,7 @@ const makeBar = (label, count, color) => {
       if (!res.ok || !data.ok) throw new Error(data.error || `Send failed: ${res.status}`);
       inboxPendingAttachments = [];
       renderInboxAttachmentList();
+      await deleteDraftIfLoaded();
       await loadLeads();
       if (data.lead_id) {
         await loadLeadInboxMessages(data.lead_id);
@@ -3063,9 +3166,180 @@ const makeBar = (label, count, color) => {
     }
   }
 
+  async function sendBulkEmail(){
+    const recipients = getBulkRecipients();
+    if (!recipients.length) return alert('Add at least one recipient (tick threads or paste addresses).');
+    const subject = (inboxSubject?.value || '').trim();
+    if (!subject) return alert('Enter a subject.');
+    const message = (inboxReply?.value || '').trim();
+    if (!message) return alert('Please type a message first.');
+    if (!confirm(`Send this email to ${recipients.length} recipient${recipients.length === 1 ? '' : 's'}?`)) return;
+    const old = inboxSend ? inboxSend.textContent : '';
+    if (inboxSend) { inboxSend.disabled = true; inboxSend.textContent = 'Sending…'; }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/compose-email-bulk`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          to: recipients,
+          subject,
+          message,
+          from: inboxSender ? inboxSender.value : 'contact',
+          attachments: inboxPendingAttachments.map(a => ({
+            filename: a.filename,
+            content_type: a.content_type,
+            content: a.content,
+          }))
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Send failed: ${res.status}`);
+      inboxPendingAttachments = [];
+      renderInboxAttachmentList();
+      await deleteDraftIfLoaded();
+      const failedList = (data.results || []).filter(r => !r.ok);
+      if (failedList.length) {
+        alert(`Sent to ${data.sent} of ${recipients.length}. Failed: ${failedList.map(r => r.email).join(', ')}`);
+      } else {
+        alert(`Sent to all ${data.sent} recipients.`);
+      }
+      exitBulkMode();
+      await loadLeads();
+    } catch (e) {
+      alert(`Unable to send bulk email: ${e.message || e}`);
+    } finally {
+      if (inboxSend) { inboxSend.disabled = false; inboxSend.textContent = old || 'Send reply'; }
+    }
+  }
+
   async function handleInboxSendClick(){
+    if (bulkMode) return sendBulkEmail();
     if (composeMode) return sendComposedEmail();
     return sendLeadInboxReply();
+  }
+
+  // ------------- Email Templates -------------
+  async function loadTemplates(){
+    if (!inboxTemplateSelect) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/email-templates`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      cachedTemplates = (res.ok && data.ok && Array.isArray(data.data)) ? data.data : [];
+    } catch (_) { cachedTemplates = []; }
+    inboxTemplateSelect.innerHTML = `<option value="">— Load template —</option>` +
+      cachedTemplates.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
+  }
+
+  function applyTemplate(id){
+    const t = cachedTemplates.find(x => String(x.id) === String(id));
+    if (!t) return;
+    if (inboxSubject) inboxSubject.value = t.subject || '';
+    if (inboxReply) inboxReply.value = t.body || '';
+  }
+
+  async function saveCurrentAsTemplate(){
+    const subject = (inboxSubject?.value || '').trim();
+    const bodyText = (inboxReply?.value || '').trim();
+    if (!subject && !bodyText) return alert('Write a subject and/or message first.');
+    const name = prompt('Name this template:', subject || 'New template');
+    if (!name) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/email-templates`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ name: name.trim(), subject, body: bodyText })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Save failed: ${res.status}`);
+      await loadTemplates();
+      alert('Template saved.');
+    } catch (e) {
+      alert(`Unable to save template: ${e.message || e}`);
+    }
+  }
+
+  // ------------- Email Drafts -------------
+  async function loadDrafts(){
+    if (!inboxDraftSelect) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/email-drafts`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      cachedDrafts = (res.ok && data.ok && Array.isArray(data.data)) ? data.data : [];
+    } catch (_) { cachedDrafts = []; }
+    inboxDraftSelect.innerHTML = `<option value="">— Load draft —</option>` +
+      cachedDrafts.map(d => {
+        let toList = [];
+        try { toList = JSON.parse(d.to_emails || '[]'); } catch (_) {}
+        const label = (d.subject || '(no subject)') + (toList.length ? ` — ${toList.join(', ')}` : '');
+        return `<option value="${esc(d.id)}">${esc(label.slice(0, 60))}</option>`;
+      }).join('');
+  }
+
+  function applyDraft(id){
+    const d = cachedDrafts.find(x => String(x.id) === String(id));
+    if (!d) return;
+    let toList = [];
+    try { toList = JSON.parse(d.to_emails || '[]'); } catch (_) {}
+
+    if (toList.length > 1) {
+      enterBulkMode();
+      loadedDraftId = String(d.id); // enterBulkMode() resets this — set again after
+      if (inboxBulkPaste) { inboxBulkPaste.value = toList.join('\n'); renderBulkSummary(); }
+    } else {
+      enterComposeMode();
+      loadedDraftId = String(d.id); // enterComposeMode() resets this — set again after
+      if (inboxToOverride) inboxToOverride.value = toList[0] || '';
+    }
+    if (inboxSubject) inboxSubject.value = d.subject || '';
+    if (inboxReply) inboxReply.value = d.message || '';
+    if (inboxSender && d.from_sender) inboxSender.value = d.from_sender;
+  }
+
+  async function saveCurrentAsDraft(){
+    const subject = (inboxSubject?.value || '').trim();
+    const message = (inboxReply?.value || '').trim();
+    if (!subject && !message) return alert('Write a subject and/or message first.');
+
+    let toEmails = [];
+    if (bulkMode) {
+      toEmails = getBulkRecipients().map(r => r.email);
+    } else if (composeMode) {
+      const v = (inboxToOverride?.value || '').trim();
+      if (v) toEmails = [v];
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/email-drafts`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: loadedDraftId || undefined,
+          to: toEmails,
+          from: inboxSender ? inboxSender.value : 'contact',
+          subject,
+          message
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Save failed: ${res.status}`);
+      loadedDraftId = data.id || loadedDraftId;
+      await loadDrafts();
+      alert('Draft saved.');
+    } catch (e) {
+      alert(`Unable to save draft: ${e.message || e}`);
+    }
+  }
+
+  async function deleteDraftIfLoaded(){
+    if (!loadedDraftId) return;
+    try {
+      await fetch(`${API_BASE}/api/admin/email-drafts/${encodeURIComponent(loadedDraftId)}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+    } catch (_) { /* non-critical */ }
+    loadedDraftId = '';
+    await loadDrafts();
   }
 
   async function loadLeads(){
@@ -4048,10 +4322,32 @@ const makeBar = (label, count, color) => {
   if (inboxStatusFilter) inboxStatusFilter.addEventListener('change', renderLeadInbox);
   if (inboxRefresh) inboxRefresh.addEventListener('click', loadLeads);
   if (inboxThreads) inboxThreads.addEventListener('click', (e) => {
+    const checkbox = e.target.closest('[data-lead-bulk-check]');
+    if (checkbox && bulkMode) {
+      const id = checkbox.getAttribute('data-lead-bulk-check');
+      if (bulkCheckedLeadIds.has(id)) bulkCheckedLeadIds.delete(id); else bulkCheckedLeadIds.add(id);
+      renderBulkSummary();
+      return;
+    }
     const btn = e.target.closest('[data-lead-thread]');
     if (!btn) return;
+    if (bulkMode) {
+      // In bulk mode, clicking anywhere on the row toggles its checkbox
+      // rather than opening it as a single reply.
+      const id = btn.getAttribute('data-lead-thread');
+      if (bulkCheckedLeadIds.has(id)) bulkCheckedLeadIds.delete(id); else bulkCheckedLeadIds.add(id);
+      renderLeadInbox();
+      renderBulkSummary();
+      return;
+    }
     loadLeadInboxMessages(btn.getAttribute('data-lead-thread'));
   });
+  if (inboxBulkToggleBtn) inboxBulkToggleBtn.addEventListener('click', () => { bulkMode ? exitBulkMode() : enterBulkMode(); });
+  if (inboxBulkPaste) inboxBulkPaste.addEventListener('input', renderBulkSummary);
+  if (inboxTemplateSelect) inboxTemplateSelect.addEventListener('change', () => { if (inboxTemplateSelect.value) applyTemplate(inboxTemplateSelect.value); });
+  if (inboxSaveTemplateBtn) inboxSaveTemplateBtn.addEventListener('click', saveCurrentAsTemplate);
+  if (inboxDraftSelect) inboxDraftSelect.addEventListener('change', () => { if (inboxDraftSelect.value) applyDraft(inboxDraftSelect.value); });
+  if (inboxSaveDraftBtn) inboxSaveDraftBtn.addEventListener('click', saveCurrentAsDraft);
   if (inboxSend) inboxSend.addEventListener('click', handleInboxSendClick);
   if (inboxComposeBtn) inboxComposeBtn.addEventListener('click', enterComposeMode);
   if (inboxViewBtn) inboxViewBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) openLeadDetail(r.id); });
@@ -4060,10 +4356,16 @@ const makeBar = (label, count, color) => {
   if (inboxApproveBtn) inboxApproveBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) updateLeadStatus(r.id, 'approved', inboxApproveBtn); });
   if (inboxRejectBtn) inboxRejectBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) openMessageModal(r.id, 'reject'); });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadLeads);
-  } else {
+  function initLeadInbox(){
     loadLeads();
+    loadTemplates();
+    loadDrafts();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLeadInbox);
+  } else {
+    initLeadInbox();
   }
 })();
 </script>
