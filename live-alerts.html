@@ -124,33 +124,11 @@
   }
 
   async function authHeaders(extra){
-    const email = getClientEmail();
-    let name = '', id = '', token = '', roleKey = '', role = '';
-
+    let token = '';
     try{ token = localStorage.getItem('ci_admin_token') || ''; }catch(_){}
 
-    // Pull the same role/user metadata shape used by the dashboard patch.
-    // This lets the Worker distinguish read-only Operator sync from admin-only writes.
-    try{
-      const prof = (window.CIAuth && CIAuth.who)
-        ? (CIAuth.who() || {})
-        : JSON.parse(localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}');
-
-      name = prof.name || localStorage.getItem('ci_user_name') || 'CityIntel User';
-      id = prof.id || prof.email || localStorage.getItem('ci_user_id') || '';
-      roleKey = prof.roleKey || '';
-      role = prof.role || '';
-    } catch(_) {
-      try{ name = localStorage.getItem('ci_user_name') || 'CityIntel User'; }catch(__){}
-      try{ id = localStorage.getItem('ci_user_id') || ''; }catch(__){}
-    }
-
-    const h = Object.assign({ 'Content-Type': 'application/json' }, (extra||{}));
-    if(email) h['X-User-Email'] = email;
-    if(name) h['X-User-Name'] = name;
-    if(id) h['X-User-Id'] = id;
-    if(roleKey) h['X-User-Role-Key'] = roleKey;
-    if(role) h['X-User-Role'] = role;
+    const base = (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type': 'application/json', 'X-User-Email': getClientEmail() };
+    const h = Object.assign({}, base, (extra||{}));
     if(token) h['X-Admin-Token'] = token;
     return h;
   }
@@ -6966,16 +6944,7 @@ function ciIsAdminRole() {
 }
 
 function ciGetAuthHeaders() {
-  try {
-    const p = JSON.parse(localStorage.getItem('ci_profile') || 'null');
-    if (!p?.email) return {};
-    return {
-      'Content-Type': 'application/json',
-      'X-User-Email': p.email,
-      'X-User-Name': p.name || '',
-      'X-User-Id': p.id || ''
-    };
-  } catch { return {}; }
+  return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
 }
 
 let _ciPushDebounce = null;
@@ -15223,17 +15192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ─── api helpers ────────────────────────────────────────────── */
   function shimApiHeaders() {
-    var h = { 'Content-Type': 'application/json' };
-    try {
-      var who = (window.CIAuth && typeof CIAuth.who === 'function') ? (CIAuth.who() || {}) : {};
-      var email = who.email || localStorage.getItem('ci_user_email') || '';
-      var name  = who.name  || localStorage.getItem('ci_user_name')  || '';
-      if (email) h['X-User-Email'] = email;
-      if (name)  h['X-User-Name']  = name;
-      var roleKey = who.roleKey || who.role_key || '';
-      if (roleKey) h['X-User-Role-Key'] = roleKey;
-    } catch(_) {}
-    return h;
+    return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type': 'application/json' };
   }
 
   async function fetchScenariosFromApi() {
@@ -16332,11 +16291,7 @@ Generate 3-5 structured steps that will guide the operator through assessing and
   let hiddenChannels = {};
 
   function authH() {
-    try {
-      const p = JSON.parse(localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || 'null');
-      if (!p?.email) return {};
-      return { 'X-User-Email': p.email, 'X-User-Name': p.name || '', 'X-User-Id': p.id || '' };
-    } catch { return {}; }
+    return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
   }
 
   // Load active stream IDs + custom channels from settings API, then rebuild tabs
@@ -16919,13 +16874,7 @@ async function getOrgConfig(){
     if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
   }catch(_){}
   try{
-    const hdrs = {};
-    if(window.CIAuth && CIAuth.who){
-      const u=CIAuth.who()||{};
-      hdrs['X-User-Email']=u.email||'';
-      hdrs['X-User-Id']=u.id||u.email||'';
-      hdrs['X-User-Name']=u.name||'';
-    }
+    const hdrs = (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
     const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
     const d=await res.json().catch(()=>({}));
     const cfg=d.data||{};
