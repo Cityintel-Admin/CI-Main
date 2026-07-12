@@ -701,7 +701,9 @@ window.CIAccess = {
 const DISMISS_KEY = 'ci_setup_checklist_dismissed';
 const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
 
-// Step definitions: { id, tier, label, desc, href, check(data) → bool }
+// Step definitions: { id, tier, label, desc, href, module, check(data) → bool }
+// `module` is optional — steps without one (org profile, team invites) are
+// core features available to every org regardless of plan.
 const STEPS = [
   {
     id: 'org_profile',
@@ -717,6 +719,7 @@ const STEPS = [
     label: 'Live alert feeds added',
     desc: 'Add at least one city or region feed to start receiving live alerts.',
     href: 'live-alerts.html',
+    module: 'live_alerts',
     check: (d) => Array.isArray(d.onboarding?.liveAlertFeeds) && d.onboarding.liveAlertFeeds.length > 0,
   },
   {
@@ -725,6 +728,7 @@ const STEPS = [
     label: 'Assets registered',
     desc: 'Add offices, sites or locations so proximity alerts can be generated.',
     href: 'assets.html',
+    module: 'assets',
     check: (d) => (d.assetCount || 0) > 0,
   },
   {
@@ -733,6 +737,7 @@ const STEPS = [
     label: 'Travellers added',
     desc: 'Register travellers to track their locations and send check-in alerts.',
     href: 'travellers.html',
+    module: 'travellers',
     check: (d) => (d.travellerCount || 0) > 0,
   },
   {
@@ -741,6 +746,7 @@ const STEPS = [
     label: 'Escalation contacts set',
     desc: 'Add contacts who receive alerts when a panic alarm or escalation fires.',
     href: 'escalation-contacts.html',
+    module: 'escalation_contacts',
     check: (d) => (d.escalationCount || 0) > 0,
   },
   {
@@ -757,6 +763,7 @@ const STEPS = [
     label: 'Panic alarm tested',
     desc: 'Verify the panic alarm is online and reachable by your team.',
     href: 'panicalarm.html',
+    module: 'panic_alarm',
     check: (d) => !!(d.panicOnline),
   },
 ];
@@ -786,11 +793,20 @@ function authH(){
 }
 
 async function gatherData(){
-  const data = { onboarding: null, assetCount:0, travellerCount:0, escalationCount:0, memberCount:1, panicOnline:false };
+  const data = { onboarding: null, assetCount:0, travellerCount:0, escalationCount:0, memberCount:1, panicOnline:false, modules:[] };
   try{
     // Onboarding config (includes live feeds)
     const ob = await fetch(API+'/api/org/onboarding', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
     if(ob.ok && ob.data) data.onboarding = ob.data;
+  }catch(_){}
+  try{
+    // Module access — same source of truth used for card locking elsewhere
+    // on this page, so the checklist never suggests a step for a module the
+    // org's plan doesn't include.
+    if(window.CIAccess){
+      const cfg = await CIAccess.getOrgConfig();
+      data.modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+    }
   }catch(_){}
   try{
     // Assets
@@ -801,6 +817,17 @@ async function gatherData(){
     // Travellers
     const t = await fetch(API+'/api/org/travellers', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
     data.travellerCount = Array.isArray(t.data||t.travellers) ? (t.data||t.travellers).length : 0;
+  }catch(_){}
+  try{
+    // Escalation contacts
+    const ec = await fetch(API+'/api/org/escalation-contacts', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
+    data.escalationCount = Array.isArray(ec.data) ? ec.data.length : 0;
+  }catch(_){}
+  try{
+    // Team size — activeOperators excludes the org admin themselves, so add
+    // 1 back to get a total headcount consistent with the ">1 member" check.
+    const inv = await fetch(API+'/api/org/invites', {headers:authH()}).then(r=>r.json()).catch(()=>({}));
+    data.memberCount = 1 + Number(inv.activeOperators || 0);
   }catch(_){}
   try{
     // Panic status (piggyback from DOM if a badge happens to be present)
@@ -815,12 +842,15 @@ function renderChecklist(data){
   const container = document.getElementById('ciChecklistItems');
   if(!card || !container) return;
 
-  const results = STEPS.map(s => ({ ...s, done: s.check(data) }));
+  const applicableSteps = STEPS.filter(s =>
+    !s.module || !window.CIAccess || CIAccess.isModuleAllowed(data.modules, s.module)
+  );
+  const results = applicableSteps.map(s => ({ ...s, done: s.check(data) }));
   const allDone = results.every(s => s.done);
   const doneCount = results.filter(s => s.done).length;
 
-  // Hide entirely if all done or user dismissed
-  if(allDone || localStorage.getItem(DISMISS_KEY) === '1'){
+  // Hide entirely if nothing applicable, everything's done, or user dismissed
+  if(!results.length || allDone || localStorage.getItem(DISMISS_KEY) === '1'){
     card.style.display = 'none';
     return;
   }
