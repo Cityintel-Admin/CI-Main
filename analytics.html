@@ -1559,6 +1559,7 @@
         <option value="approved">Approved</option>
         <option value="rejected">Rejected</option>
       </select>
+      <button id="leadInboxComposeBtn" class="btn" type="button">✉️ Compose new email</button>
       <button id="leadInboxRefreshBtn" class="btn" type="button">Refresh</button>
     </div>
   </div>
@@ -1582,12 +1583,13 @@
         <div class="lead-muted">No lead selected.</div>
       </div>
       <div class="lead-inbox-compose">
+        <input id="leadInboxToOverride" type="email" placeholder="To (recipient email address)" style="display:none" />
         <input id="leadInboxSubject" type="text" placeholder="Subject" />
         <select id="leadInboxSender" title="Send as">
           <option value="contact" selected>CityIntel Team &lt;contact@city-intel.com&gt;</option>
           <option value="carltonjl">Carlton John-Lewis &lt;carltonjl@city-intel.com&gt;</option>
           <option value="morrism">Morris Martin &lt;morrism@city-intel.com&gt;</option>
-		  <option value="sales" selected>CityIntel Sales Team &lt;sales@city-intel.com&gt;</option>
+		  <option value="sales">CityIntel Sales Team &lt;sales@city-intel.com&gt;</option>
         </select>
         <div id="leadInboxFromNote" class="lead-modal-note">This reply will be sent from CityIntel &lt;contact@city-intel.com&gt;.</div>
         <textarea id="leadInboxReply" placeholder="Type a reply to the lead..."></textarea>
@@ -2650,6 +2652,8 @@ const makeBar = (label, count, color) => {
   const inboxSearch = document.getElementById('leadInboxSearch');
   const inboxStatusFilter = document.getElementById('leadInboxStatusFilter');
   const inboxRefresh = document.getElementById('leadInboxRefreshBtn');
+  const inboxComposeBtn = document.getElementById('leadInboxComposeBtn');
+  const inboxToOverride = document.getElementById('leadInboxToOverride');
   const inboxSubject = document.getElementById('leadInboxSubject');
   const inboxSender = document.getElementById('leadInboxSender');
   const inboxFromNote = document.getElementById('leadInboxFromNote');
@@ -2705,6 +2709,7 @@ const makeBar = (label, count, color) => {
 
   let latestRows = [];
   let selectedLeadId = '';
+  let composeMode = false; // true when composing a fresh email not tied to any lead
   let activeLead = null;
   let activeMessageType = 'reply';
   let activeStatusAfterSend = 'contacted';
@@ -2883,10 +2888,33 @@ const makeBar = (label, count, color) => {
 
   function clearLeadInboxSelection(){
     selectedLeadId = '';
-    if (inboxDetailHead) inboxDetailHead.innerHTML = `<div><strong>Select a lead</strong><div class="lead-muted">Choose a lead thread to view messages and reply.</div></div>`;
+    composeMode = false;
+    if (inboxToOverride) { inboxToOverride.style.display = 'none'; inboxToOverride.value = ''; }
+    if (inboxViewBtn) inboxViewBtn.style.display = '';
+    if (inboxContactedBtn) inboxContactedBtn.style.display = '';
+    if (inboxSend) inboxSend.textContent = 'Send reply';
+    if (inboxDetailHead) inboxDetailHead.innerHTML = `<div><strong>Select a lead</strong><div class="lead-muted">Choose a lead thread to view messages and reply, or use Compose new email above.</div></div>`;
     if (inboxMessages) inboxMessages.innerHTML = `<div class="lead-muted">No lead selected.</div>`;
     if (inboxSubject) inboxSubject.value = '';
     if (inboxReply) inboxReply.value = '';
+    inboxPendingAttachments = [];
+    renderInboxAttachmentList();
+  }
+
+  function enterComposeMode(){
+    selectedLeadId = '';
+    composeMode = true;
+    // Deselect any active thread in the list UI
+    if (inboxThreads) inboxThreads.querySelectorAll('.lead-thread-item.active').forEach(el => el.classList.remove('active'));
+    if (inboxDetailHead) inboxDetailHead.innerHTML = `<div><strong>Compose new email</strong><div class="lead-muted">Not tied to an existing lead — enter a recipient below.</div></div>`;
+    if (inboxMessages) inboxMessages.innerHTML = `<div class="lead-muted">This is a new, standalone email — nothing will be added to any lead's conversation history.</div>`;
+    if (inboxToOverride) { inboxToOverride.style.display = ''; inboxToOverride.value = ''; inboxToOverride.focus(); }
+    if (inboxSubject) inboxSubject.value = '';
+    if (inboxReply) inboxReply.value = '';
+    if (inboxSend) inboxSend.textContent = 'Send email';
+    // Mark-contacted / View-details only make sense for an actual lead thread
+    if (inboxViewBtn) inboxViewBtn.style.display = 'none';
+    if (inboxContactedBtn) inboxContactedBtn.style.display = 'none';
     inboxPendingAttachments = [];
     renderInboxAttachmentList();
   }
@@ -2899,7 +2927,7 @@ const makeBar = (label, count, color) => {
     const row = getSelectedLead();
     if (!inboxDetailHead) return;
     if (!row) {
-      clearLeadInboxSelection();
+      if (!composeMode) clearLeadInboxSelection();
       return;
     }
     inboxDetailHead.innerHTML = `<div>
@@ -2912,6 +2940,11 @@ const makeBar = (label, count, color) => {
   }
 
   async function loadLeadInboxMessages(id){
+    composeMode = false;
+    if (inboxToOverride) { inboxToOverride.style.display = 'none'; inboxToOverride.value = ''; }
+    if (inboxViewBtn) inboxViewBtn.style.display = '';
+    if (inboxContactedBtn) inboxContactedBtn.style.display = '';
+    if (inboxSend) inboxSend.textContent = 'Send reply';
     selectedLeadId = String(id || '');
     renderLeadInboxHeader();
     renderLeadInbox();
@@ -2984,6 +3017,48 @@ const makeBar = (label, count, color) => {
       if (inboxSend) { inboxSend.disabled = false; inboxSend.textContent = old || 'Send reply'; }
     }
   }
+
+  async function sendComposedEmail(){
+    const to = (inboxToOverride?.value || '').trim();
+    if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return alert('Enter a valid recipient email address.');
+    const subject = (inboxSubject?.value || '').trim();
+    if (!subject) return alert('Enter a subject.');
+    const message = (inboxReply?.value || '').trim();
+    if (!message) return alert('Please type a message first.');
+    const old = inboxSend ? inboxSend.textContent : '';
+    if (inboxSend) { inboxSend.disabled = true; inboxSend.textContent = 'Sending…'; }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/compose-email`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          to,
+          subject,
+          message,
+          from: inboxSender ? inboxSender.value : 'contact',
+          attachments: inboxPendingAttachments.map(a => ({
+            filename: a.filename,
+            content_type: a.content_type,
+            content: a.content,
+          }))
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Send failed: ${res.status}`);
+      alert(`Email sent to ${to}.`);
+      clearLeadInboxSelection();
+    } catch (e) {
+      alert(`Unable to send email: ${e.message || e}`);
+    } finally {
+      if (inboxSend) { inboxSend.disabled = false; inboxSend.textContent = old || 'Send reply'; }
+    }
+  }
+
+  async function handleInboxSendClick(){
+    if (composeMode) return sendComposedEmail();
+    return sendLeadInboxReply();
+  }
+
   async function loadLeads(){
     if (!body) return;
     body.innerHTML = `<tr><td colspan="9" class="lead-muted">Loading access requests…</td></tr>`;
@@ -3968,7 +4043,8 @@ const makeBar = (label, count, color) => {
     if (!btn) return;
     loadLeadInboxMessages(btn.getAttribute('data-lead-thread'));
   });
-  if (inboxSend) inboxSend.addEventListener('click', sendLeadInboxReply);
+  if (inboxSend) inboxSend.addEventListener('click', handleInboxSendClick);
+  if (inboxComposeBtn) inboxComposeBtn.addEventListener('click', enterComposeMode);
   if (inboxViewBtn) inboxViewBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) openLeadDetail(r.id); });
   if (inboxOnboardBtn) inboxOnboardBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) openLeadOnboard(r.id); });
   if (inboxContactedBtn) inboxContactedBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) updateLeadStatus(r.id, 'contacted', inboxContactedBtn); });
