@@ -138,6 +138,108 @@
     { href: 'system-flow.html',   label: 'System Flow',    role: 'masterAdmin' },
   ];
 
+  // ── Special actions ──────────────────────────────────────────────────
+  // Nav items that trigger JS rather than navigate to a page. Always shown,
+  // on every page, regardless of hub/home scoping — same visibility rule as
+  // Executive Dashboard. Currently just the PWA "Add to Home Screen"
+  // installer (ported from the legacy dashboard.html so it isn't lost when
+  // that page is retired) — add more here later the same way.
+  const SPECIAL_ACTIONS = [
+    { id: 'navInstallApp', label: '📲 Download App', onclick: 'ciShowInstallPrompt(event)' },
+  ];
+
+  function specialActionHtml(action) {
+    return `<a href="#" id="${action.id}" onclick="${action.onclick}" style="color:#fca5a5;border-color:rgba(208,22,22,.3);background:rgba(208,22,22,.07)">${action.label}</a>`;
+  }
+
+  // ── PWA install prompt (ported from legacy dashboard.html) ──────────────
+  // Self-contained here so every page gets it for free via shared-nav.js,
+  // rather than needing the modal HTML hand-copied onto each page.
+  function ensureInstallUi() {
+    if (document.getElementById('ciInstallModal')) return; // already injected
+
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = '/manifest.json';
+      document.head.appendChild(link);
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'ciInstallModal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px';
+    modal.innerHTML = `
+      <div style="background:#1a1c20;border:1px solid #333;border-radius:18px;max-width:360px;width:100%;padding:24px 20px;position:relative">
+        <button onclick="ciCloseInstall()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#8e97a3;font-size:20px;cursor:pointer;line-height:1">✕</button>
+        <div style="font-size:36px;text-align:center;margin-bottom:10px">📲</div>
+        <h3 style="margin:0 0 6px;text-align:center;font-size:17px">Add CityIntel to Home Screen</h3>
+        <p id="ciInstallSubtitle" style="color:#8e97a3;font-size:13px;text-align:center;margin:0 0 18px;line-height:1.5">Install for quick access without opening a browser.</p>
+        <div id="ciInstallAndroid" style="display:none">
+          <button id="ciInstallBtn" onclick="ciRunInstall()" style="width:100%;padding:12px;border-radius:12px;background:#d01616;border:none;color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">⬇️ Install App</button>
+        </div>
+        <div id="ciInstallIOS" style="display:none">
+          <ol style="color:#cfd6e1;font-size:13px;line-height:1.9;margin:0;padding-left:18px">
+            <li>Tap the <strong>Share</strong> button <span style="font-size:16px">⬆️</span> at the bottom of Safari</li>
+            <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+            <li>Tap <strong>Add</strong> in the top-right corner</li>
+          </ol>
+        </div>
+        <div id="ciInstallGeneric" style="display:none">
+          <p style="color:#cfd6e1;font-size:13px;line-height:1.7;margin:0">Open CityIntel in <strong>Chrome</strong> on Android, or <strong>Safari</strong> on iPhone/iPad for the best install experience. Then tap the browser menu and choose <strong>"Add to Home Screen"</strong>.</p>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if (e.target === this) window.ciCloseInstall(); });
+
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const navBtn = document.getElementById('navInstallApp');
+      if (navBtn) navBtn.setAttribute('data-installable', '1');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      const navBtn = document.getElementById('navInstallApp');
+      if (navBtn) { navBtn.textContent = '✅ App Installed'; navBtn.style.pointerEvents = 'none'; }
+    });
+
+    window.ciShowInstallPrompt = function(e) {
+      if (e) e.preventDefault();
+      const androidEl = document.getElementById('ciInstallAndroid');
+      const iosEl = document.getElementById('ciInstallIOS');
+      const genericEl = document.getElementById('ciInstallGeneric');
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+      if (isStandalone) {
+        document.getElementById('ciInstallSubtitle').textContent = 'CityIntel is already installed on this device.';
+        androidEl.style.display = 'none'; iosEl.style.display = 'none'; genericEl.style.display = 'none';
+      } else if (deferredPrompt) {
+        androidEl.style.display = 'block'; iosEl.style.display = 'none'; genericEl.style.display = 'none';
+      } else if (isIOS) {
+        androidEl.style.display = 'none'; iosEl.style.display = 'block'; genericEl.style.display = 'none';
+      } else {
+        androidEl.style.display = 'none'; iosEl.style.display = 'none'; genericEl.style.display = 'block';
+      }
+      document.getElementById('ciInstallModal').style.display = 'flex';
+    };
+
+    window.ciRunInstall = async function() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      if (outcome === 'accepted') window.ciCloseInstall();
+    };
+
+    window.ciCloseInstall = function() {
+      document.getElementById('ciInstallModal').style.display = 'none';
+    };
+  }
+
   // ── Read cached org config for module visibility ───────────────────────
   function getEnabledModules() {
     try {
@@ -242,7 +344,10 @@
       });
     }
 
+    SPECIAL_ACTIONS.forEach(action => parts.push(specialActionHtml(action)));
+
     nav.innerHTML = parts.join('\n');
+    ensureInstallUi();
   }
 
   // Run after DOM ready and after CIAuth is available
