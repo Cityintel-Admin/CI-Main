@@ -21,6 +21,50 @@ window.alertsData =[
 },
 
 
+{
+  title: "Movilización General 20 de Julio (Petro's civil disobedience call)",
+  city: "Bogotá",
+  lat: 4.6183,
+  lng: -74.1995,
+  address: "Bosa and Ciudad Bolívar (southern Bogotá)",
+  postcode: "111611",
+  country: "Colombia",
+  continent: "South America",
+  risk: "High",
+  time: "2026-07-20T10:00:00",
+  source: "https://www.elpais.com.co/politica/marchas-20-de-julio-presidente-petro-convoca-movilizacion-para-defender-las-reformas-sociales-0731.html",
+  summary: "Outgoing President Gustavo Petro has explicitly called for a 'general mobilisation day' on 20 July (Colombia's Independence Day) — his last as president — inviting supporters to Bosa and Ciudad Bolívar in southern Bogotá to defend his government's social reforms against the incoming administration of president-elect Abelardo de la Espriella. Petro has framed this as the start of a peaceful civil disobedience movement, and runner-up Iván Cepeda has separately called for similar action, having already held a related rally in Cali. Confirmed by multiple independent outlets as of 7 July 2026. Notably, this year's official military/independence parade has also been relocated to the Bosa/Ciudad Bolívar corridor, meaning both the state ceremony and Petro's rally will overlap in the same part of the city. Risk assessed as High given the unprecedented context (a sitting president calling supporters into the streets against his own successor during a live political transition), the history of ESMAD riot-police clashes around this date in past years, and the overlap with official parade security operations."
+},
+  
+
+  {
+  title: "7 de Setembro — Avenida Paulista rally (pro-Bolsonaro/opposition)",
+  city: "São Paulo",
+  lat: -23.5567,
+  lng: -46.6535,
+  address: "Avenida Paulista (concentration point: in front of MASP)",
+  postcode: "01310-200",
+  country: "Brazil",
+  continent: "South America",
+  risk: "High",
+  time: "2026-09-07T14:00:00",
+  source: "https://www.cnnbrasil.com.br/politica/atos-de-7-de-setembro-direita-pede-anistia-esquerda-defende-soberania/",
+  summary: "An annual fixture on Brazil's Independence Day (7 September) since at least 2021: a large right-wing/opposition rally on Avenida Paulista, historically organised around support for Jair Bolsonaro, amnesty for those convicted over the 8 January 2023 uprising, and criticism of Justice Alexandre de Moraes. Recent editions have drawn thousands, including sitting governors and federal deputies as speakers. This year's edition falls in an especially charged context given Bolsonaro's ongoing legal situation. No 2026-specific announcement has been published yet (as is typical — organisational details tend to firm up only weeks before), but the date, location, and general character are effectively certain given the unbroken multi-year pattern. Risk assessed as High given historical scale, heavy security presence, and the polarised political backdrop."
+},
+{
+  title: "7 de Setembro — Grito dos Excluídos (leftist/pro-government counter-mobilisation)",
+  city: "São Paulo",
+  lat: -23.5505,
+  lng: -46.6333,
+  address: "Praça da Sé / Praça da República area (exact 2026 point TBC)",
+  postcode: "01001-000",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-07T10:00:00",
+  source: "https://www.cnnbrasil.com.br/politica/atos-de-7-de-setembro-direita-pede-anistia-esquerda-defende-soberania/",
+  summary: "The counterpart mobilisation to the Avenida Paulista rally on the same Independence Day — 'Grito dos Excluídos' (Cry of the Excluded) brings together social movements, unions, and left-wing parties around social justice, national sovereignty, and anti-poverty themes, historically centred on Praça da Sé and Praça da República. An annual fixture in the same vein as the Paulista rally. Risk assessed as Medium — generally lower-friction than the right-wing rally, but still a large multi-point mobilisation on a symbolically charged date."
+},
   
 
   {
