@@ -2,7 +2,7 @@
  * landing-auth-check.js
  * If the user is already logged in, skip the landing page and go to the dashboard.
  * Retries on a short interval to handle auth.js async initialisation.
- */
+ */ 
 (function () {
   function tryRedirect() {
     try {
@@ -25,4 +25,4 @@
       clearInterval(interval);
     }
   }, 100);
-})();
+})(); 
