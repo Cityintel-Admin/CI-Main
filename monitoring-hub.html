@@ -86,7 +86,7 @@
   const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   let allAlerts=[]; let activeFilter='all';
   function who(){ try { return (window.CIAuth&&CIAuth.who) ? (CIAuth.who()||{}) : JSON.parse(localStorage.getItem('ci_user')||localStorage.getItem('ci_profile')||'{}'); } catch(_) { return {}; } }
-  function headers(){ const u=who(); const h={'Content-Type':'application/json'}; if(u.email) h['X-User-Email']=u.email; if(u.name) h['X-User-Name']=u.name; if(u.id||u.email) h['X-User-Id']=u.id||u.email; if(u.role) h['X-User-Role']=u.role; if(u.roleKey) h['X-User-Role-Key']=u.roleKey; try{const t=localStorage.getItem('ci_admin_token')||''; if(t) h['X-Admin-Token']=t;}catch(_){} return h; }
+  function headers(){ const h=(window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {'Content-Type':'application/json'}; try{const t=localStorage.getItem('ci_admin_token')||''; if(t) h['X-Admin-Token']=t;}catch(_){} return h; }
   function mountTopActions(){ const host=$('topActions'); if(!host) return; const u=who(); if(window.CIAuth&&CIAuth.isLoggedIn&&CIAuth.isLoggedIn()){ const name=u.name||u.email||'CityIntel User'; const role=u.roleLabel||u.role||'Member'; const initials=String(name).includes('@')?String(name)[0].toUpperCase():String(name).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase(); host.innerHTML=`<div class="user" id="userChip"><div class="avatar">${esc(initials||'CI')}</div><div class="user-meta"><b>${esc(name)}</b><span>${esc(role)}</span></div></div><div class="dropdown" id="userMenu"><a href="profile.html">Profile</a><a href="settings.html">Settings</a><a href="#" id="logoutLink">Log out</a></div>`; const chip=$('userChip'), menu=$('userMenu'); chip?.addEventListener('click',()=>{menu.style.display=menu.style.display==='block'?'none':'block'}); document.addEventListener('click',e=>{if(!host.contains(e.target)) menu.style.display='none'}); $('logoutLink')?.addEventListener('click',e=>{e.preventDefault(); try{CIAuth.logout()}catch(_){} location.href='index.html'}); } else { const here=encodeURIComponent((location.pathname.split('/').pop()||'monitoring-hub.html')+location.search+location.hash); host.innerHTML=`<a class="login-btn" href="login.html?next=${here}">Log in</a>`; } }
   function normRows(data){ if(Array.isArray(data)) return data; if(Array.isArray(data?.events)) return data.events; if(Array.isArray(data?.alerts)) return data.alerts; if(Array.isArray(data?.data)) return data.data; if(Array.isArray(data?.results)) return data.results; return []; }
   function localAlerts(){ const keys=['ci_live_alerts_cache','ci_live_alerts','cityintel.liveAlerts','ci_events']; for(const k of keys){ try{ const rows=normRows(JSON.parse(localStorage.getItem(k)||'[]')); if(rows.length) return rows; }catch(_){} } try{ if(Array.isArray(window.ALERTS)) return window.ALERTS; if(Array.isArray(window.alertsData)) return window.alertsData; }catch(_){} return []; }
@@ -153,13 +153,7 @@ async function getOrgConfig(){
     if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
   }catch(_){}
   try{
-    const hdrs = {};
-    if(window.CIAuth && CIAuth.who){
-      const u=CIAuth.who()||{};
-      hdrs['X-User-Email']=u.email||'';
-      hdrs['X-User-Id']=u.id||u.email||'';
-      hdrs['X-User-Name']=u.name||'';
-    }
+    const hdrs = (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
     const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
     const d=await res.json().catch(()=>({}));
     const cfg=d.data||{};
