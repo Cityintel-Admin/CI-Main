@@ -21,6 +21,37 @@ window.alertsData =[
 },
 
 
+  
+
+  {
+  title: "Movilización por el Día de la Industria",
+  city: "Buenos Aires",
+  lat: -34.6210,
+  lng: -58.3700,
+  address: "CGT headquarters, Azopardo 802, San Telmo (exact route TBC)",
+  postcode: "C1107",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-02T00:00:00",
+  source: "https://www.infobae.com/politica/2026/07/07/la-cgt-comenzara-su-plan-de-lucha-el-22-de-este-mes-cual-sera-la-primera-medida-y-que-incluye-la-agenda-de-las-protestas/",
+  summary: "Fifth stage of the CGT/CTA/UTEP escalating labour protest calendar: a mobilisation proposed by Rodolfo Daer (Food Workers' Union) to mark Argentina's Industry Day, aimed at drawing attention to factory closures, suspensions, and industrial recession under the current economic programme. Confirmed as part of the calendar via multiple independent outlets, though the specific route hadn't been published yet at time of writing. Risk assessed as Medium pending more specific routing information closer to the date."
+},
+{
+  title: "Semana Social (Catholic Church-organised labour/social dialogue week)",
+  city: "Córdoba",
+  lat: -31.4201,
+  lng: -64.1888,
+  address: "Córdoba city (venue TBC)",
+  postcode: "5000",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Low",
+  time: "2026-09-04T00:00:00",
+  source: "https://www.infobae.com/politica/2026/07/07/la-cgt-comenzara-su-plan-de-lucha-el-22-de-este-mes-cual-sera-la-primera-medida-y-que-incluye-la-agenda-de-las-protestas/",
+  summary: "A three-day 'Social Week' (4-6 September 2026) organised by the Comisión Episcopal Argentina (the Catholic Bishops' Conference), with confirmed CGT/CTA/UTEP delegations attending as part of their broader protest calendar. This is a more institutional dialogue/conference event rather than a street protest — included for completeness given the union confederations' confirmed participation, but risk is assessed as Low given its dialogue-oriented, church-organised nature rather than a mobilisation."
+},
+
 
 
   {
