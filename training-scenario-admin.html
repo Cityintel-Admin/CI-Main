@@ -2420,10 +2420,14 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
 }
 
 async function doInject(scenario, stepIdx) {
+  let saveFailed = false;
   try {
     const res = await apiFetch('/api/org/training-scenarios', { method: 'POST', body: JSON.stringify(scenario) });
     if (res.ids && res.ids[0]) scenario.id = res.ids[0];
-  } catch(e) { console.warn('CityIntel training: API inject failed, falling back to localStorage', e); }
+  } catch(e) {
+    saveFailed = true;
+    console.warn('CityIntel training: API inject failed, falling back to localStorage', e);
+  }
 
   pushToOperatorFeed(scenario);
   recordEvent({ type: 'inject', scenarioId: scenario.id, scenarioTitle: scenario.title, stepIdx: stepIdx ?? null });
@@ -2431,7 +2435,11 @@ async function doInject(scenario, stepIdx) {
   await refreshScenariosFromApi();
   renderFeedLog(); renderStats(); updateStatusBar();
 
-  toast(`⚡ Injected: "${scenario.title.slice(0,40)}${scenario.title.length > 40 ? '…' : ''}"`, 'success');
+  if (saveFailed) {
+    toast(`⚡ Injected locally only — could not save to server: "${scenario.title.slice(0,30)}${scenario.title.length > 30 ? '…' : ''}"`, 'error');
+  } else {
+    toast(`⚡ Injected: "${scenario.title.slice(0,40)}${scenario.title.length > 40 ? '…' : ''}"`, 'success');
+  }
   if (scenario.autoEscalateAfterMin > 0) {
     setTimeout(() => autoEscalateScenario(scenario.id), scenario.autoEscalateAfterMin * 60 * 1000);
   }
@@ -2454,7 +2462,13 @@ function pushToOperatorFeed(scenario) {
 async function autoEscalateScenario(id) {
   const sc = scenarios.find(s => s.id === id);
   if (!sc || sc.status !== 'active') return;
-  try { await apiFetch('/api/org/training-scenarios', { method:'PUT', body: JSON.stringify({ id, status:'auto-escalated' }) }); } catch(_){}
+  try {
+    await apiFetch('/api/org/training-scenarios', { method:'PUT', body: JSON.stringify({ id, status:'auto-escalated' }) });
+  } catch(e) {
+    toast(e.message || 'Could not auto-escalate — change was not saved', 'error');
+    await refreshScenariosFromApi(); renderFeedLog();
+    return;
+  }
   await refreshScenariosFromApi(); renderFeedLog();
   recordEvent({ type:'auto', scenarioId:id, scenarioTitle:sc.title });
   logResponse(`⚡ Auto-escalated: "${esc((sc.title||'').slice(0,40))}"`, 'resp-escalate');
@@ -2464,7 +2478,13 @@ async function autoEscalateScenario(id) {
 async function escalateScenario(id) {
   const sc = scenarios.find(s => s.id === id);
   if (!sc) return;
-  try { await apiFetch('/api/org/training-scenarios', { method:'PUT', body: JSON.stringify({ id, status:'escalated' }) }); } catch(_){}
+  try {
+    await apiFetch('/api/org/training-scenarios', { method:'PUT', body: JSON.stringify({ id, status:'escalated' }) });
+  } catch(e) {
+    toast(e.message || 'Could not escalate — change was not saved', 'error');
+    await refreshScenariosFromApi(); renderFeedLog(); renderStats();
+    return;
+  }
   updateLocalFeedStatus(id, 'escalated');
   await refreshScenariosFromApi(); renderFeedLog(); renderStats();
   logResponse(`🔴 Admin escalated: "${esc((sc.title||'').slice(0,40))}"`, 'resp-escalate');
@@ -2474,7 +2494,13 @@ async function escalateScenario(id) {
 async function clearScenario(id) {
   const sc = scenarios.find(s => s.id === id);
   if (!sc) return;
-  try { await apiFetch('/api/org/training-scenarios', { method:'PUT', body: JSON.stringify({ id, status:'cleared' }) }); } catch(_){}
+  try {
+    await apiFetch('/api/org/training-scenarios', { method:'PUT', body: JSON.stringify({ id, status:'cleared' }) });
+  } catch(e) {
+    toast(e.message || 'Could not clear — change was not saved', 'error');
+    await refreshScenariosFromApi(); renderFeedLog(); renderStats(); updateStatusBar();
+    return;
+  }
   updateLocalFeedStatus(id, 'cleared');
   await refreshScenariosFromApi(); renderFeedLog(); renderStats(); updateStatusBar();
   logResponse(`✅ Cleared: "${esc((sc.title||'').slice(0,40))}"`, 'resp-clear');
@@ -2482,7 +2508,13 @@ async function clearScenario(id) {
 }
 
 async function deleteScenario(id) {
-  try { await apiFetch('/api/org/training-scenarios?id=' + encodeURIComponent(id), { method:'DELETE' }); } catch(_){}
+  try {
+    await apiFetch('/api/org/training-scenarios?id=' + encodeURIComponent(id), { method:'DELETE' });
+  } catch(e) {
+    toast(e.message || 'Could not delete — it may still exist on the server', 'error');
+    await refreshScenariosFromApi(); renderFeedLog(); renderStats(); updateStatusBar();
+    return;
+  }
   removeFromLocalFeed(id);
   await refreshScenariosFromApi(); renderFeedLog(); renderStats(); updateStatusBar();
 }
@@ -3250,28 +3282,42 @@ document.getElementById('btnPauseSession').addEventListener('click', () => {
 
 document.getElementById('btnEndSession').addEventListener('click', () => {
   showConfirm('End training session?', 'This will clear all active scenarios. A debrief report will be shown.', async () => {
+    let failCount = 0;
     for (const sc of scenarios.filter(s => s.status === 'active')) {
-      try { await apiFetch('/api/org/training-scenarios', { method:'PUT', body:JSON.stringify({ id:sc.id, status:'cleared' }) }); updateLocalFeedStatus(sc.id,'cleared'); } catch(_) { sc.status='cleared'; }
+      try {
+        await apiFetch('/api/org/training-scenarios', { method:'PUT', body:JSON.stringify({ id:sc.id, status:'cleared' }) });
+        updateLocalFeedStatus(sc.id,'cleared');
+      } catch(_) { failCount++; }
     }
     sequenceRunning = false;
     if (seqResponseWatcher) clearInterval(seqResponseWatcher);
     await refreshScenariosFromApi();
     renderFeedLog(); renderStats(); updateStatusBar(); stopSessionTimer();
-    toast('Session ended', 'success');
+    if (failCount > 0) {
+      toast(`Session ended — ${failCount} scenario${failCount===1?'':'s'} could not be synced to the server`, 'error');
+    } else {
+      toast('Session ended', 'success');
+    }
     setTimeout(() => openDebrief(), 600);
   });
 });
 
 document.getElementById('btnClearAll').addEventListener('click', () => {
   showConfirm('Clear all scenarios?', 'This will permanently remove all scenarios from the log and operator feed.', async () => {
+    let failCount = 0;
     for (const sc of scenarios) {
-      try { await apiFetch('/api/org/training-scenarios?id='+encodeURIComponent(sc.id), { method:'DELETE' }); } catch(_) {}
+      try { await apiFetch('/api/org/training-scenarios?id='+encodeURIComponent(sc.id), { method:'DELETE' }); }
+      catch(_) { failCount++; }
     }
     scenarios = []; sequenceSteps.forEach(s => { s.status='pending'; s.scenarioId=null; });
     sequenceRunning = false; currentStepIdx = -1;
     try { localStorage.removeItem('ci_admin_training_feed'); localStorage.removeItem('ci_training_scenarios_v1'); } catch(_){}
     renderFeedLog(); renderStats(); updateStatusBar(); renderSequenceList(); stopSessionTimer();
-    toast('All scenarios cleared', 'success');
+    if (failCount > 0) {
+      toast(`Cleared locally — ${failCount} scenario${failCount===1?'':'s'} could not be deleted on the server and may reappear`, 'error');
+    } else {
+      toast('All scenarios cleared', 'success');
+    }
   });
 });
 
@@ -3544,7 +3590,7 @@ async function saveToLibrary(type) {
     saveLocalLibrary(local);
     libraryItems = local;
     renderLibrary();
-    toast('Saved locally (API unavailable)', 'warn');
+    toast(`Saved locally only: ${e.message || 'could not reach the server'}`, 'warn');
   }
 }
 
@@ -3603,7 +3649,10 @@ async function deleteLibraryItem(id) {
   showConfirm('Delete library item?', `"${item.name}" will be permanently removed from the library.`, async () => {
     try {
       await apiFetch('/api/org/training-library?id=' + encodeURIComponent(id), { method:'DELETE' });
-    } catch(_) {}
+    } catch(e) {
+      toast(e.message || 'Could not delete — it still exists on the server', 'error');
+      return;
+    }
     libraryItems = libraryItems.filter(i => i.id !== id);
     saveLocalLibrary(libraryItems);
     renderLibrary();
@@ -3779,6 +3828,7 @@ async function saveSessionToHistory(scored, overallPct, grade) {
     const local = loadLocalHistory();
     local.unshift(sessionObj);
     saveLocalHistory(local.slice(0, 50));
+    toast(`Debrief saved locally only: ${e.message || 'could not reach the server'}`, 'warn');
   }
 
   // Also keep in memory
@@ -4008,6 +4058,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 <script src="shared-nav.js"></script>
+<script src="support-widget.js"></script>
 	
 </body>
 </html>
