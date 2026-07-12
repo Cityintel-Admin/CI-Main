@@ -2959,16 +2959,8 @@ body{background:linear-gradient(180deg,#111214,#16171a)!important;color:var(--te
 
 // --- Auth helpers (Workers expect X-User-Email) ---
 function authHeaders(extra = {}) {
-  const h = {};
-  // Try a few common keys; page already uses userEmail variable when available.
-  const email =
-    (typeof userEmail !== 'undefined' && userEmail) ||
-    localStorage.getItem('ci_user_email') ||
-    localStorage.getItem('userEmail') ||
-    localStorage.getItem('email') ||
-    '';
-  if (email) h['X-User-Email'] = email;
-  return Object.assign(h, extra);
+  const base = (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
+  return Object.assign({}, base, extra);
 }
 
 function isPinSet() {
@@ -4840,10 +4832,10 @@ function renderSubjectsStructured(subjectLines){
   }
 
   async function apiFetch(url, opts) {
-    const headers = Object.assign({
-      'Content-Type':'application/json',
-      'X-User-Email': userEmail || '',
-    }, (opts && opts.headers) || {});
+    const headers = Object.assign(
+      (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type':'application/json' },
+      (opts && opts.headers) || {}
+    );
     const res = await fetch(url, Object.assign({}, opts, { headers }));
     return res;
   }
@@ -5136,11 +5128,13 @@ function setAttachUploadStatus(text, isError){
     setAttachUploadStatus(`Uploading ${files.length} image${files.length === 1 ? '' : 's'}…`);
     try {
       // Note: no Content-Type header here — the browser sets its own
-      // multipart boundary for FormData bodies; apiFetch() forces
-      // application/json so it can't be used for this call.
+      // multipart boundary for FormData bodies; CIAuth.headers() always
+      // includes Content-Type:application/json, so strip it for this call.
+      const uploadHeaders = (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
+      delete uploadHeaders['Content-Type'];
       const res = await fetch(API_BASE + '/api/neighbor/upload', {
         method: 'POST',
-        headers: { 'X-User-Email': userEmail || '' },
+        headers: uploadHeaders,
         body: form
       });
       const data = await res.json().catch(() => null);
@@ -5488,13 +5482,7 @@ async function getOrgConfig(){
     if(cached && cached._ts && (Date.now()-cached._ts)<TTL) return cached;
   }catch(_){}
   try{
-    const hdrs = {};
-    if(window.CIAuth && CIAuth.who){
-      const u=CIAuth.who()||{};
-      hdrs['X-User-Email']=u.email||'';
-      hdrs['X-User-Id']=u.id||u.email||'';
-      hdrs['X-User-Name']=u.name||'';
-    }
+    const hdrs = (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
     const res=await fetch(API+'/api/org/onboarding',{headers:hdrs});
     const d=await res.json().catch(()=>({}));
     const cfg=d.data||{};
