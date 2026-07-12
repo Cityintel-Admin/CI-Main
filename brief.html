@@ -271,6 +271,18 @@
 .org-live-score.low{border-color:rgba(74,222,128,.28);background:rgba(20,83,45,.18);color:#bbf7d0}
 @media (max-width: 900px){.org-live-grid{grid-template-columns:1fr}.org-live-kpi-row{grid-template-columns:repeat(2,1fr)}}
 
+/* --- Brief data sources strip --- */
+.brief-source-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.brief-source-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;border:1px solid transparent}
+.brief-source-chip.on{background:rgba(51,196,141,.12);color:var(--ok);border-color:rgba(51,196,141,.35)}
+.brief-source-chip.off{background:rgba(148,163,184,.08);color:#94a3b8;border-color:rgba(148,163,184,.25)}
+.brief-source-note{font-size:11px;color:var(--muted);width:100%;margin-top:2px}
+.brief-source-strip a.brief-source-upgrade{font-size:11px;color:#60a5fa;text-decoration:underline}
+
+/* --- Master-admin only wrapper --- */
+.master-admin-group{border:1px dashed rgba(240,180,41,.45);border-radius:16px;padding:14px;background:rgba(240,180,41,.03);margin-bottom:16px}
+.master-admin-flag{font-size:11px;font-weight:800;letter-spacing:.03em;color:#fbbf24;text-transform:uppercase;margin-bottom:12px}
+
 /* ===== Mobile layout tweaks ===== */
 @media (max-width: 720px) {
   /* Stack layout: topbar, sidebar row, then main content */
@@ -380,6 +392,8 @@
     <h1>Intelligence Brief</h1>
     <div class="date-sub" id="briefDate"></div>
 
+    <div class="brief-source-strip" id="briefSourceStrip" style="display:none"></div>
+
     <section class="card brief-priority-card" id="section-priority-brief">
       <div class="brief-priority-head">
         <div>
@@ -448,7 +462,7 @@
     </section>
 
     <!-- KPI band -->
-    <div class="kpis" style="margin-bottom:16px">
+    <div class="kpis" id="briefKpiBand" style="margin-bottom:16px">
       <div class="kpi brief-kpi-card"
            id="kpi-active"
            data-scroll-target="#section-top-high-risk">
@@ -516,19 +530,25 @@
       <div id="brief-draft-preview" class="muted" style="font-size:12px;margin-top:8px"></div>
     </section>
 
-      <!-- Active Intelligence Patterns — Phase 8 -->
-      <section class="card span-12" id="section-intel-patterns" style="display:none;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-          <div>
-            <h2 style="margin:0 0 3px;">Active Intelligence Patterns</h2>
-            <div class="muted" style="font-size:12px;">AI-detected protest waves, regional instability signals, and multi-country spreads from the CityIntel intelligence pipeline.</div>
-          </div>
-          <a class="btn-link" href="cityintel-assistant.html" style="font-size:12px;">Manage in Assistant →</a>
-        </div>
-        <div id="intelPatternsBody"><div class="muted">Loading patterns…</div></div>
-      </section>
+      <!-- Master-admin only: internal curation pipeline, never client data -->
+      <div class="span-12 master-admin-group" id="masterAdminCurationGroup" style="display:none;">
+        <div class="master-admin-flag">🔒 Master Admin — Internal Curation, Not Client Data</div>
 
-      <!-- Live Intelligence Briefs — Phase 9 -->
+        <!-- Active Intelligence Patterns — Phase 8 -->
+        <section class="card span-12" id="section-intel-patterns" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <h2 style="margin:0 0 3px;">Active Intelligence Patterns</h2>
+              <div class="muted" style="font-size:12px;">AI-detected protest waves, regional instability signals, and multi-country spreads from the CityIntel intelligence pipeline.</div>
+            </div>
+            <a class="btn-link" href="cityintel-assistant.html" style="font-size:12px;">Manage in Assistant →</a>
+          </div>
+          <div id="intelPatternsBody"><div class="muted">Loading patterns…</div></div>
+        </section>
+      </div>
+
+      <!-- Live Intelligence Briefs — Phase 9. Shown to all roles: org admins/operators see -->
+      <!-- their own org's queued briefs (server-scoped); master admin sees theirs too. -->
       <section class="card span-12" id="section-intel-briefs" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
           <div>
@@ -1333,14 +1353,16 @@ function detectTheme(a) {
 
   async function loadPatterns(){
     const card=document.getElementById('section-intel-patterns'),body=document.getElementById('intelPatternsBody');
+    const wrap=document.getElementById('masterAdminCurationGroup');
     if(!card||!body)return;
     try{
       const res=await fetch(API+'/api/intel-review/incidents/patterns?limit=6&admin_hint=cityintel_masteradmin',{headers:authH()});
       if(!res.ok)return;
       const data=await res.json().catch(()=>({}));
       const patterns=data.patterns||[];
-      if(!patterns.length){card.style.display='none';return;}
+      if(!patterns.length){card.style.display='none';if(wrap)wrap.style.display='none';return;}
       card.style.display='';
+      if(wrap)wrap.style.display='';
       body.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">'+
         patterns.map(p=>{
           const icon=PATTERN_ICONS[p.pattern_type]||'🔗';
@@ -1463,24 +1485,12 @@ function detectTheme(a) {
       list.querySelectorAll('.org-live-priority-item').forEach(item=>item.addEventListener('click',()=>{const title=item.dataset.title||''; if(title) location.href='live-alerts.html?search='+encodeURIComponent(title)+'&from=brief';}));
     }
 
-    // Also lift live-alert data into the top executive tiles so the brief reflects the deployed org profile.
-    const top=queue[0];
-    if(top){
-      setText('priorityIncidentTitle', (top.title||'Untitled').slice(0,34)+((top.title||'').length>34?'…':''));
-      setText('priorityIncidentNote', `${top.city||'Location pending'} • priority ${top.priority_score||'—'} • ${fmtWhen(top.when||top.when_ts)}`);
-      const incidentTile=document.getElementById('priorityIncidentTile'); if(incidentTile) incidentTile.dataset.incidentTitle=top.title||'';
-    }
-    if(uniqueFeeds.length){
-      setText('priorityUrgentCity', uniqueFeeds[0]);
-      setText('priorityUrgentNote', `${uniqueFeeds.length} configured live feed${uniqueFeeds.length===1?'':'s'} • ${t.high||0} high in last ${data.windowHours||24}h`);
-      const urgent=document.getElementById('priorityUrgentTile'); if(urgent){urgent.dataset.city=uniqueFeeds[0]; urgent.dataset.high=String(t.high||0); urgent.dataset.med=String(t.med||0); urgent.dataset.low=String(t.low||0);}
-    }
-    if(data.topCategories && data.topCategories.length){
-      setText('priorityTheme', toTitle(data.topCategories[0].category));
-      setText('priorityThemeNote', `${data.topCategories[0].count} matching live alert${data.topCategories[0].count===1?'':'s'} in the current window.`);
-    }
-    const focus=profile.operationalFocus||profile.feedPackage||'';
-    if(focus){setText('priorityFocus', focus); setText('priorityFocusNote', `${profile.intelligenceScope||'City'} scope • ${profile.monitoringRadiusKm||25}km radius • ${profile.alertSensitivity||'Balanced'} sensitivity.`);}
+    // Note: this used to also overwrite the Protest Brief's executive tiles
+    // (priorityIncidentTitle / priorityUrgentCity / priorityTheme / priorityFocus)
+    // with live-alert data. Removed — the two cards are now independently
+    // gated by module (alerts vs live_alerts) and should never blend into
+    // the same unlabelled tiles; this card has its own KPI row and priority
+    // queue list for that purpose.
   }
 
   async function load(){
@@ -1634,9 +1644,53 @@ window.CIAccess = {
 
 
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-  if(window.CIAccess) CIAccess.initPage('intelligence_brief');
+document.addEventListener('DOMContentLoaded', async function(){
+  let pageOk = true;
+  if(window.CIAccess) pageOk = await CIAccess.initPage('intelligence_brief');
+  if(pageOk !== false) applyBriefSourceGating();
 });
+
+// ── Per-source module gating ────────────────────────────────────────────
+// Brief blends two independent data sources: the static protest/unrest
+// feed (alerts-data.js, gated on the "alerts" module — "Protest Records"
+// in onboarding) and the org-scoped live-alerts snapshot (gated on the
+// "live_alerts" module). Each is shown or hidden independently, and never
+// share a data source assumption with the other's rendering.
+async function applyBriefSourceGating(){
+  if(!window.CIAccess) return;
+  let modules = [];
+  try{
+    const cfg = await CIAccess.getOrgConfig();
+    modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+  }catch(_){ return; }
+
+  const hasProtest = CIAccess.isModuleAllowed(modules, 'alerts');
+  const hasLiveAlerts = CIAccess.isModuleAllowed(modules, 'live_alerts');
+
+  ['section-priority-brief','briefKpiBand','section-top-high-risk','section-regional-outlook'].forEach(function(id){
+    const el = document.getElementById(id);
+    if(el) el.style.display = hasProtest ? '' : 'none';
+  });
+
+  const liveCard = document.getElementById('section-org-live-brief');
+  if(liveCard) liveCard.style.display = hasLiveAlerts ? '' : 'none';
+
+  renderBriefSourceStrip(hasProtest, hasLiveAlerts);
+}
+
+function renderBriefSourceStrip(hasProtest, hasLiveAlerts){
+  const mount = document.getElementById('briefSourceStrip');
+  if(!mount) return;
+  const chip = function(label, on){
+    return '<span class="brief-source-chip '+(on?'on':'off')+'">'+(on?'✅':'🚫')+' '+label+(on?'':' — not on your plan')+'</span>';
+  };
+  let html = chip('Protest Records', hasProtest) + chip('Live Alerts', hasLiveAlerts);
+  if(!hasProtest || !hasLiveAlerts){
+    html += '<div class="brief-source-note">Missing a data source? <a class="brief-source-upgrade" href="mailto:contact@city-intel.com">Contact your CityIntel account manager</a> to add it to your plan.</div>';
+  }
+  mount.innerHTML = html;
+  mount.style.display = '';
+}
 </script>
 	 
 <script src="shared-nav.js"></script>
