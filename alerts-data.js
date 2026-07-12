@@ -21,6 +21,36 @@ window.alertsData =[
 },
 
 
+
+
+  {
+  title: "Movilización de jubilados — inicio del plan de lucha sindical",
+  city: "Buenos Aires",
+  lat: -34.6097,
+  lng: -58.3905,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-07-22T00:00:00",
+  source: "https://www.conclusion.com.ar/gremiales/la-cgt-y-las-dos-cta-lanzaron-un-plan-de-protestas-a-la-francesa-y-evaluan-convocar-a-un-paro-general/07/2026/",
+  summary: "The CGT (Argentina's main labour confederation), both CTA federations, and UTEP jointly announced an escalating protest plan against the Milei government's economic policy, confirmed via multiple independent outlets. This Wednesday march kicks off the plan by joining forces with the weekly retirees' protest at Congress — expect significantly larger turnout and a heavier security operation than a typical Wednesday given organised union backing. Risk assessed as High given the existing pattern of confrontation at these weekly marches, now compounded by union mobilisation."
+},
+{
+  title: "Marcha de San Cayetano (Liniers a Plaza de Mayo)",
+  city: "Buenos Aires",
+  lat: -34.6420,
+  lng: -58.5202,
+  address: "Santuario San Cayetano, Cuzco 150, Liniers — marching to Plaza de Mayo",
+  postcode: "C1408",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-08-07T08:00:00",
+  source: "https://ansol.com.ar/utep-san-cayetano-ate/generales/politica/",
+  summary: "The annual San Cayetano march (Patron Saint of Bread and Work) — a roughly 15km procession from the Liniers sanctuary to Plaza de Mayo, held every August 7th since 2016. Organised by UTEP (Union of Popular Economy Workers), with confirmed participation from the CGT, both CTA federations, ATE, and dozens of allied social/human rights organisations — part of the same escalating labour protest calendar as the July 22 Congress march. Expect very large crowds (typically tens of thousands), stops at Congress en route, and a closing rally at Plaza de Mayo around 14:00. Risk assessed as High given scale, the current heightened political tension around labour reform, and the area around the sanctuary itself being closed off for days beforehand for religious pilgrims."
+},
   
 {
   title: "Marcha de los jubilados (weekly retirees' protest)",
