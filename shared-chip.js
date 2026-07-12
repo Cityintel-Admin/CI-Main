@@ -5,6 +5,7 @@
  * Requires: <div id="topActions" style="position:relative"></div> in the brandbar.
  */
 
+
 (function mountTopActions() {
   function run() {
     const host = document.getElementById('topActions');
