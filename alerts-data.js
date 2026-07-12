@@ -20,6 +20,8 @@ window.alertsData =[
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
 
+
+
   {
     "title": "Anti-War and Anti-NATO Demonstrations",
     "city": "Ankara",
@@ -35,7 +37,24 @@ window.alertsData =[
     "summary": "The 36th annual NATO Summit is taking place in Ankara from 7–8 July 2026. In response, left-wing, anti-war, and pro-Palestine factions have organized localized rallies, leading Turkish authorities to issue a strict 13-day ban on public assemblies and drone flights across the capital. Police have executed sweeping pre-emptive raids, detaining over 200 activists. Despite the official protest ban, spontaneous flash demonstrations remain highly likely. Given the heavy security presence, international spotlight, and potential for clashes, the risk is assessed as High."
   },
 
-  
+  {
+  title: "March on Washington: Defend the Vote",
+  city: "Washington",
+  lat: 38.8895,
+  lng: -77.0353,
+  address: "National Mall",
+  postcode: "20024",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-08-28T10:00:00",
+  source: "https://marchonwashington2026.com/",
+  summary: "Rev. Al Sharpton, the National Action Network, and the Drum Major Institute (led by Martin Luther King III) have organised a march on the National Mall on 28 August 2026, marking the 63rd anniversary of the 1963 March on Washington. The march focuses on voting rights, civil rights protections, and economic justice. Given the National Mall location, the civil-rights-anniversary significance, and the scale organisers are aiming for, expect substantial foot traffic, road closures, and heavy security presence around the Mall and Metro stations. Risk is assessed as High primarily due to crowd size and transport disruption rather than any expectation of unrest — organisers have a long history of peaceful, non-violent demonstrations."
+},
+
+
+
+
 
 {
   title: "National Trade Union Mobilisation",
@@ -9772,7 +9791,7 @@ window.alertsData =[
   {
     title: "Stop the state clampdown",
     city: "Westminster Magistrates Court London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-23T09:00:00",
@@ -9795,7 +9814,7 @@ window.alertsData =[
   {
     title: "Solidaridad Internacionalista con el Pueblo Trabajador Cubano",
     city: "Madrid",
-    country: "España",
+    country: "Spain",
     continent: "Europe",
     risk: "Bajo",
     time: "2026-03-01T12:00:00",
@@ -9883,7 +9902,7 @@ window.alertsData =[
  {
     title: "Solidaridad Internacionalista con el Pueblo Trabajador Cubano",
     city: "Madrid",
-    country: "España",
+    country: "Spain",
     continent: "Europe",
     risk: "Bajo",
     time: "2026-03-01T12:00:00",
@@ -9905,7 +9924,7 @@ window.alertsData =[
  {
     title: "Stop the Nuclear Nightmare: National Demonstration",
     city: "Faslane, Helensburgh",
-    country: "UK",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Moderate",
     time: "2026-03-14T13:00:00",
@@ -9916,7 +9935,7 @@ window.alertsData =[
   {
     title: "Maqbool Bhat Memorial Protest & March",
     city: "London",
-    country: "UK",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-11T13:00:00",
@@ -9927,7 +9946,7 @@ window.alertsData =[
   {
     title: "Worldwide marking BlackDay on February 8th, organized by Pakistan Tehreek-e-Insaf",
     city: "London 	10 Downing Street",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-08T13:00:00",
@@ -9938,7 +9957,7 @@ window.alertsData =[
    {
     title: "Worldwide marking BlackDay on February 8th, organized by Pakistan Tehreek-e-Insaf",
     city: "Glasgow Car Rally from Consulate of Pakistan ",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-08T14:00:00",
@@ -9949,7 +9968,7 @@ window.alertsData =[
     {
     title: "Worldwide marking BlackDay on February 8th, organized by Pakistan Tehreek-e-Insaf",
     city: "	Brussels	Pl. Du Luxembourg 7 Conference ",
-    country: "Belguim",
+    country: "Belgium",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-08T16:00:00",
@@ -10245,7 +10264,7 @@ window.alertsData =[
   {
     title: "Protest for Free Iran (London)",
     city: "London",
-    country: "UK",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Low",
     time: "2026-02-08T16:00:00",
@@ -10267,7 +10286,7 @@ window.alertsData =[
  {
     title: "Protest for Free Iran (London)",
     city: "London",
-    country: "UK",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Low ",
     time: "2026-02-08T18:00:00",
@@ -10388,7 +10407,7 @@ window.alertsData =[
    {
     title: "Iranian protest",
     city: "Central London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-07T13:00:00",
@@ -10399,7 +10418,7 @@ window.alertsData =[
   {
     title: "Digital ID protest",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-02-07T12:00:00",
@@ -10410,7 +10429,7 @@ window.alertsData =[
   {
     title: "Anti-racism march",
     city: "North London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-02-07T12:30:00",
@@ -10421,7 +10440,7 @@ window.alertsData =[
  {
     title: "Unpunished Evil Grows: Stand with Ukraine Protest",
     city: "London, Piccadilly Circus",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-21T14:00:00",
@@ -10432,7 +10451,7 @@ window.alertsData =[
    {
     title: "Protest for Release of Kidnapped Venezuelan President Nicolas Maduro and Cilia Flores",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-03T18:00:00",
@@ -10443,7 +10462,7 @@ window.alertsData =[
   {
     title: "Protest against Sri Lanka's 78th Independent Day - Black Day for Tamils",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2025-02-04T11:00:00",
@@ -10454,7 +10473,7 @@ window.alertsData =[
    {
     title: "Anti-Zionist Movement Launch Birmingham / Our Fight Stop The Hate March",
     city: "Birmingham",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Med",
     time: "2026-02-08T15:00:00",
@@ -10465,7 +10484,7 @@ window.alertsData =[
 {
     title: "Architectural Workers’ Protest Bjarke Ingels Group",
     city: "1 Finsbury Avenue, EC2M 2PF",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-02-03T13:0:00",
@@ -10678,7 +10697,7 @@ window.alertsData =[
  {
     title: "National Shutdown / General Strike against ICE",
     city: "Nationwide",
-    country: "United States of America",
+    country: "United States",
     continent: "United States of America",
     risk: "med",
     time: "2026-01-30T08:00:00",
@@ -10991,7 +11010,7 @@ window.alertsData =[
  {
     title: "Anti-Digital ID & Digital Currency Protest",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Low",
     time: "2026-01-31T14:30:00",
@@ -11189,7 +11208,7 @@ window.alertsData =[
    {
     title: "One struggle, one fight",
     city: "Newcastle",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T11:30:00",
@@ -11200,7 +11219,7 @@ window.alertsData =[
   {
     title: "Global Day of Solidarity",
     city: "Newcastle",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T12:30:00",
@@ -11211,7 +11230,7 @@ window.alertsData =[
    {
     title: "Free Spanish Hounds March",
     city: "Glasgow",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T11:00:00",
@@ -11222,7 +11241,7 @@ window.alertsData =[
    {
     title: "Free Spanish Hounds March",
     city: "Glasgow",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T11:00:00",
@@ -11233,7 +11252,7 @@ window.alertsData =[
  {
     title: "Glasgow Warriors v Clovers",
     city: "Glasgow",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Low",
     time: "2026-01-31T14:00:00",
@@ -11244,7 +11263,7 @@ window.alertsData =[
    {
     title: "There Is No Ceasefire!",
     city: "Belfast",
-    country: "Northern Ireland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T13:00:00",
@@ -11255,7 +11274,7 @@ window.alertsData =[
  {
     title: "Act Now!",
     city: "Nine Elms",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T15:00:00",
@@ -11266,7 +11285,7 @@ window.alertsData =[
  {
     title: "Free Iran",
     city: "Manchester",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T15:00:00",
@@ -11277,7 +11296,7 @@ window.alertsData =[
  {
     title: "Boycott Reebok",
     city: "Manchester",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T13:00:00",
@@ -11288,7 +11307,7 @@ window.alertsData =[
   {
     title: "Free Spanish Hounds March",
     city: "Manchester",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-01-31T11:00:00",
@@ -11299,7 +11318,7 @@ window.alertsData =[
  {
     title: "Jim Larkin Commemoration",
     city: "Dublin",
-    country: "Republic of Ireland",
+    country: "Ireland",
     continent: "Europe",
     risk: "Low",
     time: "2026-01-31T11:30:00",
@@ -11310,7 +11329,7 @@ window.alertsData =[
  {
     title: "Croydon Day of action for Palestine",
     city: "Croydon",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-02-01T11:00:00",
@@ -11321,7 +11340,7 @@ window.alertsData =[
   {
     title: "Peace & Equal rights for all",
     city: "Kings Cross",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-02-01T13:00:00",
@@ -11332,7 +11351,7 @@ window.alertsData =[
   {
     title: "Free Iran protest",
     city: "Westminster",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-02-01T15:00:00",
@@ -11343,7 +11362,7 @@ window.alertsData =[
  {
     title: "West Drayton and Hillingdon say NO!",
     city: "Hillingdon",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "med",
     time: "2026-02-01T12:00:00",
@@ -11354,7 +11373,7 @@ window.alertsData =[
    {
     title: "Free Spanish Hounds March",
     city: "Belgravia",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-01T11:00:00",
@@ -11365,7 +11384,7 @@ window.alertsData =[
   {
     title: "Protest Sea Life",
     city: "London Aquarium, Westminster Bridge Road",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T14:00:00",
@@ -11376,7 +11395,7 @@ window.alertsData =[
   {
     title: "Act Now!",
     city: "	U.S. Embassy, Nine Elms",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T15:00:00",
@@ -11388,7 +11407,7 @@ window.alertsData =[
  {
     title: "PSC National March counter protestt",
     city: "Aldwych London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:30:00",
@@ -11399,7 +11418,7 @@ window.alertsData =[
   {
     title: "National March For Palestine",
     city: "Russell Square to Whitehall London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11410,7 +11429,7 @@ window.alertsData =[
  {
     title: "Walk with Jesus Parade",
     city: "Marble Arch, Hyde Park",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-01-31T12:00:00",
@@ -11421,7 +11440,7 @@ window.alertsData =[
   {
     title: "Keep UKIP out of Whitechapel",
     city: "Whitechapel Station, Whitechapel",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-01-31T12:00:00",
@@ -11432,7 +11451,7 @@ window.alertsData =[
   {
     title: "UKIP parade",
     city: "Aldgate Square > Marble Arch London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-01-31T10:00:00",
@@ -11443,7 +11462,7 @@ window.alertsData =[
   {
     title: "Stop War On Kurds",
     city: "Syrian Embassy, Belgrave Square, Knightsbridge",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-0-30T14:00:00",
@@ -11454,7 +11473,7 @@ window.alertsData =[
   {
     title: "People Power NUP Demo",
     city: "BBC Portland Place, Marylebone",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-30T10:30:00",
@@ -11465,7 +11484,7 @@ window.alertsData =[
   {
     title: "Bin-Strike Protests",
     city: "Various locations, Birmingham",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-30T06:30:00",
@@ -11476,7 +11495,7 @@ window.alertsData =[
   {
     title: "Unionized police officers plan to protest",
     city: "Ajaccio: Station Square",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11487,7 +11506,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Arras: Place Marechal-Foch",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11498,7 +11517,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Bordeaux: City Hall",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11509,7 +11528,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Clermont-Ferrand: Place Gilbert Gaillard",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11520,7 +11539,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Dijon: Police Headquarters",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11531,7 +11550,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Gernoble: Police Headquarters",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11542,7 +11561,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "La Rochelle: In front of La Rochelle Train Station",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11553,7 +11572,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Lyon: Place Marechal-Lyautey",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11562,7 +11581,7 @@ window.alertsData =[
   }, {
     title: "Unionized police officers plan to protest",
     city: "Marseille: L'Ombriere at Vieux Port",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11573,7 +11592,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Metz: City Hall",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11584,7 +11603,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Nice: Place Massena",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11595,7 +11614,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Nantes: Police Headquarters",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11606,7 +11625,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Nimes: In front of Nimes Prefecture.",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11617,7 +11636,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Paris: Place de la Bastille",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11628,7 +11647,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Perpignan: Place du Castillet",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11639,7 +11658,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Pau: City Hall",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11650,7 +11669,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Orleans: Place du Martrois",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11661,7 +11680,7 @@ window.alertsData =[
  {
     title: "Unionized police officers plan to protest",
     city: "Reims: Square Colbert",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11672,7 +11691,7 @@ window.alertsData =[
   {
     title: "Unionized police officers plan to protest",
     city: "Reims: Square Colbert",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T11:00:00",
@@ -11683,7 +11702,7 @@ window.alertsData =[
   {
     title: "A National March for Palestine ",
     city: "Rennes: In front of the Prefecture of Ille-et-Vilainen",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11694,7 +11713,7 @@ window.alertsData =[
    {
     title: "A National March for Palestine ",
     city: "Rouen: City Hall",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11705,7 +11724,7 @@ window.alertsData =[
     {
     title: "A National March for Palestine ",
     city: "Strasbourg: Police Headquarters",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11716,7 +11735,7 @@ window.alertsData =[
    {
     title: "Toulouse: In front of the Prefecture of Haute-Garonne ",
     city: "Strasbourg: Police Headquarters",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11727,7 +11746,7 @@ window.alertsData =[
    {
     title: "A National March for Palestine ",
     city: "Strasbourg: Police Headquarters",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11738,7 +11757,7 @@ window.alertsData =[
    {
     title: "A National March for Palestine ",
     city: "Russell Square to Whitehall. London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11749,7 +11768,7 @@ window.alertsData =[
    {
     title: "A National March for Palestine ",
     city: "Russell Square to Whitehall. London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11760,7 +11779,7 @@ window.alertsData =[
   {
     title: "Anti-racism community unity protest",
     city: "Whitechapel Station London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11837,7 +11856,7 @@ window.alertsData =[
   {
     title: "RMT transport union has announced that outsourced Docklands Light Railway",
     city: "City Hall London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-04T09:30:00",
@@ -11848,7 +11867,7 @@ window.alertsData =[
  {
     title: "Abolish The Asylum System",
     city: "Cresta Court Hotel in Altrincham",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-30T17:00:00",
@@ -11859,7 +11878,7 @@ window.alertsData =[
  {
     title: "Abolish The Asylum System",
     city: " Army Barracks in Crowborough ",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-02-01T10:00:00",
@@ -11870,7 +11889,7 @@ window.alertsData =[
   {
     title: "Confront Power at Parliament",
     city: "Parliament Square, Westminster London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-28T11:00:00",
@@ -11881,7 +11900,7 @@ window.alertsData =[
   {
     title: "The event, titled the National Demonstration for Palestine",
     city: "Woburn Square Garden in London.",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T12:00:00",
@@ -11892,8 +11911,8 @@ window.alertsData =[
 {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "US",
-    continent: "North America",
+    country: "Ireland",
+    continent: "Europe",
     risk: "Mid",
     time: "2025-12-22T24:00:00",
     source: "",
@@ -11903,8 +11922,8 @@ window.alertsData =[
  {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "United States of America",
-    continent: "North America",
+    country: "Ireland",
+    continent: "Europe",
     risk: "high",
     time: "2025-11-22T24:00:00",
     source: "",
@@ -11914,8 +11933,8 @@ window.alertsData =[
 {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "United States of America",
-    continent: "North America",
+    country: "Ireland",
+    continent: "Europe",
     risk: "high",
     time: "2025-01-11T24:00:00",
     source: "",
@@ -11926,7 +11945,7 @@ window.alertsData =[
   {
     title: "There is no Ceasefire March for Palestine",
     city: "Barnardo Sq City Hall and march to the Department of Foreign Affairs",
-    country: "Dublin",
+    country: "Ireland",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-24T24:00:00",
@@ -11937,7 +11956,7 @@ window.alertsData =[
   {
     title: "Valérie Pécresse, President of the Île-de-France Region.",
     city: "Scottish Parliament Edinburgh",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-20T16:30:00",
@@ -11959,7 +11978,7 @@ window.alertsData =[
   {
     title: " National Demonstration for Peace",
     city: "Place du Palais Royal in Paris",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-31T14:00:00",
@@ -11970,7 +11989,7 @@ window.alertsData =[
   {
     title: "Ghanaian PhD students in the UK",
     city: "Ghana High Commission, located at 13 Belgrave Square, London,",
-    country: "england",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-20T15:00:00",
@@ -12004,7 +12023,7 @@ window.alertsData =[
  {
     title: "Jewish Voice for Peace",
     city: "780 Third Avenue, also known as The Gardens at 780 in New York City.",
-    country: "New york",
+    country: "United States",
     continent: "North America",
     risk: "Mid",
     time: "2026-01-23T14:30:00",
@@ -12110,7 +12129,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action",
   city:"New York", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -12122,7 +12141,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action ",
   city:"Chicago", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -12134,7 +12153,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action",
   city:"Los Angeles", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -12146,7 +12165,7 @@ title:"Workplace day of action",
 { 
   title:"Coordinated ‘walkout’ action",
   city:"Washington DC", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-20T15:00:00",
@@ -12159,7 +12178,7 @@ title:"Workplace day of action",
 { 
   title:"March for Life — Washington, DC",
   city:"Washington DC", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America",
   risk:"medium",
   time:"2026-01-23T12:00:00",
@@ -12170,7 +12189,7 @@ title:"Workplace day of action",
 { 
   title:"Solidarity rally — ‘Standing with Iranian People’",
   city:"Washington, DC", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America",
   risk:"low",
   time:"2026-01-21T18:30:00",
@@ -12250,7 +12269,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Protest the Guga Hunt",
     city: "Scottish Parliament Edinburgh",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-21T08:30:00",
@@ -12272,7 +12291,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Keep Hybrid work in the OPS ",
     city: " 505 University Ave, Toronto ON",
-    country: "United States of America",
+    country: "United States",
     continent: "North America",
     risk: "Mid",
     time: "2026-01-23T08:30:00",
@@ -12359,7 +12378,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 { 
   title:"National School Walkout / Student Protest (reported)", 
   city:"Multiple (national)", 
-  country:"United States of America", 
+  country:"United States", 
   continent:"North America", 
   risk:"medium", 
   time:"2026-01-20T14:00:00", 
@@ -12812,7 +12831,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "March for Life",
     city: "Place Vauban Paris",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-20T11:30:00",
@@ -12824,7 +12843,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "ACTION UPDATE Cut the Ties Protest ",
     city: "statue of Wellington outside the Royal Exchange, near Bank Station London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-20T11:30:00",
@@ -12880,7 +12899,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
    {
     title: "antifascist solidarity rally in memory of murdered Russian antifascists Stanislav Markelov and Anastasia Baburova.",
     city: "Igor Stravinsky Square in Paris",
-    country: "Paris",
+    country: "France",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-19T19:00:00",
@@ -12892,7 +12911,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "The Human and Civil Rights Coalition ",
     city: "Capitol Square Southwest in Atlanta",
-    country: "North America",
+    country: "United States",
     continent: "North America",
     risk: "Mid",
     time: "2026-01-20T11:00:00",
@@ -12903,7 +12922,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "A Call to the #Church: Stand for Families, Stand for Freedom, Stand for the Future",
     city: "Scottish Parliament at Holyrood - Edinburgh",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Low",
     time: "2026-01-17T13:30:00",
@@ -12925,7 +12944,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "Protest in solidarity with Imran Khan",
     city: "University of Bradford",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-19T12:00:00",
@@ -12969,7 +12988,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "March for a Free Iran",
     city: "BBC Broadcasting House to Downing Street London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "High",
     time: "2026-01-18T14:00:00",
@@ -13013,7 +13032,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "Insure Our Survival ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-12T09:00:00",
@@ -13024,7 +13043,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Insure Our Survival ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-13T09:00:00",
@@ -13035,7 +13054,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Insure Our Survival ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-14T09:00:00",
@@ -13046,7 +13065,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Insure Our Survival ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-15T09:00:00",
@@ -13057,7 +13076,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Insure Our Survival ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-16T09:00:00",
@@ -13091,7 +13110,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "Stop the Wethersfield Buses",
     city: " Braintree",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-12T18:00:00",
@@ -13102,7 +13121,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Defend Suffolk Democracy",
     city: "Endeavour House in Ipswich",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "Mid",
     time: "2026-01-12T09:00:00",
@@ -13113,7 +13132,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "moratorium on data center development Protest",
     city: "Sheboygan, Wisconsin,",
-    country: "USA",
+    country: "United States",
     continent: "America",
     risk: "Low",
     time: "2026-01-12T17:30:00",
@@ -13191,7 +13210,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Challenging the War Machine Summit",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-31T08:30:00",
@@ -13203,7 +13222,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "National Demonstration for Palestine",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-231T08:30:00",
@@ -13214,7 +13233,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Holocaust Memorial Day Commemoration ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-27T08:30:00",
@@ -13225,7 +13244,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Earthlings Experience (Vegan Activism) ",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-17T08:30:00",
@@ -13236,7 +13255,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
     {
     title: "Sudan Solidarity Events",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-17T08:30:00",
@@ -13247,7 +13266,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  {
     title: "ICE OUT FOR GOOD - Anthem Indivisible",
     city: "Anthem ",
-    country: "USA",
+    country: "United States",
     continent: "America,",
     risk: "low",
     time: "2026-01-11T08:30:00",
@@ -13258,7 +13277,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "A Call for Justice at the Heart of Power: Somalilanders",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-14T12:00:00",
@@ -13269,7 +13288,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Ending the repression and execution of peaceful protesters in Iran",
     city: "Brussels",
-    country: "Belgem",
+    country: "Belgium",
     continent: "Europe",
     risk: "low",
     time: "2026-01-11T08:30:00",
@@ -13280,7 +13299,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Expose Zurich Insurance",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-20T08:30:00",
@@ -13415,7 +13434,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
     {
     title: "Staff at 25 colleges",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2026-01-12T07:30:00",
@@ -13426,7 +13445,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
     {
     title: "Refugee Solidarity Vigil",
     city: "Bath",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2025-10-20T12:30:00",
@@ -13457,7 +13476,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Ocala Free America Protest",
     city: "Ocala",
-    country: "USA",
+    country: "United States",
     continent: "United States",
     risk: "low",
     time: "2026-01-17T10:00:00",
@@ -13468,7 +13487,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
     {
     title: "Italian taxi drivers call for a national strike",
     city: "Rome",
-    country: "italy",
+    country: "Italy",
     continent: "Europe",
     risk: "low",
     time: "2026-01-13T07:00:00",
@@ -13479,7 +13498,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: "Refugee Solidarity Vigil",
     city: "Bath",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2025-10-20T18:00:00",
@@ -13491,7 +13510,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {
     title: " Venezuelan people protest",
     city: "Paris",
-    country: "france",
+    country: "France",
     continent: "Europe",
     risk: "high",
     time: "2026-01-10T18:00:00",
@@ -14064,7 +14083,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
   {
     title: "Pro-Palestine HR-Day demonstration — Istanbul",
     city: "Istanbul",
-    country: "Türkiye",
+    country: "Turkey",
     continent: "Asia",
     risk: "high",
     time: "2025-12-10T16:00:00",
@@ -16262,29 +16281,29 @@ title:"Waitangi Day events & demonstrations — Wellington",
 { title:'Climate/Environment Rally Window', city:'Suva', country:'Fiji', continent:'Oceania', risk:'low', time:'2026-02-25T16:00:00', source:'Analyst forecast referencing regional climate activism cycles', predictive:true, predictive_type:'modeled', summary:'Blurb: Civic rally near Albert Park.\n\nFurther: Peaceful; risk low.' },
 
 
-{ title:"International Women's Day March", city:"New York City", country:"USA", continent:"North America", risk:"medium", time:"2026-03-08T13:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally in Midtown and Lower Manhattan.\n\nFurther: Feminist groups and unions; moderate crowds and rolling closures." },
-  { title:"International Women's Day March", city:"Washington, DC", country:"USA", continent:"North America", risk:"low", time:"2026-03-08T12:30:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march on the National Mall.\n\nFurther: Permitted, police-escorted; risk low." },
-  { title:"International Women's Day March", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2026-03-08T14:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: Downtown IWD march around City Hall.\n\nFurther: Large turnout; congestion risk medium." },
+{ title:"International Women's Day March", city:"New York City", country:"United States", continent:"North America", risk:"medium", time:"2026-03-08T13:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally in Midtown and Lower Manhattan.\n\nFurther: Feminist groups and unions; moderate crowds and rolling closures." },
+  { title:"International Women's Day March", city:"Washington, DC", country:"United States", continent:"North America", risk:"low", time:"2026-03-08T12:30:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march on the National Mall.\n\nFurther: Permitted, police-escorted; risk low." },
+  { title:"International Women's Day March", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2026-03-08T14:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: Downtown IWD march around City Hall.\n\nFurther: Large turnout; congestion risk medium." },
   { title:"International Women's Day March", city:"Toronto", country:"Canada", continent:"North America", risk:"low", time:"2026-03-08T13:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally at Nathan Phillips Square.\n\nFurther: Family-friendly; risk low." },
   { title:"International Women's Day March", city:"Montréal", country:"Canada", continent:"North America", risk:"low", time:"2026-03-08T13:30:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march along Boulevard René-Lévesque.\n\nFurther: Peaceful; risk low." },
   { title:"International Women's Day March", city:"Vancouver", country:"Canada", continent:"North America", risk:"low", time:"2026-03-08T12:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD waterfront rally.\n\nFurther: Compact and peaceful; risk low." },
   { title:"International Women's Day March", city:"Mexico City", country:"Mexico", continent:"North America", risk:"medium", time:"2026-03-08T16:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march from Monumento a la Revolución toward Zócalo.\n\nFurther: Large, energetic crowds; moderate disruption." },
   { title:"International Women's Day March", city:"Guadalajara", country:"Mexico", continent:"North America", risk:"medium", time:"2026-03-08T16:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD rally downtown with student blocs.\n\nFurther: Traffic holds; risk medium." },
   { title:"International Women's Day March", city:"Monterrey", country:"Mexico", continent:"North America", risk:"low", time:"2026-03-08T17:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD assembly in Macroplaza.\n\nFurther: Peaceful; risk low." },
-  { title:"International Women's Day March", city:"San Juan", country:"USA", continent:"North America", risk:"low", time:"2026-03-08T15:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march in Old San Juan.\n\nFurther: Peaceful; risk low." },
+  { title:"International Women's Day March", city:"San Juan", country:"United States", continent:"North America", risk:"low", time:"2026-03-08T15:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/International_Women%27s_Day", summary:"Blurb: IWD march in Old San Juan.\n\nFurther: Peaceful; risk low." },
 
   
-  { title:"Global Climate Strike — New York City", city:"New York City", country:"USA", continent:"North America", risk:"medium", time:"2026-03-15T12:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Youth-led climate march through Midtown.\n\nFurther: Police-facilitated; medium congestion risk." },
-  { title:"Global Climate Strike — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2026-03-15T12:30:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Rally at Civic Center Plaza.\n\nFurther: Peaceful; risk low." },
+  { title:"Global Climate Strike — New York City", city:"New York City", country:"United States", continent:"North America", risk:"medium", time:"2026-03-15T12:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Youth-led climate march through Midtown.\n\nFurther: Police-facilitated; medium congestion risk." },
+  { title:"Global Climate Strike — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2026-03-15T12:30:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Rally at Civic Center Plaza.\n\nFurther: Peaceful; risk low." },
   { title:"Global Climate Strike — Toronto", city:"Toronto", country:"Canada", continent:"North America", risk:"low", time:"2026-03-15T12:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Students rally at Queen's Park.\n\nFurther: Peaceful; risk low." },
   { title:"Global Climate Strike — Vancouver", city:"Vancouver", country:"Canada", continent:"North America", risk:"low", time:"2026-03-15T12:30:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: Climate strike at Robson Square.\n\nFurther: Compact; risk low." },
   { title:"Global Climate Strike — Mexico City", city:"Mexico City", country:"Mexico", continent:"North America", risk:"medium", time:"2026-03-15T13:00:00", predictive:true, predictive_type:"recurring", source:"https://fridaysforfuture.org/what-we-do/strike/", summary:"Blurb: March toward Zócalo by youth networks.\n\nFurther: Medium disruption expected." },
 
     
-  { title:"MLK Day March and Commemoration", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2026-01-19T10:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day", summary:"Blurb: Annual MLK Day parade and rallies along Auburn Ave.\n\nFurther: Peaceful commemorations; rolling closures." },
-  { title:"MLK Day March and Service Events", city:"Washington, DC", country:"USA", continent:"North America", risk:"low", time:"2026-01-19T11:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day", summary:"Blurb: Commemorative march and service projects across DC.\n\nFurther: Peaceful; risk low." },
+  { title:"MLK Day March and Commemoration", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2026-01-19T10:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day", summary:"Blurb: Annual MLK Day parade and rallies along Auburn Ave.\n\nFurther: Peaceful commemorations; rolling closures." },
+  { title:"MLK Day March and Service Events", city:"Washington, DC", country:"United States", continent:"North America", risk:"low", time:"2026-01-19T11:00:00", predictive:true, predictive_type:"recurring", source:"https://en.wikipedia.org/wiki/Martin_Luther_King_Jr._Day", summary:"Blurb: Commemorative march and service projects across DC.\n\nFurther: Peaceful; risk low." },
 
-  { title:"March for Life — National Rally", city:"Washington, DC", country:"USA", continent:"North America", risk:"medium", time:"2026-01-23T12:00:00", predictive:true, predictive_type:"recurring", source:"https://marchforlife.org/", summary:"Blurb: Annual March for Life from National Mall up Constitution Ave.\n\nFurther: Large attendance; medium disruption." },
+  { title:"March for Life — National Rally", city:"Washington, DC", country:"United States", continent:"North America", risk:"medium", time:"2026-01-23T12:00:00", predictive:true, predictive_type:"recurring", source:"https://marchforlife.org/", summary:"Blurb: Annual March for Life from National Mall up Constitution Ave.\n\nFurther: Large attendance; medium disruption." },
  
     
 
@@ -16801,7 +16820,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
 { title:"Anti‑Corruption Youth Sit‑in (Charged Cases Follow‑up)", city:"Kampala", country:"Uganda", continent:"Africa", risk:"medium", time:"2025-10-18T11:00:00", source:"https://www.reuters.com/world/africa/court-charges-least-42-ugandan-youths-over-anti-graft-protest-2024-07-24/", summary:"Blurb: Youth groups plan courthouse sit‑in demanding case dismissals from 2024 arrests. Further: Police typically restrict access to City Square; short‑notice dispersal possible; keep movement flexible around Buganda Rd." },
 
-{ title:"Solidarity March — Eastern Congo Civilians", city:"Kinshasa", country:"DR Congo", continent:"Africa", risk:"medium", time:"2025-10-20T14:00:00", source:"https://www.reuters.com/world/africa/congo-protesters-attack-kinshasa-embassies-over-conflict-east-2025-01-28/", summary:"Blurb: Civil groups rally against eastern violence; previous actions targeted diplomatic sites. Further: Authorities keen to prevent embassy approach; plan for diversions near Gombe; risk rises if march deviates from permitted route." },
+{ title:"Solidarity March — Eastern Congo Civilians", city:"Kinshasa", country:"Democratic Republic of Congo", continent:"Africa", risk:"medium", time:"2025-10-20T14:00:00", source:"https://www.reuters.com/world/africa/congo-protesters-attack-kinshasa-embassies-over-conflict-east-2025-01-28/", summary:"Blurb: Civil groups rally against eastern violence; previous actions targeted diplomatic sites. Further: Authorities keen to prevent embassy approach; plan for diversions near Gombe; risk rises if march deviates from permitted route." },
 
 { title:"University Fees & Cost‑of‑Living Rally", city:"Accra", country:"Ghana", continent:"Africa", risk:"medium", time:"2025-10-22T13:00:00", source:"https://www.reuters.com/world/africa/ghana-inflation-rises-fourth-straight-month-december-2025-01-08/", summary:"Blurb: Student unions protest rising costs; campus‑to‑parliament route. Further: Police liaison indicates static assembly near Independence Square; traffic management in effect on Independence Ave / Liberation Rd." },
 
@@ -16935,41 +16954,41 @@ title:"Waitangi Day events & demonstrations — Wellington",
 {"title": "October 2 Commemoration March (Tlatelolco)", "city": "Mexico City", "country": "Mexico", "continent": "North America", "risk": "high", "time": "2025-10-02T16:00:00", "source": "https://mx.usembassy.gov/demonstration-alert-large-protest-in-mexico-city-on-october-2/", "summary": "Blurb: Annual Oct. 2 march marking the 1968 Tlatelolco massacre—large turnout and vandalism risks flagged by U.S. Embassy; route closures and property damage possible. Further: Marchers typically converge from Plaza de las Tres Culturas toward the Zócalo; CDMX police deploy anti-riot units along Avenida Insurgentes and Reforma. Expect spray-painting at government buildings and some clashes near barricades; businesses along the corridor tend to shutter early."},
   
 
-{"title": "Oct 7 Anniversary Rally — Midtown", "city": "New York", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-08T18:00:00", "source": "https://www.reutersconnect.com/item/pro-palestinian-rally-held-in-midtown-manhattan-nyc/dGFnOnJldXRlcnMuY29tLDIwMjU6bmV3c21sX01UMUFOQURMMDAwMklPRTZW", "summary": "Blurb: Midtown assembly marking two years since Oct 7; police kettling used at curb lanes, no major clashes reported. Further: Crowd centered near Times Square spillover zones; NYPD Community Affairs and SRG units present. Chants, speeches; intermittent traffic holds on 7th Ave and 42nd Street."},
+{"title": "Oct 7 Anniversary Rally — Midtown", "city": "New York", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-08T18:00:00", "source": "https://www.reutersconnect.com/item/pro-palestinian-rally-held-in-midtown-manhattan-nyc/dGFnOnJldXRlcnMuY29tLDIwMjU6bmV3c21sX01UMUFOQURMMDAwMklPRTZW", "summary": "Blurb: Midtown assembly marking two years since Oct 7; police kettling used at curb lanes, no major clashes reported. Further: Crowd centered near Times Square spillover zones; NYPD Community Affairs and SRG units present. Chants, speeches; intermittent traffic holds on 7th Ave and 42nd Street."},
   
-{"title": "No Kings NYC — Labor Feeder March", "city": "New York", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T11:00:00", "source": "https://nycclc.org/events/no-kings-nyc-labor-march", "summary": "Blurb: Labor feeder march joins national 'No Kings' day; planned route from Duarte Square to 14th St. Further: Union delegations, marshals, and sound trucks expected; NYPD escorts; brief closures along 6th Ave with merge into the main march corridor."},
+{"title": "No Kings NYC — Labor Feeder March", "city": "New York", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T11:00:00", "source": "https://nycclc.org/events/no-kings-nyc-labor-march", "summary": "Blurb: Labor feeder march joins national 'No Kings' day; planned route from Duarte Square to 14th St. Further: Union delegations, marshals, and sound trucks expected; NYPD escorts; brief closures along 6th Ave with merge into the main march corridor."},
   
-{"title": "No Kings March — Times Sq to 14th St", "city": "New York", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T10:30:00", "source": "https://www.xrebellion.nyc/events/nokingsmarchoct18", "summary": "Blurb: XR NYC contingent marches to join national action; disruptive but negotiated route. Further: Environmental bloc coordinates with main 'No Kings' organizers; anticipated slow rolls through Midtown pedestrian choke points; police liaison established."},
+{"title": "No Kings March — Times Sq to 14th St", "city": "New York", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T10:30:00", "source": "https://www.xrebellion.nyc/events/nokingsmarchoct18", "summary": "Blurb: XR NYC contingent marches to join national action; disruptive but negotiated route. Further: Environmental bloc coordinates with main 'No Kings' organizers; anticipated slow rolls through Midtown pedestrian choke points; police liaison established."},
   
-{"title": "No Kings Day of Action — NYC", "city": "New York", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.nyclu.org/event/no-kings-day-of-action", "summary": "Blurb: Civil liberties-focused rally denouncing executive overreach; speeches and registration drives. Further: Setup at feeder sites with convergence near Union Square; ADA-accessible assembly; anticipate press scrums and short-term subway egress congestion."},
+{"title": "No Kings Day of Action — NYC", "city": "New York", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.nyclu.org/event/no-kings-day-of-action", "summary": "Blurb: Civil liberties-focused rally denouncing executive overreach; speeches and registration drives. Further: Setup at feeder sites with convergence near Union Square; ADA-accessible assembly; anticipate press scrums and short-term subway egress congestion."},
   
-{"title": "‘No Kings’ National March — DC", "city": "Washington", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T09:30:00", "source": "https://www.fox5dc.com/news/speaker-johnson-claims-no-kings-march-planned-dc-hate-america-rally", "summary": "Blurb: Large march planned along 14th St NW to the National Mall; political tensions expected, coordinated policing. Further: Staging near McPherson/Franklin Squares; Park Police and MPD jurisdictional split; rolling road closures on Constitution Ave; counter-demonstrator presence likely at Lafayette Square."},
+{"title": "‘No Kings’ National March — DC", "city": "Washington", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T09:30:00", "source": "https://www.fox5dc.com/news/speaker-johnson-claims-no-kings-march-planned-dc-hate-america-rally", "summary": "Blurb: Large march planned along 14th St NW to the National Mall; political tensions expected, coordinated policing. Further: Staging near McPherson/Franklin Squares; Park Police and MPD jurisdictional split; rolling road closures on Constitution Ave; counter-demonstrator presence likely at Lafayette Square."},
   
-{"title": "No Kings — DC Metro Area Preview", "city": "Washington", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T10:00:00", "source": "https://www.wusa9.com/article/news/local/dc/thousands-expected-in-dc-area-for-no-kings-rallies/65-3ea4512c-e63b-4247-981e-b6a33821ec1e", "summary": "Blurb: Thousands expected across the DC region for synchronized rallies; primary focus downtown core. Further: Suburban feeder marches expected from Arlington/Alexandria; transit agencies add capacity; Secret Service perimeters unaffected but adjacent crowding near federal buildings."},
+{"title": "No Kings — DC Metro Area Preview", "city": "Washington", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T10:00:00", "source": "https://www.wusa9.com/article/news/local/dc/thousands-expected-in-dc-area-for-no-kings-rallies/65-3ea4512c-e63b-4247-981e-b6a33821ec1e", "summary": "Blurb: Thousands expected across the DC region for synchronized rallies; primary focus downtown core. Further: Suburban feeder marches expected from Arlington/Alexandria; transit agencies add capacity; Secret Service perimeters unaffected but adjacent crowding near federal buildings."},
   
-{"title": "No Kings — Chicago (Grant Park)", "city": "Chicago", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.lwvchicago.org/calendar-of-events/no-kings-lw3wp", "summary": "Blurb: Chicago rally at Grant Park with civic groups and unions; peaceful mass assembly expected. Further: Street closures around Columbus Dr. and Balbo; staging of auxiliary feeder marches; low risk of confrontations given stewarding and liaison teams."},
+{"title": "No Kings — Chicago (Grant Park)", "city": "Chicago", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.lwvchicago.org/calendar-of-events/no-kings-lw3wp", "summary": "Blurb: Chicago rally at Grant Park with civic groups and unions; peaceful mass assembly expected. Further: Street closures around Columbus Dr. and Balbo; staging of auxiliary feeder marches; low risk of confrontations given stewarding and liaison teams."},
   
-{"title": "No Kings — Chicago Citywide Listings", "city": "Chicago", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.pjstar.com/story/news/politics/2025/10/13/no-kings-rallies-oct-18-list-of-illinois-protests-times-locations-near-me-chicago/86624492007/", "summary": "Blurb: Multiple neighborhood rallies (North Side, Lincoln Park, Northwest Side) feeding into central actions. Further: Localized traffic holds; police presence dispersed; negligible disruption beyond immediate rally windows."},
+{"title": "No Kings — Chicago Citywide Listings", "city": "Chicago", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.pjstar.com/story/news/politics/2025/10/13/no-kings-rallies-oct-18-list-of-illinois-protests-times-locations-near-me-chicago/86624492007/", "summary": "Blurb: Multiple neighborhood rallies (North Side, Lincoln Park, Northwest Side) feeding into central actions. Further: Localized traffic holds; police presence dispersed; negligible disruption beyond immediate rally windows."},
   
-{"title": "No Kings Suburbs — Oak Park & Forest Park", "city": "Oak Park", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T11:00:00", "source": "https://www.oakpark.com/2025/10/14/anti-trump-no-kings-protests-scheduled-for-oak-park-and-forest-park/", "summary": "Blurb: Suburban rallies aligned to Chicago action; family-friendly with speeches. Further: Park district venues; minimal policing; parking congestion near Recreation Park fields."},
+{"title": "No Kings Suburbs — Oak Park & Forest Park", "city": "Oak Park", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T11:00:00", "source": "https://www.oakpark.com/2025/10/14/anti-trump-no-kings-protests-scheduled-for-oak-park-and-forest-park/", "summary": "Blurb: Suburban rallies aligned to Chicago action; family-friendly with speeches. Further: Park district venues; minimal policing; parking congestion near Recreation Park fields."},
   
-{"title": "No Kings — Arlington Heights (Suburban)", "city": "Arlington Heights", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T15:00:00", "source": "https://www.facebook.com/groups/534337223743263/posts/2184268572083445/", "summary": "Blurb: Suburban mutual aid + rally; small turnout expected. Further: Local organizers emphasize non-confrontational messaging; police aware; short event duration."},
+{"title": "No Kings — Arlington Heights (Suburban)", "city": "Arlington Heights", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T15:00:00", "source": "https://www.facebook.com/groups/534337223743263/posts/2184268572083445/", "summary": "Blurb: Suburban mutual aid + rally; small turnout expected. Further: Local organizers emphasize non-confrontational messaging; police aware; short event duration."},
   
-{"title": "No Kings — Downtown Los Angeles", "city": "Los Angeles", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.seiu99.org/2025/10/02/no-kings-march-rally-stand-together-on-october-18/", "summary": "Blurb: Union-led contingent at LAUSD HQ joins the national day; lane closures and media presence expected. Further: SEIU and allied unions coordinate marshals; LAPD escorts; route along Beaudry to civic core with dispersal near Grand Park."},
+{"title": "No Kings — Downtown Los Angeles", "city": "Los Angeles", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.seiu99.org/2025/10/02/no-kings-march-rally-stand-together-on-october-18/", "summary": "Blurb: Union-led contingent at LAUSD HQ joins the national day; lane closures and media presence expected. Further: SEIU and allied unions coordinate marshals; LAPD escorts; route along Beaudry to civic core with dispersal near Grand Park."},
   
-{"title": "No Kings — Southern California Overview", "city": "Los Angeles", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.foxla.com/news/no-kings-day-anti-trump-protests-california-oct-18", "summary": "Blurb: Dozens of SoCal rallies synchronized; most are static gatherings with speeches. Further: Traffic impacts localized around civic centers; beach cities expect small marches; CHP monitoring freeway-adjacent routes."},
+{"title": "No Kings — Southern California Overview", "city": "Los Angeles", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.foxla.com/news/no-kings-day-anti-trump-protests-california-oct-18", "summary": "Blurb: Dozens of SoCal rallies synchronized; most are static gatherings with speeches. Further: Traffic impacts localized around civic centers; beach cities expect small marches; CHP monitoring freeway-adjacent routes."},
   
-{"title": "No Kings — San Diego Waterfront Park", "city": "San Diego", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://obrag.org/2025/10/no-kings-rally-and-march-in-san-diego-waterfront-park-saturday-oct-18-other-events-listed/", "summary": "Blurb: Countywide day of action with main rally at Waterfront Park; family-friendly tone. Further: Road closures on Pacific Hwy frontage; trolley stations busier; limited counter-protest risk."},
+{"title": "No Kings — San Diego Waterfront Park", "city": "San Diego", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://obrag.org/2025/10/no-kings-rally-and-march-in-san-diego-waterfront-park-saturday-oct-18-other-events-listed/", "summary": "Blurb: Countywide day of action with main rally at Waterfront Park; family-friendly tone. Further: Road closures on Pacific Hwy frontage; trolley stations busier; limited counter-protest risk."},
   
-{"title": "No Kings — Austin March", "city": "Austin", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://spectrumlocalnews.com/tx/south-texas-el-paso/news/2025/10/14/despite-trump-s-objections---no-kings--march-will-continue", "summary": "Blurb: March to proceed despite political pushback; route and fees disputed publicly. Further: APD coordinating with organizers; Capitol grounds peripheral impacts; moderate risk of antagonistic counter-presence."},
+{"title": "No Kings — Austin March", "city": "Austin", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://spectrumlocalnews.com/tx/south-texas-el-paso/news/2025/10/14/despite-trump-s-objections---no-kings--march-will-continue", "summary": "Blurb: March to proceed despite political pushback; route and fees disputed publicly. Further: APD coordinating with organizers; Capitol grounds peripheral impacts; moderate risk of antagonistic counter-presence."},
   
-{"title": "No Kings — Laredo Rally", "city": "Laredo", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.lmtonline.com/local/article/laredo-no-kings-day-protest-trump-2025-21100652.php", "summary": "Blurb: Local 'No Kings Day' protest at Jett Bowl North; peaceful, short-duration gathering. Further: Organized by Webb County Democratic Party and local groups; minimal law enforcement footprint; low disruption."},
+{"title": "No Kings — Laredo Rally", "city": "Laredo", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.lmtonline.com/local/article/laredo-no-kings-day-protest-trump-2025-21100652.php", "summary": "Blurb: Local 'No Kings Day' protest at Jett Bowl North; peaceful, short-duration gathering. Further: Organized by Webb County Democratic Party and local groups; minimal law enforcement footprint; low disruption."},
   
-{"title": "No Kings — Hartford", "city": "Hartford", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T12:00:00", "source": "https://www.ctinsider.com/news/article/ct-no-kings-protests-trump-oct-18-21094963.php", "summary": "Blurb: Largest CT rally with elected speakers; celebratory tone. Further: Music stage, voter registration tables; HPD traffic guidance; road closures near Bushnell Park."},
+{"title": "No Kings — Hartford", "city": "Hartford", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T12:00:00", "source": "https://www.ctinsider.com/news/article/ct-no-kings-protests-trump-oct-18-21094963.php", "summary": "Blurb: Largest CT rally with elected speakers; celebratory tone. Further: Music stage, voter registration tables; HPD traffic guidance; road closures near Bushnell Park."},
   
-{"title": "No Kings — Albany/Capital Region", "city": "Albany", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T12:00:00", "source": "https://www.timesunion.com/news/article/know-oct-18-no-kings-rallies-albany-hudson-21100283.php", "summary": "Blurb: Capital Region corridor action along Western Ave; multiple upstate towns aligned. Further: Rolling closures coordinated with APD; turnout expected to exceed June baseline; limited counter-protests."},
+{"title": "No Kings — Albany/Capital Region", "city": "Albany", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T12:00:00", "source": "https://www.timesunion.com/news/article/know-oct-18-no-kings-rallies-albany-hudson-21100283.php", "summary": "Blurb: Capital Region corridor action along Western Ave; multiple upstate towns aligned. Further: Rolling closures coordinated with APD; turnout expected to exceed June baseline; limited counter-protests."},
   
-{"title": "No Kings — NYC/NJ Locations Map", "city": "New York", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T11:30:00", "source": "https://www.fox5ny.com/news/no-kings-day-protest-nyc-locations-map-trump-saturday-oct-18", "summary": "Blurb: Location index for NYC/NJ actions; numerous small-to-medium sites. Further: Borough-level gatherings with march elements in Manhattan and Brooklyn; NYPD presence standard for permitted events."},
+{"title": "No Kings — NYC/NJ Locations Map", "city": "New York", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T11:30:00", "source": "https://www.fox5ny.com/news/no-kings-day-protest-nyc-locations-map-trump-saturday-oct-18", "summary": "Blurb: Location index for NYC/NJ actions; numerous small-to-medium sites. Further: Borough-level gatherings with march elements in Manhattan and Brooklyn; NYPD presence standard for permitted events."},
   
 {"title": "Oct 7 Vigil — Toronto (Jurassic Park)", "city": "Toronto", "country": "Canada", "continent": "North America", "risk": "medium", "time": "2025-10-07T18:00:00", "source": "https://www.instagram.com/p/DPeownAEtXD/", "summary": "Blurb: Evening rally at Jurassic Park; campus and community blocs present. Further: Focus on ceasefire and sanctions; TPS monitored with low intervention; transit hubs (Union Station) experienced brief surges."},
   
@@ -16979,13 +16998,13 @@ title:"Waitangi Day events & demonstrations — Wellington",
   
 {"title": "Vancouver Oct 4 Rally — Downtown", "city": "Vancouver", "country": "Canada", "continent": "North America", "risk": "low", "time": "2025-10-04T13:00:00", "source": "https://www.instagram.com/p/DPZ7GvwgWDw/", "summary": "Blurb: Large downtown rally; primarily peaceful. Further: Speeches at art gallery steps; VPD monitored from distance; transit unaffected beyond brief bus delays."},
   
-{"title": "Oct 7 Anniversary Rallies — U.S. overview", "city": "Multiple", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-07T12:00:00", "source": "https://www.reuters.com/world/middle-east/planned-pro-palestinian-protests-gaza-war-anniversary-draw-criticism-2025-10-07/", "summary": "Blurb: Coordinated Oct 7 anniversary actions across U.S. cities; varying sizes and tone. Further: Events ranged from campus vigils to downtown marches; some controversy over event messaging; policing generally restrained with localized arrests elsewhere."},
+{"title": "Oct 7 Anniversary Rallies — U.S. overview", "city": "Multiple", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-07T12:00:00", "source": "https://www.reuters.com/world/middle-east/planned-pro-palestinian-protests-gaza-war-anniversary-draw-criticism-2025-10-07/", "summary": "Blurb: Coordinated Oct 7 anniversary actions across U.S. cities; varying sizes and tone. Further: Events ranged from campus vigils to downtown marches; some controversy over event messaging; policing generally restrained with localized arrests elsewhere."},
   
-{"title": "'No Kings' Nationwide Day of Action — Overview", "city": "Multiple", "country": "USA", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.livenowfox.com/news/what-know-about-no-kings-protests", "summary": "Blurb: National day of action with hundreds of synchronized events; family-friendly tone emphasized. Further: Organizers cite 'defense of democracy' framing; expected multi-city marches with local permitting and liaison processes."},
+{"title": "'No Kings' Nationwide Day of Action — Overview", "city": "Multiple", "country": "United States", "continent": "North America", "risk": "medium", "time": "2025-10-18T12:00:00", "source": "https://www.livenowfox.com/news/what-know-about-no-kings-protests", "summary": "Blurb: National day of action with hundreds of synchronized events; family-friendly tone emphasized. Further: Organizers cite 'defense of democracy' framing; expected multi-city marches with local permitting and liaison processes."},
   
-{"title": "'No Kings' Organizing Hub", "city": "Multiple", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T09:00:00", "source": "https://www.nokings.org/", "summary": "Blurb: National hub for Oct 18 actions with registration and listings. Further: Use to corroborate city-level details and feeder convergence plans; not an event itself, but authoritative schedule index."},
+{"title": "'No Kings' Organizing Hub", "city": "Multiple", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T09:00:00", "source": "https://www.nokings.org/", "summary": "Blurb: National hub for Oct 18 actions with registration and listings. Further: Use to corroborate city-level details and feeder convergence plans; not an event itself, but authoritative schedule index."},
   
-{"title": "'No Kings' Illinois Cluster — Roundup", "city": "Multiple (IL)", "country": "USA", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.yahoo.com/news/articles/no-kings-protests-return-oct-090510076.html", "summary": "Blurb: Roundup article listing Illinois times/locations; suburban and city sites. Further: Useful as corroborating source alongside local organizers’ pages; small to medium gatherings."},
+{"title": "'No Kings' Illinois Cluster — Roundup", "city": "Multiple (IL)", "country": "United States", "continent": "North America", "risk": "low", "time": "2025-10-18T10:00:00", "source": "https://www.yahoo.com/news/articles/no-kings-protests-return-oct-090510076.html", "summary": "Blurb: Roundup article listing Illinois times/locations; suburban and city sites. Further: Useful as corroborating source alongside local organizers’ pages; small to medium gatherings."},
     
 
   { title:"Education & Health Funding March", city:"Buenos Aires", country:"Argentina", continent:"South America", risk:"medium", time:"2025-09-17T17:00:00", source:"https://www.reuters.com/world/americas/argentines-march-demand-increased-education-healthcare-funding-2025-09-17/", summary:"Blurb: Tens of thousands rallied downtown against austerity, demanding more funds for universities and pediatric care.\n\nFurther: Marchers converged on Congress and key ministries, with faculty unions, student federations and health workers leading columns. Police maintained corridor lanes, but intermittent bottlenecks formed along Avenida de Mayo and near Plaza Congreso. Organizers vowed to keep pressure on lawmakers ahead of budget votes; officials warned of transit disruption on Metro lines A and D during peak return hours." },
@@ -17211,7 +17230,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
 { title:"International Women’s Day March", city:"Vienna", country:"Austria", continent:"Europe", risk:"medium", time:"2025-03-08T17:00:00", source:"https://www.reuters.com/pictures/scenes-international-womens-day-2025-03-10/", summary:"Blurb: Evening rallies on gender equality and safety; large, stewarded crowds expected in city centres. Further: Routes typically link civic squares to parliament/government areas; anticipate metro surges pre/post march and rolling closures." },
 
-{ title:"International Women’s Day March", city:"Prague", country:"Czechia", continent:"Europe", risk:"medium", time:"2025-03-08T17:00:00", source:"https://www.reuters.com/pictures/scenes-international-womens-day-2025-03-10/", summary:"Blurb: Evening rallies on gender equality and safety; large, stewarded crowds expected in city centres. Further: Routes typically link civic squares to parliament/government areas; anticipate metro surges pre/post march and rolling closures." },
+{ title:"International Women’s Day March", city:"Prague", country:"Czech Republic", continent:"Europe", risk:"medium", time:"2025-03-08T17:00:00", source:"https://www.reuters.com/pictures/scenes-international-womens-day-2025-03-10/", summary:"Blurb: Evening rallies on gender equality and safety; large, stewarded crowds expected in city centres. Further: Routes typically link civic squares to parliament/government areas; anticipate metro surges pre/post march and rolling closures." },
 
 { title:"International Women’s Day March", city:"Warsaw", country:"Poland", continent:"Europe", risk:"medium", time:"2025-03-08T17:00:00", source:"https://www.reuters.com/pictures/scenes-international-womens-day-2025-03-10/", summary:"Blurb: Evening rallies on gender equality and safety; large, stewarded crowds expected in city centres. Further: Routes typically link civic squares to parliament/government areas; anticipate metro surges pre/post march and rolling closures." },
 
@@ -17287,7 +17306,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
 { title:"May Day — Labour & Social Justice March", city:"Vienna", country:"Austria", continent:"Europe", risk:"medium", time:"2025-05-01T11:00:00", source:"https://www.reuters.com/pictures/may-day-protests-around-world-2025-05-01/FMIWQXVZOBNFHGMPYYCKWYPATA/", summary:"Blurb: Labour unions and allied groups mobilise for May Day; large daytime marches in core districts. Further: Police barriers at government corridors; some cities enforce square access limits; sporadic scuffles possible at fringes." },
 
-{ title:"May Day — Labour & Social Justice March", city:"Prague", country:"Czechia", continent:"Europe", risk:"medium", time:"2025-05-01T11:00:00", source:"https://www.reuters.com/pictures/may-day-protests-around-world-2025-05-01/FMIWQXVZOBNFHGMPYYCKWYPATA/", summary:"Blurb: Labour unions and allied groups mobilise for May Day; large daytime marches in core districts. Further: Police barriers at government corridors; some cities enforce square access limits; sporadic scuffles possible at fringes." },
+{ title:"May Day — Labour & Social Justice March", city:"Prague", country:"Czech Republic", continent:"Europe", risk:"medium", time:"2025-05-01T11:00:00", source:"https://www.reuters.com/pictures/may-day-protests-around-world-2025-05-01/FMIWQXVZOBNFHGMPYYCKWYPATA/", summary:"Blurb: Labour unions and allied groups mobilise for May Day; large daytime marches in core districts. Further: Police barriers at government corridors; some cities enforce square access limits; sporadic scuffles possible at fringes." },
 
 { title:"May Day — Labour & Social Justice March", city:"Budapest", country:"Hungary", continent:"Europe", risk:"high", time:"2025-05-01T11:00:00", source:"https://www.reuters.com/pictures/may-day-protests-around-world-2025-05-01/FMIWQXVZOBNFHGMPYYCKWYPATA/", summary:"Blurb: Labour unions and allied groups mobilise for May Day; large daytime marches in core districts. Further: Police barriers at government corridors; some cities enforce square access limits; sporadic scuffles possible at fringes." },
 
@@ -17375,7 +17394,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
  
 { title:"Protests vs Romanian Election Annulment", city:"Bucharest", country:"Romania", continent:"Europe", risk:"medium", time:"2025-01-12T15:00:00", source:"https://en.wikipedia.org/wiki/2024%E2%80%932025_Romanian_election_annulment_protests", summary:"Blurb: Tens of thousands assemble at University Square demanding vote resumes after court annulled election. Further: peaceful but emotionally charged; spillover activism in diaspora embassies across Europe; moderate risk of arrests." },
  
-{ title:"Farmers Protest EU Trade Policies", city:"Prague", country:"Czechia", continent:"Europe", risk:"medium", time:"2025-02-27T08:00:00", source:"https://en.wikipedia.org/wiki/2023%E2%80%932025_Czech_Union_farmers%27_protests", summary:"Blurb: Farmers mobilize tractors around Prague protesting perceived unfair competition & food imports. Further: rural convoys into capital; highway slowdowns and blockades near government ministries expected." },
+{ title:"Farmers Protest EU Trade Policies", city:"Prague", country:"Czech Republic", continent:"Europe", risk:"medium", time:"2025-02-27T08:00:00", source:"https://en.wikipedia.org/wiki/2023%E2%80%932025_Czech_Union_farmers%27_protests", summary:"Blurb: Farmers mobilize tractors around Prague protesting perceived unfair competition & food imports. Further: rural convoys into capital; highway slowdowns and blockades near government ministries expected." },
  
 { title:"Nationwide Rally vs Conservative-AfD Link", city:"Berlin", country:"Germany", continent:"Europe", risk:"high", time:"2025-02-02T11:00:00", source:"https://www.aljazeera.com/news/2025/2/2/protesters-rally-against-german-leaders-support-from-far-right-afd-party", summary:"Blurb: Tens of thousands protest CDU’s proposed migration law aided by AfD tie-ups. Further: similar rallies in Hamburg, Munich, Cologne, Leipzig; strong national media coverage and visible police deployments." },
 
@@ -18040,132 +18059,132 @@ title:"Waitangi Day events & demonstrations — Wellington",
 { title:"Campus Solidarity Rally", city:"Lahore", country:"Pakistan", continent:"Asia", risk:"medium", time:"2025-04-18T15:00:00", source:"#", summary:"Blurb: Multi-campus rally in Lahore's Lower Mall zone. Further: Student unions coordinate speeches outside press club; traffic lanes intermittently held; low risk of clashes." },
 
 
-{ title:"Anti-Trump Demonstrations on Inauguration Weekend", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-01-18T12:00:00", source:"https://www.reuters.com/world/us/thousands-gather-washington-protest-trump-inauguration-2025-01-18/", summary:"Blurb: Thousands rally downtown during inauguration weekend; marches and static assemblies around the Mall. Further: Police manage rolling closures on Constitution/Independence avenues; sporadic scuffles but overall controlled; expect metro surges at L’Enfant Plaza and Gallery Place." },
+{ title:"Anti-Trump Demonstrations on Inauguration Weekend", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-01-18T12:00:00", source:"https://www.reuters.com/world/us/thousands-gather-washington-protest-trump-inauguration-2025-01-18/", summary:"Blurb: Thousands rally downtown during inauguration weekend; marches and static assemblies around the Mall. Further: Police manage rolling closures on Constitution/Independence avenues; sporadic scuffles but overall controlled; expect metro surges at L’Enfant Plaza and Gallery Place." },
 
-  { title:"University of Washington Building Occupation", city:"Seattle", country:"USA", continent:"North America", risk:"high", time:"2025-05-06T17:00:00", source:"https://www.reuters.com/world/us/us-reviews-occupation-university-washington-building-by-pro-palestinian-2025-05-07/", summary:"Blurb: Protesters occupy a UW building as part of campus divestment actions; dozens detained. Further: Entry points barricaded; SPD supports campus police; classes relocated; perimeters tightened around the Quad with controlled access." },
-  { title:"Columbia Library Occupation & Arrests", city:"New York", country:"USA", continent:"North America", risk:"high", time:"2025-05-07T19:00:00", source:"https://www.reuters.com/world/us/dozens-pro-palestinian-protesters-occupy-columbia-university-library-2025-05-07/", summary:"Blurb: Students occupy Butler Library reading room; NYPD makes dozens of arrests. Further: University restricts building access; intensified security patrols; solidarity marches ripple to Morningside Heights and Broadway corridors." },
-  { title:"Columbia Suspends Students After Occupation", city:"New York", country:"USA", continent:"North America", risk:"medium", time:"2025-05-10T10:00:00", source:"https://www.reuters.com/world/us/columbia-university-suspends-more-than-65-students-over-library-occupation-2025-05-10/", summary:"Blurb: University imposes interim suspensions on >65 students following library occupation. Further: Campus access limitations and protest-management protocols remain; low transport impact outside campus footprint." },
+  { title:"University of Washington Building Occupation", city:"Seattle", country:"United States", continent:"North America", risk:"high", time:"2025-05-06T17:00:00", source:"https://www.reuters.com/world/us/us-reviews-occupation-university-washington-building-by-pro-palestinian-2025-05-07/", summary:"Blurb: Protesters occupy a UW building as part of campus divestment actions; dozens detained. Further: Entry points barricaded; SPD supports campus police; classes relocated; perimeters tightened around the Quad with controlled access." },
+  { title:"Columbia Library Occupation & Arrests", city:"New York", country:"United States", continent:"North America", risk:"high", time:"2025-05-07T19:00:00", source:"https://www.reuters.com/world/us/dozens-pro-palestinian-protesters-occupy-columbia-university-library-2025-05-07/", summary:"Blurb: Students occupy Butler Library reading room; NYPD makes dozens of arrests. Further: University restricts building access; intensified security patrols; solidarity marches ripple to Morningside Heights and Broadway corridors." },
+  { title:"Columbia Suspends Students After Occupation", city:"New York", country:"United States", continent:"North America", risk:"medium", time:"2025-05-10T10:00:00", source:"https://www.reuters.com/world/us/columbia-university-suspends-more-than-65-students-over-library-occupation-2025-05-10/", summary:"Blurb: University imposes interim suspensions on >65 students following library occupation. Further: Campus access limitations and protest-management protocols remain; low transport impact outside campus footprint." },
   { title:"Canada Rallies Push Back on U.S. Tensions (‘Elbows Up’)", city:"Toronto", country:"Canada", continent:"North America", risk:"low", time:"2025-03-15T14:00:00", source:"https://www.reuters.com/world/americas/angry-canadians-get-their-elbows-up-face-trump-threats-2025-03-15/", summary:"Blurb: Civic rallies and campaigns express Canadian frustration over cross-border tensions. Further: Peaceful gatherings; police-facilitated routes; minor downtown delays near Queen’s Park and Eaton Centre approaches." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"USA", continent:"North America", risk:"low", time:"2025-01-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2025-01-06T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"USA", continent:"North America", risk:"low", time:"2025-01-07T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"USA", continent:"North America", risk:"medium", time:"2025-01-08T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"USA", continent:"North America", risk:"low", time:"2025-01-09T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"USA", continent:"North America", risk:"low", time:"2025-01-10T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"USA", continent:"North America", risk:"medium", time:"2025-01-11T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2025-01-12T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"USA", continent:"North America", risk:"medium", time:"2025-01-13T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2025-01-14T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"USA", continent:"North America", risk:"low", time:"2025-01-15T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"USA", continent:"North America", risk:"medium", time:"2025-01-16T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"USA", continent:"North America", risk:"low", time:"2025-01-17T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"USA", continent:"North America", risk:"medium", time:"2025-01-18T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"USA", continent:"North America", risk:"low", time:"2025-01-19T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"USA", continent:"North America", risk:"low", time:"2025-01-20T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"USA", continent:"North America", risk:"medium", time:"2025-01-21T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"USA", continent:"North America", risk:"low", time:"2025-01-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-01-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"USA", continent:"North America", risk:"low", time:"2025-01-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"USA", continent:"North America", risk:"low", time:"2025-02-05T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2025-02-06T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"USA", continent:"North America", risk:"low", time:"2025-02-07T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"USA", continent:"North America", risk:"medium", time:"2025-02-08T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"USA", continent:"North America", risk:"low", time:"2025-02-09T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"USA", continent:"North America", risk:"low", time:"2025-02-10T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"USA", continent:"North America", risk:"medium", time:"2025-02-11T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2025-02-12T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"USA", continent:"North America", risk:"medium", time:"2025-02-13T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2025-02-14T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"USA", continent:"North America", risk:"low", time:"2025-02-15T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"USA", continent:"North America", risk:"medium", time:"2025-02-16T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"USA", continent:"North America", risk:"low", time:"2025-02-17T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"USA", continent:"North America", risk:"medium", time:"2025-02-18T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"USA", continent:"North America", risk:"low", time:"2025-02-19T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"USA", continent:"North America", risk:"low", time:"2025-02-20T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"USA", continent:"North America", risk:"medium", time:"2025-02-21T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"USA", continent:"North America", risk:"low", time:"2025-02-22T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-02-23T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"USA", continent:"North America", risk:"low", time:"2025-02-24T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"USA", continent:"North America", risk:"low", time:"2025-03-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2025-03-06T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"USA", continent:"North America", risk:"low", time:"2025-03-07T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"USA", continent:"North America", risk:"medium", time:"2025-03-08T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"USA", continent:"North America", risk:"low", time:"2025-03-09T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"USA", continent:"North America", risk:"low", time:"2025-03-10T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"USA", continent:"North America", risk:"medium", time:"2025-03-11T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2025-03-12T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"USA", continent:"North America", risk:"medium", time:"2025-03-13T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2025-03-14T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"USA", continent:"North America", risk:"low", time:"2025-03-15T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"USA", continent:"North America", risk:"medium", time:"2025-03-16T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"USA", continent:"North America", risk:"low", time:"2025-03-17T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"USA", continent:"North America", risk:"medium", time:"2025-03-18T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"USA", continent:"North America", risk:"low", time:"2025-03-19T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"USA", continent:"North America", risk:"low", time:"2025-03-20T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"USA", continent:"North America", risk:"medium", time:"2025-03-21T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"USA", continent:"North America", risk:"low", time:"2025-03-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-03-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"USA", continent:"North America", risk:"low", time:"2025-03-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"USA", continent:"North America", risk:"low", time:"2025-04-05T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2025-04-06T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"USA", continent:"North America", risk:"low", time:"2025-04-07T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"USA", continent:"North America", risk:"medium", time:"2025-04-08T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"USA", continent:"North America", risk:"low", time:"2025-04-09T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"USA", continent:"North America", risk:"low", time:"2025-04-10T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"USA", continent:"North America", risk:"medium", time:"2025-04-11T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2025-04-12T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"USA", continent:"North America", risk:"medium", time:"2025-04-13T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2025-04-14T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"USA", continent:"North America", risk:"low", time:"2025-04-15T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"USA", continent:"North America", risk:"medium", time:"2025-04-16T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"USA", continent:"North America", risk:"low", time:"2025-04-17T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"USA", continent:"North America", risk:"medium", time:"2025-04-18T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"USA", continent:"North America", risk:"low", time:"2025-04-19T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"USA", continent:"North America", risk:"low", time:"2025-04-20T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"USA", continent:"North America", risk:"medium", time:"2025-04-21T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"USA", continent:"North America", risk:"low", time:"2025-04-22T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-04-23T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"USA", continent:"North America", risk:"low", time:"2025-04-24T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"USA", continent:"North America", risk:"low", time:"2025-05-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2025-05-06T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"USA", continent:"North America", risk:"low", time:"2025-05-07T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"USA", continent:"North America", risk:"medium", time:"2025-05-08T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"USA", continent:"North America", risk:"low", time:"2025-05-09T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"USA", continent:"North America", risk:"low", time:"2025-05-10T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"USA", continent:"North America", risk:"medium", time:"2025-05-11T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2025-05-12T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"USA", continent:"North America", risk:"medium", time:"2025-05-13T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2025-05-14T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"USA", continent:"North America", risk:"low", time:"2025-05-15T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"USA", continent:"North America", risk:"medium", time:"2025-05-16T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"USA", continent:"North America", risk:"low", time:"2025-05-17T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"USA", continent:"North America", risk:"medium", time:"2025-05-18T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"USA", continent:"North America", risk:"low", time:"2025-05-19T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"USA", continent:"North America", risk:"low", time:"2025-05-20T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"USA", continent:"North America", risk:"medium", time:"2025-05-21T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"USA", continent:"North America", risk:"low", time:"2025-05-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-05-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"USA", continent:"North America", risk:"low", time:"2025-05-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"USA", continent:"North America", risk:"low", time:"2025-06-05T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"USA", continent:"North America", risk:"medium", time:"2025-06-06T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"USA", continent:"North America", risk:"low", time:"2025-06-07T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"USA", continent:"North America", risk:"medium", time:"2025-06-08T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"USA", continent:"North America", risk:"low", time:"2025-06-09T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"USA", continent:"North America", risk:"low", time:"2025-06-10T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"USA", continent:"North America", risk:"medium", time:"2025-06-11T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"USA", continent:"North America", risk:"low", time:"2025-06-12T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"USA", continent:"North America", risk:"medium", time:"2025-06-13T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"USA", continent:"North America", risk:"low", time:"2025-06-14T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"USA", continent:"North America", risk:"low", time:"2025-06-15T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"USA", continent:"North America", risk:"medium", time:"2025-06-16T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"USA", continent:"North America", risk:"low", time:"2025-06-17T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"USA", continent:"North America", risk:"medium", time:"2025-06-18T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"USA", continent:"North America", risk:"low", time:"2025-06-19T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"USA", continent:"North America", risk:"low", time:"2025-06-20T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"USA", continent:"North America", risk:"medium", time:"2025-06-21T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"USA", continent:"North America", risk:"low", time:"2025-06-22T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"USA", continent:"North America", risk:"medium", time:"2025-06-23T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"USA", continent:"North America", risk:"low", time:"2025-06-24T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"United States", continent:"North America", risk:"low", time:"2025-01-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2025-01-06T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"United States", continent:"North America", risk:"low", time:"2025-01-07T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"United States", continent:"North America", risk:"medium", time:"2025-01-08T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"United States", continent:"North America", risk:"low", time:"2025-01-09T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"United States", continent:"North America", risk:"low", time:"2025-01-10T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"United States", continent:"North America", risk:"medium", time:"2025-01-11T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2025-01-12T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"United States", continent:"North America", risk:"medium", time:"2025-01-13T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2025-01-14T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"United States", continent:"North America", risk:"low", time:"2025-01-15T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"United States", continent:"North America", risk:"medium", time:"2025-01-16T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"United States", continent:"North America", risk:"low", time:"2025-01-17T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"United States", continent:"North America", risk:"medium", time:"2025-01-18T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"United States", continent:"North America", risk:"low", time:"2025-01-19T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"United States", continent:"North America", risk:"low", time:"2025-01-20T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"United States", continent:"North America", risk:"medium", time:"2025-01-21T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"United States", continent:"North America", risk:"low", time:"2025-01-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-01-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"United States", continent:"North America", risk:"low", time:"2025-01-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"United States", continent:"North America", risk:"low", time:"2025-02-05T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2025-02-06T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"United States", continent:"North America", risk:"low", time:"2025-02-07T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"United States", continent:"North America", risk:"medium", time:"2025-02-08T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"United States", continent:"North America", risk:"low", time:"2025-02-09T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"United States", continent:"North America", risk:"low", time:"2025-02-10T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"United States", continent:"North America", risk:"medium", time:"2025-02-11T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2025-02-12T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"United States", continent:"North America", risk:"medium", time:"2025-02-13T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2025-02-14T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"United States", continent:"North America", risk:"low", time:"2025-02-15T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"United States", continent:"North America", risk:"medium", time:"2025-02-16T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"United States", continent:"North America", risk:"low", time:"2025-02-17T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"United States", continent:"North America", risk:"medium", time:"2025-02-18T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"United States", continent:"North America", risk:"low", time:"2025-02-19T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"United States", continent:"North America", risk:"low", time:"2025-02-20T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"United States", continent:"North America", risk:"medium", time:"2025-02-21T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"United States", continent:"North America", risk:"low", time:"2025-02-22T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-02-23T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"United States", continent:"North America", risk:"low", time:"2025-02-24T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"United States", continent:"North America", risk:"low", time:"2025-03-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2025-03-06T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"United States", continent:"North America", risk:"low", time:"2025-03-07T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"United States", continent:"North America", risk:"medium", time:"2025-03-08T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"United States", continent:"North America", risk:"low", time:"2025-03-09T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"United States", continent:"North America", risk:"low", time:"2025-03-10T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"United States", continent:"North America", risk:"medium", time:"2025-03-11T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2025-03-12T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"United States", continent:"North America", risk:"medium", time:"2025-03-13T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2025-03-14T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"United States", continent:"North America", risk:"low", time:"2025-03-15T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"United States", continent:"North America", risk:"medium", time:"2025-03-16T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"United States", continent:"North America", risk:"low", time:"2025-03-17T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"United States", continent:"North America", risk:"medium", time:"2025-03-18T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"United States", continent:"North America", risk:"low", time:"2025-03-19T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"United States", continent:"North America", risk:"low", time:"2025-03-20T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"United States", continent:"North America", risk:"medium", time:"2025-03-21T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"United States", continent:"North America", risk:"low", time:"2025-03-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-03-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"United States", continent:"North America", risk:"low", time:"2025-03-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"United States", continent:"North America", risk:"low", time:"2025-04-05T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2025-04-06T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"United States", continent:"North America", risk:"low", time:"2025-04-07T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"United States", continent:"North America", risk:"medium", time:"2025-04-08T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"United States", continent:"North America", risk:"low", time:"2025-04-09T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"United States", continent:"North America", risk:"low", time:"2025-04-10T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"United States", continent:"North America", risk:"medium", time:"2025-04-11T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2025-04-12T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"United States", continent:"North America", risk:"medium", time:"2025-04-13T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2025-04-14T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"United States", continent:"North America", risk:"low", time:"2025-04-15T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"United States", continent:"North America", risk:"medium", time:"2025-04-16T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"United States", continent:"North America", risk:"low", time:"2025-04-17T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"United States", continent:"North America", risk:"medium", time:"2025-04-18T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"United States", continent:"North America", risk:"low", time:"2025-04-19T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"United States", continent:"North America", risk:"low", time:"2025-04-20T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"United States", continent:"North America", risk:"medium", time:"2025-04-21T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"United States", continent:"North America", risk:"low", time:"2025-04-22T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-04-23T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"United States", continent:"North America", risk:"low", time:"2025-04-24T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"United States", continent:"North America", risk:"low", time:"2025-05-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2025-05-06T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"United States", continent:"North America", risk:"low", time:"2025-05-07T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"United States", continent:"North America", risk:"medium", time:"2025-05-08T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"United States", continent:"North America", risk:"low", time:"2025-05-09T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"United States", continent:"North America", risk:"low", time:"2025-05-10T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"United States", continent:"North America", risk:"medium", time:"2025-05-11T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2025-05-12T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"United States", continent:"North America", risk:"medium", time:"2025-05-13T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2025-05-14T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"United States", continent:"North America", risk:"low", time:"2025-05-15T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"United States", continent:"North America", risk:"medium", time:"2025-05-16T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"United States", continent:"North America", risk:"low", time:"2025-05-17T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"United States", continent:"North America", risk:"medium", time:"2025-05-18T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"United States", continent:"North America", risk:"low", time:"2025-05-19T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"United States", continent:"North America", risk:"low", time:"2025-05-20T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"United States", continent:"North America", risk:"medium", time:"2025-05-21T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"United States", continent:"North America", risk:"low", time:"2025-05-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-05-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"United States", continent:"North America", risk:"low", time:"2025-05-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — New York", city:"New York", country:"United States", continent:"North America", risk:"low", time:"2025-06-05T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Los Angeles", city:"Los Angeles", country:"United States", continent:"North America", risk:"medium", time:"2025-06-06T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Chicago", city:"Chicago", country:"United States", continent:"North America", risk:"low", time:"2025-06-07T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Houston", city:"Houston", country:"United States", continent:"North America", risk:"medium", time:"2025-06-08T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Phoenix", city:"Phoenix", country:"United States", continent:"North America", risk:"low", time:"2025-06-09T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Philadelphia", city:"Philadelphia", country:"United States", continent:"North America", risk:"low", time:"2025-06-10T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Dallas", city:"Dallas", country:"United States", continent:"North America", risk:"medium", time:"2025-06-11T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Atlanta", city:"Atlanta", country:"United States", continent:"North America", risk:"low", time:"2025-06-12T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Boston", city:"Boston", country:"United States", continent:"North America", risk:"medium", time:"2025-06-13T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — San Francisco", city:"San Francisco", country:"United States", continent:"North America", risk:"low", time:"2025-06-14T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Seattle", city:"Seattle", country:"United States", continent:"North America", risk:"low", time:"2025-06-15T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Portland", city:"Portland", country:"United States", continent:"North America", risk:"medium", time:"2025-06-16T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Austin", city:"Austin", country:"United States", continent:"North America", risk:"low", time:"2025-06-17T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Miami", city:"Miami", country:"United States", continent:"North America", risk:"medium", time:"2025-06-18T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Denver", city:"Denver", country:"United States", continent:"North America", risk:"low", time:"2025-06-19T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Detroit", city:"Detroit", country:"United States", continent:"North America", risk:"low", time:"2025-06-20T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Minneapolis", city:"Minneapolis", country:"United States", continent:"North America", risk:"medium", time:"2025-06-21T15:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — St. Louis", city:"St. Louis", country:"United States", continent:"North America", risk:"low", time:"2025-06-22T16:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Washington, D.C.", city:"Washington, D.C.", country:"United States", continent:"North America", risk:"medium", time:"2025-06-23T17:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
+  { title:"Civic Rally / Divestment / Labour Day of Action — Baltimore", city:"Baltimore", country:"United States", continent:"North America", risk:"low", time:"2025-06-24T18:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
   
 
 { title:"Civic & Labour Action — Toronto", city:"Toronto", country:"Canada", continent:"North America", risk:"low", time:"2025-01-05T11:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
@@ -18288,8 +18307,8 @@ title:"Waitangi Day events & demonstrations — Wellington",
   { title:"Marcha Cívica y Sindical — Mérida", city:"Mérida", country:"Mexico", continent:"North America", risk:"low", time:"2025-06-22T12:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
   { title:"Marcha Cívica y Sindical — Chihuahua", city:"Chihuahua", country:"Mexico", continent:"North America", risk:"medium", time:"2025-06-23T13:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
   { title:"Marcha Cívica y Sindical — Toluca", city:"Toluca", country:"Mexico", continent:"North America", risk:"low", time:"2025-06-24T14:00:00", source:"#", summary:"Blurb: Announced march/assembly; downtown congestion likely. Further: Police implement rolling closures and barricades at rally nodes; stewarding expected; limited counter-presence." },
-  { title:"Intensified Demonstration", city:"Portland", country:"USA", continent:"North America", risk:"high", time:"2025-02-22T20:00:00", source:"#", summary:"Blurb: Nighttime march with brief clashes downtown. Further: Firework/pyro risk; rapid response units stage near Justice Center; rolling dispersal orders likely." },
-  { title:"Intensified Demonstration", city:"Oakland", country:"USA", continent:"North America", risk:"high", time:"2025-03-09T19:30:00", source:"#", summary:"Blurb: Port-adjacent pickets disrupt ingress at terminals. Further: Gate slowdowns and convoy delays; mutual aid requested depending on turnout." },
+  { title:"Intensified Demonstration", city:"Portland", country:"United States", continent:"North America", risk:"high", time:"2025-02-22T20:00:00", source:"#", summary:"Blurb: Nighttime march with brief clashes downtown. Further: Firework/pyro risk; rapid response units stage near Justice Center; rolling dispersal orders likely." },
+  { title:"Intensified Demonstration", city:"Oakland", country:"United States", continent:"North America", risk:"high", time:"2025-03-09T19:30:00", source:"#", summary:"Blurb: Port-adjacent pickets disrupt ingress at terminals. Further: Gate slowdowns and convoy delays; mutual aid requested depending on turnout." },
   { title:"Intensified Demonstration", city:"Monterrey", country:"Mexico", continent:"North America", risk:"medium", time:"2025-04-18T17:00:00", source:"#", summary:"Blurb: Workers’ march along Avenida Constitución. Further: Bridge approaches intermittently held; traffic police implement diversions." },
   { title:"Intensified Demonstration", city:"Montreal", country:"Canada", continent:"North America", risk:"medium", time:"2025-01-27T15:00:00", source:"#", summary:"Blurb: Tuition/fees rally near McGill. Further: Campus perimeter marshalled; Saint Catherine Street buses detoured." },
 
@@ -18789,7 +18808,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
 { title:"Climate Strike — Youth for Earth", city:"Seoul", country:"South Korea", continent:"Asia", risk:"low", time:"2025-09-06T13:00:00", source:"https://koreajoongangdaily.joins.com/news/2025/09/06/socialAffairs/climate-strike-seoul-youth-protest/20250906000010.html", summary:"Blurb: Youth activists gathered downtown. Further: Peaceful rally in Gwanghwamun Square; no incidents." },
 
-{ title:"Labour Rights March", city:"Hong Kong", country:"China (SAR)", continent:"Asia", risk:"medium", time:"2025-08-18T15:00:00", source:"https://www.scmp.com/news/hong-kong/politics/article/3260890/hundreds-join-labour-rights-march-under-tight-police-curbs", summary:"Blurb: Labour groups marched under strict permit limits. Further: Checkpoints; speeches within approved route." },
+{ title:"Labour Rights March", city:"Hong Kong", country:"China (Hong Kong)", continent:"Asia", risk:"medium", time:"2025-08-18T15:00:00", source:"https://www.scmp.com/news/hong-kong/politics/article/3260890/hundreds-join-labour-rights-march-under-tight-police-curbs", summary:"Blurb: Labour groups marched under strict permit limits. Further: Checkpoints; speeches within approved route." },
 
 { title:"Tuition Hike Protest", city:"Manila", country:"Philippines", continent:"Asia", risk:"low", time:"2025-08-12T09:00:00", source:"https://www.rappler.com/philippines/students-protest-tuition-hike-manila-august-2025/", summary:"Blurb: Students protested 10% fee increase. Further: March from campus to education commission; peaceful." },
 
@@ -18816,7 +18835,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
 { title:"‘Bloquons Tout’ — Southern Coast", city:"Nice", country:"France", continent:"Europe", risk:"low", time:"2025-09-10T10:00:00", source:"https://www.france24.com/en/europe/2025-09-10-french-protesters-block-everything-call-for-political-change", summary:"Blurb: Smaller turnout; symbolic road holds. Further: Brief slowdowns; peaceful dispersion." },
 
-{ title:"Farmers’ Protest — Subsidy Cuts", city:"Prague", country:"Czechia", continent:"Europe", risk:"medium", time:"2025-08-14T10:00:00", source:"https://english.radio.cz/farmers-protest-prague-over-eu-green-subsidy-changes-2025-08-14/", summary:"Blurb: Tractor convoy entered central Prague. Further: Ring road slowed; minimal incident reports." },
+{ title:"Farmers’ Protest — Subsidy Cuts", city:"Prague", country:"Czech Republic", continent:"Europe", risk:"medium", time:"2025-08-14T10:00:00", source:"https://english.radio.cz/farmers-protest-prague-over-eu-green-subsidy-changes-2025-08-14/", summary:"Blurb: Tractor convoy entered central Prague. Further: Ring road slowed; minimal incident reports." },
 
 { title:"Rail Union Protest — Pension Reform", city:"Berlin", country:"Germany", continent:"Europe", risk:"low", time:"2025-08-09T09:00:00", source:"https://www.dw.com/en/railway-workers-germany-hold-protest-over-retirement-policy-2025-08-09/a-77544102", summary:"Blurb: Short picket by rail workers. Further: Symbolic action at Hauptbahnhof; no strike escalation." },
 
@@ -18931,7 +18950,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 {
   title: "Farmers’ Protest — Grain Subsidy Cuts",
   city: "Prague",
-  country: "Czechia",
+  country: "Czech Republic",
   continent: "Europe",
   risk: "medium",
   time: "2025-08-14T10:00:00",
@@ -19039,7 +19058,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 {
   title: "Hong Kong Solidarity March — Labour Rights",
   city: "Hong Kong",
-  country: "China (SAR)",
+  country: "China (Hong Kong)",
   continent: "Asia",
   risk: "medium",
   time: "2025-08-18T15:00:00",
@@ -21069,7 +21088,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Community Cost-of-Living Rally",
     city: "Coventry",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2025-10-26T13:00:00",
@@ -21079,7 +21098,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Climate Teach-In at the Lanes",
     city: "Brighton",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2025-11-02T12:00:00",
@@ -21089,7 +21108,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Tenant Support Drop-In",
     city: "Cardiff",
-    country: "Wales",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "low",
     time: "2025-11-09T11:00:00",
@@ -21099,7 +21118,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 {
     title: "Protests against Palestine Action ban — Parliament Square",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "high",
     time: "2025-10-04T12:00:00",
@@ -21109,7 +21128,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Protest at sites supplying F-35 components — Arms embargo now",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "medium",
     time: "2025-10-08T08:00:00",
@@ -21119,7 +21138,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "National March for Palestine",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "high",
     time: "2025-10-11T12:00:00",
@@ -21129,7 +21148,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Together With Refugees — Parliament Square rally",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "medium",
     time: "2025-10-20T13:45:00",
@@ -21139,7 +21158,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Together With Refugees — Trades Hall event",
     city: "Glasgow",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "medium",
     time: "2025-10-20T13:45:00",
@@ -21149,7 +21168,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Scotland Demands Better — National march & rally",
     city: "Edinburgh",
-    country: "Scotland",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "high",
     time: "2025-10-25T10:30:00",
@@ -21159,7 +21178,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   {
     title: "Million Mask March (Anonymous) — Bonfire Night",
     city: "London",
-    country: "England",
+    country: "United Kingdom",
     continent: "Europe",
     risk: "medium",
     time: "2025-11-05T18:00:00",
@@ -21181,7 +21200,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 {
   title: "UK Campus & London City — Oct-7 Vigils and Rallies",
   city: "London (multiple campuses)",
-  country: "England",
+  country: "United Kingdom",
   continent: "Europe",
   risk: "medium",
   time: "2025-10-07T13:00:00",
@@ -21241,7 +21260,7 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 {
   title: "London — Global Climate Strike (COP30 Wave)",
   city: "London",
-  country: "England",
+  country: "United Kingdom",
   continent: "Europe",
   risk: "low",
   time: "2025-11-14T12:00:00",
@@ -23276,222 +23295,3 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
 
 
 ];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
