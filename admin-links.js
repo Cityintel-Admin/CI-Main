@@ -1,4 +1,4 @@
-
+ 
 (function(){
   function isAdmin(){
     if (!window.CIAuth || !CIAuth.isLoggedIn()) return false;
