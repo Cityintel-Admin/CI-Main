@@ -803,7 +803,7 @@
     state.pollTimer = setInterval(() => loadThread({ silent: true }), POLL_MS);
   }
 
-  function boot(){
+  async function boot(){
     if (!window.CIAuth && Date.now() - state.bootStartedAt < BOOT_WAIT_MS) {
       setTimeout(boot, BOOT_RETRY_MS);
       return;
@@ -814,6 +814,18 @@
     // Master Admin users already have the Analytics Support Inbox.
     // Keep the user-facing chat widget for org users/operators to avoid duplicate admin UI.
     if (isMasterAdmin()) return;
+
+    // Support widget is now an addable module rather than always-on — gate
+    // it the same way the rest of the platform gates modules, and fail open
+    // (matching CIAccess.isModuleAllowed's own convention) if org config
+    // hasn't loaded yet rather than blocking the widget on a slow request.
+    if (window.CIAccess && CIAccess.getOrgConfig && CIAccess.isModuleAllowed) {
+      try {
+        const cfg = await CIAccess.getOrgConfig();
+        const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+        if (!CIAccess.isModuleAllowed(modules, 'support_widget')) return;
+      } catch (_) { /* fail open — don't let a config-fetch hiccup hide support */ }
+    }
 
     buildWidget();
     loadThread({ silent: true });
