@@ -20,42 +20,12 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // ------------- Local internal users -------------
-  // NOTE:
-  // role remains 'Admin' for compatibility with existing pages that still check role==='admin'
-  // roleKey / roleLabel are the new role model for future page-level permission checks
-  const USERS = {
-    'cjladmin@cityintel.com': {
-      name: 'Carlton',
-      role: 'Admin',
-      roleKey: 'master-admin',
-      roleLabel: 'Master Admin',
-      passHash: '2af37cad7dca2c87d8aa6f5e8136e299e652be3953c182d1bc558f0f80bdb64e'
-    },
-    'mmadmin@cityintel.com': {
-      name: 'Morris',
-      role: 'Admin',
-      roleKey: 'master-admin',
-      roleLabel: 'Master Admin',
-      passHash: 'ef2c36181af9977b4359eedab2d21a6715d266e0d5a35200f333d743adb2cc5e'
-    },
-    
-   'orgadmin@cityintel.com': {
-  name: 'Demo Org Admin',
-  role: 'Org Admin',
-  roleKey: 'org-admin',
-  roleLabel: 'Org Admin',
-  passHash: 'e3a031e5d671abbc246d3d6c9b3911e668d59bfb7e9b342bf5c00aa5b17f5877'
-},
-'operator@cityintel.com': {
-  name: 'Demo Operator',
-  role: 'Operator',
-  roleKey: 'operator',
-  roleLabel: 'Operator',
-  passHash: '8a5b3838f59ae50f645e43fcb107c7b765d9c7341b98506987a382f32c906a55'
-}
-   
-  };
+  // NOTE: the hardcoded local USERS table (with real admin emails and
+  // password hashes) that used to live here has been removed. It was left
+  // over from before /api/auth/login existed on the real backend — login()
+  // below has called the real backend for a while now and never referenced
+  // USERS, so it was dead code shipping admin credentials in a client-side
+  // file for no reason. Deleted rather than fixed in place.
 
   // ------------- Role / capability model -------------
   const ROLE_CAPABILITIES = {
@@ -131,8 +101,13 @@
   function isValidEmail(s = '') {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
   }
-  function token() {
-    return 'tok_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  // Used only if the backend didn't return a real session token (e.g. the
+  // Worker's SESSION_SECRET isn't configured yet, mid-rollout). Purely a
+  // local "logged in" marker in that case — NOT a credential, and NOT sent
+  // to the server as proof of anything. Once every environment has
+  // SESSION_SECRET set, this path should never be hit in practice.
+  function fallbackLocalMarker() {
+    return 'local_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
   function normalizeRoleKey(raw = {}) {
     if (raw.roleKey) return String(raw.roleKey).toLowerCase();
@@ -197,7 +172,7 @@
   }
 
 
-  async function cacheOrgOnboarding(profile) {
+  async function cacheOrgOnboarding(profile, sessionToken) {
     try {
       if (!profile || !profile.email || profile.roleKey === 'master-admin') return null;
       const headers = {
@@ -208,6 +183,8 @@
         'X-User-Role-Key': profile.roleKey || '',
         'X-User-Role': profile.role || ''
       };
+      const tok = sessionToken || LS.get('ci_token', null);
+      if (tok) headers['Authorization'] = 'Bearer ' + tok;
       const res = await fetch(`${API_BASE}/api/org/onboarding`, { headers });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok && data.data) {
@@ -247,6 +224,30 @@
     can(capability) {
       const u = this.who();
       return !!(u && u.capabilities && u.capabilities[capability]);
+    },
+
+    // ------------- Shared API header builder (auth hardening Phase 3) -----
+    // Every page currently builds its own ad-hoc headers() function reading
+    // localStorage directly. Since auth.js is already loaded on every page,
+    // pages can switch to calling CIAuth.headers() instead of maintaining
+    // their own copy — nothing extra needs to be pasted in.
+    // Sends both the real signed bearer token (what the backend now prefers
+    // and verifies cryptographically) AND the legacy X-User-* headers
+    // (what the backend still accepts as a fallback during the migration —
+    // see worker.js requireUser() history). Once every page has switched
+    // to calling this and the backend's legacy fallback is removed, the
+    // X-User-* headers below can come out too.
+    headers(extra = {}) {
+      const p = this.who() || {};
+      const tok = LS.get('ci_token', null);
+      const h = { 'Content-Type': 'application/json' };
+      if (tok) h['Authorization'] = 'Bearer ' + tok;
+      if (p.email) h['X-User-Email'] = p.email;
+      if (p.name) h['X-User-Name'] = p.name;
+      if (p.id || p.email) h['X-User-Id'] = p.id || p.email;
+      if (p.role) h['X-User-Role'] = p.role;
+      if (p.roleKey) h['X-User-Role-Key'] = p.roleKey;
+      return { ...h, ...extra };
     },
 
    async login(email, password) {
@@ -296,9 +297,13 @@
   });
 
   persistProfile(profile);
-  await cacheOrgOnboarding(profile);
+  await cacheOrgOnboarding(profile, data.token);
 
-  LS.set('ci_token', token());
+  // Store the real signed session token issued by /api/auth/login. This is
+  // what requireUser() on the backend now verifies (see worker.js history)
+  // — it replaces the old fake client-generated token that was never
+  // actually checked by the server.
+  LS.set('ci_token', data.token || fallbackLocalMarker());
 
   localStorage.setItem(
     'ci_subscribed',
@@ -358,12 +363,7 @@
 
         const res = await fetch(`${API_BASE}/api/sub-status?email=${encodeURIComponent(p.email)}`, {
   method: 'GET',
-  headers: {
-    'X-User-Email': p.email,
-    'X-User-Name': p.name || '',
-    'X-User-Role-Key': p.roleKey || '',
-    'X-User-Role': p.role || ''
-  }
+  headers: this.headers()
 });
         if (!res.ok) return;
         const data = await res.json();
