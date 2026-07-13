@@ -7090,12 +7090,43 @@ async function ciLoadOnboardingFeedDefaults(){
   } catch(e) { console.warn('CityIntel: onboarding feed defaults unavailable', e); }
 }
 
+// One-time cleanup for feeds created before the keyword-filter fix above.
+// ciLoadOnboardingFeedDefaults() only regenerates the whole onboarding
+// batch when every existing feed is either a starter feed or already
+// org-managed — the moment an operator adds one manual feed alongside
+// them, that regeneration permanently stops touching the onboarding
+// feeds (by design, so it never clobbers manual customisation). That
+// means org-onboarding-default feeds created before this fix keep their
+// old baked-in `keywords` forever unless handled directly. This strips
+// keywords specifically (and only) from feeds tagged
+// source:'org_onboarding_default', regardless of what else is on the
+// page, so the fix actually reaches accounts already in that mixed state.
+function ciMigrateStaleOnboardingFeedKeywords(){
+  try {
+    const feeds = loadFeeds();
+    let changed = false;
+    const migrated = feeds.map(f => {
+      if (f && f.source === 'org_onboarding_default' && Array.isArray(f.keywords) && f.keywords.length) {
+        changed = true;
+        return Object.assign({}, f, { keywords: [] });
+      }
+      return f;
+    });
+    if (changed) {
+      saveFeeds(migrated);
+      if (typeof window.ciRenderFeedList === 'function') window.ciRenderFeedList();
+      setTimeout(() => { try { if (typeof renderFeeds === 'function') renderFeeds(); } catch(_) {} }, 250);
+    }
+  } catch(e) { console.warn('CityIntel: stale onboarding-feed keyword migration failed', e); }
+}
+
 // Run org feed load on page init (after auth is ready)
 (function() {
   function tryOrgFeedLoad() {
     if (!window.CIAuth || !CIAuth.isLoggedIn()) return;
     ciLoadOrgFeeds();
     setTimeout(ciLoadOnboardingFeedDefaults, 900);
+    setTimeout(ciMigrateStaleOnboardingFeedKeywords, 1200);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(tryOrgFeedLoad, 700));
