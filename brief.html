@@ -576,7 +576,7 @@ function detectTheme(a) {
 </script>
   <script>
     // ----- helpers -----
-    const DATA = Array.isArray(window.alertsData) ? window.alertsData : [];
+    let DATA = Array.isArray(window.alertsData) ? window.alertsData : [];
     const CIF = window.CIFilter || {};
 
     const parse = v => (window.CIHelpers && CIHelpers.parseWhenAny(v)) || (v?new Date(v):null);
@@ -619,7 +619,12 @@ function detectTheme(a) {
     }
 
     // ----- render -----
-    (function renderBrief(){
+    // A named (not immediately-invoked) function so it can be safely re-run
+    // once tier-filtering resolves (async, after org config loads) without
+    // re-declaring all the helpers above. Re-reads DATA from window.alertsData
+    // each call so a later tier-filter re-assignment is picked up.
+    function renderBrief(){
+      DATA = Array.isArray(window.alertsData) ? window.alertsData : [];
       // Header date
       const now = new Date();
       document.getElementById('briefDate').textContent =
@@ -888,7 +893,9 @@ function detectTheme(a) {
         return (diff>=0?'+':'') + pct + '%';
       }
       function trendClass(diff){ return diff>=0 ? 'up' : 'down'; }
-    })();
+    }
+    renderBrief();
+    window.renderBrief = renderBrief;
   </script>
 
 
@@ -1670,6 +1677,109 @@ document.addEventListener('DOMContentLoaded', async function(){
   if(pageOk !== false) applyBriefSourceGating();
 });
 
+// ── Tier filtering for the static protest dataset (alerts-data.js) ──────
+// alerts-data.js ships the full unfiltered global dataset to every
+// browser (same trust boundary as alerts.html/live-alerts.html — this
+// only hides out-of-tier rows in the UI, it does not stop someone from
+// reading the raw array via devtools). Mirrors worker.js's
+// TIER_COUNTRY_SETS and live-alerts.html's ISO_TO_COUNTRY exactly so
+// tier definitions stay consistent across the platform.
+//
+// Fail-closed by design: if an event's country string can't be
+// confidently resolved to an ISO code (older/inconsistent historical
+// entries — data entry has since been tightened going forward), it is
+// hidden once any tier restriction is active, rather than risk showing
+// an out-of-tier client something they shouldn't see. Only affects
+// orgs on a restricted tier; "global" tier shows everything as before.
+const CI_ISO_TO_COUNTRY = {
+  'GB':'United Kingdom','IE':'Ireland','FR':'France','DE':'Germany','IT':'Italy',
+  'ES':'Spain','PT':'Portugal','NL':'Netherlands','BE':'Belgium','LU':'Luxembourg',
+  'AT':'Austria','CH':'Switzerland','SE':'Sweden','NO':'Norway','DK':'Denmark',
+  'FI':'Finland','PL':'Poland','CZ':'Czech Republic','SK':'Slovakia','HU':'Hungary',
+  'RO':'Romania','BG':'Bulgaria','HR':'Croatia','SI':'Slovenia','EE':'Estonia',
+  'LV':'Latvia','LT':'Lithuania','GR':'Greece','CY':'Cyprus','MT':'Malta',
+  'IS':'Iceland','AL':'Albania','RS':'Serbia','BA':'Bosnia and Herzegovina','ME':'Montenegro',
+  'MK':'North Macedonia','XK':'Kosovo','MD':'Moldova','UA':'Ukraine','GE':'Georgia',
+  'AM':'Armenia','AZ':'Azerbaijan','TR':'Turkey','IL':'Israel','JO':'Jordan',
+  'LB':'Lebanon','PS':'Palestinian Territories','SA':'Saudi Arabia','AE':'UAE','QA':'Qatar',
+  'KW':'Kuwait','BH':'Bahrain','OM':'Oman','YE':'Yemen','IQ':'Iraq','IR':'Iran',
+  'SY':'Syria','EG':'Egypt','LY':'Libya','TN':'Tunisia','DZ':'Algeria','MA':'Morocco',
+  'SD':'Sudan','ET':'Ethiopia','NG':'Nigeria','GH':'Ghana','KE':'Kenya','ZA':'South Africa',
+  'SN':'Senegal','CI':'Ivory Coast','CM':'Cameroon','TZ':'Tanzania','UG':'Uganda',
+  'MZ':'Mozambique','ZW':'Zimbabwe','ZM':'Zambia','RW':'Rwanda','ML':'Mali',
+  'BF':'Burkina Faso','NE':'Niger','GN':'Guinea','SL':'Sierra Leone','LR':'Liberia',
+  'TD':'Chad','SO':'Somalia','ER':'Eritrea','DJ':'Djibouti','CF':'Central African Republic',
+  'CG':'Congo','CD':'Democratic Republic of Congo','GA':'Gabon','GQ':'Equatorial Guinea','AO':'Angola',
+  'NA':'Namibia','BW':'Botswana','LS':'Lesotho','SZ':'Eswatini','MW':'Malawi',
+  'MG':'Madagascar','SC':'Seychelles','MU':'Mauritius','TG':'Togo','BJ':'Benin','GM':'Gambia',
+  'US':'United States',
+  'CA':'Canada','MX':'Mexico','BR':'Brazil','AR':'Argentina','CL':'Chile',
+  'CO':'Colombia','PE':'Peru','VE':'Venezuela','EC':'Ecuador','BO':'Bolivia',
+  'PY':'Paraguay','UY':'Uruguay','GY':'Guyana','SR':'Suriname','GT':'Guatemala',
+  'HN':'Honduras','HT':'Haiti',
+  'AU':'Australia','NZ':'New Zealand','JP':'Japan','CN':'China','KR':'South Korea',
+  'HK':'Hong Kong','TW':'Taiwan','SG':'Singapore','MY':'Malaysia','TH':'Thailand',
+  'VN':'Vietnam','PH':'Philippines','ID':'Indonesia','IN':'India','PK':'Pakistan',
+  'BD':'Bangladesh','LK':'Sri Lanka','NP':'Nepal','MM':'Myanmar','KH':'Cambodia',
+  'LA':'Laos','BN':'Brunei','MN':'Mongolia','KZ':'Kazakhstan','UZ':'Uzbekistan',
+  'FJ':'Fiji','PG':'Papua New Guinea','SB':'Solomon Islands','VU':'Vanuatu','NC':'New Caledonia'
+};
+// A handful of common alternate spellings that may still surface (mostly
+// in older/historical entries) beyond the primary ISO_TO_COUNTRY names.
+const CI_COUNTRY_SYNONYMS = {
+  'united states of america': 'US', 'usa': 'US',
+  'uk': 'GB', 'great britain': 'GB', 'britain': 'GB',
+  'russia': 'RU', 'russian federation': 'RU',
+  'south korea': 'KR', 'korea, south': 'KR',
+  'czechia': 'CZ',
+  'bosnia': 'BA',
+  "côte d’ivoire": 'CI', "côte d'ivoire": 'CI', 'cote d\u2019ivoire': 'CI',
+  'china (hong kong)': 'HK',
+  'drc': 'CD', 'congo-kinshasa': 'CD',
+  'uae': 'AE', 'united arab emirates': 'AE'
+};
+function ciBuildCountryNameToIso(){
+  const map = {};
+  Object.entries(CI_ISO_TO_COUNTRY).forEach(function(pair){
+    map[pair[1].toLowerCase()] = pair[0];
+  });
+  Object.assign(map, CI_COUNTRY_SYNONYMS);
+  return map;
+}
+const CI_COUNTRY_NAME_TO_ISO = ciBuildCountryNameToIso();
+
+// Mirrors TIER_COUNTRY_SETS in worker.js exactly.
+const CI_TIER_COUNTRY_SETS = {
+  global: null,
+  emea: new Set(['GB','IE','FR','DE','IT','ES','PT','NL','BE','LU','AT','CH','SE','NO','DK','FI','PL','CZ','SK','HU','RO','BG','HR','SI','EE','LV','LT','GR','CY','MT','IS','AL','RS','BA','ME','MK','XK','MD','UA','GE','AM','AZ','TR','IL','JO','LB','PS','SA','AE','QA','KW','BH','OM','YE','IQ','IR','SY','EG','LY','TN','DZ','MA','SD','ET','NG','GH','KE','ZA','SN','CI','CM','TZ','UG','MZ','ZW','ZM','RW','ML','BF','NE','GN','SL','LR','TD','SO','ER','DJ','CF','CG','CD','GA','GQ','AO','NA','BW','LS','SZ','MW','MG','SC','MU']),
+  europe: new Set(['GB','IE','FR','DE','IT','ES','PT','NL','BE','LU','AT','CH','SE','NO','DK','FI','PL','CZ','SK','HU','RO','BG','HR','SI','EE','LV','LT','GR','CY','MT','IS','AL','RS','BA','ME','MK','XK','MD','UA','GE','AM','AZ']),
+  uk_only: new Set(['GB']),
+  usa_only: new Set(['US']),
+  apac: new Set(['AU','NZ','JP','CN','KR','HK','TW','SG','MY','TH','VN','PH','ID','IN','PK','BD','LK','NP','MM','KH','LA','BN','MV','BT','MN','KZ','UZ','TM','TJ','KG','AF'])
+};
+
+function ciResolveTierAllowedIso(cfg){
+  const tier = String(cfg.dataTier || 'global').toLowerCase();
+  if (tier === 'global') return null; // no filter
+  if (tier === 'custom'){
+    try{
+      const parsed = JSON.parse(cfg.customRegion || '[]');
+      if (Array.isArray(parsed) && parsed.length) return new Set(parsed.map(function(c){ return String(c).toUpperCase().trim(); }));
+    }catch(_){}
+    return new Set(); // custom tier with nothing configured — show nothing rather than everything
+  }
+  return CI_TIER_COUNTRY_SETS[tier] || null;
+}
+
+function ciFilterProtestDataByTier(data, allowedIso){
+  if (!allowedIso) return data; // global tier — no filtering
+  return (data || []).filter(function(ev){
+    const iso = CI_COUNTRY_NAME_TO_ISO[String(ev.country || '').trim().toLowerCase()];
+    if (!iso) return false; // fail closed: unresolvable country, hide once a tier is active
+    return allowedIso.has(iso);
+  });
+}
+
 // ── Per-source module gating ────────────────────────────────────────────
 // Brief blends two independent data sources: the static protest/unrest
 // feed (alerts-data.js, gated on the "alerts" module — "Protest Records"
@@ -1679,8 +1789,9 @@ document.addEventListener('DOMContentLoaded', async function(){
 async function applyBriefSourceGating(){
   if(!window.CIAccess) return;
   let modules = [];
+  let cfg = {};
   try{
-    const cfg = await CIAccess.getOrgConfig();
+    cfg = await CIAccess.getOrgConfig();
     modules = Array.isArray(cfg.modules) ? cfg.modules : [];
   }catch(_){ return; }
 
@@ -1694,6 +1805,16 @@ async function applyBriefSourceGating(){
 
   const liveCard = document.getElementById('section-org-live-brief');
   if(liveCard) liveCard.style.display = hasLiveAlerts ? '' : 'none';
+
+  if (hasProtest){
+    const allowedIso = ciResolveTierAllowedIso(cfg);
+    if (allowedIso !== null){
+      const original = Array.isArray(window.__ciAlertsDataUnfiltered) ? window.__ciAlertsDataUnfiltered : window.alertsData;
+      window.__ciAlertsDataUnfiltered = original; // keep a copy in case gating re-runs
+      window.alertsData = ciFilterProtestDataByTier(original, allowedIso);
+      if (typeof window.renderBrief === 'function') window.renderBrief();
+    }
+  }
 
   renderBriefSourceStrip(hasProtest, hasLiveAlerts);
 }
