@@ -21,6 +21,190 @@ window.alertsData =[
 },
 
 
+  
+
+  {
+  title: "Grève et mobilisation nationale de la fonction publique",
+  city: "Paris",
+  lat: 48.8675,
+  lng: 2.3640,
+  address: "Place de la République (rassemblement national attendu dans les grandes villes)",
+  postcode: "75011",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-29T09:00:00",
+  source: "https://www.cestlagreve.fr/greve/fonction-publique-septembre-2026/",
+  summary: "A nationwide strike and mobilization day confirmed for Tuesday 29 September 2026, called jointly by every major public-sector union (CGT, CFDT, UNSA, FSU, Solidaires, CFE-CGC, FA-FP) across state, local government, and hospital public services. Core demands: a significant increase to the civil service pay index, restoration of full sick-pay, and improved working conditions amid recruitment difficulties. Confirmed via multiple independent union sources (FSU, CFDT, Solidaires, CGT branches). Expect widespread school closures/reduced services, disrupted government office hours, and non-urgent hospital appointment delays nationwide, plus union marches in major cities — exact Paris route to be published closer to the date, but Place de la République is the customary assembly point for actions of this scale. Risk assessed as High given the scale (all three arms of the public service, unprecedented full-union unity) and precedent for large disruptive turnout on comparable past mobilisation days."
+},
+
+
+{
+  title: "Cape Town Solidarity Protest for Palestine",
+  city: "Cape Town",
+  lat: -34.0797,
+  lng: 18.4434,
+  address: "Outside the United States Consulate General, 2 Reddam Avenue, Westlake",
+  postcode: "7945",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-08-02T09:30:00",
+  source: "https://www.instagram.com/p/DWZi5MyiOmm/",
+  summary: "The Palestine Solidarity Campaign and allied civil-society organisations have announced a solidarity protest outside the United States Consulate General in Cape Town on Sunday 2 August 2026 from 09:30 to 11:30. Participants have been asked to bring Palestinian flags, placards and solidarity messages. The action is expected to focus on United States political and military support for Israel, the continuing conflict in Gaza and demands for stronger international action to protect Palestinian civilians. The precise diplomatic location and published two-hour protest window are confirmed through organiser-linked social-media material and supporting local community media. Risk assessed as Medium because demonstrations outside the US Consulate normally attract a visible police and private-security presence, controlled vehicle access and possible temporary disruption around Reddam Avenue and the Steenberg/Westlake area. The event is organised as a peaceful static demonstration, but the diplomatic target and politically charged subject increase sensitivity."
+},
+
+
+  {
+  title: "NGO-COD Cross-Border River Pollution Protest at Chinese Embassy",
+  city: "Bangkok",
+  lat: 13.7305,
+  lng: 100.5473,
+  address: "Embassy of the People's Republic of China, 57 Ratchadaphisek Road, Din Daeng",
+  postcode: "10400",
+  country: "Thailand",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-07-15T10:00:00",
+  source: "https://www.khaosodenglish.com/politics/2026/07/08/activists-rally-outside-chinese-embassy-over-river-pollution/",
+  summary: "The NGO Coordinating Committee (NGO-COD), together with civil-society and environmental organisations, has announced a follow-up demonstration outside the Chinese Embassy in Bangkok concerning transboundary pollution affecting the Kok, Sai, Ruak and Mekong river basins. The campaign calls on the Chinese government to support action against mining-related pollution in Myanmar's Shan State and to investigate the use of force against demonstrators during an earlier protest outside the Chinese Consulate in Chiang Mai. Organisers intend to deliver a formal petition and stage a symbolic demonstration outside the embassy. Risk assessed as Medium because the protest targets a foreign diplomatic mission, where police security and temporary traffic restrictions are likely. The action is expected to remain peaceful but access controls around the embassy should be anticipated."
+},
+  
+{
+  title: "Jatiyatabadi Chhatra Dal July Uprising Anniversary Student Rally",
+  city: "Dhaka",
+  lat: 23.7271,
+  lng: 90.3965,
+  address: "Central Shaheed Minar, Dhaka University area",
+  postcode: "1000",
+  country: "Bangladesh",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-03T12:00:00",
+  source: "https://www.prothomalo.com/politics/t6xeckvipf",
+  summary: "Jatiyatabadi Chhatra Dal, the student wing of the governing Bangladesh Nationalist Party, has confirmed a major student rally at the Central Shaheed Minar in Dhaka on 3 August 2026. The event concludes a nine-part programme commemorating the second anniversary of the July-August mass uprising, honouring those killed and injured, preserving the movement's historical memory and promoting anti-fascist national unity. Prime Minister and BNP Chairman Tarique Rahman is scheduled to attend as chief guest. No reliable start time has yet been published, so 12:00 has been applied as the default. Risk assessed as Medium because the event is expected to attract substantial numbers of party activists and students to a politically symbolic location beside Dhaka University, with crowd congestion, traffic disruption and a visible security deployment likely. The mobilisation is organised and commemorative, although Bangladesh's polarised student-political environment creates some potential for friction or rival-group activity."
+},
+
+{
+  title: "Aksi Kamisan ke-916 — Weekly Human Rights Silent Protest",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Merdeka Palace, Jalan Medan Merdeka Barat",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-07-16T15:00:00",
+  source: "https://x.com/sumarsih11/status/2075442807519773019",
+  summary: "The organisers of Aksi Kamisan have confirmed that the next weekly silent human-rights protest will take place outside Merdeka Palace in central Jakarta on Thursday 16 July 2026. The confirmation followed the movement's 915th gathering on 9 July and explicitly invited participants to return on 16 July. Aksi Kamisan has been held every Thursday since January 2007 by victims and relatives of victims of serious human-rights abuses. Participants traditionally wear black, carry black umbrellas and stand silently while demanding accountability for unresolved cases including the Trisakti and Semanggi shootings, enforced disappearances, the killing of Munir Said Thalib and other historic violations. Recent 2026 gatherings have operated from 15:00 to 17:00. Risk assessed as Low because this is an established, peaceful and normally small static protest. Police monitoring, barriers and limited pedestrian restrictions are possible because the gathering takes place directly opposite the presidential palace."
+},
+  
+{
+  title: "People's State of the Nation Address 2026",
+  city: "Quezon City",
+  lat: 14.6921,
+  lng: 121.0941,
+  address: "Commonwealth Avenue, near the Batasang Pambansa area (final assembly point and permitted route TBC)",
+  postcode: "1126",
+  country: "Philippines",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-07-27T12:00:00",
+  source: "https://dailyguardian.com.ph/blog/ilonggos-demand-accountability-and-justice-in-peoples-sona",
+  summary: "Progressive, labour, student, human-rights and civil-society organisations are preparing a People's State of the Nation Address mobilisation in Quezon City on 27 July 2026, coinciding with President Ferdinand Marcos Jr.'s fifth State of the Nation Address at the Batasang Pambansa Complex. Organising activity is already underway: the Panay People's SONA Committee held a preparatory public forum on 10 July and confirmed that the wider mass mobilisation is scheduled for 27 July, while BAYAN-linked organisations and allied groups have circulated calls to assemble along Commonwealth Avenue. Expected themes include government corruption, poverty and rising living costs, workers' rights, political accountability, human rights, the impeachment proceedings involving Vice President Sara Duterte, and opposition to political repression. A dependable final start time has not yet been published, so 12:00 has been applied as the default. Risk assessed as High because the protest will take place close to the national legislature during a major security operation, with Commonwealth Avenue historically subject to barricades, road closures and attempts by police to restrict protesters' movement towards Batasang Pambansa. The current political environment is particularly tense following major anti-corruption demonstrations, arrests and allegations of police violence during previous Manila mobilisations. The event is intended as an organised political rally, but confrontations over access, march routes or dispersal remain possible."
+},
+  
+{
+  title: "81st Anniversary Folding-Crane Peace March",
+  city: "Hiroshima",
+  lat: 34.3928,
+  lng: 132.4525,
+  address: "Hiroshima Peace Memorial Park to Hiroshima Prefectural Sports Center (Hiroshima Green Arena)",
+  postcode: "730-0011",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-04T16:00:00",
+  source: "https://gensuikin.peace-forum.com/2026/07/09/81hiroshima/",
+  summary: "The Organising Committee for the 81st-Anniversary World Conference against Atomic and Hydrogen Bombs has confirmed a Folding-Crane Peace March in Hiroshima on 4 August 2026. The march will begin at 16:00 at Hiroshima Peace Memorial Park and proceed to Hiroshima Prefectural Sports Center, also known as Hiroshima Green Arena, where the conference's opening assembly will begin at 17:00. The action forms part of the Hiroshima programme of the World Conference against Atomic and Hydrogen Bombs, which runs from 4 to 6 August and brings together survivors, trade unions, peace organisations, anti-nuclear campaigners and international delegates. Participants will call for nuclear disarmament, protection of survivors' rights, opposition to war and Japanese participation in the Treaty on the Prohibition of Nuclear Weapons. Risk assessed as Medium because the march will move through central Hiroshima during the heavily attended atomic-bomb anniversary period, creating pedestrian congestion, traffic controls and heightened security. The event is formally organised and expected to remain peaceful."
+},
+
+{
+  title: "Sayonara Nukes 9.23 National Rally and Parade",
+  city: "Tokyo",
+  lat: 35.6702,
+  lng: 139.6949,
+  address: "Yoyogi Park B Area, beside NHK Hall — parade through the Shibuya and Harajuku area",
+  postcode: "150-0041",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-23T14:00:00",
+  source: "https://sayonara-nukes.org/",
+  summary: "The Sayonara Nukes 10 Million People's Action Executive Committee has confirmed its autumn national rally at Yoyogi Park on 23 September 2026. Exhibition booths and a smaller stage will operate from 11:00, followed by a musical programme from 13:40, the main rally from 14:00 to 14:45 and a protest parade departing at 15:00. The mobilisation forms part of Climate Action Week and calls for an end to nuclear-power dependence, stronger action on the climate crisis, expansion of renewable energy and protection of communities affected by the Fukushima disaster. The organising coalition includes established anti-nuclear, environmental, peace and civil-society organisations. Comparable national actions at Yoyogi Park attracted approximately 4,500 people in September 2025 and 8,500 people in March 2026. Risk assessed as Medium because several thousand participants, two central-Tokyo parade routes, traffic restrictions and congestion around Yoyogi Park, Harajuku and Shibuya are likely. The movement has an established peaceful record and unrest is not anticipated."
+},
+  
+  {
+  title: "KCTU 7·15 General Strike Rally and March",
+  city: "Seoul",
+  lat: 37.5704,
+  lng: 126.9779,
+  address: "Dongwha Duty Free Shop, 149 Sejong-daero — march towards the Cheong Wa Dae area",
+  postcode: "03186",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-07-15T15:00:00",
+  source: "https://nodong.org/notice/7933923",
+  summary: "The Korean Confederation of Trade Unions (KCTU) has confirmed a general strike rally outside Dongwha Duty Free Shop near Gwanghwamun at 15:00 on 15 July 2026, followed by a march towards the Cheong Wa Dae area. Approximately 10,000 workers are expected to participate, including metalworkers, public-sector and subcontracted workers, care workers, healthcare workers, call-centre employees, and platform or other specially employed workers. Metalworkers are expected to conduct workplace strikes of at least four hours, while around 2,500 care workers have declared a one-day stoppage. The principal demands are direct bargaining with primary contractors, development of industry-wide bargaining structures, and recognition of labour rights for subcontracted, platform and specially employed workers. The location, time and mobilisation have been confirmed through the KCTU's own announcement and multiple independent Korean media reports. Risk assessed as High because of the expected turnout, politically sensitive central-Seoul route, road occupation and closures around Gwanghwamun, and the planned movement towards Cheong Wa Dae. The announced action is organised, but police cordons and friction over the permitted march route are possible."
+},
+
+{
+  title: "8·15 Gwanghwamun National Resistance Rally",
+  city: "Seoul",
+  lat: 37.5759,
+  lng: 126.9768,
+  address: "Gwanghwamun area, Sejong-daero (precise assembly footprint TBC)",
+  postcode: "03172",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-08-15T12:00:00",
+  source: "https://www.christiantoday.co.kr/news/374735",
+  summary: "The Republic of Korea Restoration National Movement Headquarters and associated conservative Christian organisations have announced a major rally in the Gwanghwamun area on 15 August 2026, South Korea's Liberation Day. Organisers have promoted the event as a nationwide mobilisation and 'national resistance' rally, using an aspirational turnout claim of ten million participants. Campaigning and participant recruitment have been underway since at least April, with organisers repeatedly identifying 15 August and Gwanghwamun as the principal date and location. The movement's stated themes include opposition to the Lee Jae-myung administration, allegations surrounding election integrity, opposition to engagement with North Korea, support for the South Korea-US alliance, and broader conservative religious and anti-government grievances. A dependable final start time has not yet been published, so 12:00 has been applied as the default. Risk assessed as High because the event falls on a major national holiday, is being promoted as a national-scale anti-government mobilisation, and will take place amid continuing political tension following the June local-election ballot-shortage controversy. Large crowds, extensive police deployment, road closures and possible counter-mobilisation should be anticipated. The organiser's turnout figure should be treated as promotional rather than an independently verified forecast."
+},
+
+{
+  title: "Delhi Chalo — Badlaav Zaroori Hai Rally",
+  city: "New Delhi",
+  lat: 28.6415,
+  lng: 77.2447,
+  address: "Ramlila Maidan, Jawaharlal Nehru Marg",
+  postcode: "110002",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.newindianexpress.com/india/2026/Jul/01/cpi-announces-nationwide-campaign-against-several-union-government-policies",
+  summary: "The Communist Party of India (CPI) has confirmed a nationwide 'Delhi Chalo' mobilisation culminating in the 'Badlaav Zaroori Hai' rally at Ramlila Maidan, New Delhi, on 1 September 2026. The rally will follow nationwide padyatras conducted from 6 to 15 August and is intended to bring supporters from across India to the capital. Announced demands include action on rising prices and unemployment, a legal guarantee for Minimum Support Price, protection of workers' rights, quality public education and healthcare, implementation of women's reservation, social justice for Dalits and Adivasis, and restoration of democratic and constitutional rights. The event was announced at a CPI press conference and promoted publicly by party general secretary D. Raja. No rally start time was published, so 12:00 has been applied as the default. Risk assessed as High because this is a national political mobilisation at one of Delhi's principal mass-rally venues, preceded by a multi-state campaign and explicitly intended to draw participants from across the country. Large crowds, extensive traffic restrictions, police cordons and possible friction around access routes should be anticipated, although organisers have not called for violence."
+},
+
+  {
+  title: "CJP Parliament March Against Examination Paper Leaks",
+  city: "New Delhi",
+  lat: 28.6276,
+  lng: 77.2197,
+  address: "Jantar Mantar towards the Parliament of India (final permitted route TBC)",
+  postcode: "110001",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-07-20T12:00:00",
+  source: "https://thefederal.com/category/news/sonam-wangchuk-fast-cjp-parliament-march-249889",
+  summary: "The youth-led Cockroach Janta Party (CJP) has announced a march towards Parliament on 20 July 2026, coinciding with the opening day of India's Monsoon Session. The action follows more than three weeks of protest at Jantar Mantar over alleged examination paper leaks and other irregularities affecting competitive examinations. Climate activist Sonam Wangchuk is participating in the campaign through an indefinite hunger strike, while organisers are demanding the resignation of Education Minister Dharmendra Pradhan and compensation for families of students reportedly driven to suicide following examination-related scandals. Opposition politicians, farmers and civil-society supporters have visited or backed the protest, and organisers have called on students, parents and the wider public to join the march. No start time was specified, so 12:00 has been applied as the default. Risk assessed as High because the march is intended to approach Parliament on the first day of a legislative session, making route restrictions, preventive detentions, barricades, significant police deployment and confrontation over access highly likely."
+},
+
 {
   title: "Movilización General 20 de Julio (Petro's civil disobedience call)",
   city: "Bogotá",
