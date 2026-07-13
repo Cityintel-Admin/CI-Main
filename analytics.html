@@ -1613,6 +1613,7 @@
             📎 Attach files
             <input id="leadInboxAttachments" type="file" multiple style="display:none">
           </label>
+          <button id="leadInboxZoomBtn" class="lead-action-btn reply" type="button">🎥 Schedule Zoom call</button>
           <div id="leadInboxAttachmentList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         </div>
         <div class="lead-inbox-actions">
@@ -2683,6 +2684,7 @@ const makeBar = (label, count, color) => {
   const inboxReply = document.getElementById('leadInboxReply');
   const inboxAttachments = document.getElementById('leadInboxAttachments');
   const inboxAttachmentList = document.getElementById('leadInboxAttachmentList');
+  const inboxZoomBtn = document.getElementById('leadInboxZoomBtn');
   const inboxSend = document.getElementById('leadInboxSendBtn');
   const inboxViewBtn = document.getElementById('leadInboxViewBtn');
   const inboxOnboardBtn = document.getElementById('leadInboxOnboardBtn');
@@ -3163,6 +3165,36 @@ const makeBar = (label, count, color) => {
       alert(`Unable to send email: ${e.message || e}`);
     } finally {
       if (inboxSend) { inboxSend.disabled = false; inboxSend.textContent = old || 'Send reply'; }
+    }
+  }
+
+  async function scheduleZoomCall(){
+    const lead = getSelectedLead();
+    const leadName = lead ? fullName(lead) : (composeMode ? (inboxToOverride?.value || '').trim() : '');
+    const subject = (inboxSubject?.value || '').trim();
+    const topic = subject || (leadName ? `Call with ${leadName}` : 'CityIntel call');
+    const old = inboxZoomBtn ? inboxZoomBtn.textContent : '';
+    if (inboxZoomBtn) { inboxZoomBtn.disabled = true; inboxZoomBtn.textContent = 'Creating…'; }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/create-zoom-meeting`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ topic, lead_name: leadName })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Zoom meeting creation failed: ${res.status}`);
+      const m = data.meeting || {};
+      const lines = [
+        `Join Zoom meeting: ${m.join_url || ''}`,
+        m.password ? `Passcode: ${m.password}` : ''
+      ].filter(Boolean).join('\n');
+      if (inboxReply) {
+        inboxReply.value = inboxReply.value ? `${inboxReply.value}\n\n${lines}` : lines;
+      }
+    } catch (e) {
+      alert(`Unable to create Zoom meeting: ${e.message || e}`);
+    } finally {
+      if (inboxZoomBtn) { inboxZoomBtn.disabled = false; inboxZoomBtn.textContent = old || '🎥 Schedule Zoom call'; }
     }
   }
 
@@ -4349,6 +4381,7 @@ const makeBar = (label, count, color) => {
   if (inboxDraftSelect) inboxDraftSelect.addEventListener('change', () => { if (inboxDraftSelect.value) applyDraft(inboxDraftSelect.value); });
   if (inboxSaveDraftBtn) inboxSaveDraftBtn.addEventListener('click', saveCurrentAsDraft);
   if (inboxSend) inboxSend.addEventListener('click', handleInboxSendClick);
+  if (inboxZoomBtn) inboxZoomBtn.addEventListener('click', scheduleZoomCall);
   if (inboxComposeBtn) inboxComposeBtn.addEventListener('click', enterComposeMode);
   if (inboxViewBtn) inboxViewBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) openLeadDetail(r.id); });
   if (inboxOnboardBtn) inboxOnboardBtn.addEventListener('click', () => { const r=getSelectedLead(); if(r) openLeadOnboard(r.id); });
