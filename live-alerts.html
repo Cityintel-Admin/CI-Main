@@ -2185,6 +2185,63 @@ padding-bottom: 12px;
   color:#fee2e2;
 }
 
+/* --- Map search control --- */
+.ci-map-search-control{
+  display:flex;
+  align-items:center;
+  background:#111827 !important;
+  border:1px solid #4b5563 !important;
+  border-radius:8px !important;
+  overflow:hidden;
+}
+.ci-map-search-control input{
+  width:200px;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:#e5e7eb;
+  font-size:12px;
+  padding:6px 8px;
+}
+.ci-map-search-control button{
+  background:#1f2937;
+  border:none;
+  border-left:1px solid #4b5563;
+  color:#e5e7eb;
+  cursor:pointer;
+  padding:6px 10px;
+  font-size:13px;
+}
+.ci-map-search-control button:hover{ background:#374151; }
+
+/* --- Map ruler control --- */
+.ci-map-ruler-control a{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:30px;
+  height:30px;
+  background:#111827 !important;
+  color:#e5e7eb !important;
+  font-size:15px;
+  text-decoration:none !important;
+}
+.ci-map-ruler-control a.active{
+  background:#7f1d1d !important;
+  border-color:#f97373 !important;
+}
+.ci-ruler-label{
+  background:#111827;
+  border:1px solid #f97373;
+  border-radius:6px;
+  color:#fee2e2;
+  font-size:11px;
+  font-weight:700;
+  padding:2px 6px;
+  white-space:nowrap;
+  text-align:center;
+}
+
 	/* --- Map sidebar: selected feed alerts list --- */
 .map-alerts-list{
   display:flex;
@@ -10850,6 +10907,120 @@ L.control.zoom({ position: 'topright' }).addTo(map);
   function zoomToLocation(lat, lon, zoom) {
     map.setView([lat, lon], zoom, { animate: false });
   }
+
+  // ── Map search control ─────────────────────────────────────────────────
+  // Reuses the existing /api/admin/geocode endpoint (OpenStreetMap
+  // Nominatim under the hood, already used by the intel-review pipeline).
+  const CISearchControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function(){
+      const container = L.DomUtil.create('div', 'leaflet-bar ci-map-search-control');
+      container.innerHTML =
+        '<input type="text" id="ciMapSearchInput" placeholder="Search city, country, or address…" autocomplete="off">' +
+        '<button type="button" id="ciMapSearchBtn" title="Go">🔍</button>';
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+      return container;
+    }
+  });
+  map.addControl(new CISearchControl());
+
+  let _ciSearchMarker = null;
+  async function ciRunMapSearch(){
+    const input = document.getElementById('ciMapSearchInput');
+    const q = (input && input.value || '').trim();
+    if (!q) return;
+    const btn = document.getElementById('ciMapSearchBtn');
+    const oldText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    try {
+      const res = await fetch(API_ORIGIN + '/api/admin/geocode?q=' + encodeURIComponent(q), { headers: ciGetAuthHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) { alert(data.error || 'Location not found — try a more specific search.'); return; }
+      zoomToLocation(data.lat, data.lon, 12);
+      if (_ciSearchMarker) { try { map.removeLayer(_ciSearchMarker); } catch(_) {} }
+      _ciSearchMarker = L.marker([data.lat, data.lon]).addTo(map).bindPopup(data.displayName || q).openPopup();
+      setTimeout(() => { if (_ciSearchMarker) { try { map.removeLayer(_ciSearchMarker); } catch(_) {} _ciSearchMarker = null; } }, 10000);
+    } catch (e) {
+      alert('Search failed — please try again.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = oldText; }
+    }
+  }
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.id === 'ciMapSearchBtn') ciRunMapSearch();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && e.target && e.target.id === 'ciMapSearchInput') ciRunMapSearch();
+  });
+
+  // ── Ruler / distance tool ───────────────────────────────────────────────
+  // Click one point, then a second — draws a line and shows great-circle
+  // distance between them. Clicking a third point starts a fresh measurement.
+  const CIRulerControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function(){
+      const container = L.DomUtil.create('div', 'leaflet-bar ci-map-ruler-control');
+      container.innerHTML = '<a href="#" id="ciRulerBtn" title="Measure distance" role="button">📏</a>';
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(container, 'click', function(e){ L.DomEvent.preventDefault(e); ciToggleRuler(); });
+      return container;
+    }
+  });
+  map.addControl(new CIRulerControl());
+
+  let ciRulerActive = false;
+  let ciRulerPoints = [];
+  let ciRulerLayer = null;
+
+  function ciHaversineKm(a, b){
+    const R = 6371;
+    const dLat = (b[0] - a[0]) * Math.PI / 180;
+    const dLon = (b[1] - a[1]) * Math.PI / 180;
+    const lat1 = a[0] * Math.PI / 180, lat2 = b[0] * Math.PI / 180;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  function ciResetRuler(){
+    ciRulerPoints = [];
+    if (ciRulerLayer) { try { map.removeLayer(ciRulerLayer); } catch(_) {} ciRulerLayer = null; }
+  }
+
+  function ciToggleRuler(){
+    ciRulerActive = !ciRulerActive;
+    const btn = document.getElementById('ciRulerBtn');
+    if (btn) btn.classList.toggle('active', ciRulerActive);
+    map.getContainer().style.cursor = ciRulerActive ? 'crosshair' : '';
+    ciResetRuler();
+  }
+
+  map.on('click', function(e){
+    if (!ciRulerActive) return;
+    ciRulerPoints.push([e.latlng.lat, e.latlng.lng]);
+    if (ciRulerLayer) { try { map.removeLayer(ciRulerLayer); } catch(_) {} ciRulerLayer = null; }
+
+    if (ciRulerPoints.length === 1) {
+      ciRulerLayer = L.layerGroup([
+        L.circleMarker(ciRulerPoints[0], { radius: 5, color: '#f97373', fillColor: '#fbbf24', fillOpacity: 1 })
+      ]).addTo(map);
+    } else {
+      const distKm = ciHaversineKm(ciRulerPoints[0], ciRulerPoints[1]);
+      const label = distKm < 1 ? Math.round(distKm * 1000) + ' m' : distKm.toFixed(2) + ' km';
+      const line = L.polyline(ciRulerPoints, { color: '#fbbf24', weight: 3, dashArray: '6,6' });
+      const midpoint = [(ciRulerPoints[0][0] + ciRulerPoints[1][0]) / 2, (ciRulerPoints[0][1] + ciRulerPoints[1][1]) / 2];
+      const labelMarker = L.marker(midpoint, {
+        icon: L.divIcon({ className: 'ci-ruler-label', html: label, iconSize: [90, 20] })
+      });
+      ciRulerLayer = L.layerGroup([
+        L.circleMarker(ciRulerPoints[0], { radius: 5, color: '#f97373', fillColor: '#fbbf24', fillOpacity: 1 }),
+        L.circleMarker(ciRulerPoints[1], { radius: 5, color: '#f97373', fillColor: '#fbbf24', fillOpacity: 1 }),
+        line,
+        labelMarker
+      ]).addTo(map);
+      ciRulerPoints = []; // next click starts a fresh measurement
+    }
+  });
 
   function tryGeolocation() {
     if (!navigator.geolocation) {
