@@ -2242,6 +2242,31 @@ padding-bottom: 12px;
   text-align:center;
 }
 
+/* --- Geofence queue tile edit control --- */
+.queue-geofence-edit{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:#1f2937;
+  border:1px solid #4b5563;
+  color:#e5e7eb;
+  font-size:10px;
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+}
+.queue-geofence-edit:hover{ background:#374151; }
+#geofenceQueueBtn.active-geofence-draw{
+  border-color:#fbbf24 !important;
+  background:rgba(251,191,36,.12) !important;
+}
+
 	/* --- Map sidebar: selected feed alerts list --- */
 .map-alerts-list{
   display:flex;
@@ -5305,6 +5330,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="queue-btn" data-queue="cleared">
         Cleared <span class="queue-count" id="qCleared">0</span>
       </button>
+      <div class="queue-btn-wrap" id="geofenceQueueWrap" style="position:relative;">
+        <button type="button" class="queue-btn" data-queue="geofence" id="geofenceQueueBtn">
+          🎯 <span id="geofenceQueueLabel">Set up geofence</span> <span class="queue-count" id="qGeofence" style="display:none;">0</span>
+        </button>
+        <button type="button" id="geofenceEditBtn" class="queue-geofence-edit" title="Set up / redraw geofence">⚙</button>
+      </div>
     </div>
     <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
   </div>
@@ -11022,6 +11053,158 @@ L.control.zoom({ position: 'topright' }).addTo(map);
     }
   });
 
+  // ── Geofence queue (single circle per org, v1) ──────────────────────────
+  // Sits in the Operator Queue rather than the "Feeds on this page" list,
+  // and is exempt from the feed_limit cap. Stored as a single JSON object
+  // per org (like org_panic) via /api/org/geofence.
+  let ciGeofence = null; // { lat, lon, radiusKm, label }
+  let ciGeofenceDrawing = false;
+  let ciGeofenceDrawPoints = [];
+  let ciGeofenceDrawLayer = null;
+  let ciGeofencePreviewLayer = null;
+
+  async function ciLoadGeofence(){
+    try {
+      const res = await fetch(API_ORIGIN + '/api/org/geofence', { headers: ciGetAuthHeaders() });
+      const data = await res.json().catch(() => ({}));
+      ciGeofence = (data && data.ok && data.data) ? data.data : null;
+    } catch(_) { ciGeofence = null; }
+    ciRenderGeofenceTile();
+    ciDrawGeofenceOnMap();
+    try { updateQueueCounts(); } catch(_) {}
+  }
+
+  function ciRenderGeofenceTile(){
+    const label = document.getElementById('geofenceQueueLabel');
+    const count = document.getElementById('qGeofence');
+    if (!label || !count) return;
+    if (ciGeofence) {
+      label.textContent = ciGeofence.label || 'Geofence';
+      count.style.display = '';
+    } else {
+      label.textContent = 'Set up geofence';
+      count.style.display = 'none';
+    }
+  }
+
+  function ciDrawGeofenceOnMap(){
+    if (ciGeofencePreviewLayer) { try { map.removeLayer(ciGeofencePreviewLayer); } catch(_) {} ciGeofencePreviewLayer = null; }
+    if (!ciGeofence) return;
+    ciGeofencePreviewLayer = L.circle([ciGeofence.lat, ciGeofence.lon], {
+      radius: ciGeofence.radiusKm * 1000,
+      color: '#fbbf24',
+      weight: 2,
+      fillColor: '#fbbf24',
+      fillOpacity: 0.08,
+      dashArray: '4,6'
+    }).addTo(map);
+  }
+
+  function ciEventInGeofence(ev){
+    if (!ciGeofence) return false;
+    const loc = (typeof extractLatLon === 'function') ? extractLatLon(ev) : null;
+    if (!loc) return false;
+    return ciHaversineKm([ciGeofence.lat, ciGeofence.lon], [loc.lat, loc.lon]) <= ciGeofence.radiusKm;
+  }
+  window.ciEventInGeofence = ciEventInGeofence;
+  window.ciGetGeofence = function(){ return ciGeofence; };
+
+  function ciStartGeofenceDraw(){
+    if (!ciCanManageFeeds()) { alert('Only Master Admins and Org Admins can set up the geofence.'); return; }
+    if (ciRulerActive) ciToggleRuler(); // mutually exclusive draw modes
+    ciGeofenceDrawing = true;
+    ciGeofenceDrawPoints = [];
+    if (ciGeofenceDrawLayer) { try { map.removeLayer(ciGeofenceDrawLayer); } catch(_) {} ciGeofenceDrawLayer = null; }
+    map.getContainer().style.cursor = 'crosshair';
+    const btn = document.getElementById('geofenceQueueBtn');
+    if (btn) btn.classList.add('active-geofence-draw');
+    alert('Click the map to set the geofence centre, then click again to set its radius (max 500km).');
+  }
+
+  function ciCancelGeofenceDraw(){
+    ciGeofenceDrawing = false;
+    ciGeofenceDrawPoints = [];
+    if (ciGeofenceDrawLayer) { try { map.removeLayer(ciGeofenceDrawLayer); } catch(_) {} ciGeofenceDrawLayer = null; }
+    map.getContainer().style.cursor = ciRulerActive ? 'crosshair' : '';
+    const btn = document.getElementById('geofenceQueueBtn');
+    if (btn) btn.classList.remove('active-geofence-draw');
+  }
+
+  map.on('click', async function(e){
+    if (!ciGeofenceDrawing) return;
+    ciGeofenceDrawPoints.push([e.latlng.lat, e.latlng.lng]);
+    if (ciGeofenceDrawLayer) { try { map.removeLayer(ciGeofenceDrawLayer); } catch(_) {} ciGeofenceDrawLayer = null; }
+
+    if (ciGeofenceDrawPoints.length === 1) {
+      ciGeofenceDrawLayer = L.layerGroup([
+        L.circleMarker(ciGeofenceDrawPoints[0], { radius: 5, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 1 })
+      ]).addTo(map);
+      return;
+    }
+
+    const center = ciGeofenceDrawPoints[0];
+    const edge = ciGeofenceDrawPoints[1];
+    const radiusKm = ciHaversineKm(center, edge);
+    if (radiusKm > 500) {
+      alert('That radius is over the 500km cap — click the map again to pick a tighter radius.');
+      ciGeofenceDrawPoints = [center];
+      ciGeofenceDrawLayer = L.layerGroup([
+        L.circleMarker(center, { radius: 5, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 1 })
+      ]).addTo(map);
+      return;
+    }
+
+    const label = prompt('Name this geofence (e.g. "HQ Perimeter"):', (ciGeofence && ciGeofence.label) || 'My geofence') || 'My geofence';
+    const newGeofence = { lat: center[0], lon: center[1], radiusKm: Number(radiusKm.toFixed(2)), label };
+    try {
+      const res = await fetch(API_ORIGIN + '/api/org/geofence', {
+        method: 'PUT',
+        headers: ciGetAuthHeaders(),
+        body: JSON.stringify(newGeofence)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) alert(data.error || 'Could not save geofence.');
+    } catch(_) {
+      alert('Could not save geofence — check your connection and try again.');
+    }
+    ciGeofence = newGeofence;
+    ciCancelGeofenceDraw();
+    ciRenderGeofenceTile();
+    ciDrawGeofenceOnMap();
+    try { updateQueueCounts(); } catch(_) {}
+  });
+
+  async function ciClearGeofence(){
+    if (!ciCanManageFeeds()) { alert('Only Master Admins and Org Admins can remove the geofence.'); return; }
+    if (!confirm('Remove the current geofence?')) return;
+    try {
+      await fetch(API_ORIGIN + '/api/org/geofence', { method: 'PUT', headers: ciGetAuthHeaders(), body: JSON.stringify(null) });
+    } catch(_) {}
+    ciGeofence = null;
+    ciCancelGeofenceDraw();
+    ciRenderGeofenceTile();
+    ciDrawGeofenceOnMap();
+    try { updateQueueCounts(); } catch(_) {}
+  }
+
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.id === 'geofenceEditBtn') {
+      e.stopPropagation();
+      if (ciGeofenceDrawing) { ciCancelGeofenceDraw(); return; }
+      if (ciGeofence) {
+        if (confirm('A geofence is already set up. Redraw it? (Cancel to remove it instead)')) {
+          ciStartGeofenceDraw();
+        } else {
+          ciClearGeofence();
+        }
+      } else {
+        ciStartGeofenceDraw();
+      }
+    }
+  });
+
+  ciLoadGeofence();
+
   function tryGeolocation() {
     if (!navigator.geolocation) {
       zoomToLocation(HEAD_OFFICE.lat, HEAD_OFFICE.lon, HEAD_OFFICE.zoom);
@@ -13721,6 +13904,7 @@ function redrawIncidentRadius(){
       st === 'monitoring' ? 'Monitoring queue' :
       st === 'unverified' ? 'Unverified location queue' :
       st === 'cleared' ? 'Cleared queue' :
+      st === 'geofence' ? ((typeof window.ciGetGeofence === 'function' && window.ciGetGeofence()) ? (window.ciGetGeofence().label || 'Geofence queue') : 'Geofence queue') :
       'Queue';
 
     const all = collectAllCachedEvents();
@@ -13741,7 +13925,9 @@ function redrawIncidentRadius(){
         ? all.filter(ev => hasTransitionDraft(ev))
         : st === 'unverified'
           ? unverified.filter(ev => getDisposition(ev) === 'untriaged')
-          : filterByDisposition(all, st)
+          : st === 'geofence'
+            ? all.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev))
+            : filterByDisposition(all, st)
     );
 
     ciRefreshQueueFilterOptions(baseItems);
@@ -13943,17 +14129,22 @@ function redrawIncidentRadius(){
     const esc = filterByDisposition(all, 'escalated').length;
     const mon = filterByDisposition(all, 'monitoring').length;
     const clr = filterByDisposition(all, 'cleared').length;
+    const geo = (typeof window.ciGetGeofence === 'function' && window.ciGetGeofence())
+      ? all.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev)).length
+      : 0;
 
     const allEl = document.getElementById('qAllAlerts');
     const a = document.getElementById('qEscalated');
     const b = document.getElementById('qMonitoring');
     const u = document.getElementById('qUnverified');
     const c = document.getElementById('qCleared');
+    const g = document.getElementById('qGeofence');
     if (allEl) allEl.textContent = total;
     if (a) a.textContent = esc;
     if (b) b.textContent = mon;
     if (u) u.textContent = unv;
     if (c) c.textContent = clr;
+    if (g) g.textContent = geo;
     try { ciRefreshQueueFilterOptions(all); } catch(_) {}
   }
   window.ciUpdateQueueCounts = updateQueueCounts;
@@ -13964,6 +14155,10 @@ function redrawIncidentRadius(){
     if (!btn) return;
     const st = btn.getAttribute('data-queue');
     if (!st) return;
+    if (st === 'geofence' && !(typeof window.ciGetGeofence === 'function' && window.ciGetGeofence())) {
+      if (typeof ciStartGeofenceDraw === 'function') ciStartGeofenceDraw();
+      return;
+    }
     renderQueueList(st);
   });
 
