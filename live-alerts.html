@@ -2242,6 +2242,29 @@ padding-bottom: 12px;
   text-align:center;
 }
 
+/* --- Map legend (marker key), sits directly above the map --- */
+.ci-map-legend{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:14px;
+  background:#0b0e14;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:8px 12px;
+  margin-bottom:8px;
+  font-size:11px;
+  color:#cbd5e1;
+}
+.ci-map-legend-item{ display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.ci-map-legend-swatch{ width:11px; height:11px; border-radius:50%; display:inline-block; flex:none; }
+.ci-map-legend-pin{
+  width:12px; height:12px; border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg); display:inline-block; flex:none;
+  border:1.5px solid rgba(255,255,255,.7);
+}
+.ci-map-legend-sep{ width:1px; align-self:stretch; background:rgba(255,255,255,.1); }
+
 /* --- Geofence queue tile edit control --- */
 .queue-geofence-edit{
   position:absolute;
@@ -5423,6 +5446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	<!-- MAP AREA -->
   <div class="global-map-main">
+    <div id="ciMapLegend" class="ci-map-legend"></div>
     <div id="liveRiskMap"></div>
   </div>
 
@@ -7141,7 +7165,7 @@ async function ciLoadOnboardingFeedDefaults(){
       id: 'org-default-' + ciSlugFeedId(place) + '-' + idx,
       places: [String(place).toLowerCase()],
       rawCities: place,
-      displayLabel: scope && scope.toLowerCase() !== 'city' ? `${place} · ${scope}` : place,
+      displayLabel: place,
       risks: ciRisksForSensitivity(sensitivity),
       useLive: true,
       // Deliberately no keywords here. sourceCategories was previously applied
@@ -7183,15 +7207,16 @@ async function ciLoadOnboardingFeedDefaults(){
   } catch(e) { console.warn('CityIntel: onboarding feed defaults unavailable', e); }
 }
 
-// One-time cleanup for feeds created before the keyword-filter fix above.
+// One-time cleanup for feeds created before the keyword-filter fix above,
+// and now also before the "· Global" label suffix was dropped.
 // ciLoadOnboardingFeedDefaults() only regenerates the whole onboarding
 // batch when every existing feed is either a starter feed or already
 // org-managed — the moment an operator adds one manual feed alongside
 // them, that regeneration permanently stops touching the onboarding
 // feeds (by design, so it never clobbers manual customisation). That
 // means org-onboarding-default feeds created before this fix keep their
-// old baked-in `keywords` forever unless handled directly. This strips
-// keywords specifically (and only) from feeds tagged
+// old baked-in `keywords`/`displayLabel` forever unless handled directly.
+// This strips both specifically (and only) from feeds tagged
 // source:'org_onboarding_default', regardless of what else is on the
 // page, so the fix actually reaches accounts already in that mixed state.
 function ciMigrateStaleOnboardingFeedKeywords(){
@@ -7199,9 +7224,14 @@ function ciMigrateStaleOnboardingFeedKeywords(){
     const feeds = loadFeeds();
     let changed = false;
     const migrated = feeds.map(f => {
-      if (f && f.source === 'org_onboarding_default' && Array.isArray(f.keywords) && f.keywords.length) {
-        changed = true;
-        return Object.assign({}, f, { keywords: [] });
+      if (f && f.source === 'org_onboarding_default') {
+        const patch = {};
+        if (Array.isArray(f.keywords) && f.keywords.length) patch.keywords = [];
+        // Old label format was "<place> · <scope>" (e.g. "EMEA · Global").
+        // The place itself is stored separately in rawCities, so re-derive
+        // the clean label from that rather than string-splitting the old one.
+        if (f.rawCities && f.displayLabel && f.displayLabel !== f.rawCities) patch.displayLabel = f.rawCities;
+        if (Object.keys(patch).length) { changed = true; return Object.assign({}, f, patch); }
       }
       return f;
     });
@@ -7210,7 +7240,7 @@ function ciMigrateStaleOnboardingFeedKeywords(){
       if (typeof window.ciRenderFeedList === 'function') window.ciRenderFeedList();
       setTimeout(() => { try { if (typeof renderFeeds === 'function') renderFeeds(); } catch(_) {} }, 250);
     }
-  } catch(e) { console.warn('CityIntel: stale onboarding-feed keyword migration failed', e); }
+  } catch(e) { console.warn('CityIntel: stale onboarding-feed migration failed', e); }
 }
 
 // Run org feed load on page init (after auth is ready)
@@ -11000,6 +11030,25 @@ L.control.zoom({ position: 'topright' }).addTo(map);
   });
   map.addControl(new CIRulerControl());
 
+  const CIGeofenceControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function(){
+      const container = L.DomUtil.create('div', 'leaflet-bar ci-map-ruler-control');
+      container.innerHTML = '<a href="#" id="ciGeofenceMapBtn" title="Set up / redraw geofence" role="button">🎯</a>';
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(container, 'click', function(e){
+        L.DomEvent.preventDefault(e);
+        const evt = new Event('click');
+        const proxy = document.getElementById('geofenceEditBtn');
+        // Reuse the exact same handler as the (still-present, smaller)
+        // queue-tile gear icon rather than duplicating its logic.
+        if (proxy) proxy.dispatchEvent(evt);
+      });
+      return container;
+    }
+  });
+  map.addControl(new CIGeofenceControl());
+
   let ciRulerActive = false;
   let ciRulerPoints = [];
   let ciRulerLayer = null;
@@ -11118,6 +11167,8 @@ L.control.zoom({ position: 'topright' }).addTo(map);
     map.getContainer().style.cursor = 'crosshair';
     const btn = document.getElementById('geofenceQueueBtn');
     if (btn) btn.classList.add('active-geofence-draw');
+    const mapBtn = document.getElementById('ciGeofenceMapBtn');
+    if (mapBtn) mapBtn.classList.add('active');
     alert('Click the map to set the geofence centre, then click again to set its radius (max 500km).');
   }
 
@@ -11128,6 +11179,8 @@ L.control.zoom({ position: 'topright' }).addTo(map);
     map.getContainer().style.cursor = ciRulerActive ? 'crosshair' : '';
     const btn = document.getElementById('geofenceQueueBtn');
     if (btn) btn.classList.remove('active-geofence-draw');
+    const mapBtn = document.getElementById('ciGeofenceMapBtn');
+    if (mapBtn) mapBtn.classList.remove('active');
   }
 
   map.on('click', async function(e){
@@ -12994,9 +13047,38 @@ const assetIcon = L.divIcon({
   });
 
 
+  function ciRenderMapLegend(){
+    const mount = document.getElementById('ciMapLegend');
+    if (!mount) return;
+    mount.innerHTML =
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-pin" style="background:#b21f1f"></span>High risk</div>' +
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-pin" style="background:#d97706"></span>Medium risk</div>' +
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-pin" style="background:#15803d"></span>Low risk</div>' +
+      '<div class="ci-map-legend-item" style="opacity:.7">(protest / CityIntel admin posts)</div>' +
+      '<div class="ci-map-legend-sep"></div>' +
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-swatch" style="background:#3b82f6"></span>Assets</div>' +
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-swatch" style="background:#f97316"></span>Travellers</div>' +
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-swatch" style="background:#22c55e"></span>Live tracking</div>';
+  }
+  ciRenderMapLegend();
+
   // === CityIntel Admin Posts overlay on Live Alerts map =================
   const cityIntelAdminLayer = L.layerGroup().addTo(map);
-  const cityIntelAdminIcon = L.divIcon({ className:'ci-admin-marker', html:'📍', iconSize:[24,24], iconAnchor:[12,24], popupAnchor:[0,-22] });
+  // Colour-code protest/admin-post markers by risk, matching the same
+  // palette used for risk chips elsewhere (high/medium/low), so the map
+  // itself communicates severity rather than every post looking identical.
+  const CI_ADMIN_RISK_COLORS = { high: '#b21f1f', medium: '#d97706', med: '#d97706', low: '#15803d' };
+  function ciAdminMarkerIcon(risk){
+    const key = String(risk || '').toLowerCase();
+    const color = CI_ADMIN_RISK_COLORS[key] || '#666';
+    return L.divIcon({
+      className: 'ci-admin-marker',
+      html: '<div style="width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:' + color + ';border:2px solid rgba(255,255,255,.85);box-shadow:0 0 3px rgba(0,0,0,.6);"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 20],
+      popupAnchor: [0, -18]
+    });
+  }
 
   function ciFeedPostHasCoords(post){ return Number.isFinite(Number(post && post.lat)) && Number.isFinite(Number(post && post.lon)); }
   function ciFeedPostWhen(post){
@@ -13107,13 +13189,17 @@ const assetIcon = L.divIcon({
 
       posts.forEach(function(post){
         const lat = Number(post.lat), lon = Number(post.lon);
+        const riskKey = String(post.risk || '').toLowerCase();
+        const riskColor = CI_ADMIN_RISK_COLORS[riskKey] || '#666';
+        const riskLabel = riskKey === 'med' ? 'Medium' : (riskKey ? riskKey.charAt(0).toUpperCase() + riskKey.slice(1) : 'Unrated');
         const popup = '' +
           '<div style="min-width:230px">' +
             '<div style="font-weight:900;margin-bottom:4px;">' + ciEscapeAdminPost(post.title || 'CityIntel Admin Post') + '</div>' +
+            '<div style="font-size:11px;font-weight:700;color:' + riskColor + ';margin-bottom:4px;">● ' + riskLabel + ' risk</div>' +
             '<div style="font-size:12px;opacity:.82;margin-bottom:6px;">' + ciEscapeAdminPost(post.location_label || 'Mapped location') + (post.event_at ? ' · ' + ciEscapeAdminPost(ciFeedPostWhen(post)) : '') + '</div>' +
             '<div style="font-size:12px;line-height:1.35;">' + ciEscapeAdminPost(post.body || '').slice(0,220) + '</div>' +
           '</div>';
-        const marker = L.marker([lat, lon], { icon: cityIntelAdminIcon, zIndexOffset:1600 }).addTo(cityIntelAdminLayer).bindPopup(popup, { maxWidth:320 });
+        const marker = L.marker([lat, lon], { icon: ciAdminMarkerIcon(post.risk), zIndexOffset:1600 }).addTo(cityIntelAdminLayer).bindPopup(popup, { maxWidth:320 });
         post.__ciMarker = marker;
         marker.on('click', function(){ focusPost(post, false, true); });
       });
@@ -13927,6 +14013,11 @@ function redrawIncidentRadius(){
           ? unverified.filter(ev => getDisposition(ev) === 'untriaged')
           : st === 'geofence'
             ? all.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev))
+                .concat(
+                  (Array.isArray(window.CICityIntelAdminPosts) ? window.CICityIntelAdminPosts : [])
+                    .filter(p => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(p))
+                    .map(p => (typeof ciAdminPostToDetailItem === 'function') ? ciAdminPostToDetailItem(p) : p)
+                )
             : filterByDisposition(all, st)
     );
 
@@ -14130,7 +14221,9 @@ function redrawIncidentRadius(){
     const mon = filterByDisposition(all, 'monitoring').length;
     const clr = filterByDisposition(all, 'cleared').length;
     const geo = (typeof window.ciGetGeofence === 'function' && window.ciGetGeofence())
-      ? all.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev)).length
+      ? all.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev)).length +
+        (Array.isArray(window.CICityIntelAdminPosts) ? window.CICityIntelAdminPosts : [])
+          .filter(p => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(p)).length
       : 0;
 
     const allEl = document.getElementById('qAllAlerts');
