@@ -6956,7 +6956,12 @@ function ciPushOrgFeeds(feeds) {
       method: 'PUT',
       headers: ciGetAuthHeaders(),
       body: JSON.stringify({ feeds })
-    }).catch(() => {}); // silent — localStorage is the fallback
+    }).then(async (res) => {
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        if (data && data.error) alert(data.error); // e.g. feed-limit rejection — don't let this fail silently
+      }
+    }).catch(() => {}); // network failure — localStorage is the fallback
   }, 800); // debounce rapid add/remove actions
 }
 
@@ -10314,11 +10319,32 @@ window.ciApplyFeedActionLock = ciApplyFeedActionLock;
 
 let editingFeedId = null;
 
-function openFeedModal(feed){
+// Client-side mirror of the server-side feed cap (worker.js enforces the
+// real limit on save; this just gives immediate, friendly feedback before
+// someone fills out the whole modal only to have the save rejected).
+async function ciCheckFeedCapOrWarn(){
+  try {
+    if (!window.CIAccess) return true; // no CIAccess loaded — let the server be the source of truth
+    const cfg = await CIAccess.getOrgConfig();
+    const limit = Number(cfg?.feedLimit ?? 5);
+    if (!(limit > 0)) return true; // 0 = unlimited
+    const currentCount = ciNonTrainingFeeds(loadFeeds()).length;
+    if (currentCount >= limit) {
+      alert(`Your organisation's plan allows up to ${limit} live-alert feeds. Remove one before adding another, or contact your CityIntel account manager to increase this limit.`);
+      return false;
+    }
+    return true;
+  } catch (_) {
+    return true; // fail open on the client — the server enforces the real limit regardless
+  }
+}
+
+async function openFeedModal(feed){
   if (!ciCanManageFeeds()) {
     alert('Only Master Admins and Org Admins can add or edit feeds.');
     return;
   }
+  if (!feed && !(await ciCheckFeedCapOrWarn())) return;
   editingFeedId = feed ? feed.id : null;
   const titleEl = document.getElementById('feedModalTitle');
   if (titleEl) titleEl.textContent = feed ? 'Edit Feed' : 'Add Feed';
