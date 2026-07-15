@@ -68,6 +68,7 @@
       hub: { href: 'monitoring-hub.html', label: 'Monitoring Hub', module: 'monitoring_hub' },
       members: [
         { href: 'live-alerts.html',        label: 'Live Alerts',         module: 'live_alerts' },
+        { href: 'live-alerts-analytics.html',        label: 'Live Alerts Analytics' },
         { href: 'cityintel-assistant.html', label: 'CityIntel AI',      module: 'cityintel_ai' },
         // Neighbourhood Intel moved to STANDALONE — see above.
       ]
