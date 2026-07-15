@@ -4,6 +4,9 @@
 // Example:
 //   <script src="support-widget.js"></script>
 
+
+<script src="whitelabel.js"></script>
+  
 (function(){
   'use strict';
 
