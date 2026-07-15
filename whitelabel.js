@@ -34,6 +34,12 @@
     return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
   }
 
+  // Perceptual-weighted luminance — good enough for a light/dark text
+  // decision without a full WCAG contrast calculation.
+  function relativeLuminance(rgb){
+    return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b);
+  }
+
   function readCache(){
     try{
       const raw = JSON.parse(localStorage.getItem(CI_WL_CACHE_KEY) || 'null');
@@ -107,6 +113,13 @@
       document.head.appendChild(style);
 
       const rgb = hexToRgb(b.accentColor);
+      // Buttons/badges filled with the accent colour need text that stays
+      // legible regardless of how light or dark the org's chosen colour is —
+      // white text was fine against the default red, but would disappear
+      // against a light accent. Forced only onto rules that actually fill a
+      // background with the accent colour, not ones that just use it for a
+      // border or a small text accent (those don't need a text-colour flip).
+      const textColor = (rgb && relativeLuminance(rgb) > 150) ? '#111214' : '#ffffff';
       const overrides = [];
       const HEX_RE = /#D01616/ig;
       // Matches rgba(208,22,22, <alpha>) and rgb(208,22,22) with flexible whitespace.
@@ -118,6 +131,7 @@
           if (rule.cssRules) { collectOverrides(rule.cssRules); return; } // @media, @supports, etc.
           if (!rule.selectorText || !rule.style) return;
           const props = [];
+          let touchesBackground = false;
           for (let i = 0; i < rule.style.length; i++){
             const prop = rule.style[i];
             const val = rule.style.getPropertyValue(prop);
@@ -131,9 +145,15 @@
               });
             }
             RGBA_RE.lastIndex = 0;
-            if (newVal) props.push(`${prop}:${newVal} !important`);
+            if (newVal) {
+              props.push(`${prop}:${newVal} !important`);
+              if (/^background/i.test(prop)) touchesBackground = true;
+            }
           }
-          if (props.length) overrides.push(`${rule.selectorText}{${props.join(';')}}`);
+          if (props.length){
+            if (touchesBackground) props.push(`color:${textColor} !important`);
+            overrides.push(`${rule.selectorText}{${props.join(';')}}`);
+          }
         });
       }
 
