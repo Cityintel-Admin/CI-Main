@@ -915,6 +915,35 @@
       <div><label>Operational focus</label><select id="obOperationalFocus"><option value="">Select focus</option><option>Corporate Security</option><option>Travel Risk</option><option>Executive Protection</option><option>Crisis Management</option><option>GSOC / SOC</option><option>Facilities</option><option>Business Continuity</option><option>Public Sector</option><option>NGO</option><option>Government</option><option>Other</option></select></div>
       <div><label>Primary use case</label><select id="obPrimaryUseCase"><option value="">Select use case</option><option>Monitoring Operations</option><option>Traveller Protection</option><option>Site Security</option><option>Executive Protection</option><option>Intelligence Monitoring</option><option>Business Continuity</option><option>Crisis Response</option><option>Other</option></select></div>
 
+      <div class="onboard-section-title">White-Label <span style="font-weight:400;opacity:.6;font-size:12px;">(Phase 1 — cosmetic only)</span></div>
+      <div class="onboard-help" style="grid-column:1/-1">Cosmetic white-label swaps this org's logo, accent colour, and display name across their branded shell. It doesn't change sender identity, email templates, or give them their own domain — that's reserved for a future full reseller tier. New orgs only.</div>
+
+      <div><label>White-label tier</label>
+        <select id="obWhitelabelTier">
+          <option value="none">None (standard CityIntel branding)</option>
+          <option value="cosmetic">Cosmetic (logo / colour / name swap)</option>
+        </select>
+      </div>
+      <div><label>Display name <span style="font-weight:400;opacity:.6">(replaces "CityIntel" in their shell)</span></label>
+        <input id="obWhitelabelDisplayName" type="text" placeholder="e.g. Acme Security Ops">
+      </div>
+      <div><label>Accent colour</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input id="obWhitelabelAccentColor" type="color" value="#D01616" style="width:48px;height:34px;padding:2px;background:transparent;border:1px solid var(--gray-600);border-radius:8px;">
+          <span class="onboard-help" style="margin:0" id="obWhitelabelAccentColorHex">#D01616</span>
+        </div>
+      </div>
+      <div>
+        <label>Logo</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img id="obWhitelabelLogoPreview" src="" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:6px;background:#fff;display:none;">
+          <input id="obWhitelabelLogoFile" type="file" accept="image/*">
+          <button type="button" id="obWhitelabelLogoUploadBtn" class="btn-link">Upload</button>
+        </div>
+        <div class="onboard-help" id="obWhitelabelLogoStatus" style="margin-top:4px;"></div>
+        <input type="hidden" id="obWhitelabelLogoUrl">
+      </div>
+
       <div class="onboard-section-title">Module Access</div>
       <div class="onboard-help" style="grid-column:1/-1">Select which platform features this organisation can access. Dashboard and Settings are always included. Uncheck to hide/lock a module for this client — useful for itemising plan tiers and pricing.</div>
 
@@ -3869,6 +3898,14 @@ const makeBar = (label, count, color) => {
       document.getElementById('obAssetLimit').value = ob.assetLimit ?? 0;
       document.getElementById('obTravellerLimit').value = ob.travellerLimit ?? 0;
       document.getElementById('obFeedLimit').value = ob.feedLimit ?? 5;
+      document.getElementById('obWhitelabelTier').value = ob.whitelabelTier || 'none';
+      document.getElementById('obWhitelabelDisplayName').value = ob.whitelabelDisplayName || '';
+      document.getElementById('obWhitelabelAccentColor').value = ob.whitelabelAccentColor || '#D01616';
+      document.getElementById('obWhitelabelAccentColorHex').textContent = ob.whitelabelAccentColor || '#D01616';
+      document.getElementById('obWhitelabelLogoUrl').value = ob.whitelabelLogoUrl || '';
+      { const prev = document.getElementById('obWhitelabelLogoPreview');
+        if (ob.whitelabelLogoUrl) { prev.src = ob.whitelabelLogoUrl; prev.style.display = ''; }
+        else { prev.style.display = 'none'; prev.src = ''; } }
       document.getElementById('obWatchlistLimit').value = ob.watchlistLimit ?? 0;
       document.getElementById('obOperationalFocus').value = ob.operationalFocus || row.operational_focus || '';
       document.getElementById('obPrimaryUseCase').value = ob.primaryUseCase || row.primary_use_case || '';
@@ -3937,6 +3974,10 @@ const makeBar = (label, count, color) => {
       assetLimit: document.getElementById('obAssetLimit').value.trim() || '0',
       travellerLimit: document.getElementById('obTravellerLimit').value.trim() || '0',
       feedLimit: document.getElementById('obFeedLimit').value.trim() || '5',
+      whitelabelTier: document.getElementById('obWhitelabelTier').value || 'none',
+      whitelabelDisplayName: document.getElementById('obWhitelabelDisplayName').value.trim(),
+      whitelabelAccentColor: document.getElementById('obWhitelabelAccentColor').value || '',
+      whitelabelLogoUrl: document.getElementById('obWhitelabelLogoUrl').value || '',
       watchlistLimit: document.getElementById('obWatchlistLimit').value.trim() || '0',
       address: document.getElementById('obAddress').value.trim(),
       defaultCity: document.getElementById('obCity').value.trim(),
@@ -4004,6 +4045,42 @@ const makeBar = (label, count, color) => {
       if (onboardActivateTrial) onboardActivateTrial.disabled = false;
     }
   }
+
+  // ── White-label: accent colour preview + logo upload ────────────────────
+  document.getElementById('obWhitelabelAccentColor')?.addEventListener('input', function(){
+    const hexEl = document.getElementById('obWhitelabelAccentColorHex');
+    if (hexEl) hexEl.textContent = this.value;
+  });
+
+  document.getElementById('obWhitelabelLogoUploadBtn')?.addEventListener('click', async function(){
+    const statusEl = document.getElementById('obWhitelabelLogoStatus');
+    const fileInput = document.getElementById('obWhitelabelLogoFile');
+    const file = fileInput?.files?.[0];
+    if (!file) { if (statusEl) statusEl.textContent = 'Choose an image file first.'; return; }
+    const orgId = activeOnboardLead?.onboarded_org_id || '';
+    if (!orgId) {
+      if (statusEl) statusEl.textContent = 'This lead hasn\u2019t been converted to an organisation yet — activate/approve it first, then upload the logo.';
+      return;
+    }
+    this.disabled = true;
+    if (statusEl) statusEl.textContent = 'Uploading…';
+    try {
+      const form = new FormData();
+      form.append('org_id', orgId);
+      form.append('file', file, file.name);
+      const res = await fetch(`${API_BASE}/api/admin/whitelabel/upload-logo`, { method: 'POST', headers: authHeaders(), body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Upload failed');
+      document.getElementById('obWhitelabelLogoUrl').value = data.url;
+      const prev = document.getElementById('obWhitelabelLogoPreview');
+      if (prev) { prev.src = data.url; prev.style.display = ''; }
+      if (statusEl) statusEl.textContent = 'Logo uploaded and saved.';
+    } catch (e) {
+      if (statusEl) statusEl.textContent = 'Upload failed: ' + (e.message || e);
+    } finally {
+      this.disabled = false;
+    }
+  });
 
   async function openLeadHistory(id){
     const row = latestRows.find(r => String(r.id) === String(id));
