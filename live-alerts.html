@@ -5100,6 +5100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <nav class="mobile-nav-bar" id="mobileNavBar">
   <a href="index.html">Dashboard</a>
   <a href="live-alerts.html" class="active">Live Alerts</a>
+  <a href="live-alerts-analytics.html">Alerts Analytics</a>
   <a href="alerts.html">High Risk</a>
   <a href="events.html">All Events</a>
   <a href="brief.html">Intel Brief</a>
@@ -5121,7 +5122,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		<a href="travellers.html">Travellers</a>
         <a href="alerts.html">High Risk Events</a>
         <a href="events.html">All Events</a>
-		<a href="live-alerts.html">Live Alerts</a>  
+		<a href="live-alerts.html">Live Alerts</a>
+        <a href="live-alerts-analytics.html">Alerts Analytics</a>  
 	    <a href="brief.html">Intelligence Brief</a>
 	    <a href="trends.html">Trends & Forecasts</a>
         <a href="reports.html">Reports</a>
@@ -8201,7 +8203,38 @@ function setDisposition(ev, status, note){
   (keys && keys.length ? keys : [key]).forEach(k => { map[user][k] = rec; });
   saveAlertStatusMap(map);
   rememberQueuedAlert(ev, safeSt);
+  ciSyncDispositionToServer(ev, safeSt, rec.note);
   return rec;
+}
+
+// Pushes the disposition to the server so it's centrally visible (audit
+// trail, cross-operator/cross-device consistency, analytics reporting)
+// rather than living only in this browser's localStorage. Only synced when
+// the alert has a real server-issued id — synthetic/local-only events have
+// nothing to join against server-side and are skipped.
+let _ciDispositionSyncQueue = [];
+let _ciDispositionSyncTimer = null;
+function ciSyncDispositionToServer(ev, status, note){
+  if (!ev || !ev.id) return;
+  _ciDispositionSyncQueue.push({
+    alert_key: String(ev.id),
+    status: status,
+    note: note || '',
+    alert_title: String(ev.title || '').slice(0, 200),
+    alert_city: String(ev.city || '').slice(0, 100),
+    alert_risk: String(ev.risk || '').slice(0, 20),
+    alert_when: String(ev.when || ev.when_ts || '').slice(0, 50)
+  });
+  clearTimeout(_ciDispositionSyncTimer);
+  _ciDispositionSyncTimer = setTimeout(function(){
+    const batch = _ciDispositionSyncQueue.splice(0, _ciDispositionSyncQueue.length);
+    if (!batch.length) return;
+    fetch(API_ORIGIN + '/api/live-alerts/dispositions', {
+      method: 'POST',
+      headers: ciGetAuthHeaders(),
+      body: JSON.stringify({ dispositions: batch })
+    }).catch(function(){ /* localStorage remains the fallback of record for this browser */ });
+  }, 600);
 }
 
 function formatUpdatedAt(rec){
