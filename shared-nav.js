@@ -30,6 +30,8 @@
  *    differently.)
  */
 
+<script src="whitelabel.js"></script>
+
 (function mountSharedNav() {
 
   // ── Home / hub-switcher ─────────────────────────────────────────────────
