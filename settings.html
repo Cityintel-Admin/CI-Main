@@ -264,7 +264,7 @@ html,body{overflow-x:hidden;max-width:100vw}
       <div id="inviteSeatStatus" class="muted" style="font-size:13px;margin-bottom:12px">Loading…</div>
 
       <!-- Invite form -->
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr minmax(150px,190px) auto;gap:10px;align-items:end;margin-bottom:10px">
         <div>
           <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:3px">Display name</label>
           <input id="inviteUserName" placeholder="Optional display name">
@@ -273,20 +273,28 @@ html,body{overflow-x:hidden;max-width:100vw}
           <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:3px">Email address *</label>
           <input id="inviteUserEmail" type="email" placeholder="user@company.com">
         </div>
+        <div>
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:3px">Role *</label>
+          <select id="inviteUserRole" style="width:100%;height:34px;box-sizing:border-box">
+            <option value="operator" selected>Operator</option>
+            <option value="org-admin">Org Admin</option>
+          </select>
+        </div>
         <button id="sendOrgInviteBtn" type="button">Send invite</button>
       </div>
       <div id="inviteMsg" class="muted" style="margin-bottom:10px;font-size:13px"></div>
 
       <!-- Members table -->
       <div style="overflow:auto;border:1px solid var(--gray-600);border-radius:12px;">
-        <table style="width:100%;border-collapse:collapse;min-width:520px;">
+        <table style="width:100%;border-collapse:collapse;min-width:760px;">
           <thead><tr style="background:#1c1e22">
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Email</th>
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Name</th>
+            <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Role</th>
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Status</th>
-            <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Created</th>
+            <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Joined / Invited</th>
           </tr></thead>
-          <tbody id="orgInviteRows"><tr><td colspan="4" class="muted" style="padding:10px">Loading…</td></tr></tbody>
+          <tbody id="orgInviteRows"><tr><td colspan="5" class="muted" style="padding:10px">Loading…</td></tr></tbody>
         </table>
       </div>
 
@@ -1934,27 +1942,78 @@ html,body{overflow-x:hidden;max-width:100vw}
   }
   function canManage(){ try{return !!(window.CIAuth && (CIAuth.isOrgAdmin() || CIAuth.isMasterAdmin()));}catch{return false;} }
   function esc(v){return String(v??'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function formatDate(v){
+    if(!v) return '—';
+    const d=new Date(v);
+    return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString([], {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+  function statusLabel(v){
+    const s=String(v||'').toLowerCase();
+    if(s==='active') return 'Active';
+    if(s==='pending') return 'Invite pending';
+    if(s==='expired') return 'Invite expired';
+    if(s==='accepted') return 'Accepted';
+    return v || '—';
+  }
+  function statusStyle(v){
+    const s=String(v||'').toLowerCase();
+    if(s==='active') return 'color:#bbf7d0;background:rgba(51,196,141,.12);border:1px solid rgba(51,196,141,.35)';
+    if(s==='pending') return 'color:#fde68a;background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.35)';
+    if(s==='expired') return 'color:#fecaca;background:rgba(255,90,95,.12);border:1px solid rgba(255,90,95,.35)';
+    return 'color:#cbd5e1;background:rgba(255,255,255,.05);border:1px solid var(--gray-600)';
+  }
   async function loadInvites(){
     if(!canManage()) return; // whole org card is already gated
     try{
       const res=await fetch(API_BASE + '/api/org/invites',{headers:getAuthHeaders()});
       const data=await res.json().catch(()=>({}));
       if(!res.ok||!data.ok) throw new Error(data.error||'Failed');
-      q('inviteSeatStatus').textContent = `${data.activeOperators || 0}/${data.maxOperators || 5} operator seats currently active or reserved.`;
+
+      const used=Number(data.seatsUsed ?? data.activeOperators ?? 0);
+      const max=Number(data.maxTeamMembers ?? data.maxOperators ?? 5);
+      const active=Number(data.activeMembers ?? 0);
+      const pending=Number(data.pendingInvites ?? 0);
+      q('inviteSeatStatus').textContent =
+        `${used}/${max} additional team seats in use or reserved · ${active} active member${active===1?'':'s'} · ${pending} pending invite${pending===1?'':'s'}.`;
+
       const rows=Array.isArray(data.data)?data.data:[];
-      q('orgInviteRows').innerHTML = rows.length ? rows.map(r=>`<tr><td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.email)}</td><td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.name)}</td><td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.status)}</td><td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.created_at||'')}</td></tr>`).join('') : '<tr><td colspan="4" class="muted" style="padding:10px">No operator invites sent yet.</td></tr>';
-    }catch(e){ const el=q('inviteSeatStatus'); if(el) el.textContent='Invite manager unavailable: '+(e.message||e); }
+      q('orgInviteRows').innerHTML = rows.length ? rows.map(r=>{
+        const when = r.status==='active' ? (r.joined_at || r.created_at) : r.created_at;
+        return `<tr>
+          <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.email)}</td>
+          <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.name)}</td>
+          <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.role_label || r.role_key || 'Operator')}</td>
+          <td style="padding:8px 12px;border-top:1px solid var(--gray-600)"><span style="display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;${statusStyle(r.status)}">${esc(statusLabel(r.status))}</span></td>
+          <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(formatDate(when))}</td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="5" class="muted" style="padding:10px">No team members or invitations found yet.</td></tr>';
+    }catch(e){
+      const el=q('inviteSeatStatus');
+      if(el) el.textContent='Team manager unavailable: '+(e.message||e);
+    }
   }
   async function sendInvite(){
-    const email=q('inviteUserEmail').value.trim(); const name=q('inviteUserName').value.trim();
+    const email=q('inviteUserEmail').value.trim();
+    const name=q('inviteUserName').value.trim();
+    const role=q('inviteUserRole')?.value || 'operator';
     if(!email){ q('inviteMsg').textContent='Enter an email address.'; return; }
     q('inviteMsg').textContent='Sending invite…';
     try{
-      const res=await fetch(API_BASE + '/api/org/invites',{method:'POST',headers:getAuthHeaders(),body:JSON.stringify({email,name})});
+      const res=await fetch(API_BASE + '/api/org/invites',{
+        method:'POST',
+        headers:getAuthHeaders(),
+        body:JSON.stringify({email,name,role})
+      });
       const data=await res.json().catch(()=>({}));
       if(!res.ok||!data.ok) throw new Error(data.error||'Invite failed');
-      q('inviteMsg').textContent='Invite sent. Password setup email should arrive shortly.'; q('inviteUserEmail').value=''; q('inviteUserName').value=''; await loadInvites();
-    }catch(e){ q('inviteMsg').textContent='Invite failed: '+(e.message||e); }
+      q('inviteMsg').textContent=`Invite sent as ${data.role_label || (role==='org-admin'?'Org Admin':'Operator')}. Password setup email should arrive shortly.`;
+      q('inviteUserEmail').value='';
+      q('inviteUserName').value='';
+      if(q('inviteUserRole')) q('inviteUserRole').value='operator';
+      await loadInvites();
+    }catch(e){
+      q('inviteMsg').textContent='Invite failed: '+(e.message||e);
+    }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadInvites); else loadInvites();
   document.addEventListener('click', e=>{ if(e.target && e.target.id==='sendOrgInviteBtn') sendInvite(); });
