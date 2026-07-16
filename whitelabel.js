@@ -1,5 +1,5 @@
 // ============================================================================
-// whitelabel.js — Phase 1.1 (cosmetic tier only)
+// whitelabel.js — Phase 1.2 (cosmetic tier only)
 //
 // Include this on any page, right after auth.js:
 //   <script src="auth.js"></script>
@@ -34,6 +34,7 @@
   const CI_WL_CACHE_TTL_MS = 5 * 60 * 1000;
   const THEME_STYLE_ID = 'ciWhiteLabelThemeVars';
   const OVERRIDE_STYLE_ID = 'ciWhiteLabelCssOverrides';
+  const SHELL_OVERRIDE_STYLE_ID = 'ciWhiteLabelShellOverrides';
 
   function hexToRgb(hex){
     const m = String(hex || '').trim().match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
@@ -162,6 +163,49 @@
     `;
   }
 
+  // Phase 1.2 shell fallback. Some legacy pages still contain literal red
+  // values in their page-level CSS. Those rules can be difficult to override
+  // reliably via CSSOM scanning alone, especially on very large pages with
+  // dynamically injected styles. These selectors are intentionally limited
+  // to the reusable CityIntel shell/branding surfaces so semantic operational
+  // reds (panic, danger, escalation, critical alerts, etc.) remain untouched.
+  function applyShellOverrides(palette){
+    if (!palette) return;
+
+    const r = palette.rgb.r;
+    const g = palette.rgb.g;
+    const b = palette.rgb.b;
+    const style = ensureStyle(SHELL_OVERRIDE_STYLE_ID);
+
+    style.textContent = `
+      .brandbar{
+        background:linear-gradient(90deg,rgba(${r},${g},${b},.28),rgba(${r},${g},${b},0)) !important;
+      }
+
+      .sidebar .brand{
+        background:rgba(${r},${g},${b},.10) !important;
+      }
+
+      .sidebar nav a.active,
+      .sidebar nav a[aria-current="page"]{
+        background:rgba(${r},${g},${b},.15) !important;
+        border-color:${palette.accent} !important;
+      }
+
+      .mobile-nav-bar a.active,
+      .mobile-nav-bar a[aria-current="page"]{
+        border-bottom-color:${palette.accent} !important;
+      }
+
+      .login-btn,
+      .btn.primary{
+        background:${palette.accent} !important;
+        border-color:${palette.accent} !important;
+        color:${palette.text} !important;
+      }
+    `;
+  }
+
   function applyBrandIdentity(b){
     if (!b) return;
 
@@ -267,7 +311,7 @@
     try{
       Array.from(document.styleSheets).forEach(sheet => {
         const owner = sheet.ownerNode;
-        if (owner && (owner.id === THEME_STYLE_ID || owner.id === OVERRIDE_STYLE_ID)) return;
+        if (owner && (owner.id === THEME_STYLE_ID || owner.id === OVERRIDE_STYLE_ID || owner.id === SHELL_OVERRIDE_STYLE_ID)) return;
 
         let rules;
         try{
@@ -318,11 +362,11 @@
       mutations.forEach(mutation => {
         const target = mutation.target;
         if (target && target.nodeType === 1 &&
-            (target.id === THEME_STYLE_ID || target.id === OVERRIDE_STYLE_ID)) return;
+            (target.id === THEME_STYLE_ID || target.id === OVERRIDE_STYLE_ID || target.id === SHELL_OVERRIDE_STYLE_ID)) return;
 
         mutation.addedNodes.forEach(node => {
           if (!node || node.nodeType !== 1) return;
-          if (node.id === THEME_STYLE_ID || node.id === OVERRIDE_STYLE_ID) return;
+          if (node.id === THEME_STYLE_ID || node.id === OVERRIDE_STYLE_ID || node.id === SHELL_OVERRIDE_STYLE_ID) return;
 
           applyInlineOverrides(node, palette);
           shouldRefreshIdentity = true;
@@ -371,6 +415,7 @@
     });
 
     applyThemeVariables(palette);
+    applyShellOverrides(palette);
     refreshCssOverrides(palette);
     applyInlineOverrides(document, palette);
     watchDynamicContent(b, palette);
