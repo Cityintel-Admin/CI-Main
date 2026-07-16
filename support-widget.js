@@ -228,12 +228,23 @@
         z-index:9998;
         font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         color:#e9edf2;
+        /* White-label palette. Falls back to the original CityIntel red when
+           no cosmetic white-label theme is active. */
+        --ci-support-accent:var(--brand-accent,var(--brand-red,#D01616));
+        --ci-support-accent-dark:var(--brand-accent-dark,#7f1111);
+        --ci-support-accent-text:var(--brand-accent-text,#fff);
+        --ci-support-accent-soft:var(--brand-accent-soft,rgba(208,22,22,.14));
+        --ci-support-accent-soft-strong:var(--brand-accent-soft-strong,rgba(208,22,22,.28));
+        --ci-support-accent-soft-faint:var(--brand-accent-soft-faint,rgba(208,22,22,.04));
+        --ci-support-accent-border:var(--brand-accent-border,rgba(208,22,22,.55));
+        --ci-support-accent-border-soft:var(--brand-accent-border-soft,rgba(208,22,22,.42));
+        --ci-support-accent-focus:var(--brand-accent-focus,rgba(208,22,22,.65));
       }
       .ci-support-toggle{
         position:relative;
-        border:1px solid rgba(208,22,22,.55);
-        background:linear-gradient(135deg,#D01616,#7f1111);
-        color:#fff;
+        border:1px solid var(--ci-support-accent-border);
+        background:linear-gradient(135deg,var(--ci-support-accent),var(--ci-support-accent-dark));
+        color:var(--ci-support-accent-text);
         border-radius:999px;
         padding:11px 15px;
         cursor:pointer;
@@ -274,7 +285,7 @@
       .ci-support-panel.open{display:flex;flex-direction:column}
       .ci-support-head{
         padding:13px 14px;
-        background:linear-gradient(90deg,rgba(208,22,22,.28),rgba(208,22,22,.04));
+        background:linear-gradient(90deg,var(--ci-support-accent-soft-strong),var(--ci-support-accent-soft-faint));
         border-bottom:1px solid #24272c;
         display:flex;
         align-items:center;
@@ -346,8 +357,8 @@
       }
       .ci-support-message.user{
         align-self:flex-end;
-        background:rgba(208,22,22,.14);
-        border-color:rgba(208,22,22,.42);
+        background:var(--ci-support-accent-soft);
+        border-color:var(--ci-support-accent-border-soft);
       }
       .ci-support-message.admin{
         align-self:flex-start;
@@ -379,7 +390,7 @@
       .ci-support-input:focus,
       .ci-support-select:focus,
       .ci-support-textarea:focus{
-        border-color:rgba(208,22,22,.65);
+        border-color:var(--ci-support-accent-focus);
       }
       .ci-support-row{
         display:grid;
@@ -402,9 +413,9 @@
         font-size:11px;
       }
       .ci-support-send{
-        border:1px solid #D01616;
-        background:#D01616;
-        color:#fff;
+        border:1px solid var(--ci-support-accent);
+        background:var(--ci-support-accent);
+        color:var(--ci-support-accent-text);
         border-radius:10px;
         padding:9px 12px;
         cursor:pointer;
