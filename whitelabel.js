@@ -40,6 +40,61 @@
     return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b);
   }
 
+  function hexToHsl(hex){
+    const rgb = hexToRgb(hex);
+    if (!rgb) return null;
+    const r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s; const l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    return { h, s, l };
+  }
+
+  function hslToHex(h, s, l){
+    let r, g, b;
+    if (s === 0) { r = g = b = l; }
+    else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1; if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
+    }
+    const toHex = v => Math.round(v * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  // Derives a shade of the org's accent colour that sits at the same
+  // relative lightness/saturation offset that `targetHex` sits at relative
+  // to `baseHex` (the primary brand red). Used only for shades confirmed to
+  // be pure UI decoration (hover/pressed/gradient states) in a specific
+  // known file — never applied blindly to "anything red", since several
+  // similar-looking reds elsewhere on this platform are semantic risk/danger
+  // colours (High/Critical badges, panic alarm) that must stay red
+  // regardless of an org's chosen branding colour.
+  function deriveShade(baseHex, targetHex, accentHex){
+    const baseHsl = hexToHsl(baseHex), targetHsl = hexToHsl(targetHex), accentHsl = hexToHsl(accentHex);
+    if (!baseHsl || !targetHsl || !accentHsl) return targetHex;
+    const lightnessDelta = targetHsl.l - baseHsl.l;
+    const saturationRatio = baseHsl.s > 0 ? (targetHsl.s / baseHsl.s) : 1;
+    const newL = Math.min(1, Math.max(0, accentHsl.l + lightnessDelta));
+    const newS = Math.min(1, Math.max(0, accentHsl.s * saturationRatio));
+    return hslToHex(accentHsl.h, newS, newL);
+  }
+
   function readCache(){
     try{
       const raw = JSON.parse(localStorage.getItem(CI_WL_CACHE_KEY) || 'null');
@@ -120,9 +175,55 @@
       // background with the accent colour, not ones that just use it for a
       // border or a small text accent (those don't need a text-colour flip).
       const textColor = (rgb && relativeLuminance(rgb) > 150) ? '#111214' : '#ffffff';
-      const HEX_RE = /#D01616/ig;
-      // Matches rgba(208,22,22, <alpha>) and rgb(208,22,22) with flexible whitespace.
-      const RGBA_RE = /rgba?\(\s*208\s*,\s*22\s*,\s*22\s*(,\s*[\d.]+\s*)?\)/ig;
+
+      // Secondary shades confirmed (by reading support-widget.js directly)
+      // to be pure UI decoration — hover/pressed/gradient states of the
+      // support widget, nothing semantic. Each maps to a colour-map entry:
+      // the literal shade -> the proportionally-derived equivalent in the
+      // org's accent colour. Deliberately NOT extended to other reds seen
+      // elsewhere on the platform (risk badges, panic alarm, etc.) since
+      // those carry danger/severity meaning and must stay red regardless of
+      // an org's branding colour.
+      const BASE_RED = '#D01616';
+      const colorMap = {}; // lowercase hex -> replacement hex
+      colorMap['#d01616'] = b.accentColor.toLowerCase();
+      ['#9c0f0f', '#7f1111', '#b21f1f', '#fca5a5'].forEach(shade => {
+        colorMap[shade.toLowerCase()] = deriveShade(BASE_RED, shade, b.accentColor).toLowerCase();
+      });
+      // Same idea for the rgb-triple forms used in rgba(...) declarations.
+      const rgbMap = {}; // "r,g,b" -> {r,g,b}
+      rgbMap['208,22,22'] = rgb;
+      [[248,113,113],[127,29,29]].forEach(([r,g,bl]) => {
+        const derived = hexToRgb(deriveShade(BASE_RED, `#${[r,g,bl].map(v=>v.toString(16).padStart(2,'0')).join('')}`, b.accentColor));
+        rgbMap[`${r},${g},${bl}`] = derived;
+      });
+
+      const HEX_ALT = Object.keys(colorMap).map(h => h.replace('#','')).join('|');
+      const HEX_RE = new RegExp(`#(?:${HEX_ALT})`, 'ig');
+      const RGB_ALT = Object.keys(rgbMap).map(t => t.split(',').map(n => `\\s*${n}\\s*`).join(',')).join('|');
+      const RGBA_RE = new RegExp(`rgba?\\(\\s*(?:${RGB_ALT})\\s*(,\\s*[\\d.]+\\s*)?\\)`, 'ig');
+
+      // Shared conversion used by both the stylesheet scan and the inline
+      // scan — looks up which *specific* shade matched (not just "did it
+      // match at all") so each one gets its own correctly-derived
+      // replacement, not a single fixed colour applied everywhere.
+      function convertColorString(val){
+        let newVal = null;
+        if (HEX_RE.test(val)) {
+          newVal = val.replace(HEX_RE, m => colorMap[m.toLowerCase()] || m);
+        }
+        HEX_RE.lastIndex = 0;
+        if (rgb && RGBA_RE.test(val)) {
+          newVal = (newVal || val).replace(RGBA_RE, (m, alphaPart) => {
+            const nums = m.match(/[\d.]+/g) || [];
+            const key = `${nums[0]},${nums[1]},${nums[2]}`;
+            const target = rgbMap[key] || rgb;
+            return alphaPart ? `rgba(${target.r},${target.g},${target.b}${alphaPart})` : `rgb(${target.r},${target.g},${target.b})`;
+          });
+        }
+        RGBA_RE.lastIndex = 0;
+        return newVal;
+      }
 
       // A single persistent override stylesheet, replaced (not appended-to)
       // on every re-scan — otherwise every subsequent scan (see the observer
@@ -141,14 +242,7 @@
               const prop = rule.style[i];
               const val = rule.style.getPropertyValue(prop);
               if (!val) continue;
-              let newVal = null;
-              if (HEX_RE.test(val)) newVal = val.replace(HEX_RE, b.accentColor);
-              HEX_RE.lastIndex = 0;
-              if (rgb && RGBA_RE.test(val)) {
-                newVal = (newVal || val).replace(RGBA_RE, (m, alphaPart) => {
-                  return alphaPart ? `rgba(${rgb.r},${rgb.g},${rgb.b}${alphaPart})` : `rgb(${rgb.r},${rgb.g},${rgb.b})`;
-                });
-              }
+              const newVal = convertColorString(val);
               RGBA_RE.lastIndex = 0;
               if (newVal) {
                 props.push(`${prop}:${newVal} !important`);
@@ -189,16 +283,8 @@
         (root.querySelectorAll ? root.querySelectorAll('[style]') : []).forEach(el => {
           const raw = el.getAttribute('style');
           if (!raw) return;
-          const hasHex = HEX_RE.test(raw); HEX_RE.lastIndex = 0;
-          const hasRgba = !!(rgb && RGBA_RE.test(raw)); RGBA_RE.lastIndex = 0;
-          if (!hasHex && !hasRgba) return;
-          let newStyle = raw.replace(HEX_RE, b.accentColor); HEX_RE.lastIndex = 0;
-          if (rgb){
-            newStyle = newStyle.replace(RGBA_RE, (m, alphaPart) => {
-              return alphaPart ? `rgba(${rgb.r},${rgb.g},${rgb.b}${alphaPart})` : `rgb(${rgb.r},${rgb.g},${rgb.b})`;
-            });
-            RGBA_RE.lastIndex = 0;
-          }
+          const newStyle = convertColorString(raw);
+          if (!newStyle) return;
           el.setAttribute('style', newStyle);
           if (/background/i.test(raw)) el.style.setProperty('color', textColor, 'important');
         });
