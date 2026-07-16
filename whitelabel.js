@@ -170,6 +170,48 @@
         overrideStyle.textContent = overrides.join('\n');
         document.head.appendChild(overrideStyle);
       }
+
+      // Inline style="" attributes are invisible to document.styleSheets
+      // entirely — they never appear in the CSSOM, so the scan above can't
+      // reach them no matter how thorough it is. Several pages set the
+      // brand red directly this way (e.g. executive-dashboard.html's
+      // welcome-banner border/background). Handled as a direct string
+      // replace on the attribute itself, which — being inline — already
+      // has the highest possible specificity, so no !important needed here.
+      function applyInlineOverrides(root){
+        (root.querySelectorAll ? root.querySelectorAll('[style]') : []).forEach(el => {
+          const raw = el.getAttribute('style');
+          if (!raw) return;
+          const hasHex = HEX_RE.test(raw); HEX_RE.lastIndex = 0;
+          const hasRgba = !!(rgb && RGBA_RE.test(raw)); RGBA_RE.lastIndex = 0;
+          if (!hasHex && !hasRgba) return;
+          let newStyle = raw.replace(HEX_RE, b.accentColor); HEX_RE.lastIndex = 0;
+          if (rgb){
+            newStyle = newStyle.replace(RGBA_RE, (m, alphaPart) => {
+              return alphaPart ? `rgba(${rgb.r},${rgb.g},${rgb.b}${alphaPart})` : `rgb(${rgb.r},${rgb.g},${rgb.b})`;
+            });
+            RGBA_RE.lastIndex = 0;
+          }
+          el.setAttribute('style', newStyle);
+          if (/background/i.test(raw)) el.style.setProperty('color', textColor, 'important');
+        });
+      }
+      applyInlineOverrides(document);
+
+      // Widgets that inject their own DOM after page load (support-widget.js
+      // being the known case — it's a separate script, loaded and rendered
+      // independently of this one) can add fresh inline-styled elements
+      // *after* the pass above already ran, so they'd be missed on a single
+      // one-time scan. A debounced MutationObserver re-applies the inline
+      // scan whenever new nodes show up. Re-processing already-converted
+      // elements is harmless — their style no longer matches the red
+      // pattern, so they're simply skipped on subsequent passes.
+      let mutationTimer = null;
+      const observer = new MutationObserver(() => {
+        clearTimeout(mutationTimer);
+        mutationTimer = setTimeout(() => applyInlineOverrides(document), 300);
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
     }
   }
 
