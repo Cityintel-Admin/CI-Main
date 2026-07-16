@@ -108,9 +108,9 @@
     // without needing a hand-maintained selector list, and !important
     // sidesteps any source-order/specificity edge cases.
     if (b.accentColor){
-      const style = document.createElement('style');
-      style.textContent = `:root{ --brand-red: ${b.accentColor}; }`;
-      document.head.appendChild(style);
+      const rootStyle = document.createElement('style');
+      rootStyle.textContent = `:root{ --brand-red: ${b.accentColor}; }`;
+      document.head.appendChild(rootStyle);
 
       const rgb = hexToRgb(b.accentColor);
       // Buttons/badges filled with the accent colour need text that stays
@@ -120,55 +120,62 @@
       // background with the accent colour, not ones that just use it for a
       // border or a small text accent (those don't need a text-colour flip).
       const textColor = (rgb && relativeLuminance(rgb) > 150) ? '#111214' : '#ffffff';
-      const overrides = [];
       const HEX_RE = /#D01616/ig;
       // Matches rgba(208,22,22, <alpha>) and rgb(208,22,22) with flexible whitespace.
       const RGBA_RE = /rgba?\(\s*208\s*,\s*22\s*,\s*22\s*(,\s*[\d.]+\s*)?\)/ig;
 
-      function collectOverrides(rules){
-        if (!rules) return;
-        Array.from(rules).forEach(rule => {
-          if (rule.cssRules) { collectOverrides(rule.cssRules); return; } // @media, @supports, etc.
-          if (!rule.selectorText || !rule.style) return;
-          const props = [];
-          let touchesBackground = false;
-          for (let i = 0; i < rule.style.length; i++){
-            const prop = rule.style[i];
-            const val = rule.style.getPropertyValue(prop);
-            if (!val) continue;
-            let newVal = null;
-            if (HEX_RE.test(val)) newVal = val.replace(HEX_RE, b.accentColor);
-            HEX_RE.lastIndex = 0;
-            if (rgb && RGBA_RE.test(val)) {
-              newVal = (newVal || val).replace(RGBA_RE, (m, alphaPart) => {
-                return alphaPart ? `rgba(${rgb.r},${rgb.g},${rgb.b}${alphaPart})` : `rgb(${rgb.r},${rgb.g},${rgb.b})`;
-              });
+      // A single persistent override stylesheet, replaced (not appended-to)
+      // on every re-scan — otherwise every subsequent scan (see the observer
+      // below) would pile up duplicate rules forever.
+      let overrideStyleEl = null;
+      function scanAndOverrideStylesheets(){
+        const overrides = [];
+        function collectOverrides(rules){
+          if (!rules) return;
+          Array.from(rules).forEach(rule => {
+            if (rule.cssRules) { collectOverrides(rule.cssRules); return; } // @media, @supports, etc.
+            if (!rule.selectorText || !rule.style) return;
+            const props = [];
+            let touchesBackground = false;
+            for (let i = 0; i < rule.style.length; i++){
+              const prop = rule.style[i];
+              const val = rule.style.getPropertyValue(prop);
+              if (!val) continue;
+              let newVal = null;
+              if (HEX_RE.test(val)) newVal = val.replace(HEX_RE, b.accentColor);
+              HEX_RE.lastIndex = 0;
+              if (rgb && RGBA_RE.test(val)) {
+                newVal = (newVal || val).replace(RGBA_RE, (m, alphaPart) => {
+                  return alphaPart ? `rgba(${rgb.r},${rgb.g},${rgb.b}${alphaPart})` : `rgb(${rgb.r},${rgb.g},${rgb.b})`;
+                });
+              }
+              RGBA_RE.lastIndex = 0;
+              if (newVal) {
+                props.push(`${prop}:${newVal} !important`);
+                if (/^background/i.test(prop)) touchesBackground = true;
+              }
             }
-            RGBA_RE.lastIndex = 0;
-            if (newVal) {
-              props.push(`${prop}:${newVal} !important`);
-              if (/^background/i.test(prop)) touchesBackground = true;
+            if (props.length){
+              if (touchesBackground) props.push(`color:${textColor} !important`);
+              overrides.push(`${rule.selectorText}{${props.join(';')}}`);
             }
-          }
-          if (props.length){
-            if (touchesBackground) props.push(`color:${textColor} !important`);
-            overrides.push(`${rule.selectorText}{${props.join(';')}}`);
-          }
-        });
-      }
+          });
+        }
 
-      try {
         Array.from(document.styleSheets).forEach(sheet => {
+          if (sheet.ownerNode === overrideStyleEl) return; // don't scan our own output
           let rules;
           try { rules = sheet.cssRules || sheet.rules; } catch(_) { return; } // cross-origin sheets throw on read
-          collectOverrides(rules);
+          try { collectOverrides(rules); } catch(_){}
         });
-      } catch(_){}
 
-      if (overrides.length){
-        const overrideStyle = document.createElement('style');
-        overrideStyle.textContent = overrides.join('\n');
-        document.head.appendChild(overrideStyle);
+        if (!overrides.length) return;
+        if (!overrideStyleEl){
+          overrideStyleEl = document.createElement('style');
+          overrideStyleEl.id = 'ci-whitelabel-overrides';
+          document.head.appendChild(overrideStyleEl);
+        }
+        overrideStyleEl.textContent = overrides.join('\n');
       }
 
       // Inline style="" attributes are invisible to document.styleSheets
@@ -196,22 +203,31 @@
           if (/background/i.test(raw)) el.style.setProperty('color', textColor, 'important');
         });
       }
+
+      scanAndOverrideStylesheets();
       applyInlineOverrides(document);
 
-      // Widgets that inject their own DOM after page load (support-widget.js
-      // being the known case — it's a separate script, loaded and rendered
-      // independently of this one) can add fresh inline-styled elements
-      // *after* the pass above already ran, so they'd be missed on a single
-      // one-time scan. A debounced MutationObserver re-applies the inline
-      // scan whenever new nodes show up. Re-processing already-converted
-      // elements is harmless — their style no longer matches the red
-      // pattern, so they're simply skipped on subsequent passes.
+      // Widgets that inject their own DOM and/or their own <style> tag after
+      // page load — support-widget.js being the confirmed case, which
+      // creates a stylesheet via document.createElement('style') on its own
+      // DOMContentLoaded listener — can finish setting up *after* this
+      // script's one-time scans above already ran, depending on <script>
+      // tag order. A single one-time scan can miss it entirely. A debounced
+      // MutationObserver re-runs BOTH the stylesheet scan and the inline
+      // scan whenever new nodes show up, so a late-arriving stylesheet (not
+      // just late-arriving inline styles) gets caught too. Re-processing
+      // already-converted rules/elements is harmless — they no longer match
+      // the red pattern, so they're simply skipped on later passes.
       let mutationTimer = null;
       const observer = new MutationObserver(() => {
         clearTimeout(mutationTimer);
-        mutationTimer = setTimeout(() => applyInlineOverrides(document), 300);
+        mutationTimer = setTimeout(() => {
+          scanAndOverrideStylesheets();
+          applyInlineOverrides(document);
+        }, 300);
       });
       observer.observe(document.body, { childList: true, subtree: true });
+      observer.observe(document.head, { childList: true, subtree: true });
     }
   }
 
