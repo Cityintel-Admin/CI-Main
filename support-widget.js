@@ -183,10 +183,20 @@
 
   function authHeaders(){
     const u = getUserContext();
-    const h = {
+    let h = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+
+    // Phase 2A.2: carry the signed bearer session whenever auth.js has one.
+    // Metadata headers remain during migration but are no longer sufficient
+    // on their own for sensitive admin authorization paths.
+    try {
+      if (window.CIAuth && typeof CIAuth.headers === 'function') {
+        h = { ...h, ...CIAuth.headers() };
+      }
+    } catch (_) {}
+
     if (u.email) h['X-User-Email'] = u.email;
     if (u.name) h['X-User-Name'] = u.name;
     if (u.userId) h['X-User-Id'] = u.userId;
