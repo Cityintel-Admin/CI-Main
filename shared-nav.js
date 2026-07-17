@@ -18,7 +18,7 @@
  * Nav shape (deliberately kept short):
  *  - Executive Dashboard is the fixed "home" — it's the one link that always
  *    shows, everywhere, as the way back to switch hubs.
- *  - HOME page (executive-dashboard.html / dashboard.html): shows Executive
+ *  - HOME page (executive-dashboard.html): shows Executive
  *    Dashboard (expanded with its own members) + every other hub's landing
  *    link (collapsed) + Sources/Settings/About + master-only links.
  *  - Inside any OTHER hub (its landing page or one of its own members):
@@ -30,7 +30,6 @@
  *    differently.)
  */
 
-<script src="whitelabel.js"></script>
 
 (function mountSharedNav() {
 
@@ -47,9 +46,9 @@
     ]
   };
 
-  // dashboard.html is legacy — currently still acts as home too, until it's
-  // retired once the Protest Hub work lands. Remove this once that happens.
-  const LEGACY_HOME_PAGES = ['executive-dashboard'];
+  // Preserve the legacy dashboard.html identifier only for old bookmarks.
+  // New navigation and authentication always use executive-dashboard.html.
+  const LEGACY_HOME_PAGES = ['dashboard.html'];
 
   // ── Standalone pages ─────────────────────────────────────────────────────
   // These modules can belong to different hub packages depending on how an
@@ -138,7 +137,6 @@
   const MASTER_LINKS = [
     { href: 'analytics.html',     label: 'Analytics',      role: 'masterAdmin' },
     { href: 'operationslog.html', label: 'Operations Log', role: 'masterAdmin' },
-    { href: 'system-flow.html',   label: 'System Flow',    role: 'masterAdmin' },
   ];
 
   // ── Special actions ──────────────────────────────────────────────────
