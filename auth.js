@@ -158,6 +158,10 @@
 
   // ------------- Cloudflare Worker API -------------
   const API_BASE = 'https://api.cityintelapi.com'; // your Worker URL
+  const APP_HOME = 'executive-dashboard.html';
+  // Shared canonical authenticated landing page. Exposed for pages that
+  // need a safe default without duplicating the legacy dashboard.html path.
+  window.CI_APP_HOME = window.CI_APP_HOME || APP_HOME;
 
   async function fetchSubStatus(email) {
     try {
@@ -322,9 +326,12 @@
   }
 
   const params = new URLSearchParams(location.search);
-  const next = params.get('next') || 'dashboard.html';
-  // If 'next' points to the old index.html, send to dashboard instead
-  location.href = next === 'index.html' ? 'dashboard.html' : next;
+  const requestedNext = String(params.get('next') || APP_HOME).trim();
+  // Canonicalise legacy/default landing targets onto the Executive Dashboard.
+  const next = (!requestedNext || requestedNext === 'index.html' || requestedNext === 'dashboard.html')
+    ? APP_HOME
+    : requestedNext;
+  location.href = next;
 
   return profile;
 },
@@ -338,11 +345,24 @@
       localStorage.removeItem('ci_plan');
       localStorage.removeItem('ci_trial');
       localStorage.removeItem('ci_org_onboarding');
+
+      // White-label branding is organisation-scoped. Clear all current and
+      // legacy branding caches on logout so a subsequent account can never
+      // inherit the previous organisation's cosmetic identity.
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i) || '';
+          if (key === 'ci_whitelabel_cache_v1' || key.startsWith('ci_whitelabel_cache_v2:')) {
+            localStorage.removeItem(key);
+          }
+        }
+      } catch (_) {}
+      try { delete window.CIWhiteLabel; } catch (_) {}
     },
 
     requireAuth(redirectTo = 'login.html') {
       if (!this.isLoggedIn()) {
-        const nxt = encodeURIComponent(location.pathname.split('/').pop() || 'dashboard.html');
+        const nxt = encodeURIComponent(location.pathname.split('/').pop() || APP_HOME);
         location.href = `${redirectTo}?next=${nxt}`;
       }
     },
@@ -426,7 +446,7 @@ const status = String(
 
         const path = (location.pathname.split('/').pop() || '').toLowerCase();
         const protectedPages = [
-          'dashboard.html','alerts.html','events.html','reports.html','watch.html',
+          'executive-dashboard.html','dashboard.html','alerts.html','events.html','reports.html','watch.html',
           'operations-log.html','operationslog.html','analytics.html','system-flow.html','sources.html','settings.html',
           'live-alerts.html','assets.html','travellers.html','brief.html','trends.html',
           'neighborhood-intel.html','neighbourhood-intel.html'
