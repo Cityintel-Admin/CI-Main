@@ -276,7 +276,16 @@
   }
 
   function heartbeatHeaders(payload){
-    const h = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    // Prefer the shared signed-session header builder. Keep explicit identity
+    // metadata only as migration/context fields for older Worker code paths
+    // and operational logging.
+    let h = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    try {
+      if (window.CIAuth && typeof CIAuth.headers === 'function') {
+        h = { ...h, ...CIAuth.headers() };
+      }
+    } catch (_) {}
+
     if (payload.email) h['X-User-Email'] = payload.email;
     if (payload.name) h['X-User-Name'] = payload.name;
     if (payload.user_id) h['X-User-Id'] = payload.user_id;
