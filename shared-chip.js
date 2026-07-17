@@ -35,27 +35,7 @@
     if (window.CIAuth && CIAuth.isLoggedIn()) {
       const initials = initialsOf(displayName);
       const isMaster = CIAuth.isMasterAdmin ? CIAuth.isMasterAdmin() : false;
-
-      // ── Heartbeat beacon — fires every 2 min while logged in ──────────
-      (function startHeartbeat() {
-        const API = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
-        const u = authUser;
-        const payload = JSON.stringify({
-          user_id:  u.id || u.email || '',
-          org_id:   u.org_id || u.orgId || '',
-          org_name: u.org_name || u.orgName || '',
-          email:    u.email || '',
-          name:     displayName,
-          page:     location.pathname.split('/').pop() || 'index.html',
-        });
-        function beat() {
-          try {
-            navigator.sendBeacon(API + '/api/admin/heartbeat', new Blob([payload], { type: 'application/json' }));
-          } catch (_) {}
-        }
-        beat(); // fire immediately on page load
-        setInterval(beat, 2 * 60 * 1000); // then every 2 minutes
-      })();
+      // Live-session heartbeat is owned by metrics.js so it can carry the signed Bearer session.
 
       host.innerHTML = `
         <div class="user" id="userChip" style="cursor:pointer">
@@ -66,7 +46,7 @@
           </div>
         </div>
         <div class="dropdown" id="userMenu">
-          ${isMaster ? '<a href="analytics.html">Analytics</a><a href="system-flow.html">System Flow</a><a href="operationslog.html">Operations Log</a>' : ''}
+          ${isMaster ? '<a href="analytics.html">Analytics</a><a href="operationslog.html">Operations Log</a>' : ''}
           <a href="profile.html">Profile</a>
           <a href="settings.html">Settings</a>
           <div style="border-top:1px solid rgba(255,255,255,.08);margin:6px 0"></div>
