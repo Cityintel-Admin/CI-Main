@@ -109,6 +109,12 @@
   function fallbackLocalMarker() {
     return 'local_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
+
+  // CityIntel session tokens are payload.base64url + "." + 64-char HMAC hex.
+  // A local_* marker is deliberately NOT treated as a bearer credential.
+  function isSignedSessionToken(token) {
+    return /^[A-Za-z0-9_-]+\.[a-f0-9]{64}$/i.test(String(token || '').trim());
+  }
   function normalizeRoleKey(raw = {}) {
     if (raw.roleKey) return String(raw.roleKey).toLowerCase();
     const role = String(raw.role || '').toLowerCase();
@@ -188,7 +194,7 @@
         'X-User-Role': profile.role || ''
       };
       const tok = sessionToken || LS.get('ci_token', null);
-      if (tok) headers['Authorization'] = 'Bearer ' + tok;
+      if (isSignedSessionToken(tok)) headers['Authorization'] = 'Bearer ' + tok;
       const res = await fetch(`${API_BASE}/api/org/onboarding`, { headers });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok && data.data) {
@@ -230,28 +236,65 @@
       return !!(u && u.capabilities && u.capabilities[capability]);
     },
 
-    // ------------- Shared API header builder (auth hardening Phase 3) -----
-    // Every page currently builds its own ad-hoc headers() function reading
-    // localStorage directly. Since auth.js is already loaded on every page,
-    // pages can switch to calling CIAuth.headers() instead of maintaining
-    // their own copy — nothing extra needs to be pasted in.
-    // Sends both the real signed bearer token (what the backend now prefers
-    // and verifies cryptographically) AND the legacy X-User-* headers
-    // (what the backend still accepts as a fallback during the migration —
-    // see worker.js requireUser() history). Once every page has switched
-    // to calling this and the backend's legacy fallback is removed, the
-    // X-User-* headers below can come out too.
+    // ------------- Shared API header builder (Phase 2A.2) ----------------
+    // Bearer authentication is now the preferred credential. Legacy X-User-*
+    // identity headers are still sent temporarily because a small number of
+    // older page-level helpers have not yet been retired; the Worker no longer
+    // treats those headers as proof of Master Admin identity.
+    sessionToken() {
+      return LS.get('ci_token', null);
+    },
+    hasSignedSession() {
+      return isSignedSessionToken(this.sessionToken());
+    },
+    authMode() {
+      if (this.hasSignedSession()) return 'bearer';
+      return this.isLoggedIn() ? 'legacy-header' : 'anonymous';
+    },
     headers(extra = {}) {
       const p = this.who() || {};
-      const tok = LS.get('ci_token', null);
-      const h = { 'Content-Type': 'application/json' };
-      if (tok) h['Authorization'] = 'Bearer ' + tok;
+      const tok = this.sessionToken();
+      const h = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      if (isSignedSessionToken(tok)) h['Authorization'] = 'Bearer ' + tok;
+
+      // Migration metadata only. Backend authorization should be derived from
+      // the verified session/DB identity wherever a signed session is present.
       if (p.email) h['X-User-Email'] = p.email;
       if (p.name) h['X-User-Name'] = p.name;
       if (p.id || p.email) h['X-User-Id'] = p.id || p.email;
       if (p.role) h['X-User-Role'] = p.role;
       if (p.roleKey) h['X-User-Role-Key'] = p.roleKey;
+      if (p.org_id || p.orgId) h['X-Org-Id'] = p.org_id || p.orgId;
       return { ...h, ...extra };
+    },
+    async verifySession() {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/session`, {
+          method: 'GET',
+          headers: this.headers()
+        });
+        const data = await res.json().catch(() => ({}));
+        return {
+          ok: !!(res.ok && data.ok),
+          status: res.status,
+          authMode: data.authMode || this.authMode(),
+          signed: !!data.signed,
+          user: data.user || null,
+          error: data.error || ''
+        };
+      } catch (e) {
+        return {
+          ok: false,
+          status: 0,
+          authMode: this.authMode(),
+          signed: false,
+          user: null,
+          error: String(e?.message || e)
+        };
+      }
     },
 
    async login(email, password) {
@@ -303,11 +346,16 @@
   persistProfile(profile);
   await cacheOrgOnboarding(profile, data.token);
 
-  // Store the real signed session token issued by /api/auth/login. This is
-  // what requireUser() on the backend now verifies (see worker.js history)
-  // — it replaces the old fake client-generated token that was never
-  // actually checked by the server.
-  LS.set('ci_token', data.token || fallbackLocalMarker());
+  // Store the real signed session token issued by /api/auth/login.
+  // If the Worker has not yet been configured with SESSION_SECRET, retain a
+  // temporary local marker so the existing migration fallback can keep the
+  // browser session usable. local_* markers are never sent as Bearer tokens.
+  const storedToken = data.token || fallbackLocalMarker();
+  LS.set('ci_token', storedToken);
+  localStorage.setItem('ci_auth_mode', isSignedSessionToken(storedToken) ? 'bearer' : 'legacy-header');
+  if (!isSignedSessionToken(storedToken)) {
+    console.warn('CityIntel authentication is running in legacy-header compatibility mode. Configure SESSION_SECRET and sign in again before disabling the Worker fallback.');
+  }
 
   localStorage.setItem(
     'ci_subscribed',
@@ -345,6 +393,7 @@
       localStorage.removeItem('ci_plan');
       localStorage.removeItem('ci_trial');
       localStorage.removeItem('ci_org_onboarding');
+      localStorage.removeItem('ci_auth_mode');
 
       // White-label branding is organisation-scoped. Clear all current and
       // legacy branding caches on logout so a subsequent account can never
