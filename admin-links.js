@@ -2,8 +2,13 @@
 (function(){
   function isAdmin(){
     if (!window.CIAuth || !CIAuth.isLoggedIn()) return false;
-    const u = CIAuth.who();
-    return String(u?.role || '').toLowerCase() === 'admin';
+    try {
+      if (typeof CIAuth.isMasterAdmin === 'function') return !!CIAuth.isMasterAdmin();
+    } catch (_) {}
+    const u = CIAuth.who ? CIAuth.who() : null;
+    const roleKey = String(u?.roleKey || u?.role_key || '').toLowerCase();
+    const role = String(u?.role || '').toLowerCase();
+    return roleKey === 'master-admin' || role === 'admin';
   }
 
   function renderAdminLinks(){
@@ -28,7 +33,6 @@
 
     add('analytics.html',      'Analytics');
     add('operationslog.html', 'Operations Log');
-    add('system-flow.html',    'System Flow');
   }
 
   // Run on load
