@@ -1,5 +1,5 @@
 // ============================================================================
-// whitelabel.js — Phase 1.2 (cosmetic tier only)
+// whitelabel.js — Phase 2A.1 foundation (cosmetic + reseller tiers)
 //
 // Include this on any page, right after auth.js:
 //   <script src="auth.js"></script>
@@ -7,7 +7,7 @@
 //
 // On DOMContentLoaded, fetches the logged-in user's org config (the same
 // /api/org/onboarding endpoint every page already uses for module/tier
-// gating) and — only if that org's whitelabel_tier is 'cosmetic' — applies:
+// gating) and — when that org's whitelabel_tier is 'cosmetic' or 'reseller' — applies:
 //   - organisation logo to supported brand containers
 //   - organisation display name to supported brand labels + document title
 //   - organisation accent colour and a derived accent palette
@@ -30,7 +30,8 @@
 (function(){
   'use strict';
 
-  const CI_WL_CACHE_KEY = 'ci_whitelabel_cache_v1';
+  const CI_WL_LEGACY_CACHE_KEY = 'ci_whitelabel_cache_v1';
+  const CI_WL_CACHE_PREFIX = 'ci_whitelabel_cache_v2:';
   const CI_WL_CACHE_TTL_MS = 5 * 60 * 1000;
   const THEME_STYLE_ID = 'ciWhiteLabelThemeVars';
   const OVERRIDE_STYLE_ID = 'ciWhiteLabelCssOverrides';
@@ -92,9 +93,31 @@
     };
   }
 
+  function brandingScope(){
+    try{
+      const u = (window.CIAuth && typeof CIAuth.who === 'function') ? (CIAuth.who() || {}) : {};
+      const orgId = String(
+        u.org_id || u.orgId || u.organisationId || u.organizationId ||
+        localStorage.getItem('ci_org_id') || ''
+      ).trim();
+      if (orgId) return `org:${orgId}`;
+
+      const email = String(u.email || localStorage.getItem('ci_email') || '').trim().toLowerCase();
+      if (email) return `user:${email}`;
+    }catch(_){}
+    return 'anonymous';
+  }
+
+  function currentCacheKey(){
+    return CI_WL_CACHE_PREFIX + brandingScope();
+  }
+
   function readCache(){
     try{
-      const raw = JSON.parse(localStorage.getItem(CI_WL_CACHE_KEY) || 'null');
+      // Remove the old global cache once encountered. A global cache could
+      // leak one organisation's branding into another account for up to 5 min.
+      localStorage.removeItem(CI_WL_LEGACY_CACHE_KEY);
+      const raw = JSON.parse(localStorage.getItem(currentCacheKey()) || 'null');
       if (!raw || !raw.at || (Date.now() - raw.at) > CI_WL_CACHE_TTL_MS) return null;
       return raw.data || null;
     }catch(_){
@@ -104,8 +127,13 @@
 
   function writeCache(data){
     try{
-      localStorage.setItem(CI_WL_CACHE_KEY, JSON.stringify({ at: Date.now(), data }));
+      localStorage.setItem(currentCacheKey(), JSON.stringify({ at: Date.now(), data }));
     }catch(_){}
+  }
+
+  function tierSupportsBranding(tier){
+    const t = String(tier || '').trim().toLowerCase();
+    return t === 'cosmetic' || t === 'reseller';
   }
 
   async function fetchBranding(){
@@ -394,7 +422,7 @@
   }
 
   function applyBranding(b){
-    if (!b || b.tier !== 'cosmetic') return;
+    if (!b || !tierSupportsBranding(b.tier)) return;
 
     applyBrandIdentity(b);
 
