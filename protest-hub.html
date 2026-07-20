@@ -1613,7 +1613,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <div class="ci-featured-protests-head">
     <div>
       <h3>Featured Protest Intelligence</h3>
-      <p>Individual event spotlights from the next 7 days, ordered chronologically so the soonest mapped protest with a recorded expected attendance appears first. Unlike Priority Cities, this layer highlights specific events rather than aggregated city pressure.</p>
+      <p>Individual event spotlights from the next 7 days, ordered chronologically so the soonest mapped protest with a recorded expected attendance appears first. Likely duplicate updates are consolidated so Featured Protest Intelligence highlights distinct events rather than repeated versions of the same protest.</p>
     </div>
     <div class="ci-featured-protests-badge">FEATURED PROTESTS • NEXT 7 DAYS</div>
   </div>
@@ -6012,7 +6012,7 @@ document.addEventListener("DOMContentLoaded",function(){
 	
 
 
-<!-- ===== v20: Featured Protest Intelligence — chronological spotlights + Protest Hub marker language ===== -->
+<!-- ===== v21: Featured Protest Intelligence — deduplicated canonical events + exact marker linking ===== -->
 <script>
 (function mountFeaturedProtestIntelligence(){
   const host = document.getElementById('featuredProtestGrid');
@@ -6033,6 +6033,10 @@ document.addEventListener("DOMContentLoaded",function(){
     if (s.startsWith('me')) return 'med';
     return 'low';
   }
+  function riskRank(r){
+    const n = normRisk(r);
+    return n === 'high' ? 3 : n === 'med' ? 2 : 1;
+  }
   function riskLabel(r){
     const n = normRisk(r);
     return n === 'high' ? 'High risk' : n === 'med' ? 'Medium risk' : 'Low risk';
@@ -6042,28 +6046,31 @@ document.addEventListener("DOMContentLoaded",function(){
     return n === 'high' ? '#ff3b3f' : n === 'med' ? '#f59e0b' : '#84cc16';
   }
   function latLonOf(a){
+    if (a && Array.isArray(a._ll) && Number.isFinite(Number(a._ll[0])) && Number.isFinite(Number(a._ll[1]))) {
+      return [Number(a._ll[0]), Number(a._ll[1])];
+    }
     const api = window.CIProtestProximityAPI;
     if (api && typeof api.latLonOf === 'function') {
       const ll = api.latLonOf(a);
       if (ll && Number.isFinite(Number(ll[0])) && Number.isFinite(Number(ll[1]))) return [Number(ll[0]), Number(ll[1])];
     }
-    const lat = Number(a.lat ?? a.latitude ?? a.Latitude ?? a.event_lat ?? a.eventLat);
-    const lon = Number(a.lon ?? a.lng ?? a.longitude ?? a.Longitude ?? a.event_lon ?? a.eventLng);
+    const lat = Number(a?.lat ?? a?.latitude ?? a?.Latitude ?? a?.event_lat ?? a?.eventLat);
+    const lon = Number(a?.lon ?? a?.lng ?? a?.longitude ?? a?.Longitude ?? a?.event_lon ?? a?.eventLng);
     return Number.isFinite(lat) && Number.isFinite(lon) ? [lat,lon] : null;
   }
   function attendanceOf(a){
-    const n = Number(a.approx_attending ?? a.attendance ?? a.estimated_attendance ?? a.expected_attendance ?? a.crowd_estimate);
+    const n = Number(a?.approx_attending ?? a?.attendance ?? a?.estimated_attendance ?? a?.expected_attendance ?? a?.crowd_estimate);
     return Number.isFinite(n) && n > 0 ? n : null;
   }
   function monitoringRadiusOf(a){
-    const eventRadius = Number(a.impact_radius_km ?? a.protest_radius_km ?? a.radius_km);
+    const eventRadius = Number(a?.impact_radius_km ?? a?.protest_radius_km ?? a?.radius_km);
     if (Number.isFinite(eventRadius) && eventRadius > 0) return { value:eventRadius, label:'Event radius' };
     const input = document.getElementById('proximityRadiusInput');
     const current = Number(input && input.value);
     return { value:(Number.isFinite(current) && current > 0 ? current : 25), label:'Monitoring radius' };
   }
   function prettyDate(a){
-    const dt = a._featuredDt || parseWhen(a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at);
+    const dt = a?._featuredDt || parseWhen(a?.time ?? a?.datetime ?? a?.date ?? a?.when ?? a?.event_at ?? a?.created_at);
     if (!dt || isNaN(dt)) return 'Time pending';
     return dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
   }
@@ -6082,49 +6089,145 @@ document.addEventListener("DOMContentLoaded",function(){
     }, 0);
     return { travellers:countNear(travellers), assets:countNear(assets) };
   }
-  function eventScore(a, now){
-    const risk = normRisk(a.risk);
-    const riskPoints = risk === 'high' ? 300 : risk === 'med' ? 200 : 100;
-    const attendance = attendanceOf(a);
-    const attendancePoints = attendance ? Math.min(80, Math.log10(attendance + 1) * 18) : 0;
-    const coordPoints = latLonOf(a) ? 35 : 0;
-    const daysAway = Math.max(0, (a._featuredDt - now) / 86400000);
-    const imminencePoints = Math.max(0, 35 - daysAway * 5);
-    const verifiedPoints = (a.verified === true || a._fromApprovedIntel === true || a.approved === true) ? 20 : 0;
-    return riskPoints + attendancePoints + coordPoints + imminencePoints + verifiedPoints;
+  function localHaversineKm(a,b){
+    const R = 6371;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(b[0]-a[0]);
+    const dLon = toRad(b[1]-a[1]);
+    const lat1 = toRad(a[0]);
+    const lat2 = toRad(b[0]);
+    const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(h));
   }
+  function normalizeText(s){
+    return String(s || '')
+      .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/(the|a|an|march|rally|protest|demonstration|event)/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  function titleOf(a){
+    return String(a?.title || a?.headline || a?.name || '');
+  }
+  function placeOf(a){
+    const city = String(a?.city || a?.location_label || '').trim();
+    const country = String(a?.country || a?.Country || '').trim();
+    return [city, country].filter(Boolean).join(', ');
+  }
+  function dateKeyOf(dt){
+    if (!(dt instanceof Date) || isNaN(dt)) return '';
+    return dt.toISOString().slice(0,10);
+  }
+  function tokenSimilarity(a,b){
+    const A = new Set(normalizeText(a).split(' ').filter(Boolean));
+    const B = new Set(normalizeText(b).split(' ').filter(Boolean));
+    if (!A.size || !B.size) return 0;
+    let inter = 0;
+    A.forEach(t => { if (B.has(t)) inter += 1; });
+    return inter / Math.max(A.size, B.size);
+  }
+  function titlesSimilar(a,b){
+    const ta = normalizeText(titleOf(a));
+    const tb = normalizeText(titleOf(b));
+    if (!ta || !tb) return false;
+    if (ta === tb) return true;
+    if (ta.length > 12 && tb.length > 12 && (ta.includes(tb) || tb.includes(ta))) return true;
+    return tokenSimilarity(ta, tb) >= 0.72;
+  }
+  function likelySameEvent(a,b){
+    if (dateKeyOf(a._featuredDt) !== dateKeyOf(b._featuredDt)) return false;
+    const placeA = normalizeText(placeOf(a));
+    const placeB = normalizeText(placeOf(b));
+    if (placeA && placeB && placeA !== placeB) return false;
+    const llA = latLonOf(a), llB = latLonOf(b);
+    if (llA && llB && localHaversineKm(llA, llB) > 3) return false;
+    return titlesSimilar(a,b);
+  }
+  function recordQualityScore(a){
+    const verified = (a?.verified === true || a?._fromApprovedIntel === true || a?.approved === true) ? 1 : 0;
+    const ll = latLonOf(a) ? 1 : 0;
+    const attendance = attendanceOf(a) || 0;
+    return riskRank(a?.risk) * 1000 + verified * 100 + ll * 25 + Math.min(attendance, 9999) / 100;
+  }
+  function fingerprintOf(a){
+    return [normalizeText(titleOf(a)), normalizeText(placeOf(a)), dateKeyOf(a._featuredDt), latLonOf(a)?.map(v => Number(v).toFixed(3)).join(',') || ''].join('|');
+  }
+  function clusterRecords(rows){
+    const clusters = [];
+    rows.forEach(row => {
+      let target = null;
+      for (const cluster of clusters) {
+        if (cluster.records.some(existing => likelySameEvent(existing, row))) {
+          target = cluster;
+          break;
+        }
+      }
+      if (!target) {
+        target = { records: [] };
+        clusters.push(target);
+      }
+      target.records.push(row);
+    });
+    return clusters.map((cluster, idx) => {
+      const records = cluster.records.slice().sort((a,b) => {
+        const q = recordQualityScore(b) - recordQualityScore(a);
+        if (q) return q;
+        return (a._featuredDt?.getTime?.() || 0) - (b._featuredDt?.getTime?.() || 0);
+      });
+      const earliest = cluster.records.slice().sort((a,b) => (a._featuredDt - b._featuredDt))[0];
+      const best = records[0];
+      const bestLL = latLonOf(best) || latLonOf(earliest);
+      const maxAttendance = Math.max(...cluster.records.map(r => attendanceOf(r) || 0));
+      const longestTitle = cluster.records.slice().sort((a,b) => titleOf(b).length - titleOf(a).length)[0];
+      const canonical = {
+        ...best,
+        title: titleOf(longestTitle || best) || titleOf(best),
+        city: best.city || earliest.city,
+        country: best.country || best.Country || earliest.country || earliest.Country,
+        Country: best.Country || best.country || earliest.Country || earliest.country,
+        risk: best.risk,
+        approx_attending: maxAttendance || attendanceOf(best),
+        _featuredDt: earliest._featuredDt,
+        _clusterRecords: cluster.records.slice(),
+        _clusterCount: cluster.records.length,
+        _featureKey: `ci-featured-${idx}-${fingerprintOf(earliest)}`,
+        _ll: bestLL || undefined,
+        lat: bestLL ? bestLL[0] : (best.lat ?? earliest.lat),
+        lon: bestLL ? bestLL[1] : (best.lon ?? best.lng ?? earliest.lon ?? earliest.lng),
+        time: earliest.time || earliest.datetime || best.time || best.datetime,
+        datetime: earliest.datetime || earliest.time || best.datetime || best.time,
+        when: earliest.when || best.when,
+        date: earliest.date || best.date,
+        verified: cluster.records.some(r => r.verified === true || r._fromApprovedIntel === true || r.approved === true),
+        _merged: cluster.records.length > 1,
+        _sourceIds: cluster.records.map(r => r.id).filter(Boolean)
+      };
+      return canonical;
+    });
+  }
+
   function selectFeatured(){
     const now = new Date();
     const end = new Date(now.getTime() + 7 * 86400000);
-    const seen = new Set();
     const rows = (Array.isArray(window.alertsData) ? window.alertsData : [])
       .map(a => ({...a, _featuredDt:parseWhen(a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at)}))
       .filter(a => a._featuredDt && a._featuredDt >= now && a._featuredDt <= end)
-      // Featured cards are intentionally curated: a usable map location and
-      // an actual attendance estimate are required. We would rather show 1–2
-      // meaningful cards than force-fill 3 cards with "Not specified" data.
-      .filter(a => !!latLonOf(a) && !!attendanceOf(a))
-      .filter(a => {
-        const key = [a.id || '', a.title || '', a.city || '', +a._featuredDt].join('|').toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
-      // v20: chronological-first ordering. The first card is always the
-      // soonest upcoming qualifying event; verification/risk/crowd only break
-      // ties where events share the same timestamp.
+      .filter(a => !!latLonOf(a) && !!attendanceOf(a));
+    const clusters = clusterRecords(rows)
       .sort((a,b) => {
         const dateDiff = a._featuredDt - b._featuredDt;
         if (dateDiff) return dateDiff;
-        const verifiedA = (a.verified === true || a._fromApprovedIntel === true || a.approved === true) ? 1 : 0;
-        const verifiedB = (b.verified === true || b._fromApprovedIntel === true || b.approved === true) ? 1 : 0;
+        const verifiedA = a.verified ? 1 : 0;
+        const verifiedB = b.verified ? 1 : 0;
         if (verifiedB !== verifiedA) return verifiedB - verifiedA;
-        const riskA = normRisk(a.risk) === 'high' ? 3 : normRisk(a.risk) === 'med' ? 2 : 1;
-        const riskB = normRisk(b.risk) === 'high' ? 3 : normRisk(b.risk) === 'med' ? 2 : 1;
-        if (riskB !== riskA) return riskB - riskA;
+        const riskDiff = riskRank(b.risk) - riskRank(a.risk);
+        if (riskDiff) return riskDiff;
         return (attendanceOf(b) || 0) - (attendanceOf(a) || 0);
       });
-    return rows.slice(0,3);
+    return clusters.slice(0,3);
   }
 
   function destroyMiniMaps(){
@@ -6153,14 +6256,12 @@ document.addEventListener("DOMContentLoaded",function(){
         fillOpacity:.95
       }).addTo(map).bindPopup(
         `<b>${esc(a.title || 'Protest event')}</b><br>` +
-        `${esc([a.city, a.country || a.Country].filter(Boolean).join(', '))}<br>` +
-        `${esc(prettyDate(a))}<br>Risk: <b>${esc(riskLabel(a.risk))}</b>`,
+        `${esc(placeOf(a))}<br>` +
+        `${esc(prettyDate(a))}<br>Risk: <b>${esc(riskLabel(a.risk))}</b>` +
+        (a._clusterCount > 1 ? `<br>Matched records: <b>${esc(a._clusterCount)}</b>` : ''),
         { autoPan:false }
       );
       focusMarker.openPopup();
-      // Leaflet normally auto-pans an opened popup, which was moving the
-      // selected protest away from the visual centre after "Locate on map".
-      // Keep the selected protest locked to the centre point instead.
       map.panTo(ll, { animate:true, duration:.35 });
     } catch(_) {}
     if (window.CIProximityPanel && window.CIProximityPanel.openForProtest) {
@@ -6177,33 +6278,22 @@ document.addEventListener("DOMContentLoaded",function(){
     focusOnMap(a);
   }
 
-  function localHaversineKm(a,b){
-    const R = 6371;
-    const toRad = d => d * Math.PI / 180;
-    const dLat = toRad(b[0]-a[0]);
-    const dLon = toRad(b[1]-a[1]);
-    const lat1 = toRad(a[0]);
-    const lat2 = toRad(b[0]);
-    const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
-    return 2 * R * Math.asin(Math.sqrt(h));
-  }
   function nearbyMapEvents(a){
     const centre = latLonOf(a);
     if (!centre) return [];
-    const seen = new Set();
-    return (Array.isArray(window.alertsData) ? window.alertsData : [])
+    const raw = (Array.isArray(window.alertsData) ? window.alertsData : [])
+      .map(item => ({...item, _featuredDt:parseWhen(item.time ?? item.datetime ?? item.date ?? item.when ?? item.event_at ?? item.created_at)}))
       .map(item => ({ item, ll:latLonOf(item) }))
       .filter(x => !!x.ll)
       .map(x => ({...x, distance:localHaversineKm(centre,x.ll)}))
       .filter(x => x.distance <= 30)
-      .filter(x => {
-        const key = String(x.item.id || `${x.item.title || ''}|${x.ll[0]}|${x.ll[1]}`).toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
-      .sort((x,y) => x.distance-y.distance)
-      .slice(0,7);
+      .map(x => x.item);
+    const clustered = clusterRecords(raw).sort((x,y) => {
+      const dx = localHaversineKm(centre, latLonOf(x));
+      const dy = localHaversineKm(centre, latLonOf(y));
+      return dx - dy;
+    });
+    return clustered.slice(0,7);
   }
   function featuredProtestIconFor(risk, isFeatured=false){
     const n = normRisk(risk);
@@ -6233,8 +6323,6 @@ document.addEventListener("DOMContentLoaded",function(){
         tap:true,
         zoomSnap:1
       });
-      // Keep map gestures inside the mini-map instead of triggering the
-      // surrounding featured-card click behaviour or scrolling the page.
       if (L.DomEvent) {
         L.DomEvent.disableClickPropagation(el);
         L.DomEvent.disableScrollPropagation(el);
@@ -6246,8 +6334,10 @@ document.addEventListener("DOMContentLoaded",function(){
 
       const localEvents = nearbyMapEvents(a);
       let selectedMarker = null;
-      localEvents.forEach(({item,ll:eventLL}) => {
-        const isFeatured = (item === a) || (a.id && item.id && String(a.id) === String(item.id));
+      localEvents.forEach(item => {
+        const eventLL = latLonOf(item);
+        if (!eventLL) return;
+        const isFeatured = (item._featureKey && item._featureKey === a._featureKey) || likelySameEvent(item, a);
         const miniMarker = L.marker(eventLL, {
           icon:featuredProtestIconFor(item.risk, isFeatured),
           keyboard:false,
@@ -6255,16 +6345,15 @@ document.addEventListener("DOMContentLoaded",function(){
         }).addTo(m);
         miniMarker.bindPopup(
           `<b>${esc(item.title || 'Protest event')}</b><br>` +
-          `${esc([item.city, item.country || item.Country].filter(Boolean).join(', '))}<br>` +
+          `${esc(placeOf(item))}<br>` +
           `${esc(prettyDate(item))}<br>` +
           `Risk: <b>${esc(riskLabel(item.risk))}</b>` +
-          (attendanceOf(item) ? `<br>Expected attendance: <b>${esc(attendanceOf(item).toLocaleString())}+</b>` : ''),
+          (attendanceOf(item) ? `<br>Expected attendance: <b>${esc(attendanceOf(item).toLocaleString())}+</b>` : '') +
+          (item._clusterCount > 1 ? `<br>Matched records: <b>${esc(item._clusterCount)}</b>` : ''),
           { autoPan:false }
         );
         if (isFeatured) selectedMarker = miniMarker;
       });
-      // Ensure the selected protest is always visibly marked even when it was
-      // deduplicated out of the nearby-event list.
       if (!selectedMarker) {
         selectedMarker = L.marker(ll, {
           icon:featuredProtestIconFor(a.risk, true),
@@ -6272,15 +6361,14 @@ document.addEventListener("DOMContentLoaded",function(){
           zIndexOffset:1000
         }).addTo(m).bindPopup(
           `<b>${esc(a.title || 'Protest event')}</b><br>` +
-          `${esc([a.city, a.country || a.Country].filter(Boolean).join(', '))}<br>` +
+          `${esc(placeOf(a))}<br>` +
           `${esc(prettyDate(a))}<br>` +
           `Risk: <b>${esc(riskLabel(a.risk))}</b><br>` +
-          `Expected attendance: <b>${esc(attendanceOf(a).toLocaleString())}+</b>`,
+          `Expected attendance: <b>${esc((attendanceOf(a) || 0).toLocaleString())}+</b>` +
+          (a._clusterCount > 1 ? `<br>Matched records: <b>${esc(a._clusterCount)}</b>` : ''),
           { autoPan:false }
         );
       }
-      // Keep every featured mini-map centred on the selected protest. Nearby
-      // markers provide local context, while the mini-map remains interactive.
       m.setView(ll, 12, { animate:false });
       miniMaps.push(m);
       setTimeout(() => { try { m.invalidateSize(false); } catch(_) {} }, 80);
@@ -6298,9 +6386,7 @@ document.addEventListener("DOMContentLoaded",function(){
     }
 
     host.innerHTML = featured.map((a, idx) => {
-      const city = String(a.city || a.location_label || 'Location pending').trim();
-      const country = String(a.country || a.Country || '').trim();
-      const place = [city,country].filter(Boolean).join(', ');
+      const place = placeOf(a);
       const risk = normRisk(a.risk);
       const attendance = attendanceOf(a);
       const radius = monitoringRadiusOf(a);
@@ -6331,11 +6417,11 @@ document.addEventListener("DOMContentLoaded",function(){
               <div class="ci-featured-meta">Event time<strong>${esc(prettyDate(a))}</strong></div>
               <div class="ci-featured-meta">Map status<strong>${hasCoords ? 'Location available' : 'Coordinates pending'}</strong></div>
             </div>
-            ${(impacts.travellers !== null || impacts.assets !== null) ? `
-              <div class="ci-featured-impact">
-                <span>👤 ${impacts.travellers ?? 0} traveller${impacts.travellers===1?'':'s'} nearby</span>
-                <span>◆ ${impacts.assets ?? 0} asset${impacts.assets===1?'':'s'} nearby</span>
-              </div>` : ''}
+            <div class="ci-featured-impact">
+              <span>👤 ${impacts.travellers ?? 0} traveller${impacts.travellers===1?'':'s'} nearby</span>
+              <span>◆ ${impacts.assets ?? 0} asset${impacts.assets===1?'':'s'} nearby</span>
+              ${a._clusterCount > 1 ? `<span>↺ ${esc(a._clusterCount)} matched updates consolidated</span>` : ''}
+            </div>
             <div class="ci-featured-actions">
               <button class="ci-featured-btn primary" type="button" data-action="map" data-featured-index="${idx}">${hasCoords ? 'Locate on map' : 'View event'}</button>
               <button class="ci-featured-btn" type="button" data-action="record" data-featured-index="${idx}">View full record</button>
