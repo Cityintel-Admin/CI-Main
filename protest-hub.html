@@ -1248,7 +1248,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   color:var(--muted);
   text-align:center;
 }
-.ci-featured-mini-map{pointer-events:none}
+.ci-featured-mini-map{pointer-events:auto;cursor:grab}
+.ci-featured-mini-map:active{cursor:grabbing}
 .ci-featured-mini-map .leaflet-control-container{display:none!important}
 @media (max-width:1180px){
   .ci-featured-protests-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1609,7 +1610,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <h3>Featured Protest Intelligence</h3>
       <p>Individual event spotlights from the next 7 days. Only mapped protests with a recorded expected attendance are featured, ranked by verification, risk, crowd size and imminence. Unlike Priority Cities, this layer highlights specific events rather than aggregated city pressure.</p>
     </div>
-    <div class="ci-featured-protests-badge">CURATED LIVE EVENTS</div>
+    <div class="ci-featured-protests-badge">FEATURED PROTESTS • NEXT 7 DAYS</div>
   </div>
   <div id="featuredProtestGrid" class="ci-featured-protests-grid">
     <div class="ci-featured-empty">Loading featured protest intelligence…</div>
@@ -6006,7 +6007,7 @@ document.addEventListener("DOMContentLoaded",function(){
 	
 
 
-<!-- ===== v17: Featured Protest Intelligence — position + mini-map readability fix ===== -->
+<!-- ===== v18: Featured Protest Intelligence — interactive mini-maps + centred locate ===== -->
 <script>
 (function mountFeaturedProtestIntelligence(){
   const host = document.getElementById('featuredProtestGrid');
@@ -6145,9 +6146,14 @@ document.addEventListener("DOMContentLoaded",function(){
       }).addTo(map).bindPopup(
         `<b>${esc(a.title || 'Protest event')}</b><br>` +
         `${esc([a.city, a.country || a.Country].filter(Boolean).join(', '))}<br>` +
-        `${esc(prettyDate(a))}<br>Risk: <b>${esc(riskLabel(a.risk))}</b>`
+        `${esc(prettyDate(a))}<br>Risk: <b>${esc(riskLabel(a.risk))}</b>`,
+        { autoPan:false }
       );
       focusMarker.openPopup();
+      // Leaflet normally auto-pans an opened popup, which was moving the
+      // selected protest away from the visual centre after "Locate on map".
+      // Keep the selected protest locked to the centre point instead.
+      map.panTo(ll, { animate:true, duration:.35 });
     } catch(_) {}
     if (window.CIProximityPanel && window.CIProximityPanel.openForProtest) {
       window.CIProximityPanel.openForProtest(a, ll);
@@ -6181,7 +6187,7 @@ document.addEventListener("DOMContentLoaded",function(){
       .map(item => ({ item, ll:latLonOf(item) }))
       .filter(x => !!x.ll)
       .map(x => ({...x, distance:localHaversineKm(centre,x.ll)}))
-      .filter(x => x.distance <= 55)
+      .filter(x => x.distance <= 30)
       .filter(x => {
         const key = String(x.item.id || `${x.item.title || ''}|${x.ll[0]}|${x.ll[1]}`).toLowerCase();
         if (seen.has(key)) return false;
@@ -6198,13 +6204,20 @@ document.addEventListener("DOMContentLoaded",function(){
       const m = L.map(el, {
         zoomControl:false,
         attributionControl:false,
-        dragging:false,
-        scrollWheelZoom:false,
-        doubleClickZoom:false,
+        dragging:true,
+        scrollWheelZoom:true,
+        doubleClickZoom:true,
         boxZoom:false,
         keyboard:false,
-        tap:false
+        tap:true,
+        zoomSnap:1
       });
+      // Keep map gestures inside the mini-map instead of triggering the
+      // surrounding featured-card click behaviour or scrolling the page.
+      if (L.DomEvent) {
+        L.DomEvent.disableClickPropagation(el);
+        L.DomEvent.disableScrollPropagation(el);
+      }
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom:19,
         subdomains:'abcd'
@@ -6214,26 +6227,42 @@ document.addEventListener("DOMContentLoaded",function(){
       const bounds = [];
       localEvents.forEach(({item,ll:eventLL}) => {
         const isFeatured = (item === a) || (a.id && item.id && String(a.id) === String(item.id));
-        L.circleMarker(eventLL, {
+        const miniMarker = L.circleMarker(eventLL, {
           radius:isFeatured ? 9 : 5,
           color:isFeatured ? '#ffffff' : 'rgba(255,255,255,.70)',
           weight:isFeatured ? 2 : 1,
           fillColor:riskColor(item.risk),
           fillOpacity:isFeatured ? .98 : .88
         }).addTo(m);
+        miniMarker.bindPopup(
+          `<b>${esc(item.title || 'Protest event')}</b><br>` +
+          `${esc([item.city, item.country || item.Country].filter(Boolean).join(', '))}<br>` +
+          `${esc(prettyDate(item))}<br>` +
+          `Risk: <b>${esc(riskLabel(item.risk))}</b>` +
+          (attendanceOf(item) ? `<br>Expected attendance: <b>${esc(attendanceOf(item).toLocaleString())}+</b>` : ''),
+          { autoPan:false }
+        );
         bounds.push(eventLL);
       });
       // Ensure the selected protest is always visibly marked even when it was
       // deduplicated out of the nearby-event list.
       if (!localEvents.some(x => (x.item === a) || (a.id && x.item.id && String(a.id) === String(x.item.id)))) {
-        L.circleMarker(ll, { radius:8, color:'#fff', weight:2, fillColor:riskColor(a.risk), fillOpacity:.98 }).addTo(m);
+        L.circleMarker(ll, { radius:8, color:'#fff', weight:2, fillColor:riskColor(a.risk), fillOpacity:.98 })
+          .addTo(m)
+          .bindPopup(
+            `<b>${esc(a.title || 'Protest event')}</b><br>` +
+            `${esc([a.city, a.country || a.Country].filter(Boolean).join(', '))}<br>` +
+            `${esc(prettyDate(a))}<br>` +
+            `Risk: <b>${esc(riskLabel(a.risk))}</b><br>` +
+            `Expected attendance: <b>${esc(attendanceOf(a).toLocaleString())}+</b>`,
+            { autoPan:false }
+          );
         bounds.push(ll);
       }
-      if (bounds.length > 1) {
-        m.fitBounds(bounds, { padding:[34,34], maxZoom:11, animate:false });
-      } else {
-        m.setView(ll, 10);
-      }
+      // Keep every featured mini-map centred on the selected protest and
+      // slightly closer than v17. Nearby markers remain available around it,
+      // while the mouse wheel / double-click can zoom further in or out.
+      m.setView(ll, 12, { animate:false });
       miniMaps.push(m);
       setTimeout(() => { try { m.invalidateSize(false); } catch(_) {} }, 80);
     } catch(e) {
