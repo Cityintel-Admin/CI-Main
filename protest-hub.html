@@ -1718,16 +1718,29 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         </section>
 
         <section class="card" style="grid-column: span 12;">
-          <h3>Priority Countries (Live)</h3>
+          <h3>Priority Countries</h3>
           <p style="color:var(--muted);margin:6px 0 12px">Country-level operational priorities for the next 7 days, weighted by upcoming risk and spread across cities.</p>
           <div id="priorityCountries" class="priority-grid"></div>
         </section>
 
         <section class="card" style="grid-column: span 12;">
-          <h3>Priority Cities (Live)</h3>
-          <p style="color:var(--muted);margin:6px 0 12px">Aggregated city protest pressure for the next 7 days. Each card combines deduplicated upcoming events; marker selection previews individual protests without changing the city-level score.</p>
+          <h3>Priority Cities</h3>
+          <p style="color:var(--muted);margin:6px 0 12px">Aggregated city protest pressure for the next 7 days. Each card combines deduplicated upcoming events contributing to the city’s pressure score. Select a marker on a city mini-map to preview that individual protest without changing the city-level score.</p>
           <div id="priorityCities" class="priority-grid"></div>
         </section>
+<section class="card ci-featured-protests-card" id="featuredProtestIntelligence">
+  <div class="ci-featured-protests-head">
+    <div>
+      <h3>Featured Protest Intelligence</h3>
+      <p>Individual event spotlights from the next 7 days, ordered chronologically so the soonest mapped protest with a recorded expected attendance appears first. Likely duplicate updates are consolidated so Featured Protest Intelligence highlights distinct events rather than repeated versions of the same protest.</p>
+    </div>
+    <div class="ci-featured-protests-badge">FEATURED PROTESTS • NEXT 7 DAYS</div>
+  </div>
+  <div id="featuredProtestGrid" class="ci-featured-protests-grid">
+    <div class="ci-featured-empty">Loading featured protest intelligence…</div>
+  </div>
+</section>
+
 
         <section class="card" style="grid-column: span 12;">
           <h3>Emerging Patterns</h3>
@@ -1772,9 +1785,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           </table>
         </section>
 
-        <!-- v16: Preserve the original Protest Hub section order.
-             The Global Protest Risk Map remains in its original lower-page position,
-             followed immediately by Featured Protest Intelligence and then the CityIntel Live Feed. -->
+        <!-- v23: Global Protest Risk Map remains in the lower operational section.
+             Featured Protest Intelligence now sits directly below Priority Cities;
+             the CityIntel Live Feed follows this main map. -->
 <div class="card" style="grid-column: span 12;">
   <div class="map-card-header">
     <h3>Global Protest Risk Map</h3>
@@ -1806,18 +1819,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <div id="riskMap"></div>
 </div>
 
-<section class="card ci-featured-protests-card" id="featuredProtestIntelligence">
-  <div class="ci-featured-protests-head">
-    <div>
-      <h3>Featured Protest Intelligence</h3>
-      <p>Individual event spotlights from the next 7 days, ordered chronologically so the soonest mapped protest with a recorded expected attendance appears first. Likely duplicate updates are consolidated so Featured Protest Intelligence highlights distinct events rather than repeated versions of the same protest.</p>
-    </div>
-    <div class="ci-featured-protests-badge">FEATURED PROTESTS • NEXT 7 DAYS</div>
-  </div>
-  <div id="featuredProtestGrid" class="ci-featured-protests-grid">
-    <div class="ci-featured-empty">Loading featured protest intelligence…</div>
-  </div>
-</section>
 
         <section class="card ci-feed-card" style="grid-column: span 12;">
           <div class="ci-feed-header">
@@ -4799,7 +4800,7 @@ function CI_updatePanicMapOverlayIndex(st){
       .slice(0,5);
 
     if (!ranked.length) {
-      priorityHost.innerHTML = '<div style="color:var(--muted)">No live city priorities in the next 7 days.</div>';
+      priorityHost.innerHTML = '<div style="color:var(--muted)">No city priorities in the next 7 days.</div>';
     } else {
       priorityHost.innerHTML = '';
       ranked.forEach(([city, meta]) => {
@@ -4993,12 +4994,10 @@ function CI_updatePanicMapOverlayIndex(st){
       grid.insertBefore(quick, grid.firstElementChild);
     }
 
-    // 2) Keep the lower-page sequence stable:
-    // Global Protest Risk Map -> Featured Protest Intelligence -> CityIntel Live Feed.
-    // Older builds moved the Live Feed directly after the map at runtime, which
-    // unintentionally pushed the Featured Protest Intelligence section below it.
+    // 2) Keep the lower operational sequence stable.
+    // Featured Protest Intelligence now sits directly below Priority Cities.
+    // The CityIntel Live Feed should remain directly after the Global Protest Risk Map.
     const mapCard = closestCardWithId('riskMap');
-    const featuredCard = document.getElementById('featuredProtestIntelligence');
     const feedCard = closestCardWithId('ciFeedList');
 
     function moveAfter(node, after){
@@ -5007,8 +5006,7 @@ function CI_updatePanicMapOverlayIndex(st){
       }
     }
 
-    if(featuredCard && feedCard) moveAfter(feedCard, featuredCard);
-    else if(mapCard && feedCard) moveAfter(feedCard, mapCard);
+    if(mapCard && feedCard) moveAfter(feedCard, mapCard);
 
     // 3) Limit Live Feed to 4 posts initially, with Show more and Open Live Alerts.
     (function setupLiveFeedLimit(){
@@ -6240,7 +6238,12 @@ document.addEventListener("DOMContentLoaded",function(){
     return n === 'high' ? 'High risk' : n === 'med' ? 'Medium risk' : 'Low risk';
   }
   function attendanceOf(a){
-    const n = Number(a?.approx_attending ?? a?.attendance ?? a?.estimated_attendance ?? a?.expected_attendance ?? a?.crowd_estimate);
+    const raw = a?.approx_attending ?? a?.attendance ?? a?.estimated_attendance ?? a?.expected_attendance ?? a?.crowd_estimate;
+    if (raw === null || raw === undefined || raw === '') return null;
+    if (typeof raw === 'number') return Number.isFinite(raw) && raw > 0 ? raw : null;
+    const cleaned = String(raw).replace(/,/g,'').match(/\d+(?:\.\d+)?/);
+    if (!cleaned) return null;
+    const n = Number(cleaned[0]);
     return Number.isFinite(n) && n > 0 ? n : null;
   }
   function latLonOf(a){
@@ -6419,7 +6422,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
     host.className='ci-priority-cities-v22';
     if(!ranked.length){
-      host.innerHTML='<div style="color:var(--muted)">No live city priorities in the next 7 days.</div>';
+      host.innerHTML='<div style="color:var(--muted)">No city priorities in the next 7 days.</div>';
       cityStates=[];return;
     }
     cityStates=ranked.map(row=>({...row,selectedIndex:0,mapState:null}));
@@ -6434,7 +6437,6 @@ document.addEventListener("DOMContentLoaded",function(){
             </div>
             <span class="ci-city-pressure-pill">Score ${esc(state.score)}</span>
           </div>
-          <div class="ci-priority-city-map-note">Markers show deduplicated upcoming protests contributing to this city's 7-day pressure score. Select a marker to preview it.</div>
         </div>
         <div class="ci-priority-city-body">
           <div class="ci-priority-city-scoreline">
@@ -6494,7 +6496,7 @@ document.addEventListener("DOMContentLoaded",function(){
     const api=window.CIProtestProximityAPI;if(api&&typeof api.latLonOf==='function'){const ll=api.latLonOf(a);if(ll&&Number.isFinite(Number(ll[0]))&&Number.isFinite(Number(ll[1])))return[Number(ll[0]),Number(ll[1])];}
     const lat=Number(a?.lat??a?.latitude??a?.Latitude??a?.event_lat??a?.eventLat);const lon=Number(a?.lon??a?.lng??a?.longitude??a?.Longitude??a?.event_lon??a?.eventLng);return Number.isFinite(lat)&&Number.isFinite(lon)?[lat,lon]:null;
   }
-  function attendanceOf(a){const n=Number(a?.approx_attending??a?.attendance??a?.estimated_attendance??a?.expected_attendance??a?.crowd_estimate);return Number.isFinite(n)&&n>0?n:null;}
+  function attendanceOf(a){const raw=a?.approx_attending??a?.attendance??a?.estimated_attendance??a?.expected_attendance??a?.crowd_estimate;if(raw===null||raw===undefined||raw==='')return null;if(typeof raw==='number')return Number.isFinite(raw)&&raw>0?raw:null;const m=String(raw).replace(/,/g,'').match(/\d+(?:\.\d+)?/);if(!m)return null;const n=Number(m[0]);return Number.isFinite(n)&&n>0?n:null;}
   function monitoringRadiusOf(a){const er=Number(a?.impact_radius_km??a?.protest_radius_km??a?.radius_km);if(Number.isFinite(er)&&er>0)return{value:er,label:'Event radius'};const input=document.getElementById('proximityRadiusInput');const cur=Number(input&&input.value);return{value:(Number.isFinite(cur)&&cur>0?cur:25),label:'Monitoring radius'};}
   function prettyDate(a){const dt=a?._featuredDt||parseWhen(a?.time??a?.datetime??a?.date??a?.when??a?.event_at??a?.created_at);if(!dt||isNaN(dt))return'Time pending';return dt.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
   function placeOf(a){const city=String(a?.city||a?.location_label||'').trim();const country=String(a?.country||a?.Country||'').trim();return[city,country].filter(Boolean).join(', ');}
