@@ -2775,7 +2775,9 @@ const makeBar = (label, count, color) => {
   let activeOnboardLead = null;
 
   let latestRows = [];
+  let latestInboxRows = [];
   let selectedLeadId = '';
+  let selectedConversationId = '';
   let composeMode = false; // true when composing a fresh email not tied to any lead
   let bulkMode = false; // true when selecting multiple recipients for one send
   const bulkCheckedLeadIds = new Set(); // lead ids ticked in the Threads list while in bulk mode
@@ -2868,6 +2870,8 @@ const makeBar = (label, count, color) => {
   }
 
   function isDirectEmailThread(row){
+    const origin = String(row?.conversation_origin || '').trim().toLowerCase();
+    if (origin) return origin === 'inbound_email' || origin === 'direct_outreach';
     const kind = String(row?.interest || '').trim().toLowerCase();
     return kind === 'inbound email' || kind === 'direct outreach';
   }
@@ -2996,11 +3000,11 @@ const makeBar = (label, count, color) => {
   function inboxFilteredRows(){
     const status = inboxStatusFilter ? String(inboxStatusFilter.value || 'all').toLowerCase() : 'all';
     const q = inboxSearch ? inboxSearch.value.trim().toLowerCase() : '';
-    return latestRows
+    return latestInboxRows
       .filter(r => !status || status === 'all' || String(r.status || 'new').toLowerCase() === status)
       .filter(r => {
         if (!q) return true;
-        const hay = [fullName(r), displayEmail(r), displayCompany(r), r.role, r.interest, r.region, r.message, r.heard_from, r.status].join(' ').toLowerCase();
+        const hay = [fullName(r), displayEmail(r), displayCompany(r), r.thread_subject, r.last_subject, r.role, r.interest, r.region, r.message, r.heard_from, r.status].join(' ').toLowerCase();
         return hay.includes(q);
       })
       .sort((a,b) => (Date.parse(leadUpdatedAt(b)) || 0) - (Date.parse(leadUpdatedAt(a)) || 0));
@@ -3011,26 +3015,29 @@ const makeBar = (label, count, color) => {
     const rows = inboxFilteredRows();
     if (!rows.length) {
       inboxThreads.innerHTML = `<div class="lead-muted" style="padding:14px">No lead threads found for this filter.</div>`;
-      if (selectedLeadId && !latestRows.some(r => String(r.id) === String(selectedLeadId))) clearLeadInboxSelection();
+      if (selectedConversationId && !latestInboxRows.some(r => String(r.conversation_id) === String(selectedConversationId))) clearLeadInboxSelection();
       return;
     }
 
-    if (!bulkMode && !composeMode && (!selectedLeadId || !rows.some(r => String(r.id) === String(selectedLeadId)))) {
+    if (!bulkMode && !composeMode && (!selectedConversationId || !rows.some(r => String(r.conversation_id) === String(selectedConversationId)))) {
+      selectedConversationId = String(rows[0].conversation_id || '');
       selectedLeadId = String(rows[0].id || '');
-      setTimeout(() => loadLeadInboxMessages(selectedLeadId), 0);
+      setTimeout(() => loadLeadInboxMessages(selectedConversationId), 0);
     }
 
     inboxThreads.innerHTML = rows.map(r => {
       const id = String(r.id || '');
-      const active = id === String(selectedLeadId) ? ' active' : '';
+      const conversationId = String(r.conversation_id || `conv_${id}`);
+      const active = conversationId === String(selectedConversationId) ? ' active' : '';
       const name = fullName(r);
       const company = displayCompany(r) || 'No company';
-      const meta = [r.interest, r.region].filter(Boolean).join(' • ') || 'Access request';
+      const threadSubject = r.thread_subject || r.last_subject || '';
+      const meta = [threadSubject || r.interest, r.region].filter(Boolean).join(' • ') || 'Access request';
       const last = fmtDate(leadUpdatedAt(r));
       const checkbox = bulkMode
-        ? `<input type="checkbox" data-lead-bulk-check="${esc(id)}" ${bulkCheckedLeadIds.has(id) ? 'checked' : ''} style="margin-right:8px;transform:scale(1.15)" />`
+        ? `<input type="checkbox" data-lead-bulk-check="${esc(conversationId)}" ${bulkCheckedLeadIds.has(conversationId) ? 'checked' : ''} style="margin-right:8px;transform:scale(1.15)" />`
         : '';
-      return `<button class="lead-thread${active}" type="button" data-lead-thread="${esc(id)}">
+      return `<button class="lead-thread${active}" type="button" data-lead-thread="${esc(conversationId)}">
         <div class="lead-thread-title">${checkbox}<span>${esc(name)}</span>${statusBadge(r.status)}</div>
         <div class="lead-thread-meta">${esc(company)}<br>${esc(meta)} · ${esc(last)}</div>
         <div class="lead-thread-preview">${esc(r.message || 'No message provided')}</div>
@@ -3042,6 +3049,7 @@ const makeBar = (label, count, color) => {
 
   function clearLeadInboxSelection(){
     selectedLeadId = '';
+    selectedConversationId = '';
     composeMode = false;
     loadedDraftId = '';
     if (bulkMode) exitBulkMode();
@@ -3061,6 +3069,7 @@ const makeBar = (label, count, color) => {
     exitBulkMode(); // modes are mutually exclusive
     loadedDraftId = '';
     selectedLeadId = '';
+    selectedConversationId = '';
     composeMode = true;
     // Deselect any active thread in the list UI
     if (inboxThreads) inboxThreads.querySelectorAll('.lead-thread-item.active').forEach(el => el.classList.remove('active'));
@@ -3086,7 +3095,7 @@ const makeBar = (label, count, color) => {
 
   function getBulkRecipients(){
     const fromLeads = Array.from(bulkCheckedLeadIds)
-      .map(id => latestRows.find(r => String(r.id) === String(id)))
+      .map(id => latestInboxRows.find(r => String(r.conversation_id) === String(id)))
       .filter(Boolean)
       .map(r => ({ email: displayEmail(r) || r.email || '', name: fullName(r) || '' }))
       .filter(r => r.email);
@@ -3143,7 +3152,7 @@ const makeBar = (label, count, color) => {
   }
 
   function getSelectedLead(){
-    return latestRows.find(r => String(r.id) === String(selectedLeadId)) || null;
+    return latestInboxRows.find(r => String(r.conversation_id) === String(selectedConversationId)) || latestRows.find(r => String(r.id) === String(selectedLeadId)) || null;
   }
 
   function renderLeadInboxHeader(){
@@ -3159,11 +3168,11 @@ const makeBar = (label, count, color) => {
       <div class="lead-muted">${esc(displayEmail(row) || 'No email')} • ${esc(displayCompany(row) || 'No company')} • ${esc(row.region || 'No region')}</div>
       <div style="margin-top:6px">${statusBadge(row.status)} <span class="lead-muted">${inboundThread ? 'Received' : 'Submitted'} ${esc(fmtDate(row.created_at))}</span></div>
     </div>
-    <div class="lead-muted" style="text-align:right">${esc(row.interest || 'Access request')}<br>${esc(row.role || '')}</div>`;
+    <div class="lead-muted" style="text-align:right">${esc(row.thread_subject || row.interest || 'Access request')}<br>${esc(row.role || '')}</div>`;
     if (inboxSubject && !inboxSubject.value.trim() && !isDirectEmailThread(row)) inboxSubject.value = 'CityIntel access request';
   }
 
-  async function loadLeadInboxMessages(id){
+  async function loadLeadInboxMessages(conversationId){
     composeMode = false;
     loadedDraftId = '';
     if (bulkMode) exitBulkMode();
@@ -3171,14 +3180,16 @@ const makeBar = (label, count, color) => {
     if (inboxViewBtn) inboxViewBtn.style.display = '';
     if (inboxContactedBtn) inboxContactedBtn.style.display = '';
     if (inboxSend) inboxSend.textContent = 'Send reply';
-    selectedLeadId = String(id || '');
+    selectedConversationId = String(conversationId || '');
+    const selectedRow = latestInboxRows.find(r => String(r.conversation_id) === selectedConversationId) || null;
+    selectedLeadId = String(selectedRow?.id || '');
     renderLeadInboxHeader();
     renderLeadInbox();
     const row = getSelectedLead();
     if (!row || !inboxMessages) return;
     inboxMessages.innerHTML = `<div class="lead-muted">Loading conversation…</div>`;
     try {
-      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(row.id)}/messages`, { headers: authHeaders() });
+      const res = await fetch(`${API_BASE}/api/admin/lead-requests/${encodeURIComponent(row.id)}/messages?conversation_id=${encodeURIComponent(selectedConversationId)}`, { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `Messages failed: ${res.status}`);
       const history = Array.isArray(data.data) ? data.data.slice().reverse() : [];
@@ -3249,6 +3260,7 @@ const makeBar = (label, count, color) => {
           message,
           status:'contacted',
           from: inboxSender ? inboxSender.value : 'contact',
+          conversation_id: selectedConversationId,
           attachments: inboxPendingAttachments.map(a => ({
             filename: a.filename,
             content_type: a.content_type,
@@ -3262,7 +3274,8 @@ const makeBar = (label, count, color) => {
       inboxPendingAttachments = [];
       renderInboxAttachmentList();
       await loadLeads();
-      await loadLeadInboxMessages(row.id);
+      await loadLeadConversations();
+      await loadLeadInboxMessages(selectedConversationId);
     } catch (e) {
       alert(`Unable to send reply: ${e.message || e}`);
     } finally {
@@ -3301,8 +3314,9 @@ const makeBar = (label, count, color) => {
       renderInboxAttachmentList();
       await deleteDraftIfLoaded();
       await loadLeads();
-      if (data.lead_id) {
-        await loadLeadInboxMessages(data.lead_id);
+      await loadLeadConversations();
+      if (data.lead_id && data.conversation_id) {
+        await loadLeadInboxMessages(data.conversation_id);
       } else {
         // Saved fine but the thread record didn't get created for some
         // reason — the email still sent, just won't show in the list.
@@ -3385,6 +3399,7 @@ const makeBar = (label, count, color) => {
       }
       exitBulkMode();
       await loadLeads();
+      await loadLeadConversations();
     } catch (e) {
       alert(`Unable to send bulk email: ${e.message || e}`);
     } finally {
@@ -3522,6 +3537,23 @@ const makeBar = (label, count, color) => {
     await loadDrafts();
   }
 
+  async function loadLeadConversations(){
+    if (!inboxThreads) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-conversations?status=all&limit=500`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Conversation request failed: ${res.status}`);
+      latestInboxRows = Array.isArray(data.data) ? data.data : [];
+      renderLeadInbox();
+      if (selectedConversationId && latestInboxRows.some(r => String(r.conversation_id) === String(selectedConversationId))) {
+        loadLeadInboxMessages(selectedConversationId);
+      }
+    } catch (e) {
+      console.error('lead conversation load failed', e);
+      inboxThreads.innerHTML = `<div style="color:#fecaca;padding:14px">Unable to load conversations: ${esc(e.message || e)}</div>`;
+    }
+  }
+
   async function loadLeads(){
     if (!body) return;
     body.innerHTML = `<tr><td colspan="9" class="lead-muted">Loading access requests…</td></tr>`;
@@ -3536,8 +3568,6 @@ const makeBar = (label, count, color) => {
       latestRows = rows;
       updateKpis(rows);
       renderRows(tableFilteredRows());
-      renderLeadInbox();
-      if (selectedLeadId) loadLeadInboxMessages(selectedLeadId);
     } catch (e) {
       console.error('lead request load failed', e);
       body.innerHTML = `<tr><td colspan="9" style="color:#fecaca;padding:12px">Unable to load access requests: ${esc(e.message || e)}</td></tr>`;
@@ -3564,6 +3594,7 @@ const makeBar = (label, count, color) => {
       if (!res.ok || !data.ok) throw new Error(data.error || `Update failed: ${res.status}`);
 
       await loadLeads();
+      await loadLeadConversations();
     } catch (e) {
       alert(`Unable to update lead status: ${e.message || e}`);
       if (btn) {
@@ -4555,7 +4586,7 @@ const makeBar = (label, count, color) => {
   if (refresh) refresh.addEventListener('click', loadLeads);
   if (inboxSearch) inboxSearch.addEventListener('input', renderLeadInbox);
   if (inboxStatusFilter) inboxStatusFilter.addEventListener('change', renderLeadInbox);
-  if (inboxRefresh) inboxRefresh.addEventListener('click', loadLeads);
+  if (inboxRefresh) inboxRefresh.addEventListener('click', async () => { await loadLeads(); await loadLeadConversations(); });
   if (inboxThreads) inboxThreads.addEventListener('click', (e) => {
     const checkbox = e.target.closest('[data-lead-bulk-check]');
     if (checkbox && bulkMode) {
@@ -4594,6 +4625,7 @@ const makeBar = (label, count, color) => {
 
   function initLeadInbox(){
     loadLeads();
+    loadLeadConversations();
     loadTemplates();
     loadDrafts();
   }
