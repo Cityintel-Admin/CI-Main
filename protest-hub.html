@@ -4032,12 +4032,18 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     });
   };
   function authHeaders(){
+    let base = {};
     try {
-      if (window.CIAuth && CIAuth.headers) {
-        return {...CIAuth.headers(),'Content-Type':'application/json'};
-      }
+      if (window.CIAuth && CIAuth.headers) base = CIAuth.headers() || {};
     } catch(_) {}
-    return {'Content-Type':'application/json'};
+    const headers = {...base,'Content-Type':'application/json'};
+    // Match the existing Master Admin API helpers already used elsewhere on
+    // this page: forward the stored server-side admin token when available.
+    try {
+      const adminToken = localStorage.getItem('ci_admin_token') || '';
+      if (adminToken) headers['X-Admin-Token'] = adminToken;
+    } catch(_) {}
+    return headers;
   }
   function setStatus(msg,tone='neutral'){
     if (!statusEl) return;
@@ -4182,6 +4188,16 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   const statusEl = document.getElementById('orgIntelStatus');
   const storageMode = document.getElementById('orgIntelStorageMode');
   if (!card || !list || !form) return;
+
+  // v33: Master Admin reviews organisation submissions through the central
+  // CityIntel Verification Requests queue above. Hide the organisation-scoped
+  // submission panel to avoid presenting a second, irrelevant entry workflow.
+  try {
+    if (window.CIAuth && CIAuth.isMasterAdmin && CIAuth.isMasterAdmin()) {
+      card.style.display = 'none';
+      return;
+    }
+  } catch(_) {}
 
   const API = (window.API_BASE || window.API_ORIGIN || 'https://api.cityintelapi.com');
   const API_PATH = '/api/org/protest-submissions';
