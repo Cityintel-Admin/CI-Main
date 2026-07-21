@@ -1634,9 +1634,10 @@
         <input id="leadInboxSubject" type="text" placeholder="Subject" />
         <select id="leadInboxSender" title="Send as">
           <option value="contact" selected>CityIntel Team &lt;contact@city-intel.com&gt;</option>
+          <option value="info">Info &lt;info@city-intel.com&gt;</option>
           <option value="carltonjl">Carlton John-Lewis &lt;carltonjl@city-intel.com&gt;</option>
           <option value="morrism">Morris Martin &lt;morrism@city-intel.com&gt;</option>
-		  <option value="sales">CityIntel Sales Team &lt;sales@city-intel.com&gt;</option>
+          <option value="sales">CityIntel Sales Team &lt;sales@city-intel.com&gt;</option>
         </select>
         <div id="leadInboxFromNote" class="lead-modal-note">This reply will be sent from CityIntel &lt;contact@city-intel.com&gt;.</div>
         <textarea id="leadInboxReply" placeholder="Type a reply to the lead..."></textarea>
@@ -2057,8 +2058,10 @@
     <label for="leadModalSender">Send as</label>
     <select id="leadModalSender">
       <option value="contact" selected>CityIntel Team &lt;contact@city-intel.com&gt;</option>
+      <option value="info">Info &lt;info@city-intel.com&gt;</option>
       <option value="carltonjl">Carlton John-Lewis &lt;carltonjl@city-intel.com&gt;</option>
-      <option value="morrism">Morris Martin &lt;MorrisM@city-intel.com&gt;</option>
+      <option value="morrism">Morris Martin &lt;morrism@city-intel.com&gt;</option>
+      <option value="sales">CityIntel Sales Team &lt;sales@city-intel.com&gt;</option>
     </select>
     <label for="leadModalSubject">Subject</label>
     <input id="leadModalSubject" type="text" />
@@ -2738,8 +2741,10 @@ const makeBar = (label, count, color) => {
   // Sender display names, mirrored from the worker's allowlist
   const SENDER_LABELS = {
     'contact': 'CityIntel <contact@city-intel.com>',
+    'info': 'Info <info@city-intel.com>',
     'carltonjl': 'Carlton John-Lewis <carltonjl@city-intel.com>',
-    'morrism': 'Morris Martin <MorrisM@city-intel.com>',
+    'morrism': 'Morris Martin <morrism@city-intel.com>',
+    'sales': 'CityIntel Sales Team <sales@city-intel.com>',
   };
   let pendingAttachments = []; // [{filename, content_type, content (base64)}]
   let inboxPendingAttachments = []; // lead inbox quick-reply attachments
@@ -2795,7 +2800,28 @@ const makeBar = (label, count, color) => {
   }
 
   function fullName(row){
-    return `${row?.first_name || ''} ${row?.surname || ''}`.trim() || 'there';
+    return `${row?.first_name || ''} ${row?.surname || ''}`.trim() || displayEmail(row) || 'there';
+  }
+
+  function isDirectEmailThread(row){
+    const kind = String(row?.interest || '').trim().toLowerCase();
+    return kind === 'inbound email' || kind === 'direct outreach';
+  }
+
+  function senderKeyForAddress(address){
+    const email = String(address || '').trim().toLowerCase();
+    if (email === 'info@city-intel.com') return 'info';
+    if (email === 'carltonjl@city-intel.com') return 'carltonjl';
+    if (email === 'morrism@city-intel.com') return 'morrism';
+    if (email === 'sales@city-intel.com') return 'sales';
+    if (email === 'contact@city-intel.com') return 'contact';
+    return '';
+  }
+
+  function replySubject(subject){
+    const value = String(subject || '').trim();
+    if (!value) return 'CityIntel reply';
+    return /^re\s*:/i.test(value) ? value : `Re: ${value}`;
   }
 
   // Once a lead is onboarded, the org name/admin email can be edited in the
@@ -3063,13 +3089,14 @@ const makeBar = (label, count, color) => {
       if (!composeMode) clearLeadInboxSelection();
       return;
     }
+    const inboundThread = String(row.interest || '').trim().toLowerCase() === 'inbound email';
     inboxDetailHead.innerHTML = `<div>
       <strong>${esc(fullName(row))}</strong>
       <div class="lead-muted">${esc(displayEmail(row) || 'No email')} • ${esc(displayCompany(row) || 'No company')} • ${esc(row.region || 'No region')}</div>
-      <div style="margin-top:6px">${statusBadge(row.status)} <span class="lead-muted">Submitted ${esc(fmtDate(row.created_at))}</span></div>
+      <div style="margin-top:6px">${statusBadge(row.status)} <span class="lead-muted">${inboundThread ? 'Received' : 'Submitted'} ${esc(fmtDate(row.created_at))}</span></div>
     </div>
     <div class="lead-muted" style="text-align:right">${esc(row.interest || 'Access request')}<br>${esc(row.role || '')}</div>`;
-    if (inboxSubject && !inboxSubject.value.trim()) inboxSubject.value = 'CityIntel access request';
+    if (inboxSubject && !inboxSubject.value.trim() && !isDirectEmailThread(row)) inboxSubject.value = 'CityIntel access request';
   }
 
   async function loadLeadInboxMessages(id){
@@ -3099,15 +3126,40 @@ const makeBar = (label, count, color) => {
         to_email: 'CityIntel',
         created_at: row.created_at
       };
-      const messages = [firstCard, ...history];
-      inboxMessages.innerHTML = messages.map(msg => {
+
+      // Direct outreach and auto-created inbound-email threads already store
+      // their first message in lead_request_messages. Do not prepend the
+      // synthetic "Website access request" card, which previously duplicated
+      // direct-outreach messages and mislabeled genuine inbound email.
+      const messages = isDirectEmailThread(row) ? history : [firstCard, ...history];
+
+      // Keep replies on the same CityIntel identity that received/sent the
+      // most recent message. This means a mail arriving at Morris or Carlton
+      // automatically selects that sender in the reply composer.
+      const latestThreadMessage = [...messages].reverse().find(msg => msg && (msg.subject || msg.from_email || msg.to_email));
+      if (latestThreadMessage && inboxSender) {
+        const direction = String(latestThreadMessage.direction || '').toLowerCase();
+        const cityIntelAddress = direction === 'sent'
+          ? latestThreadMessage.from_email
+          : latestThreadMessage.to_email;
+        const senderKey = senderKeyForAddress(cityIntelAddress);
+        if (senderKey) {
+          inboxSender.value = senderKey;
+          updateInboxFromNote();
+        }
+      }
+      if (latestThreadMessage?.subject && inboxSubject) {
+        inboxSubject.value = replySubject(latestThreadMessage.subject);
+      }
+
+      inboxMessages.innerHTML = messages.length ? messages.map(msg => {
         const sent = String(msg.direction || '').toLowerCase() === 'sent';
         return `<div class="lead-chat-bubble ${sent ? 'sent' : 'received'}">
           <div class="lead-chat-subject">${esc(msg.subject || (sent ? 'CityIntel reply' : 'Lead message'))}</div>
           <div class="lead-chat-message">${esc(msg.message || '')}</div>
           <div class="lead-muted" style="margin-top:8px">${esc(sent ? (msg.from_email || 'CityIntel') : fullName(row))} • ${esc(fmtDate(msg.created_at))}</div>
         </div>`;
-      }).join('');
+      }).join('') : `<div class="lead-muted">No messages recorded for this thread yet.</div>`;
       inboxMessages.scrollTop = inboxMessages.scrollHeight;
     } catch (e) {
       inboxMessages.innerHTML = `<div style="color:#fecaca">Unable to load messages: ${esc(e.message || e)}</div>`;
@@ -4326,6 +4378,10 @@ const makeBar = (label, count, color) => {
 
   if (modalSender) {
     modalSender.addEventListener('change', updateFromNote);
+  }
+  if (inboxSender) {
+    inboxSender.addEventListener('change', updateInboxFromNote);
+    updateInboxFromNote();
   }
 
   async function sendLeadMessage(){
