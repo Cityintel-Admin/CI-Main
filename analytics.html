@@ -1597,6 +1597,12 @@
         <option value="approved">Approved</option>
         <option value="rejected">Rejected</option>
       </select>
+      <select id="leadInboxFolderFilter" class="btn" style="background:#16171a;color:var(--text)" title="Conversation folder">
+        <option value="active">Active</option>
+        <option value="archived">Archived</option>
+        <option value="trash">Trash</option>
+        <option value="all">All folders</option>
+      </select>
       <button id="leadInboxComposeBtn" class="btn" type="button">✉️ Compose new email</button>
       <button id="leadInboxBulkToggleBtn" class="btn" type="button">📢 Bulk send</button>
       <button id="leadInboxRefreshBtn" class="btn" type="button">Refresh</button>
@@ -1656,6 +1662,10 @@
           <div id="leadInboxAttachmentList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         </div>
         <div class="lead-inbox-actions">
+          <button id="leadInboxArchiveBtn" class="lead-action-btn reply" type="button" title="Archive this conversation">Archive</button>
+          <button id="leadInboxTrashBtn" class="lead-action-btn reject" type="button" title="Move this conversation to Trash">Move to Trash</button>
+          <button id="leadInboxRestoreBtn" class="lead-action-btn approve" type="button" style="display:none">Restore</button>
+          <button id="leadInboxDeletePermanentBtn" class="lead-action-btn reject" type="button" style="display:none">Delete permanently</button>
           <button id="leadInboxViewBtn" class="lead-action-btn reply" type="button">View details</button>
           <button id="leadInboxContactedBtn" class="lead-action-btn contact" type="button">Mark contacted</button>
           <button id="leadInboxSendBtn" class="btn primary" type="button">Send reply</button>
@@ -2707,6 +2717,7 @@ const makeBar = (label, count, color) => {
   const inboxMessages = document.getElementById('leadInboxMessages');
   const inboxSearch = document.getElementById('leadInboxSearch');
   const inboxStatusFilter = document.getElementById('leadInboxStatusFilter');
+  const inboxFolderFilter = document.getElementById('leadInboxFolderFilter');
   const inboxRefresh = document.getElementById('leadInboxRefreshBtn');
   const inboxComposeBtn = document.getElementById('leadInboxComposeBtn');
   const inboxToOverride = document.getElementById('leadInboxToOverride');
@@ -2726,6 +2737,10 @@ const makeBar = (label, count, color) => {
   const inboxAttachmentList = document.getElementById('leadInboxAttachmentList');
   const inboxZoomBtn = document.getElementById('leadInboxZoomBtn');
   const inboxSend = document.getElementById('leadInboxSendBtn');
+  const inboxArchiveBtn = document.getElementById('leadInboxArchiveBtn');
+  const inboxTrashBtn = document.getElementById('leadInboxTrashBtn');
+  const inboxRestoreBtn = document.getElementById('leadInboxRestoreBtn');
+  const inboxDeletePermanentBtn = document.getElementById('leadInboxDeletePermanentBtn');
   const inboxViewBtn = document.getElementById('leadInboxViewBtn');
   const inboxOnboardBtn = document.getElementById('leadInboxOnboardBtn');
   const inboxContactedBtn = document.getElementById('leadInboxContactedBtn');
@@ -3010,6 +3025,90 @@ const makeBar = (label, count, color) => {
       .sort((a,b) => (Date.parse(leadUpdatedAt(b)) || 0) - (Date.parse(leadUpdatedAt(a)) || 0));
   }
 
+
+  function conversationLifecycle(row){
+    const s = String(row?.lifecycle_status || 'active').toLowerCase();
+    return ['active','archived','trash'].includes(s) ? s : 'active';
+  }
+
+  function trashDaysRemaining(row){
+    if (conversationLifecycle(row) !== 'trash' || !row?.trashed_at) return null;
+    const trashed = Date.parse(row.trashed_at);
+    if (!Number.isFinite(trashed)) return null;
+    const elapsed = Math.floor((Date.now() - trashed) / 86400000);
+    return Math.max(0, 30 - elapsed);
+  }
+
+  function renderConversationLifecycleBadge(row){
+    const lifecycle = conversationLifecycle(row);
+    if (lifecycle === 'active') return '';
+    const label = lifecycle === 'trash' ? 'Trash' : 'Archived';
+    const style = lifecycle === 'trash'
+      ? 'border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.10)'
+      : 'border-color:#64748b;color:#cbd5e1;background:rgba(100,116,139,.12)';
+    return `<span class="lead-status" style="${style}">${label}</span>`;
+  }
+
+  function updateConversationLifecycleActions(){
+    const row = getSelectedLead();
+    const lifecycle = conversationLifecycle(row);
+    const hasRow = !!row && !composeMode && !bulkMode;
+    if (inboxArchiveBtn) inboxArchiveBtn.style.display = hasRow && lifecycle === 'active' ? '' : 'none';
+    if (inboxTrashBtn) inboxTrashBtn.style.display = hasRow && lifecycle !== 'trash' ? '' : 'none';
+    if (inboxRestoreBtn) inboxRestoreBtn.style.display = hasRow && lifecycle !== 'active' ? '' : 'none';
+    if (inboxDeletePermanentBtn) inboxDeletePermanentBtn.style.display = hasRow && lifecycle === 'trash' ? '' : 'none';
+    // Archived and Trash folders are read-only. Restore a conversation to
+    // Active before replying or changing its workflow state. New inbound mail
+    // automatically restores an archived/trashed conversation to Active.
+    const readOnlyLifecycle = hasRow && lifecycle !== 'active';
+    if (inboxSend) inboxSend.style.display = readOnlyLifecycle ? 'none' : '';
+    if (inboxContactedBtn) inboxContactedBtn.style.display = (!hasRow || readOnlyLifecycle) ? 'none' : '';
+    if (inboxZoomBtn) inboxZoomBtn.style.display = readOnlyLifecycle ? 'none' : '';
+  }
+
+  async function changeConversationLifecycle(action){
+    const row = getSelectedLead();
+    if (!row?.conversation_id) return alert('Select a conversation first.');
+    const labels = { archive:'archive', trash:'move to Trash', restore:'restore to Active' };
+    if (!confirm(`Are you sure you want to ${labels[action] || action} this conversation?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-conversations/${encodeURIComponent(row.conversation_id)}/lifecycle`, {
+        method:'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Lifecycle update failed: ${res.status}`);
+      selectedConversationId = '';
+      selectedLeadId = '';
+      await loadLeadConversations();
+    } catch (e) {
+      alert(`Unable to update conversation: ${e.message || e}`);
+    }
+  }
+
+  async function deleteConversationPermanently(){
+    const row = getSelectedLead();
+    if (!row?.conversation_id) return alert('Select a conversation first.');
+    if (conversationLifecycle(row) !== 'trash') return alert('Only conversations in Trash can be permanently deleted.');
+    const entered = prompt('This permanently deletes the conversation messages and stored attachments. The lead/contact record and audit history are preserved. Type DELETE to continue:');
+    if (String(entered || '').trim().toUpperCase() !== 'DELETE') return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-conversations/${encodeURIComponent(row.conversation_id)}`, {
+        method:'DELETE',
+        headers: authHeaders(),
+        body: JSON.stringify({ confirm:'DELETE' })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Delete failed: ${res.status}`);
+      selectedConversationId = '';
+      selectedLeadId = '';
+      await loadLeadConversations();
+    } catch (e) {
+      alert(`Unable to permanently delete conversation: ${e.message || e}`);
+    }
+  }
+
   function renderLeadInbox(){
     if (!inboxThreads) return;
     const rows = inboxFilteredRows();
@@ -3038,13 +3137,14 @@ const makeBar = (label, count, color) => {
         ? `<input type="checkbox" data-lead-bulk-check="${esc(conversationId)}" ${bulkCheckedLeadIds.has(conversationId) ? 'checked' : ''} style="margin-right:8px;transform:scale(1.15)" />`
         : '';
       return `<button class="lead-thread${active}" type="button" data-lead-thread="${esc(conversationId)}">
-        <div class="lead-thread-title">${checkbox}<span>${esc(name)}</span>${statusBadge(r.status)}</div>
-        <div class="lead-thread-meta">${esc(company)}<br>${esc(meta)} · ${esc(last)}</div>
+        <div class="lead-thread-title">${checkbox}<span>${esc(name)}</span><span style="display:flex;gap:5px;align-items:center">${renderConversationLifecycleBadge(r)}${statusBadge(r.status)}</span></div>
+        <div class="lead-thread-meta">${esc(company)}<br>${esc(meta)} · ${esc(last)}${conversationLifecycle(r) === 'trash' && trashDaysRemaining(r) !== null ? `<br><span style="color:#fca5a5">Auto-deletes in ${trashDaysRemaining(r)} day${trashDaysRemaining(r) === 1 ? '' : 's'}</span>` : ''}</div>
         <div class="lead-thread-preview">${esc(r.message || 'No message provided')}</div>
       </button>`;
     }).join('');
 
     if (!bulkMode) renderLeadInboxHeader();
+    updateConversationLifecycleActions();
   }
 
   function clearLeadInboxSelection(){
@@ -3168,8 +3268,9 @@ const makeBar = (label, count, color) => {
       <div class="lead-muted">${esc(displayEmail(row) || 'No email')} • ${esc(displayCompany(row) || 'No company')} • ${esc(row.region || 'No region')}</div>
       <div style="margin-top:6px">${statusBadge(row.status)} <span class="lead-muted">${inboundThread ? 'Received' : 'Submitted'} ${esc(fmtDate(row.created_at))}</span></div>
     </div>
-    <div class="lead-muted" style="text-align:right">${esc(row.thread_subject || row.interest || 'Access request')}<br>${esc(row.role || '')}</div>`;
+    <div class="lead-muted" style="text-align:right">${esc(row.thread_subject || row.interest || 'Access request')}<br>${esc(row.role || '')}${conversationLifecycle(row) === 'trash' && trashDaysRemaining(row) !== null ? `<br><span style="color:#fca5a5">Trash · ${trashDaysRemaining(row)} days until automatic deletion</span>` : conversationLifecycle(row) === 'archived' ? '<br><span style="color:#cbd5e1">Archived</span>' : ''}</div>`;
     if (inboxSubject && !inboxSubject.value.trim() && !isDirectEmailThread(row)) inboxSubject.value = 'CityIntel access request';
+    updateConversationLifecycleActions();
   }
 
   async function loadLeadInboxMessages(conversationId){
@@ -3540,7 +3641,8 @@ const makeBar = (label, count, color) => {
   async function loadLeadConversations(){
     if (!inboxThreads) return;
     try {
-      const res = await fetch(`${API_BASE}/api/admin/lead-conversations?status=all&limit=500`, { headers: authHeaders() });
+      const folder = inboxFolderFilter ? String(inboxFolderFilter.value || 'active') : 'active';
+      const res = await fetch(`${API_BASE}/api/admin/lead-conversations?status=all&folder=${encodeURIComponent(folder)}&limit=500`, { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `Conversation request failed: ${res.status}`);
       latestInboxRows = Array.isArray(data.data) ? data.data : [];
@@ -4586,7 +4688,12 @@ const makeBar = (label, count, color) => {
   if (refresh) refresh.addEventListener('click', loadLeads);
   if (inboxSearch) inboxSearch.addEventListener('input', renderLeadInbox);
   if (inboxStatusFilter) inboxStatusFilter.addEventListener('change', renderLeadInbox);
+  if (inboxFolderFilter) inboxFolderFilter.addEventListener('change', async () => { selectedConversationId=''; selectedLeadId=''; await loadLeadConversations(); });
   if (inboxRefresh) inboxRefresh.addEventListener('click', async () => { await loadLeads(); await loadLeadConversations(); });
+  if (inboxArchiveBtn) inboxArchiveBtn.addEventListener('click', () => changeConversationLifecycle('archive'));
+  if (inboxTrashBtn) inboxTrashBtn.addEventListener('click', () => changeConversationLifecycle('trash'));
+  if (inboxRestoreBtn) inboxRestoreBtn.addEventListener('click', () => changeConversationLifecycle('restore'));
+  if (inboxDeletePermanentBtn) inboxDeletePermanentBtn.addEventListener('click', deleteConversationPermanently);
   if (inboxThreads) inboxThreads.addEventListener('click', (e) => {
     const checkbox = e.target.closest('[data-lead-bulk-check]');
     if (checkbox && bulkMode) {
