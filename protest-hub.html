@@ -448,6 +448,21 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .ci-protest-marker.high{background:#ff5a5f}
 .ci-protest-marker.medium{background:#f0b429}
 .ci-protest-marker.low{background:#33c48d}
+/* Phase A.3: organisation-submitted protest intelligence keeps the normal
+   risk colour but uses a distinct dashed operational ring until verified. */
+.ci-protest-marker.ci-org-submission-marker{
+  border-style:dashed;
+  border-color:#e7edf5;
+  box-shadow:0 0 0 3px rgba(154,200,255,.18),0 0 10px rgba(0,0,0,.65);
+}
+.ci-protest-marker.ci-org-submission-marker.pending{
+  border-color:#f0b429;
+  box-shadow:0 0 0 3px rgba(240,180,41,.18),0 0 11px rgba(240,180,41,.28);
+}
+.ci-protest-marker.ci-org-submission-marker.private{
+  border-color:#9ac8ff;
+  box-shadow:0 0 0 3px rgba(154,200,255,.16),0 0 11px rgba(154,200,255,.22);
+}
 
 
 
@@ -2456,8 +2471,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
                 </select>
               </div>
               <div class="ci-org-field">
+                <label for="orgIntelPostcode">Postcode / ZIP / postal code</label>
+                <input id="orgIntelPostcode" maxlength="40" placeholder="e.g. E16 1XL">
+                <div class="ci-org-field-hint">Optional, but useful for precise location records and future geocoding.</div>
+              </div>
+              <div class="ci-org-field span2">
                 <label for="orgIntelLocation">Location / address</label>
-                <input id="orgIntelLocation" maxlength="180" placeholder="e.g. Place de la République">
+                <input id="orgIntelLocation" maxlength="180" placeholder="e.g. ExCeL London, Royal Victoria Dock">
               </div>
 
               <div class="ci-org-field">
@@ -3876,6 +3896,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   let backendAvailable = false;
   let submissions = [];
   let editingId = null;
+  let pendingCreateId = null;
   let injectedIds = new Set();
 
   const fields = {
@@ -3885,6 +3906,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     city:document.getElementById('orgIntelCity'),
     country:document.getElementById('orgIntelCountry'),
     continent:document.getElementById('orgIntelContinent'),
+    postcode:document.getElementById('orgIntelPostcode'),
     location:document.getElementById('orgIntelLocation'),
     lat:document.getElementById('orgIntelLat'),
     lon:document.getElementById('orgIntelLon'),
@@ -4066,6 +4088,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
       lat:s.lat ?? null,
       lng:s.lon ?? null,
       address:s.location_label || s.city || '',
+      postcode:s.postcode || '',
       source:s.source_url || null,
       approx_attending:s.approx_attending ?? null,
       impact_radius_km:s.impact_radius_km ?? 25,
@@ -4119,7 +4142,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     });
     list.innerHTML=sorted.map(s=>{
       const key=s._matchedExisting?'matched':statusKey(s);
-      const place=[s.city,s.country].filter(Boolean).join(', ');
+      const place=[s.location_label,s.postcode,s.city,s.country].filter(Boolean).join(', ');
       const attendance=Number(s.approx_attending);
       const source=s.source_url ? `<a href="${esc(s.source_url)}" target="_blank" rel="noopener" style="color:#9ac8ff">Open source</a>` : 'No source recorded';
       const note=s._matchedExisting
@@ -4147,6 +4170,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
               <div><div class="ci-org-meta-label">Expected attendance</div><div class="ci-org-meta-value">${Number.isFinite(attendance)&&attendance>0 ? esc(attendance.toLocaleString())+'+' : 'Not recorded'}</div></div>
               <div><div class="ci-org-meta-label">Monitoring radius</div><div class="ci-org-meta-value">${esc(s.impact_radius_km || 25)} km</div></div>
               <div><div class="ci-org-meta-label">Coordinates</div><div class="ci-org-meta-value">${llOf(s) ? `${esc(s.lat)}, ${esc(s.lon)}` : 'Not recorded'}</div></div>
+              <div><div class="ci-org-meta-label">Postcode</div><div class="ci-org-meta-value">${esc(s.postcode || 'Not recorded')}</div></div>
               <div><div class="ci-org-meta-label">Source</div><div class="ci-org-meta-value">${source}</div></div>
             </div>
             <div class="ci-org-submission-summary">${esc(s.summary || '')}</div>
@@ -4162,6 +4186,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   }
   function resetForm(){
     editingId=null;
+    pendingCreateId=null;
     form.reset();
     fields.risk.value='Medium';
     fields.radius.value='25';
@@ -4176,6 +4201,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
       fields.city.value=s.city||'';
       fields.country.value=s.country||'';
       fields.continent.value=s.continent||'';
+      fields.postcode.value=s.postcode||'';
       fields.location.value=s.location_label||'';
       fields.lat.value=s.lat??'';
       fields.lon.value=s.lon??'';
@@ -4205,8 +4231,10 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     if ((lat==null)!==(lon==null)) {
       throw new Error('Enter both latitude and longitude, or leave both blank.');
     }
+    const payloadId=editingId || pendingCreateId || `local-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    if (!editingId) pendingCreateId=payloadId;
     return {
-      id:editingId || `local-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+      id:payloadId,
       title:fields.title.value.trim(),
       summary:fields.summary.value.trim(),
       risk:fields.risk.value,
@@ -4214,6 +4242,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
       city:fields.city.value.trim(),
       country:fields.country.value.trim(),
       continent:fields.continent.value.trim(),
+      postcode:fields.postcode.value.trim() || null,
       location_label:fields.location.value.trim() || null,
       lat,lon,
       approx_attending:int(fields.attendance.value),
@@ -4328,8 +4357,11 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 
   window.addEventListener('ci:alerts-data-updated',e=>{
     if (e?.detail?.orgSubmissions) return;
-    // Recheck whether a newly approved CityIntel record now matches a submission.
-    submissions.forEach(s=>{s._matchedExisting=findExistingMatch(s)||null;});
+    // The approved/global protest loader can replace window.alertsData after
+    // organisation submissions initially load. Re-inject the organisation
+    // layer after every authoritative refresh so private/pending events remain
+    // available to the map, KPIs and proximity logic without duplication.
+    injectOperationalLayer();
     render();
   });
 
@@ -5157,10 +5189,13 @@ function escapeHtml(str){
 }
 
 	
-function protestIconFor(risk){
+function protestIconFor(risk,event=null){
   const s = norm(risk);
   const band = s.startsWith('hi') ? 'high' : s.startsWith('me') ? 'medium' : 'low';
-  return L.divIcon({ className: `ci-protest-marker ${band}`, html: '', iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-10] });
+  const isOrg = event?._orgSubmission === true;
+  const orgStatus = String(event?._verificationStatus || '').toLowerCase();
+  const orgClass = isOrg ? ` ci-org-submission-marker ${orgStatus === 'pending' ? 'pending' : 'private'}` : '';
+  return L.divIcon({ className: `ci-protest-marker ${band}${orgClass}`, html: '', iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-10] });
 }
 function eventLatLon(a){
   const lat = Number(a.lat ?? a.latitude ?? a.Latitude ?? a.event_lat ?? a.eventLat);
@@ -5197,9 +5232,13 @@ function renderProtestMarkers(){
     if (!ll) return;
     const pretty = a._dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     const cityCountry = [a.city, a.country || a.Country].filter(Boolean).join(', ');
-    const marker = L.marker(ll, { icon: protestIconFor(a.risk), keyboard:false })
+    const orgStatusLine = a._orgSubmission
+      ? `<br><span style="color:${a._verificationStatus === 'pending' ? '#f0b429' : '#9ac8ff'};font-weight:700">Organisation Intelligence · ${a._verificationStatus === 'pending' ? 'Pending Verification' : 'Organisation Only'}</span>`
+      : '';
+    const locationLine = [a.address || a.location_label, a.postcode].filter(Boolean).join(', ');
+    const marker = L.marker(ll, { icon: protestIconFor(a.risk,a), keyboard:false })
       .addTo(protestLayer)
-      .bindPopup(`<b>${escapeHtml(a.title || 'Protest event')}</b><br>${escapeHtml(cityCountry)}${cityCountry ? '<br>' : ''}${escapeHtml(pretty)}<br>Risk: <b>${escapeHtml(String(a.risk || 'low'))}</b>`);
+      .bindPopup(`<b>${escapeHtml(a.title || 'Protest event')}</b><br>${escapeHtml(cityCountry)}${cityCountry ? '<br>' : ''}${locationLine ? escapeHtml(locationLine) + '<br>' : ''}${escapeHtml(pretty)}<br>Risk: <b>${escapeHtml(String(a.risk || 'low'))}</b>${orgStatusLine}`);
     marker.on('click', () => {
       if (window.CIProximityPanel) window.CIProximityPanel.openForProtest(a, ll);
     });
@@ -5212,7 +5251,7 @@ window.CIFocusFeedPostOnMap = function(postId){
   if (!post || !eventLatLon(post)) return;
   const ll = eventLatLon(post);
   feedFocusLayer.clearLayers();
-  const marker = L.marker(ll, { icon: protestIconFor(post.risk || 'info'), keyboard:false })
+  const marker = L.marker(ll, { icon: protestIconFor(post.risk || 'info',post), keyboard:false })
     .addTo(feedFocusLayer)
     .bindPopup(`<b>${escapeHtml(post.title || 'CityIntel feed post')}</b><br>${escapeHtml(post.location_label || '')}${post.event_at ? '<br>' + escapeHtml(new Date(post.event_at).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })) : ''}`);
   map.setView(ll, Math.max(map.getZoom(), 13), { animate:true });
@@ -5222,6 +5261,9 @@ window.CIFocusFeedPostOnMap = function(postId){
 };
 
 window.addEventListener('ci:feed-posts-updated', () => {
+  try { renderProtestMarkers(); } catch(_) {}
+});
+window.addEventListener('ci:alerts-data-updated', () => {
   try { renderProtestMarkers(); } catch(_) {}
 });
 function updatePresenceLayerVisibility(){
