@@ -1023,7 +1023,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   min-height:276px;
   border:1px solid var(--brand-gray-600);
   border-radius:16px;
-  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.018));
+  background:
+    radial-gradient(circle at 20% 22%, rgba(255,255,255,.045), transparent 28%),
+    radial-gradient(circle at 82% 20%, rgba(208,22,22,.085), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.008)),
+    linear-gradient(180deg, #10141a 0%, #0b0f14 100%);
   display:flex;
   flex-direction:column;
   align-items:stretch;
@@ -1037,13 +1041,24 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   overflow:hidden;
   padding:14px 12px 13px;
   box-sizing:border-box;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), inset 0 -24px 40px rgba(0,0,0,.20);
 }
-.continent-pie-card::before{ content:none; }
+.continent-pie-card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), transparent 34%, rgba(0,0,0,.08));
+  pointer-events:none;
+}
 .continent-pie-card:hover{
   transform:translateY(-1px);
   border-color:rgba(208,22,22,.55);
-  background:linear-gradient(180deg,rgba(208,22,22,.065),rgba(255,255,255,.02));
-  box-shadow:0 12px 28px rgba(0,0,0,.25);
+  background:
+    radial-gradient(circle at 20% 22%, rgba(255,255,255,.05), transparent 28%),
+    radial-gradient(circle at 82% 20%, rgba(208,22,22,.11), transparent 24%),
+    linear-gradient(180deg, rgba(208,22,22,.05), rgba(255,255,255,.01)),
+    linear-gradient(180deg, #10141a 0%, #0b0f14 100%);
+  box-shadow:0 12px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.02), inset 0 -24px 40px rgba(0,0,0,.22);
 }
 .continent-chart-wrap{
   width:100%;
@@ -1053,6 +1068,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   place-items:center;
   isolation:isolate;
   margin-bottom:2px;
+  z-index:1;
 }
 .continent-map-bg{
   position:absolute;
@@ -1140,6 +1156,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   text-decoration:underline;
   line-height:1.15;
   margin-top:2px;
+  position:relative;
+  z-index:1;
 }
 .continent-pie-meta{
   color:var(--muted);
@@ -1147,6 +1165,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   text-align:center;
   line-height:1.35;
   margin-top:auto;
+  position:relative;
+  z-index:1;
 }
 .continent-risk-legend{
   display:flex;
@@ -5026,6 +5046,63 @@ function CI_updatePanicMapOverlayIndex(st){
   }
 
   if (trendsHost) {
+    function trendNormalizeTitle(raw){
+      return String(raw || '').toLowerCase()
+        .replace(/&amp;/g, 'and')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\b(protest|rally|march|demonstration|demonstrations|event)\b/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    function trendDateKey(dt){
+      return dt && !isNaN(dt) ? dt.toISOString().slice(0,10) : '';
+    }
+    function trendAttendanceOf(a){
+      const raw = a?.approx_attending ?? a?.attendance ?? a?.expectedAttendance ?? a?.crowd;
+      if (raw == null || raw === '') return 0;
+      const n = parseInt(String(raw).replace(/[^0-9]/g,''),10);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function trendRiskRank(r){
+      const n = String(r || '').toLowerCase();
+      if (n === 'high') return 3;
+      if (n === 'med' || n === 'medium') return 2;
+      return 1;
+    }
+    function trendLatLonOf(a){
+      const lat = Number(a?.lat);
+      const lon = Number(a?.lon ?? a?.lng);
+      return Number.isFinite(lat) && Number.isFinite(lon) ? [lat, lon] : null;
+    }
+    function dedupeTrendEvents(events){
+      const groups = new Map();
+      events.forEach(a => {
+        const key = [
+          trendNormalizeTitle(a.title || a.headline || ''),
+          String(a.city || a.country || a.Country || '').toLowerCase().trim(),
+          trendDateKey(a._dt)
+        ].join('|');
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(a);
+      });
+      return [...groups.values()].map(group => {
+        const sorted = group.slice().sort((a,b) => trendRiskRank(b._risk || b.risk) - trendRiskRank(a._risk || a.risk) || trendAttendanceOf(b) - trendAttendanceOf(a));
+        const best = sorted[0];
+        const earliest = group.slice().sort((a,b) => a._dt - b._dt)[0] || best;
+        const ll = trendLatLonOf(best) || trendLatLonOf(earliest);
+        const maxAttendance = Math.max(...group.map(x => trendAttendanceOf(x) || 0));
+        return {
+          ...best,
+          _dt: earliest._dt,
+          time: earliest.time || earliest.datetime || best.time || best.datetime,
+          approx_attending: maxAttendance || trendAttendanceOf(best),
+          lat: ll ? ll[0] : best.lat,
+          lon: ll ? ll[1] : (best.lon ?? best.lng),
+          _trendMergedCount: group.length
+        };
+      }).sort((a,b) => a._dt - b._dt);
+    }
+
     const trendDefs = [
       {
         key: 'labour',
@@ -5047,8 +5124,16 @@ function CI_updatePanicMapOverlayIndex(st){
       }
     ];
 
+    const uniqueTrendUpcoming = dedupeTrendEvents(upcoming);
+    const trendBucketMap = Object.fromEntries(trendDefs.map(def => [def.key, []]));
+    uniqueTrendUpcoming.forEach(a => {
+      const haystack = `${a.title || ''} ${a.summary || ''}`.toLowerCase();
+      const matchDef = trendDefs.find(def => def.matcher.test(haystack));
+      if (matchDef) trendBucketMap[matchDef.key].push(a);
+    });
+
     const trendRows = trendDefs.map(def => {
-      const matches = upcoming.filter(a => def.matcher.test(`${a.title || ''} ${a.summary || ''}`.toLowerCase()));
+      const matches = trendBucketMap[def.key] || [];
       const cityCounts = {};
       matches.forEach(a => {
         const city = String(a.city || a.country || a.Country || 'Unknown').trim();
@@ -5056,9 +5141,11 @@ function CI_updatePanicMapOverlayIndex(st){
       });
       const topCity = Object.entries(cityCounts).sort((a,b) => b[1] - a[1])[0];
       const lead = matches[0] || null;
+      const mergedCount = matches.reduce((sum, a) => sum + (a._trendMergedCount || 1), 0);
       return {
         ...def,
         count: matches.length,
+        totalMatchedUpdates: mergedCount,
         topCity: topCity ? topCity[0] : '',
         topCityCount: topCity ? topCity[1] : 0,
         strongestRisk: matches.some(a => a._risk === 'high') ? 'High pressure' :
@@ -5088,7 +5175,7 @@ function CI_updatePanicMapOverlayIndex(st){
                 <div class="signal-kicker">Emerging pattern</div>
                 <div class="signal-title">${row.label}</div>
               </div>
-              <div class="signal-count-badge">${row.count} signal${row.count !== 1 ? 's' : ''}</div>
+              <div class="signal-count-badge">${row.count} deduplicated signal${row.count !== 1 ? 's' : ''}</div>
             </div>
             <div class="signal-city-chip"><span class="dot"></span> Strongest city: ${row.topCity || 'Global'}${row.topCity ? ` (${row.topCityCount})` : ''}</div>
           </div>
@@ -5102,7 +5189,7 @@ function CI_updatePanicMapOverlayIndex(st){
             <div class="signal-meta-grid">
               <div class="signal-meta-block">
                 <div class="signal-meta-label">Upcoming cluster</div>
-                <div class="signal-meta-value">${row.count} event${row.count !== 1 ? 's' : ''} detected in the next 7 days.</div>
+                <div class="signal-meta-value">${row.count} unique event${row.count !== 1 ? 's' : ''} detected in the next 7 days.</div>
               </div>
               <div class="signal-meta-block">
                 <div class="signal-meta-label">Lead example time</div>
@@ -5110,7 +5197,7 @@ function CI_updatePanicMapOverlayIndex(st){
               </div>
               <div class="signal-meta-block" style="grid-column:1/-1">
                 <div class="signal-meta-label">Lead example</div>
-                <div class="signal-meta-value">${row.lead?.title || 'Pattern cluster'}</div>
+                <div class="signal-meta-value">${row.lead?.title || 'Pattern cluster'}${row.totalMatchedUpdates > row.count ? ` • ${row.totalMatchedUpdates} matched updates consolidated` : ''}</div>
               </div>
             </div>
             <div class="signal-actions">
