@@ -222,6 +222,12 @@
     .lead-chat-bubble.received{margin-right:auto;background:rgba(255,255,255,.035)}
     .lead-chat-subject{font-weight:800;margin-bottom:5px;color:#e5e7eb;font-size:13px}
     .lead-chat-message{white-space:pre-wrap;line-height:1.45;color:#e9edf2}
+    .lead-chat-attachments{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .lead-attachment-download{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid var(--g500);background:rgba(255,255,255,.045);color:#dbeafe;font:inherit;font-size:12px;cursor:pointer;max-width:100%}
+    .lead-attachment-download:hover{border-color:#60a5fa;background:rgba(59,130,246,.09)}
+    .lead-attachment-download:disabled{opacity:.5;cursor:not-allowed;border-color:var(--g600)}
+    .lead-attachment-name{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .lead-attachment-size{color:var(--muted);font-size:11px}
     .lead-inbox-compose{border-top:1px solid var(--g600);padding:12px 14px;display:grid;gap:10px;margin-top:auto}
     .lead-inbox-compose textarea,.lead-inbox-compose input,.lead-inbox-compose select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:10px;font:inherit}
     .lead-inbox-compose textarea{min-height:105px;resize:vertical}
@@ -2788,6 +2794,64 @@ const makeBar = (label, count, color) => {
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#039;');
 
+  function leadAttachmentSize(bytes){
+    const n = Number(bytes || 0);
+    if (!Number.isFinite(n) || n <= 0) return '';
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(n < 10 * 1024 ? 1 : 0)} KB`;
+    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function renderLeadMessageAttachments(msg){
+    const atts = Array.isArray(msg?.attachments) ? msg.attachments : [];
+    if (!atts.length) return '';
+    return `<div class="lead-chat-attachments">${atts.map(a => {
+      const stored = String(a.storage_status || 'stored').toLowerCase() === 'stored';
+      const size = leadAttachmentSize(a.size_bytes);
+      const title = stored ? 'Download attachment' : 'Attachment was not stored successfully';
+      return `<button type="button" class="lead-attachment-download" data-attachment-id="${esc(a.id || '')}" data-attachment-name="${esc(a.filename || 'attachment')}" title="${esc(title)}" ${stored ? '' : 'disabled'}>
+        <span>📎</span><span class="lead-attachment-name">${esc(a.filename || 'attachment')}</span>${size ? `<span class="lead-attachment-size">${esc(size)}</span>` : ''}
+      </button>`;
+    }).join('')}</div>`;
+  }
+
+  async function downloadLeadAttachment(attachmentId, filename, button){
+    if (!attachmentId) return;
+    const oldText = button?.innerHTML || '';
+    try {
+      if (button) { button.disabled = true; button.textContent = 'Downloading…'; }
+      const res = await fetch(`${API_BASE}/api/admin/lead-attachments/${encodeURIComponent(attachmentId)}`, { headers: authHeaders() });
+      if (!res.ok) {
+        let message = `Download failed: ${res.status}`;
+        try { const data = await res.json(); if (data?.error) message = data.error; } catch (_) {}
+        throw new Error(message);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'attachment';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (e) {
+      alert(`Unable to download attachment: ${e.message || e}`);
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = oldText; }
+    }
+  }
+
+  document.addEventListener('click', (event) => {
+    const btn = event.target.closest?.('.lead-attachment-download');
+    if (!btn || btn.disabled) return;
+    const attachmentId = btn.getAttribute('data-attachment-id') || '';
+    const filename = btn.getAttribute('data-attachment-name') || 'attachment';
+    if (!attachmentId) return;
+    event.preventDefault();
+    downloadLeadAttachment(attachmentId, filename, btn);
+  });
+
   function fmtDate(v){
     const d = new Date(v || '');
     if (isNaN(d)) return '—';
@@ -3157,6 +3221,7 @@ const makeBar = (label, count, color) => {
         return `<div class="lead-chat-bubble ${sent ? 'sent' : 'received'}">
           <div class="lead-chat-subject">${esc(msg.subject || (sent ? 'CityIntel reply' : 'Lead message'))}</div>
           <div class="lead-chat-message">${esc(msg.message || '')}</div>
+          ${renderLeadMessageAttachments(msg)}
           <div class="lead-muted" style="margin-top:8px">${esc(sent ? (msg.from_email || 'CityIntel') : fullName(row))} • ${esc(fmtDate(msg.created_at))}</div>
         </div>`;
       }).join('') : `<div class="lead-muted">No messages recorded for this thread yet.</div>`;
@@ -4170,15 +4235,7 @@ const makeBar = (label, count, color) => {
         const outgoing = String(msg.direction || '').toLowerCase() === 'sent';
         const title = outgoing ? 'CityIntel → User' : 'User Reply';
         const bg = outgoing ? 'rgba(59,130,246,.08)' : 'rgba(255,255,255,.03)';
-        let attachmentsHtml = '';
-        try {
-          const atts = msg.attachments ? JSON.parse(msg.attachments) : null;
-          if (Array.isArray(atts) && atts.length) {
-            attachmentsHtml = `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">` +
-              atts.map(a => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--g600);font-size:12px;">📎 ${esc(a.filename || 'attachment')}</span>`).join('') +
-              `</div>`;
-          }
-        } catch (e) { /* ignore malformed attachment metadata */ }
+        const attachmentsHtml = renderLeadMessageAttachments(msg);
         return `
           <div style="border:1px solid var(--g600);border-radius:12px;padding:12px;background:${bg};">
             <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
