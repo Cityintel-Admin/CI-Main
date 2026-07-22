@@ -4062,10 +4062,16 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const res=await fetch(API+path,{
       method:body===undefined?'GET':'POST',
       headers:authHeaders(),
-      body:body===undefined?undefined:JSON.stringify(body)
+      body:body===undefined?undefined:JSON.stringify(body),
+      cache:'no-store'
     });
     const data=await res.json().catch(()=>({}));
-    if(!res.ok||data.ok===false) throw new Error(data.error||`HTTP ${res.status}`);
+    if(!res.ok||data.ok===false){
+      const err=new Error(data.error||`HTTP ${res.status}`);
+      err.status=res.status;
+      err.code=data.code||'';
+      throw err;
+    }
     return data;
   }
   function orgSubmissionOf(item){
@@ -4128,8 +4134,25 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
       render(data.items||[]);
       setStatus('');
     }catch(err){
-      list.innerHTML='<div class="ci-master-review-empty">Could not load the central verification queue.</div>';
-      setStatus(err.message||'Could not load verification requests.','error');
+      const authProblem = err?.status === 401 ||
+        /session|authentication|bearer|expired|invalid/i.test(String(err?.message||''));
+      if(authProblem){
+        list.innerHTML = `
+          <div class="ci-master-review-empty">
+            Your Master Admin browser session needs to be refreshed before the central verification queue can be opened.
+            <button type="button" id="ciMasterReviewReauth" style="margin-left:8px;border:1px solid rgba(208,22,22,.45);background:rgba(208,22,22,.12);color:#fff;border-radius:8px;padding:7px 10px;font:800 10px system-ui;cursor:pointer">
+              Re-authenticate
+            </button>
+          </div>`;
+        setStatus(err.message || 'Your signed session is invalid or expired. Please sign in again.','error');
+        document.getElementById('ciMasterReviewReauth')?.addEventListener('click',()=>{
+          try{ window.CIAuth?.logout?.(); }catch(_){}
+          location.href='login.html?next='+encodeURIComponent('protest-hub.html');
+        });
+      }else{
+        list.innerHTML='<div class="ci-master-review-empty">Could not load the central verification queue.</div>';
+        setStatus(err.message||'Could not load verification requests.','error');
+      }
     }
   }
   async function act(action,id){
