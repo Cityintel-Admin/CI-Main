@@ -24,10 +24,9 @@
  *  - Inside any OTHER hub (its landing page or one of its own members):
  *    shows only that hub's own family (landing + members) + the single
  *    Executive Dashboard link. No other hubs, no footer, no master links.
- *  - Any page belonging to no hub and not home (Sources/Settings/About,
- *    Analytics/Operations Log/System Flow): shows only the Executive
- *    Dashboard link. (Assumption — flag if you want these treated
- *    differently.)
+ *  - Any page belonging to no hub and not home shows the Executive Dashboard,
+ *    standalone links, and (for Master Admin users) the Master Admin Console
+ *    and Operations Log links.
  */
 
 
@@ -135,11 +134,13 @@
 
   // ── Master Admin only — home page only ─────────────────────────────────
   const MASTER_LINKS = [
-    { href: 'analytics.html',     label: 'Analytics',      role: 'masterAdmin' },
-    { href: 'master-admin-overview.htm',     label: 'Master Admin Overview',      role: 'masterAdmin' },
-    { href: 'master-admin-communications.html',     label: 'Master Admin Communications',      role: 'masterAdmin' },
-    { href: 'master-admin-platform.html',     label: 'Master Admin Platform',      role: 'masterAdmin' },
-    { href: 'operationslog.html', label: 'Operations Log', role: 'masterAdmin' },
+    // Single sidebar entry into the Master Admin Console. The three admin pages
+    // use their own internal switcher, so we do not duplicate all three here.
+    { href: 'master-admin-overview.html', label: 'Master Admin', role: 'masterAdmin' },
+    { href: 'operationslog.html',         label: 'Operations Log', role: 'masterAdmin' },
+
+    // analytics.html remains deployed as a legacy rollback/reference page only.
+    // { href: 'analytics.html', label: 'Legacy Analytics', role: 'masterAdmin' },
   ];
 
   // ── Special actions ──────────────────────────────────────────────────
@@ -345,6 +346,14 @@
       }
       STANDALONE.forEach(page => {
         if (moduleAllowed(modules, page.module)) parts.push(linkHtml(page, here));
+      });
+
+      // Master Admin links must remain available outside the Executive Dashboard.
+      // Previously MASTER_LINKS were only rendered inside the `isHome` branch,
+      // which meant shared-nav could overwrite/remove links injected by
+      // admin-links.js on pages such as the new Master Admin Console pages.
+      MASTER_LINKS.forEach(link => {
+        if (roleOk(link)) parts.push(linkHtml(link, here));
       });
     }
 
