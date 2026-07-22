@@ -1698,6 +1698,7 @@
           <button id="leadInboxAssignOwnerBtn" class="lead-action-btn reply" type="button">Assign</button>
           <button id="leadInboxConvertAccessBtn" class="lead-action-btn onboard" type="button" style="display:none" title="Create an access/onboarding candidate from this email conversation">Create access candidate</button>
           <button id="leadInboxArchiveBtn" class="lead-action-btn reply" type="button" title="Archive this conversation">Archive</button>
+          <button id="leadInboxManualQuarantineBtn" class="lead-action-btn contact" type="button" title="Move the latest inbound message to Master Admin quarantine for review">Quarantine</button>
           <button id="leadInboxTrashBtn" class="lead-action-btn reject" type="button" title="Move this conversation to Trash">Move to Trash</button>
           <button id="leadInboxRestoreBtn" class="lead-action-btn approve" type="button" style="display:none">Restore</button>
           <button id="leadInboxDeletePermanentBtn" class="lead-action-btn reject" type="button" style="display:none">Delete permanently</button>
@@ -2790,6 +2791,7 @@ const makeBar = (label, count, color) => {
   const inboxZoomBtn = document.getElementById('leadInboxZoomBtn');
   const inboxSend = document.getElementById('leadInboxSendBtn');
   const inboxArchiveBtn = document.getElementById('leadInboxArchiveBtn');
+  const inboxManualQuarantineBtn = document.getElementById('leadInboxManualQuarantineBtn');
   const inboxTrashBtn = document.getElementById('leadInboxTrashBtn');
   const inboxRestoreBtn = document.getElementById('leadInboxRestoreBtn');
   const inboxDeletePermanentBtn = document.getElementById('leadInboxDeletePermanentBtn');
@@ -3166,6 +3168,7 @@ const makeBar = (label, count, color) => {
     const lifecycle = conversationLifecycle(row);
     const hasRow = !!row && !composeMode && !bulkMode;
     if (inboxArchiveBtn) inboxArchiveBtn.style.display = hasRow && lifecycle === 'active' ? '' : 'none';
+    if (inboxManualQuarantineBtn) inboxManualQuarantineBtn.style.display = hasRow && lifecycle === 'active' ? '' : 'none';
     if (inboxTrashBtn) inboxTrashBtn.style.display = hasRow && lifecycle !== 'trash' ? '' : 'none';
     if (inboxRestoreBtn) inboxRestoreBtn.style.display = hasRow && lifecycle !== 'active' ? '' : 'none';
     if (inboxDeletePermanentBtn) inboxDeletePermanentBtn.style.display = hasRow && lifecycle === 'trash' ? '' : 'none';
@@ -3207,6 +3210,29 @@ const makeBar = (label, count, color) => {
       await loadLeadConversations();
     } catch (e) {
       alert(`Unable to update conversation: ${e.message || e}`);
+    }
+  }
+
+  async function manuallyQuarantineSelectedConversation(){
+    const row = getSelectedLead();
+    if (!row?.conversation_id) return alert('Select a conversation first.');
+    if (conversationLifecycle(row) !== 'active') return alert('Only Active conversations can be moved to Quarantine.');
+    if (!confirm('Move the latest inbound message in this conversation to Quarantine for Master Admin review? The conversation will leave Active and can be released back from the Quarantine folder.')) return;
+    const old = inboxManualQuarantineBtn?.textContent || '';
+    if (inboxManualQuarantineBtn) { inboxManualQuarantineBtn.disabled = true; inboxManualQuarantineBtn.textContent = 'Quarantining…'; }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/lead-conversations/${encodeURIComponent(row.conversation_id)}/quarantine`, {
+        method:'POST', headers:authHeaders(), body:JSON.stringify({})
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Quarantine failed: ${res.status}`);
+      selectedConversationId=''; selectedLeadId=''; selectedQuarantineId='';
+      if (inboxFolderFilter) inboxFolderFilter.value='quarantine';
+      await loadLeadConversations();
+    } catch (e) {
+      alert(`Unable to quarantine conversation: ${e.message || e}`);
+    } finally {
+      if (inboxManualQuarantineBtn) { inboxManualQuarantineBtn.disabled = false; inboxManualQuarantineBtn.textContent = old || 'Quarantine'; }
     }
   }
 
@@ -3306,7 +3332,7 @@ const makeBar = (label, count, color) => {
     if (attachLabel) attachLabel.style.display = enabled ? 'none' : '';
     const idsToHide = [inboxTemplateSelect, inboxSaveTemplateBtn, inboxDraftSelect, inboxSaveDraftBtn, inboxSubject, inboxSender, inboxReply,
       inboxAttachments, inboxZoomBtn, inboxAttachmentList, inboxOwnerSelect, inboxAssignOwnerBtn, inboxConvertAccessBtn, inboxArchiveBtn,
-      inboxTrashBtn, inboxRestoreBtn, inboxDeletePermanentBtn, inboxViewBtn, inboxContactedBtn, inboxSend];
+      inboxManualQuarantineBtn, inboxTrashBtn, inboxRestoreBtn, inboxDeletePermanentBtn, inboxViewBtn, inboxContactedBtn, inboxSend];
     idsToHide.forEach(el => { if (el) el.style.display = enabled ? 'none' : ''; });
     if (inboxFromNote) inboxFromNote.style.display = enabled ? 'none' : '';
     if (inboxComposeBtn) inboxComposeBtn.disabled = enabled;
@@ -5003,6 +5029,7 @@ const makeBar = (label, count, color) => {
   if (inboxOwnerFilter) inboxOwnerFilter.addEventListener('change', async () => { selectedConversationId=''; selectedLeadId=''; await loadLeadConversations(); });
   if (inboxRefresh) inboxRefresh.addEventListener('click', async () => { await loadLeads(); await loadLeadConversations(); });
   if (inboxArchiveBtn) inboxArchiveBtn.addEventListener('click', () => changeConversationLifecycle('archive'));
+  if (inboxManualQuarantineBtn) inboxManualQuarantineBtn.addEventListener('click', manuallyQuarantineSelectedConversation);
   if (inboxTrashBtn) inboxTrashBtn.addEventListener('click', () => changeConversationLifecycle('trash'));
   if (inboxRestoreBtn) inboxRestoreBtn.addEventListener('click', () => changeConversationLifecycle('restore'));
   if (inboxDeletePermanentBtn) inboxDeletePermanentBtn.addEventListener('click', deleteConversationPermanently);
