@@ -136,6 +136,9 @@
   // ── Master Admin only — home page only ─────────────────────────────────
   const MASTER_LINKS = [
     { href: 'analytics.html',     label: 'Analytics',      role: 'masterAdmin' },
+    { href: 'master-admin-overview.htm',     label: 'Master Admin Overview',      role: 'masterAdmin' },
+    { href: 'master-admin-communications.html',     label: 'Master Admin Communications',      role: 'masterAdmin' },
+    { href: 'master-admin-platform.html',     label: 'Master Admin Platform',      role: 'masterAdmin' },
     { href: 'operationslog.html', label: 'Operations Log', role: 'masterAdmin' },
   ];
 
