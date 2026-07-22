@@ -238,6 +238,11 @@
     .lead-inbox-compose textarea,.lead-inbox-compose input,.lead-inbox-compose select{width:100%;box-sizing:border-box;background:#0f1012;color:var(--text);border:1px solid var(--g600);border-radius:10px;padding:10px;font:inherit}
     .lead-inbox-compose textarea{min-height:105px;resize:vertical}
     .lead-inbox-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+    .lead-quarantine-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid #f0b429;color:#fde68a;background:rgba(240,180,41,.12);font-size:11px;font-weight:800}
+    .lead-quarantine-risk.high{border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.12)}
+    .lead-quarantine-risk.medium{border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.12)}
+    .lead-quarantine-reasons{display:grid;gap:5px;margin-top:10px;padding:9px;border:1px solid rgba(240,180,41,.28);border-radius:10px;background:rgba(240,180,41,.05)}
+    .lead-quarantine-actions{display:none;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;border-top:1px solid var(--g600);padding-top:10px}
     @media(max-width:900px){.lead-inbox-grid{grid-template-columns:1fr}.lead-chat-bubble{max-width:100%}}
 
 
@@ -1607,6 +1612,7 @@
         <option value="active">Active</option>
         <option value="archived">Archived</option>
         <option value="trash">Trash</option>
+        <option value="quarantine">Quarantine</option>
         <option value="all">All folders</option>
       </select>
       <select id="leadInboxOwnerFilter" class="btn" style="background:#16171a;color:var(--text)" title="Conversation owner">
@@ -1674,6 +1680,12 @@
           </label>
           <button id="leadInboxZoomBtn" class="lead-action-btn reply" type="button">🎥 Schedule Zoom call</button>
           <div id="leadInboxAttachmentList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div id="leadInboxQuarantineActions" class="lead-quarantine-actions">
+          <button id="leadInboxQuarantineReleaseBtn" class="lead-action-btn approve" type="button">Release to Inbox</button>
+          <button id="leadInboxQuarantineSafeBtn" class="lead-action-btn approve" type="button">Mark safe &amp; release</button>
+          <button id="leadInboxQuarantineSpamBtn" class="lead-action-btn contact" type="button">Mark spam</button>
+          <button id="leadInboxQuarantineBlockBtn" class="lead-action-btn reject" type="button">Block sender</button>
         </div>
         <div class="lead-inbox-actions">
           <select id="leadInboxOwnerSelect" class="lead-action-btn" title="Assign conversation owner" style="min-width:125px">
@@ -2783,6 +2795,12 @@ const makeBar = (label, count, color) => {
   const inboxDeletePermanentBtn = document.getElementById('leadInboxDeletePermanentBtn');
   const inboxOwnerSelect = document.getElementById('leadInboxOwnerSelect');
   const inboxAssignOwnerBtn = document.getElementById('leadInboxAssignOwnerBtn');
+  const inboxQuarantineActions = document.getElementById('leadInboxQuarantineActions');
+  const inboxQuarantineReleaseBtn = document.getElementById('leadInboxQuarantineReleaseBtn');
+  const inboxQuarantineSafeBtn = document.getElementById('leadInboxQuarantineSafeBtn');
+  const inboxQuarantineSpamBtn = document.getElementById('leadInboxQuarantineSpamBtn');
+  const inboxQuarantineBlockBtn = document.getElementById('leadInboxQuarantineBlockBtn');
+  const inboxComposePanel = document.querySelector('.lead-inbox-compose');
   const inboxConvertAccessBtn = document.getElementById('leadInboxConvertAccessBtn');
   const inboxViewBtn = document.getElementById('leadInboxViewBtn');
   const inboxOnboardBtn = document.getElementById('leadInboxOnboardBtn');
@@ -2834,8 +2852,10 @@ const makeBar = (label, count, color) => {
 
   let latestRows = [];
   let latestInboxRows = [];
+  let latestQuarantineRows = [];
   let selectedLeadId = '';
   let selectedConversationId = '';
+  let selectedQuarantineId = '';
   let composeMode = false; // true when composing a fresh email not tied to any lead
   let bulkMode = false; // true when selecting multiple recipients for one send
   const bulkCheckedLeadIds = new Set(); // lead ids ticked in the Threads list while in bulk mode
@@ -2923,8 +2943,10 @@ const makeBar = (label, count, color) => {
   document.addEventListener('click', (event) => {
     const btn = event.target.closest?.('.lead-attachment-download');
     if (!btn || btn.disabled) return;
-    const attachmentId = btn.getAttribute('data-attachment-id') || '';
+    const qAttachmentId = btn.getAttribute('data-quarantine-attachment-id') || '';
     const filename = btn.getAttribute('data-attachment-name') || 'attachment';
+    if (qAttachmentId) { event.preventDefault(); downloadQuarantineAttachment(qAttachmentId, filename, btn); return; }
+    const attachmentId = btn.getAttribute('data-attachment-id') || '';
     if (!attachmentId) return;
     event.preventDefault();
     downloadLeadAttachment(attachmentId, filename, btn);
@@ -3271,8 +3293,109 @@ const makeBar = (label, count, color) => {
     }
   }
 
+
+  function isQuarantineFolder(){
+    return String(inboxFolderFilter?.value || '').toLowerCase() === 'quarantine';
+  }
+
+  function quarantineRiskClass(score){ return Number(score || 0) >= 75 ? 'high' : 'medium'; }
+
+  function setQuarantineUiMode(enabled){
+    if (inboxQuarantineActions) inboxQuarantineActions.style.display = enabled ? 'flex' : 'none';
+    const attachLabel = inboxAttachments?.closest?.('label');
+    if (attachLabel) attachLabel.style.display = enabled ? 'none' : '';
+    const idsToHide = [inboxTemplateSelect, inboxSaveTemplateBtn, inboxDraftSelect, inboxSaveDraftBtn, inboxSubject, inboxSender, inboxReply,
+      inboxAttachments, inboxZoomBtn, inboxAttachmentList, inboxOwnerSelect, inboxAssignOwnerBtn, inboxConvertAccessBtn, inboxArchiveBtn,
+      inboxTrashBtn, inboxRestoreBtn, inboxDeletePermanentBtn, inboxViewBtn, inboxContactedBtn, inboxSend];
+    idsToHide.forEach(el => { if (el) el.style.display = enabled ? 'none' : ''; });
+    if (inboxFromNote) inboxFromNote.style.display = enabled ? 'none' : '';
+    if (inboxComposeBtn) inboxComposeBtn.disabled = enabled;
+    if (inboxBulkToggleBtn) inboxBulkToggleBtn.disabled = enabled;
+    if (inboxOwnerFilter) inboxOwnerFilter.disabled = enabled;
+    if (inboxStatusFilter) inboxStatusFilter.disabled = enabled;
+  }
+
+  function renderQuarantineAttachments(row){
+    const atts = Array.isArray(row?.attachments) ? row.attachments : [];
+    if (!atts.length) return '';
+    return `<div class="lead-chat-attachments">${atts.map(a => {
+      const stored = String(a.storage_status || '').toLowerCase() === 'stored';
+      const size = leadAttachmentSize(a.size_bytes);
+      return `<button type="button" class="lead-attachment-download quarantine" data-quarantine-attachment-id="${esc(a.id || '')}" data-attachment-name="${esc(a.filename || 'attachment')}" ${stored ? '' : 'disabled'}>
+        <span>📎</span><span class="lead-attachment-name">${esc(a.filename || 'attachment')}</span>${size ? `<span class="lead-attachment-size">${esc(size)}</span>` : ''}
+      </button>`;
+    }).join('')}</div>`;
+  }
+
+  async function downloadQuarantineAttachment(id, filename, button){
+    if (!id) return;
+    const oldText = button?.innerHTML || '';
+    try {
+      if (button) { button.disabled = true; button.textContent = 'Downloading…'; }
+      const res = await fetch(`${API_BASE}/api/admin/email-quarantine-attachments/${encodeURIComponent(id)}`, { headers:authHeaders() });
+      if (!res.ok) { let m=`Download failed: ${res.status}`; try{const j=await res.json(); if(j?.error)m=j.error;}catch(_){} throw new Error(m); }
+      const blob = await res.blob(); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename||'attachment'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+    } catch(e) { alert(`Unable to download quarantine attachment: ${e.message || e}`); }
+    finally { if(button){ button.disabled=false; button.innerHTML=oldText; } }
+  }
+
+  function renderQuarantineInbox(){
+    if (!inboxThreads) return;
+    setQuarantineUiMode(true);
+    const q = String(inboxSearch?.value || '').trim().toLowerCase();
+    const rows = latestQuarantineRows.filter(r => !q || [r.sender_name,r.sender_email,r.recipient_email,r.subject,r.message,(r.risk_reasons||[]).join(' ')].join(' ').toLowerCase().includes(q));
+    if (!rows.length) {
+      inboxThreads.innerHTML = `<div class="lead-muted" style="padding:14px">No quarantined messages found.</div>`;
+      selectedQuarantineId='';
+      if (inboxQuarantineActions) inboxQuarantineActions.style.display='none';
+      if (inboxDetailHead) inboxDetailHead.innerHTML='<div><strong>Quarantine</strong><div class="lead-muted">No suspicious messages are awaiting review.</div></div>';
+      if (inboxMessages) inboxMessages.innerHTML='<div class="lead-muted">Quarantine is clear.</div>';
+      return;
+    }
+    if (!selectedQuarantineId || !rows.some(r => String(r.id)===String(selectedQuarantineId))) selectedQuarantineId=String(rows[0].id||'');
+    inboxThreads.innerHTML = rows.map(r => {
+      const active = String(r.id)===String(selectedQuarantineId) ? ' active' : '';
+      const score = Number(r.risk_score||0);
+      return `<button class="lead-thread${active}" type="button" data-quarantine-thread="${esc(r.id)}">
+        <div class="lead-thread-title"><span>${esc(r.sender_name || r.sender_email || 'Unknown sender')}</span><span class="lead-quarantine-badge lead-quarantine-risk ${quarantineRiskClass(score)}">Risk ${esc(score)}</span></div>
+        <div class="lead-thread-meta">${esc(r.sender_email)} → ${esc(r.recipient_email)}<br>${esc(r.subject || '(No subject)')} · ${esc(fmtDate(r.created_at))}</div>
+        <div class="lead-thread-preview">${esc(r.message || 'No readable message')}</div>
+      </button>`;
+    }).join('');
+    loadQuarantineMessage(selectedQuarantineId);
+  }
+
+  async function loadQuarantineMessage(id){
+    selectedQuarantineId=String(id||''); selectedConversationId=''; selectedLeadId=''; composeMode=false; bulkMode=false;
+    const row = latestQuarantineRows.find(r => String(r.id)===selectedQuarantineId);
+    if (!row) return;
+    setQuarantineUiMode(true);
+    const score=Number(row.risk_score||0); const reasons=Array.isArray(row.risk_reasons)?row.risk_reasons:[];
+    if(inboxDetailHead) inboxDetailHead.innerHTML=`<div><strong>${esc(row.sender_name || row.sender_email || 'Unknown sender')}</strong><div class="lead-muted">${esc(row.sender_email)} → ${esc(row.recipient_email)}</div><div style="margin-top:6px"><span class="lead-quarantine-badge lead-quarantine-risk ${quarantineRiskClass(score)}">Quarantined · Risk ${esc(score)}</span></div></div><div class="lead-muted" style="text-align:right">${esc(fmtDate(row.created_at))}<br>Master Admin review required</div>`;
+    if(inboxMessages) inboxMessages.innerHTML=`<div class="lead-chat-bubble received" style="max-width:100%"><div class="lead-chat-subject">${esc(row.subject || '(No subject)')}</div><div class="lead-chat-message">${esc(row.message || '')}</div>${renderQuarantineAttachments(row)}<div class="lead-muted" style="margin-top:8px">${esc(row.sender_email)} • ${esc(fmtDate(row.created_at))}</div>${reasons.length?`<div class="lead-quarantine-reasons"><strong>Why this was quarantined</strong>${reasons.map(x=>`<div class="lead-muted">• ${esc(x)}</div>`).join('')}</div>`:''}</div>`;
+    if(inboxMessages) inboxMessages.scrollTop=0;
+  }
+
+  async function quarantineAction(action){
+    const row=latestQuarantineRows.find(r=>String(r.id)===String(selectedQuarantineId)); if(!row) return;
+    const labels={release:'Release this message to the Lead Inbox?',mark_safe:'Mark this sender safe and release the message?',mark_spam:'Mark this message as spam?',block_sender:`Block ${row.sender_email} from the Lead Inbox? Future mail will be quarantined.`};
+    if(!confirm(labels[action]||'Continue?')) return;
+    const btn={release:inboxQuarantineReleaseBtn,mark_safe:inboxQuarantineSafeBtn,mark_spam:inboxQuarantineSpamBtn,block_sender:inboxQuarantineBlockBtn}[action];
+    const old=btn?.textContent||''; if(btn){btn.disabled=true;btn.textContent='Working…';}
+    try{
+      const res=await fetch(`${API_BASE}/api/admin/email-quarantine/${encodeURIComponent(row.id)}/action`,{method:'POST',headers:authHeaders(),body:JSON.stringify({action})});
+      const data=await res.json().catch(()=>({})); if(!res.ok||!data.ok) throw new Error(data.error||`Action failed: ${res.status}`);
+      selectedQuarantineId='';
+      if((action==='release'||action==='mark_safe') && data.conversation_id){
+        if(inboxFolderFilter) inboxFolderFilter.value='active'; setQuarantineUiMode(false); await loadLeadConversations(); await loadLeadInboxMessages(data.conversation_id);
+      } else await loadLeadConversations();
+    }catch(e){alert(`Unable to update quarantine: ${e.message||e}`);} finally{if(btn){btn.disabled=false;btn.textContent=old;}}
+  }
+
   function renderLeadInbox(){
     if (!inboxThreads) return;
+    if (isQuarantineFolder()) { renderQuarantineInbox(); return; }
+    setQuarantineUiMode(false);
     const rows = inboxFilteredRows();
     if (!rows.length) {
       inboxThreads.innerHTML = `<div class="lead-muted" style="padding:14px">No lead threads found for this filter.</div>`;
@@ -3312,6 +3435,8 @@ const makeBar = (label, count, color) => {
   function clearLeadInboxSelection(){
     selectedLeadId = '';
     selectedConversationId = '';
+    selectedQuarantineId = '';
+    if (!isQuarantineFolder()) setQuarantineUiMode(false);
     composeMode = false;
     loadedDraftId = '';
     if (bulkMode) exitBulkMode();
@@ -3805,6 +3930,16 @@ const makeBar = (label, count, color) => {
     if (!inboxThreads) return;
     try {
       const folder = inboxFolderFilter ? String(inboxFolderFilter.value || 'active') : 'active';
+      if (folder === 'quarantine') {
+        const res = await fetch(`${API_BASE}/api/admin/email-quarantine?status=quarantined&limit=500`, { headers:authHeaders() });
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok||!data.ok) throw new Error(data.error || `Quarantine request failed: ${res.status}`);
+        latestQuarantineRows = Array.isArray(data.data) ? data.data : [];
+        latestInboxRows = []; selectedConversationId=''; selectedLeadId='';
+        renderQuarantineInbox();
+        return;
+      }
+      setQuarantineUiMode(false); latestQuarantineRows=[]; selectedQuarantineId='';
       const owner = inboxOwnerFilter ? String(inboxOwnerFilter.value || 'all') : 'all';
       const res = await fetch(`${API_BASE}/api/admin/lead-conversations?status=all&folder=${encodeURIComponent(folder)}&owner=${encodeURIComponent(owner)}&limit=500`, { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
@@ -4864,7 +4999,7 @@ const makeBar = (label, count, color) => {
   if (refresh) refresh.addEventListener('click', loadLeads);
   if (inboxSearch) inboxSearch.addEventListener('input', renderLeadInbox);
   if (inboxStatusFilter) inboxStatusFilter.addEventListener('change', renderLeadInbox);
-  if (inboxFolderFilter) inboxFolderFilter.addEventListener('change', async () => { selectedConversationId=''; selectedLeadId=''; await loadLeadConversations(); });
+  if (inboxFolderFilter) inboxFolderFilter.addEventListener('change', async () => { selectedConversationId=''; selectedLeadId=''; selectedQuarantineId=''; await loadLeadConversations(); });
   if (inboxOwnerFilter) inboxOwnerFilter.addEventListener('change', async () => { selectedConversationId=''; selectedLeadId=''; await loadLeadConversations(); });
   if (inboxRefresh) inboxRefresh.addEventListener('click', async () => { await loadLeads(); await loadLeadConversations(); });
   if (inboxArchiveBtn) inboxArchiveBtn.addEventListener('click', () => changeConversationLifecycle('archive'));
@@ -4873,7 +5008,13 @@ const makeBar = (label, count, color) => {
   if (inboxDeletePermanentBtn) inboxDeletePermanentBtn.addEventListener('click', deleteConversationPermanently);
   if (inboxAssignOwnerBtn) inboxAssignOwnerBtn.addEventListener('click', assignSelectedConversationOwner);
   if (inboxConvertAccessBtn) inboxConvertAccessBtn.addEventListener('click', convertSelectedConversationToAccess);
+  if (inboxQuarantineReleaseBtn) inboxQuarantineReleaseBtn.addEventListener('click', () => quarantineAction('release'));
+  if (inboxQuarantineSafeBtn) inboxQuarantineSafeBtn.addEventListener('click', () => quarantineAction('mark_safe'));
+  if (inboxQuarantineSpamBtn) inboxQuarantineSpamBtn.addEventListener('click', () => quarantineAction('mark_spam'));
+  if (inboxQuarantineBlockBtn) inboxQuarantineBlockBtn.addEventListener('click', () => quarantineAction('block_sender'));
   if (inboxThreads) inboxThreads.addEventListener('click', (e) => {
+    const qbtn = e.target.closest('[data-quarantine-thread]');
+    if (qbtn) { loadQuarantineMessage(qbtn.getAttribute('data-quarantine-thread')); renderQuarantineInbox(); return; }
     const checkbox = e.target.closest('[data-lead-bulk-check]');
     if (checkbox && bulkMode) {
       const id = checkbox.getAttribute('data-lead-bulk-check');
