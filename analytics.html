@@ -220,6 +220,12 @@
     .lead-chat-bubble{max-width:82%;border:1px solid var(--g600);border-radius:12px;padding:10px 12px;background:#15171b;box-sizing:border-box}
     .lead-chat-bubble.sent{margin-left:auto;border-color:rgba(96,165,250,.35);background:rgba(59,130,246,.08)}
     .lead-chat-bubble.received{margin-right:auto;background:rgba(255,255,255,.035)}
+    .lead-delivery-row{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-top:7px}
+    .lead-delivery-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;border:1px solid var(--g500);font-size:11px;font-weight:800;line-height:1.2;background:rgba(255,255,255,.035);color:#cbd5e1}
+    .lead-delivery-badge.sent{border-color:#60a5fa;color:#bfdbfe;background:rgba(59,130,246,.10)}
+    .lead-delivery-badge.delivered{border-color:#33c48d;color:#bbf7d0;background:rgba(51,196,141,.10)}
+    .lead-delivery-badge.delayed{border-color:#f0b429;color:#fde68a;background:rgba(240,180,41,.10)}
+    .lead-delivery-badge.bounced,.lead-delivery-badge.failed,.lead-delivery-badge.suppressed{border-color:#ff5a5f;color:#fecaca;background:rgba(255,90,95,.10)}
     .lead-chat-subject{font-weight:800;margin-bottom:5px;color:#e5e7eb;font-size:13px}
     .lead-chat-message{white-space:pre-wrap;line-height:1.45;color:#e9edf2}
     .lead-chat-attachments{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
@@ -2869,6 +2875,24 @@ const makeBar = (label, count, color) => {
     }).join('')}</div>`;
   }
 
+  function renderLeadDeliveryStatus(msg){
+    if (String(msg?.direction || '').toLowerCase() !== 'sent') return '';
+    const status = String(msg?.delivery_status || 'sent').trim().toLowerCase();
+    const cfg = {
+      sent:       { label:'Sent',       icon:'✓' },
+      delivered:  { label:'Delivered',  icon:'✓✓' },
+      delayed:    { label:'Delayed',    icon:'⏳' },
+      bounced:    { label:'Bounced',    icon:'↩' },
+      failed:     { label:'Failed',     icon:'!' },
+      suppressed: { label:'Suppressed', icon:'!' }
+    }[status] || { label: status ? status.replace(/_/g,' ') : 'Sent', icon:'✓' };
+
+    const detail = String(msg?.delivery_detail || '').trim();
+    const eventAt = msg?.delivery_event_at ? fmtDate(msg.delivery_event_at) : '';
+    const title = [cfg.label, eventAt, detail].filter(Boolean).join(' · ');
+    return `<div class="lead-delivery-row"><span class="lead-delivery-badge ${esc(status || 'sent')}" title="${esc(title)}">${esc(cfg.icon)} ${esc(cfg.label)}</span></div>`;
+  }
+
   async function downloadLeadAttachment(attachmentId, filename, button){
     if (!attachmentId) return;
     const oldText = button?.innerHTML || '';
@@ -3473,6 +3497,7 @@ const makeBar = (label, count, color) => {
           <div class="lead-chat-message">${esc(msg.message || '')}</div>
           ${renderLeadMessageAttachments(msg)}
           <div class="lead-muted" style="margin-top:8px">${esc(sent ? (msg.from_email || 'CityIntel') : fullName(row))} • ${esc(fmtDate(msg.created_at))}</div>
+          ${renderLeadDeliveryStatus(msg)}
         </div>`;
       }).join('') : `<div class="lead-muted">No messages recorded for this thread yet.</div>`;
       inboxMessages.scrollTop = inboxMessages.scrollHeight;
@@ -7973,7 +7998,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
       rows('ci14cServiceRows',(j.services||[]).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${statusBadge(x.status)}</td><td>${esc(x.detail||'')}</td><td>${fmtDate(x.checked_at)}</td></tr>`).join(''),4);
 
-      const purposes={d1:'D1 database access',resend:'Transactional email via Resend',stripe_secret:'Stripe billing API',stripe_webhook:'Stripe webhook verification',openai:'OpenAI intelligence calls',anthropic:'Anthropic intelligence calls'};
+      const purposes={d1:'D1 database access',resend:'Transactional email via Resend',resend_webhook:'Resend delivery/bounce webhook verification',stripe_secret:'Stripe billing API',stripe_webhook:'Stripe webhook verification',openai:'OpenAI intelligence calls',anthropic:'Anthropic intelligence calls'};
       rows('ci14cBindingRows',Object.entries(j.bindings||{}).map(([k,v])=>`<tr><td><b>${esc(k)}</b></td><td>${statusBadge(v?'ok':'warning')}</td><td>${esc(purposes[k]||'Environment binding')}</td></tr>`).join(''),3);
 
       const usage=[
