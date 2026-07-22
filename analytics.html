@@ -1625,6 +1625,7 @@
       </select>
       <button id="leadInboxComposeBtn" class="btn" type="button">✉️ Compose new email</button>
       <button id="leadInboxBulkToggleBtn" class="btn" type="button">📢 Bulk send</button>
+      <button id="leadInboxSenderSafetyBtn" class="btn" type="button">🛡 Sender safety</button>
       <button id="leadInboxRefreshBtn" class="btn" type="button">Refresh</button>
     </div>
   </div>
@@ -1710,6 +1711,185 @@
     </div>
   </div>
 </section>
+
+
+<section class="card" id="emailSenderSafetyCard" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap">
+    <div>
+      <h3 style="margin:0">Sender Safety Management</h3>
+      <div class="legend">Review and manage Safe, Spam, Blocked and Watch senders used by Communications Phase B7.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button id="senderSafetyToggleBtn" class="btn" type="button">Open</button>
+    </div>
+  </div>
+
+  <div id="senderSafetyPanel" style="display:none;margin-top:14px">
+    <div class="commercial-grid" style="margin-bottom:12px">
+      <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Total</div><div id="senderSafetyTotal" class="money">0</div></div>
+      <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Safe</div><div id="senderSafetySafe" class="money" style="color:#33c48d">0</div></div>
+      <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Spam</div><div id="senderSafetySpam" class="money" style="color:#f0b429">0</div></div>
+      <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Blocked</div><div id="senderSafetyBlocked" class="money" style="color:#ff5a5f">0</div></div>
+      <div class="commercial-kpi" style="grid-column:span 2"><div class="label">Watch</div><div id="senderSafetyWatch" class="money" style="color:#93c5fd">0</div></div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <input id="senderSafetySearch" class="btn" style="background:#16171a;color:var(--text);min-width:240px" placeholder="Search sender email or reason..." />
+      <select id="senderSafetyFilter" class="btn" style="background:#16171a;color:var(--text)">
+        <option value="all">All sender states</option>
+        <option value="safe">Safe</option>
+        <option value="spam">Spam</option>
+        <option value="blocked">Blocked</option>
+        <option value="watch">Watch</option>
+      </select>
+      <button id="senderSafetyRefreshBtn" class="btn" type="button">Refresh</button>
+    </div>
+
+    <div class="lead-table-wrap">
+      <table class="lead-table" style="min-width:1000px">
+        <thead>
+          <tr>
+            <th>Sender</th>
+            <th>Status</th>
+            <th>Spam marks</th>
+            <th>Quarantines</th>
+            <th>Reason</th>
+            <th>Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="senderSafetyRows">
+          <tr><td colspan="7" class="lead-muted">Open Sender Safety Management to load sender rules.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="senderSafetyStatus" class="lead-muted" style="margin-top:10px"></div>
+  </div>
+</section>
+
+
+<script>
+(function(){
+  const API=(window.CI_API_BASE||window.API_BASE||'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const fmtDate=v=>{try{return v?new Date(v).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'—';}catch(_){return v||'—';}};
+  const authHeaders=()=>{
+    try{
+      const base=(window.CIAuth&&CIAuth.headers)?CIAuth.headers():{'Accept':'application/json','Content-Type':'application/json'};
+      return {...base,'Accept':'application/json','Content-Type':'application/json'};
+    }catch(_){return {'Accept':'application/json','Content-Type':'application/json'};}
+  };
+
+  let senderSafetyLoaded=false;
+  let senderSafetyRows=[];
+
+  const el=id=>document.getElementById(id);
+  function statusBadge(status){
+    const s=String(status||'neutral').toLowerCase();
+    const map={
+      safe:['#33c48d','#bbf7d0','Safe'],
+      spam:['#f0b429','#fde68a','Spam'],
+      blocked:['#ff5a5f','#fecaca','Blocked'],
+      watch:['#60a5fa','#bfdbfe','Watch'],
+      neutral:['#64748b','#cbd5e1','Neutral']
+    };
+    const [border,color,label]=map[s]||map.neutral;
+    return `<span class="lead-status" style="border-color:${border};color:${color}">${label}</span>`;
+  }
+  function actionButtons(row){
+    const email=esc(row.sender_email||'');
+    const s=String(row.safety_status||'neutral');
+    const buttons=[];
+    if(s!=='safe') buttons.push(`<button class="lead-action-btn approve" data-safety-action="mark_safe" data-safety-email="${email}">Mark safe</button>`);
+    if(s!=='blocked') buttons.push(`<button class="lead-action-btn contact" data-safety-action="mark_spam" data-safety-email="${email}">Mark spam</button>`);
+    if(s!=='blocked') buttons.push(`<button class="lead-action-btn reject" data-safety-action="block" data-safety-email="${email}">Block</button>`);
+    if(s==='blocked') buttons.push(`<button class="lead-action-btn approve" data-safety-action="unblock" data-safety-email="${email}">Unblock</button>`);
+    buttons.push(`<button class="lead-action-btn reply" data-safety-action="reset" data-safety-email="${email}">Reset reputation</button>`);
+    return `<div class="lead-actions">${buttons.join('')}</div>`;
+  }
+  function render(){
+    const body=el('senderSafetyRows'); if(!body) return;
+    const filter=String(el('senderSafetyFilter')?.value||'all');
+    const q=String(el('senderSafetySearch')?.value||'').trim().toLowerCase();
+    const rows=senderSafetyRows.filter(r=>{
+      if(filter!=='all' && String(r.safety_status)!==filter) return false;
+      if(q && ![r.sender_email,r.reason,r.updated_by,r.safety_status].join(' ').toLowerCase().includes(q)) return false;
+      return true;
+    });
+    body.innerHTML=rows.length?rows.map(r=>`<tr>
+      <td><b>${esc(r.sender_email||'—')}</b><div class="lead-muted">${esc(r.updated_by?`Last changed by ${r.updated_by}`:'')}</div></td>
+      <td>${statusBadge(r.safety_status)}</td>
+      <td>${Number(r.spam_count||0)}</td>
+      <td>${Number(r.quarantine_count||0)}</td>
+      <td><div class="lead-message" title="${esc(r.reason||'')}">${esc(r.reason||'—')}</div></td>
+      <td>${esc(fmtDate(r.updated_at))}</td>
+      <td>${actionButtons(r)}</td>
+    </tr>`).join(''):`<tr><td colspan="7" class="lead-muted">No sender rules match this view.</td></tr>`;
+  }
+  async function load(){
+    const status=el('senderSafetyStatus');
+    if(status) status.textContent='Loading sender safety rules…';
+    try{
+      const res=await fetch(`${API}/api/admin/email-sender-rules?status=all&limit=1000`,{headers:authHeaders()});
+      const j=await res.json().catch(()=>({}));
+      if(!res.ok||!j.ok) throw new Error(j.error||`Sender safety request failed: ${res.status}`);
+      senderSafetyRows=Array.isArray(j.data)?j.data:[];
+      const s=j.summary||{};
+      if(el('senderSafetyTotal')) el('senderSafetyTotal').textContent=Number(s.total||0);
+      if(el('senderSafetySafe')) el('senderSafetySafe').textContent=Number(s.safe||0);
+      if(el('senderSafetySpam')) el('senderSafetySpam').textContent=Number(s.spam||0);
+      if(el('senderSafetyBlocked')) el('senderSafetyBlocked').textContent=Number(s.blocked||0);
+      if(el('senderSafetyWatch')) el('senderSafetyWatch').textContent=Number(s.watch||0);
+      if(status) status.textContent=`Loaded ${senderSafetyRows.length} sender rule${senderSafetyRows.length===1?'':'s'}.`;
+      senderSafetyLoaded=true;
+      render();
+    }catch(e){
+      if(status) status.textContent=`Unable to load sender safety rules: ${e.message||e}`;
+    }
+  }
+  async function act(email,action){
+    const labels={mark_safe:'mark this sender safe',mark_spam:'mark this sender as spam',block:'block this sender',unblock:'unblock this sender',reset:'reset all stored sender reputation'};
+    if(!confirm(`Are you sure you want to ${labels[action]||action}?\\n\\n${email}`)) return;
+    const status=el('senderSafetyStatus'); if(status) status.textContent=`Applying ${action.replace(/_/g,' ')} to ${email}…`;
+    try{
+      const res=await fetch(`${API}/api/admin/email-sender-rules/${encodeURIComponent(email)}/action`,{
+        method:'POST',headers:authHeaders(),body:JSON.stringify({action})
+      });
+      const j=await res.json().catch(()=>({}));
+      if(!res.ok||!j.ok) throw new Error(j.error||`Sender safety action failed: ${res.status}`);
+      await load();
+    }catch(e){
+      if(status) status.textContent=`Unable to update sender: ${e.message||e}`;
+      alert(`Unable to update sender: ${e.message||e}`);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const panel=el('senderSafetyPanel');
+    const toggle=el('senderSafetyToggleBtn');
+    const quick=el('leadInboxSenderSafetyBtn');
+    if(toggle) toggle.addEventListener('click',async()=>{
+      const opening=panel?.style.display==='none'||!panel?.style.display;
+      if(panel) panel.style.display=opening?'block':'none';
+      toggle.textContent=opening?'Close':'Open';
+      if(opening&&!senderSafetyLoaded) await load();
+    });
+    if(quick) quick.addEventListener('click',async()=>{
+      if(panel) panel.style.display='block';
+      if(toggle) toggle.textContent='Close';
+      el('emailSenderSafetyCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+      if(!senderSafetyLoaded) await load();
+    });
+    el('senderSafetyRefreshBtn')?.addEventListener('click',load);
+    el('senderSafetyFilter')?.addEventListener('change',render);
+    el('senderSafetySearch')?.addEventListener('input',render);
+    el('senderSafetyRows')?.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-safety-action]'); if(!btn) return;
+      act(btn.getAttribute('data-safety-email')||'',btn.getAttribute('data-safety-action')||'');
+    });
+  });
+})();
+</script>
 
 
 
