@@ -34,7 +34,7 @@
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Reports</title>
+<title>CityIntel — Reports v23</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -61,6 +61,119 @@
 	
   <script src="metrics.js"></script>
   <script src="alerts-data.js"></script>
+  <script>
+  // Reports v23 — consolidate static alerts-data.js with the same approved/dynamic
+  // Protest Feed used by Alerts and Protest Hub.
+  window.CIReportsProtestsReady = (async function loadReportsProtestDataset(){
+    const API_BASE = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+    const staticRows = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const staticCount = staticRows.length;
+
+    function authH(){
+      return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
+    }
+    function normRisk(r){
+      const s = String(r || '').toLowerCase();
+      if (s.startsWith('hi')) return 'High';
+      if (s.startsWith('me') || s === 'med') return 'Medium';
+      return 'Low';
+    }
+    function normalKey(v){
+      return String(v || '').trim().toLowerCase().replace(/\s+/g,' ');
+    }
+    function timeOf(a){
+      return a?.time || a?.datetime || a?.date || a?.when || a?.event_at || '';
+    }
+    function titleTimeKey(a){
+      return `${normalKey(a?.title)}|${String(timeOf(a) || '')}`;
+    }
+    function feedPostToAlert(p){
+      return {
+        id: p.id,
+        title: p.title || 'Untitled',
+        summary: p.body || p.summary || '',
+        risk: normRisk(p.risk),
+        time: p.event_at || p.time || p.date || '',
+        city: p.city || p.location_label || '',
+        country: p.country || '',
+        continent: p.continent || '',
+        lat: p.lat ?? null,
+        lng: p.lon ?? p.lng ?? null,
+        address: p.location_label || p.address || p.city || '',
+        postcode: p.postcode || p.postal_code || '',
+        source: p.source_url || p.source || null,
+        approx_attending: p.approx_attending ?? p.attendance ?? p.estimated_attendance ?? p.expected_attendance ?? null,
+        impact_radius_km: p.impact_radius_km ?? p.protest_radius_km ?? p.radius_km ?? null,
+        verified: p.verified ?? p.approved ?? true,
+        _fromApprovedIntel: true,
+        _feedId: p.id
+      };
+    }
+    function updateStatus(stats){
+      window.CIReportsProtestSourceStats = stats;
+      const render = () => {
+        const el = document.getElementById('protestDataSourceStatus');
+        if (!el) return;
+        const tone = stats.error ? 'warn' : 'ok';
+        el.className = 'ci-report-source-status ' + tone;
+        el.innerHTML = stats.error
+          ? `<strong>Protest report dataset:</strong> static baseline ${stats.staticCount.toLocaleString()} records. Dynamic Protest Feed could not be loaded for this session.`
+          : `<strong>Protest report dataset:</strong> ${stats.staticCount.toLocaleString()} static baseline + ${stats.dynamicCount.toLocaleString()} dynamic/approved feed records · ${stats.addedCount.toLocaleString()} newly merged · <strong>${stats.totalCount.toLocaleString()} consolidated records</strong>.`;
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render, {once:true});
+      else render();
+    }
+
+    try {
+      const res = await fetch(API_BASE + '/api/protests', { headers: authH(), cache:'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
+      const posts = Array.isArray(data.posts) ? data.posts : (Array.isArray(data.data) ? data.data : []);
+      if (window.CIAccess) {
+        try { CIAccess.handleApiTier(data, 'Report protest data filtered to your region'); } catch(_) {}
+      }
+      const mapped = posts.map(feedPostToAlert).filter(x => x.title && x.time);
+
+      const existingIds = new Set(staticRows.map(a => a?.id).filter(v => v !== undefined && v !== null && String(v) !== '').map(v => String(v)));
+      const existingTitleTimes = new Set(staticRows.map(titleTimeKey));
+      const fresh = mapped.filter(m => {
+        const idMatch = m.id !== undefined && m.id !== null && existingIds.has(String(m.id));
+        const titleTimeMatch = existingTitleTimes.has(titleTimeKey(m));
+        if (idMatch || titleTimeMatch) return false;
+        existingIds.add(String(m.id ?? ''));
+        existingTitleTimes.add(titleTimeKey(m));
+        return true;
+      });
+
+      if (fresh.length) {
+        window.alertsData = [...staticRows, ...fresh];
+        try {
+          window.dispatchEvent(new CustomEvent('ci:reports-protest-data-updated', {
+            detail: { added:fresh.length, dynamic:posts.length, total:window.alertsData.length }
+          }));
+        } catch(_) {}
+      }
+
+      updateStatus({
+        staticCount,
+        dynamicCount: posts.length,
+        addedCount: fresh.length,
+        totalCount: Array.isArray(window.alertsData) ? window.alertsData.length : staticCount
+      });
+      return fresh;
+    } catch(err) {
+      console.warn('CityIntel Reports: /api/protests unavailable; using static protest baseline only', err);
+      updateStatus({
+        staticCount,
+        dynamicCount: 0,
+        addedCount: 0,
+        totalCount: staticCount,
+        error: String(err?.message || err || 'Dynamic Protest Feed unavailable')
+      });
+      return [];
+    }
+  })();
+  </script>
 
   <style>
     :root{
@@ -264,8 +377,335 @@
       .quick-stats{flex-direction:column}
     }
   </style>
+
+<style id="ci-reports-v23-visual-css">
+/* ===== Reports v23 — Visual refinement ===== */
+body{
+  background:
+    radial-gradient(circle at 76% -12%,rgba(208,22,22,.055),transparent 30%),
+    linear-gradient(180deg,#0a0d11,#090b0e 58%,#0b0e12);
+}
+.main{gap:15px}
+.page-head h1{
+  font-size:30px;
+  letter-spacing:-.025em;
+}
+.page-head p{
+  max-width:900px;
+  line-height:1.55;
+}
+.card{
+  background:
+    radial-gradient(circle at 94% 2%,rgba(208,22,22,.045),transparent 28%),
+    linear-gradient(180deg,#11151a,#0b0e12);
+  border-color:rgba(255,255,255,.085);
+  box-shadow:0 12px 30px rgba(0,0,0,.24);
+}
+.card h2{font-size:18px;letter-spacing:-.01em}
+
+/* Report summary metrics */
+.quick-stats{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(105px,1fr));
+  gap:8px;
+  min-width:min(560px,100%);
+}
+.stat-pill{
+  position:relative;
+  overflow:hidden;
+  border-radius:12px;
+  padding:10px 11px 9px;
+  background:linear-gradient(180deg,#101419,#090c10);
+  border:1px solid rgba(255,255,255,.075);
+  color:#7f8a99;
+  line-height:1.25;
+}
+.stat-pill::before{
+  content:"";position:absolute;left:0;top:0;right:0;height:2px;background:#7f8a99;
+}
+.stat-pill:nth-child(1)::before{background:#63b3ed}
+.stat-pill:nth-child(2)::before{background:#b26cff}
+.stat-pill:nth-child(3)::before{background:#33c48d}
+.stat-pill:nth-child(4)::before{background:#f0b429}
+.stat-pill:nth-child(5)::before{background:#ff5a5f}
+.stat-pill strong{
+  display:block;
+  margin-bottom:3px;
+  font-size:19px;
+  line-height:1;
+}
+
+/* Shared small intelligence kicker */
+.ci-report-kicker{
+  color:#7790ad;
+  font-size:9.5px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  margin-bottom:3px;
+}
+
+/* Filters */
+.ci-report-filters-card{
+  background:linear-gradient(180deg,#101419,#0a0d11);
+}
+.ci-report-filters-card .filters{
+  margin-top:8px;
+}
+.ci-report-filters-card .select,
+.ci-report-filters-card .input{
+  background:#090c10;
+  border-color:rgba(255,255,255,.075);
+}
+.ci-report-filters-card .select:focus,
+.ci-report-filters-card .input:focus{
+  outline:none;
+  border-color:rgba(99,179,237,.42);
+  box-shadow:0 0 0 2px rgba(99,179,237,.055);
+}
+
+/* Intelligence Framework */
+#intelReportFrameworkCard{
+  position:relative;
+  overflow:hidden;
+  border-color:rgba(51,196,141,.18);
+  background:
+    radial-gradient(circle at 96% 0%,rgba(51,196,141,.075),transparent 30%),
+    linear-gradient(180deg,#11161a,#0a0d11);
+}
+#intelReportFrameworkCard::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:#33c48d;
+}
+#intelReportFrameworkCard .framework-note{
+  background:#090e13;
+  border-color:rgba(99,179,237,.24);
+}
+#intelReportFrameworkCard .select{
+  background:#090c10;
+  border-color:rgba(255,255,255,.075);
+}
+.source-lock{
+  box-shadow:0 0 16px rgba(51,196,141,.08);
+}
+.ci-report-source-status{
+  margin:0 0 13px;
+  padding:10px 12px;
+  border-radius:11px;
+  font-size:11.5px;
+  line-height:1.45;
+  background:#090c10;
+  border:1px solid rgba(255,255,255,.07);
+  color:#9ba7b5;
+}
+.ci-report-source-status.ok{
+  border-color:rgba(51,196,141,.24);
+  color:#b8e7d2;
+}
+.ci-report-source-status.warn{
+  border-color:rgba(240,180,41,.28);
+  color:#ead694;
+}
+
+/* Source Verification */
+#sourceReviewCard{
+  border-color:rgba(240,180,41,.16);
+  background:
+    radial-gradient(circle at 94% 0%,rgba(240,180,41,.06),transparent 28%),
+    linear-gradient(180deg,#11151a,#0a0d11);
+}
+#sourceReviewCard .framework-note{
+  background:#090c10;
+  border-color:rgba(255,255,255,.07);
+}
+
+/* Report library */
+#reportLibraryCard{
+  background:
+    radial-gradient(circle at 96% 0%,rgba(99,179,237,.055),transparent 30%),
+    linear-gradient(180deg,#11151a,#0a0d11);
+}
+#reportLibraryCard .library-tabs{
+  margin-top:14px;
+}
+#reportLibraryCard .tab-btn{
+  background:#090c10;
+  border-color:rgba(255,255,255,.075);
+  font-weight:800;
+}
+#reportLibraryCard table{
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:13px;
+  background:#090c10;
+}
+#reportLibraryCard thead th{
+  background:#080b0f;
+  color:#758190;
+  border-color:rgba(255,255,255,.065);
+  text-transform:uppercase;
+  letter-spacing:.045em;
+  font-size:10px;
+}
+#reportLibraryCard tbody td{
+  border-color:rgba(255,255,255,.06);
+  padding-top:13px;
+  padding-bottom:13px;
+}
+#reportLibraryCard tbody tr:hover td{
+  background:rgba(99,179,237,.025);
+}
+#reportLibraryCard .report-title{
+  font-size:13px;
+  color:#f3f6fa;
+}
+
+/* Builder cards */
+.builder{
+  gap:12px;
+}
+.builder .card{
+  position:relative;
+  overflow:hidden;
+  min-height:155px;
+  background:
+    radial-gradient(circle at 93% 4%,rgba(208,22,22,.055),transparent 32%),
+    linear-gradient(180deg,#101419,#090c10);
+  border-color:rgba(255,255,255,.075);
+  transition:transform .16s ease,border-color .16s ease;
+}
+.builder .card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:#D01616;
+}
+.builder .card:nth-child(2)::before{background:#ff5a5f}
+.builder .card:nth-child(3)::before{background:#63b3ed}
+.builder .card:nth-child(4)::before{background:#b26cff}
+.builder .card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(208,22,22,.35);
+}
+.builder .card h3{
+  font-size:17px;
+  letter-spacing:-.01em;
+}
+
+/* Draft builder */
+.draft-shell.active{
+  background:
+    radial-gradient(circle at 95% 0%,rgba(178,108,255,.05),transparent 30%),
+    linear-gradient(180deg,#11151a,#0a0d11);
+}
+.draft-shell .section,
+.draft-shell .mini-card,
+.draft-shell .delta-card,
+.draft-shell .event-card{
+  background:#090c10;
+  border-color:rgba(255,255,255,.07);
+}
+
+/* General controls */
+.btn{
+  background:#0c1014;
+  border-color:rgba(255,255,255,.09);
+}
+.btn:hover{
+  background:#12171d;
+  border-color:rgba(208,22,22,.42);
+}
+.btn.primary{
+  box-shadow:0 6px 16px rgba(208,22,22,.14);
+}
+.select,.input,.textarea{
+  background:#090c10;
+  border-color:rgba(255,255,255,.075);
+}
+
+/* Branded initial loading state */
+.ci-reports-loading-overlay{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 50% 34%,rgba(208,22,22,.10),transparent 32%),
+    rgba(5,7,10,.97);
+  opacity:1;
+  visibility:visible;
+  transition:opacity .28s ease,visibility .28s ease;
+}
+.ci-reports-loading-overlay.hidden{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.ci-reports-loading-panel{
+  width:min(510px,calc(100vw - 34px));
+  padding:25px 26px 23px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(circle at 86% 8%,rgba(208,22,22,.11),transparent 30%),
+    linear-gradient(180deg,#12161c,#090c10);
+  box-shadow:0 28px 70px rgba(0,0,0,.55);
+  text-align:center;
+}
+.ci-reports-loading-brand{
+  display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;
+}
+.ci-reports-loading-brand img{
+  width:44px;height:44px;object-fit:contain;border-radius:8px;background:#fff;
+}
+.ci-reports-loading-brand span{font-size:18px;font-weight:950}
+.ci-reports-loading-spinner{
+  width:48px;height:48px;margin:0 auto 16px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.08);
+  border-top-color:#D01616;
+  border-right-color:#33c48d;
+  animation:ciReportsSpin .8s linear infinite;
+}
+@keyframes ciReportsSpin{to{transform:rotate(360deg)}}
+.ci-reports-loading-title{font-size:18px;font-weight:950;color:#f4f7fb}
+.ci-reports-loading-status{margin-top:7px;color:#929dab;font-size:12px;line-height:1.5}
+.ci-reports-loading-tags{
+  display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:16px;
+}
+.ci-reports-loading-tags span{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 7px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.025);
+  color:#7f8b9a;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;
+}
+.ci-reports-loading-tags i{width:6px;height:6px;border-radius:50%;display:inline-block}
+
+@media(max-width:1100px){
+  .quick-stats{grid-template-columns:repeat(3,minmax(110px,1fr));min-width:0;width:100%}
+}
+@media(max-width:640px){
+  .quick-stats{grid-template-columns:1fr 1fr}
+}
+</style>
+
 </head>
 <body>
+  <div class="ci-reports-loading-overlay" id="ciReportsLoadingOverlay" aria-live="polite" aria-busy="true">
+    <div class="ci-reports-loading-panel">
+      <div class="ci-reports-loading-brand">
+        <img src="CityintLogo.jpg" alt="">
+        <span>CityIntel</span>
+      </div>
+      <div class="ci-reports-loading-spinner" aria-hidden="true"></div>
+      <div class="ci-reports-loading-title">Loading Reports Hub</div>
+      <div class="ci-reports-loading-status" id="ciReportsLoadingStatus">Gathering report library, verified intelligence and protest datasets…</div>
+      <div class="ci-reports-loading-tags" aria-hidden="true">
+        <span><i style="background:#63b3ed"></i>Library</span>
+        <span><i style="background:#33c48d"></i>Verified Data</span>
+        <span><i style="background:#ff5a5f"></i>Protest Feed</span>
+        <span><i style="background:#f0b429"></i>Evidence</span>
+        <span><i style="background:#b26cff"></i>Drafts</span>
+      </div>
+    </div>
+  </div>
   <div class="brandbar">
     <img src="CityintLogo.jpg" alt="CityIntel Logo">
     <div class="title" style="font-weight:700;font-size:18px">CityIntel</div>
@@ -303,8 +743,8 @@
         <button class="btn ghost" id="templatesBtn">Templates</button>
       </div>
 
-      <section class="card">
-        <h2>Filters</h2>
+      <section class="card ci-report-filters-card">
+        <div class="ci-report-kicker">Library controls</div><h2>Filters</h2>
         <div class="filters">
           <select class="select" id="typeFilter">
             <option value="all">All Types</option>
@@ -353,6 +793,7 @@
           </div>
           <span class="source-lock">Verified CityIntel baseline protected</span>
         </div>
+        <div id="protestDataSourceStatus" class="ci-report-source-status">Loading consolidated Protest Intelligence data sources…</div>
         <div class="framework-grid">
           <div class="field wide">
             <label for="intelSubjectSelect">Intelligence subject</label>
@@ -459,7 +900,7 @@
         <div class="draft-header">
           <div>
             <h2 id="draftTitle">Draft Builder</h2>
-            <div class="subtle" id="draftSubtitle">Auto-generated from alerts-data.js. Edit logic and export can be layered on later.</div>
+            <div class="subtle" id="draftSubtitle">Auto-generated from the consolidated CityIntel protest dataset. Static baseline and approved Protest Feed records are merged before report generation.</div>
           </div>
           <div class="draft-badges" id="draftBadges"></div>
         </div>
@@ -1689,6 +2130,9 @@
         <div class="cards">${eventsHtml}</div>
       </section></div>
 </div>
+
+
+
 </body>
 </html>`;
     }
@@ -1983,7 +2427,7 @@
         prev = previousDatasetWindowMeta(state);
         sourceLabel = prev ? 'Dataset fallback' : sourceLabel;
       }
-      if (!prev) return { html:`<div class="delta-subtle">No prior comparable ${sourceLabel} report found yet, and no usable prior dataset window was found in alerts-data.js for this scope.</div>`, previousId:'', previousTitle:'', compareScope:scope };
+      if (!prev) return { html:`<div class="delta-subtle">No prior comparable ${sourceLabel} report found yet, and no usable prior dataset window was found in the consolidated CityIntel protest dataset for this scope.</div>`, previousId:'', previousTitle:'', compareScope:scope };
       const cur = state.compareMeta || {};
       const pm = prev.compareMeta || {};
       const prevEvents = Number(pm.eventsCount ?? (prev.metrics && prev.metrics.events) ?? 0);
@@ -2043,7 +2487,7 @@
       if (type === 'preview'){
         baseEvents = alerts.filter(a => a.monthKey === focusMonthKey && a.when >= new Date());
         title = `Draft Builder — Protest Intelligence Preview: ${monthNameFromKey(focusMonthKey)}`;
-        subtitle = 'Upcoming events auto-grouped from alerts-data.js. This date-driven preview always targets the next calendar month and rolls forward automatically on the 1st.';
+        subtitle = 'Upcoming events auto-grouped from the consolidated CityIntel protest dataset, combining the static baseline with approved/dynamic Protest Feed records. This date-driven preview always targets the next calendar month and rolls forward automatically on the 1st.';
         badges = [{text:'Monthly Preview'},{text:monthNameFromKey(focusMonthKey)},{text:`${baseEvents.length} events`}];
       }
       else if (type === 'review'){
@@ -2336,15 +2780,24 @@
         finally { el.frameworkBuildBtn.disabled = false; }
         return;
       }
+      if (window.CIReportsProtestsReady) {
+        try { await window.CIReportsProtestsReady; } catch(_) {}
+      }
       buildDraft(type, '', '', { scopeMode:'global', selectedRegions:[] });
     }
 
     hydrateMonths(); renderStats(); renderScopeTabs(); renderTable();
-    bootReportsBackend();
+    window.CIReportsBackendReady = bootReportsBackend();
     el.applyBtn.addEventListener('click', renderTable);
     el.clearBtn.addEventListener('click', () => { el.typeFilter.value = 'all'; el.monthFilter.value = 'all'; el.keywordFilter.value = ''; renderTable(); });
     el.keywordFilter.addEventListener('keydown', e => { if (e.key === 'Enter') renderTable(); });
-    document.querySelectorAll('[data-build]').forEach(btn => btn.addEventListener('click', () => { if (el.intelReportTypeSelect) el.intelReportTypeSelect.value = btn.dataset.build; buildDraft(btn.dataset.build, '', '', { scopeMode:'global', selectedRegions:[] }); }));
+    document.querySelectorAll('[data-build]').forEach(btn => btn.addEventListener('click', async () => {
+      if (el.intelReportTypeSelect) el.intelReportTypeSelect.value = btn.dataset.build;
+      if (window.CIReportsProtestsReady) {
+        try { await window.CIReportsProtestsReady; } catch(_) {}
+      }
+      buildDraft(btn.dataset.build, '', '', { scopeMode:'global', selectedRegions:[] });
+    }));
     [el.intelSubjectSelect, el.intelSourceModeSelect, el.intelOutputAudienceSelect].filter(Boolean).forEach(sel => sel.addEventListener('change', updateFrameworkNote));
     if (el.intelReportTypeSelect) el.intelReportTypeSelect.addEventListener('change', updateFrameworkNote);
     if (el.frameworkBuildBtn) el.frameworkBuildBtn.addEventListener('click', buildSelectedFrameworkReport);
@@ -2856,6 +3309,39 @@ document.addEventListener('DOMContentLoaded',function(){
 <script src="shared-nav.js"></script>
 <script src="support-widget.js"></script>
 	
+
+<script>
+(function reportsInitialLoader(){
+  const overlay = document.getElementById('ciReportsLoadingOverlay');
+  const status = document.getElementById('ciReportsLoadingStatus');
+  if (!overlay) return;
+
+  function hide(){
+    overlay.setAttribute('aria-busy','false');
+    overlay.classList.add('hidden');
+    setTimeout(()=>{ overlay.style.display='none'; },340);
+  }
+
+  async function finish(){
+    try{
+      if(status) status.textContent='Loading report library and synchronising CityIntel data sources…';
+      const waits = [];
+      if(window.CIReportsProtestsReady) waits.push(window.CIReportsProtestsReady);
+      await new Promise(resolve=>setTimeout(resolve,0));
+      if(window.CIReportsBackendReady) waits.push(window.CIReportsBackendReady);
+      if(waits.length) await Promise.allSettled(waits);
+      if(status) status.textContent='Building the Reports Hub…';
+    }catch(_){}
+    hide();
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',finish,{once:true});
+  else finish();
+
+  setTimeout(hide,12000);
+})();
+</script>
+
 </body>
 </html>
 
