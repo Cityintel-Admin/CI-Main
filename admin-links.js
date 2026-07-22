@@ -32,9 +32,9 @@
     };
 
     add('analytics.html',      'Analytics');
-    add('master-admin-overview.html',      'Master Admin Overview.html');
-    add('master-admin-communications.html',      'Master-Admin-Communications.html');
-    add('master-admin-platform.html',      'Master Admin Platform.html');
+    add('master-admin-overview.html',      'Master Admin Overview');
+    add('master-admin-communications.html',      'Master Admin Communications');
+    add('master-admin-platform.html',      'Master Admin Platform');
     add('operationslog.html', 'Operations Log');
   }
 
