@@ -31,11 +31,15 @@
       nav.appendChild(a);
     };
 
-    add('analytics.html',      'Analytics');
-    add('master-admin-overview.html',      'Master Admin Overview');
-    add('master-admin-communications.html',      'Master Admin Communications');
-    add('master-admin-platform.html',      'Master Admin Platform');
+    // Master Admin Console entry point.
+    // The Overview page contains the internal switcher for:
+    // Overview | Communications & Customers | Business & Platform.
+    add('master-admin-overview.html', 'Master Admin');
     add('operationslog.html', 'Operations Log');
+
+    // Legacy analytics.html intentionally remains deployed as a rollback/reference
+    // page, but is no longer exposed in the active navigation.
+    // add('analytics.html', 'Legacy Analytics');
   }
 
   // Run on load
