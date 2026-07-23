@@ -555,7 +555,7 @@
 <option value="720">12 hours</option>
 <option value="1440">24 hours</option>
 <option value="10080">7 days</option>
-</select> — auto-refreshes every 60 s</div>
+</select> — auto-refreshes every 60 s · select a user row to inspect recent page activity</div>
 </div>
 <div style="display:flex;align-items:center;gap:10px">
 <span id="sessionCount" style="font-size:22px;font-weight:800;color:#33c48d">—</span>
@@ -574,6 +574,57 @@
 <tbody id="sessionTableBody"><tr><td colspan="4" style="padding:16px;color:var(--muted)">Loading…</td></tr></tbody>
 </table>
 </div>
+<div id="userActivityPanel" style="display:none;margin-top:14px;border:1px solid var(--g600);border-radius:14px;background:#111215;overflow:hidden">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--g600);background:#17191d">
+    <div>
+      <div class="lead-muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:800">User Activity Trail</div>
+      <h4 id="userActivityName" style="margin:4px 0 2px;font-size:18px;color:#fff">Selected user</h4>
+      <div id="userActivityMeta" class="legend"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <label class="lead-muted" for="userActivityDays">Usage window</label>
+      <select id="userActivityDays" class="btn" style="background:#16171a;color:var(--text)">
+        <option value="1">24 hours</option>
+        <option value="7">7 days</option>
+        <option value="30" selected>30 days</option>
+        <option value="90">90 days</option>
+      </select>
+      <button id="userActivityRefresh" class="btn" type="button">Refresh</button>
+      <button id="userActivityClose" class="btn" type="button">Close</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:14px;padding:14px" class="user-activity-grid">
+    <div style="min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <h4 style="margin:0">Previous 10 pages</h4>
+        <span id="userActivityRecentCount" class="lead-muted"></span>
+      </div>
+      <div style="overflow:auto;border:1px solid var(--g600);border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px">
+          <thead><tr style="background:#1c1e22"><th style="padding:8px 10px;text-align:left">Time</th><th style="padding:8px 10px;text-align:left">Page</th><th style="padding:8px 10px;text-align:left">Hub / package</th></tr></thead>
+          <tbody id="userActivityRecentRows"><tr><td colspan="3" style="padding:14px;color:var(--muted)">Select a user to load activity.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <h4 style="margin:0">Package usage</h4>
+        <span id="userActivityTotal" class="lead-muted"></span>
+      </div>
+      <div id="userActivityUsage" style="display:grid;gap:9px"><div class="lead-muted">Select a user to load usage.</div></div>
+    </div>
+  </div>
+  <div id="userActivityStatus" class="lead-muted" style="padding:0 14px 14px"></div>
+</div>
+<style>
+  #sessionTableBody tr[data-user-id]{cursor:pointer;transition:background .15s,border-color .15s}
+  #sessionTableBody tr[data-user-id]:hover{background:rgba(96,165,250,.08)}
+  #sessionTableBody tr[data-user-id].activity-selected{background:rgba(208,22,22,.10);box-shadow:inset 3px 0 0 var(--red)}
+  .activity-usage-row{padding:9px 10px;border:1px solid var(--g600);border-radius:10px;background:#17191d}
+  .activity-usage-bar{height:7px;margin-top:7px;border-radius:999px;background:#292c32;overflow:hidden}
+  .activity-usage-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#d01616,#60a5fa)}
+  @media(max-width:900px){.user-activity-grid{grid-template-columns:1fr!important}}
+</style>
 </section><section class="card" id="meetingDiaryCard" style="margin-bottom:20px;">
 <div style="display:flex;align-items:flex-start;gap:12px;justify-content:space-between;flex-wrap:wrap">
 <div>
@@ -4679,26 +4730,41 @@
   const tbody = document.getElementById('sessionTableBody');
   const windowSel = document.getElementById('sessionWindowSelect');
   const refreshBtn = document.getElementById('sessionRefreshBtn');
+  const activityPanel = document.getElementById('userActivityPanel');
+  const activityDays = document.getElementById('userActivityDays');
   if(!card) return;
   card.style.display = '';
 
-  function who(){ try{return(window.CIAuth&&CIAuth.who)?(CIAuth.who()||{}):(JSON.parse(localStorage.getItem('ci_user')||'{}'));}catch{return{};} }
+  let selectedUserId = '';
+  let selectedSession = null;
+  let sessionMap = new Map();
+
   function authH(){
     const h=(window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {'Content-Type':'application/json','Accept':'application/json'};
-    if(window.CIAuth?.isMasterAdmin?.())h['X-User-Role']='MasterAdmin';
+    if(window.CIAuth?.isMasterAdmin?.()) h['X-User-Role']='MasterAdmin';
     return h;
   }
-  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function relTime(iso){
     if(!iso) return '—';
-    const secs = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+    const secs = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
     if(secs < 60) return `${secs}s ago`;
     if(secs < 3600) return `${Math.floor(secs/60)}m ago`;
-    return `${Math.floor(secs/3600)}h ago`;
+    if(secs < 86400) return `${Math.floor(secs/3600)}h ago`;
+    return `${Math.floor(secs/86400)}d ago`;
+  }
+  function fmtDate(iso){
+    try{return iso?new Date(iso).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'—';}catch(_){return iso||'—';}
   }
   function pageLabel(p){
     if(!p) return '—';
-    return p.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    return String(p).split('?')[0].split('#')[0].replace(/^\/+/, '').replace(/\.html$/,'').replace(/[-_]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  }
+
+  function highlightSelected(){
+    tbody?.querySelectorAll('tr[data-user-id]').forEach(row=>{
+      row.classList.toggle('activity-selected', row.dataset.userId===selectedUserId);
+    });
   }
 
   async function loadSessions(){
@@ -4708,6 +4774,7 @@
       const d = await res.json().catch(()=>({}));
       if(!d.ok) throw new Error(d.error||'Failed');
       const sessions = d.sessions || [];
+      sessionMap = new Map(sessions.map(s=>[String(s.user_id||''),s]));
       if(countEl) countEl.textContent = sessions.length;
       if(!tbody) return;
       if(!sessions.length){
@@ -4716,7 +4783,7 @@
         return;
       }
       tbody.innerHTML = sessions.map(s => `
-        <tr style="border-bottom:1px solid var(--g600)">
+        <tr data-user-id="${esc(s.user_id||'')}" title="View recent activity for ${esc(s.name||s.email||s.user_id||'this user')}" style="border-bottom:1px solid var(--g600)">
           <td style="padding:9px 12px">
             <strong>${esc(s.name||s.email||s.user_id)}</strong>
             <div style="font-size:11px;color:var(--muted)">${esc(s.email||'')}</div>
@@ -4729,16 +4796,87 @@
           </td>
           <td style="padding:9px 12px;color:var(--muted);font-size:12px">${relTime(s.updated_at)}</td>
         </tr>`).join('');
+      highlightSelected();
     } catch(e){
       if(tbody) tbody.innerHTML = `<tr><td colspan="4" style="padding:12px;color:#fca5a5">Failed to load sessions: ${esc(String(e?.message||e))}</td></tr>`;
       if(countEl) countEl.textContent = '—';
     }
   }
 
-  if(windowSel) windowSel.addEventListener('change', loadSessions);
-  if(refreshBtn) refreshBtn.addEventListener('click', loadSessions);
+  function renderActivity(data){
+    const user = data.user || selectedSession || {};
+    const nameEl = document.getElementById('userActivityName');
+    const metaEl = document.getElementById('userActivityMeta');
+    const recentBody = document.getElementById('userActivityRecentRows');
+    const usageEl = document.getElementById('userActivityUsage');
+    const totalEl = document.getElementById('userActivityTotal');
+    const recentCount = document.getElementById('userActivityRecentCount');
+    if(nameEl) nameEl.textContent = user.name || user.email || user.user_id || 'User activity';
+    if(metaEl) metaEl.textContent = [user.email, user.org_name || user.org_id].filter(Boolean).join(' · ');
+    if(totalEl) totalEl.textContent = `${Number(data.total_visits||0)} page visit${Number(data.total_visits||0)===1?'':'s'}`;
+    if(recentCount) recentCount.textContent = `${(data.recent||[]).length} shown`;
 
-  // Auto-refresh every 60 seconds
+    const recent = data.recent || [];
+    if(recentBody){
+      recentBody.innerHTML = recent.length ? recent.map(r=>`<tr style="border-top:1px solid var(--g600)">
+        <td style="padding:9px 10px;color:var(--muted);white-space:nowrap">${esc(fmtDate(r.visited_at))}</td>
+        <td style="padding:9px 10px"><strong>${esc(r.page_label||pageLabel(r.page))}</strong><div class="lead-muted">${esc(r.page||'')}</div></td>
+        <td style="padding:9px 10px"><span style="display:inline-flex;padding:2px 7px;border:1px solid var(--g500);border-radius:999px">${esc(r.area||'Other')}</span></td>
+      </tr>`).join('') : `<tr><td colspan="3" style="padding:14px;color:var(--muted)">No page activity has been recorded in this period yet.</td></tr>`;
+    }
+
+    const usage = data.usage || [];
+    if(usageEl){
+      usageEl.innerHTML = usage.length ? usage.map(item=>`<div class="activity-usage-row" title="${esc((item.pages||[]).map(p=>`${p.page_label}: ${p.visits}`).join(' · '))}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><strong>${esc(item.area)}</strong><span style="font-weight:800">${Number(item.visits||0)} <span class="lead-muted">(${Number(item.percentage||0)}%)</span></span></div>
+        <div class="activity-usage-bar"><div class="activity-usage-fill" style="width:${Math.max(0,Math.min(100,Number(item.percentage||0)))}%"></div></div>
+        <div class="lead-muted" style="margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc((item.pages||[]).slice(0,3).map(p=>`${p.page_label} ${p.visits}`).join(' · '))}</div>
+      </div>`).join('') : `<div class="lead-muted">No package usage has been recorded in this period yet.</div>`;
+    }
+  }
+
+  async function loadActivity(){
+    if(!selectedUserId) return;
+    const status = document.getElementById('userActivityStatus');
+    if(status) status.textContent = 'Loading recent page activity…';
+    try{
+      const days = activityDays?.value || '30';
+      const res = await fetch(`${API}/api/admin/user-activity?user_id=${encodeURIComponent(selectedUserId)}&days=${encodeURIComponent(days)}&limit=10`,{headers:authH()});
+      const d = await res.json().catch(()=>({}));
+      if(!res.ok || !d.ok) throw new Error(d.error||`Activity request failed: ${res.status}`);
+      renderActivity(d);
+      if(status) status.textContent = `Activity retained for up to 90 days. Usage summary covers the selected ${activityDays?.selectedOptions?.[0]?.textContent||'period'}.`;
+    }catch(e){
+      if(status) status.textContent = `Unable to load user activity: ${e.message||e}`;
+      const recentBody = document.getElementById('userActivityRecentRows');
+      if(recentBody) recentBody.innerHTML = `<tr><td colspan="3" style="padding:14px;color:#fca5a5">${esc(e.message||e)}</td></tr>`;
+    }
+  }
+
+  function openActivity(userId){
+    selectedUserId = String(userId||'');
+    selectedSession = sessionMap.get(selectedUserId) || selectedSession;
+    if(!selectedUserId) return;
+    if(activityPanel) activityPanel.style.display = 'block';
+    highlightSelected();
+    activityPanel?.scrollIntoView({behavior:'smooth',block:'nearest'});
+    loadActivity();
+  }
+
+  tbody?.addEventListener('click',e=>{
+    const row = e.target.closest('tr[data-user-id]');
+    if(row) openActivity(row.dataset.userId||'');
+  });
+  windowSel?.addEventListener('change', loadSessions);
+  refreshBtn?.addEventListener('click', loadSessions);
+  activityDays?.addEventListener('change', loadActivity);
+  document.getElementById('userActivityRefresh')?.addEventListener('click', loadActivity);
+  document.getElementById('userActivityClose')?.addEventListener('click',()=>{
+    selectedUserId=''; selectedSession=null;
+    if(activityPanel) activityPanel.style.display='none';
+    highlightSelected();
+  });
+
   loadSessions();
   setInterval(loadSessions, 60 * 1000);
 })();
