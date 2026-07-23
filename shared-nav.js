@@ -87,7 +87,6 @@
         { href: 'brief.html',  label: 'Intelligence Brief', module: 'intelligence_brief' },
         { href: 'reports.html', label: 'Reports',           module: 'reports' },
         { href: 'trends.html', label: 'Trends & Forecasts', module: 'trends' },
-        { href: 'events.html', label: 'All Events',         module: 'all_events' }, // being retired in favour of alerts.html
         // 'high_risk_events' checkbox exists in analytics.html but no page
         // exists for it yet — omitted rather than linking to a 404.
       ]
