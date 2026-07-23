@@ -13,6 +13,210 @@
   <script src="admin-links.js"></script>
   <script src="alerts-data.js"></script>
 
+<script id="ci-brief-dual-source-protest-loader">
+/*
+  Brief v17 — consolidated protest dataset.
+
+  Source 1: alerts-data.js static baseline.
+  Source 2: approved/dynamic CityIntel Protest Feed (/api/protests).
+
+  Important ordering:
+    1. Merge and deduplicate both protest sources.
+    2. Store the consolidated unfiltered dataset.
+    3. applyBriefSourceGating() applies the organisation's data-tier filter.
+    4. renderBrief() calculates KPIs, priority cards and regional risk.
+*/
+window.CIBriefProtestsReady = (async function loadBriefApprovedProtests(){
+  const API_BASE = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const baseline = Array.isArray(window.alertsData) ? window.alertsData.slice() : [];
+
+  function authHeaders(){
+    try {
+      return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function normRisk(value){
+    const s = String(value || '').toLowerCase();
+    if (s.startsWith('hi')) return 'High';
+    if (s.startsWith('me') || s === 'med') return 'Medium';
+    return 'Low';
+  }
+
+  function clean(value){
+    return String(value || '')
+      .trim()
+      .replace(/\s+/g,' ')
+      .toLowerCase();
+  }
+
+  function eventTime(row){
+    return row?.time ?? row?.datetime ?? row?.date ?? row?.when ?? row?.event_at ?? '';
+  }
+
+  function idKey(row){
+    const id = row?.id ?? row?._feedId ?? '';
+    return id !== '' && id != null ? `id|${String(id)}` : '';
+  }
+
+  function fingerprint(row){
+    return [
+      clean(row?.title),
+      clean(eventTime(row)),
+      clean(row?.city || row?.location_label),
+      clean(row?.country || row?.Country)
+    ].join('|');
+  }
+
+  function sourceKey(row){
+    const source = clean(row?.source || row?.source_url);
+    return source ? `src|${source}` : '';
+  }
+
+  function feedPostToAlert(p){
+    return {
+      id: p.id,
+      title: p.title || 'Untitled',
+      summary: p.body || p.summary || '',
+      risk: normRisk(p.risk),
+      time: p.event_at || p.time || p.datetime || p.date || null,
+      city: p.city || p.location_label || '',
+      country: p.country || '',
+      continent: p.continent || '',
+      lat: p.lat ?? null,
+      lng: p.lon ?? p.lng ?? null,
+      lon: p.lon ?? p.lng ?? null,
+      address: p.location_label || p.address || p.city || '',
+      postcode: p.postcode || p.postal_code || '',
+      source: p.source_url || p.source || null,
+      approx_attending:
+        p.approx_attending ??
+        p.attendance ??
+        p.estimated_attendance ??
+        p.expected_attendance ??
+        null,
+      impact_radius_km:
+        p.impact_radius_km ??
+        p.protest_radius_km ??
+        p.radius_km ??
+        null,
+      verified: p.verified ?? p.approved ?? true,
+      _fromApprovedIntel: true,
+      _fromDynamicProtestFeed: true,
+      _feedId: p.id
+    };
+  }
+
+  function consolidate(staticRows, dynamicRows){
+    const merged = [];
+    const seenIds = new Set();
+    const seenFingerprints = new Set();
+    const seenSources = new Set();
+
+    function add(row){
+      if (!row) return false;
+
+      const id = idKey(row);
+      const fp = fingerprint(row);
+      const src = sourceKey(row);
+
+      if (id && seenIds.has(id)) return false;
+      if (fp && fp !== '|||' && seenFingerprints.has(fp)) return false;
+      if (src && seenSources.has(src)) return false;
+
+      merged.push(row);
+      if (id) seenIds.add(id);
+      if (fp && fp !== '|||') seenFingerprints.add(fp);
+      if (src) seenSources.add(src);
+      return true;
+    }
+
+    staticRows.forEach(add);
+
+    let newlyMerged = 0;
+    dynamicRows.forEach(row => {
+      if (add(row)) newlyMerged += 1;
+    });
+
+    return { merged, newlyMerged };
+  }
+
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
+
+  try {
+    const response = await fetch(API_BASE + '/api/protests', {
+      headers: authHeaders(),
+      cache: 'no-store',
+      signal: controller ? controller.signal : undefined
+    });
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json().catch(() => ({}));
+    const posts =
+      Array.isArray(data?.posts) ? data.posts :
+      Array.isArray(data?.data) ? data.data :
+      Array.isArray(data) ? data :
+      [];
+
+    try {
+      if (window.CIAccess && CIAccess.handleApiTier) {
+        CIAccess.handleApiTier(data, 'Brief protest data filtered to your access tier');
+      }
+    } catch (_) {}
+
+    const dynamicRows = posts.map(feedPostToAlert);
+    const result = consolidate(baseline, dynamicRows);
+
+    // Preserve the complete consolidated source before organisation tier filtering.
+    window.__ciAlertsDataUnfiltered = result.merged.slice();
+    window.alertsData = result.merged.slice();
+
+    window.CIBriefProtestDatasetStats = {
+      staticBaseline: baseline.length,
+      dynamicApproved: dynamicRows.length,
+      newlyMerged: result.newlyMerged,
+      consolidated: result.merged.length
+    };
+
+    console.info(
+      `CityIntel Brief protest dataset: ${baseline.length} static baseline + ` +
+      `${dynamicRows.length} dynamic/approved feed records; ` +
+      `${result.newlyMerged} newly merged; ${result.merged.length} consolidated.`
+    );
+
+    return window.CIBriefProtestDatasetStats;
+  } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId);
+
+    window.__ciAlertsDataUnfiltered = baseline.slice();
+    window.alertsData = baseline.slice();
+
+    window.CIBriefProtestDatasetStats = {
+      staticBaseline: baseline.length,
+      dynamicApproved: 0,
+      newlyMerged: 0,
+      consolidated: baseline.length,
+      fallback: true
+    };
+
+    console.warn(
+      'CityIntel Brief: /api/protests unavailable; using static alerts-data.js baseline only.',
+      error
+    );
+
+    return window.CIBriefProtestDatasetStats;
+  }
+})();
+</script>
+
 	
 <script>
   CIAuth.requireAuth();
@@ -66,7 +270,7 @@
 
 <meta charset="utf-8" />
 
-<title>CityIntel — Brief</title>
+<title>CityIntel — Brief v17</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -640,7 +844,7 @@ function detectTheme(a) {
           msg.id = 'brief-no-data-msg';
           msg.className = 'muted';
           msg.style.cssText = 'padding:12px 0;font-size:13px';
-          msg.textContent = 'No alert data loaded — KPIs and tiles will populate once alerts-data.js is available.';
+          msg.textContent = 'No protest data loaded — KPIs and tiles will populate once the CityIntel protest dataset is available.';
           prioritySection.appendChild(msg);
         }
       }
@@ -895,7 +1099,6 @@ function detectTheme(a) {
       }
       function trendClass(diff){ return diff>=0 ? 'up' : 'down'; }
     }
-    renderBrief();
     window.renderBrief = renderBrief;
   </script>
 
@@ -1675,10 +1878,16 @@ window.CIAccess = {
 document.addEventListener('DOMContentLoaded', async function(){
   let pageOk = true;
   if(window.CIAccess) pageOk = await CIAccess.initPage('intelligence_brief');
-  if(pageOk !== false) applyBriefSourceGating();
+
+  if(pageOk !== false){
+    if(window.CIBriefProtestsReady){
+      try { await window.CIBriefProtestsReady; } catch (_) {}
+    }
+    await applyBriefSourceGating();
+  }
 });
 
-// ── Tier filtering for the static protest dataset (alerts-data.js) ──────
+// ── Tier filtering for the consolidated protest dataset ────────────────
 // alerts-data.js ships the full unfiltered global dataset to every
 // browser (same trust boundary as alerts.html/live-alerts.html — this
 // only hides out-of-tier rows in the UI, it does not stop someone from
@@ -1782,19 +1991,39 @@ function ciFilterProtestDataByTier(data, allowedIso){
 }
 
 // ── Per-source module gating ────────────────────────────────────────────
-// Brief blends two independent data sources: the static protest/unrest
-// feed (alerts-data.js, gated on the "alerts" module — "Protest Records"
-// in onboarding) and the org-scoped live-alerts snapshot (gated on the
+// Brief blends two independent intelligence layers: the consolidated
+// protest dataset (alerts-data.js + approved/dynamic /api/protests records,
+// gated on the "alerts" module — "Protest Records" in onboarding) and the
+// org-scoped live-alerts snapshot (gated on the
 // "live_alerts" module). Each is shown or hidden independently, and never
 // share a data source assumption with the other's rendering.
 async function applyBriefSourceGating(){
-  if(!window.CIAccess) return;
+  if(window.CIBriefProtestsReady){
+    try { await window.CIBriefProtestsReady; } catch (_) {}
+  }
+
+  // CIAccess is expected on this page, but fail open to the consolidated
+  // dataset if it is temporarily unavailable rather than leaving the Brief blank.
+  if(!window.CIAccess){
+    if(typeof window.renderBrief === 'function') window.renderBrief();
+    renderBriefSourceStrip(true, true);
+    return;
+  }
+
   let modules = [];
   let cfg = {};
   try{
     cfg = await CIAccess.getOrgConfig();
     modules = Array.isArray(cfg.modules) ? cfg.modules : [];
-  }catch(_){ return; }
+  }catch(_){
+    const original = Array.isArray(window.__ciAlertsDataUnfiltered)
+      ? window.__ciAlertsDataUnfiltered
+      : (Array.isArray(window.alertsData) ? window.alertsData : []);
+    window.alertsData = original.slice();
+    if(typeof window.renderBrief === 'function') window.renderBrief();
+    renderBriefSourceStrip(true, true);
+    return;
+  }
 
   const hasProtest = CIAccess.isModuleAllowed(modules, 'alerts');
   const hasLiveAlerts = CIAccess.isModuleAllowed(modules, 'live_alerts');
@@ -1807,14 +2036,20 @@ async function applyBriefSourceGating(){
   const liveCard = document.getElementById('section-org-live-brief');
   if(liveCard) liveCard.style.display = hasLiveAlerts ? '' : 'none';
 
-  if (hasProtest){
+  if(hasProtest){
+    // Always begin with the fully consolidated protest dataset, then apply
+    // the organisation's tier. This prevents re-runs from filtering an
+    // already-filtered subset.
+    const original = Array.isArray(window.__ciAlertsDataUnfiltered)
+      ? window.__ciAlertsDataUnfiltered
+      : (Array.isArray(window.alertsData) ? window.alertsData : []);
+
     const allowedIso = ciResolveTierAllowedIso(cfg);
-    if (allowedIso !== null){
-      const original = Array.isArray(window.__ciAlertsDataUnfiltered) ? window.__ciAlertsDataUnfiltered : window.alertsData;
-      window.__ciAlertsDataUnfiltered = original; // keep a copy in case gating re-runs
-      window.alertsData = ciFilterProtestDataByTier(original, allowedIso);
-      if (typeof window.renderBrief === 'function') window.renderBrief();
-    }
+    window.alertsData = allowedIso === null
+      ? original.slice()
+      : ciFilterProtestDataByTier(original, allowedIso);
+
+    if(typeof window.renderBrief === 'function') window.renderBrief();
   }
 
   renderBriefSourceStrip(hasProtest, hasLiveAlerts);
@@ -1823,13 +2058,33 @@ async function applyBriefSourceGating(){
 function renderBriefSourceStrip(hasProtest, hasLiveAlerts){
   const mount = document.getElementById('briefSourceStrip');
   if(!mount) return;
+
   const chip = function(label, on){
     return '<span class="brief-source-chip '+(on?'on':'off')+'">'+(on?'✅':'🚫')+' '+label+(on?'':' — not on your plan')+'</span>';
   };
+
   let html = chip('Protest Records', hasProtest) + chip('Live Alerts', hasLiveAlerts);
+
+  if(hasProtest && window.CIBriefProtestDatasetStats){
+    const s = window.CIBriefProtestDatasetStats;
+    const filteredCount = Array.isArray(window.alertsData) ? window.alertsData.length : s.consolidated;
+    html += '<div class="brief-source-note">' +
+      '<strong>Protest dataset:</strong> ' +
+      Number(s.staticBaseline || 0).toLocaleString() + ' static baseline + ' +
+      Number(s.dynamicApproved || 0).toLocaleString() + ' approved/dynamic feed records · ' +
+      Number(s.newlyMerged || 0).toLocaleString() + ' newly merged · ' +
+      '<strong>' + Number(s.consolidated || 0).toLocaleString() + ' consolidated</strong>' +
+      (filteredCount !== Number(s.consolidated || 0)
+        ? ' · <strong>' + Number(filteredCount).toLocaleString() + ' in your data tier</strong>'
+        : '') +
+      (s.fallback ? ' · Dynamic Protest Feed unavailable for this session' : '') +
+      '.</div>';
+  }
+
   if(!hasProtest || !hasLiveAlerts){
     html += '<div class="brief-source-note">Missing a data source? <a class="brief-source-upgrade" href="mailto:contact@city-intel.com">Contact your CityIntel account manager</a> to add it to your plan.</div>';
   }
+
   mount.innerHTML = html;
   mount.style.display = '';
 }
