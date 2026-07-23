@@ -17,7 +17,7 @@
 
 <meta charset="utf-8" />
 
-<title>CityIntel — Power Outages v22</title>
+<title>CityIntel — Power Outages v22.1</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -1122,6 +1122,8 @@ window.CIPowerLoading = (function(){
       marker.setRadius((marker._ciBaseRadius || 8) + 3);
       marker.setStyle({color:'#ffffff',weight:3,fillOpacity:1,opacity:1});
       marker.bringToFront();
+      const pane = map && map.getPane ? map.getPane('powerOutagePane') : null;
+      if(pane) pane.style.pointerEvents = 'auto';
     }catch(_){}
 
     highlightOutageRow(outage);
@@ -1224,6 +1226,18 @@ window.CIPowerLoading = (function(){
       subdomains:'abcd', maxZoom:19
     }).addTo(map);
 
+    // Keep the area-focus radius below outage markers and unable to absorb clicks.
+    if(!map.getPane('powerFocusPane')){
+      map.createPane('powerFocusPane');
+      map.getPane('powerFocusPane').style.zIndex = '350';
+      map.getPane('powerFocusPane').style.pointerEvents = 'none';
+    }
+    if(!map.getPane('powerOutagePane')){
+      map.createPane('powerOutagePane');
+      map.getPane('powerOutagePane').style.zIndex = '460';
+      map.getPane('powerOutagePane').style.pointerEvents = 'auto';
+    }
+
     // Map click → Area Focus: show outages within 1km, update KPI, persist to localStorage
     map.on('click', function(e) {
       const { lat, lng } = e.latlng;
@@ -1258,10 +1272,14 @@ window.CIPowerLoading = (function(){
       // Remove previous focus circle
       if (focusCircle) { focusCircle.remove(); focusCircle = null; }
       focusCircle = L.circle([lat, lng], {
+        pane:'powerFocusPane',
+        interactive:false,
+        bubblingMouseEvents:false,
         radius: FOCUS_KM * 1000,
         color: '#93c5fd', weight: 2, fillColor: '#93c5fd', fillOpacity: 0.08,
         dashArray: '6 4'
       }).addTo(map);
+      try { focusCircle.bringToBack(); } catch(_) {}
 
       // Filter outages within radius
       const nearby = allOutages.filter(o => {
@@ -1312,6 +1330,8 @@ window.CIPowerLoading = (function(){
       };
 
       const circle = L.circleMarker([lat,lon], {
+        pane:'powerOutagePane',
+        interactive:true,
         radius:baseRadius,
         ...baseStyle,
         bubblingMouseEvents:false
@@ -1336,10 +1356,7 @@ window.CIPowerLoading = (function(){
         {direction:'top',offset:[0,-8],opacity:.92,sticky:true}
       );
 
-      circle.on('click', ev=>{
-        if(ev && ev.originalEvent){
-          try { L.DomEvent.stopPropagation(ev.originalEvent); } catch(_){}
-        }
+      circle.on('click', ()=>{
         selectOutageMarker(circle, o, {fly:false,scroll:false});
       });
 
