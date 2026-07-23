@@ -207,6 +207,11 @@
     return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
   }
 
+  // One stable identifier for this page instance. Every heartbeat emitted by
+  // the same loaded page reuses it, allowing the Worker to append one activity
+  // record without writing duplicates every 60 seconds.
+  const PAGE_ACTIVITY_ID = window.__CI_PAGE_ACTIVITY_ID || (window.__CI_PAGE_ACTIVITY_ID = genId());
+
   // Persistent per-browser visitor id (survives across visits/sessions) and
   // a per-tab session id — this is what lets the server tell "one visitor
   // who viewed 3 pages" apart from "three separate visitors who viewed 1
@@ -271,7 +276,11 @@
       name: p.name,
       role: p.role,
       is_master_admin: !!p.isMasterAdmin,
-      page: currentPage()
+      page: currentPage(),
+      page_path: location.pathname || '',
+      page_title: document.title || '',
+      session_id: getOrCreateSessionId(),
+      activity_id: PAGE_ACTIVITY_ID
     };
   }
 
