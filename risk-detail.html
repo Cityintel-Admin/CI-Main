@@ -5,7 +5,7 @@
 
 <meta charset="utf-8" />
 
-<title>CityIntel — Risk Detail</title>
+<title>CityIntel — Risk Detail v2</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -29,9 +29,208 @@
 <!-- Future Android / PWA -->
 <link rel="manifest" href="/manifest.json">
 	
+  <script src="auth.js"></script>
   <script src="whitelabel.js"></script> 
   <script src="metrics.js"></script>
   <script src="alerts-data.js"></script>
+
+<script id="ci-risk-detail-dual-source-loader">
+/*
+  Risk Detail v2 — consolidated protest dataset
+  Source 1: alerts-data.js static baseline
+  Source 2: approved/dynamic CityIntel Protest Feed (/api/protests)
+
+  Data-dependent Risk Detail renderers await CIRiskDetailDataReady before
+  calculating scope totals, trends, maps, risk mix and event tables.
+*/
+window.CIRiskDetailDataReady = (async function loadRiskDetailApprovedProtests(){
+  const API_BASE = (window.CI_API_BASE || window.API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/,'');
+  const baseline = Array.isArray(window.alertsData) ? window.alertsData.slice() : [];
+
+  function authHeaders(){
+    try {
+      return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function normRisk(value){
+    const s = String(value || '').toLowerCase();
+    if (s.startsWith('hi')) return 'High';
+    if (s.startsWith('me') || s === 'med') return 'Medium';
+    return 'Low';
+  }
+
+  function clean(value){
+    return String(value || '')
+      .trim()
+      .replace(/\s+/g,' ')
+      .toLowerCase();
+  }
+
+  function eventTime(row){
+    return row?.time ?? row?.datetime ?? row?.date ?? row?.when ?? row?.event_at ?? '';
+  }
+
+  function eventIdKey(row){
+    const id = row?.id ?? row?._feedId ?? '';
+    return id !== '' && id != null ? `id|${String(id)}` : '';
+  }
+
+  function eventFingerprint(row){
+    return [
+      clean(row?.title),
+      clean(eventTime(row)),
+      clean(row?.city || row?.location_label),
+      clean(row?.country || row?.Country)
+    ].join('|');
+  }
+
+  function sourceKey(row){
+    const source = clean(row?.source || row?.source_url);
+    return source ? `src|${source}` : '';
+  }
+
+  function feedPostToAlert(p){
+    return {
+      id: p.id,
+      title: p.title || 'Untitled',
+      summary: p.body || p.summary || '',
+      risk: normRisk(p.risk),
+      time: p.event_at || p.time || p.datetime || p.date || null,
+      city: p.city || p.location_label || '',
+      country: p.country || '',
+      continent: p.continent || '',
+      lat: p.lat ?? null,
+      lng: p.lon ?? p.lng ?? null,
+      lon: p.lon ?? p.lng ?? null,
+      address: p.location_label || p.address || p.city || '',
+      postcode: p.postcode || '',
+      source: p.source_url || p.source || null,
+      approx_attending:
+        p.approx_attending ??
+        p.attendance ??
+        p.estimated_attendance ??
+        p.expected_attendance ??
+        null,
+      impact_radius_km:
+        p.impact_radius_km ??
+        p.protest_radius_km ??
+        p.radius_km ??
+        null,
+      verified: p.verified ?? p.approved ?? true,
+      _fromApprovedIntel: true,
+      _fromDynamicProtestFeed: true,
+      _feedId: p.id
+    };
+  }
+
+  function consolidate(staticRows, dynamicRows){
+    const merged = [];
+    const seenIds = new Set();
+    const seenFingerprints = new Set();
+    const seenSources = new Set();
+
+    function add(row){
+      if (!row) return false;
+
+      const idKey = eventIdKey(row);
+      const fp = eventFingerprint(row);
+      const srcKey = sourceKey(row);
+
+      if (idKey && seenIds.has(idKey)) return false;
+      if (fp && fp !== '|||' && seenFingerprints.has(fp)) return false;
+      if (srcKey && seenSources.has(srcKey)) return false;
+
+      merged.push(row);
+      if (idKey) seenIds.add(idKey);
+      if (fp && fp !== '|||') seenFingerprints.add(fp);
+      if (srcKey) seenSources.add(srcKey);
+      return true;
+    }
+
+    staticRows.forEach(add);
+    let newlyMerged = 0;
+    dynamicRows.forEach(row => {
+      if (add(row)) newlyMerged += 1;
+    });
+
+    return { merged, newlyMerged };
+  }
+
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
+
+  try {
+    const response = await fetch(API_BASE + '/api/protests', {
+      headers: authHeaders(),
+      signal: controller ? controller.signal : undefined
+    });
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json().catch(() => ({}));
+    const posts =
+      Array.isArray(data?.posts) ? data.posts :
+      Array.isArray(data?.data) ? data.data :
+      Array.isArray(data) ? data :
+      [];
+
+    const dynamicRows = posts.map(feedPostToAlert);
+    const result = consolidate(baseline, dynamicRows);
+
+    window.alertsData = result.merged;
+    window.CIRiskDetailDatasetStats = {
+      staticBaseline: baseline.length,
+      dynamicApproved: dynamicRows.length,
+      newlyMerged: result.newlyMerged,
+      consolidated: result.merged.length
+    };
+
+    console.info(
+      `CityIntel Risk Detail dataset: ${baseline.length} static baseline + ` +
+      `${dynamicRows.length} dynamic/approved feed records; ` +
+      `${result.newlyMerged} newly merged; ${result.merged.length} consolidated.`
+    );
+
+    try {
+      window.dispatchEvent(new CustomEvent('ci:alerts-data-updated', {
+        detail: {
+          riskDetail: true,
+          source: 'static+approved-protests',
+          ...window.CIRiskDetailDatasetStats
+        }
+      }));
+    } catch (_) {}
+
+    return window.CIRiskDetailDatasetStats;
+  } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId);
+
+    window.alertsData = baseline;
+    window.CIRiskDetailDatasetStats = {
+      staticBaseline: baseline.length,
+      dynamicApproved: 0,
+      newlyMerged: 0,
+      consolidated: baseline.length,
+      fallback: true
+    };
+
+    console.warn(
+      'CityIntel Risk Detail: /api/protests unavailable; using static alerts-data.js baseline only.',
+      error
+    );
+
+    return window.CIRiskDetailDatasetStats;
+  }
+})();
+</script>
+
 
   <!-- Chart.js for the pie -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -445,7 +644,10 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script>
-(function miniTrend(){
+(async function miniTrend(){
+  if (window.CIRiskDetailDataReady) {
+    try { await window.CIRiskDetailDataReady; } catch (_) {}
+  }
   const ctx = document.getElementById('miniTrend');
   if(!ctx || !window.alertsData || !window.Chart) return;
 
@@ -683,7 +885,11 @@
 </div>
 
 <script>
-(function(){
+(async function(){
+  if (window.CIRiskDetailDataReady) {
+    try { await window.CIRiskDetailDataReady; } catch (_) {}
+  }
+
   const qs = new URLSearchParams(location.search);
   const continentParam = (qs.get('continent') || '').trim();
   const regionParam    = (qs.get('region') || qs.get('country') || '').trim();
