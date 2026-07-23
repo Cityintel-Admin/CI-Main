@@ -8,6 +8,7 @@
   const HEARTBEAT_INTERVAL_MS = 60 * 1000;
   const HEARTBEAT_RETRY_MS = 2500;
   const HEARTBEAT_MAX_BOOT_WAIT_MS = 15000;
+  const ENGAGEMENT_CHECKPOINT_MS = 30 * 60 * 1000;
   const PAGEVIEW_PATH = '/api/metrics/page-view';
   const VISITOR_ID_KEY = 'ci_visitor_id';
   const SESSION_ID_KEY = 'ci_session_id';
@@ -212,6 +213,30 @@
   // record without writing duplicates every 60 seconds.
   const PAGE_ACTIVITY_ID = window.__CI_PAGE_ACTIVITY_ID || (window.__CI_PAGE_ACTIVITY_ID = genId());
 
+  // MA Communications 1B.1 — accumulate engagement only while this loaded page
+  // is visible. Reloading the page creates a new PAGE_ACTIVITY_ID (a genuine
+  // page visit), while the 60-second heartbeat reuses the same ID.
+  let engagementAccumulatedMs = 0;
+  let engagementSegmentStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+
+  function syncEngagementVisibility(){
+    const now = Date.now();
+    if (document.visibilityState === 'visible') {
+      if (!engagementSegmentStartedAt) engagementSegmentStartedAt = now;
+    } else if (engagementSegmentStartedAt) {
+      engagementAccumulatedMs += Math.max(0, now - engagementSegmentStartedAt);
+      engagementSegmentStartedAt = 0;
+    }
+  }
+
+  function engagementActiveMs(){
+    let total = engagementAccumulatedMs;
+    if (document.visibilityState === 'visible' && engagementSegmentStartedAt) {
+      total += Math.max(0, Date.now() - engagementSegmentStartedAt);
+    }
+    return Math.max(0, Math.round(total));
+  }
+
   // Persistent per-browser visitor id (survives across visits/sessions) and
   // a per-tab session id — this is what lets the server tell "one visitor
   // who viewed 3 pages" apart from "three separate visitors who viewed 1
@@ -280,7 +305,10 @@
       page_path: location.pathname || '',
       page_title: document.title || '',
       session_id: getOrCreateSessionId(),
-      activity_id: PAGE_ACTIVITY_ID
+      activity_id: PAGE_ACTIVITY_ID,
+      engagement_active_ms: engagementActiveMs(),
+      engagement_checkpoint_ms: ENGAGEMENT_CHECKPOINT_MS,
+      page_visible: document.visibilityState === 'visible'
     };
   }
 
@@ -339,11 +367,15 @@
     setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
 
     document.addEventListener('visibilitychange', () => {
+      syncEngagementVisibility();
       if (document.visibilityState === 'visible') sendHeartbeat();
     });
 
     window.addEventListener('focus', sendHeartbeat);
-    window.addEventListener('pagehide', sendHeartbeat);
+    window.addEventListener('pagehide', () => {
+      syncEngagementVisibility();
+      sendHeartbeat();
+    });
   }
 
   // --- Public API ---
@@ -364,6 +396,7 @@
     sendPageView,
     getHeartbeatPayload: heartbeatPayload,
     getPageViewPayload: pageViewPayload,
+    getEngagementActiveMs: engagementActiveMs,
     getEvents() { return read(); }
   };
 
