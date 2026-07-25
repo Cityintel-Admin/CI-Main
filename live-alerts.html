@@ -2985,6 +2985,7 @@ white-space:nowrap;}
   border-color:rgba(248,113,113,.85);
   color:#fff;
 }
+.ci-queue-pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:8px 0 10px;padding:8px 10px;border:1px solid rgba(255,255,255,.075);border-radius:11px;background:#080c10}.ci-queue-pager .ci-page-info{font-size:11px;color:#a4afbd;font-weight:750;margin-right:auto}.ci-queue-page-btn{border:1px solid rgba(255,255,255,.11);background:#12171d;color:#e9edf2;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;cursor:pointer}.ci-queue-page-btn:hover:not(:disabled){border-color:rgba(208,22,22,.58);background:rgba(208,22,22,.10)}.ci-queue-page-btn:disabled{opacity:.38;cursor:not-allowed}.ci-live-alert-popup{min-width:220px}.ci-live-alert-popup .ci-popup-kicker{font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#ff6b72;margin-bottom:4px}.ci-live-alert-popup strong{display:block;font-size:13px;line-height:1.35;margin-bottom:5px}.ci-live-alert-popup .ci-popup-meta{font-size:11px;line-height:1.45;color:#9da8b6}.ci-live-alert-popup .ci-popup-open{display:inline-flex;margin-top:8px;color:#ff6b72;font-size:11px;font-weight:900}
 /* Bulk action buttons — matching pill style with status colours */
 .btn-bulk-action {
   border-radius:999px;
@@ -6910,6 +6911,7 @@ function ciAlertStoreMerge(feed, events){
   window.CI_ALL_ALERTS = dedupeClientEvents(mergedRows)
     .sort((a,b)=>(Date.parse(eventWhen(b))||0)-(Date.parse(eventWhen(a))||0))
     .slice(0, 1000);
+  try{window.dispatchEvent(new CustomEvent('ci:alertStoreUpdated',{detail:{count:window.CI_ALL_ALERTS.length}}));}catch(_){}
 
   return ciAlertStoreForFeed(feed);
 }
@@ -13532,7 +13534,8 @@ const assetIcon = L.divIcon({
       '<div class="ci-map-legend-item"><span class="ci-map-legend-pin" style="background:#b21f1f"></span>High risk</div>' +
       '<div class="ci-map-legend-item"><span class="ci-map-legend-pin" style="background:#d97706"></span>Medium risk</div>' +
       '<div class="ci-map-legend-item"><span class="ci-map-legend-pin" style="background:#15803d"></span>Low risk</div>' +
-      '<div class="ci-map-legend-item" style="opacity:.7">(protest / CityIntel admin posts)</div>' +
+      '<div class="ci-map-legend-item" style="opacity:.7">Risk-coloured mapped intelligence</div>' +
+      '<div class="ci-map-legend-item"><span class="ci-map-legend-swatch" style="background:#60a5fa"></span>Live alert incident</div>' +
       '<div class="ci-map-legend-sep"></div>' +
       '<div class="ci-map-legend-item"><span class="ci-map-legend-swatch" style="background:#3b82f6"></span>Assets</div>' +
       '<div class="ci-map-legend-item"><span class="ci-map-legend-swatch" style="background:#f97316"></span>Travellers</div>' +
@@ -13542,6 +13545,67 @@ const assetIcon = L.divIcon({
 
   // === CityIntel Admin Posts overlay on Live Alerts map =================
   const cityIntelAdminLayer = L.layerGroup().addTo(map);
+  const ciLiveAlertLayer = L.layerGroup().addTo(map);
+  function ciMappedAlertCoords(ev){
+    let geometry=ev?.geometry;
+    try{if(typeof geometry==='string') geometry=JSON.parse(geometry);}catch(_){}
+    const coords=geometry&&Array.isArray(geometry.coordinates)?geometry.coordinates:null;
+    const lat=Number(ev?.lat??ev?.latitude??ev?.location_lat??ev?.geo?.lat??(coords?coords[1]:null));
+    const lon=Number(ev?.lon??ev?.lng??ev?.longitude??ev?.location_lon??ev?.geo?.lon??ev?.geo?.lng??(coords?coords[0]:null));
+    if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180) return null;
+    return {lat,lon};
+  }
+  function ciMappedAlertRisk(ev){
+    const r=String(ev?.risk||ev?.Risk||ev?.severity||'').toLowerCase();
+    if(/critical|severe/.test(r)) return 'critical';
+    if(/high/.test(r)) return 'high';
+    if(/med|medium|warn/.test(r)) return 'medium';
+    if(/low/.test(r)) return 'low';
+    return 'info';
+  }
+  function ciMappedAlertColour(ev){const r=ciMappedAlertRisk(ev);return r==='critical'?'#ff2d35':r==='high'?'#ef4444':r==='medium'?'#f59e0b':r==='low'?'#22c55e':'#60a5fa';}
+  function ciMappedAlertTime(ev){
+    const raw=ev?.indexed_at||ev?.first_seen_at||ev?.provider_received_at||ev?.when||ev?.when_ts||ev?.published_at||'';
+    const d=new Date(raw);return Number.isNaN(d.getTime())?'':d.toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  }
+  function ciIsAdminPostAlert(ev){return String(ev?.sourceType||'').toLowerCase()==='cityintel-admin-post'||String(ev?.collection_trigger||'').toLowerCase()==='admin_post';}
+  function ciRefreshLiveAlertMarkers(){
+    try{
+      ciLiveAlertLayer.clearLayers();
+      const source=(typeof window.ciAlertStoreGetAll==='function'?window.ciAlertStoreGetAll():[]).filter(Boolean);
+      const now=Date.now(), maxAge=7*24*60*60*1000;
+      const seen=new Set();
+      const rows=source.filter(ev=>{
+        if(ciIsAdminPostAlert(ev)) return false;
+        if(typeof isAlertHidden==='function'&&isAlertHidden(ev)) return false;
+        if(typeof getDisposition==='function'&&getDisposition(ev)==='cleared') return false;
+        const c=ciMappedAlertCoords(ev);if(!c) return false;
+        const t=Date.parse(ev?.indexed_at||ev?.first_seen_at||ev?.when||ev?.when_ts||ev?.published_at||'')||now;
+        if(now-t>maxAge) return false;
+        const key=String(ev?.id||ev?.event_id||ev?.alert_id||'')||[String(ev?.title||'').toLowerCase(),c.lat.toFixed(4),c.lon.toFixed(4)].join('|');
+        if(seen.has(key)) return false;seen.add(key);ev.__ciMappedCoords=c;return true;
+      }).slice(0,250);
+      rows.forEach(ev=>{
+        const c=ev.__ciMappedCoords||ciMappedAlertCoords(ev), colour=ciMappedAlertColour(ev), risk=ciMappedAlertRisk(ev);
+        const title=ev?.title||ev?.summary||ev?.description||'Live alert';
+        const place=ev?.city||ev?.location||ev?.country||'Mapped location';
+        const src=ev?.src||ev?.source||ev?.collection_provider||'Live alerts';
+        const popup=`<div class="ci-live-alert-popup"><div class="ci-popup-kicker">Live alert incident</div><strong>${ciEscapeAdminPost(title)}</strong><div class="ci-popup-meta">${ciEscapeAdminPost(place)}${ciMappedAlertTime(ev)?' · '+ciEscapeAdminPost(ciMappedAlertTime(ev)):''}<br>${ciEscapeAdminPost(src)} · ${ciEscapeAdminPost(risk)} risk</div><span class="ci-popup-open">Open incident details →</span></div>`;
+        const marker=L.circleMarker([c.lat,c.lon],{radius:6.5,color:'#f8fafc',weight:1.5,fillColor:colour,fillOpacity:.94,pane:'markerPane'}).addTo(ciLiveAlertLayer).bindPopup(popup,{maxWidth:310});
+        marker.on('click',()=>{
+          try{if(typeof window.openDetailPanel==='function') window.openDetailPanel(ev,rows);else if(typeof openDetailPanel==='function') openDetailPanel(ev,rows);}catch(_){}
+          window.ciLastIncident={lat:c.lat,lon:c.lon,label:title};
+        });
+      });
+      window.CILiveAlertMappedCount=rows.length;
+    }catch(e){console.warn('CityIntel live alert marker refresh failed',e);}
+  }
+  window.ciRefreshLiveAlertMarkers=ciRefreshLiveAlertMarkers;
+  window.addEventListener('ci:alertStoreUpdated',()=>setTimeout(ciRefreshLiveAlertMarkers,40));
+  window.addEventListener('ci:queueUpdated',()=>setTimeout(ciRefreshLiveAlertMarkers,40));
+  setTimeout(ciRefreshLiveAlertMarkers,1800);
+  setTimeout(ciRefreshLiveAlertMarkers,5000);
+  setInterval(ciRefreshLiveAlertMarkers,60000);
   // Colour-code protest/admin-post markers by risk, matching the same
   // palette used for risk chips elsewhere (high/medium/low), so the map
   // itself communicates severity rather than every post looking identical.
@@ -14380,6 +14444,22 @@ function redrawIncidentRadius(){
     bound: false
   };
 
+  const ciQueuePagingState = { queue:'all', page:1, pageSize:10 };
+  function ciResetQueuePage(){ ciQueuePagingState.page=1; }
+  function ciAppendQueuePager(host,status,totalItems){
+    if(!host||totalItems<=ciQueuePagingState.pageSize) return;
+    const totalPages=Math.max(1,Math.ceil(totalItems/ciQueuePagingState.pageSize));
+    ciQueuePagingState.page=Math.max(1,Math.min(ciQueuePagingState.page,totalPages));
+    const pager=document.createElement('div');
+    pager.className='ci-queue-pager';
+    const start=(ciQueuePagingState.page-1)*ciQueuePagingState.pageSize+1;
+    const end=Math.min(totalItems,ciQueuePagingState.page*ciQueuePagingState.pageSize);
+    pager.innerHTML=`<span class="ci-page-info">Showing ${start}-${end} of ${totalItems} · Page ${ciQueuePagingState.page}/${totalPages}</span><button type="button" class="ci-queue-page-btn" data-dir="prev" ${ciQueuePagingState.page<=1?'disabled':''}>Previous</button><button type="button" class="ci-queue-page-btn" data-dir="next" ${ciQueuePagingState.page>=totalPages?'disabled':''}>Next</button>`;
+    pager.querySelector('[data-dir="prev"]')?.addEventListener('click',()=>{ciQueuePagingState.page=Math.max(1,ciQueuePagingState.page-1);renderQueueList(status);});
+    pager.querySelector('[data-dir="next"]')?.addEventListener('click',()=>{ciQueuePagingState.page=Math.min(totalPages,ciQueuePagingState.page+1);renderQueueList(status);});
+    host.appendChild(pager);
+  }
+
   function ciNormFilterValue(v){
     return String(v || '').trim();
   }
@@ -14449,7 +14529,7 @@ function redrawIncidentRadius(){
     const resetEl = document.getElementById('ciAlertFilterReset');
     if (!countryEl || !cityEl || !riskEl || !resetEl) return;
 
-    const rerender = () => renderQueueList(ciQueueFilterState.activeQueue || 'all');
+    const rerender = () => { ciResetQueuePage(); renderQueueList(ciQueueFilterState.activeQueue || 'all'); };
 
     countryEl.addEventListener('change', () => {
       ciQueueFilterState.country = countryEl.value || '';
@@ -14476,6 +14556,7 @@ function redrawIncidentRadius(){
 
   function renderQueueList(status){
     const st = String(status||'').toLowerCase();
+    if(ciQueuePagingState.queue!==(st||'all')){ciQueuePagingState.queue=st||'all';ciQueuePagingState.page=1;}
     ciQueueFilterState.activeQueue = st || 'all';
     ciBindQueueFilters();
     const label =
@@ -14518,7 +14599,11 @@ function redrawIncidentRadius(){
 
     ciRefreshQueueFilterOptions(baseItems);
     const filteredItems = baseItems.filter(ciMatchesQueueFilters);
-    const items = filteredItems.slice(0, 60);
+    const totalItems=filteredItems.length;
+    const totalPages=Math.max(1,Math.ceil(totalItems/ciQueuePagingState.pageSize));
+    ciQueuePagingState.page=Math.max(1,Math.min(ciQueuePagingState.page,totalPages));
+    const pageStart=(ciQueuePagingState.page-1)*ciQueuePagingState.pageSize;
+    const items = filteredItems.slice(pageStart,pageStart+ciQueuePagingState.pageSize);
 
     openFeedId = '__queue__' + st;
     window.__ciOpenFeedId = openFeedId;
@@ -14530,10 +14615,10 @@ function redrawIncidentRadius(){
       const action = document.createElement('div');
       action.className = 'queue-action-row';
       action.innerHTML = `
-        <button type="button" class="btn-bulk-action btn-bulk-monitor" id="queueMonitorAllVisible" title="Move all ${items.length} visible alerts to Monitoring">
-          ⬇ Monitor all (${items.length})
+        <button type="button" class="btn-bulk-action btn-bulk-monitor" id="queueMonitorAllVisible" title="Move the ${items.length} alerts on this page to Monitoring">
+          ⬇ Monitor page (${items.length})
         </button>
-        <button type="button" class="btn-danger-small" id="queueDeleteAllVisible">Delete all verified</button>
+        <button type="button" class="btn-danger-small" id="queueDeleteAllVisible">Delete page</button>
       `;
       alertsList.appendChild(action);
       const monAll = action.querySelector('#queueMonitorAllVisible');
@@ -14559,13 +14644,13 @@ function redrawIncidentRadius(){
       const action = document.createElement('div');
       action.className = 'queue-action-row';
       action.innerHTML = `
-        <button type="button" class="btn-bulk-action btn-bulk-monitor" id="queueMonitorAllUnverified" title="Move all ${items.length} unverified alerts to Monitoring for follow-up">
-          ⬇ Monitor all (${items.length})
+        <button type="button" class="btn-bulk-action btn-bulk-monitor" id="queueMonitorAllUnverified" title="Move the ${items.length} unverified alerts on this page to Monitoring for follow-up">
+          ⬇ Monitor page (${items.length})
         </button>
-        <button type="button" class="btn-bulk-action btn-bulk-clear" id="queueClearAllUnverified" title="Clear all ${items.length} unverified alerts">
-          ✓ Clear all (${items.length})
+        <button type="button" class="btn-bulk-action btn-bulk-clear" id="queueClearAllUnverified" title="Clear the ${items.length} unverified alerts on this page">
+          ✓ Clear page (${items.length})
         </button>
-        <button type="button" class="btn-danger-small" id="queueDeleteAllUnverified">Delete all unverified</button>
+        <button type="button" class="btn-danger-small" id="queueDeleteAllUnverified">Delete page</button>
       `;
       alertsList.appendChild(action);
       const monAllUnv = action.querySelector('#queueMonitorAllUnverified');
@@ -14600,11 +14685,11 @@ function redrawIncidentRadius(){
       const action = document.createElement('div');
       action.className = 'queue-action-row';
       action.innerHTML = `
-        <button type="button" class="btn-bulk-action btn-bulk-escalate" id="queueEscalateAllMonitoring" title="Escalate all ${items.length} monitored alerts">
-          ↑ Escalate all (${items.length})
+        <button type="button" class="btn-bulk-action btn-bulk-escalate" id="queueEscalateAllMonitoring" title="Escalate the ${items.length} monitored alerts on this page">
+          ↑ Escalate page (${items.length})
         </button>
-        <button type="button" class="btn-bulk-action btn-bulk-clear" id="queueClearAllMonitoring" title="Clear all ${items.length} monitored alerts">
-          ✓ Clear all (${items.length})
+        <button type="button" class="btn-bulk-action btn-bulk-clear" id="queueClearAllMonitoring" title="Clear the ${items.length} monitored alerts on this page">
+          ✓ Clear page (${items.length})
         </button>
       `;
       alertsList.appendChild(action);
@@ -14627,6 +14712,8 @@ function redrawIncidentRadius(){
         try { updateQueueCounts(); } catch(_) {}
       });
     }
+
+    if(items.length) ciAppendQueuePager(alertsList,st,totalItems);
 
     if (!items.length){
       const filterActive = ciQueueFilterState.country || ciQueueFilterState.city || ciQueueFilterState.risk;
@@ -14692,6 +14779,7 @@ function redrawIncidentRadius(){
       rows.push(row);
     });
 
+    ciAppendQueuePager(alertsList,st,totalItems);
     showAlerts();
 
     // auto-select first
@@ -14734,6 +14822,7 @@ function redrawIncidentRadius(){
     if (c) c.textContent = clr;
     if (g) g.textContent = geo;
     try { ciRefreshQueueFilterOptions(all); } catch(_) {}
+    try { window.dispatchEvent(new CustomEvent('ci:queueUpdated')); } catch(_) {}
   }
   window.ciUpdateQueueCounts = updateQueueCounts;
 
@@ -15076,22 +15165,42 @@ function getFeedEvents(feedId){
   return [];
 }
 
-  function openFeedAlerts(feedId, label){
-    // ✅ toggle: clicking the same feed again closes back to feeds
+  const ciFeedPagingState={feedId:'',page:1,pageSize:10};
+  function ciAppendFeedPager(host,feedId,label,totalItems){
+    if(!host||totalItems<=ciFeedPagingState.pageSize) return;
+    const totalPages=Math.max(1,Math.ceil(totalItems/ciFeedPagingState.pageSize));
+    ciFeedPagingState.page=Math.max(1,Math.min(ciFeedPagingState.page,totalPages));
+    const start=(ciFeedPagingState.page-1)*ciFeedPagingState.pageSize+1;
+    const end=Math.min(totalItems,ciFeedPagingState.page*ciFeedPagingState.pageSize);
+    const pager=document.createElement('div');pager.className='ci-queue-pager';
+    pager.innerHTML=`<span class="ci-page-info">Showing ${start}-${end} of ${totalItems} · Page ${ciFeedPagingState.page}/${totalPages}</span><button type="button" class="ci-queue-page-btn" data-dir="prev" ${ciFeedPagingState.page<=1?'disabled':''}>Previous</button><button type="button" class="ci-queue-page-btn" data-dir="next" ${ciFeedPagingState.page>=totalPages?'disabled':''}>Next</button>`;
+    pager.querySelector('[data-dir="prev"]')?.addEventListener('click',()=>{ciFeedPagingState.page=Math.max(1,ciFeedPagingState.page-1);openFeedAlerts(feedId,label,{force:true,page:ciFeedPagingState.page});});
+    pager.querySelector('[data-dir="next"]')?.addEventListener('click',()=>{ciFeedPagingState.page=Math.min(totalPages,ciFeedPagingState.page+1);openFeedAlerts(feedId,label,{force:true,page:ciFeedPagingState.page});});
+    host.appendChild(pager);
+  }
+
+  function openFeedAlerts(feedId, label, options={}){
+    // Clicking the same feed again closes back to feeds. Pagination uses force=true.
     const alertsOpen = alertsPanel.style.display !== 'none';
-    if (alertsOpen && openFeedId === feedId){
+    if (!options.force && alertsOpen && openFeedId === feedId){
       showFeeds();
       return;
     }
     openFeedId = feedId;
     window.__ciOpenFeedId = feedId;
+    if(ciFeedPagingState.feedId!==String(feedId)){ciFeedPagingState.feedId=String(feedId);ciFeedPagingState.page=1;}
+    if(Number.isFinite(Number(options.page))) ciFeedPagingState.page=Math.max(1,Number(options.page));
 
-    const events = getFeedEvents(feedId)
+    const allFeedEvents = getFeedEvents(feedId)
       .slice()
       .sort((a,b) => (Date.parse(eventWhen(b))||0) - (Date.parse(eventWhen(a))||0))
       // Default view: only show untriaged in the feed list (triaged live in Operator queues)
-      .filter(ev => (getDisposition(ev) || 'untriaged') === 'untriaged')
-      .slice(0, 12);
+      .filter(ev => (getDisposition(ev) || 'untriaged') === 'untriaged');
+    const totalFeedItems=allFeedEvents.length;
+    const totalFeedPages=Math.max(1,Math.ceil(totalFeedItems/ciFeedPagingState.pageSize));
+    ciFeedPagingState.page=Math.max(1,Math.min(ciFeedPagingState.page,totalFeedPages));
+    const feedPageStart=(ciFeedPagingState.page-1)*ciFeedPagingState.pageSize;
+    const events=allFeedEvents.slice(feedPageStart,feedPageStart+ciFeedPagingState.pageSize);
 
     alertsTitle.textContent = label ? `Latest incidents — ${label}` : 'Latest incidents';
     alertsList.innerHTML = '';
@@ -15102,6 +15211,7 @@ function getFeedEvents(feedId){
       return;
     }
 
+    ciAppendFeedPager(alertsList,feedId,label,totalFeedItems);
     const rows = [];
 
 const selectEvent = async (ev, rowEl) => {
@@ -15151,6 +15261,7 @@ const selectEvent = async (ev, rowEl) => {
       rows.push(row);
     });
 
+    ciAppendFeedPager(alertsList,feedId,label,totalFeedItems);
     showAlerts();
 
     // Default behaviour for live intelligence:
@@ -18207,3 +18318,5 @@ document.addEventListener("DOMContentLoaded",function(){
 	  
 </body>
 </html>
+
+<!-- CityIntel Live Alerts v44: queue pagination + coordinate-bearing live alert map layer -->
