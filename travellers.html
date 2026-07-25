@@ -250,7 +250,7 @@
   @media(max-width:720px){.drawer-grid{grid-template-columns:1fr}.traveller-drawer{width:100vw}.bulk-actions .btn{font-size:12px}}
 
 
-  /* ── Travellers v15 visual refinement ───────────────────────────────── */
+  /* ── Travellers v16 currently travelling refinement ───────────────────────────────── */
   :root{
     --ci-red:#D01616;
     --ci-red-strong:#ef2b2d;
@@ -568,7 +568,7 @@
 
         <section class="traveller-summary" aria-label="Traveller register summary">
           <article class="summary-tile"><div class="summary-label">Registered travellers</div><div class="summary-value" id="travStatTotal">0</div><div class="summary-note">people currently held in the register</div></article>
-          <article class="summary-tile"><div class="summary-label">In country</div><div class="summary-value" id="travStatInCountry">0</div><div class="summary-note">active travellers presently deployed</div></article>
+          <article class="summary-tile" title="Calculated from the traveller trip window. Records manually marked In country are also included; Completed and Cancelled records are excluded."><div class="summary-label">Currently travelling</div><div class="summary-value" id="travStatInCountry">0</div><div class="summary-note">active trip windows or manually marked in country</div></article>
           <article class="summary-tile"><div class="summary-label">Elevated / critical</div><div class="summary-value" id="travStatPriority">0</div><div class="summary-note">people requiring closer monitoring</div></article>
           <article class="summary-tile"><div class="summary-label">Countries covered</div><div class="summary-value" id="travStatCountries">0</div><div class="summary-note">current and upcoming destinations</div></article>
         </section>
@@ -1165,7 +1165,31 @@ function renderTable(){
   body.innerHTML = '';
 
   const totalTravellers = Array.isArray(travellers) ? travellers.length : 0;
-  const inCountry = travellers.filter(t => String(t?.travelStatus || '').trim().toLowerCase() === 'in country').length;
+
+  // A traveller is currently travelling when today's date falls within the
+  // recorded trip window. A manually selected "In country" status is treated
+  // as an explicit override, while Completed and Cancelled records are always
+  // excluded from the live count.
+  const today = new Date();
+  const localDayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const localDayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+  const parseTripDate = (value, endOfDay = false) => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+    const d = new Date(dateOnly ? `${raw}T${endOfDay ? '23:59:59.999' : '00:00:00'}` : raw);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+  const isCurrentlyTravelling = (t) => {
+    const status = String(t?.travelStatus || '').trim().toLowerCase();
+    if (status === 'completed' || status === 'cancelled') return false;
+    if (status === 'in country') return true;
+    const from = parseTripDate(t?.from, false);
+    const to = parseTripDate(t?.to, true);
+    if (!from && !to) return false;
+    return (!from || from <= localDayEnd) && (!to || to >= localDayStart);
+  };
+  const inCountry = travellers.filter(isCurrentlyTravelling).length;
   const priorityTravellers = travellers.filter(t => ['elevated','critical'].includes(String(t?.riskStatus || t?.status || '').trim().toLowerCase())).length;
   const travellerCountries = new Set(travellers.map(t => String(t?.country || '').trim().toLowerCase()).filter(Boolean)).size;
   const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = String(value); };
