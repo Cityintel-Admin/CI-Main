@@ -621,6 +621,19 @@
   }
   .drawer-label{color:#8797ad;font-weight:800}
   .drawer-value{font-weight:650;color:#edf2f8}
+
+  .asset-quality-strip{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-left:2px solid #ef2b32;
+    border-radius:12px;background:linear-gradient(90deg,rgba(239,43,50,.075),rgba(9,13,17,.9) 34%,rgba(9,13,17,.96));
+  }
+  .asset-quality-main{display:flex;align-items:center;gap:10px;min-width:240px}
+  .asset-quality-dot{width:9px;height:9px;border-radius:999px;background:#ef2b32;box-shadow:0 0 14px rgba(239,43,50,.72);flex:0 0 auto}
+  .asset-quality-strip.is-complete .asset-quality-dot{background:#35d39a;box-shadow:0 0 14px rgba(53,211,154,.55)}
+  .asset-quality-label{font-size:10px;text-transform:uppercase;letter-spacing:.11em;color:#8ea0b7;font-weight:850}
+  .asset-quality-value{font-size:13px;color:#f4f7fb;font-weight:800;margin-top:2px}
+  .asset-quality-hint{font-size:11px;color:#8ea0b7;line-height:1.45;text-align:right;max-width:680px}
+  .summary-value.is-loading{font-size:22px;color:#93a4b9}
   @media(max-width:960px){
     .asset-summary{grid-template-columns:1fr 1fr}
     .assets-hero{align-items:flex-start}
@@ -631,6 +644,7 @@
     .hero-actions{margin-top:13px;justify-content:flex-start}
     .asset-summary{grid-template-columns:1fr 1fr}
     .asset-toolbar{grid-template-columns:1fr}
+    .asset-quality-hint{text-align:left;max-width:none}
     .main{padding:12px}
   }
   @media(max-width:460px){.asset-summary{grid-template-columns:1fr}}
@@ -688,9 +702,17 @@
 
         <section class="asset-summary" aria-label="Asset register summary">
           <article class="summary-tile"><div class="summary-label">Registered assets</div><div class="summary-value" id="assetStatTotal">0</div><div class="summary-note">locations in the organisation register</div></article>
-          <article class="summary-tile"><div class="summary-label">Open sites</div><div class="summary-value" id="assetStatOpen">0</div><div class="summary-note">currently recorded as operational</div></article>
-          <article class="summary-tile"><div class="summary-label">High / critical</div><div class="summary-value" id="assetStatPriority">0</div><div class="summary-note">priority locations requiring attention</div></article>
+          <article class="summary-tile" title="Based on the business criticality assigned to each asset record, not current external threat conditions."><div class="summary-label">High / critical assets</div><div class="summary-value" id="assetStatPriority">0</div><div class="summary-note">assigned business criticality</div></article>
+          <article class="summary-tile" title="Unique mapped assets within an active outage radius or a current / next-7-day protest monitoring radius."><div class="summary-label">Currently exposed</div><div class="summary-value is-loading" id="assetStatExposed">…</div><div class="summary-note" id="assetStatExposedNote">checking mapped intelligence</div></article>
           <article class="summary-tile"><div class="summary-label">Countries covered</div><div class="summary-value" id="assetStatCountries">0</div><div class="summary-note">geographic operating footprint</div></article>
+        </section>
+
+        <section class="asset-quality-strip" id="assetMapQuality" aria-label="Asset location data quality">
+          <div class="asset-quality-main">
+            <span class="asset-quality-dot" aria-hidden="true"></span>
+            <div><div class="asset-quality-label">Map coverage</div><div class="asset-quality-value" id="assetMapCoverage">0 of 0 assets mapped · 0%</div></div>
+          </div>
+          <div class="asset-quality-hint" id="assetMapCoverageHint">Coordinates enable proximity monitoring across CityIntel maps and exposure workflows.</div>
         </section>
 
         <!-- Assets table -->
@@ -769,7 +791,7 @@
           <span class="section-kicker">Location record editor</span><h3>Add / Edit Asset</h3>
           <p class="pill-hint">
             Add critical company locations (HQs, branches, warehouses, plants, data centres, etc.).
-            Lat/Lon are optional but required if you want them on the map.
+            Latitude and longitude are required for new manual records so every asset can participate in map and exposure workflows. Use Auto-locate when coordinates are not known.
           </p>
 
           <form id="assetForm" style="margin-top:10px">
@@ -811,12 +833,12 @@
                 </select>
               </div>
               <div class="field">
-                <label for="assetLat">Latitude</label>
-                <input id="assetLat" type="number" step="0.000001" placeholder="51.5074">
+                <label for="assetLat">Latitude *</label>
+                <input id="assetLat" type="number" step="0.000001" min="-90" max="90" required placeholder="51.5074">
               </div>
               <div class="field">
-                <label for="assetLon">Longitude</label>
-                <input id="assetLon" type="number" step="0.000001" placeholder="-0.1278">
+                <label for="assetLon">Longitude *</label>
+                <input id="assetLon" type="number" step="0.000001" min="-180" max="180" required placeholder="-0.1278">
               </div>
 
               <div class="form-section-title">Operational status</div>
@@ -1116,6 +1138,7 @@
       // Keep local cache in sync so map/test can read it
       saveAssetsOrgAware(assets);
       renderTable();
+      scanAssetExposure();
     }
 
 
@@ -1313,12 +1336,13 @@
       pendingBulkAssets = rows;
       if (!assetBulkPanel || !assetBulkPreview) return;
       assetBulkPanel.classList.add('open');
-      assetBulkMsg.textContent = `${rows.length} valid row${rows.length !== 1 ? 's' : ''} ready to append.`;
+      const unmappedRows = rows.filter(a => !hasValidAssetCoordinates(a)).length;
+      assetBulkMsg.textContent = `${rows.length} valid row${rows.length !== 1 ? 's' : ''} ready to append.${unmappedRows ? ` ${unmappedRows} missing coordinate pair${unmappedRows === 1 ? '' : 's'} will be flagged as unmapped.` : ' All rows are map-ready.'}`;
       const shown = rows.slice(0, 25);
       assetBulkPreview.innerHTML = `
         <table>
-          <thead><tr><th>Name</th><th>Country</th><th>City</th><th>Type</th><th>Status</th><th>Criticality</th><th>Asset Code</th></tr></thead>
-          <tbody>${shown.map(a => `<tr><td>${esc(a.name)}</td><td>${esc(a.country)}</td><td>${esc(a.city)}</td><td>${esc(typeLabel(a.type))}</td><td>${esc(statusLabel(a.status))}</td><td>${esc(criticalityLabel(a.criticality))}</td><td>${esc(a.assetCode)}</td></tr>`).join('')}</tbody>
+          <thead><tr><th>Name</th><th>Country</th><th>City</th><th>Type</th><th>Status</th><th>Criticality</th><th>Mapping</th><th>Asset Code</th></tr></thead>
+          <tbody>${shown.map(a => `<tr><td>${esc(a.name)}</td><td>${esc(a.country)}</td><td>${esc(a.city)}</td><td>${esc(typeLabel(a.type))}</td><td>${esc(statusLabel(a.status))}</td><td>${esc(criticalityLabel(a.criticality))}</td><td><span class="badge ${hasValidAssetCoordinates(a) ? 'badge-low' : 'badge-high'}">${hasValidAssetCoordinates(a) ? 'Mapped' : 'Needs coordinates'}</span></td><td>${esc(a.assetCode)}</td></tr>`).join('')}</tbody>
         </table>
         ${rows.length > shown.length ? `<div class="bulk-msg" style="padding:8px">Showing first ${shown.length} of ${rows.length} rows.</div>` : ''}
       `;
@@ -1373,6 +1397,138 @@
       }
     }
 
+    function hasValidAssetCoordinates(asset){
+      const lat = Number(asset?.lat);
+      const lon = Number(asset?.lon ?? asset?.lng);
+      return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+    }
+
+    function haversineKm(lat1, lon1, lat2, lon2){
+      const toRad = value => Number(value) * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function protestRadiusKm(item){
+      const explicit = Number(item?.impact_radius_km ?? item?.impactRadiusKm ?? item?.radius_km ?? item?.radiusKm);
+      if (Number.isFinite(explicit) && explicit > 0) return Math.min(explicit, 100);
+      const risk = String(item?.risk || item?.severity || '').toLowerCase();
+      if (risk.startsWith('hi') || risk === 'critical') return 25;
+      if (risk.startsWith('med') || risk === 'moderate' || risk === 'warning') return 15;
+      return 7.5;
+    }
+
+    function signalCoordinates(item){
+      const lat = Number(item?.lat ?? item?.latitude ?? item?.geopoint?.lat);
+      const lon = Number(item?.lon ?? item?.lng ?? item?.longitude ?? item?.geopoint?.lon ?? item?.geopoint?.lng);
+      return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+    }
+
+    function normaliseSignalDate(item){
+      const raw = item?.event_at ?? item?.eventAt ?? item?.time ?? item?.date ?? item?.start_time ?? item?.planned_date;
+      const ms = raw ? new Date(raw).getTime() : NaN;
+      return Number.isFinite(ms) ? ms : null;
+    }
+
+    function loadStaticAlertBaseline(){
+      if (Array.isArray(window.alertsData)) return Promise.resolve(window.alertsData);
+      return new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-ci-assets-alert-baseline]');
+        if (existing) {
+          existing.addEventListener('load', () => resolve(Array.isArray(window.alertsData) ? window.alertsData : []), { once:true });
+          existing.addEventListener('error', reject, { once:true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'alerts-data.js';
+        script.async = true;
+        script.dataset.ciAssetsAlertBaseline = '1';
+        script.onload = () => resolve(Array.isArray(window.alertsData) ? window.alertsData : []);
+        script.onerror = () => reject(new Error('Static alert baseline could not be loaded'));
+        document.head.appendChild(script);
+      });
+    }
+
+    let exposureScanSequence = 0;
+    async function scanAssetExposure(){
+      const sequence = ++exposureScanSequence;
+      const valueEl = document.getElementById('assetStatExposed');
+      const noteEl = document.getElementById('assetStatExposedNote');
+      const mappedAssets = assets.filter(hasValidAssetCoordinates);
+
+      if (valueEl) { valueEl.textContent = mappedAssets.length ? '…' : '0'; valueEl.classList.toggle('is-loading', mappedAssets.length > 0); }
+      if (noteEl) noteEl.textContent = mappedAssets.length ? 'checking mapped intelligence' : 'no mapped assets available';
+      if (!mappedAssets.length) return;
+
+      const headers = (() => {
+        try { return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : getAuthHeaders(); }
+        catch (_) { return {}; }
+      })();
+
+      const protestRequest = fetch(`${API_BASE}/api/protests`, { headers })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Protest feed ${r.status}`)))
+        .then(data => Array.isArray(data) ? data : (data?.posts || data?.data || data?.items || []));
+      const outageRequest = fetch(`${API_BASE}/api/power-outages`, { headers })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Power feed ${r.status}`)))
+        .then(data => data?.outages || data?.allOutages || data?.data || data?.items || []);
+      const baselineRequest = loadStaticAlertBaseline();
+
+      const results = await Promise.allSettled([baselineRequest, protestRequest, outageRequest]);
+      if (sequence !== exposureScanSequence) return;
+
+      const now = Date.now();
+      const sevenDays = now + (7 * 24 * 60 * 60 * 1000);
+      const oldestRelevant = now - (12 * 60 * 60 * 1000);
+      const protestSignals = [];
+      const seenProtests = new Set();
+
+      [results[0], results[1]].forEach(result => {
+        if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return;
+        result.value.forEach(item => {
+          const coords = signalCoordinates(item);
+          if (!coords) return;
+          const when = normaliseSignalDate(item);
+          if (when && (when < oldestRelevant || when > sevenDays)) return;
+          const title = String(item?.title || item?.name || 'protest').trim().toLowerCase();
+          const key = `${title}|${when || ''}|${coords.lat.toFixed(4)}|${coords.lon.toFixed(4)}`;
+          if (seenProtests.has(key)) return;
+          seenProtests.add(key);
+          protestSignals.push({ ...coords, radiusKm: protestRadiusKm(item), type:'protest' });
+        });
+      });
+
+      const outageSignals = [];
+      if (results[2].status === 'fulfilled' && Array.isArray(results[2].value)) {
+        results[2].value.forEach(item => {
+          const coords = signalCoordinates(item);
+          if (!coords) return;
+          const state = String(item?.incident_type || item?.status || '').toLowerCase();
+          if (item?.restored_time || state.includes('restor')) return;
+          const explicit = Number(item?.radius_km ?? item?.radiusKm);
+          outageSignals.push({ ...coords, radiusKm:Number.isFinite(explicit) && explicit > 0 ? Math.min(explicit, 50) : 10, type:'power' });
+        });
+      }
+
+      const signals = [...protestSignals, ...outageSignals];
+      const exposed = new Set();
+      mappedAssets.forEach((asset, index) => {
+        const assetLat = Number(asset.lat);
+        const assetLon = Number(asset.lon ?? asset.lng);
+        if (signals.some(signal => haversineKm(assetLat, assetLon, signal.lat, signal.lon) <= signal.radiusKm)) {
+          exposed.add(String(asset.id || asset.assetCode || `${asset.name || 'asset'}-${index}`));
+        }
+      });
+
+      const availableSources = results.filter(result => result.status === 'fulfilled').length;
+      if (valueEl) { valueEl.textContent = String(exposed.size); valueEl.classList.remove('is-loading'); }
+      if (noteEl) {
+        if (!availableSources) noteEl.textContent = 'exposure sources unavailable';
+        else noteEl.textContent = `${signals.length} active / next-7-day mapped signal${signals.length === 1 ? '' : 's'} checked`;
+      }
+    }
+
     function filteredAssets(){
       const ctry = (assetCountryFilter?.value || '').trim();
       const city = (assetCityFilter?.value || '').trim();
@@ -1391,15 +1547,25 @@
       const rows = filteredAssets();
 
       const totalAssets = Array.isArray(assets) ? assets.length : 0;
-      const openAssets = assets.filter(a => String(a?.status || 'open').toLowerCase() === 'open').length;
       const priorityAssets = assets.filter(a => ['high','critical'].includes(String(a?.criticality || '').toLowerCase())).length;
       const assetCountries = new Set(assets.map(a => String(a?.country || '').trim().toLowerCase()).filter(Boolean)).size;
+      const mappedAssets = assets.filter(hasValidAssetCoordinates).length;
+      const mappingPercent = totalAssets ? Math.round((mappedAssets / totalAssets) * 100) : 0;
       const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = String(value); };
       setText('assetStatTotal', totalAssets);
-      setText('assetStatOpen', openAssets);
       setText('assetStatPriority', priorityAssets);
       setText('assetStatCountries', assetCountries);
       setText('assetRegisterCount', `${rows.length} record${rows.length === 1 ? '' : 's'}`);
+      setText('assetMapCoverage', `${mappedAssets} of ${totalAssets} asset${totalAssets === 1 ? '' : 's'} mapped · ${mappingPercent}%`);
+      const qualityStrip = document.getElementById('assetMapQuality');
+      const qualityHint = document.getElementById('assetMapCoverageHint');
+      if (qualityStrip) qualityStrip.classList.toggle('is-complete', totalAssets > 0 && mappedAssets === totalAssets);
+      if (qualityHint) {
+        const missing = Math.max(0, totalAssets - mappedAssets);
+        qualityHint.textContent = missing
+          ? `${missing} record${missing === 1 ? '' : 's'} need valid latitude and longitude before they can appear on maps or enter exposure calculations.`
+          : (totalAssets ? 'Every registered asset is map-ready and included in proximity monitoring.' : 'Coordinates enable proximity monitoring across CityIntel maps and exposure workflows.');
+      }
 
       if (assetRegisterMeta) {
         const bits = [];
@@ -1746,13 +1912,16 @@
 
         const lat = parseFloat(latInput.value);
         const lon = parseFloat(lonInput.value);
-        if (!isNaN(lat)) base.lat = lat;
-        if (!isNaN(lon)) base.lon = lon;
-
         if (!base.name || !base.city || !base.country){
           alert('Please provide at least name, city and country.');
           return;
         }
+        if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lon) || lon < -180 || lon > 180){
+          alert('Please provide a valid latitude and longitude. Use Auto-locate if the coordinates are not known.');
+          return;
+        }
+        base.lat = lat;
+        base.lon = lon;
 
         if (idx >= 0 && assets[idx]){
           assets[idx] = Object.assign({}, assets[idx], base);
@@ -1762,6 +1931,7 @@
 
         saveAssetsOrgAware(assets);
         renderTable();
+        scanAssetExposure();
         clearForm();
       });
     }
@@ -1784,6 +1954,7 @@
         assets.splice(idx,1);
         saveAssetsOrgAware(assets);
         renderTable();
+        scanAssetExposure();
         clearForm();
       });
     }
@@ -1825,6 +1996,7 @@
         assets = assets.concat(pendingBulkAssets);
         saveAssetsOrgAware(assets);
         renderTable();
+        scanAssetExposure();
         pendingBulkAssets = [];
         if (assetBulkPanel) assetBulkPanel.classList.remove('open');
         if (assetCsvFileInput) assetCsvFileInput.value = '';
