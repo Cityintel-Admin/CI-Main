@@ -145,7 +145,7 @@ body{background:radial-gradient(circle at 83% -14%,rgba(208,22,22,.085),transpar
     $('lastUpdated').textContent='Cache checked: '+new Date(health.cacheCheckedAt||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const cacheMeta=$('cacheMeta'), cachePill=$('cachePill');
     const collectionNote=health.collectionAttempted
-      ? ` · provider refresh ${health.collectionOk||0}/${health.collectionAttempted}`
+      ? ` · provider check ${health.collectionOk||0}/${health.collectionAttempted}${Number.isFinite(health.newUnique)?` · ${health.newUnique} new`:''}`
       : '';
     cacheMeta.textContent=rows.length
       ? `${rows.length} cached alert${rows.length===1?'':'s'} · newest alert ${ageLabel(age)} ago${collectionNote}`
@@ -219,7 +219,7 @@ body{background:radial-gradient(circle at 83% -14%,rgba(208,22,22,.085),transpar
   const FEED_STORAGE_KEY='ci_live_feeds_v1';
   const HUB_REFRESH_AT_KEY='ci_monitoring_refresh_completed_at';
   const HUB_REFRESH_HANDOFF_KEY='ci_live_alerts_refresh_handoff';
-  const HUB_REFRESH_COOLDOWN=2*60*1000;
+  const HUB_REFRESH_COOLDOWN=60*1000;
 
   function configuredFeedsFromLocal(){
     try{
@@ -266,9 +266,10 @@ body{background:radial-gradient(circle at 83% -14%,rgba(208,22,22,.085),transpar
     params.set('window','24');
     params.set('trigger','monitoring_hub_refresh');
     params.set('route','monitoring_hub_manual_refresh');
+    const provider=String(feed?.provider||feed?.collection_provider||feed?.collectionProvider||'newsdata').trim().toLowerCase()||'newsdata';
     const urls=[
-      `${API}/api/live-alerts/run-now?${params.toString()}&provider=newsdata`,
-      `${API}/api/live-alerts/run-now?${params.toString()}&provider=newsdata&alt=1`
+      `${API}/api/live-alerts/run-now?${params.toString()}&provider=${encodeURIComponent(provider)}`,
+      `${API}/api/live-alerts/run-now?${params.toString()}&provider=${encodeURIComponent(provider)}&alt=1`
     ];
     for(const url of urls){
       try{
@@ -300,18 +301,36 @@ body{background:radial-gradient(circle at 83% -14%,rgba(208,22,22,.085),transpar
       return {ok:res.ok&&json?.ok!==false,rows:res.ok?normRows(json):[]};
     }catch(e){ console.warn('monitoring cache failed',e); return {ok:false,rows:[]}; }
   }
+  function alertIdentity(a){
+    const explicit=a?.id||a?.event_id||a?.alert_id||a?.url||a?.source_url||'';
+    if(explicit) return String(explicit);
+    return [String(a?.title||a?.name||'').trim().toLowerCase(),String(a?.city||a?.location||'').trim().toLowerCase(),String(whenOf(a)||'').slice(0,16)].join('|');
+  }
+  function newestAlertMs(rows){
+    return (rows||[]).reduce((m,a)=>Math.max(m,Date.parse(whenOf(a))||0),0);
+  }
+  function compareCache(beforeRows,afterRows){
+    const beforeKeys=new Set((beforeRows||[]).map(alertIdentity).filter(Boolean));
+    const newUnique=(afterRows||[]).filter(a=>{const k=alertIdentity(a);return k&&!beforeKeys.has(k);}).length;
+    const beforeNewest=newestAlertMs(beforeRows), afterNewest=newestAlertMs(afterRows);
+    return {newUnique,beforeCount:(beforeRows||[]).length,afterCount:(afterRows||[]).length,newestAdvanced:afterNewest>beforeNewest,beforeNewest,afterNewest};
+  }
+
   async function loadAlerts(options={}){
     const forceCollect=options.forceCollect===true;
     const silent=options.silent===true;
     mountTopActions();
     const btn=$('refreshBtn');
+    const beforeRows=forceCollect ? (allAlerts.length?allAlerts.slice():(await fetchSharedCache()).rows) : [];
     if(forceCollect&&btn){btn.disabled=true;btn.classList.add('is-loading');btn.textContent='Refreshing sources…';}
     if(!silent) setFeedState('',forceCollect?'Refreshing providers and shared cache…':'Checking live monitoring cache…');
     let collection={attempted:0,ok:0,failed:0,events:0};
+    let skippedRecent=false;
     if(forceCollect){
       const last=Number(localStorage.getItem(HUB_REFRESH_AT_KEY)||0);
       if(last&&Date.now()-last<HUB_REFRESH_COOLDOWN){
-        setFeedState('warn','Provider refresh ran recently · rechecking shared cache');
+        skippedRecent=true;
+        setFeedState('warn','A provider check just ran · rechecking the shared cache');
       }else{
         collection=await collectConfiguredFeeds();
       }
@@ -319,18 +338,40 @@ body{background:radial-gradient(circle at 83% -14%,rgba(208,22,22,.085),transpar
     const cache=await fetchSharedCache();
     let rows=cache.rows;
     if(!rows.length) rows=localAlerts();
+    const delta=forceCollect?compareCache(beforeRows,rows):{newUnique:0,beforeCount:0,afterCount:rows.length,newestAdvanced:false};
     const health={
       cacheCheckedAt:Date.now(),
       collectionAttempted:collection.attempted,
       collectionOk:collection.ok,
-      collectionFailed:collection.failed
+      collectionFailed:collection.failed,
+      collectionSkippedRecent:skippedRecent,
+      newUnique:delta.newUnique,
+      newestAdvanced:delta.newestAdvanced,
+      beforeCount:delta.beforeCount,
+      afterCount:delta.afterCount
     };
     renderAll(rows,health);
+    if(forceCollect){
+      const guidance=$('guidanceText');
+      if(skippedRecent){
+        setFeedState('warn','Recent provider check reused · shared cache rechecked');
+        if(guidance) guidance.textContent='A provider refresh completed less than one minute ago, so CityIntel reused it and rechecked the shared cache.';
+      }else if(collection.failed&&collection.ok===0){
+        setFeedState('warn',`Provider check delayed · 0/${collection.attempted} feeds responded`);
+        if(guidance) guidance.textContent='The shared cache remains available, but the immediate provider request did not complete. Live Alerts can continue from cached intelligence.';
+      }else if(delta.newUnique>0){
+        setFeedState('',`Provider check complete · ${delta.newUnique} new cached alert${delta.newUnique===1?'':'s'}`);
+        if(guidance) guidance.textContent=`${collection.ok}/${collection.attempted} configured feeds responded. ${delta.newUnique} new unique alert${delta.newUnique===1?' was':'s were'} added to the shared cache.`;
+      }else{
+        setFeedState('',`Provider check complete · no newer alerts returned`);
+        if(guidance) guidance.textContent=`${collection.ok}/${collection.attempted} configured feeds responded, but the provider returned no alert newer than the current cache. The newest-alert age will therefore remain unchanged.`;
+      }
+    }
     if(forceCollect&&collection.ok>0){
       const completedAt=Date.now();
       try{
         localStorage.setItem(HUB_REFRESH_AT_KEY,String(completedAt));
-        localStorage.setItem(HUB_REFRESH_HANDOFF_KEY,JSON.stringify({at:completedAt,feeds:collection.ok,events:collection.events}));
+        localStorage.setItem(HUB_REFRESH_HANDOFF_KEY,JSON.stringify({at:completedAt,feeds:collection.ok,events:collection.events,newUnique:delta.newUnique}));
       }catch(_){}
     }
     if(forceCollect&&btn){btn.disabled=false;btn.classList.remove('is-loading');btn.textContent='↻ Refresh data';}
