@@ -5344,7 +5344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
     <div class="ci-live-loading-spinner" aria-hidden="true"></div>
     <div class="ci-live-loading-title">Loading Live Alerts</div>
-    <div class="ci-live-loading-status" id="ciLiveLoadingStatus">Synchronising organisation and alert intelligence…</div>
+    <div class="ci-live-loading-status" id="ciLiveLoadingStatus">Preparing organisation, feed and exposure intelligence…</div>
     <div class="ci-live-loading-domains" aria-hidden="true">
       <span><i style="background:#ef4444"></i>Alerts</span>
       <span><i style="background:#f59e0b"></i>Protests</span>
@@ -5357,32 +5357,45 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 
-<script id="ci-live-alerts-v41-loading-script">
+<script id="ci-live-alerts-v43-loading-script">
 (function(){
-  let hidden = false;
-  try {
-    const navEntry = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
-    window.CI_INITIAL_COLLECTION_TRIGGER = navEntry && navEntry.type === 'reload' ? 'hard_refresh' : 'page_load';
-  } catch (_) {
-    window.CI_INITIAL_COLLECTION_TRIGGER = 'page_load';
-  }
-  window.ciSetLiveLoadingStatus = function(message){
-    const el = document.getElementById('ciLiveLoadingStatus');
-    if (el && message) el.textContent = message;
+  const startedAt=Date.now();
+  const minimumVisibleMs=1400;
+  let hidden=false;
+  let hideTimer=null;
+  try{
+    const handoff=JSON.parse(localStorage.getItem('ci_live_alerts_refresh_handoff')||'null');
+    const recent=handoff&&Number(handoff.at)&&Date.now()-Number(handoff.at)<3*60*1000;
+    window.CI_RECENT_HUB_REFRESH=!!recent;
+  }catch(_){window.CI_RECENT_HUB_REFRESH=false;}
+  try{
+    const navEntry=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||null;
+    window.CI_INITIAL_COLLECTION_TRIGGER=window.CI_RECENT_HUB_REFRESH
+      ? 'hub_refresh_reuse'
+      : (navEntry&&navEntry.type==='reload'?'hard_refresh':'page_load');
+  }catch(_){window.CI_INITIAL_COLLECTION_TRIGGER=window.CI_RECENT_HUB_REFRESH?'hub_refresh_reuse':'page_load';}
+  window.ciSetLiveLoadingStatus=function(message){
+    const el=document.getElementById('ciLiveLoadingStatus');
+    if(el&&message&&!hidden) el.textContent=message;
   };
-  window.ciHideLiveLoadingOverlay = function(){
-    if (hidden) return;
-    hidden = true;
-    const overlay = document.getElementById('ciLiveLoadingOverlay');
-    if (!overlay) return;
-    overlay.setAttribute('aria-busy','false');
-    overlay.classList.add('hidden');
-    window.setTimeout(()=>{ overlay.style.display='none'; }, 360);
+  window.ciHideLiveLoadingOverlay=function(){
+    if(hidden||hideTimer) return;
+    const wait=Math.max(0,minimumVisibleMs-(Date.now()-startedAt));
+    hideTimer=window.setTimeout(()=>{
+      hidden=true;
+      const overlay=document.getElementById('ciLiveLoadingOverlay');
+      if(!overlay) return;
+      overlay.setAttribute('aria-busy','false');
+      overlay.classList.add('hidden');
+      window.setTimeout(()=>{overlay.style.display='none';},360);
+    },wait);
   };
-  // Never trap the operator behind the overlay if a secondary integration stalls.
-  window.setTimeout(()=>window.ciHideLiveLoadingOverlay && window.ciHideLiveLoadingOverlay(), 6000);
-  document.addEventListener('DOMContentLoaded', ()=>{ try{ window.ciHideLiveLoadingOverlay && window.ciHideLiveLoadingOverlay(); }catch(_){} }, {once:true});
-  window.addEventListener('pageshow', ()=>{ window.setTimeout(()=>{ try{ window.ciHideLiveLoadingOverlay && window.ciHideLiveLoadingOverlay(); }catch(_){} }, 250); });
+  window.setTimeout(()=>window.ciSetLiveLoadingStatus?.('Preparing feed layout and organisation context…'),250);
+  window.setTimeout(()=>window.ciSetLiveLoadingStatus?.(window.CI_RECENT_HUB_REFRESH?'Using the fresh Monitoring Hub cache…':'Restoring stored alerts and operator queues…'),900);
+  window.setTimeout(()=>window.ciSetLiveLoadingStatus?.('Synchronising map, exposure and protest intelligence…'),2200);
+  // Safety release: optional integrations must never trap the operator.
+  window.setTimeout(()=>window.ciHideLiveLoadingOverlay?.(),9000);
+  window.addEventListener('pageshow',event=>{if(event.persisted) window.setTimeout(()=>window.ciHideLiveLoadingOverlay?.(),250);});
 })();
 </script>
 
@@ -10250,7 +10263,9 @@ async function refreshSingleFeedCard(cardEl, feed, options = {}){
 
     // 3) Pull fresh alerts for this feed. For live feeds this uses /api/live-alerts/run-now,
     // which stores the same events back to D1 for future missed-alert recovery.
-    const fresh = await fetchMockEventsForFeed(feed, options.trigger || 'page_load');
+    const fresh = options.skipProviderRun === true
+      ? []
+      : await fetchMockEventsForFeed(feed, options.trigger || 'page_load');
     if (fresh && fresh.length) combined.push(...fresh);
 
     // 4) Merge with browser archive so the card does not blank if a request returns zero.
@@ -11256,7 +11271,10 @@ try {
   }
 
 // 3) always go fetch fresh + schedule
-refreshSingleFeedCard(card, feed, { trigger:window.CI_INITIAL_COLLECTION_TRIGGER || 'page_load' });
+refreshSingleFeedCard(card, feed, {
+  trigger:window.CI_INITIAL_COLLECTION_TRIGGER || 'page_load',
+  skipProviderRun:window.CI_RECENT_HUB_REFRESH === true
+});
 	    // after all cards are created / refreshed
   recomputeGlobalStrip();
   // Yield between feed cards so a large archive cannot monopolise the browser UI thread.
@@ -11277,16 +11295,30 @@ refreshSingleFeedCard(card, feed, { trigger:window.CI_INITIAL_COLLECTION_TRIGGER
 // -------------------- INIT --------------------
 renderFeeds()
   .then(async ()=>{
-    try { window.ciHideLiveLoadingOverlay && window.ciHideLiveLoadingOverlay(); } catch(_){}
     try {
-      window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus('Restoring persistent alerts and merging protest intelligence…');
-      await syncPersistentCacheToFeeds({ renderCards:true });
+      window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus(
+        window.CI_RECENT_HUB_REFRESH
+          ? 'Loading the fresh Monitoring Hub cache into feeds and queues…'
+          : 'Restoring persistent alerts and operator queues…'
+      );
+      await Promise.race([
+        syncPersistentCacheToFeeds({ renderCards:true }),
+        new Promise(resolve=>setTimeout(resolve,2800))
+      ]);
     } catch(e) { console.warn('CityIntel: initial cache sync failed', e); }
     try {
+      window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus('Merging verified protest intelligence…');
       if (typeof window.ciLoadConsolidatedProtestData === 'function') {
-        await window.ciLoadConsolidatedProtestData({ force:false });
+        await Promise.race([
+          window.ciLoadConsolidatedProtestData({ force:false }),
+          new Promise(resolve=>setTimeout(resolve,1800))
+        ]);
       }
     } catch(e) { console.warn('CityIntel: protest source merge delayed', e); }
+    try {
+      window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus('Finalising map, queues and exposure overlays…');
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    } catch(_) {}
     markLiveUpdated();
     const modeText = (window.CILiveStatus && window.CILiveStatus.modeText) || 'Org data';
     setLiveStatus({ sync:'ok', syncText:'Alerts ready', mode:'ok', modeText });
