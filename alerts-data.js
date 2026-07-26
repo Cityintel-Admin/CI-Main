@@ -21,6 +21,3650 @@ window.alertsData =[
 },
 
 
+
+
+
+{
+  title: "Cork Weekly Palestine Solidarity Protest",
+  city: "Cork",
+  lat: 51.897800,
+  lng: -8.474400,
+  address: "Grand Parade, Cork City",
+  postcode: "T12",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.instagram.com/corkpalestinesolidarity/p/DIbCLuSs64S/",
+  summary: "Cork Palestine Solidarity Campaign confirms that its public Palestine solidarity protest takes place every Saturday at 13:00 on Grand Parade in Cork city. Participants call for justice for Palestinians, an end to the siege of Gaza and an end to attacks on civilians. This current organiser announcement explicitly continues the weekly physical action through the August period, so each Saturday has been entered separately. Risk assessed as Low because the gathering is an established peaceful city-centre protest, although localised pedestrian congestion, Garda monitoring and short traffic effects around Grand Parade are possible."
+},
+
+{
+  title: "Cork Weekly Palestine Solidarity Protest",
+  city: "Cork",
+  lat: 51.897800,
+  lng: -8.474400,
+  address: "Grand Parade, Cork City",
+  postcode: "T12",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T13:00:00",
+  source: "https://www.instagram.com/corkpalestinesolidarity/p/DIbCLuSs64S/",
+  summary: "Cork Palestine Solidarity Campaign confirms that its public Palestine solidarity protest takes place every Saturday at 13:00 on Grand Parade in Cork city. Participants call for justice for Palestinians, an end to the siege of Gaza and an end to attacks on civilians. This current organiser announcement explicitly continues the weekly physical action through the August period, so each Saturday has been entered separately. Risk assessed as Low because the gathering is an established peaceful city-centre protest, although localised pedestrian congestion, Garda monitoring and short traffic effects around Grand Parade are possible."
+},
+
+{
+  title: "Cork Weekly Palestine Solidarity Protest",
+  city: "Cork",
+  lat: 51.897800,
+  lng: -8.474400,
+  address: "Grand Parade, Cork City",
+  postcode: "T12",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T13:00:00",
+  source: "https://www.instagram.com/corkpalestinesolidarity/p/DIbCLuSs64S/",
+  summary: "Cork Palestine Solidarity Campaign confirms that its public Palestine solidarity protest takes place every Saturday at 13:00 on Grand Parade in Cork city. Participants call for justice for Palestinians, an end to the siege of Gaza and an end to attacks on civilians. This current organiser announcement explicitly continues the weekly physical action through the August period, so each Saturday has been entered separately. Risk assessed as Low because the gathering is an established peaceful city-centre protest, although localised pedestrian congestion, Garda monitoring and short traffic effects around Grand Parade are possible."
+},
+
+{
+  title: "Cork Weekly Palestine Solidarity Protest",
+  city: "Cork",
+  lat: 51.897800,
+  lng: -8.474400,
+  address: "Grand Parade, Cork City",
+  postcode: "T12",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T13:00:00",
+  source: "https://www.instagram.com/corkpalestinesolidarity/p/DIbCLuSs64S/",
+  summary: "Cork Palestine Solidarity Campaign confirms that its public Palestine solidarity protest takes place every Saturday at 13:00 on Grand Parade in Cork city. Participants call for justice for Palestinians, an end to the siege of Gaza and an end to attacks on civilians. This current organiser announcement explicitly continues the weekly physical action through the August period, so each Saturday has been entered separately. Risk assessed as Low because the gathering is an established peaceful city-centre protest, although localised pedestrian congestion, Garda monitoring and short traffic effects around Grand Parade are possible."
+},
+
+{
+  title: "Cork Weekly Palestine Solidarity Protest",
+  city: "Cork",
+  lat: 51.897800,
+  lng: -8.474400,
+  address: "Grand Parade, Cork City",
+  postcode: "T12",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://www.instagram.com/corkpalestinesolidarity/p/DIbCLuSs64S/",
+  summary: "Cork Palestine Solidarity Campaign confirms that its public Palestine solidarity protest takes place every Saturday at 13:00 on Grand Parade in Cork city. Participants call for justice for Palestinians, an end to the siege of Gaza and an end to attacks on civilians. This current organiser announcement explicitly continues the weekly physical action through the August period, so each Saturday has been entered separately. Risk assessed as Low because the gathering is an established peaceful city-centre protest, although localised pedestrian congestion, Garda monitoring and short traffic effects around Grand Parade are possible."
+},
+
+{
+  title: "Healthcare Workers for Palestine Weekly Candlelight Vigil",
+  city: "Galway",
+  lat: 53.276800,
+  lng: -9.065600,
+  address: "Front gates, University Hospital Galway, Newcastle Road",
+  postcode: "H91 YR71",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-04T19:00:00",
+  source: "https://www.instagram.com/galway_ipsc/",
+  summary: "Galway Palestine Solidarity Campaign confirms that healthcare workers assemble every Tuesday evening from 19:00 to 20:00 at the front gates of University Hospital Galway for a candlelight vigil in solidarity with Palestinians and healthcare staff affected by the conflict. The organiser's current recurring notice establishes the physical location, weekday and continuing schedule, so the four August Tuesdays have been recorded separately. Risk assessed as Low because this is a peaceful static vigil with limited operational impact beyond minor pedestrian concentration at the hospital entrance."
+},
+
+{
+  title: "Healthcare Workers for Palestine Weekly Candlelight Vigil",
+  city: "Galway",
+  lat: 53.276800,
+  lng: -9.065600,
+  address: "Front gates, University Hospital Galway, Newcastle Road",
+  postcode: "H91 YR71",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-11T19:00:00",
+  source: "https://www.instagram.com/galway_ipsc/",
+  summary: "Galway Palestine Solidarity Campaign confirms that healthcare workers assemble every Tuesday evening from 19:00 to 20:00 at the front gates of University Hospital Galway for a candlelight vigil in solidarity with Palestinians and healthcare staff affected by the conflict. The organiser's current recurring notice establishes the physical location, weekday and continuing schedule, so the four August Tuesdays have been recorded separately. Risk assessed as Low because this is a peaceful static vigil with limited operational impact beyond minor pedestrian concentration at the hospital entrance."
+},
+
+{
+  title: "Healthcare Workers for Palestine Weekly Candlelight Vigil",
+  city: "Galway",
+  lat: 53.276800,
+  lng: -9.065600,
+  address: "Front gates, University Hospital Galway, Newcastle Road",
+  postcode: "H91 YR71",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-18T19:00:00",
+  source: "https://www.instagram.com/galway_ipsc/",
+  summary: "Galway Palestine Solidarity Campaign confirms that healthcare workers assemble every Tuesday evening from 19:00 to 20:00 at the front gates of University Hospital Galway for a candlelight vigil in solidarity with Palestinians and healthcare staff affected by the conflict. The organiser's current recurring notice establishes the physical location, weekday and continuing schedule, so the four August Tuesdays have been recorded separately. Risk assessed as Low because this is a peaceful static vigil with limited operational impact beyond minor pedestrian concentration at the hospital entrance."
+},
+
+{
+  title: "Healthcare Workers for Palestine Weekly Candlelight Vigil",
+  city: "Galway",
+  lat: 53.276800,
+  lng: -9.065600,
+  address: "Front gates, University Hospital Galway, Newcastle Road",
+  postcode: "H91 YR71",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-25T19:00:00",
+  source: "https://www.instagram.com/galway_ipsc/",
+  summary: "Galway Palestine Solidarity Campaign confirms that healthcare workers assemble every Tuesday evening from 19:00 to 20:00 at the front gates of University Hospital Galway for a candlelight vigil in solidarity with Palestinians and healthcare staff affected by the conflict. The organiser's current recurring notice establishes the physical location, weekday and continuing schedule, so the four August Tuesdays have been recorded separately. Risk assessed as Low because this is a peaceful static vigil with limited operational impact beyond minor pedestrian concentration at the hospital entrance."
+},
+
+{
+  title: "Monkstown Weekly Community Vigil for Palestine",
+  city: "Monkstown",
+  lat: 53.294000,
+  lng: -6.153800,
+  address: "Triantán na Palaistíne (The Triangle), Monkstown Village, County Dublin",
+  postcode: "A94",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T18:00:00",
+  source: "https://www.instagram.com/reel/DauufatINNr/",
+  summary: "Dún Laoghaire for Palestine and community organisers confirm a weekly vigil every Sunday from 18:00 to 18:30 at Triantán na Palaistíne, known as The Triangle, in Monkstown Village. The physical gathering uses songs, poetry, music and public solidarity messages to oppose the war in Gaza and support Palestinian rights. The current recurring notice confirms continuation without an announced end date, so each August Sunday has been entered separately. Risk assessed as Low because the vigil is small, established and peaceful, with only minor pedestrian concentration expected in the village centre."
+},
+
+{
+  title: "Monkstown Weekly Community Vigil for Palestine",
+  city: "Monkstown",
+  lat: 53.294000,
+  lng: -6.153800,
+  address: "Triantán na Palaistíne (The Triangle), Monkstown Village, County Dublin",
+  postcode: "A94",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T18:00:00",
+  source: "https://www.instagram.com/reel/DauufatINNr/",
+  summary: "Dún Laoghaire for Palestine and community organisers confirm a weekly vigil every Sunday from 18:00 to 18:30 at Triantán na Palaistíne, known as The Triangle, in Monkstown Village. The physical gathering uses songs, poetry, music and public solidarity messages to oppose the war in Gaza and support Palestinian rights. The current recurring notice confirms continuation without an announced end date, so each August Sunday has been entered separately. Risk assessed as Low because the vigil is small, established and peaceful, with only minor pedestrian concentration expected in the village centre."
+},
+
+{
+  title: "Monkstown Weekly Community Vigil for Palestine",
+  city: "Monkstown",
+  lat: 53.294000,
+  lng: -6.153800,
+  address: "Triantán na Palaistíne (The Triangle), Monkstown Village, County Dublin",
+  postcode: "A94",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T18:00:00",
+  source: "https://www.instagram.com/reel/DauufatINNr/",
+  summary: "Dún Laoghaire for Palestine and community organisers confirm a weekly vigil every Sunday from 18:00 to 18:30 at Triantán na Palaistíne, known as The Triangle, in Monkstown Village. The physical gathering uses songs, poetry, music and public solidarity messages to oppose the war in Gaza and support Palestinian rights. The current recurring notice confirms continuation without an announced end date, so each August Sunday has been entered separately. Risk assessed as Low because the vigil is small, established and peaceful, with only minor pedestrian concentration expected in the village centre."
+},
+
+{
+  title: "Monkstown Weekly Community Vigil for Palestine",
+  city: "Monkstown",
+  lat: 53.294000,
+  lng: -6.153800,
+  address: "Triantán na Palaistíne (The Triangle), Monkstown Village, County Dublin",
+  postcode: "A94",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T18:00:00",
+  source: "https://www.instagram.com/reel/DauufatINNr/",
+  summary: "Dún Laoghaire for Palestine and community organisers confirm a weekly vigil every Sunday from 18:00 to 18:30 at Triantán na Palaistíne, known as The Triangle, in Monkstown Village. The physical gathering uses songs, poetry, music and public solidarity messages to oppose the war in Gaza and support Palestinian rights. The current recurring notice confirms continuation without an announced end date, so each August Sunday has been entered separately. Risk assessed as Low because the vigil is small, established and peaceful, with only minor pedestrian concentration expected in the village centre."
+},
+
+{
+  title: "Monkstown Weekly Community Vigil for Palestine",
+  city: "Monkstown",
+  lat: 53.294000,
+  lng: -6.153800,
+  address: "Triantán na Palaistíne (The Triangle), Monkstown Village, County Dublin",
+  postcode: "A94",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T18:00:00",
+  source: "https://www.instagram.com/reel/DauufatINNr/",
+  summary: "Dún Laoghaire for Palestine and community organisers confirm a weekly vigil every Sunday from 18:00 to 18:30 at Triantán na Palaistíne, known as The Triangle, in Monkstown Village. The physical gathering uses songs, poetry, music and public solidarity messages to oppose the war in Gaza and support Palestinian rights. The current recurring notice confirms continuation without an announced end date, so each August Sunday has been entered separately. Risk assessed as Low because the vigil is small, established and peaceful, with only minor pedestrian concentration expected in the village centre."
+},
+
+{
+  title: "Cork Community Pride Parade 2026",
+  city: "Cork",
+  lat: 51.897800,
+  lng: -8.474400,
+  address: "Grand Parade, Cork City — circular city-centre route returning to Grand Parade",
+  postcode: "T12",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-02T13:00:00",
+  source: "https://www.corkcommunitypride.ie/parade/",
+  summary: "Cork Community Pride confirms its public Pride parade for Sunday 2 August 2026, with assembly at 13:00 on Grand Parade and a city-centre march starting and ending there. Organisers invite community groups and the public to march for LGBTQIA+ visibility, equality and solidarity. The event is distinct from the separate family picnic and qualifies as a physical rights mobilisation. Risk assessed as Medium because the parade will occupy central streets for several hours and is likely to require rolling traffic controls, stewarding and Garda support, although no specific disorder threat has been identified."
+},
+
+{
+  title: "Galway Community Pride Parade — Still We Rise",
+  city: "Galway",
+  lat: 53.274400,
+  lng: -9.042400,
+  address: "Galway City Hall, College Road to Fr Burke Park",
+  postcode: "H91 X4K8",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T12:00:00",
+  source: "https://www.transportforireland.ie/events/galway-community-pride/",
+  summary: "Galway Community Pride and Transport for Ireland confirm a public Pride parade on Saturday 8 August 2026 from 12:00 to 14:00. The march begins at Galway City Hall on College Road and proceeds to Fr Burke Park under the 2026 theme 'Still We Rise', promoting LGBTQIA+ rights, visibility and community solidarity. Transport authorities warn that road closures, route changes and bus diversions may operate before, during and after the parade. Risk assessed as Medium because of the rolling city-centre route, crowd size and transport disruption rather than an expectation of unrest."
+},
+
+{
+  title: "Longford Pride Parade 2026",
+  city: "Longford",
+  lat: 53.729000,
+  lng: -7.798500,
+  address: "Connolly Barracks, Church Street to Market Square via Bridge Street, Main Street and Ballymahon Street",
+  postcode: "N39",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T16:00:00",
+  source: "https://www.longfordcoco.ie/services/roads/temporary-road-closures/temporary-road-closure-longford-pride-parade-2026.html",
+  summary: "Longford Pride and Longford County Council confirm the 2026 Pride parade for Saturday 8 August. Participants meet from 15:30 at Connolly Barracks and the parade begins at approximately 16:00, travelling through Bridge Street, Main Street and Ballymahon Street to Market Square. The council has authorised road closures from 15:30 to 17:30 to facilitate the march. The event promotes LGBTQIA+ visibility, equality and community inclusion. Risk assessed as Medium because the route crosses the town centre and requires full temporary road closures and signed diversions, although the organised parade is expected to remain peaceful."
+},
+
+{
+  title: "Trans Pride Limerick 2026 — Celebrate and Protest",
+  city: "Limerick",
+  lat: 52.663900,
+  lng: -8.626700,
+  address: "Bedford Row, Limerick City",
+  postcode: "V94",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T16:00:00",
+  source: "https://www.instagram.com/transpridelimerickk/",
+  summary: "Trans Pride Limerick confirms its third annual Pride and protest gathering at Bedford Row on Saturday 22 August 2026 at 16:00. Organisers explicitly invite participants to 'celebrate and protest', establishing a current-year physical mobilisation focused on transgender rights, visibility, safety and community solidarity. No march route has yet been published, so the record remains mapped as a static Bedford Row gathering rather than an inferred parade. Risk assessed as Low because the event is expected to be peaceful and comparatively small, with limited pedestrian congestion in the central shopping area."
+},
+
+{
+  title: "Solidarity Swim for Gaza — Dublin 2026",
+  city: "Sutton",
+  lat: 53.384000,
+  lng: -6.101500,
+  address: "Burrow Beach, Burrow Road, Sutton, Dublin",
+  postcode: "D13 DP65",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T13:30:00",
+  source: "https://www.ipsc.ie/event/solidarity-swim-for-gaza-dublin-2026",
+  summary: "The Ireland-Palestine Solidarity Campaign confirms a physical Solidarity Swim for Gaza at Burrow Beach in Sutton on Sunday 16 August 2026 from 13:30 to 15:00. Participants are invited to swim, paddle, wade or gather at the shoreline to demonstrate solidarity with Palestinians and raise public awareness. Risk assessed as Low because this is an organised peaceful campaigning action at a beach rather than a disruptive march, although water safety, beach access and local parking pressure will require attention. Any temporary bathing-water warning in force nearer the date should be checked before attendance."
+},
+
+{
+  title: "Dublin to Belfast Palestine Solidarity Cycle — Day 1",
+  city: "Portmarnock",
+  lat: 53.422900,
+  lng: -6.148800,
+  address: "Naomh Mearnóg GAA Club, Blackwood Lane, Portmarnock, County Dublin",
+  postcode: "D13",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T10:00:00",
+  source: "https://eventmaster.ie/event/7ZpjIyeFdv",
+  summary: "Cycle for Palestine Ireland confirms the first day of a permitted two-day solidarity cycle from Dublin to Belfast on Saturday 15 August 2026 at 10:00. Day 1 begins at Naomh Mearnóg GAA Club in Portmarnock and follows a published road route north, with refreshment and rest stops approximately every 25 kilometres. Organisers describe the action as bringing Palestine to the streets and calling for freedom, justice and equality. Risk assessed as Medium because a large group of cyclists will travel over a long public-road route and may cause temporary traffic interaction at the start and along the course, although the pace is described as leisurely and the event permit has been approved."
+},
+
+  
+  
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 1 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 2 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-03T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 3 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-04T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 4 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-05T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 5 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 6 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 7 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 8 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 9 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-10T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 10 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-11T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 11 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-12T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 12 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-13T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 13 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 14 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 15 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 16 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-17T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 17 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-18T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 18 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-19T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 19 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-20T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 20 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-21T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 21 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 22 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 23 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-24T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 24 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-25T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 25 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 26 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-27T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 27 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 28 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 29 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 30 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.349560,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current, actively maintained Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 31 August 2026. The physical action calls for public solidarity with Palestinians and continued pressure over the war in Gaza. Expected attendance is not recorded. Risk assessed as Low because this is an established recurring static gathering; visible police monitoring, pedestrian congestion and short local access controls remain possible at the prominent central-city location."
+},
+
+{
+  title: "Ghent Weekly Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.054010,
+  lng: 3.724380,
+  address: "Stadshal, Poeljemarkt, Ghent",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "Belgium’s maintained YOUCA protest agenda confirms a Gaza solidarity protest beneath the Stadshal in Ghent every Thursday at 19:00, including Thursday 6 August 2026. The gathering is a physical public protest supporting Palestinian rights and calling attention to the continuing conflict and humanitarian conditions in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring, static and established, although local crowding and police observation may occur around the Stadshal and Poeljemarkt."
+},
+
+{
+  title: "Ghent Weekly Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.054010,
+  lng: 3.724380,
+  address: "Stadshal, Poeljemarkt, Ghent",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-13T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "Belgium’s maintained YOUCA protest agenda confirms a Gaza solidarity protest beneath the Stadshal in Ghent every Thursday at 19:00, including Thursday 13 August 2026. The gathering is a physical public protest supporting Palestinian rights and calling attention to the continuing conflict and humanitarian conditions in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring, static and established, although local crowding and police observation may occur around the Stadshal and Poeljemarkt."
+},
+
+{
+  title: "Ghent Weekly Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.054010,
+  lng: 3.724380,
+  address: "Stadshal, Poeljemarkt, Ghent",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-20T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "Belgium’s maintained YOUCA protest agenda confirms a Gaza solidarity protest beneath the Stadshal in Ghent every Thursday at 19:00, including Thursday 20 August 2026. The gathering is a physical public protest supporting Palestinian rights and calling attention to the continuing conflict and humanitarian conditions in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring, static and established, although local crowding and police observation may occur around the Stadshal and Poeljemarkt."
+},
+
+{
+  title: "Ghent Weekly Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.054010,
+  lng: 3.724380,
+  address: "Stadshal, Poeljemarkt, Ghent",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-27T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "Belgium’s maintained YOUCA protest agenda confirms a Gaza solidarity protest beneath the Stadshal in Ghent every Thursday at 19:00, including Thursday 27 August 2026. The gathering is a physical public protest supporting Palestinian rights and calling attention to the continuing conflict and humanitarian conditions in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring, static and established, although local crowding and police observation may occur around the Stadshal and Poeljemarkt."
+},
+
+{
+  title: "Liberation Fridays Leuven — Gaza Solidarity Protest",
+  city: "Leuven",
+  lat: 50.881111,
+  lng: 4.715000,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T18:00:00",
+  source: "https://www.instagram.com/liberation.fridays.leuven?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw%3D%3D",
+  summary: "Liberation Fridays Leuven and YOUCA’s current protest agenda confirm a weekly public demonstration at Martelarenplein every Friday at 18:00, including Friday 7 August 2026. The action promotes collective liberation and solidarity with Palestine and is held at the principal railway-station square. Expected attendance is not recorded. Risk assessed as Low because it is an established static protest, with limited pedestrian congestion and a possible visible police presence around the station forecourt."
+},
+
+{
+  title: "Liberation Fridays Leuven — Gaza Solidarity Protest",
+  city: "Leuven",
+  lat: 50.881111,
+  lng: 4.715000,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T18:00:00",
+  source: "https://www.instagram.com/liberation.fridays.leuven?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw%3D%3D",
+  summary: "Liberation Fridays Leuven and YOUCA’s current protest agenda confirm a weekly public demonstration at Martelarenplein every Friday at 18:00, including Friday 14 August 2026. The action promotes collective liberation and solidarity with Palestine and is held at the principal railway-station square. Expected attendance is not recorded. Risk assessed as Low because it is an established static protest, with limited pedestrian congestion and a possible visible police presence around the station forecourt."
+},
+
+{
+  title: "Liberation Fridays Leuven — Gaza Solidarity Protest",
+  city: "Leuven",
+  lat: 50.881111,
+  lng: 4.715000,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-21T18:00:00",
+  source: "https://www.instagram.com/liberation.fridays.leuven?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw%3D%3D",
+  summary: "Liberation Fridays Leuven and YOUCA’s current protest agenda confirm a weekly public demonstration at Martelarenplein every Friday at 18:00, including Friday 21 August 2026. The action promotes collective liberation and solidarity with Palestine and is held at the principal railway-station square. Expected attendance is not recorded. Risk assessed as Low because it is an established static protest, with limited pedestrian congestion and a possible visible police presence around the station forecourt."
+},
+
+{
+  title: "Liberation Fridays Leuven — Gaza Solidarity Protest",
+  city: "Leuven",
+  lat: 50.881111,
+  lng: 4.715000,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T18:00:00",
+  source: "https://www.instagram.com/liberation.fridays.leuven?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw%3D%3D",
+  summary: "Liberation Fridays Leuven and YOUCA’s current protest agenda confirm a weekly public demonstration at Martelarenplein every Friday at 18:00, including Friday 28 August 2026. The action promotes collective liberation and solidarity with Palestine and is held at the principal railway-station square. Expected attendance is not recorded. Risk assessed as Low because it is an established static protest, with limited pedestrian congestion and a possible visible police presence around the station forecourt."
+},
+
+{
+  title: "Antwerp Weekly Palestine Solidarity Action",
+  city: "Antwerp",
+  lat: 51.221300,
+  lng: 4.399200,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-03T19:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings and Belgium’s maintained protest agenda confirm a Palestine solidarity action outside Antwerp City Hall every Monday at 19:00, including Monday 3 August 2026. The gathering publicly calls for protection of Palestinian civilians, accountability and political action concerning Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is an established recurring static protest, although the politically sensitive City Hall location may bring police monitoring and temporary restrictions around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Weekly Palestine Solidarity Action",
+  city: "Antwerp",
+  lat: 51.221300,
+  lng: 4.399200,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-10T19:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings and Belgium’s maintained protest agenda confirm a Palestine solidarity action outside Antwerp City Hall every Monday at 19:00, including Monday 10 August 2026. The gathering publicly calls for protection of Palestinian civilians, accountability and political action concerning Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is an established recurring static protest, although the politically sensitive City Hall location may bring police monitoring and temporary restrictions around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Weekly Palestine Solidarity Action",
+  city: "Antwerp",
+  lat: 51.221300,
+  lng: 4.399200,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-17T19:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings and Belgium’s maintained protest agenda confirm a Palestine solidarity action outside Antwerp City Hall every Monday at 19:00, including Monday 17 August 2026. The gathering publicly calls for protection of Palestinian civilians, accountability and political action concerning Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is an established recurring static protest, although the politically sensitive City Hall location may bring police monitoring and temporary restrictions around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Weekly Palestine Solidarity Action",
+  city: "Antwerp",
+  lat: 51.221300,
+  lng: 4.399200,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-24T19:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings and Belgium’s maintained protest agenda confirm a Palestine solidarity action outside Antwerp City Hall every Monday at 19:00, including Monday 24 August 2026. The gathering publicly calls for protection of Palestinian civilians, accountability and political action concerning Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is an established recurring static protest, although the politically sensitive City Hall location may bring police monitoring and temporary restrictions around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Weekly Palestine Solidarity Action",
+  city: "Antwerp",
+  lat: 51.221300,
+  lng: 4.399200,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T19:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings and Belgium’s maintained protest agenda confirm a Palestine solidarity action outside Antwerp City Hall every Monday at 19:00, including Monday 31 August 2026. The gathering publicly calls for protection of Palestinian civilians, accountability and political action concerning Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is an established recurring static protest, although the politically sensitive City Hall location may bring police monitoring and temporary restrictions around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.232040,
+  lng: 2.917380,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current Belgian protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 1 August 2026. The static action provides a visible public expression of solidarity with Palestinians and opposition to the continuing violence in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.232040,
+  lng: 2.917380,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current Belgian protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 8 August 2026. The static action provides a visible public expression of solidarity with Palestinians and opposition to the continuing violence in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.232040,
+  lng: 2.917380,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current Belgian protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 15 August 2026. The static action provides a visible public expression of solidarity with Palestinians and opposition to the continuing violence in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.232040,
+  lng: 2.917380,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current Belgian protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 22 August 2026. The static action provides a visible public expression of solidarity with Palestinians and opposition to the continuing violence in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.232040,
+  lng: 2.917380,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current Belgian protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 29 August 2026. The static action provides a visible public expression of solidarity with Palestinians and opposition to the continuing violence in Gaza. Expected attendance is not recorded. Risk assessed as Low because the action is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.941290,
+  lng: 4.548100,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current protest agenda confirms a weekly “red line” Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 1 August 2026. Participants use the red-line symbolism to demand political action and accountability over the treatment of Palestinians. Expected attendance is not recorded. Risk assessed as Low because the gathering is small, static and community based, with only minor local pedestrian or roadside disruption expected."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.941290,
+  lng: 4.548100,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current protest agenda confirms a weekly “red line” Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 8 August 2026. Participants use the red-line symbolism to demand political action and accountability over the treatment of Palestinians. Expected attendance is not recorded. Risk assessed as Low because the gathering is small, static and community based, with only minor local pedestrian or roadside disruption expected."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.941290,
+  lng: 4.548100,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current protest agenda confirms a weekly “red line” Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 15 August 2026. Participants use the red-line symbolism to demand political action and accountability over the treatment of Palestinians. Expected attendance is not recorded. Risk assessed as Low because the gathering is small, static and community based, with only minor local pedestrian or roadside disruption expected."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.941290,
+  lng: 4.548100,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current protest agenda confirms a weekly “red line” Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 22 August 2026. Participants use the red-line symbolism to demand political action and accountability over the treatment of Palestinians. Expected attendance is not recorded. Risk assessed as Low because the gathering is small, static and community based, with only minor local pedestrian or roadside disruption expected."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.941290,
+  lng: 4.548100,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA’s current protest agenda confirms a weekly “red line” Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 29 August 2026. Participants use the red-line symbolism to demand political action and accountability over the treatment of Palestinians. Expected attendance is not recorded. Risk assessed as Low because the gathering is small, static and community based, with only minor local pedestrian or roadside disruption expected."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.190330,
+  lng: 4.449010,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 1 August 2026. The picket demands closure of Antwerp International Airport on climate, noise, public-finance and land-use grounds. Expected attendance is not recorded. Risk assessed as Low because this is a short, established and non-violent roadside protest; brief parking, pedestrian or vehicle-access friction is possible near the perimeter fence."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.190330,
+  lng: 4.449010,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 8 August 2026. The picket demands closure of Antwerp International Airport on climate, noise, public-finance and land-use grounds. Expected attendance is not recorded. Risk assessed as Low because this is a short, established and non-violent roadside protest; brief parking, pedestrian or vehicle-access friction is possible near the perimeter fence."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.190330,
+  lng: 4.449010,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 15 August 2026. The picket demands closure of Antwerp International Airport on climate, noise, public-finance and land-use grounds. Expected attendance is not recorded. Risk assessed as Low because this is a short, established and non-violent roadside protest; brief parking, pedestrian or vehicle-access friction is possible near the perimeter fence."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.190330,
+  lng: 4.449010,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 22 August 2026. The picket demands closure of Antwerp International Airport on climate, noise, public-finance and land-use grounds. Expected attendance is not recorded. Risk assessed as Low because this is a short, established and non-violent roadside protest; brief parking, pedestrian or vehicle-access friction is possible near the perimeter fence."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.190330,
+  lng: 4.449010,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 29 August 2026. The picket demands closure of Antwerp International Airport on climate, noise, public-finance and land-use grounds. Expected attendance is not recorded. Risk assessed as Low because this is a short, established and non-violent roadside protest; brief parking, pedestrian or vehicle-access friction is possible near the perimeter fence."
+},
+
+{
+  title: "Bruges Weekly Gaza Chalk Protest",
+  city: "Bruges",
+  lat: 51.208790,
+  lng: 3.226810,
+  address: "Outside Bruges City Hall, Burg 12",
+  postcode: "8000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T12:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings confirm a weekly chalk protest for Palestine outside Bruges City Hall every Sunday from 12:00 to 12:30, including Sunday 2 August 2026. Participants write public messages on the Burg to demand action over Gaza and defend the visibility of peaceful protest. The recurring action is also documented by local campaign material. Expected attendance is not recorded. Risk assessed as Low because it is a short, static and non-violent action, although occasional interaction with visitors or municipal enforcement is possible."
+},
+
+{
+  title: "Bruges Weekly Gaza Chalk Protest",
+  city: "Bruges",
+  lat: 51.208790,
+  lng: 3.226810,
+  address: "Outside Bruges City Hall, Burg 12",
+  postcode: "8000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T12:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings confirm a weekly chalk protest for Palestine outside Bruges City Hall every Sunday from 12:00 to 12:30, including Sunday 9 August 2026. Participants write public messages on the Burg to demand action over Gaza and defend the visibility of peaceful protest. The recurring action is also documented by local campaign material. Expected attendance is not recorded. Risk assessed as Low because it is a short, static and non-violent action, although occasional interaction with visitors or municipal enforcement is possible."
+},
+
+{
+  title: "Bruges Weekly Gaza Chalk Protest",
+  city: "Bruges",
+  lat: 51.208790,
+  lng: 3.226810,
+  address: "Outside Bruges City Hall, Burg 12",
+  postcode: "8000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T12:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings confirm a weekly chalk protest for Palestine outside Bruges City Hall every Sunday from 12:00 to 12:30, including Sunday 16 August 2026. Participants write public messages on the Burg to demand action over Gaza and defend the visibility of peaceful protest. The recurring action is also documented by local campaign material. Expected attendance is not recorded. Risk assessed as Low because it is a short, static and non-violent action, although occasional interaction with visitors or municipal enforcement is possible."
+},
+
+{
+  title: "Bruges Weekly Gaza Chalk Protest",
+  city: "Bruges",
+  lat: 51.208790,
+  lng: 3.226810,
+  address: "Outside Bruges City Hall, Burg 12",
+  postcode: "8000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T12:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings confirm a weekly chalk protest for Palestine outside Bruges City Hall every Sunday from 12:00 to 12:30, including Sunday 23 August 2026. Participants write public messages on the Burg to demand action over Gaza and defend the visibility of peaceful protest. The recurring action is also documented by local campaign material. Expected attendance is not recorded. Risk assessed as Low because it is a short, static and non-violent action, although occasional interaction with visitors or municipal enforcement is possible."
+},
+
+{
+  title: "Bruges Weekly Gaza Chalk Protest",
+  city: "Bruges",
+  lat: 51.208790,
+  lng: 3.226810,
+  address: "Outside Bruges City Hall, Burg 12",
+  postcode: "8000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T12:00:00",
+  source: "https://www.planteenolijfboom.nl/demonstraties",
+  summary: "Current August action listings confirm a weekly chalk protest for Palestine outside Bruges City Hall every Sunday from 12:00 to 12:30, including Sunday 30 August 2026. Participants write public messages on the Burg to demand action over Gaza and defend the visibility of peaceful protest. The recurring action is also documented by local campaign material. Expected attendance is not recorded. Risk assessed as Low because it is a short, static and non-violent action, although occasional interaction with visitors or municipal enforcement is possible."
+},
+
+{
+  title: "Vrouwen in het Zwart Leuven Anti-War Silent Vigil",
+  city: "Leuven",
+  lat: 50.879100,
+  lng: 4.701000,
+  address: "Leuven City Hall, Grote Markt",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-05T12:30:00",
+  source: "https://www.vredeleuven.org/activiteiten",
+  summary: "The Leuven Peace Movement confirms a Vrouwen in het Zwart silent vigil against war and violence at Leuven City Hall every Wednesday from 12:30 to 13:00, including Wednesday 5 August 2026. The physical campaigning vigil uses silent public presence to oppose war, militarisation and violence. Expected attendance is not recorded. Risk assessed as Low because this is an established, small and peaceful static action with minimal operational impact beyond limited pedestrian use of Grote Markt."
+},
+
+{
+  title: "Vrouwen in het Zwart Leuven Anti-War Silent Vigil",
+  city: "Leuven",
+  lat: 50.879100,
+  lng: 4.701000,
+  address: "Leuven City Hall, Grote Markt",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-12T12:30:00",
+  source: "https://www.vredeleuven.org/activiteiten",
+  summary: "The Leuven Peace Movement confirms a Vrouwen in het Zwart silent vigil against war and violence at Leuven City Hall every Wednesday from 12:30 to 13:00, including Wednesday 12 August 2026. The physical campaigning vigil uses silent public presence to oppose war, militarisation and violence. Expected attendance is not recorded. Risk assessed as Low because this is an established, small and peaceful static action with minimal operational impact beyond limited pedestrian use of Grote Markt."
+},
+
+{
+  title: "Vrouwen in het Zwart Leuven Anti-War Silent Vigil",
+  city: "Leuven",
+  lat: 50.879100,
+  lng: 4.701000,
+  address: "Leuven City Hall, Grote Markt",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-19T12:30:00",
+  source: "https://www.vredeleuven.org/activiteiten",
+  summary: "The Leuven Peace Movement confirms a Vrouwen in het Zwart silent vigil against war and violence at Leuven City Hall every Wednesday from 12:30 to 13:00, including Wednesday 19 August 2026. The physical campaigning vigil uses silent public presence to oppose war, militarisation and violence. Expected attendance is not recorded. Risk assessed as Low because this is an established, small and peaceful static action with minimal operational impact beyond limited pedestrian use of Grote Markt."
+},
+
+{
+  title: "Vrouwen in het Zwart Leuven Anti-War Silent Vigil",
+  city: "Leuven",
+  lat: 50.879100,
+  lng: 4.701000,
+  address: "Leuven City Hall, Grote Markt",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T12:30:00",
+  source: "https://www.vredeleuven.org/activiteiten",
+  summary: "The Leuven Peace Movement confirms a Vrouwen in het Zwart silent vigil against war and violence at Leuven City Hall every Wednesday from 12:30 to 13:00, including Wednesday 26 August 2026. The physical campaigning vigil uses silent public presence to oppose war, militarisation and violence. Expected attendance is not recorded. Risk assessed as Low because this is an established, small and peaceful static action with minimal operational impact beyond limited pedestrian use of Grote Markt."
+},
+
+{
+  title: "Critical Mass Brussels Cycling Demonstration",
+  city: "Brussels",
+  lat: 50.841700,
+  lng: 4.363000,
+  address: "Place du Trône / Troonplein, Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-28T18:00:00",
+  source: "https://criticalmass.brussels/en/",
+  summary: "Critical Mass Brussels confirms a cycling demonstration departing from Place du Trône at 18:00 on the last Friday of each month. In August 2026 the last Friday is 28 August. The ride is explicitly described as part demonstration and campaigns for safer, more accessible cycling and increased road space for bicycles. The route is determined during the ride and normally lasts about 90 minutes. Risk assessed as Medium because a large moving group can temporarily occupy roads, cause rolling traffic disruption and require police or steward management, although the established action is peaceful."
+},
+
+{
+  title: "Hiroshima and Nagasaki Anti-Nuclear Peace Procession",
+  city: "Leuven",
+  lat: 50.874700,
+  lng: 4.700400,
+  address: "Leuven peace programme ending at Sint-Michiel Vredeskerk, Naamsestraat 57A",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T16:45:00",
+  source: "https://www.vredeleuven.org/activiteiten",
+  summary: "The Leuven Peace Movement and Vrede confirm a current-year Hiroshima and Nagasaki remembrance and anti-nuclear peace programme on Saturday 8 August 2026 from 16:45 to 22:00. The programme includes public peace campaigning and a physical procession connected to Sint-Michiel Vredeskerk, calling attention to the humanitarian consequences of nuclear weapons and advocating nuclear disarmament. Risk assessed as Low because the action is organised, symbolic and peaceful, with limited pedestrian congestion along the short central-Leuven movement route."
+},
+
+{
+  title: "Hiroshima and Nagasaki Anti-Nuclear Vigil",
+  city: "Ghent",
+  lat: 51.053950,
+  lng: 3.722940,
+  address: "Sint-Niklaaskerk followed by Korenlei, Ghent",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T21:00:00",
+  source: "https://vrede.be/nl/kalender/hiroshima-nagasaki-herdenking-gent",
+  summary: "Vredesoverleg Gent confirms a physical anti-nuclear remembrance and peace vigil on Sunday 9 August 2026 from 21:00 to 23:00. The programme begins in Sint-Niklaaskerk and moves at 22:00 to Korenlei for speeches, live music and a symbolic lantern launch. Organisers explicitly use the event to advocate a nuclear-weapon-free world amid rising militarisation. Risk assessed as Low because the vigil is formally organised and peaceful, with only localised evening pedestrian congestion expected."
+},
+
+{
+  title: "Antwerp Pride Parade — Pride Is Protest",
+  city: "Antwerp",
+  lat: 51.226800,
+  lng: 4.397100,
+  address: "Scheldekaaien South near Brouwersvliet to Ledeganckkaai via Sint-Jansvliet, Kloosterstraat and Scheldestraat",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T14:00:00",
+  source: "https://antwerppride.com/calendar/antwerp-pride-parade",
+  summary: "Antwerp Pride confirms its public rights parade on Saturday 8 August 2026 from 14:00 to 18:00. Organisers explicitly state that “Pride is protest” and frame the march as a response to pressure on LGBTQIA+ and minority rights. The route enters the Scheldt quays near Brouwersvliet, continues to Sint-Jansvliet, Kloosterstraat and Scheldestraat, and ends near Ledeganckkaai. Risk assessed as Medium because a large city-centre turnout, rolling road closures, crowd-control measures and extensive stewarding are expected, although the event is formally organised and no specific unrest warning has been identified."
+},
+ 
+
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-03T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-04T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-05T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-10T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-11T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-12T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-13T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-17T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-18T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-19T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-20T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-21T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-24T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-25T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-27T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Reading Vigil for Free Palestine",
+  city: "Amsterdam",
+  lat: 52.3731,
+  lng: 4.8929,
+  address: "Dam Square, beside the Palestinian flag",
+  postcode: "1012 NP",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T12:30:00",
+  source: "https://readingvigil.net/",
+  summary: "Reading Vigil for Free Palestine confirms a daily public solidarity action at Dam Square from 12:30 to 13:30. Participants read aloud Palestinian literature, testimony, scholarship and poetry to make Palestinian voices audible in public space and to oppose the war in Gaza, occupation, apartheid and settler colonialism. The action has operated every day since November 2023 and the organiser continues to invite public participation. Risk assessed as Low because this is a small, established and non-confrontational reading vigil; limited pedestrian congestion and routine police or municipal observation are possible because it takes place on a prominent central square."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48, a group of critical Israelis in the Netherlands, confirms a silent protest every Sunday at 17:00 beside the Lieverdje statue on Spui. Israeli, Palestinian, Dutch and other participants call for accountability, justice for Palestinians, unrestricted humanitarian aid and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil with no march or disruption mechanism; a small police presence and localised pedestrian crowding are possible in the central shopping area."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48, a group of critical Israelis in the Netherlands, confirms a silent protest every Sunday at 17:00 beside the Lieverdje statue on Spui. Israeli, Palestinian, Dutch and other participants call for accountability, justice for Palestinians, unrestricted humanitarian aid and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil with no march or disruption mechanism; a small police presence and localised pedestrian crowding are possible in the central shopping area."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48, a group of critical Israelis in the Netherlands, confirms a silent protest every Sunday at 17:00 beside the Lieverdje statue on Spui. Israeli, Palestinian, Dutch and other participants call for accountability, justice for Palestinians, unrestricted humanitarian aid and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil with no march or disruption mechanism; a small police presence and localised pedestrian crowding are possible in the central shopping area."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48, a group of critical Israelis in the Netherlands, confirms a silent protest every Sunday at 17:00 beside the Lieverdje statue on Spui. Israeli, Palestinian, Dutch and other participants call for accountability, justice for Palestinians, unrestricted humanitarian aid and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil with no march or disruption mechanism; a small police presence and localised pedestrian crowding are possible in the central shopping area."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48, a group of critical Israelis in the Netherlands, confirms a silent protest every Sunday at 17:00 beside the Lieverdje statue on Spui. Israeli, Palestinian, Dutch and other participants call for accountability, justice for Palestinians, unrestricted humanitarian aid and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil with no march or disruption mechanism; a small police presence and localised pedestrian crowding are possible in the central shopping area."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Groningen",
+  lat: 53.21849,
+  lng: 6.56666,
+  address: "Waagplein",
+  postcode: "9712 JZ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.vrouweninhetzwart.nl/acties.htm",
+  summary: "Vrouwen in het Zwart confirms a public wake on Waagplein every Saturday in odd-numbered calendar weeks, including this August date. Participants stand in protest against Israeli actions affecting Palestinians and call for peace, justice and accountability. Risk assessed as Low because this is a small, established and non-violent static vigil; only minor pedestrian congestion is expected."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Groningen",
+  lat: 53.21849,
+  lng: 6.56666,
+  address: "Waagplein",
+  postcode: "9712 JZ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T13:00:00",
+  source: "https://www.vrouweninhetzwart.nl/acties.htm",
+  summary: "Vrouwen in het Zwart confirms a public wake on Waagplein every Saturday in odd-numbered calendar weeks, including this August date. Participants stand in protest against Israeli actions affecting Palestinians and call for peace, justice and accountability. Risk assessed as Low because this is a small, established and non-violent static vigil; only minor pedestrian congestion is expected."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Groningen",
+  lat: 53.21849,
+  lng: 6.56666,
+  address: "Waagplein",
+  postcode: "9712 JZ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://www.vrouweninhetzwart.nl/acties.htm",
+  summary: "Vrouwen in het Zwart confirms a public wake on Waagplein every Saturday in odd-numbered calendar weeks, including this August date. Participants stand in protest against Israeli actions affecting Palestinians and call for peace, justice and accountability. Risk assessed as Low because this is a small, established and non-violent static vigil; only minor pedestrian congestion is expected."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Maastricht",
+  lat: 50.85173,
+  lng: 5.69037,
+  address: "Markt, beside the J.P. Minckelers statue near Boschstraat",
+  postcode: "6211 CK",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T16:00:00",
+  source: "https://www.vrouweninhetzwart.nl/acties.htm",
+  summary: "Vrouwen in het Zwart confirms its Maastricht public wake on the first Saturday of each month from 16:00 to 17:00 beside the J.P. Minckelers statue on Markt. The action protests Israeli policies and violence affecting Palestinians and supports peace, justice and accountability. Risk assessed as Low because this is a small, long-established static vigil with no anticipated disorder; minor pedestrian congestion is possible on the central market square."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "The Rights Forum has individually listed this 14:00-15:00 demonstration on Haarlem's Grote Markt, organised by Breed Platform Palestina and Vrouwen in het Zwart. Participants protest Israeli military and occupation policies and call for protection of Palestinians, accountability and an end to violence. Risk assessed as Low because the action is an established weekly static demonstration; minor crowding around the market square and routine police monitoring are possible."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "The Rights Forum has individually listed this 14:00-15:00 demonstration on Haarlem's Grote Markt, organised by Breed Platform Palestina and Vrouwen in het Zwart. Participants protest Israeli military and occupation policies and call for protection of Palestinians, accountability and an end to violence. Risk assessed as Low because the action is an established weekly static demonstration; minor crowding around the market square and routine police monitoring are possible."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "The Rights Forum has individually listed this 14:00-15:00 demonstration on Haarlem's Grote Markt, organised by Breed Platform Palestina and Vrouwen in het Zwart. Participants protest Israeli military and occupation policies and call for protection of Palestinians, accountability and an end to violence. Risk assessed as Low because the action is an established weekly static demonstration; minor crowding around the market square and routine police monitoring are possible."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "The Rights Forum has individually listed this 14:00-15:00 demonstration on Haarlem's Grote Markt, organised by Breed Platform Palestina and Vrouwen in het Zwart. Participants protest Israeli military and occupation policies and call for protection of Palestinians, accountability and an end to violence. Risk assessed as Low because the action is an established weekly static demonstration; minor crowding around the market square and routine police monitoring are possible."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T12:45:00",
+  source: "https://www.vrouweninhetzwart.nl/acties.htm",
+  summary: "Vrouwen in het Zwart confirms its Amsterdam wake on the first Friday of each month from 12:45 to 13:45 beside the Lieverdje statue on Spui. Participants hold a public vigil protesting Israeli actions affecting Palestinians and supporting justice, peace and accountability. Risk assessed as Low because this is an established, silent and non-confrontational gathering; only limited pedestrian congestion is expected."
+},
+
+{
+  title: "Stille Rode Lijn Multi-Conflict Peace Wake",
+  city: "Zaltbommel",
+  lat: 51.81472,
+  lng: 5.24861,
+  address: "Waalkade",
+  postcode: "5301 CJ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T19:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Organisers have confirmed the Stille Rode Lijn wake on the Waalkade from 19:00 to 19:30 on the second and fourth Friday of each month in 2026. The vigil remembers victims in Gaza and the West Bank and also opposes violence in Sudan, Syria, Iran and Ukraine. Risk assessed as Low because this is a short, silent and static peace action; no significant transport disruption or disorder is anticipated."
+},
+
+{
+  title: "Stille Rode Lijn Multi-Conflict Peace Wake",
+  city: "Zaltbommel",
+  lat: 51.81472,
+  lng: 5.24861,
+  address: "Waalkade",
+  postcode: "5301 CJ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T19:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Organisers have confirmed the Stille Rode Lijn wake on the Waalkade from 19:00 to 19:30 on the second and fourth Friday of each month in 2026. The vigil remembers victims in Gaza and the West Bank and also opposes violence in Sudan, Syria, Iran and Ukraine. Risk assessed as Low because this is a short, silent and static peace action; no significant transport disruption or disorder is anticipated."
+},
+
+{
+  title: "Mensen in het Zwart Palestine Solidarity Wake",
+  city: "Nijmegen",
+  lat: 51.84519,
+  lng: 5.86645,
+  address: "Koningsplein and Mariënburg pedestrian area",
+  postcode: "6511 PS",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "The Rights Forum confirms a monthly Mensen in het Zwart public wake in the Koningsplein-Mariënburg area from 14:00 to 16:00. Participants form a line with protest signs opposing Israeli actions against Palestinians and calling for justice and an end to occupation and violence. Risk assessed as Low because this is a peaceful static vigil in a pedestrianised shopping area; local foot-traffic congestion is possible."
+},
+
+{
+  title: "WorldPride March Amsterdam 2026",
+  city: "Amsterdam",
+  lat: 52.33939,
+  lng: 4.90669,
+  address: "Martin Luther Kingpark to Museumplein via Rijnstraat, Van Woustraat, Ceintuurbaan, Roelof Hartstraat and Van Baerlestraat",
+  postcode: "1079 RL",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T15:00:00",
+  source: "https://pride.amsterdam/en/event/worldpride-march/",
+  summary: "WorldPride Amsterdam confirms a public LGBTQIA+ rights march on Saturday 8 August 2026. Participants gather in Martin Luther Kingpark from 15:00, the march departs at 16:30 and follows a 3.5-kilometre route through Amsterdam South to Museumplein. The mobilisation promotes equality, visibility, human rights and solidarity with LGBTQIA+ communities worldwide. Risk assessed as Medium because a large international turnout, rolling road closures, extensive stewarding and police deployment are expected along the route, although the event is formally organised and no specific unrest warning has been identified."
+},
+
+
+  
+
+{
+  title: "FAO COBAS Nationwide Road Freight Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Nationwide — Italian road freight and logistics network",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-10T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAO COBAS has registered a continuous nationwide strike by travelling personnel operating heavy freight vehicles under Italy's logistics, freight-transport and forwarding collective agreement from 00:00 on 10 August until 24:00 on 14 August 2026. This record represents the confirmed continuation of the action on 10 August and is retained as a national operational strike rather than being converted into unsupported city demonstrations or picket locations. The Ministry of Infrastructure and Transport lists the action as a 120-hour national freight-transport stoppage. Risk assessed as Medium because reduced heavy-goods capacity may delay distribution, industrial supply chains and movement of essential, energy or hazardous products, although the official notice does not currently confirm road blockades, public rallies or disorder."
+},
+
+{
+  title: "FAO COBAS Nationwide Road Freight Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Nationwide — Italian road freight and logistics network",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-11T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAO COBAS has registered a continuous nationwide strike by travelling personnel operating heavy freight vehicles under Italy's logistics, freight-transport and forwarding collective agreement from 00:00 on 10 August until 24:00 on 14 August 2026. This record represents the confirmed continuation of the action on 11 August and is retained as a national operational strike rather than being converted into unsupported city demonstrations or picket locations. The Ministry of Infrastructure and Transport lists the action as a 120-hour national freight-transport stoppage. Risk assessed as Medium because reduced heavy-goods capacity may delay distribution, industrial supply chains and movement of essential, energy or hazardous products, although the official notice does not currently confirm road blockades, public rallies or disorder."
+},
+
+{
+  title: "FAO COBAS Nationwide Road Freight Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Nationwide — Italian road freight and logistics network",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-12T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAO COBAS has registered a continuous nationwide strike by travelling personnel operating heavy freight vehicles under Italy's logistics, freight-transport and forwarding collective agreement from 00:00 on 10 August until 24:00 on 14 August 2026. This record represents the confirmed continuation of the action on 12 August and is retained as a national operational strike rather than being converted into unsupported city demonstrations or picket locations. The Ministry of Infrastructure and Transport lists the action as a 120-hour national freight-transport stoppage. Risk assessed as Medium because reduced heavy-goods capacity may delay distribution, industrial supply chains and movement of essential, energy or hazardous products, although the official notice does not currently confirm road blockades, public rallies or disorder."
+},
+
+{
+  title: "FAO COBAS Nationwide Road Freight Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Nationwide — Italian road freight and logistics network",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-13T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAO COBAS has registered a continuous nationwide strike by travelling personnel operating heavy freight vehicles under Italy's logistics, freight-transport and forwarding collective agreement from 00:00 on 10 August until 24:00 on 14 August 2026. This record represents the confirmed continuation of the action on 13 August and is retained as a national operational strike rather than being converted into unsupported city demonstrations or picket locations. The Ministry of Infrastructure and Transport lists the action as a 120-hour national freight-transport stoppage. Risk assessed as Medium because reduced heavy-goods capacity may delay distribution, industrial supply chains and movement of essential, energy or hazardous products, although the official notice does not currently confirm road blockades, public rallies or disorder."
+},
+
+{
+  title: "FAO COBAS Nationwide Road Freight Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Nationwide — Italian road freight and logistics network",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAO COBAS has registered a continuous nationwide strike by travelling personnel operating heavy freight vehicles under Italy's logistics, freight-transport and forwarding collective agreement from 00:00 on 10 August until 24:00 on 14 August 2026. This record represents the confirmed continuation of the action on 14 August and is retained as a national operational strike rather than being converted into unsupported city demonstrations or picket locations. The Ministry of Infrastructure and Transport lists the action as a 120-hour national freight-transport stoppage. Risk assessed as Medium because reduced heavy-goods capacity may delay distribution, industrial supply chains and movement of essential, energy or hazardous products, although the official notice does not currently confirm road blockades, public rallies or disorder."
+},
+
+{
+  title: "Paesello Pride 2026 — Cammarata–San Giovanni Gemini March",
+  city: "Cammarata",
+  lat: 37.6336,
+  lng: 13.6375,
+  address: "Piazzale Camilleri, Cammarata — march to Largo Nazareno, San Giovanni Gemini",
+  postcode: "92022",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T18:00:00",
+  source: "https://www.instagram.com/p/Dain9_9I6oA/",
+  summary: "Paesello Pride organisers have confirmed a rural LGBTQIA+ rights march linking Cammarata and neighbouring San Giovanni Gemini on Saturday 8 August 2026. Participants are asked to gather at Piazzale Camilleri from 18:00, with the parade departing at 19:00 and reaching Largo Nazareno at approximately 21:00. The mobilisation promotes queer visibility, inclusion and the right to remain visible in smaller inland communities, and therefore qualifies as a campaigning march rather than merely a cultural festival. Risk assessed as Low because the action is organised as a peaceful community parade, although temporary traffic restrictions and pedestrian congestion are likely through the two historic centres. The coordinates map the announced Cammarata assembly area."
+},
+
+{
+  title: "Catanzaro Pride 2026 March",
+  city: "Catanzaro",
+  lat: 38.8207,
+  lng: 16.6126,
+  address: "Piazza Anita Garibaldi, Catanzaro Lido — along the seafront to Area Teti",
+  postcode: "88100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T17:30:00",
+  source: "https://www.calabriacontatto.it/catanzaro-pride-2026-programma-eventi/",
+  summary: "Catanzaro Pride has confirmed the city's first official Pride march for Saturday 8 August 2026, gathering at 17:30 in Piazza Anita Garibaldi in the Lido district. The procession will travel along Catanzaro's seafront to Area Teti, where rights-focused speeches, testimony and the closing programme will take place. Organisers describe the mobilisation as a political and cultural act seeking LGBTQIA+ visibility, civil rights and opposition to discrimination. Risk assessed as Medium because the first citywide Pride procession and seafront route are likely to require road controls, crowd management and a visible police presence, although no current source indicates a specific threat of disorder."
+},
+
+{
+  title: "Monterotondo Marittimo Pride — Italy's Smallest Pride Gathering",
+  city: "Monterotondo Marittimo",
+  lat: 43.14714,
+  lng: 10.85622,
+  address: "Piazza Mario Cheli, Monterotondo Marittimo",
+  postcode: "58025",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T18:00:00",
+  source: "https://www.instagram.com/p/DbDXLJ1tR-o/",
+  summary: "Collettivo CLAPS has confirmed the seventh Monterotondo Marittimo Pride for Saturday 8 August 2026 from 18:00 in Piazza Mario Cheli. The static public gathering combines institutional remarks and a rights-focused discussion with activists, writers and artists before the cultural programme, and is explicitly presented as a mobilisation for LGBTQIA+ rights, inclusion and visibility in a small rural community. It therefore qualifies as a campaigning Pride gathering even though the compact town-centre format does not include a march. Risk assessed as Low because the action is peaceful, contained within one square and supported locally; limited pedestrian congestion and temporary access controls around Piazza Mario Cheli are possible."
+},
+
+{
+  title: "No Ponte March — Close Stretto di Messina S.p.A.",
+  city: "Messina",
+  lat: 38.1858,
+  lng: 15.5561,
+  address: "Piazza Cairoli, Messina — march through the city centre; closing programme at Piazza del Popolo",
+  postcode: "98123",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T18:30:00",
+  source: "https://www.instagram.com/p/DX4NnUsDEXN/",
+  summary: "The Assemblea No Ponte has confirmed a national march in Messina on Saturday 8 August 2026, assembling at Piazza Cairoli at 18:30. The mobilisation calls for closure of Stretto di Messina S.p.A. and abandonment of the proposed fixed crossing, with organisers arguing that public resources should instead support water, health, environmental protection and territorial safety. Current organiser material confirms a central-city procession and a closing concert at Piazza del Popolo, but a complete street-by-street route has not yet been published. Risk assessed as Medium because the action is intended to draw participants from Sicily, Calabria and supporting movements, creating significant central traffic disruption and a visible security operation; no current evidence supports a High rating or predicts violence."
+},
+
+{
+  title: "Bologna Station Massacre Anti-Fascist Memorial March",
+  city: "Bologna",
+  lat: 44.4939275,
+  lng: 11.3430987,
+  address: "Piazza Nettuno — march to Bologna Centrale, Piazza Medaglie d’Oro",
+  postcode: "40124",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-02T09:10:00",
+  source: "https://www.comune.bologna.it/novita/notizie/2-agosto-2026",
+  summary: "The Municipality of Bologna and the association representing victims' families have confirmed a public march on Sunday 2 August 2026 during the current-year programme commemorating the fascist bombing of Bologna Centrale. The procession will leave Piazza Nettuno at 09:10 and travel to the railway station and Piazza Medaglie d'Oro for the principal remembrance and justice-focused ceremony. This record is based on the expressly announced 2026 physical march and its continuing anti-fascist, truth and accountability purpose, not on the anniversary or historical recurrence alone. Risk assessed as Medium because the high-profile city-centre procession will generate extensive road restrictions, crowd concentration and security measures around the station, although the event has a formal civic character and no current disorder warning."
+},
+
+{
+  title: "Forlì Prison Solidarity Picket",
+  city: "Forlì",
+  lat: 44.21691,
+  lng: 12.03884,
+  address: "Outside Casa Circondariale La Rocca, Via della Rocca 4/6",
+  postcode: "47121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-03T18:00:00",
+  source: "https://ilrovescio.info/2026/07/14/forli-lunedi-20-luglio-e-lunedi-3-agosto-presidi-al-carcere/",
+  summary: "Anarchist solidarity organisers have announced a static picket outside the La Rocca prison in Forlì at 18:00 on Monday 3 August 2026. The call states that the action supports people held inside, protests prison conditions including extreme summer heat and continued incarceration, and expresses solidarity with people arrested during the 16 June operation. Risk assessed as Medium because the gathering targets the perimeter of an operating prison and is likely to attract close police monitoring and access controls, although the available announcement describes a small static presidio rather than a march or blockade. Verification relies on a current organiser-aligned movement publication; no separate police or municipal acknowledgement was located at the time of collection."
+},
+
+
+{
+  title: "Aste Nagusia Spectacle and Events Sector Strike",
+  city: "Vitoria-Gasteiz",
+  lat: 42.8467,
+  lng: -2.6725,
+  address: "Citywide spectacle and events workplaces during the Gasteiz fiestas (map anchor: Plaza de la Virgen Blanca)",
+  postcode: "01001",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-05T12:00:00",
+  source: "https://www.cnt.es/noticias/nuevas-jornadas-de-huelga-del-sector-de-espectaculos-y-eventos-durante-las-tres-aste-nagusiak/",
+  summary: "CNT Bilbao and the unions represented on the spectacle and events sector bargaining table have confirmed a strike in Araba on 5 August 2026, timed to coincide with the Aste Nagusia festivities in Vitoria-Gasteiz. The dispute concerns the prolonged blockage of the sector collective agreement, working conditions and labour rights for staff who deliver live events and festival infrastructure. No common strike start time or public picket point has been published, so 12:00 is applied as the database default and the city-centre marker is an operational anchor rather than a confirmed assembly point. Risk assessed as Medium because staffing disruption may affect festival programming, technical operations and public-event delivery during a high-attendance city celebration; disorder is not anticipated."
+},
+
+{
+  title: "Aste Nagusia Spectacle and Events Sector Strike",
+  city: "San Sebastián",
+  lat: 43.3212,
+  lng: -1.9854,
+  address: "Citywide spectacle and events workplaces during Donostia Aste Nagusia (map anchor: Alderdi Eder / City Hall)",
+  postcode: "20003",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T12:00:00",
+  source: "https://www.cnt.es/noticias/nuevas-jornadas-de-huelga-del-sector-de-espectaculos-y-eventos-durante-las-tres-aste-nagusiak/",
+  summary: "CNT Bilbao and the unions represented on the spectacle and events sector bargaining table have confirmed a strike in Gipuzkoa on 14 August 2026, timed to coincide with the Aste Nagusia festivities in San Sebastián. The dispute concerns the prolonged blockage of the sector collective agreement, working conditions and labour rights for staff who deliver live events and festival infrastructure. No common strike start time or public picket point has been published, so 12:00 is applied as the database default and the city-centre marker is an operational anchor rather than a confirmed assembly point. Risk assessed as Medium because staffing disruption may affect festival programming, technical operations and public-event delivery during a high-attendance city celebration; disorder is not anticipated."
+},
+
+{
+  title: "Aste Nagusia Spectacle and Events Sector Strike",
+  city: "Bilbao",
+  lat: 43.2594,
+  lng: -2.9253,
+  address: "Citywide spectacle and events workplaces during Bilbao Aste Nagusia (map anchor: Teatro Arriaga, Plaza Arriaga 1)",
+  postcode: "48005",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-26T12:00:00",
+  source: "https://www.cnt.es/noticias/nuevas-jornadas-de-huelga-del-sector-de-espectaculos-y-eventos-durante-las-tres-aste-nagusiak/",
+  summary: "CNT Bilbao and the unions represented on the spectacle and events sector bargaining table have confirmed a strike in Bizkaia on 26 August 2026, timed to coincide with the Aste Nagusia festivities in Bilbao. The dispute concerns the prolonged blockage of the sector collective agreement, working conditions and labour rights for staff who deliver live events and festival infrastructure. No common strike start time or public picket point has been published, so 12:00 is applied as the database default and the city-centre marker is an operational anchor rather than a confirmed assembly point. Risk assessed as Medium because staffing disruption may affect festival programming, technical operations and public-event delivery during a high-attendance city celebration; disorder is not anticipated."
+},
+
+{
+  title: "Málaga Automotive Sector Collective Agreement Strike",
+  city: "Málaga",
+  lat: 36.715,
+  lng: -4.4236,
+  address: "Automotive workplaces across Málaga province (map anchor: CCOO Málaga, Avenida Manuel Agustín Heredia 26)",
+  postcode: "29001",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-03T12:00:00",
+  source: "https://andalucia.ccoo.es/noticia%3A765027--CCOO_convoca_huelga_en_el_sector_de_automocion_en_Malaga_por_el_bloqueo_en_el_convenio%26opc_id%3D486cfe5d2fdf9f0867e317adfcb86615",
+  summary: "CCOO has called approximately 5,900 automotive-sector workers across Málaga province to strike on 3 August 2026 after negotiations over a replacement collective agreement failed to progress. Disputed issues include annual working hours, pay, seniority recognition, the transport allowance and updated prevention measures for electrification and changing automotive materials. No province-wide start time or common picket location has been published, so 12:00 is applied as the database default and the CCOO Málaga address is used only as an operational map anchor. Risk assessed as Medium for disruption to vehicle sales, repair, bodywork and associated automotive services across the province; public disorder is not anticipated. The action should receive a lifecycle check because further mediation could still produce a settlement before the strike date."
+},
+
+{
+  title: "Plaza Mayor and McArthurGlen Late-Night Retail Strike",
+  city: "Málaga",
+  lat: 36.6562,
+  lng: -4.4805,
+  address: "CC Plaza Mayor and McArthurGlen Designer Outlet Málaga, Calle Alfonso Ponce de León 3",
+  postcode: "29004",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-27T22:00:00",
+  source: "https://andalucia.ccoo.es/noticia%3A765038--CCOO_Y_UGT_CONVOCAN_HUELGA_Y_CONCENTRACIONES_EN_EL_COMERCIO_DE_PLAZA_MAYOR_Y_MCARTHURGLEN_EN_RECHAZO_A_LA_APERTURA_HASTA_LA_MEDIANOCHE%26opc_id%3D486cfe5d2fdf9f0867e317adfcb86615",
+  summary: "CCOO and FeSMC-UGT have formally called retail employees at CC Plaza Mayor and McArthurGlen Designer Outlet Málaga to strike from 22:00 on 27 August until 00:30 on 28 August 2026. The action opposes the centres' planned late-night opening until midnight, with unions citing harm to work-life balance, fatigue and psychosocial risk, unsafe late-night travel and the absence of collective negotiation. The organisers announced a separate public concentration only for 30 July; this August entry therefore records the workplace strike and does not invent an August street rally. Risk assessed as Medium because commercial activity at both centres may stop during the extended-opening period and late-night visitor services may be disrupted; unrest is not anticipated."
+},
+
+{
+  title: "Swissport Palma Ground-Handling Partial Strike",
+  city: "Palma de Mallorca",
+  lat: 39.5517,
+  lng: 2.7388,
+  address: "Palma de Mallorca Airport, Carretera de l’Aeroport, s/n",
+  postcode: "07611",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T07:00:00",
+  source: "https://illesbalears.fsc.ccoo.es/noticia%3A764761--CCOO_convoca_cuatro_jornadas_de_huelga_parcial_en_Swissport_Palma_para_reclamar_mejoras_en_prevencion_organizacion_y_condiciones_laborales%26opc_id%3D5c399a1fa300b7e973ed8d0e04dc51b1",
+  summary: "CCOO's Swissport Palma section has confirmed partial ground-handling strikes at Palma de Mallorca Airport on 1 August 2026, operating in two windows from 07:00 to 12:00 and 19:00 to 22:00. The dispute concerns heat-risk prevention, staffing levels, work organisation, application of the handling-sector agreement, pay parity, regularisation of transferred employees' remuneration and compensation for higher-responsibility duties. Mediation ended without agreement, leaving the August dates active. Risk assessed as Medium because Swissport provides ground services to several international airlines and the stoppages fall during the summer travel peak; delays in baggage, ramp or turnaround activity are possible, although minimum-service arrangements and contingency planning may limit impact."
+},
+
+{
+  title: "Swissport Palma Ground-Handling Partial Strike",
+  city: "Palma de Mallorca",
+  lat: 39.5517,
+  lng: 2.7388,
+  address: "Palma de Mallorca Airport, Carretera de l’Aeroport, s/n",
+  postcode: "07611",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-04T07:00:00",
+  source: "https://illesbalears.fsc.ccoo.es/noticia%3A764761--CCOO_convoca_cuatro_jornadas_de_huelga_parcial_en_Swissport_Palma_para_reclamar_mejoras_en_prevencion_organizacion_y_condiciones_laborales%26opc_id%3D5c399a1fa300b7e973ed8d0e04dc51b1",
+  summary: "CCOO's Swissport Palma section has confirmed partial ground-handling strikes at Palma de Mallorca Airport on 4 August 2026, operating in two windows from 07:00 to 12:00 and 19:00 to 22:00. The dispute concerns heat-risk prevention, staffing levels, work organisation, application of the handling-sector agreement, pay parity, regularisation of transferred employees' remuneration and compensation for higher-responsibility duties. Mediation ended without agreement, leaving the August dates active. Risk assessed as Medium because Swissport provides ground services to several international airlines and the stoppages fall during the summer travel peak; delays in baggage, ramp or turnaround activity are possible, although minimum-service arrangements and contingency planning may limit impact."
+},
+
+{
+  title: "Swissport Palma Ground-Handling Partial Strike",
+  city: "Palma de Mallorca",
+  lat: 39.5517,
+  lng: 2.7388,
+  address: "Palma de Mallorca Airport, Carretera de l’Aeroport, s/n",
+  postcode: "07611",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T07:00:00",
+  source: "https://illesbalears.fsc.ccoo.es/noticia%3A764761--CCOO_convoca_cuatro_jornadas_de_huelga_parcial_en_Swissport_Palma_para_reclamar_mejoras_en_prevencion_organizacion_y_condiciones_laborales%26opc_id%3D5c399a1fa300b7e973ed8d0e04dc51b1",
+  summary: "CCOO's Swissport Palma section has confirmed partial ground-handling strikes at Palma de Mallorca Airport on 8 August 2026, operating in two windows from 07:00 to 12:00 and 19:00 to 22:00. The dispute concerns heat-risk prevention, staffing levels, work organisation, application of the handling-sector agreement, pay parity, regularisation of transferred employees' remuneration and compensation for higher-responsibility duties. Mediation ended without agreement, leaving the August dates active. Risk assessed as Medium because Swissport provides ground services to several international airlines and the stoppages fall during the summer travel peak; delays in baggage, ramp or turnaround activity are possible, although minimum-service arrangements and contingency planning may limit impact."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-10T05:45:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 10 August 2026 as a separately dated action day. The source confirms a 05:45 commencement on the first day. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-11T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 11 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-12T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 12 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-13T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 13 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 14 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 15 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-16T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 16 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-17T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 17 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-18T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 18 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-19T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 19 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 20 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 21 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 22 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 23 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-24T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 24 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-25T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 25 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-26T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 26 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-27T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 27 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-28T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 28 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 29 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-30T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 30 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "UTE Portmany Municipal Waste, Street-Cleaning and Gardening Strike",
+  city: "Sant Antoni de Portmany",
+  lat: 38.9805,
+  lng: 1.3036,
+  address: "Municipal waste, street-cleaning and gardening services across Sant Antoni de Portmany (map anchor: Ajuntament, Passeig de la Mar 16)",
+  postcode: "07820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-31T12:00:00",
+  source: "https://habitat.ccoo.es/noticia%3A764967",
+  summary: "CCOO del Hábitat has registered an indefinite strike by the full UTE Portmany workforce responsible for municipal waste collection, street cleaning and gardening in Sant Antoni de Portmany, beginning at 05:45 on 10 August 2026. This entry represents 31 August 2026 as a separately dated action day. The action is continuing from 10 August; no separate daily start time is stated, so 12:00 is used as the database default for this continuation record. Demands cover pay and timely wage payment, replacement of defective vehicles, safer facilities and equipment, health surveillance, anti-harassment procedures, equality, work-life balance and adequate uniforms. The city-centre marker is an operational anchor and not a declared picket line. Risk assessed as Medium because a sustained stoppage during Ibiza's peak tourist season could lead to accumulating refuse, reduced street cleansing, public-health concerns and visible service degradation; disorder is not expected. The record should be updated if negotiations result in suspension or cancellation."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Azuqueca de Henares",
+  lat: 40.558,
+  lng: -3.272,
+  address: "Saint-Gobain Isover industrial plant, Avenida del Vidrio, s/n",
+  postcode: "19200",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-24T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 24 August 2026. Employees at the plant are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Madrid",
+  lat: 40.4411,
+  lng: -3.6784,
+  address: "Saint-Gobain Isover headquarters, Calle del Príncipe de Vergara 132",
+  postcode: "28002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-24T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 24 August 2026. Employees at the Madrid headquarters are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Azuqueca de Henares",
+  lat: 40.558,
+  lng: -3.272,
+  address: "Saint-Gobain Isover industrial plant, Avenida del Vidrio, s/n",
+  postcode: "19200",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 26 August 2026. Employees at the plant are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Madrid",
+  lat: 40.4411,
+  lng: -3.6784,
+  address: "Saint-Gobain Isover headquarters, Calle del Príncipe de Vergara 132",
+  postcode: "28002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 26 August 2026. Employees at the Madrid headquarters are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Azuqueca de Henares",
+  lat: 40.558,
+  lng: -3.272,
+  address: "Saint-Gobain Isover industrial plant, Avenida del Vidrio, s/n",
+  postcode: "19200",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 29 August 2026. Employees at the plant are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Madrid",
+  lat: 40.4411,
+  lng: -3.6784,
+  address: "Saint-Gobain Isover headquarters, Calle del Príncipe de Vergara 132",
+  postcode: "28002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 29 August 2026. Employees at the Madrid headquarters are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Azuqueca de Henares",
+  lat: 40.558,
+  lng: -3.272,
+  address: "Saint-Gobain Isover industrial plant, Avenida del Vidrio, s/n",
+  postcode: "19200",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 31 August 2026. Employees at the plant are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Saint-Gobain Isover Two-Hour-Per-Shift Strike",
+  city: "Madrid",
+  lat: 40.4411,
+  lng: -3.6784,
+  address: "Saint-Gobain Isover headquarters, Calle del Príncipe de Vergara 132",
+  postcode: "28002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T12:00:00",
+  source: "https://usoindustria.org/huelga-en-saint-gobain-isover-paros-de-28-dias-en-azuqueca-y-madrid-por-mejoras-laborales/",
+  summary: "USO, CCOO and UGT have confirmed partial strikes at Saint-Gobain Isover's Azuqueca de Henares plant and Madrid headquarters on 31 August 2026. Employees at the Madrid headquarters are called to stop for two hours in each work shift as part of a 28-day summer campaign covering both Spanish sites. The unions are seeking durable improvements to working conditions and quality of life, including progress on working-time reduction, after mediation ended without agreement. Exact shift-by-shift stoppage times have not been published, so 12:00 is applied as the database default. Risk assessed as Low because the action is confined to the workplace and no public march or disorder risk is indicated, although production, administration and customer support may be reduced."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 1 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-02T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 2 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-03T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 3 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-06T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 6 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-07T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 7 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 8 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-09T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 9 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-10T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 10 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-13T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 13 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 14 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 15 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-16T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 16 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-17T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 17 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 20 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 21 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 22 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 23 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-24T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 24 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-27T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 27 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-28T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 28 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 29 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-30T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 30 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-31T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) at Adolfo Suárez Madrid-Barajas Airport on 31 August 2026. The recurring action operates every Monday, Thursday, Friday, Saturday and Sunday in two windows, 05:00–07:00 and 13:00–15:00, and is called by the Alternativa Social de Clase union. The resolution indicates that approximately 264 Outsmart employees are affected and requires 50% of the normally scheduled SATE maintenance workforce to remain as minimum service. Risk assessed as Medium because reduced maintenance capacity at Spain's busiest airport may contribute to baggage-system faults, delays or operational congestion during peak summer travel, although the mandated minimum staffing should reduce the likelihood of severe disruption. The record should be updated if the strike is formally called off."
+},
+
+  
+
+{
+  title: "9 August Nationwide Palestine Solidarity Day of Action",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "Decentralised actions across Greece; individual locations to be listed on the organiser action map",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T12:00:00",
+  source: "https://linktr.ee/9aug",
+  summary: "March to Gaza Greece, BDS Greece and the Palestinian Community of Greece have announced a nationwide day of physical solidarity action on 9 August 2026 across Greek islands, mountain areas and cities. The campaign explicitly asks supporters to organise a local action or gathering, display Palestinian flags and slogans, and submit each location to a national action map. No single national assembly point or common start time has been announced, so this is retained as one decentralised nationwide action and 12:00 is applied as the CityIntel default. The marker uses the national geographic centre and must not be interpreted as an assembly point. Risk assessed as Low because the organisers have not forecast a single large gathering or disruptive mechanism; localised pedestrian activity, police monitoring or short traffic effects may occur around subsequently confirmed points. The record should be enriched or replaced by separate city entries when the organiser map provides independently verifiable locations and times."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-17T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 17 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-18T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 18 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-19T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 19 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 20 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 21 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 22 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 23 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-24T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 24 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-25T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 25 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+{
+  title: "POE-DOY Nationwide Preventive Inspection and Driving Strike-Abstention",
+  city: "Nationwide",
+  lat: 39.0742,
+  lng: 21.8243,
+  address: "AADE tax-service network across Greece (national operational action; no single assembly point confirmed)",
+  postcode: "Not applicable",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-26T12:00:00",
+  source: "https://poedoy.gr/apergia-apochi-ap-ton-proliptiko-elegcho-odigisi-gia-to-diastima-apo-17-8-2026-eos-kai-26-8-2026/",
+  summary: "The Panhellenic Federation of Tax Office Employees (POE-DOY) has confirmed a nationwide strike-abstention from preventive inspection duties and official driving from 17 to 26 August 2026. The federation states that the action responds to serious problems in the framework governing preventive tax inspections and to intensified workloads across departments. This entry represents 26 August, one of ten separately recorded action days required by the CityIntel recurring-action rule. No rally, picket line or common operating time has been announced, so 12:00 is applied as the database default and the marker uses Greece's geographic centre rather than implying a physical assembly. Risk assessed as Medium for potential delays or reductions in field tax-inspection and enforcement activity across the AADE network; public disorder is not anticipated."
+},
+
+
+
+{
+  title: "Rassemblement pour la Palestine — Saint-Quentin",
+  city: "Saint-Quentin",
+  lat: 49.8465,
+  lng: 3.2875,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "02100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T11:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55608",
+  summary: "AFPS 02–Saint-Quentin has confirmed a Palestine solidarity gathering at Place de l'Hôtel de Ville at 11:00 and explicitly states that the action will continue every Saturday through July and August 2026. The static gathering calls for solidarity with the Palestinian people and an end to the violence, occupation and denial of Palestinian rights. Risk assessed as Low because this is an established town-centre assembly with no announced march or direct-action component. Limited pedestrian congestion and a visible police or municipal presence are possible around the square."
+},
+
+{
+  title: "Rassemblement pour la Palestine — Saint-Quentin",
+  city: "Saint-Quentin",
+  lat: 49.8465,
+  lng: 3.2875,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "02100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T11:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55609",
+  summary: "AFPS 02–Saint-Quentin has confirmed a Palestine solidarity gathering at Place de l'Hôtel de Ville at 11:00 and explicitly states that the action will continue every Saturday through July and August 2026. The static gathering calls for solidarity with the Palestinian people and an end to the violence, occupation and denial of Palestinian rights. Risk assessed as Low because this is an established town-centre assembly with no announced march or direct-action component. Limited pedestrian congestion and a visible police or municipal presence are possible around the square."
+},
+
+{
+  title: "Rassemblement pour la Palestine — Saint-Quentin",
+  city: "Saint-Quentin",
+  lat: 49.8465,
+  lng: 3.2875,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "02100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T11:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55610",
+  summary: "AFPS 02–Saint-Quentin has confirmed a Palestine solidarity gathering at Place de l'Hôtel de Ville at 11:00 and explicitly states that the action will continue every Saturday through July and August 2026. The static gathering calls for solidarity with the Palestinian people and an end to the violence, occupation and denial of Palestinian rights. Risk assessed as Low because this is an established town-centre assembly with no announced march or direct-action component. Limited pedestrian congestion and a visible police or municipal presence are possible around the square."
+},
+
+{
+  title: "Rassemblement pour la Palestine — Saint-Quentin",
+  city: "Saint-Quentin",
+  lat: 49.8465,
+  lng: 3.2875,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "02100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T11:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55611",
+  summary: "AFPS 02–Saint-Quentin has confirmed a Palestine solidarity gathering at Place de l'Hôtel de Ville at 11:00 and explicitly states that the action will continue every Saturday through July and August 2026. The static gathering calls for solidarity with the Palestinian people and an end to the violence, occupation and denial of Palestinian rights. Risk assessed as Low because this is an established town-centre assembly with no announced march or direct-action component. Limited pedestrian congestion and a visible police or municipal presence are possible around the square."
+},
+
+{
+  title: "Rassemblement pour la Palestine — Saint-Quentin",
+  city: "Saint-Quentin",
+  lat: 49.8465,
+  lng: 3.2875,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "02100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T11:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55612",
+  summary: "AFPS 02–Saint-Quentin has confirmed a Palestine solidarity gathering at Place de l'Hôtel de Ville at 11:00 and explicitly states that the action will continue every Saturday through July and August 2026. The static gathering calls for solidarity with the Palestinian people and an end to the violence, occupation and denial of Palestinian rights. Risk assessed as Low because this is an established town-centre assembly with no announced march or direct-action component. Limited pedestrian congestion and a visible police or municipal presence are possible around the square."
+},
+
+{
+  title: "Rassemblement pour la paix et la justice",
+  city: "Mainvilliers",
+  lat: 48.44921,
+  lng: 1.464086,
+  address: "Place du Marché",
+  postcode: "28300",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T19:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-paix-et-la-justice-55649",
+  summary: "AFPS Chartres–Mainvilliers has confirmed a peace-and-justice gathering at Place du Marché on Saturday 8 August 2026 from 19:00 to 21:00. The programme includes music, discussion and Palestinian cultural products and is intended as a public solidarity action concerning Palestine and the wider Middle East. Risk assessed as Low because the event is a peaceful static community gathering, with only localised evening crowding expected around the market square."
+},
+
+{
+  title: "Rassemblement de solidarité avec la Palestine — Blain",
+  city: "Blain",
+  lat: 47.4753,
+  lng: -1.7649,
+  address: "Rond-point de la Paix, Boulevard de la Résistance",
+  postcode: "44130",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T17:00:00",
+  source: "https://afps44.france-palestine.org/pages/les-dernieres-pages/nos-actions-en-juillet-2026-1783419786.html",
+  summary: "The Blain committee of AFPS 44 has confirmed static Palestine solidarity gatherings at the Rond-point de la Paix every Friday in July and August 2026 from 17:00 to 18:00. The actions oppose colonisation and forced displacement and express support for Palestinian rights. Risk assessed as Low because these are established one-hour roadside demonstrations. Participants may affect sightlines and pedestrian movement around the roundabout, but no blockade or road occupation has been announced."
+},
+
+{
+  title: "Rassemblement de solidarité avec la Palestine — Blain",
+  city: "Blain",
+  lat: 47.4753,
+  lng: -1.7649,
+  address: "Rond-point de la Paix, Boulevard de la Résistance",
+  postcode: "44130",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T17:00:00",
+  source: "https://afps44.france-palestine.org/pages/les-dernieres-pages/nos-actions-en-juillet-2026-1783419786.html",
+  summary: "The Blain committee of AFPS 44 has confirmed static Palestine solidarity gatherings at the Rond-point de la Paix every Friday in July and August 2026 from 17:00 to 18:00. The actions oppose colonisation and forced displacement and express support for Palestinian rights. Risk assessed as Low because these are established one-hour roadside demonstrations. Participants may affect sightlines and pedestrian movement around the roundabout, but no blockade or road occupation has been announced."
+},
+
+{
+  title: "Rassemblement de solidarité avec la Palestine — Blain",
+  city: "Blain",
+  lat: 47.4753,
+  lng: -1.7649,
+  address: "Rond-point de la Paix, Boulevard de la Résistance",
+  postcode: "44130",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-21T17:00:00",
+  source: "https://afps44.france-palestine.org/pages/les-dernieres-pages/nos-actions-en-juillet-2026-1783419786.html",
+  summary: "The Blain committee of AFPS 44 has confirmed static Palestine solidarity gatherings at the Rond-point de la Paix every Friday in July and August 2026 from 17:00 to 18:00. The actions oppose colonisation and forced displacement and express support for Palestinian rights. Risk assessed as Low because these are established one-hour roadside demonstrations. Participants may affect sightlines and pedestrian movement around the roundabout, but no blockade or road occupation has been announced."
+},
+
+{
+  title: "Rassemblement de solidarité avec la Palestine — Blain",
+  city: "Blain",
+  lat: 47.4753,
+  lng: -1.7649,
+  address: "Rond-point de la Paix, Boulevard de la Résistance",
+  postcode: "44130",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T17:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-de-Solidarite-avec-la-Palestine-55590",
+  summary: "The Blain committee of AFPS 44 has confirmed static Palestine solidarity gatherings at the Rond-point de la Paix every Friday in July and August 2026 from 17:00 to 18:00. The actions oppose colonisation and forced displacement and express support for Palestinian rights. Risk assessed as Low because these are established one-hour roadside demonstrations. Participants may affect sightlines and pedestrian movement around the roundabout, but no blockade or road occupation has been announced."
+},
+
+{
+  title: "GAZA STOP GÉNOCIDE Rally",
+  city: "Lyon",
+  lat: 45.7607,
+  lng: 4.8356,
+  address: "Place de la République, Lyon 2e",
+  postcode: "69002",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T17:00:00",
+  source: "https://collectif69palestine.fr/2026/07/agenda-aout-2026/",
+  summary: "The Collectif 69 de soutien au peuple palestinien has confirmed a 'GAZA STOP GÉNOCIDE' gathering at Place de la République in Lyon's 2nd arrondissement at 17:00 on Saturday 1 August 2026. The physical rally calls for an end to the war in Gaza, protection of Palestinian civilians and respect for Palestinian rights. Risk assessed as Low because the organiser has announced a static city-centre gathering rather than a march or disruptive action. Local pedestrian congestion and police monitoring are possible around the square."
+},
+
+{
+  title: "Rassemblement pour la Palestine — Caen",
+  city: "Caen",
+  lat: 49.1814,
+  lng: -0.3613,
+  address: "Place de Gaza, opposite Monoprix, 41–49 Boulevard du Général Leclerc",
+  postcode: "14000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T15:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55563",
+  summary: "AFPS 14–Caen and Collectif 14 de Solidarité avec la Palestine have confirmed a Palestine solidarity gathering at 15:00 at the locally designated Place de Gaza, opposite Monoprix and the former Chamber of Commerce on Boulevard du Général Leclerc. The action focuses on civilian casualties, humanitarian conditions and Palestinian rights. Risk assessed as Low because the event is a static central-Caen assembly with no announced march or direct action. Temporary pavement crowding and local police monitoring are possible."
+},
+
+{
+  title: "Rassemblement pour la Palestine — Caen",
+  city: "Caen",
+  lat: 49.1814,
+  lng: -0.3613,
+  address: "Place de Gaza, opposite Monoprix, 41–49 Boulevard du Général Leclerc",
+  postcode: "14000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T15:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55564",
+  summary: "AFPS 14–Caen and Collectif 14 de Solidarité avec la Palestine have confirmed a Palestine solidarity gathering at 15:00 at the locally designated Place de Gaza, opposite Monoprix and the former Chamber of Commerce on Boulevard du Général Leclerc. The action focuses on civilian casualties, humanitarian conditions and Palestinian rights. Risk assessed as Low because the event is a static central-Caen assembly with no announced march or direct action. Temporary pavement crowding and local police monitoring are possible."
+},
+
+{
+  title: "Legayr Pride LGBTQIA+ March",
+  city: "Belle-Isle-en-Terre",
+  lat: 48.5452,
+  lng: -3.39624,
+  address: "Place de la Mairie",
+  postcode: "22810",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T15:30:00",
+  source: "https://www.cotesdarmor.com/fr/fiche/fetes-et-manifestations/legayr-pride-belle-isle-en-terre_TFOFMABRE022V54RY7R/",
+  summary: "The 2026 Legayr Pride programme confirms an LGBTQIA+ Pride march departing Place de la Mairie in Belle-Isle-en-Terre at 15:30 on Saturday 22 August. Participants are welcomed at the Jardins du Guer from 14:00, with community activities following the march. The event qualifies as a physical equality and visibility mobilisation rather than merely a festival listing. Risk assessed as Low because it is a small-town community Pride march with no specific hostility or counter-protest announced, although short local road holds and pedestrian congestion may occur."
+},
+
+{
+  title: "Les Bure’lesques — Anti-Cigéo Resistance Festival",
+  city: "Saint-Amand-sur-Ornain",
+  lat: 48.6275,
+  lng: 5.3869,
+  address: "Festival field on the D966 between Saint-Amand-sur-Ornain and Tréveray (operational map anchor: Saint-Amand-sur-Ornain)",
+  postcode: "55500",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T17:00:00",
+  source: "https://burefestival.org/Infos-pratiques",
+  summary: "Les Bure’lesques organisers have confirmed a three-day physical campaigning festival from 14 to 16 August 2026 opposing the Cigéo deep-geological nuclear-waste project. The programme includes public debates, films, campaign information, an activist association village, performances and concerts, and the organisers explicitly describe the event as resistance to the project. The organiser specifies a 17:00 opening on Friday. The exact entrance coordinates for the private festival field are not published; the marker uses Saint-Amand-sur-Ornain as a transparent operational anchor. Risk assessed as Low because no disruptive direct action is announced, although sustained attendance, camping and vehicle movements may affect the D966 and nearby villages."
+},
+
+{
+  title: "Les Bure’lesques — Anti-Cigéo Resistance Festival",
+  city: "Saint-Amand-sur-Ornain",
+  lat: 48.6275,
+  lng: 5.3869,
+  address: "Festival field on the D966 between Saint-Amand-sur-Ornain and Tréveray (operational map anchor: Saint-Amand-sur-Ornain)",
+  postcode: "55500",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T12:00:00",
+  source: "https://burefestival.org/Infos-pratiques",
+  summary: "Les Bure’lesques organisers have confirmed a three-day physical campaigning festival from 14 to 16 August 2026 opposing the Cigéo deep-geological nuclear-waste project. The programme includes public debates, films, campaign information, an activist association village, performances and concerts, and the organisers explicitly describe the event as resistance to the project. The programme describes Saturday and Sunday as continuous but gives no single daily opening time, so the CityIntel 12:00 default has been applied. The exact entrance coordinates for the private festival field are not published; the marker uses Saint-Amand-sur-Ornain as a transparent operational anchor. Risk assessed as Low because no disruptive direct action is announced, although sustained attendance, camping and vehicle movements may affect the D966 and nearby villages."
+},
+
+{
+  title: "Les Bure’lesques — Anti-Cigéo Resistance Festival",
+  city: "Saint-Amand-sur-Ornain",
+  lat: 48.6275,
+  lng: 5.3869,
+  address: "Festival field on the D966 between Saint-Amand-sur-Ornain and Tréveray (operational map anchor: Saint-Amand-sur-Ornain)",
+  postcode: "55500",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T12:00:00",
+  source: "https://burefestival.org/Infos-pratiques",
+  summary: "Les Bure’lesques organisers have confirmed a three-day physical campaigning festival from 14 to 16 August 2026 opposing the Cigéo deep-geological nuclear-waste project. The programme includes public debates, films, campaign information, an activist association village, performances and concerts, and the organisers explicitly describe the event as resistance to the project. The programme describes Saturday and Sunday as continuous but gives no single daily opening time, so the CityIntel 12:00 default has been applied. The exact entrance coordinates for the private festival field are not published; the marker uses Saint-Amand-sur-Ornain as a transparent operational anchor. Risk assessed as Low because no disruptive direct action is announced, although sustained attendance, camping and vehicle movements may affect the D966 and nearby villages."
+},
+
+{
+  title: "Reprendre le chemin de Saint-Bernard — Sans-Papiers Mobilisation",
+  city: "Paris",
+  lat: 48.8861,
+  lng: 2.3554,
+  address: "Église Saint-Bernard de la Chapelle, 11 Rue Affre",
+  postcode: "75018",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://www.antiracisme-solidarite.org/",
+  summary: "The Marche des Solidarités and participating sans-papiers, anti-racist and social-movement collectives have called for a physical mobilisation in Paris on 23 August 2026 under the message 'reprendre le chemin de Saint-Bernard', marking 30 years since the occupation of the Saint-Bernard church and opening a new campaign year for regularisation and equal rights. The date and Saint-Bernard destination are confirmed, but the start time and complete route have not yet been published, so 12:00 is used as the CityIntel default and the church is used as the map anchor. Risk assessed as Medium because this is a politically sensitive migration-rights march in Paris that may involve road restrictions, a substantial police presence and friction over movement or access, although organisers frame it as a rights mobilisation rather than a violent action."
+},  
   
 
   {
