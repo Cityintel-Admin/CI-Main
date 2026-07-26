@@ -15,7 +15,7 @@ window.alertsData =[
   country: "United Kingdom",
   continent: "Europe",
   risk: "High",
-  time: "2025-03-08T12:00:00",
+  time: "2026-03-08T12:00:00",
   source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
@@ -24054,7 +24054,758 @@ time:"2025-08-22T10:00:00", source:"https://www.batimes.com.ar/news/argentina/te
   time: "2025-11-14T12:00:00",
   source: "#",
   summary: "Blurb: Madrid solidarity strike with school walkouts and a central rally. Expect crowding at Sol/Gran Vía and a stewarded loop.\n\nFurther info: Disruption is light-to-moderate in central streets; risk low."
+},,
+
+
+// === Germany August 2026 verified batch v10 ===
+{
+  title: "Hamburg Pride 2026 — CSD Demonstration",
+  city: "Hamburg",
+  lat: 53.5633,
+  lng: 10.0265,
+  address: "Lübecker Straße / Mühlendamm — route via Steindamm, Kreuzweg, Steinstraße and Mönckebergstraße to Lombardsbrücke",
+  postcode: "22087",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T12:00:00",
+  source: "https://www.hamburg-pride.de/pride-2026",
+  summary: "Hamburg Pride e.V. has confirmed its 2026 CSD demonstration for Saturday 1 August at 12:00, assembling at Lübecker Straße and Mühlendamm and proceeding through central Hamburg to Lombardsbrücke. The campaign theme calls for queer solidarity, opposition to populism and extremism, and a future without discrimination or fear. Risk assessed as Medium because the long city-centre route, numerous participating groups and vehicles, and associated Pride weekend are expected to require rolling road closures, crowd controls and public-transport adjustments. The action is an explicitly political demonstration rather than only a festival parade."
 },
 
+{
+  title: "Solidarität statt Sozialabbau — Social-State Demonstration",
+  city: "Bad Kreuznach",
+  lat: 49.849,
+  lng: 7.8682,
+  address: "Heidenmauer / Gensinger Straße",
+  postcode: "55543",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-07T15:00:00",
+  source: "https://www.ngg.net/meldungen/gemeinsam-den-sozialstaat-retten",
+  summary: "German trade unions have confirmed a demonstration and rally in Bad Kreuznach on Friday 7 August 2026 at 15:00, starting from Heidenmauer and Gensinger Straße. The action, promoted under the slogan “Solidarität statt Sozialabbau”, opposes proposed cuts to pensions, health, care and wider social protections. Risk assessed as Medium because a moving union demonstration may cause temporary traffic disruption around the assembly area and city-centre route, although organisers are calling for a peaceful labour mobilisation."
+},
+
+{
+  title: "ruhrPRIDE 2026 Demonstration",
+  city: "Essen",
+  lat: 51.43036,
+  lng: 6.998159,
+  address: "Messe Essen, Messeplatz 1 — route through Rüttenscheid to Kennedyplatz and Friedensplatz",
+  postcode: "45131",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T12:00:00",
+  source: "https://www.ruhrpride.de/",
+  summary: "ruhrPRIDE e.V. has confirmed a large LGBTQ+ rights demonstration in Essen on Saturday 8 August 2026, beginning at 12:00 from the Messe/Gruga area and travelling through Rüttenscheid towards the city-centre closing area at Kennedyplatz and Friedensplatz. The mobilisation promotes acceptance, visibility, human rights and an open society. Risk assessed as Medium because the cross-city march and subsequent street event will create significant pedestrian activity, rolling road restrictions and congestion between Messe Essen and the Innenstadt; disorder is not anticipated."
+},
+
+{
+  title: "Solidarität statt Sozialabbau — Kaiserslautern Social Protest",
+  city: "Kaiserslautern",
+  lat: 49.444,
+  lng: 7.7686,
+  address: "Fackelbrunnen, Marktstraße",
+  postcode: "67655",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T11:00:00",
+  source: "https://igbau.de/Demos2026.html",
+  summary: "The DGB Rheinland-Pfalz/Saarland has confirmed a social-protection protest at Fackelbrunnen in Kaiserslautern on Saturday 15 August 2026 at 11:00. The action is part of a wider trade-union campaign opposing reductions to social security, public services and worker protections. Risk assessed as Medium because a central-city rally may produce temporary pedestrian and traffic disruption around Marktstraße and the Fackelbrunnen area, while the announced mobilisation is intended to remain peaceful."
+},
+
+{
+  title: "Lübeck CSD 2026 — #unverhandelbar Demonstration",
+  city: "Lübeck",
+  lat: 53.8666,
+  lng: 10.6848,
+  address: "Markt / Schüsselbuden — circular city-centre route returning to Markt",
+  postcode: "23552",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://www.luebeck-pride.de/termine/demonstration",
+  summary: "Lübecker CSD e.V. has confirmed its political CSD demonstration for Saturday 15 August 2026 at 12:00. The procession starts at Markt and Schüsselbuden, follows a published route through the historic centre and past Holstentor, and is scheduled to return to Markt at about 14:00. Organisers require participating groups and vehicles to display clear political messages consistent with the CSD campaign. Risk assessed as Medium because the route crosses numerous central streets and tourist areas, requiring temporary road controls and creating localised congestion; the event has a peaceful organised character."
+},
+
+{
+  title: "CSD Darmstadt 2026 — “Zeig dich. Für uns alle.”",
+  city: "Darmstadt",
+  lat: 49.8759,
+  lng: 8.657,
+  address: "Front section of Karolinenplatz, outside the Hessisches Staatsarchiv",
+  postcode: "64289",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://www.csd-darmstadt.de/demo-parade/",
+  summary: "vielbunt e.V. has confirmed the CSD Darmstadt demonstration for Saturday 15 August 2026 at 12:00, with assembly on the front section of Karolinenplatz outside the state archive before a march through the city centre. The campaign promotes queer visibility, diversity, self-determination and equal rights under the theme “Zeig dich. Für uns alle.” Risk assessed as Medium because the city-centre procession will require rolling traffic management and produce substantial pedestrian congestion, although organisers present it as a peaceful political demonstration."
+},
+
+{
+  title: "Crefelder CSD 2026 Parade",
+  city: "Krefeld",
+  lat: 51.323706,
+  lng: 6.572159,
+  address: "Platz der Wiedervereinigung — procession through Krefeld to Evangelischer Kirchplatz",
+  postcode: "47805",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://crefelder-csd.de/",
+  summary: "Crefelder CSD has confirmed a Pride-day gathering and parade on Saturday 15 August 2026 from 12:00 at Platz der Wiedervereinigung, followed by movement through Krefeld and a closing programme at Evangelischer Kirchplatz from 15:00. The action promotes equality, visibility, diversity and opposition to discrimination. Risk assessed as Medium because the procession will affect city streets and concentrate crowds at both the assembly and closing locations; the demonstration is expected to remain peaceful."
+},
+
+{
+  title: "Sozialprotest Ludwigshafen — Rote Karte dem Kahlschlag",
+  city: "Ludwigshafen",
+  lat: 49.4768,
+  lng: 8.4454,
+  address: "Berliner Platz",
+  postcode: "67059",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T11:00:00",
+  source: "https://igbau.de/Demos2026.html",
+  summary: "The DGB Rheinland-Pfalz/Saarland has confirmed a social-protection protest at Berliner Platz in Ludwigshafen on Saturday 22 August 2026 at 11:00. The demonstration, titled “Rote Karte dem Kahlschlag”, opposes proposed reductions to social security, public services and labour protections. Risk assessed as Medium because the central transport and commercial location may experience crowding, altered tram or bus access and temporary road controls, although the event is an organised peaceful trade-union mobilisation."
+},
+
+{
+  title: "Hände weg von unserem Sozialstaat — Wiesbaden Demonstration",
+  city: "Wiesbaden",
+  lat: 50.0707,
+  lng: 8.243,
+  address: "Wiesbaden Hauptbahnhof, Bahnhofplatz",
+  postcode: "65189",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T14:00:00",
+  source: "https://www.ngg.net/meldungen/gemeinsam-den-sozialstaat-retten",
+  summary: "ver.di and allied trade-union organisations have confirmed a demonstration titled “Hände weg von unserem Sozialstaat” at Wiesbaden Hauptbahnhof on Saturday 22 August 2026 at 14:00. The mobilisation opposes cuts affecting pensions, health, care, employment rights and the wider welfare state. Risk assessed as Medium because the main-station assembly point and likely movement towards central Wiesbaden may affect passenger circulation, buses and local roads; organisers are calling for peaceful collective action."
+},
+
+{
+  title: "CSD Magdeburg 2026 — “Wähl Liebe” Demonstration",
+  city: "Magdeburg",
+  lat: 52.12606,
+  lng: 11.633642,
+  address: "Domplatz",
+  postcode: "39104",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T13:00:00",
+  source: "https://csdmagdeburg.de/demonstration/",
+  summary: "CSD Magdeburg e.V. has confirmed its major 2026 demonstration at Domplatz on Saturday 22 August. The political programme and city festival begin from midday, with the demonstration scheduled from 13:00 under the theme “Wähl Liebe”, promoting diversity, democracy, acceptance and equal rights. Risk assessed as Medium because the mobilisation will concentrate crowds around Domplatz and travel through central Magdeburg, requiring traffic controls and a visible police and stewarding presence; no specific disorder warning has been identified."
+},
+
+{
+  title: "CSD Bremen 2026 — “Generationen voller Pride” Demonstration",
+  city: "Bremen",
+  lat: 53.07235,
+  lng: 8.81077,
+  address: "Altenwall, city-centre demonstration assembly point",
+  postcode: "28195",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T12:00:00",
+  source: "https://www.csd-bremen.org/events/csd-bremen-2026/",
+  summary: "CSD Bremen e.V. has confirmed a political LGBTQ+ demonstration on Saturday 22 August 2026, starting from Altenwall and proceeding through Bremen city centre. The organiser describes the action as Pride and protest, promoting acceptance and equality and opposing discrimination under the theme “Generationen voller Pride – glücklich, sichtbar, stark”. No precise start time is stated on the current event page, so the CityIntel default of 12:00 has been applied. Risk assessed as Medium because the city-centre procession will require rolling road closures and generate substantial crowd and public-transport impacts."
+},
+
+{
+  title: "CSD Arnsberg 2026 Demonstration",
+  city: "Arnsberg",
+  lat: 51.452,
+  lng: 7.962,
+  address: "Gransauplatz, Neheim",
+  postcode: "59755",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T14:00:00",
+  source: "https://csd-deutschland.de/csd-saison/csd-termine/",
+  summary: "The organiser-maintained CSD Deutschland calendar confirms a CSD demonstration in Arnsberg on Saturday 22 August 2026 at 14:00, assembling at Gransauplatz in Neheim. The action is intended to promote LGBTQ+ visibility, equality and opposition to discrimination. Risk assessed as Low because this is a local community mobilisation at a defined town-centre square, with limited but possible temporary traffic and pedestrian disruption around Gransauplatz."
+},
+
+{
+  title: "SAVE THE HUMBI — Club Culture Demonstration",
+  city: "Berlin",
+  lat: 52.5507,
+  lng: 13.363,
+  address: "Müllerstraße, outside Rathaus Wedding — march to Hochstraße 46",
+  postcode: "13353",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T14:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a registered march on Saturday 1 August 2026 from 14:00 to 17:00 under the message “SAVE THE HUMBI! Clubkultur retten! Bauamt-Wahnsinn stoppen! Spekulanten stoppen!”. The route begins on Müllerstraße near Rathaus Wedding and proceeds via Fennstraße, Schönwalder Straße and Hochstraße. Risk assessed as Medium because the moving protest will affect several Wedding streets and may require rolling closures, while the issue concerns preservation of a cultural venue and opposition to development and administrative decisions."
+},
+
+{
+  title: "Protest Against Fur Sales at Louis Vuitton",
+  city: "Berlin",
+  lat: 52.4991,
+  lng: 13.3198,
+  address: "Louis Vuitton, Kurfürstendamm 185",
+  postcode: "10707",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T15:30:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a stationary animal-rights protest against fur sales at Louis Vuitton, Kurfürstendamm 185, on Saturday 1 August 2026 from 15:30 to 16:45. Risk assessed as Low because the action is short, static and focused on a single retail premises, although a small police or private-security presence and minor pavement congestion are possible on Kurfürstendamm."
+},
+
+{
+  title: "1000 Days of Genocide — Gaza Solidarity March",
+  city: "Berlin",
+  lat: 52.5417,
+  lng: 13.4122,
+  address: "U-Bahnhof Eberswalder Straße — march via central Berlin to Monbijouplatz",
+  postcode: "10437",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T16:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a registered Gaza solidarity march titled “1000 Tage Genozid – 1000 days of genocide” on Saturday 1 August 2026 from 16:00 to 22:00. The route begins at U-Bahnhof Eberswalder Straße and proceeds through Prenzlauer Berg and Mitte to Monbijouplatz. Risk assessed as Medium because the six-hour political march crosses major central streets and may prompt rolling closures, police liaison and counter-presence; no organiser turnout estimate is published."
+},
+
+{
+  title: "Protest Against Foie Gras at Grand Café Saint Germain",
+  city: "Berlin",
+  lat: 52.5051,
+  lng: 13.3223,
+  address: "Grand Café Saint Germain, Savignyplatz 13",
+  postcode: "10623",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T12:15:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a stationary protest against foie gras at Grand Café Saint Germain, Savignyplatz 13, on Sunday 2 August 2026 from 12:15 to 14:15. Risk assessed as Low because the action is a short animal-welfare demonstration at one hospitality venue, with only localised pavement congestion and possible private-security monitoring expected."
+},
+
+{
+  title: "Tibet Solidarity March for Lobga Rangzen",
+  city: "Berlin",
+  lat: 52.52,
+  lng: 13.3694,
+  address: "Bundeskanzleramt — march to the Chinese Embassy, Märkisches Ufer",
+  postcode: "10557",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-02T12:30:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a public vigil and march on Sunday 2 August 2026 from 12:30 to 16:00 in memory of Tibetan activist Lobga Rangzen and in support of Tibetan culture, identity and rights. The procession begins at the Federal Chancellery and travels through the government district and central Berlin to the Chinese Embassy near Jannowitzbrücke. Risk assessed as Medium because the route links highly sensitive government and diplomatic locations and will require police-managed movement and temporary traffic restrictions; the registered action is described as peaceful."
+},
+
+{
+  title: "Marriott Supply-Chain Cage-Hen Protest",
+  city: "Berlin",
+  lat: 52.5105,
+  lng: 13.3738,
+  address: "Berlin Marriott Hotel, Inge-Beisheim-Platz 1",
+  postcode: "10785",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T16:30:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a stationary animal-welfare protest against cage-hen products in Marriott Hotels’ supply chain at Inge-Beisheim-Platz 1 on Sunday 2 August 2026 from 16:30 to 18:15. Risk assessed as Low because the action is confined to the hotel frontage, with limited pedestrian disruption and possible private-security oversight."
+},
+
+{
+  title: "Yazidi Genocide Remembrance and Justice March",
+  city: "Berlin",
+  lat: 52.5195,
+  lng: 13.4067,
+  address: "Neptunbrunnen, Alexanderplatz — march to Platz der Republik",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-03T15:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a current-year remembrance and campaigning march concerning the Yazidi genocide in Shingal on Monday 3 August 2026 from 15:00 to 18:00. The procession begins at Neptunbrunnen near Alexanderplatz and proceeds via Unter den Linden and the government district to Platz der Republik. Risk assessed as Medium because the action crosses central arterial streets and terminates beside the Bundestag, requiring rolling traffic restrictions and police management. This record is based on a confirmed 2026 physical march, not the anniversary alone."
+},
+
+{
+  title: "Respect Cyclists — Safe Cycle Routes Demonstration",
+  city: "Berlin",
+  lat: 52.5484,
+  lng: 13.4056,
+  address: "Falkplatz, outside Max-Schmeling-Halle — long bicycle route ending near Kleiner Tiergarten",
+  postcode: "10437",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-05T17:30:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists the monthly Respect Cyclists bicycle demonstration on Wednesday 5 August 2026 from 17:30 to 21:00. The route begins at Falkplatz and travels across northern and western Berlin before ending near Kleiner Tiergarten, campaigning for safe cycle routes. Risk assessed as Medium because the long moving cycle column will require rolling traffic holds across numerous districts during the evening travel period, although the action is organised and non-violent."
+},
+
+{
+  title: "No Atomic War — Hiroshima and Nagasaki Vigil",
+  city: "Berlin",
+  lat: 52.5049,
+  lng: 13.3357,
+  address: "Breitscheidplatz",
+  postcode: "10789",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-05T19:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a registered anti-nuclear vigil at Breitscheidplatz on Wednesday 5 August 2026 from 19:00 to 22:00, commemorating the Hiroshima and Nagasaki bombings while explicitly campaigning against any future use of nuclear weapons. Risk assessed as Low because the action is stationary and peace-focused, though the prominent central location may produce modest pedestrian congestion and a visible police presence."
+},
+
+{
+  title: "Hiroshima Day Remembrance and Anti-Nuclear Warning",
+  city: "Berlin",
+  lat: 52.5248,
+  lng: 13.4428,
+  address: "Ernst-Zinna-Weg 1",
+  postcode: "10249",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T17:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a current-year remembrance and warning action marking Hiroshima Day at Ernst-Zinna-Weg 1 on Thursday 6 August 2026 from 17:00 to 18:30. The registered theme combines commemoration with a public warning against atomic warfare. Risk assessed as Low because it is a short stationary gathering in a park setting with limited operational impact. The record is supported by an explicit 2026 physical assembly rather than historical recurrence alone."
+},
+
+{
+  title: "Severe ME/CFS Awareness Day — LiegendDemo",
+  city: "Berlin",
+  lat: 52.5276,
+  lng: 13.3795,
+  address: "Robert-Koch-Platz and Luisenstraße 64",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T12:30:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists an Initiative LiegendDemo action for Severe ME/CFS Awareness Day on Friday 7 August 2026 from 12:30 to 14:00 at Robert-Koch-Platz and Luisenstraße 64. The protest challenges the psychologisation of severe ME/CFS and warns that inadequate clinical recognition places lives at risk. Risk assessed as Low because this is a short health-advocacy action with a small defined footprint, though accessibility needs and local pavement management should be considered."
+},
+
+{
+  title: "Vigil Against Far-Right Tendencies",
+  city: "Berlin",
+  lat: 52.5219,
+  lng: 13.4132,
+  address: "Alexanderplatz",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T15:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a vigil against far-right tendencies in politics and society at Alexanderplatz on Friday 7 August 2026 from 15:00 to 16:00. Risk assessed as Low because the action is a one-hour stationary vigil, although the politically sensitive theme and busy public square may attract counter-comment or a small police presence."
+},
+
+{
+  title: "Six Years Empty — Housing and Vacancy Protest",
+  city: "Berlin",
+  lat: 52.4779,
+  lng: 13.4237,
+  address: "Weisestraße 56",
+  postcode: "12049",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T18:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a protest titled “6 Jahre Leerstand, das muss doch gefeiert werden!” at Weisestraße 56 on Friday 7 August 2026 from 18:00 to 21:00. The action highlights prolonged building vacancy and housing-use concerns. Risk assessed as Low because it is tied to one address and no march route is registered, though evening noise, pavement occupation and local resident or property-security interaction are possible."
+},
+
+{
+  title: "Hanfparade 2026 — Gerecht! Gesund! Genießen!",
+  city: "Berlin",
+  lat: 52.5195,
+  lng: 13.4067,
+  address: "Spandauer Straße beside Neptunbrunnen — march through Mitte and the government district",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T12:00:00",
+  source: "https://www.hanfparade.de/programm-route/route/",
+  summary: "The Hanfparade organising team and Berlin Police have confirmed the 2026 cannabis-policy demonstration for Saturday 8 August from 12:00 to 22:00. The event assembles on Spandauer Straße near Neptunbrunnen, with the march scheduled through Unter den Linden, the government district and central Berlin before returning to the starting area. The campaign addresses cannabis law, health, justice and regulated access. Risk assessed as Medium because the large, vehicle-supported central route will require extensive rolling road restrictions, crowd management and police liaison; the event has an established organised format."
+},
+
+{
+  title: "PRÜF BERLIN, PRÜF! — Democracy Protection Rally",
+  city: "Berlin",
+  lat: 52.5163,
+  lng: 13.3777,
+  address: "Pariser Platz",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T14:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a registered rally titled “PRÜF BERLIN, PRÜF! – Demokratie schützen” at Pariser Platz on Saturday 8 August 2026 from 14:00 to 16:00. Risk assessed as Low because the action is stationary and limited to two hours, although the Brandenburg Gate location is politically prominent and may require routine police and pedestrian management."
+},
+
+{
+  title: "Anti-Sexism Demonstration",
+  city: "Berlin",
+  lat: 52.5147,
+  lng: 13.3501,
+  address: "Straße des 17. Juni 31",
+  postcode: "10785",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T14:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a registered anti-sexism demonstration at Straße des 17. Juni 31 on Saturday 8 August 2026 from 14:00 to 16:00. Risk assessed as Low because no moving route is recorded and the action is limited to a defined two-hour period, although the central Tiergarten location may experience localised crowding and police monitoring."
+},
+
+{
+  title: "Stop the Killing of Street Animals in Turkey and Morocco",
+  city: "Berlin",
+  lat: 52.5163,
+  lng: 13.3777,
+  address: "Pariser Platz 1",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T15:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists an animal-welfare protest at Pariser Platz on Saturday 8 August 2026 from 15:00 to 18:00 opposing the killing of street animals in Turkey and Morocco. Risk assessed as Low because the action is stationary and peaceful in character, though the diplomatic and international focus and high-footfall Brandenburg Gate location may prompt a modest police presence."
+},
+
+{
+  title: "Plattenaktion Ost — Against War and Fascism",
+  city: "Berlin",
+  lat: 52.5716,
+  lng: 13.5654,
+  address: "S-Bahnhof Ahrensfelde, Märkische Allee / Havemannstraße — neighbourhood march returning to the station area",
+  postcode: "12689",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T15:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a long-duration neighbourhood march titled “Plattenaktion Ost: Gegen Krieg und Faschismus” on Saturday 8 August 2026 from 15:00 until 23:59. The route starts at S-Bahnhof Ahrensfelde and travels through residential streets in Marzahn before returning to the station area. Risk assessed as Medium because the event lasts into the night, uses a moving route through residential districts and may cause repeated local road restrictions and noise, although no specific violence warning is published."
+},
+
+{
+  title: "For a Liveable Torstraße — Trees and Clean-Air March",
+  city: "Berlin",
+  lat: 52.5297,
+  lng: 13.3929,
+  address: "Torstraße / Tucholskystraße — march to Rosenthaler Platz",
+  postcode: "10119",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T17:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists an environmental and transport-policy march on Saturday 8 August 2026 from 17:00 to 18:00, starting at Torstraße and Tucholskystraße and proceeding to Rosenthaler Platz. Participants are campaigning for cleaner air, a more liveable Torstraße and protection of trees threatened with removal. Risk assessed as Low because the action is short, although it will briefly occupy a busy central road corridor and may require temporary traffic holds."
+},
+
+{
+  title: "World Naked Bike Ride Berlin 2026",
+  city: "Berlin",
+  lat: 52.5484,
+  lng: 13.4056,
+  address: "Falkplatz, outside Max-Schmeling-Halle — long bicycle route through central and south-east Berlin",
+  postcode: "10437",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-09T11:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists the World Naked Bike Ride Berlin 2026 on Sunday 9 August from 11:00 to 17:00, beginning at Falkplatz and travelling on a long cross-city route through the government district, central Berlin, Kreuzberg, Treptow and towards Rudow. The action promotes cycling visibility, body freedom and reduced car dependence. Risk assessed as Medium because the extended moving route will require substantial rolling traffic controls over multiple districts; the registered event is organised and no disorder warning is stated."
+},
+
+{
+  title: "The Wind Knows No Passport — Migration Solidarity March",
+  city: "Berlin",
+  lat: 52.4953,
+  lng: 13.4446,
+  address: "Lohmühlenstraße 14 — march via Kottbusser Tor to Oranienplatz",
+  postcode: "12435",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T13:10:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a one-hour march titled “The wind knows no passport” on Sunday 9 August 2026 from Lohmühlenstraße 14 through Kreuzberg to Oranienplatz. The message indicates solidarity across borders and opposition to exclusion based on nationality. Risk assessed as Low because the action is short and has a defined route, though brief rolling traffic restrictions are likely around Görlitzer Ufer, Kottbusser Tor and Oranienplatz."
+},
+
+{
+  title: "UN Nuclear Weapons Ban Treaty Vigil",
+  city: "Berlin",
+  lat: 52.5163,
+  lng: 13.3777,
+  address: "Pariser Platz",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T17:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a vigil at Pariser Platz on Sunday 9 August 2026 from 17:00 to 18:00 calling for the worldwide abolition of nuclear weapons under the United Nations Treaty on the Prohibition of Nuclear Weapons. Risk assessed as Low because the action is a short stationary peace vigil with limited operational impact beyond modest pedestrian congestion."
+},
+
+{
+  title: "For a Liveable Torstraße — Trees and Clean-Air March",
+  city: "Berlin",
+  lat: 52.5297,
+  lng: 13.3929,
+  address: "Torstraße / Tucholskystraße — march to Rosenthaler Platz",
+  postcode: "10119",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-12T17:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a second August environmental and transport-policy march on Wednesday 12 August 2026 from 17:00 to 18:00, proceeding along Torstraße from Tucholskystraße to Rosenthaler Platz. The campaign calls for cleaner air, safer urban transport policy and protection of threatened street trees. Risk assessed as Low because the route and duration are limited, although short traffic holds are likely during the evening travel period."
+},
+
+{
+  title: "Five Years Since the Taliban Takeover — Protest Camp",
+  city: "Berlin",
+  lat: 52.5219,
+  lng: 13.4132,
+  address: "Alexanderplatz 1",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-14T00:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a protest camp at Alexanderplatz addressing five years since the Taliban takeover, registered from 14 to 16 August 2026. This separate record covers Friday 14 August in accordance with CityIntel multi-day splitting rules. The action is a current physical protest focused on Afghanistan, human rights and the consequences of Taliban rule. Risk assessed as Low because it is a stationary camp, though continuous occupation may require overnight management, welfare arrangements and routine police contact."
+},
+
+{
+  title: "Five Years Since the Taliban Takeover — Protest Camp",
+  city: "Berlin",
+  lat: 52.5219,
+  lng: 13.4132,
+  address: "Alexanderplatz 1",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T00:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a protest camp at Alexanderplatz addressing five years since the Taliban takeover, registered from 14 to 16 August 2026. This separate record covers Saturday 15 August in accordance with CityIntel multi-day splitting rules. The action is a current physical protest focused on Afghanistan, human rights and the consequences of Taliban rule. Risk assessed as Low because it is a stationary camp, though weekend footfall and continuous occupation may create localised congestion and require routine police liaison."
+},
+
+{
+  title: "Fuckparade 2026 — Against Commercialisation and Displacement of Subcultures",
+  city: "Berlin",
+  lat: 52.5219,
+  lng: 13.3835,
+  address: "Reinhardtstraße — circular march through Mitte and the government district",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T14:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists Fuckparade 2026 on Saturday 15 August from 14:00 to 22:00, campaigning against commercialisation and displacement of subcultures. The procession begins on Reinhardtstraße and follows a long central route through Hackescher Markt, Alexanderplatz, the government district and Unter den Linden before returning. Risk assessed as Medium because amplified music, vehicles, a lengthy route and large crowds are likely to create major traffic and noise impacts, although the action is an established cultural-political demonstration."
+},
+
+{
+  title: "Five Years Since the Taliban Takeover — Protest Camp",
+  city: "Berlin",
+  lat: 52.5219,
+  lng: 13.4132,
+  address: "Alexanderplatz 1",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T00:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a protest camp at Alexanderplatz addressing five years since the Taliban takeover, registered through 17:00 on Sunday 16 August 2026. This separate record covers the final date in accordance with CityIntel multi-day splitting rules. The action is a current physical protest focused on Afghanistan and human rights. Risk assessed as Low because it is stationary, although dismantling activity and weekend pedestrian volumes may produce localised operational effects."
+},
+
+{
+  title: "Stop the Glorification of National Socialism — Spandau March",
+  city: "Berlin",
+  lat: 52.5348,
+  lng: 13.1975,
+  address: "Bahnhof Spandau, Seegefelder Straße 1 — circular march through Spandau",
+  postcode: "13597",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-17T14:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a march titled “NS-Verherrlichung stoppen” on Monday 17 August 2026 from 14:00 to 20:00. The route begins and ends at Bahnhof Spandau and travels via Brunsbütteler Damm, Wilhelmstraße, Gatower Straße, Heerstraße and Pichelsdorfer Straße. Risk assessed as Medium because the politically sensitive anti-Nazi mobilisation lasts six hours and crosses major Spandau roads, with possible counter-presence and extensive traffic controls."
+},
+
+{
+  title: "Demonstration for Stronger Heritage Protection",
+  city: "Berlin",
+  lat: 52.5163,
+  lng: 13.3777,
+  address: "Pariser Platz — march through the historic centre to Brüderstraße",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-18T10:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a demonstration calling for stronger heritage protection on Tuesday 18 August 2026 from 10:00 to 14:00. The route begins at Pariser Platz and proceeds through Unter den Linden, Museum Island, Schlossplatz and Breite Straße to Brüderstraße. Risk assessed as Low because the action is daytime and orderly in character, though the route crosses heavily visited central heritage areas and may require short rolling restrictions."
+},
+
+{
+  title: "Bicycle Demonstration Against Anti-Black Everyday Discrimination",
+  city: "Berlin",
+  lat: 52.5163,
+  lng: 13.3777,
+  address: "Pariser Platz — bicycle route through Mitte and Kreuzberg to Revaler Straße",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T14:30:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a bicycle demonstration on Sunday 23 August 2026 from 14:30 to 17:30 opposing everyday discrimination and demanding recognition of Black people as a significant population group in Germany. The route runs from Pariser Platz through Mitte and Kreuzberg to the Warschauer Straße and Revaler Straße area. Risk assessed as Medium because the moving cycle demonstration crosses many central junctions and will require rolling traffic management, while the civil-rights theme may attract visible police support and observation."
+},
+
+{
+  title: "Amo Fest 2026 — Decolonising Public Space Rally",
+  city: "Berlin",
+  lat: 52.5131,
+  lng: 13.3967,
+  address: "Hausvogteiplatz 1",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T17:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists “Amo Fest 2026” at Hausvogteiplatz on Sunday 23 August from 17:00 to 19:00, focused on decolonising public space and the next steps following successful street renaming campaigns in Berlin. Risk assessed as Low because the action is a two-hour stationary civic and cultural rally, with limited impact beyond localised pedestrian congestion."
+},
+
+{
+  title: "Sustainable and Democratic Economy Against Multiple Crises",
+  city: "Berlin",
+  lat: 52.5002,
+  lng: 13.4204,
+  address: "Oranienstraße / Mariannenstraße",
+  postcode: "10999",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T20:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists an evening assembly at Oranienstraße and Mariannenstraße on Wednesday 26 August 2026 from 20:00 to 23:00 promoting sustainable and democratic economic approaches to multiple crises. Risk assessed as Low because no march route is registered, although the late finish and busy Kreuzberg junction may produce local noise and pedestrian congestion."
+},
+
+{
+  title: "Fridays for Future Climate Vigil",
+  city: "Berlin",
+  lat: 52.5186,
+  lng: 13.3761,
+  address: "Platz der Republik",
+  postcode: "10557",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T10:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a Fridays for Future climate vigil at Platz der Republik on Friday 28 August 2026 from 10:00 to 12:00, calling for compliance with the Paris Agreement and stronger climate action. Risk assessed as Low because it is a short stationary action in the government district, with limited disruption beyond routine security controls and pedestrian concentration."
+},
+
+{
+  title: "Together Against Political Powerlessness — Democratic Society Rally",
+  city: "Berlin",
+  lat: 52.5186,
+  lng: 13.3761,
+  address: "Platz der Republik 1",
+  postcode: "10557",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T16:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a rally at Platz der Republik on Friday 28 August 2026 from 16:00 to 17:30 under the message “Es ist möglich – gemeinsam gegen politische Ohnmacht und für eine gerechte, demokratische Gesellschaft.” Risk assessed as Low because the action is short and stationary, although its Bundestag location may prompt standard security controls and modest pedestrian disruption."
+},
+
+{
+  title: "Lichtenberg Is Colourful and Diverse Rally",
+  city: "Berlin",
+  lat: 52.5056,
+  lng: 13.5129,
+  address: "Heinrich-Dathe-Platz 1",
+  postcode: "10319",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-28T17:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a rally titled “Lichtenberg ist bunt und vielfältig” at Heinrich-Dathe-Platz on Friday 28 August 2026 from 17:00 to 21:00. The action promotes diversity and opposition to exclusion in the district. Risk assessed as Low because it is a stationary local-community gathering, though the four-hour evening programme may create local noise, crowding and a visible police or stewarding presence."
+},
+
+{
+  title: "Vonovia Rent-Increase Information Protest",
+  city: "Berlin",
+  lat: 52.5696,
+  lng: 13.4116,
+  address: "Paracelsusplatz",
+  postcode: "13187",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T12:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a tenant protest and information action at Paracelsusplatz on Saturday 29 August 2026 from 12:00 to 17:00 under the message “Wir zahlen nicht für eure Dividende”, challenging Vonovia rent increases and informing tenants about objections. Risk assessed as Low because the action is stationary and advisory in character, with limited disruption expected around the square."
+},
+
+{
+  title: "Affordable Cultural Spaces at Molkenmarkt — Urban Development Rally",
+  city: "Berlin",
+  lat: 52.5176,
+  lng: 13.4089,
+  address: "Molkenmarkt",
+  postcode: "10179",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a rally at Molkenmarkt on Saturday 29 August 2026 from 13:00 to 19:00 calling for socially and environmentally responsible urban development and protection of affordable cultural spaces. Risk assessed as Low because the action is stationary, though the six-hour duration and central redevelopment location may create localised pedestrian and construction-access impacts."
+},
+
+{
+  title: "Museum Guides’ “We Demand 0%” Labour Rally",
+  city: "Berlin",
+  lat: 52.5163,
+  lng: 13.3777,
+  address: "Pariser Platz 1",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T14:00:00",
+  source: "https://www.berlin.de/polizei/service/versammlungsbehoerde/versammlungen-aufzuege/",
+  summary: "Berlin Police lists a labour-rights rally by Geschichte wird gemacht e.V., representing freelance museum guides and history educators, at Pariser Platz on Monday 31 August 2026 from 14:00 to 16:00. The action highlights precarious working conditions and calls for a zero VAT rate so guides do not have to absorb tax on group bookings. Risk assessed as Low because it is a short stationary professional-association protest with limited operational impact."
+}
 
 ];
