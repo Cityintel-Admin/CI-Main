@@ -5,22 +5,3998 @@
 
 window.alertsData =[
 
+
+
+  
+
 {
-  title: "TEST EVENT",
-  city: "London",
-  lat: 51.5074,
-  lng: -0.1278,
-  address: "Whitehall",
-  postcode: "SW1A 2AX",
-  country: "United Kingdom",
-  continent: "Europe",
+  title: "People's Safety and Judicial Justice Rally Against Drug and Drink Driving",
+  city: "Taipei",
+  lat: 25.0396,
+  lng: 121.5150,
+  address: "Ketagalan Boulevard, outside the Presidential Office Building, Zhongzheng District",
+  postcode: "100",
+  country: "Taiwan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-01T14:00:00",
+  source: "https://www.mirrormedia.mg/story/20260726edi006",
+  summary: "The People's Safety and Judicial Justice Alliance has confirmed a public rally on Ketagalan Boulevard in central Taipei from 14:00 to 17:00 on Saturday 1 August 2026. The alliance brings together the Equal Rights to Life Association, Chinese Association for Human Rights, Taiwan National Mothers' Alliance for Protecting Families and Children, Taiwan Parents' Association for Protecting the Rights of Women and Children, Buddhist and Christian organisations, with the Kuomintang legislative caucus also supporting mobilisation. The rally's four principal demands are opposition to drug-impaired and drink driving, stronger public safety, greater support for police and improved judicial justice. Organisers will also highlight crime-victim rights, judicial reform, the social safety net and proposals concerning capital punishment and criminal sentencing. Risk assessed as Medium because the event will occupy Ketagalan Boulevard directly outside the Presidential Office Building, a politically symbolic and security-sensitive location where police deployment, road restrictions and localised congestion are likely. The gathering is formally organised and no violence or confrontational march route has been announced."
+},
+  
+
+  {
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 5 August",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, Yulgok-ro 2-gil, outside the former Japanese Embassy",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-05T12:00:00",
+  source: "https://womenandwar.net/wednesdaydemo",
+  summary: "The Korean Council for Justice and Remembrance for the Issues of Military Sexual Slavery by Japan will hold its recurring Wednesday Demonstration at 12:00 on 5 August 2026 outside the former Japanese Embassy in Seoul. Participants will demand recognition of wartime crimes, a formal apology, legal compensation, accountability, accurate historical education and protection of the Statue of Peace. Risk assessed as Medium because the demonstration takes place at a diplomatically sensitive location where opposing nationalist activists, police barriers and verbal confrontation have previously been present, although the principal action is organised and non-violent."
+},
+
+{
+  title: "1765th Wednesday Demonstration and Global Solidarity Rally",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, Yulgok-ro 2-gil, outside the former Japanese Embassy",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-12T12:00:00",
+  source: "https://womenandwar.net/announcement/?bmode=view&idx=172460190",
+  summary: "The Korean Council has confirmed the 1765th Wednesday Demonstration and 14th International Memorial Day global-solidarity rally from 12:00 to 13:00 on Wednesday 12 August 2026. Survivors' advocates, civil-society organisations and international supporters will gather beside the Statue of Peace to demand a just resolution of Japan's wartime military sexual-slavery system, including official acknowledgement, apology, reparations and historical accountability. Risk assessed as Medium because the anniversary-linked gathering is likely to be larger and more politically sensitive than a routine weekly demonstration and may attract organised counter-presence, police barriers and access restrictions around the former embassy."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 19 August",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, Yulgok-ro 2-gil, outside the former Japanese Embassy",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-19T12:00:00",
+  source: "https://womenandwar.net/wednesdaydemo",
+  summary: "The Korean Council will continue its weekly Wednesday Demonstration outside the former Japanese Embassy at 12:00 on 19 August 2026. Participants will call on Japan to acknowledge wartime military sexual slavery, establish the historical record, provide an official apology and legal reparations and ensure responsible education and remembrance. Risk assessed as Medium because the embassy-area protest may generate counter-demonstrations, amplified sound, police cordons and local access restrictions, although serious disorder is not anticipated."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 26 August",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, Yulgok-ro 2-gil, outside the former Japanese Embassy",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-26T12:00:00",
+  source: "https://womenandwar.net/wednesdaydemo",
+  summary: "The Korean Council will hold its final scheduled August Wednesday Demonstration at 12:00 on 26 August 2026 outside the former Japanese Embassy. The longstanding action campaigns for justice for survivors of Japan's wartime military sexual-slavery system and protection of the Statue of Peace. Risk assessed as Medium because the diplomatically sensitive site can attract hostile counter-presence and requires routine police separation and pavement management, although the demonstration itself is expected to remain peaceful."
+},
+
+{
+  title: "14th Memorial Day Butterfly Cultural Protest",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, Yulgok-ro 2-gil, outside the former Japanese Embassy",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-14T19:00:00",
+  source: "https://womenandwar.net/announcement/?bmode=view&idx=172459502",
+  summary: "The Korean Council has confirmed a Butterfly Cultural Festival outside the former Japanese Embassy at 19:00 on Friday 14 August 2026, marking the 14th International Memorial Day for victims of Japanese military sexual slavery. The public action will combine remembrance, testimony, cultural performances and demands for recognition, apology, reparations and historical justice. Risk assessed as Medium because the symbolic evening mobilisation at the Statue of Peace may attract a significant crowd, nationalist counter-protesters and an enhanced police presence, with possible restrictions around Yulgok-ro 2-gil."
+},
+
+{
+  title: "Sovereignty and Peace Advance Rally",
+  city: "Seoul",
+  lat: 37.5664,
+  lng: 126.9782,
+  address: "Eastern roadway beside Seoul City Hall, 110 Sejong-daero",
+  postcode: "04524",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-14T19:30:00",
+  source: "https://kpssr.net/bbs/board.php?bo_table=notice&wr_id=280",
+  summary: "The Korea Peace and Sovereignty Solidarity Alliance, Korean People's Action and associated coalitions have announced a Sovereignty and Peace Advance Rally on the eastern roadway beside Seoul City Hall at 19:30 on Friday 14 August 2026. Organisers will oppose United States military and political influence, the expansion of military alliances, economic pressure and what they describe as foreign interference, while mobilising participants for the following day's Liberation Day march. Risk assessed as Medium because the roadway gathering will require traffic controls and police deployment and may draw opposing political activists during a sensitive national-anniversary period, although no explicit violent intent has been announced."
+},
+
+{
+  title: "8·15 Sovereignty and Peace Grand March",
+  city: "Seoul",
+  lat: 37.5664,
+  lng: 126.9782,
+  address: "Central Seoul — final assembly point and march route pending (map anchor: Seoul City Hall)",
+  postcode: "04524",
+  country: "South Korea",
+  continent: "Asia",
   risk: "High",
-  time: "2026-03-08T12:00:00",
-  source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
-  summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
+  time: "2026-08-15T15:00:00",
+  source: "https://kpssr.net/bbs/board.php?bo_table=notice&wr_id=277",
+  summary: "The organising committee for the 2026 8·15 Sovereignty and Peace Grand March has confirmed a central-Seoul mobilisation at 15:00 on Saturday 15 August 2026. Participants will oppose the South Korea–United States and trilateral South Korea–United States–Japan military alliances, demand the return of wartime operational control and protest perceived United States economic pressure and political interference. The exact assembly point and route remain pending, so Seoul City Hall has been used as a transparent map anchor. Risk assessed as High because this moving Liberation Day demonstration will coincide with the separately confirmed conservative National Resistance Rally in the Gwanghwamun area. Extensive road closures, large police cordons, competing crowds and potential friction between ideologically opposed groups should be anticipated."
+},
+
+  {
+  title: "Anti-Osprey Protest Outside Saga Garrison",
+  city: "Saga",
+  lat: 33.1498,
+  lng: 130.3023,
+  address: "Japan Ground Self-Defense Force Saga Garrison gate, beside Saga Airport Parking Area 4",
+  postcode: "840-2212",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-01T10:00:00",
+  source: "https://pegasus1.seesaa.net/article/520757400.html",
+  summary: "Osprey Stop and Article 9 Action Saga has confirmed its August weekend protest outside the Japan Ground Self-Defense Force's Saga Garrison from 10:00 to 12:00 on Saturday 1 August 2026. Participants will assemble near Saga Airport Parking Area 4 before moving to the garrison gate to oppose the deployment and operation of V-22 Osprey aircraft and the growing military use of Saga Airport. Risk assessed as Medium because the action targets an operating military facility and may require security monitoring and access management around the garrison and airport roads, although the organiser has announced a peaceful gate-front protest."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 1 August",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-01T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists will hold their recurring Saturday Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on 1 August 2026. Participants will display Palestinian flags and banners and call for an end to military operations in Gaza and stronger international action. Risk assessed as Low because the event is an established stationary gathering with no march or deliberate road obstruction announced, although temporary pedestrian congestion is possible at one of Osaka's busiest tourist locations."
+},
+
+{
+  title: "Henoko Base Construction Protest at the Ministry of Defense",
+  city: "Tokyo",
+  lat: 35.69378,
+  lng: 139.72968,
+  address: "Ministry of Defense, 5-1 Ichigaya Honmuracho, Shinjuku City",
+  postcode: "162-8801",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-03T18:30:00",
+  source: "https://x.com/hitotsubo_kanto/status/2079556183107805439",
+  summary: "The Executive Committee Opposing the Construction of the Henoko Base has called a protest and formal petition action outside Japan's Ministry of Defense at 18:30 on Monday 3 August 2026. Participants will oppose continued construction of the new US military facility at Henoko in Okinawa and demand that the government respect local opposition to the project. Risk assessed as Medium because the action will take place directly outside a high-security national defence facility and may require barriers, police monitoring and restrictions around the Ichigaya entrance, although no violent intent has been announced."
+},
+
+{
+  title: "Anti-Nuclear Peace Penlight Action at Aioi Bridge",
+  city: "Hiroshima",
+  lat: 34.39641,
+  lng: 132.45361,
+  address: "Aioi Bridge pedestrian pavement, beside Hiroshima Peace Memorial Park",
+  postcode: "730-0811",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-05T19:45:00",
+  source: "https://gensuikin.peace-forum.com/2026/07/22/penlight260805/",
+  summary: "Nihon Hidankyo and Japan's principal anti-nuclear organisations have called a silent anti-nuclear penlight action on the pedestrian pavement of Aioi Bridge from 19:45 to 20:30 on Wednesday 5 August 2026. Participants will demand global nuclear disarmament and Japanese accession to the Treaty on the Prohibition of Nuclear Weapons on the eve of the 81st anniversary of the Hiroshima bombing. Risk assessed as Low because this is a silent stationary action with no march or road occupation announced, although significant pedestrian clustering is possible during the heavily attended anniversary period."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 8 August",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-08T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists will hold their recurring Saturday Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on 8 August 2026. Participants will display flags, banners and signs supporting Palestinian civilians and opposing military operations in Gaza. Risk assessed as Low because the action is stationary and no road blockade or procession is planned, although crowding may affect pedestrian movement around Dotonbori."
+},
+
+{
+  title: "Nagasaki Non-Nuclear Peace March",
+  city: "Nagasaki",
+  lat: 32.78101,
+  lng: 129.86381,
+  address: "Nagasaki Prefectural General Gymnasium, 7-1 Aburagi-machi — march to Hypocenter Park",
+  postcode: "852-8035",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-09T10:15:00",
+  source: "https://gensuikin.peace-forum.com/2026/07/09/81gensuikin-nagasaki/",
+  summary: "The Organising Committee for the 81st-Anniversary World Conference against Atomic and Hydrogen Bombs has confirmed a non-nuclear peace march from Nagasaki Prefectural General Gymnasium to Hypocenter Park from 10:15 to 11:00 on Sunday 9 August 2026. Survivors, trade unions, peace organisations and international delegates will call for nuclear disarmament, survivor rights and Japanese participation in the Treaty on the Prohibition of Nuclear Weapons. Risk assessed as Medium because the moving procession will take place during Nagasaki's principal atomic-bomb anniversary commemorations and will require traffic, pedestrian and police coordination, although the march is formally organised and expected to remain peaceful."
+},
+
+{
+  title: "21st Yasukuni Candle Action and Peace March",
+  city: "Tokyo",
+  lat: 35.70812,
+  lng: 139.75224,
+  address: "Bunkyo Civic Center, 4-15-14 Kasuga — evening candle-demonstration route pending",
+  postcode: "112-8555",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-09T18:30:00",
+  source: "https://peace-candle.net/",
+  summary: "The Peace Light into the Darkness of Yasukuni Candle Action Committee has announced its 21st annual candle demonstration for Sunday 9 August 2026. Following an afternoon programme at the Bunkyo Civic Center, participants will begin a public candle march at 18:30 opposing the political and historical role of Yasukuni Shrine and promoting remembrance of Asian victims of Japanese militarism. A final street route was not available at collection threshold. Risk assessed as Medium because demonstrations concerning Yasukuni Shrine frequently attract nationalist counter-presence, close police monitoring and route restrictions, even though the organiser promotes a peaceful candle action."
+},
+
+{
+  title: "Totsuka Peace Parade — No War and Defend Article 9",
+  city: "Yokohama",
+  lat: 35.40022,
+  lng: 139.53428,
+  address: "Totsuka Station east pedestrian deck — departure from the west side of Totsuka Station",
+  postcode: "244-0003",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-09T17:00:00",
+  source: "https://x.com/i/status/2073711105143345310",
+  summary: "The 8.9 Peace Parade in Totsuka organising committee has called an anti-war and pro-constitution parade on Sunday 9 August 2026. Participants will assemble on the east pedestrian deck of Totsuka Station at 17:00 before the procession departs from the station's west side at approximately 17:20. The action will oppose warfare and constitutional revision and defend Article 9. Risk assessed as Low because this is a locally organised peaceful procession, although short-term pedestrian and traffic management may be required around both sides of Totsuka Station."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 15 August",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-15T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists will hold their recurring Saturday Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on 15 August 2026. Participants will display flags and banners calling for a ceasefire, humanitarian access and Palestinian rights. Risk assessed as Low because the protest is stationary and no deliberate obstruction is planned, although the gathering may contribute to pedestrian congestion in Dotonbori."
+},
+
+{
+  title: "Never Repeat War Anti-Constitutional-Revision March",
+  city: "Sendai",
+  lat: 38.26494,
+  lng: 140.87174,
+  address: "El Park Sendai, 4-11-1 Ichibancho, Aoba Ward — march route pending",
+  postcode: "980-8555",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-15T16:30:00",
+  source: "https://x.com/Kun270902/status/2077298959912157577",
+  summary: "Miyagi Kakushinkon has announced an anti-war and anti-constitutional-revision demonstration in central Sendai on Saturday 15 August 2026. The march will begin at approximately 16:30 following an indoor Never Repeat War gathering at El Park Sendai. Participants will mark Japan's surrender anniversary, oppose constitutional revision and call for preservation of Article 9. The final street route was pending at collection threshold. Risk assessed as Medium because a moving procession through the Ichibancho commercial district may require police liaison, road controls and pedestrian management, although no event-specific disorder warning has been issued."
+},
+
+{
+  title: "No War and Defend the Constitution Standing — Ikebukuro",
+  city: "Tokyo",
+  lat: 35.72954,
+  lng: 139.71117,
+  address: "JR Ikebukuro Station east exit, outside Ikebukuro PARCO",
+  postcode: "171-8557",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-15T18:00:00",
+  source: "https://x.com/kusanone_appeal/status/2076930619230372258",
+  summary: "Grassroots Appeal activists have called a No War and Defend the Constitution standing action outside Ikebukuro PARCO from 18:00 to 19:00 on Saturday 15 August 2026. Participants will mark the end-of-war anniversary with signs, penlights, speeches and anti-war messages opposing revision of Japan's pacifist constitution. Risk assessed as Low because this is a stationary public action with no march or blockade announced, although temporary crowding and routine police observation are possible at the busy station entrance."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 22 August",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-22T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists will hold their recurring Saturday Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on 22 August 2026. The protest will call for Palestinian rights, humanitarian access and an end to military action in Gaza. Risk assessed as Low because it is a stationary recurring event without an announced march or blockade, although local pedestrian congestion is possible."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 29 August",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists will hold their final currently published August Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on Saturday 29 August 2026. Participants will display Palestinian flags and signs and call for a ceasefire, humanitarian access and stronger international pressure concerning Gaza. Risk assessed as Low because no moving procession or road occupation is planned, although the demonstration may cause temporary crowding on the bridge."
+},
+
+{
+  title: "Chhatron Ki Goonj National Student Rally",
+  city: "New Delhi",
+  lat: 28.6419,
+  lng: 77.2307,
+  address: "Ramlila Maidan, Jawaharlal Nehru Marg",
+  postcode: "110002",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-09T12:00:00",
+  source: "https://www.tribuneindia.com/news/haryana/congress-state-level-organisational-meeting-held-in-panipat-for-delhis-chhatron-ki-goonj-campaign/",
+  summary: "The Indian National Congress, Indian Youth Congress and National Students' Union of India have announced the culminating national Chhatron Ki Goonj mobilisation at Ramlila Maidan on Sunday 9 August 2026. The campaign is mobilising students and young people from multiple states over examination paper leaks, cancelled and irregular examinations, recruitment delays, rising education costs, youth unemployment and demands for accountability within the education system. State and district Congress organisations have been instructed to arrange large delegations for the Delhi event. No dependable public start time was available at collection threshold, so CityIntel's standard 12:00 timestamp has been applied pending an operational update. Risk assessed as Medium because a national political and student rally at one of Delhi's principal mass-mobilisation venues will require extensive police deployment, crowd controls, vehicle restrictions and public-transport management, although organisers have not called for civil disobedience or violence."
+},
+
+{
+  title: "5th National March for Life India",
+  city: "Chennai",
+  lat: 13.0415,
+  lng: 80.2522,
+  address: "Stella Maris College, 17 Cathedral Road — final public march route pending",
+  postcode: "600086",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-09T12:00:00",
+  source: "https://marchforlifeindia.org/registration/",
+  summary: "March for Life India and the Archdiocese of Madras-Mylapore have confirmed the principal public march of the fifth National March for Life at Stella Maris College on Sunday 9 August 2026. The faith-based anti-abortion and pro-life mobilisation will advocate protection of human life from conception to natural death and follows an exhibition programme at the college on 8 August. The final procession start time and street route were not consistently published at collection threshold, so CityIntel's standard 12:00 timestamp has been used pending refresh. Risk assessed as Medium because a moving demonstration concerning a socially sensitive issue may require police liaison, temporary traffic controls and counter-protest monitoring around Cathedral Road, although no specific opposing mobilisation or violence warning has been identified."
+},
+
+{
+  title: "Vidarbha Kranti Din Statehood Long March",
+  city: "Nagpur",
+  lat: 21.12826,
+  lng: 79.06778,
+  address: "Deekshabhoomi, South Ambazari Road — march to Samvidhan Chowk",
+  postcode: "440010",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-09T12:00:00",
+  source: "https://timesofindia.indiatimes.com/city/nagpur/separate-vidarbha-by-2027-roadmap-planned-by-vras/articleshow/131235127.cms",
+  summary: "The Vidarbha Rajya Andolan Samiti has announced a Kranti Din Long March in Nagpur on Sunday 9 August 2026 as part of its intensified campaign for creation of a separate Vidarbha state by 2027. Participants will march from Deekshabhoomi to Samvidhan Chowk, where a public rally will be held. Organisers cite regional development disparities, administrative neglect, farmer distress and unfulfilled provisions associated with the Nagpur Pact. No dependable start time was published, so CityIntel's standard 12:00 timestamp has been applied pending refresh. Risk assessed as Medium because the moving political procession through central Nagpur is likely to require rolling road closures, police deployment and traffic diversions around South Ambazari Road and Samvidhan Chowk, although no event-specific violent intent has been identified."
+},
+
+{
+  title: "AIKS Nationwide Jail Bharo Farmers' Movement",
+  city: "New Delhi",
+  lat: 28.6327,
+  lng: 77.219,
+  address: "District headquarters and government offices nationwide — map anchor: Harkishan Singh Surjeet Bhawan, 10–12 Indrajit Gupta Marg",
+  postcode: "110002",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-08-10T12:00:00",
+  source: "https://timesofindia.indiatimes.com/city/mumbai/farmers-body-plans-nationwide-stir-over-farm-distress-trade-pacts-mumbai-meet-backs-jail-bharo-campaign/articleshow/132075267.cms",
+  summary: "The All India Kisan Sabha has called a nationwide district-level Jail Bharo, or Fill the Jails, mobilisation for Monday 10 August 2026. Farmers, agricultural labourers and supporting worker organisations are expected to conduct civil-disobedience actions at district headquarters and government offices across multiple states. Demands concern worsening agrarian distress, legally guaranteed minimum support prices, debt relief, rising agricultural input costs, rural employment protections, labour rights and opposition to trade arrangements that organisers believe threaten domestic agriculture. Exact district venues and daily start times will vary and were not available nationally at collection threshold, so CityIntel's standard 12:00 timestamp and a transparent AIKS headquarters map anchor have been applied pending local updates. Risk assessed as High because the declared Jail Bharo strategy intentionally seeks mass detention and may involve sit-ins, attempted entry into restricted government areas, road or rail disruption and direct friction with police, even though organisers have not called for violent action."
+},
+
+{
+  title: "Haryana Power Employees and Engineers' Strike — 11 August",
+  city: "Panchkula",
+  lat: 30.7059,
+  lng: 76.8572,
+  address: "Power utilities across Haryana — map anchor: Urja Bhawan / Shakti Bhawan, Sector 6, Panchkula",
+  postcode: "134109",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-11T12:00:00",
+  source: "https://www.tribuneindia.com/news/haryana/employee-unions-to-launch-stir-against-parallel-power-licence-agri-discom-and-smart-meters-in-haryana/",
+  summary: "Four major unions representing Haryana power employees and engineers have announced the opening day of a three-day statewide strike on Tuesday 11 August 2026. The joint front opposes a proposed parallel electricity-distribution licence covering Nuh and Gurugram, creation of a separate Agriculture DISCOM, the Smart Metering Scheme and wider electricity privatisation measures. Participation may affect offices, maintenance operations and power-utility facilities throughout Haryana. No universal strike start time or single rally site was published, so CityIntel's standard 12:00 timestamp and the power-utility administrative complex in Sector 6, Panchkula, have been used as a transparent map anchor. Risk assessed as Medium because the action may disrupt administrative and maintenance functions and generate demonstrations at utility offices, although no deliberate interruption of emergency electricity supply or violent action has been announced."
+},
+
+{
+  title: "Haryana Power Employees and Engineers' Strike — 12 August",
+  city: "Panchkula",
+  lat: 30.7059,
+  lng: 76.8572,
+  address: "Power utilities across Haryana — map anchor: Urja Bhawan / Shakti Bhawan, Sector 6, Panchkula",
+  postcode: "134109",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-12T12:00:00",
+  source: "https://www.tribuneindia.com/news/haryana/employee-unions-to-launch-stir-against-parallel-power-licence-agri-discom-and-smart-meters-in-haryana/",
+  summary: "The statewide strike by Haryana power employees and engineers is scheduled to continue on Wednesday 12 August 2026. The participating unions oppose the proposed parallel distribution licence in Nuh and Gurugram, formation of a separate Agriculture DISCOM, smart-meter implementation and policies they regard as steps toward privatisation. Office services, complaint handling, maintenance and other non-emergency utility functions may be affected across the state. No common daily start time or single protest location was announced, so CityIntel's standard 12:00 timestamp and the Sector 6 power-utility complex in Panchkula have been applied as a transparent map anchor. Risk assessed as Medium because a second consecutive day may deepen operational backlogs and produce local demonstrations at utility premises, although no serious public-order threat has been identified."
+},
+
+{
+  title: "Haryana Power Employees and Engineers' Strike — 13 August",
+  city: "Panchkula",
+  lat: 30.7059,
+  lng: 76.8572,
+  address: "Power utilities across Haryana — map anchor: Urja Bhawan / Shakti Bhawan, Sector 6, Panchkula",
+  postcode: "134109",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-13T12:00:00",
+  source: "https://www.tribuneindia.com/news/haryana/employee-unions-to-launch-stir-against-parallel-power-licence-agri-discom-and-smart-meters-in-haryana/",
+  summary: "The third and final scheduled day of the Haryana power employees and engineers' statewide strike is Thursday 13 August 2026. The joint union front is demanding withdrawal of the proposed parallel distribution licence, separate Agriculture DISCOM and Smart Metering Scheme and is opposing broader privatisation of electricity distribution. Administrative functions, maintenance response and public-facing utility services may remain reduced across Haryana. Because no universal operating time or central demonstration site was published, CityIntel's standard 12:00 timestamp and the Panchkula power-utility complex have been used as a transparent map anchor. Risk assessed as Medium because cumulative disruption may increase pressure on utility operations and public complaint services, but no planned violence or deliberate shutdown of emergency electricity infrastructure has been announced."
+},
+
+  {
+  title: "Kerikeri Palestine Solidarity Rally",
+  city: "Kerikeri",
+  lat: -35.2417,
+  lng: 173.9472,
+  address: "State Highway 10 and Kerikeri Road roundabout",
+  postcode: "0293",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-01T09:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine solidarity organisers have confirmed their first-Saturday monthly rally at the State Highway 10 and Kerikeri Road roundabout from 09:00 to 11:00 on 1 August 2026. Participants are expected to display flags and signs calling for an end to military action in Gaza and stronger New Zealand government measures concerning Israel. Risk assessed as Low because this is a small, established roadside visibility action with no march or deliberate obstruction announced. Driver distraction and limited pavement activity are possible at the busy roundabout."
+},
+
+{
+  title: "Thames Vigil to Stop the War on Children",
+  city: "Thames",
+  lat: -37.1385,
+  lng: 175.5414,
+  address: "Thames Market, 700 Pollen Street",
+  postcode: "3500",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-01T10:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Voices for Palestine Hauraki has confirmed its monthly Vigil to Stop the War on Children at Thames Market from 10:00 on Saturday 1 August 2026. Participants will display Palestine-solidarity messages and call for protection of civilians and children affected by the Gaza conflict. Risk assessed as Low because this is a peaceful stationary market-area vigil with no march or traffic obstruction announced."
+},
+
+{
+  title: "Hamilton Monthly Palestine Solidarity Rally",
+  city: "Hamilton",
+  lat: -37.7833,
+  lng: 175.2718,
+  address: "Hinemoa Park, corner of Mill Street and Tristram Street",
+  postcode: "3204",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-01T14:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine Waikato has confirmed its first-Saturday monthly rally at Hinemoa Park from 14:00 on 1 August 2026. The gathering will call for an end to military operations in Gaza, sanctions against Israel and stronger New Zealand government action. Risk assessed as Low because the protest is scheduled to remain within the park and no moving procession or road blockade has been announced."
+},
+
+{
+  title: "Porirua Monthly Palestine Solidarity Rally",
+  city: "Porirua",
+  lat: -41.1347,
+  lng: 174.8395,
+  address: "Parumoana Street intersection beside Pātaka Art + Museum",
+  postcode: "5022",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Porirua Palestine-solidarity organisers have confirmed their first-Saturday monthly rally beside Pātaka on Parumoana Street from 13:00 on 1 August 2026. Participants are expected to use flags, placards and speeches to call for a ceasefire, sanctions and humanitarian access. Risk assessed as Low because this is a stationary civic-centre gathering with no march or intentional road obstruction announced."
+},
+
+{
+  title: "Hastings Monthly Palestine Solidarity Rally",
+  city: "Hastings",
+  lat: -39.6419,
+  lng: 176.8448,
+  address: "Civic Square, entrances from Eastbourne Street, Russell Street, Lyndon Road and Warren Street",
+  postcode: "4122",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-02T13:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Hastings Palestine-solidarity organisers have confirmed their first-Sunday monthly rally at Civic Square from 13:30 to 15:00 on 2 August 2026. Participants will call for protection of Palestinian civilians, humanitarian access and stronger New Zealand government action. Risk assessed as Low because the gathering is expected to remain within the central public square and no moving procession or disruption plan has been announced."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 4 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-04T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Tuesday 4 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 6 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-06T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Thursday 6 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 11 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-11T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Tuesday 11 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 13 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-13T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Thursday 13 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 18 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-18T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Tuesday 18 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 20 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-20T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Thursday 20 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 25 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-25T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Tuesday 25 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Silent Vigil for Palestine at Parliament — 27 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "New Zealand Parliament Grounds, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-27T10:30:00",
+  source: "https://www.psna.nz/events",
+  summary: "Palestine-solidarity activists will hold their recurring silent vigil on the grounds of New Zealand Parliament from 10:30 to 13:45 on Thursday 27 August 2026. Participants will display Palestinian flags and silently call for sanctions, humanitarian protection and government action. Risk assessed as Low because this is an established stationary vigil, although routine Parliamentary Security and police observation are likely."
+},
+
+{
+  title: "Weekly Climate Solidarity Protest at Parliament — 4 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "Parliament Lawn, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-04T12:30:00",
+  source: "https://fridaysforfuture.nz/",
+  summary: "Fridays for Future Aotearoa will hold its weekly climate-solidarity protest on Parliament Lawn from 12:30 to 13:30 on Tuesday 4 August 2026. Participants will raise climate-policy concerns and seek engagement with government MPs. Risk assessed as Low because this is a small, established and stationary lunchtime protest with no road obstruction announced."
+},
+
+{
+  title: "Weekly Climate Solidarity Protest at Parliament — 11 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "Parliament Lawn, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-11T12:30:00",
+  source: "https://fridaysforfuture.nz/",
+  summary: "Fridays for Future Aotearoa will hold its weekly climate-solidarity protest on Parliament Lawn from 12:30 to 13:30 on Tuesday 11 August 2026. Participants will raise climate-policy concerns and seek engagement with government MPs. Risk assessed as Low because this is a small, established and stationary lunchtime protest with no road obstruction announced."
+},
+
+{
+  title: "Weekly Climate Solidarity Protest at Parliament — 18 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "Parliament Lawn, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-18T12:30:00",
+  source: "https://fridaysforfuture.nz/",
+  summary: "Fridays for Future Aotearoa will hold its weekly climate-solidarity protest on Parliament Lawn from 12:30 to 13:30 on Tuesday 18 August 2026. Participants will raise climate-policy concerns and seek engagement with government MPs. Risk assessed as Low because this is a small, established and stationary lunchtime protest with no road obstruction announced."
+},
+
+{
+  title: "Weekly Climate Solidarity Protest at Parliament — 25 August",
+  city: "Wellington",
+  lat: -41.2784,
+  lng: 174.7767,
+  address: "Parliament Lawn, Molesworth Street",
+  postcode: "6011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-25T12:30:00",
+  source: "https://fridaysforfuture.nz/",
+  summary: "Fridays for Future Aotearoa will hold its weekly climate-solidarity protest on Parliament Lawn from 12:30 to 13:30 on Tuesday 25 August 2026. Participants will raise climate-policy concerns and seek engagement with government MPs. Risk assessed as Low because this is a small, established and stationary lunchtime protest with no road obstruction announced."
+},
+
+{
+  title: "Christchurch Palestine Flags at the Bridge — 7 August",
+  city: "Christchurch",
+  lat: -43.5321,
+  lng: 172.6348,
+  address: "Bridge of Remembrance, Cashel Street",
+  postcode: "8011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-07T16:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Christchurch Palestine-solidarity activists will hold their recurring Friday flag-waving action at the Bridge of Remembrance from 16:00 on 7 August 2026. Participants will display Palestinian flags and signs during the evening commuter period. Risk assessed as Low because the action is stationary and no march or road occupation is planned, although pedestrian clustering is possible around Cashel Street."
+},
+
+{
+  title: "Christchurch Palestine Flags at the Bridge — 14 August",
+  city: "Christchurch",
+  lat: -43.5321,
+  lng: 172.6348,
+  address: "Bridge of Remembrance, Cashel Street",
+  postcode: "8011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-14T16:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Christchurch Palestine-solidarity activists will hold their recurring Friday flag-waving action at the Bridge of Remembrance from 16:00 on 14 August 2026. Participants will display Palestinian flags and signs during the evening commuter period. Risk assessed as Low because the action is stationary and no march or road occupation is planned, although pedestrian clustering is possible around Cashel Street."
+},
+
+{
+  title: "Christchurch Palestine Flags at the Bridge — 21 August",
+  city: "Christchurch",
+  lat: -43.5321,
+  lng: 172.6348,
+  address: "Bridge of Remembrance, Cashel Street",
+  postcode: "8011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-21T16:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Christchurch Palestine-solidarity activists will hold their recurring Friday flag-waving action at the Bridge of Remembrance from 16:00 on 21 August 2026. Participants will display Palestinian flags and signs during the evening commuter period. Risk assessed as Low because the action is stationary and no march or road occupation is planned, although pedestrian clustering is possible around Cashel Street."
+},
+
+{
+  title: "Christchurch Palestine Flags at the Bridge — 28 August",
+  city: "Christchurch",
+  lat: -43.5321,
+  lng: 172.6348,
+  address: "Bridge of Remembrance, Cashel Street",
+  postcode: "8011",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-28T16:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Christchurch Palestine-solidarity activists will hold their recurring Friday flag-waving action at the Bridge of Remembrance from 16:00 on 28 August 2026. Participants will display Palestinian flags and signs during the evening commuter period. Risk assessed as Low because the action is stationary and no march or road occupation is planned, although pedestrian clustering is possible around Cashel Street."
+},
+
+{
+  title: "Invercargill Palestine Divestment Petition Drive — 2 August",
+  city: "Invercargill",
+  lat: -46.411,
+  lng: 168.3538,
+  address: "Esk Street, outside Invercargill Central mall",
+  postcode: "9810",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-02T13:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Invercargill Stands With Palestine will conduct a public petition drive outside the Esk Street mall from 13:00 to 14:00 on Sunday 2 August 2026. The campaign asks Invercargill City Council to prevent ratepayer funds from supporting companies associated with alleged violations in occupied Palestinian territories. Risk assessed as Low because this is a small stationary petition and information action with no march or obstruction planned."
+},
+
+{
+  title: "Invercargill Palestine Divestment Petition Drive — 9 August",
+  city: "Invercargill",
+  lat: -46.411,
+  lng: 168.3538,
+  address: "Esk Street, outside Invercargill Central mall",
+  postcode: "9810",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-09T13:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Invercargill Stands With Palestine will conduct a public petition drive outside the Esk Street mall from 13:00 to 14:00 on Sunday 9 August 2026. The campaign asks Invercargill City Council to prevent ratepayer funds from supporting companies associated with alleged violations in occupied Palestinian territories. Risk assessed as Low because this is a small stationary petition and information action with no march or obstruction planned."
+},
+
+{
+  title: "Invercargill Palestine Divestment Petition Drive — 16 August",
+  city: "Invercargill",
+  lat: -46.411,
+  lng: 168.3538,
+  address: "Esk Street, outside Invercargill Central mall",
+  postcode: "9810",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-16T13:00:00",
+  source: "https://www.psna.nz/events",
+  summary: "Invercargill Stands With Palestine will conduct the final currently published Sunday petition drive outside the Esk Street mall from 13:00 to 14:00 on 16 August 2026. The campaign asks Invercargill City Council to prevent ratepayer funds from supporting companies associated with alleged violations in occupied Palestinian territories. Risk assessed as Low because this is a small stationary petition and information action with no march or obstruction planned."
+},
+
+{
+  title: "Invercargill Palestine Divestment Council Mobilisation",
+  city: "Invercargill",
+  lat: -46.4134,
+  lng: 168.3535,
+  address: "Civic Theatre and Invercargill City Council Chamber, 88 Tay Street",
+  postcode: "9810",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-25T13:45:00",
+  source: "https://www.psna.nz/events",
+  summary: "Invercargill Stands With Palestine has called supporters to assemble outside the Civic Theatre and council chamber from approximately 13:45 on Tuesday 25 August 2026 ahead of a 14:00 Invercargill City Council meeting. The group is campaigning for the council to keep public funds away from companies connected to alleged violations in occupied Palestinian territories. Risk assessed as Low because the mobilisation is expected to be a small stationary gathering linked to a scheduled council meeting, although additional security and access management may be used at the chamber."
+},
+
+{
+  title: "Protect Our NDIS National Day of Action — Sydney",
+  city: "Sydney",
+  lat: -33.87311,
+  lng: 151.20693,
+  address: "Sydney Town Hall, 483 George Street — march route pending",
+  postcode: "2000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-01T10:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/protect-our-ndis-national-day-action-gadigal-sydney",
+  summary: "The Protect Our NDIS Alliance has called a national day-of-action protest at Sydney Town Hall from 10:00 on Saturday 1 August 2026. Disabled people, families, carers, workers and supporters will oppose proposed NDIS legislation and service reductions before the bill returns to the Senate on 14 August. Organisers state that sustained campaigning has already delayed passage of the legislation and are calling for further public escalation. A final march route and accessibility plan were pending at collection threshold. Risk assessed as Medium because a disability-rights mobilisation and possible procession from Sydney Town Hall may affect George Street, surrounding light-rail operations and CBD pedestrian movement, although organisers describe an accessible and peaceful action."
+},
+
+{
+  title: "Hiroshima and Nagasaki Nuclear Disarmament March",
+  city: "Sydney",
+  lat: -33.87311,
+  lng: 151.20693,
+  address: "Sydney Town Hall, 483 George Street — march to Department of Defence, 320 Pitt Street",
+  postcode: "2000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/hiroshima-and-nagasaki-march-and-rally",
+  summary: "The Sydney Hiroshima Day Committee has confirmed a nuclear-disarmament rally at Sydney Town Hall from 13:00 on Saturday 1 August 2026, followed by a march to the Department of Defence offices at 320 Pitt Street. The action marks 81 years since the atomic bombings of Hiroshima and Nagasaki and calls for nuclear disarmament and opposition to warfare. Risk assessed as Medium because the moving procession through central Sydney may require temporary traffic controls, police liaison and changes to pedestrian access around George and Pitt streets, although the event is commemorative and no specific disorder warning has been identified."
+},
+
+{
+  title: "Queensland Against Greyhound Racing Rally",
+  city: "Brisbane",
+  lat: -27.47305,
+  lng: 153.02735,
+  address: "Queensland Parliament House, 2A George Street",
+  postcode: "4000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-01T10:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/queensland-against-greyhound-racing",
+  summary: "AnimalKind, the Coalition for the Protection of Greyhounds and Friends of the Hound have called a public rally outside Queensland Parliament House at 10:00 on Saturday 1 August 2026. Participants will demand an end to greyhound racing, safe rehoming arrangements for racing dogs, conversion of tracks into public green and sporting spaces and transition support for affected workers. Organisers are encouraging supporters to bring greyhounds to the event. Risk assessed as Low because this is a stationary animal-welfare rally outside Parliament with no march or blockade announced, although local pavement crowding and routine security monitoring are likely."
+},
+
+{
+  title: "Free Palestine and Freedom of Speech Bus Mobilisation",
+  city: "Brisbane",
+  lat: -27.48274,
+  lng: 153.01762,
+  address: "Musgrave Park, 100 Edmonstone Street — bus mobilisation to Queensland–New South Wales border",
+  postcode: "4101",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-01T10:30:00",
+  source: "https://www.greenleft.org.au/2026-08/event/free-palestine-free-speech-freedom-bus",
+  summary: "Justice for Palestine Magan-djin has organised a Freedom Bus mobilisation assembling at Musgrave Park from 10:30 on Saturday 1 August 2026. The bus is scheduled to depart at 11:00 for the Queensland–New South Wales border, where participants will join a Palestine-solidarity and freedom-of-speech protest before returning to Brisbane. Organiser messaging explicitly states that the border action is intended to challenge and test new Queensland restrictions concerning protest language. Risk assessed as Medium because the mobile action crosses a state boundary, concerns contested protest legislation and may attract active police monitoring at both Musgrave Park and the border demonstration."
+},
+
+{
+  title: "Protect Our NDIS National Day of Action — Brisbane",
+  city: "Brisbane",
+  lat: -27.47164,
+  lng: 153.02453,
+  address: "Queens Gardens, 144 George Street — march route pending",
+  postcode: "4000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/protect-our-ndis-brisbane-magan-djin-meanjin-national-day-action",
+  summary: "The Protect Our NDIS Alliance has confirmed a disability-rights rally at Queens Gardens from 13:00 on Saturday 1 August 2026. Participants will oppose proposed NDIS cuts and legislation before the bill returns to the Senate on 14 August and will call for protection of disability services, access and support arrangements. A final march route and accessibility information were pending at collection threshold. Risk assessed as Medium because a potentially sizeable protest within Brisbane's government precinct may affect George Street, Parliament access and nearby bus movements, although organisers describe a peaceful and accessible demonstration."
+},
+
+{
+  title: "Free Palestine and Freedom of Speech Border Rally",
+  city: "Tweed Heads",
+  lat: -28.16804,
+  lng: 153.54368,
+  address: "State Border Marker, 2–30 Wharf Street, beside Twin Towns",
+  postcode: "2485",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-01T12:30:00",
+  source: "https://www.greenleft.org.au/2026-08/event/rally-free-palestine-freedom-speech",
+  summary: "Justice for Palestine Magan-djin and Northern Rivers Friends of Palestine have called a rally at the Queensland–New South Wales border marker from 12:30 on Saturday 1 August 2026. The action will oppose Israel's military campaign in Gaza and challenge Queensland legislation restricting specified Palestine-related protest language. Participants travelling by bus from Brisbane are expected to join local supporters at Wharf Street. Risk assessed as Medium because the organisers intend to test contested state protest restrictions at a jurisdictional boundary, creating potential for police intervention, legal disputes and local traffic or access disruption near Twin Towns."
+},
+
+{
+  title: "Protect Our NDIS National Day of Action — Melbourne",
+  city: "Melbourne",
+  lat: -37.81502,
+  lng: 144.96661,
+  address: "City Square, Swanston Street — march route pending",
+  postcode: "3000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-01T14:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/protect-our-ndis-melbourne-naarm-national-day-action",
+  summary: "The Protect Our NDIS Alliance has announced a national day-of-action rally at Melbourne City Square from 14:00 on Saturday 1 August 2026. Disabled people, carers, families, workers and supporters will protest proposed NDIS legislation and reductions in access and services before the bill returns to the Senate on 14 August. A final route and accessibility arrangements were pending at collection threshold. Risk assessed as Medium because the gathering and possible march may disrupt Swanston Street trams, pedestrian movement and central-city roads, although the organiser promotes an accessible and peaceful action."
+},
+
+{
+  title: "Free Palestine Melbourne Rally — Sanction Israel Now",
+  city: "Melbourne",
+  lat: -37.80987,
+  lng: 144.96523,
+  address: "State Library Victoria, 328 Swanston Street",
+  postcode: "3000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-02T12:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/free-palestine-rally",
+  summary: "Free Palestine Melbourne has confirmed a rally outside the State Library Victoria at 12:00 on Sunday 2 August 2026. Organisers will demand sanctions against Israel, an end to Australian political and institutional support for Israeli military actions and protection of healthcare workers and other Palestine advocates from restrictions on political speech. Risk assessed as Medium because Palestine demonstrations at this prominent central-Melbourne location can attract large crowds, counter-presence and significant police and tram-management requirements, although no event-specific threat of serious violence has been published."
+},
+
+{
+  title: "Death of Democracy Funeral Procession",
+  city: "Brisbane",
+  lat: -27.47305,
+  lng: 153.02735,
+  address: "Queensland Parliament House, 2A George Street",
+  postcode: "4000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-04T11:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/death-democracy-funeral",
+  summary: "Community group Tight Knit has announced a satirical 'Death of Democracy Funeral' outside Queensland Parliament from 11:00 on Tuesday 4 August 2026. The public mourning procession will oppose Brisbane City Council meeting-law changes that organisers say restrict opposition councillors' access to information and their ability to question projects, asset sales and infrastructure decisions. Risk assessed as Medium because a political procession within the parliamentary precinct may affect access, attract security monitoring and generate temporary pedestrian or road disruption, although the action is presented as theatrical and peaceful."
+},
+
+{
+  title: "Hiroshima–Nagasaki Remembrance Peace Vigil",
+  city: "Perth",
+  lat: -31.95225,
+  lng: 115.85715,
+  address: "Wesley Corner, Hay Street at William Street",
+  postcode: "6000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-06T16:30:00",
+  source: "https://www.greenleft.org.au/2026-08/event/hiroshima-nagasaki-81st-remembrance-peace-vigil",
+  summary: "Nuclear Free WA, Stop AUKUS WA, the Independent and Peaceful Australia Network and partner organisations have confirmed an 81st-anniversary Hiroshima–Nagasaki peace vigil at Wesley Corner from 16:30 to 18:00 on Thursday 6 August 2026. Participants will commemorate victims of the atomic bombings and call for peace and nuclear disarmament. Risk assessed as Low because this is a stationary remembrance vigil with no moving procession or blockade announced, although some pavement crowding is possible during the evening commuter period."
+},
+
+{
+  title: "Newcastle Hiroshima Day Peace Rally",
+  city: "Newcastle",
+  lat: -32.90989,
+  lng: 151.74779,
+  address: "Tighes Hill Peace Park, Maitland Road, opposite Newcastle TAFE",
+  postcode: "2297",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-08T11:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/hiroshima-day-rally",
+  summary: "The Hunter Peace Group has confirmed a Hiroshima Day rally at Tighes Hill Peace Park from 11:00 to 13:00 on Saturday 8 August 2026. The gathering will commemorate victims of the atomic bombing and advocate nuclear disarmament and peaceful international relations. Risk assessed as Low because the event is a scheduled remembrance rally in a park setting with no march or deliberate road obstruction announced. Limited parking and pedestrian activity may occur near Maitland Road and Newcastle TAFE."
+},
+
+{
+  title: "Community Rally for an AI Data Centre Moratorium",
+  city: "Melbourne",
+  lat: -37.80421,
+  lng: 144.87136,
+  address: "Hansen Reserve, 35A Roberts Street, West Footscray — community walk past nearby data-centre sites",
+  postcode: "3012",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Low",
+  time: "2026-08-09T14:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/community-rally-data-centre-moratorium",
+  summary: "Borderlands Cooperative and West Footscray community organisations have announced a family-friendly rally at Hansen Reserve from 14:00 on Sunday 9 August 2026. Participants will call for a temporary national moratorium on new AI data-centre approvals and construction until stronger safeguards are established concerning water and energy use, emissions, noise, cultural heritage and local consultation. Speeches will be followed by a short community walk past the proposed Perri Melbourne Data Centre and existing NEXTDC facilities. Risk assessed as Low because organisers explicitly describe a peaceful community event, although the walk may create limited pedestrian and traffic-management requirements around Roberts Street."
+},
+
+{
+  title: "March for Your Park Lands — Stop the Chop",
+  city: "Adelaide",
+  lat: -34.92861,
+  lng: 138.59987,
+  address: "Tarntanyangga / Victoria Square, Grote Street — final CBD march route pending",
+  postcode: "5000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://www.greenleft.org.au/2026-08/event/march-your-park-lands",
+  summary: "The Adelaide Park Lands Association has called a major CBD march beginning at Tarntanyangga/Victoria Square from 12:00 to 14:00 on Sunday 23 August 2026. Organisers expect thousands to protest tree removals, permanent infrastructure and expansion of commercial events within Adelaide's Park Lands, particularly Victoria Park and the eastern Park Lands. A final street route was pending at collection threshold. Risk assessed as Medium because a large moving crowd through central Adelaide is likely to require road closures, tram and bus diversions, police liaison and crowd management, although no event-specific disorder threat has been identified."
+},
+  
+
+{
+  title: "Gaza Square Weekly Palestine Solidarity Vigil — 16 August",
+  city: "Toronto",
+  lat: 43.673,
+  lng: -79.428,
+  address: "Gaza Square, 371 Wallace Avenue, Davenport",
+  postcode: "M6P 3N8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-16T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "Davenport For Palestine will continue its weekly Gaza Square community vigil at 11:00 on Sunday 16 August 2026. Participants will distribute posters and buttons, display Palestine-solidarity messages, use pavement chalk and meet local residents and organisers. The action is held every Sunday at 371 Wallace Avenue. Risk assessed as Low because this is an established neighbourhood-based stationary gathering with no march, traffic blockade or event-specific disorder warning. Limited pavement activity and minor pedestrian clustering are possible."
+},
+
+{
+  title: "Gaza Square Weekly Palestine Solidarity Vigil — 23 August",
+  city: "Toronto",
+  lat: 43.673,
+  lng: -79.428,
+  address: "Gaza Square, 371 Wallace Avenue, Davenport",
+  postcode: "M6P 3N8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-23T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "Davenport For Palestine will continue its weekly Gaza Square community vigil at 11:00 on Sunday 23 August 2026. Participants will distribute posters and buttons, display Palestine-solidarity messages, use pavement chalk and meet local residents and organisers. The action is held every Sunday at 371 Wallace Avenue. Risk assessed as Low because this is an established neighbourhood-based stationary gathering with no march, traffic blockade or event-specific disorder warning. Limited pavement activity and minor pedestrian clustering are possible."
+},
+
+{
+  title: "Gaza Square Weekly Palestine Solidarity Vigil — 30 August",
+  city: "Toronto",
+  lat: 43.673,
+  lng: -79.428,
+  address: "Gaza Square, 371 Wallace Avenue, Davenport",
+  postcode: "M6P 3N8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-30T11:00:00",
+  source: "https://www.findaprotest.info/event/toronto/SQnQD9fvE3CWPSomclOriF",
+  summary: "Davenport For Palestine will continue its weekly Gaza Square community vigil at 11:00 on Sunday 30 August 2026. Participants will distribute posters and buttons, display Palestine-solidarity messages, use pavement chalk and meet local residents and organisers. The action is held every Sunday at 371 Wallace Avenue. Risk assessed as Low because this is an established neighbourhood-based stationary gathering with no march, traffic blockade or event-specific disorder warning. Limited pavement activity and minor pedestrian clustering are possible."
+},
+
+{
+  title: "Vancouver Stands United for Palestine Weekly Rally — 15 August",
+  city: "Vancouver",
+  lat: 49.2827,
+  lng: -123.1207,
+  address: "Vancouver Art Gallery, Georgia Street side at Howe Street",
+  postcode: "V6Z 2H7",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-15T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Metro Vancouver United 4 Palestine will continue its weekly Palestine-solidarity rally outside the Vancouver Art Gallery at 14:00 on Saturday 15 August 2026. Organiser demands include an end to military action in Gaza, unrestricted humanitarian assistance, restoration of UNRWA support and an arms embargo. Risk assessed as Low because this is an established peaceful weekly gathering at a recognised public-demonstration location, with no march or deliberate road obstruction announced. Temporary pavement crowding and routine police observation are possible."
+},
+
+{
+  title: "Vancouver Stands United for Palestine Weekly Rally — 22 August",
+  city: "Vancouver",
+  lat: 49.2827,
+  lng: -123.1207,
+  address: "Vancouver Art Gallery, Georgia Street side at Howe Street",
+  postcode: "V6Z 2H7",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-22T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Metro Vancouver United 4 Palestine will continue its weekly Palestine-solidarity rally outside the Vancouver Art Gallery at 14:00 on Saturday 22 August 2026. Organiser demands include an end to military action in Gaza, unrestricted humanitarian assistance, restoration of UNRWA support and an arms embargo. Risk assessed as Low because this is an established peaceful weekly gathering at a recognised public-demonstration location, with no march or deliberate road obstruction announced. Temporary pavement crowding and routine police observation are possible."
+},
+
+{
+  title: "Vancouver Stands United for Palestine Weekly Rally — 29 August",
+  city: "Vancouver",
+  lat: 49.2827,
+  lng: -123.1207,
+  address: "Vancouver Art Gallery, Georgia Street side at Howe Street",
+  postcode: "V6Z 2H7",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-29T14:00:00",
+  source: "https://www.findaprotest.info/event/vancouver/008b99c3-fc5f-4a4f-9fa2-24de15347efa",
+  summary: "Metro Vancouver United 4 Palestine will continue its weekly Palestine-solidarity rally outside the Vancouver Art Gallery at 14:00 on Saturday 29 August 2026. Organiser demands include an end to military action in Gaza, unrestricted humanitarian assistance, restoration of UNRWA support and an arms embargo. Risk assessed as Low because this is an established peaceful weekly gathering at a recognised public-demonstration location, with no march or deliberate road obstruction announced. Temporary pavement crowding and routine police observation are possible."
+},
+
+{
+  title: "Windsor-Essex Pride Parade 2026",
+  city: "Windsor",
+  lat: 42.31006,
+  lng: -83.01525,
+  address: "Ottawa Street at Argyle Road — Ottawa Street — Langlois Avenue — Lanspeary Park, 1250 Langlois Avenue",
+  postcode: "N8X 4L6",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-09T11:00:00",
+  source: "https://www.wepridefest.com/windsor-essex-pride-festival/pride-parade/",
+  summary: "Windsor-Essex Pride Fest has confirmed its annual Pride Parade for 11:00 on Sunday 9 August 2026. Participants will assemble at Ottawa Street and Argyle Road, proceed west along Ottawa Street, turn onto Langlois Avenue and finish at Lanspeary Park. The parade promotes 2SLGBTQIA+ equality, visibility and awareness of continuing discrimination, exclusion, harassment and violence. Risk assessed as Medium because the moving procession and associated festival attendance will require temporary road closures, traffic diversions, stewarding and police coordination along the Ottawa Street corridor. No specific threat or planned counter-protest has been identified."
+},
+
+{
+  title: "Whitehorse Pride Parade and Picnic 2026",
+  city: "Whitehorse",
+  lat: 60.71536,
+  lng: -135.04683,
+  address: "Whitehorse city centre — final assembly point, parade route and picnic site pending (map anchor: Rotary Peace Park)",
+  postcode: "Y1A 1W5",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://www.queeryukon.com/yxypride",
+  summary: "Queer Yukon has confirmed the annual Whitehorse Pride Parade and Picnic for Saturday 15 August 2026 as part of the wider Whitehorse Pride Festival running from 12 to 23 August. The public event will promote 2SLGBTQIA+ visibility, inclusion, community participation and allyship. A definitive start time, assembly point, route and picnic location were not available at collection threshold, so CityIntel's standard 12:00 timestamp and a transparent Rotary Peace Park map anchor have been applied pending refresh. Risk assessed as Medium because a moving Pride parade may require temporary downtown traffic restrictions, stewarding and police or municipal support, although no specific counter-protest or security threat has been announced."
+},
+  
+
+{
+  title: "Vancouver Pride Parade 2026",
+  city: "Vancouver",
+  lat: 49.27672,
+  lng: -123.11284,
+  address: "Concord Pacific Place — Pacific Boulevard — Pacific Street at Burrard Street",
+  postcode: "V6B 4Y8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-02T13:00:00",
+  source: "https://vancouver.ca/people-programs/pride.aspx",
+  summary: "The Vancouver Pride Society and City of Vancouver have confirmed the 2026 Pride Parade for Sunday 2 August from 13:00 to approximately 15:30. The procession will begin at Concord Pacific Place, travel west along Pacific Boulevard and conclude near Pacific Street and Burrard Street, where participants can continue toward the Davie Village Pride Festival. Organisers expect more than 100 participating community organisations and a public attendance exceeding 100,000. Risk assessed as Medium because the very large moving crowd will require extensive road closures, transit diversions, police coordination, crowd barriers and medical provision through Yaletown and the downtown peninsula. No event-specific threat or planned disorder has been identified."
+},
+
+{
+  title: "Canada First Movement Rally at Queen's Park",
+  city: "Toronto",
+  lat: 43.66345,
+  lng: -79.39245,
+  address: "Queen's Park, outside the Ontario Legislative Building, 111 Wellesley Street West",
+  postcode: "M7A 1A2",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-08T13:00:00",
+  source: "https://www.facebook.com/Anidjar1/posts/will-you-be-joining-the-canada-first-movement-for-our-10th-event-on-august-82026/10164792330695535/",
+  summary: "The Canada First Movement has announced its tenth official public rally for Queen's Park in Toronto at 13:00 on Saturday 8 August 2026. Organiser messaging opposes the federal Liberal government and current Canadian immigration levels and calls on supporters to mobilise under the message that the Liberals must go. Risk assessed as Medium because previous Canada First demonstrations in Toronto have repeatedly attracted organised counter-protests, major police deployments and direct confrontation. A January 2026 rally and counter-protest resulted in multiple arrests and charges. Road restrictions, separated protest zones and disruption around Queen's Park, Wellesley Street and University Avenue are possible, although no counter-demonstration for this specific date had been formally confirmed at collection threshold."
+},
+
+{
+  title: "Fierté Montréal Pride Parade — Shine Together",
+  city: "Montréal",
+  lat: 45.50048,
+  lng: -73.56895,
+  address: "René-Lévesque Boulevard at Robert-Bourassa Boulevard — east to Atateken Street",
+  postcode: "H3B 4W8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-09T13:00:00",
+  source: "https://fiertemontreal.com/en/festival-2026/pride-parade",
+  summary: "Fierté Montréal has confirmed its 2026 Pride Parade for 13:00 on Sunday 9 August under the theme Shine Together. Thousands of marchers representing community organisations, unions, associations, clubs and political groups will travel approximately 1.9 kilometres east along René-Lévesque Boulevard, beginning at Robert-Bourassa Boulevard and finishing at Atateken Street in the Village. The parade will highlight LGBTQIA+ rights, visibility and current community demands, with public participation encouraged behind the registered contingents. Risk assessed as Medium because the major downtown procession will require closure of René-Lévesque Boulevard, extensive traffic and STM diversions, crowd barriers, police deployment and medical support. No event-specific disorder threat has been published."
+},
+
+{
+  title: "Edmonton Pride Parade and Trans March",
+  city: "Edmonton",
+  lat: 53.5444,
+  lng: -113.4909,
+  address: "Sir Winston Churchill Square, 9900 102A Avenue NW — downtown parade route",
+  postcode: "T5J 3P4",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-22T13:00:00",
+  source: "https://prideedmonton.ca/events/",
+  summary: "Edmonton Pride organisers have confirmed the return of the Edmonton Pride Parade and Trans March from 13:00 to 15:00 on Saturday 22 August 2026. Thousands of LGBTQ2S+ community members, organisations, allies and supporters are expected to assemble around Sir Winston Churchill Square before moving through downtown Edmonton. The march promotes queer and trans visibility, equality, inclusion and opposition to discrimination and stigma. Risk assessed as Medium because a large moving procession through the civic centre will require temporary road closures, Edmonton Transit diversions, police and stewarding resources and crowd management around Churchill Square. No specific threat or planned counter-protest has been identified."
+},
+
+{
+  title: "Capital Pride Parade 2026",
+  city: "Ottawa",
+  lat: 45.41772,
+  lng: -75.71488,
+  address: "Wellington Street at Booth Street — east to Bank Street — finish at Bank Street and Slater Street",
+  postcode: "K1A 0M8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-30T13:00:00",
+  source: "https://capitalpride.ca/2026-pride-parade/",
+  summary: "Capital Pride has confirmed its 2026 parade for 13:00 on Sunday 30 August. More than 225 participating groups and over 11,000 community members are expected. The procession begins at Wellington Street and Booth Street, travels east along Wellington Street, turns south at Bank Street beside the Confederation Building and Bank of Canada Museum and finishes at Bank Street and Slater Street, where marchers enter the Capital Pride Street Festival. Risk assessed as Medium because the route crosses Ottawa's federal-government and parliamentary district and will require substantial road closures, Ottawa Police, private security, paramedic support and crowd management. Access around Wellington Street, Booth Street, Bank Street and the western parliamentary precinct will be disrupted for staging and the parade."
+},
+
+  {
+  title: "Westlake Stand Up Saturday Democracy Rally — 1 August",
+  city: "Westlake",
+  lat: 41.4597,
+  lng: -81.9502,
+  address: "Public sidewalks at Detroit Road and Crocker Road, beside Crocker Park",
+  postcode: "44145",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-01T10:00:00",
+  source: "https://www.mobilize.us/mobilize/event/919694/",
+  summary: "Ohio Progressive Action Leaders will hold their weekly Stand Up Saturday honk-and-wave rally from 10:00 to 12:00 on 1 August 2026. Participants will display pro-democracy signs and opposition to Trump administration policies. Risk assessed as Low because organisers describe a peaceful visibility rally with no road occupation or march, although driver distraction is possible at the busy junction."
+},
+
+{
+  title: "Westlake Stand Up Saturday Democracy Rally — 8 August",
+  city: "Westlake",
+  lat: 41.4597,
+  lng: -81.9502,
+  address: "Public sidewalks at Detroit Road and Crocker Road, beside Crocker Park",
+  postcode: "44145",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-08T10:00:00",
+  source: "https://www.mobilize.us/mobilize/event/919694/",
+  summary: "Ohio Progressive Action Leaders will hold their weekly Stand Up Saturday honk-and-wave rally from 10:00 to 12:00 on 8 August 2026. Participants will display pro-democracy signs and opposition to Trump administration policies. Risk assessed as Low because organisers describe a peaceful visibility rally with no road occupation or march, although driver distraction is possible at the busy junction."
+},
+
+{
+  title: "Westlake Stand Up Saturday Democracy Rally — 15 August",
+  city: "Westlake",
+  lat: 41.4597,
+  lng: -81.9502,
+  address: "Public sidewalks at Detroit Road and Crocker Road, beside Crocker Park",
+  postcode: "44145",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-15T10:00:00",
+  source: "https://www.mobilize.us/mobilize/event/919694/",
+  summary: "Ohio Progressive Action Leaders will hold their weekly Stand Up Saturday honk-and-wave rally from 10:00 to 12:00 on 15 August 2026. Participants will display pro-democracy signs and opposition to Trump administration policies. Risk assessed as Low because organisers describe a peaceful visibility rally with no road occupation or march, although driver distraction is possible at the busy junction."
+},
+
+{
+  title: "Westlake Stand Up Saturday Democracy Rally — 22 August",
+  city: "Westlake",
+  lat: 41.4597,
+  lng: -81.9502,
+  address: "Public sidewalks at Detroit Road and Crocker Road, beside Crocker Park",
+  postcode: "44145",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-22T10:00:00",
+  source: "https://www.mobilize.us/mobilize/event/919694/",
+  summary: "Ohio Progressive Action Leaders will hold their weekly Stand Up Saturday honk-and-wave rally from 10:00 to 12:00 on 22 August 2026. Participants will display pro-democracy signs and opposition to Trump administration policies. Risk assessed as Low because organisers describe a peaceful visibility rally with no road occupation or march, although driver distraction is possible at the busy junction."
+},
+
+{
+  title: "Westlake Stand Up Saturday Democracy Rally — 29 August",
+  city: "Westlake",
+  lat: 41.4597,
+  lng: -81.9502,
+  address: "Public sidewalks at Detroit Road and Crocker Road, beside Crocker Park",
+  postcode: "44145",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-29T10:00:00",
+  source: "https://www.mobilize.us/mobilize/event/919694/",
+  summary: "Ohio Progressive Action Leaders will hold their weekly Stand Up Saturday honk-and-wave rally from 10:00 to 12:00 on 29 August 2026. Participants will display pro-democracy signs and opposition to Trump administration policies. Risk assessed as Low because organisers describe a peaceful visibility rally with no road occupation or march, although driver distraction is possible at the busy junction."
+},
+
+{
+  title: "West Asheville Anti-Administration Sign-Waving Protest — 4 August",
+  city: "Asheville",
+  lat: 35.5787,
+  lng: -82.5929,
+  address: "Corner of Haywood Road and Fairfax Avenue, opposite Ingles",
+  postcode: "28806",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-04T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Buncombe County activists will hold their weekly West Asheville protest and sign-waving action from 17:00 to 18:00 on 4 August 2026. Organisers describe a peaceful protest against the current federal administration and provide spare signs. Risk assessed as Low because participants remain on the pavement and no march or traffic blockade is planned."
+},
+
+{
+  title: "West Asheville Anti-Administration Sign-Waving Protest — 11 August",
+  city: "Asheville",
+  lat: 35.5787,
+  lng: -82.5929,
+  address: "Corner of Haywood Road and Fairfax Avenue, opposite Ingles",
+  postcode: "28806",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-11T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Buncombe County activists will hold their weekly West Asheville protest and sign-waving action from 17:00 to 18:00 on 11 August 2026. Organisers describe a peaceful protest against the current federal administration and provide spare signs. Risk assessed as Low because participants remain on the pavement and no march or traffic blockade is planned."
+},
+
+{
+  title: "West Asheville Anti-Administration Sign-Waving Protest — 18 August",
+  city: "Asheville",
+  lat: 35.5787,
+  lng: -82.5929,
+  address: "Corner of Haywood Road and Fairfax Avenue, opposite Ingles",
+  postcode: "28806",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-18T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Buncombe County activists will hold their weekly West Asheville protest and sign-waving action from 17:00 to 18:00 on 18 August 2026. Organisers describe a peaceful protest against the current federal administration and provide spare signs. Risk assessed as Low because participants remain on the pavement and no march or traffic blockade is planned."
+},
+
+{
+  title: "West Asheville Anti-Administration Sign-Waving Protest — 25 August",
+  city: "Asheville",
+  lat: 35.5787,
+  lng: -82.5929,
+  address: "Corner of Haywood Road and Fairfax Avenue, opposite Ingles",
+  postcode: "28806",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-25T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Buncombe County activists will hold their weekly West Asheville protest and sign-waving action from 17:00 to 18:00 on 25 August 2026. Organisers describe a peaceful protest against the current federal administration and provide spare signs. Risk assessed as Low because participants remain on the pavement and no march or traffic blockade is planned."
+},
+
+{
+  title: "North Asheville Democracy Sidewalk Protest — 6 August",
+  city: "Asheville",
+  lat: 35.60254,
+  lng: -82.54692,
+  address: "East side of Charlotte Street at East Chestnut Street, opposite the former Fuddruckers site",
+  postcode: "28801",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-06T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "North Asheville activists will continue their weekly sidewalk protest and sign-waving action from 17:00 to 17:45 on 6 August 2026. Participants will display pro-democracy messages and opposition to federal administration policies. Risk assessed as Low because the event is small, recurring and stationary, with no planned march or obstruction."
+},
+
+{
+  title: "North Asheville Democracy Sidewalk Protest — 13 August",
+  city: "Asheville",
+  lat: 35.60254,
+  lng: -82.54692,
+  address: "East side of Charlotte Street at East Chestnut Street, opposite the former Fuddruckers site",
+  postcode: "28801",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-13T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "North Asheville activists will continue their weekly sidewalk protest and sign-waving action from 17:00 to 17:45 on 13 August 2026. Participants will display pro-democracy messages and opposition to federal administration policies. Risk assessed as Low because the event is small, recurring and stationary, with no planned march or obstruction."
+},
+
+{
+  title: "North Asheville Democracy Sidewalk Protest — 20 August",
+  city: "Asheville",
+  lat: 35.60254,
+  lng: -82.54692,
+  address: "East side of Charlotte Street at East Chestnut Street, opposite the former Fuddruckers site",
+  postcode: "28801",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-20T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "North Asheville activists will continue their weekly sidewalk protest and sign-waving action from 17:00 to 17:45 on 20 August 2026. Participants will display pro-democracy messages and opposition to federal administration policies. Risk assessed as Low because the event is small, recurring and stationary, with no planned march or obstruction."
+},
+
+{
+  title: "North Asheville Democracy Sidewalk Protest — 27 August",
+  city: "Asheville",
+  lat: 35.60254,
+  lng: -82.54692,
+  address: "East side of Charlotte Street at East Chestnut Street, opposite the former Fuddruckers site",
+  postcode: "28801",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-27T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "North Asheville activists will continue their weekly sidewalk protest and sign-waving action from 17:00 to 17:45 on 27 August 2026. Participants will display pro-democracy messages and opposition to federal administration policies. Risk assessed as Low because the event is small, recurring and stationary, with no planned march or obstruction."
+},
+
+{
+  title: "Weaverville Weekly Pro-Democracy Protest — 6 August",
+  city: "Weaverville",
+  lat: 35.6969,
+  lng: -82.5602,
+  address: "Weaverville Clock, Clock Lot, 11 North Main Street",
+  postcode: "28787",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-06T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Weaverville activists will hold their weekly protest and sign-waving gathering beside the town clock from 17:00 to 17:45 on 6 August 2026. The action opposes federal administration policies and supports democratic institutions. Risk assessed as Low because participants are expected to remain in the Clock Lot and on nearby public pavement."
+},
+
+{
+  title: "Weaverville Weekly Pro-Democracy Protest — 13 August",
+  city: "Weaverville",
+  lat: 35.6969,
+  lng: -82.5602,
+  address: "Weaverville Clock, Clock Lot, 11 North Main Street",
+  postcode: "28787",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-13T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Weaverville activists will hold their weekly protest and sign-waving gathering beside the town clock from 17:00 to 17:45 on 13 August 2026. The action opposes federal administration policies and supports democratic institutions. Risk assessed as Low because participants are expected to remain in the Clock Lot and on nearby public pavement."
+},
+
+{
+  title: "Weaverville Weekly Pro-Democracy Protest — 20 August",
+  city: "Weaverville",
+  lat: 35.6969,
+  lng: -82.5602,
+  address: "Weaverville Clock, Clock Lot, 11 North Main Street",
+  postcode: "28787",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-20T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Weaverville activists will hold their weekly protest and sign-waving gathering beside the town clock from 17:00 to 17:45 on 20 August 2026. The action opposes federal administration policies and supports democratic institutions. Risk assessed as Low because participants are expected to remain in the Clock Lot and on nearby public pavement."
+},
+
+{
+  title: "Weaverville Weekly Pro-Democracy Protest — 27 August",
+  city: "Weaverville",
+  lat: 35.6969,
+  lng: -82.5602,
+  address: "Weaverville Clock, Clock Lot, 11 North Main Street",
+  postcode: "28787",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-27T17:00:00",
+  source: "https://www.buncombedems.org/calendar",
+  summary: "Weaverville activists will hold their weekly protest and sign-waving gathering beside the town clock from 17:00 to 17:45 on 27 August 2026. The action opposes federal administration policies and supports democratic institutions. Risk assessed as Low because participants are expected to remain in the Clock Lot and on nearby public pavement."
+},
+
+{
+  title: "Overpass Rally Against Missouri Amendments 4 and 5",
+  city: "St. Louis",
+  lat: 38.6297,
+  lng: -90.2925,
+  address: "Tamm Avenue overpass, meeting beside Turtle Park Playground, 6128 Tamm Avenue",
+  postcode: "63139",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-02T11:00:00",
+  source: "https://www.facebook.com/events/tamm-ave-st-louis-mo-63139-united-states/overpass-rally-vote-no-on-amendments-4-5/2970310023317006/",
+  summary: "50501 Missouri has announced an overpass rally from 11:00 to 14:00 on 2 August 2026 urging voters to reject Missouri Amendments 4 and 5. Participants will display signs to traffic from the Tamm Avenue bridge and assemble from the Turtle Park side. Risk assessed as Low because no carriageway occupation is announced, although bridge safety, driver distraction and temporary pedestrian congestion require attention."
+},
+  
+
+  {
+  title: "Brookline Rally for Democracy — 1 August",
+  city: "Brookline",
+  lat: 42.34204,
+  lng: -71.12119,
+  address: "Coolidge Corner, intersection of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.mobilize.us/speakoutseniors/event/964348/",
+  summary: "Speak Out, Seniors!, Brookline Pax and Activist Evenings will hold their weekly Rally for Democracy from 13:00 to 14:00 on 1 August 2026. The gathering supports human rights, constitutional protections, healthcare access and environmental protection while opposing Trump administration policies. Risk assessed as Low because it is a recurring stationary sign rally with no march or road occupation announced."
+},
+
+{
+  title: "Brookline Rally for Democracy — 8 August",
+  city: "Brookline",
+  lat: 42.34204,
+  lng: -71.12119,
+  address: "Coolidge Corner, intersection of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-08T13:00:00",
+  source: "https://www.mobilize.us/speakoutseniors/event/964348/",
+  summary: "Speak Out, Seniors!, Brookline Pax and Activist Evenings will hold their weekly Rally for Democracy from 13:00 to 14:00 on 8 August 2026. The gathering supports human rights, constitutional protections, healthcare access and environmental protection while opposing Trump administration policies. Risk assessed as Low because it is a recurring stationary sign rally with no march or road occupation announced."
+},
+
+{
+  title: "Brookline Rally for Democracy — 15 August",
+  city: "Brookline",
+  lat: 42.34204,
+  lng: -71.12119,
+  address: "Coolidge Corner, intersection of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-15T13:00:00",
+  source: "https://www.mobilize.us/speakoutseniors/event/964348/",
+  summary: "Speak Out, Seniors!, Brookline Pax and Activist Evenings will hold their weekly Rally for Democracy from 13:00 to 14:00 on 15 August 2026. The gathering supports human rights, constitutional protections, healthcare access and environmental protection while opposing Trump administration policies. Risk assessed as Low because it is a recurring stationary sign rally with no march or road occupation announced."
+},
+
+{
+  title: "Brookline Rally for Democracy — 22 August",
+  city: "Brookline",
+  lat: 42.34204,
+  lng: -71.12119,
+  address: "Coolidge Corner, intersection of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-22T13:00:00",
+  source: "https://www.mobilize.us/speakoutseniors/event/964348/",
+  summary: "Speak Out, Seniors!, Brookline Pax and Activist Evenings will hold their weekly Rally for Democracy from 13:00 to 14:00 on 22 August 2026. The gathering supports human rights, constitutional protections, healthcare access and environmental protection while opposing Trump administration policies. Risk assessed as Low because it is a recurring stationary sign rally with no march or road occupation announced."
+},
+
+{
+  title: "Brookline Rally for Democracy — 29 August",
+  city: "Brookline",
+  lat: 42.34204,
+  lng: -71.12119,
+  address: "Coolidge Corner, intersection of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://www.mobilize.us/speakoutseniors/event/964348/",
+  summary: "Speak Out, Seniors!, Brookline Pax and Activist Evenings will hold their weekly Rally for Democracy from 13:00 to 14:00 on 29 August 2026. The gathering supports human rights, constitutional protections, healthcare access and environmental protection while opposing Trump administration policies. Risk assessed as Low because it is a recurring stationary sign rally with no march or road occupation announced."
+},
+
+  {
+  title: "Fight Fascism Outside Tesla — 1 August",
+  city: "Berkeley",
+  lat: 37.8715,
+  lng: -122.3005,
+  address: "Outside Tesla Showroom, 1731 Fourth Street, between Virginia Street and Delaware Street",
+  postcode: "94710",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-01T12:00:00",
+  source: "https://indivisible.org/events/fight-fascism-protest-outside-tesla/",
+  summary: "Indivisible East Bay activists will continue their recurring Saturday protest outside the Tesla showroom from 12:00 to 13:00 on 1 August 2026. The action opposes Elon Musk's political influence and Trump administration policies. Risk assessed as Low because it is an established stationary pavement demonstration with no announced march or blockade, although minor access friction, driver distraction and verbal disagreement are possible."
+},
+
+{
+  title: "Fight Fascism Outside Tesla — 8 August",
+  city: "Berkeley",
+  lat: 37.8715,
+  lng: -122.3005,
+  address: "Outside Tesla Showroom, 1731 Fourth Street, between Virginia Street and Delaware Street",
+  postcode: "94710",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-08T12:00:00",
+  source: "https://indivisible.org/events/fight-fascism-protest-outside-tesla/",
+  summary: "Indivisible East Bay activists will continue their recurring Saturday protest outside the Tesla showroom from 12:00 to 13:00 on 8 August 2026. The action opposes Elon Musk's political influence and Trump administration policies. Risk assessed as Low because it is an established stationary pavement demonstration with no announced march or blockade, although minor access friction, driver distraction and verbal disagreement are possible."
+},
+
+{
+  title: "Fight Fascism Outside Tesla — 15 August",
+  city: "Berkeley",
+  lat: 37.8715,
+  lng: -122.3005,
+  address: "Outside Tesla Showroom, 1731 Fourth Street, between Virginia Street and Delaware Street",
+  postcode: "94710",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-15T12:00:00",
+  source: "https://indivisible.org/events/fight-fascism-protest-outside-tesla/",
+  summary: "Indivisible East Bay activists will continue their recurring Saturday protest outside the Tesla showroom from 12:00 to 13:00 on 15 August 2026. The action opposes Elon Musk's political influence and Trump administration policies. Risk assessed as Low because it is an established stationary pavement demonstration with no announced march or blockade, although minor access friction, driver distraction and verbal disagreement are possible."
+},
+
+{
+  title: "Fight Fascism Outside Tesla — 22 August",
+  city: "Berkeley",
+  lat: 37.8715,
+  lng: -122.3005,
+  address: "Outside Tesla Showroom, 1731 Fourth Street, between Virginia Street and Delaware Street",
+  postcode: "94710",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-22T12:00:00",
+  source: "https://indivisible.org/events/fight-fascism-protest-outside-tesla/",
+  summary: "Indivisible East Bay activists will continue their recurring Saturday protest outside the Tesla showroom from 12:00 to 13:00 on 22 August 2026. The action opposes Elon Musk's political influence and Trump administration policies. Risk assessed as Low because it is an established stationary pavement demonstration with no announced march or blockade, although minor access friction, driver distraction and verbal disagreement are possible."
+},
+
+{
+  title: "Fight Fascism Outside Tesla — 29 August",
+  city: "Berkeley",
+  lat: 37.8715,
+  lng: -122.3005,
+  address: "Outside Tesla Showroom, 1731 Fourth Street, between Virginia Street and Delaware Street",
+  postcode: "94710",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-29T12:00:00",
+  source: "https://indivisible.org/events/fight-fascism-protest-outside-tesla/",
+  summary: "Indivisible East Bay activists will continue their recurring Saturday protest outside the Tesla showroom from 12:00 to 13:00 on 29 August 2026. The action opposes Elon Musk's political influence and Trump administration policies. Risk assessed as Low because it is an established stationary pavement demonstration with no announced march or blockade, although minor access friction, driver distraction and verbal disagreement are possible."
+},
+
+{
+  title: "Hands Off Social Security Rally — 4 August",
+  city: "La Mesa",
+  lat: 32.7555,
+  lng: -117.0258,
+  address: "Social Security Administration, 7961 University Avenue",
+  postcode: "91942",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-04T10:30:00",
+  source: "https://www.mobilize.us/indivisible/event/788178/",
+  summary: "CBFD Indivisible, Neighbors in Action and partner organisations will hold their weekly Hands Off Social Security rally from 10:30 to 11:45 on 4 August 2026. Participants oppose staffing reductions, service cuts and privatisation. Risk assessed as Low because organisers plan a peaceful sidewalk protest and discourage use of the agency car park; minor pavement crowding and traffic distraction are possible."
+},
+
+{
+  title: "Hands Off Social Security Rally — 11 August",
+  city: "La Mesa",
+  lat: 32.7555,
+  lng: -117.0258,
+  address: "Social Security Administration, 7961 University Avenue",
+  postcode: "91942",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-11T10:30:00",
+  source: "https://www.mobilize.us/indivisible/event/788178/",
+  summary: "CBFD Indivisible, Neighbors in Action and partner organisations will hold their weekly Hands Off Social Security rally from 10:30 to 11:45 on 11 August 2026. Participants oppose staffing reductions, service cuts and privatisation. Risk assessed as Low because organisers plan a peaceful sidewalk protest and discourage use of the agency car park; minor pavement crowding and traffic distraction are possible."
+},
+
+{
+  title: "Hands Off Social Security Rally — 18 August",
+  city: "La Mesa",
+  lat: 32.7555,
+  lng: -117.0258,
+  address: "Social Security Administration, 7961 University Avenue",
+  postcode: "91942",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-18T10:30:00",
+  source: "https://www.mobilize.us/indivisible/event/788178/",
+  summary: "CBFD Indivisible, Neighbors in Action and partner organisations will hold their weekly Hands Off Social Security rally from 10:30 to 11:45 on 18 August 2026. Participants oppose staffing reductions, service cuts and privatisation. Risk assessed as Low because organisers plan a peaceful sidewalk protest and discourage use of the agency car park; minor pavement crowding and traffic distraction are possible."
+},
+
+{
+  title: "Hands Off Social Security Rally — 25 August",
+  city: "La Mesa",
+  lat: 32.7555,
+  lng: -117.0258,
+  address: "Social Security Administration, 7961 University Avenue",
+  postcode: "91942",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-25T10:30:00",
+  source: "https://www.mobilize.us/indivisible/event/788178/",
+  summary: "CBFD Indivisible, Neighbors in Action and partner organisations will hold their weekly Hands Off Social Security rally from 10:30 to 11:45 on 25 August 2026. Participants oppose staffing reductions, service cuts and privatisation. Risk assessed as Low because organisers plan a peaceful sidewalk protest and discourage use of the agency car park; minor pavement crowding and traffic distraction are possible."
 },
 
 
+  {
+  title: "Take Back America Rally in Southcenter",
+  city: "Tukwila",
+  lat: 47.44501,
+  lng: -122.2599,
+  address: "Southcenter Parkway at Minkler Boulevard, outside the Parkway Super Center",
+  postcode: "98188",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-01T14:00:00",
+  source: "https://www.mobilize.us/mobilize/event/991973/",
+  summary: "Southend Indivisible has announced a Take Back America rally at Southcenter Parkway and Minkler Boulevard in Tukwila from 14:00 to 16:00 on Saturday 1 August 2026. Participants will hold signs opposing the Trump administration and supporting democratic institutions, constitutional protections and government accountability. Risk assessed as Low because this is a scheduled roadside visibility rally by an established local organisation. Minor pavement crowding, driver distraction and intermittent congestion are possible around the busy Southcenter commercial district, but no march, road blockade or event-specific violence warning has been announced."
+},
+
+{
+  title: "Four Corners Democracy Standing Rally",
+  city: "Lenexa",
+  lat: 38.9714,
+  lng: -94.7334,
+  address: "Maurer Road at West 87th Street Parkway",
+  postcode: "66219",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-01T11:00:00",
+  source: "https://www.mobilize.us/mobilize/event/776651/",
+  summary: "Indivisible organisers have confirmed a Four Corners standing rally at Maurer Road and West 87th Street Parkway in Lenexa from 11:00 to 12:00 on Saturday 1 August 2026. Participants will use signs and roadside visibility to oppose federal policy changes and support democratic government, civil rights and constitutional protections. Risk assessed as Low because this is an established one-hour pavement rally with no moving procession or blockade announced. Minor traffic distraction and local pedestrian clustering are possible."
+},
+
+{
+  title: "Olathe Tyranny Takedown Rally — 6 August",
+  city: "Olathe",
+  lat: 38.8813,
+  lng: -94.8179,
+  address: "Opposite Olathe Downtown Library, 213 East Santa Fe Street",
+  postcode: "66061",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-06T16:00:00",
+  source: "https://www.mobilize.us/mobilize/event/978264/",
+  summary: "Indivisible Olathe has confirmed a peaceful Tyranny Takedown rally opposite the Olathe Downtown Library from 16:00 to 17:00 on Thursday 6 August 2026. Participants will demonstrate against what organisers describe as authoritarian federal policies and threats to democratic institutions, civil rights and the rule of law. Risk assessed as Low because this is a recurring one-hour roadside gathering with no march or deliberate road obstruction announced."
+},
+
+{
+  title: "Visibility Brigade at Meadowood Bridge",
+  city: "Newark",
+  lat: 39.70639,
+  lng: -75.68412,
+  address: "Meadowood Pedestrian Bridge, near 2644 Kirkwood Highway",
+  postcode: "19711",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-08T14:00:00",
+  source: "https://www.mobilize.us/mobilize/event/976379/",
+  summary: "Indivisible Newark Delaware has scheduled a visibility brigade at the Meadowood pedestrian bridge on Kirkwood Highway from 14:00 to 15:00 on Saturday 8 August 2026. Participants will display a coordinated large-letter message to traffic using the bridge. The final wording was still pending at collection threshold, but the organiser, date, time and location are confirmed. Risk assessed as Low because participants are expected to remain on the pedestrian bridge and no march or carriageway obstruction is planned. Driver distraction and brief pedestrian congestion near bridge access points are possible."
+},
+
+{
+  title: "Unite for Voting Rights Protest",
+  city: "Platteville",
+  lat: 42.7342,
+  lng: -90.4785,
+  address: "Corner of US Business 151 and Wisconsin Highway 80/81, near 115 US-151 Business",
+  postcode: "53818",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-08T12:00:00",
+  source: "https://www.mobilize.us/mobilize/event/994468/",
+  summary: "Grant County Indivisible has announced a Unite for Voting Rights protest at the junction of US Business 151 and Wisconsin Highway 80/81 in Platteville from 12:00 to 13:30 on Saturday 8 August 2026. The rally is being held in solidarity with the League of Women Voters' nationwide voting-rights Day of Action and will call for protection of ballot access and democratic participation. Risk assessed as Low because this is a scheduled roadside demonstration without a march or blockade. Minor traffic distraction and local pedestrian congestion are possible."
+},
+
+{
+  title: "Olathe Tyranny Takedown Rally — 13 August",
+  city: "Olathe",
+  lat: 38.8813,
+  lng: -94.8179,
+  address: "Opposite Olathe Downtown Library, 213 East Santa Fe Street",
+  postcode: "66061",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-13T16:00:00",
+  source: "https://www.mobilize.us/mobilize/event/978264/",
+  summary: "Indivisible Olathe's recurring Tyranny Takedown rally will continue opposite the Olathe Downtown Library from 16:00 to 17:00 on Thursday 13 August 2026. The action opposes federal policies that organisers consider authoritarian and supports democratic institutions, civil liberties and constitutional government. Risk assessed as Low because it is a small, established roadside protest with no moving procession or deliberate traffic obstruction announced."
+},
+
+{
+  title: "Resist Fascism Sarasota Weekly Rally",
+  city: "Sarasota",
+  lat: 27.3025,
+  lng: -82.5304,
+  address: "2001 Siesta Drive",
+  postcode: "34239",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-11T09:00:00",
+  source: "https://www.mobilize.us/mobilize/event/979863/",
+  summary: "Sarasota democracy activists have confirmed their 71st weekly Resist Fascism rally at 2001 Siesta Drive from 09:00 to 11:00 on Tuesday 11 August 2026. Participants will hold signs opposing the Trump administration, immigration enforcement policies and perceived threats to democratic institutions and civil rights. Risk assessed as Low because this is an established recurring roadside demonstration that has been advertised as peaceful. Minor traffic distraction and local pavement congestion are possible."
+},
+
+{
+  title: "Good Trouble Democracy Street Protest",
+  city: "Fayetteville",
+  lat: 33.4487,
+  lng: -84.4549,
+  address: "Old Fayette County Courthouse, 200 Courthouse Square",
+  postcode: "30214",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-15T09:30:00",
+  source: "https://southerncrescentindivisible.com/",
+  summary: "Southern Crescent Indivisible has scheduled a Good Trouble street protest outside the Old Fayette County Courthouse from 09:30 to 11:00 on Saturday 15 August 2026. Protesters are expected to line the pavement with signs and flags opposing Trump administration policies and supporting democracy, human rights and government accountability. Risk assessed as Low because the organiser describes a peaceful stationary visibility action. Minor traffic distraction and local pedestrian congestion around Courthouse Square are possible."
+},
+
+{
+  title: "Olathe Tyranny Takedown Rally — 20 August",
+  city: "Olathe",
+  lat: 38.8813,
+  lng: -94.8179,
+  address: "Opposite Olathe Downtown Library, 213 East Santa Fe Street",
+  postcode: "66061",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-20T16:00:00",
+  source: "https://www.mobilize.us/mobilize/event/978264/",
+  summary: "Indivisible Olathe's Tyranny Takedown demonstration is scheduled opposite the Olathe Downtown Library from 16:00 to 17:00 on Thursday 20 August 2026. Participants will protest federal policies they regard as authoritarian and promote constitutional government, democratic accountability and civil rights. Risk assessed as Low because the recurring event is intended to remain peaceful and stationary, with no march or road blockade announced."
+},
+
+{
+  title: "Rise Up Coweta County Street Protest",
+  city: "Newnan",
+  lat: 33.38136,
+  lng: -84.85149,
+  address: "Bullsboro Drive at Newnan Crossing Bypass, beside 505 Georgia Highway 34",
+  postcode: "30265",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-22T09:30:00",
+  source: "https://southerncrescentindivisible.com/",
+  summary: "Southern Crescent Indivisible has announced a Rise Up street protest at Bullsboro Drive and Newnan Crossing Bypass from 09:30 to 11:00 on Saturday 22 August 2026. Participants will use signs and flags to protest Trump administration policies and promote democratic government and civil rights. Risk assessed as Low because the event is a scheduled stationary roadside demonstration. The busy commercial intersection may experience driver distraction and limited pedestrian congestion, but no road occupation or march has been announced."
+},
+
+{
+  title: "Protest Against ICE Operations at Mesa Gateway Airport",
+  city: "Mesa",
+  lat: 33.3078,
+  lng: -111.6555,
+  address: "Mesa Gateway Airport and AROCC detention-facility area, South Sossaman Road",
+  postcode: "85212",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-22T09:00:00",
+  source: "https://www.mobilize.us/mesavalleyindivisible/event/947070/",
+  summary: "Mesa Valley Indivisible has called a protest against ICE deportation operations and the AROCC detention facility at Mesa Gateway Airport from 09:00 to 12:00 on Saturday 22 August 2026. Organisers are opposing deportation flights, immigration detention and federal enforcement activity associated with the airport area. Risk assessed as Medium because the protest concerns a politically sensitive federal operation at functioning aviation and detention infrastructure. Enhanced police or security monitoring, access controls and local traffic disruption are possible, although organisers describe a peaceful community action and no event-specific violent intent has been identified."
+},
+
+{
+  title: "Olathe Tyranny Takedown Rally — 27 August",
+  city: "Olathe",
+  lat: 38.8813,
+  lng: -94.8179,
+  address: "Opposite Olathe Downtown Library, 213 East Santa Fe Street",
+  postcode: "66061",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-27T16:00:00",
+  source: "https://www.mobilize.us/mobilize/event/978264/",
+  summary: "Indivisible Olathe's final currently published August Tyranny Takedown rally is scheduled opposite the Olathe Downtown Library from 16:00 to 17:00 on Thursday 27 August 2026. Participants will oppose federal policies they consider authoritarian and call for protection of democratic institutions, civil liberties and constitutional government. Risk assessed as Low because this is an established peaceful roadside demonstration without a moving march or planned traffic blockade."
+},
+
+{
+  title: "Hands Off Social Security Vigil",
+  city: "Chicago",
+  lat: 41.9687,
+  lng: -87.6811,
+  address: "Social Security Administration Office, 2127 West Lawrence Avenue",
+  postcode: "60625",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-27T10:00:00",
+  source: "https://www.mobilize.us/mobilize/event/787628/",
+  summary: "Chicago activists have scheduled their monthly Hands Off Social Security vigil outside the Social Security Administration office on West Lawrence Avenue from 10:00 to 11:00 on Thursday 27 August 2026. Participants will support Social Security employees and oppose staffing reductions, service cuts, privatisation and other changes they believe could weaken the programme. Risk assessed as Low because this is a recurring stationary vigil with no march or deliberate obstruction announced. Limited pavement crowding and visibility impacts around the office entrance are possible."
+},
+
+{
+  title: "Good Trouble Clayton County Street Protest",
+  city: "Morrow",
+  lat: 33.572,
+  lng: -84.3488,
+  address: "South Point Shopping Center, 6715 Jonesboro Road at Mount Zion Road",
+  postcode: "30260",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-08-29T09:30:00",
+  source: "https://southerncrescentindivisible.com/",
+  summary: "Southern Crescent Indivisible has scheduled a Good Trouble street protest at the South Point Shopping Center intersection of Jonesboro Road and Mount Zion Road from 09:30 to 11:00 on Saturday 29 August 2026. Participants will display signs and flags opposing Trump administration policies and supporting democracy, civil rights and government accountability. Risk assessed as Low because this is a planned stationary roadside visibility action. Minor traffic distraction and pedestrian clustering may occur around the commercial intersection, but no march or road blockade has been announced."
+},
+
+
+{
+  title: "March on Washington 2026 — Defend the Vote",
+  city: "Washington",
+  lat: 38.8893,
+  lng: -77.0502,
+  address: "Lincoln Memorial, 2 Lincoln Memorial Circle NW, National Mall",
+  postcode: "20037",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-28T12:00:00",
+  source: "https://marchonwashington2026.com/",
+  summary: "The National Action Network and Drum Major Institute have called the March on Washington 2026: Defend the Vote at the Lincoln Memorial on Friday 28 August 2026, marking the 63rd anniversary of the historic 1963 March on Washington. Rev. Al Sharpton, Martin Luther King III, Arndrea Waters King and a broad coalition of civil-rights, labour, faith and community organisations are expected to participate. The mobilisation will focus on voting rights, equal political representation, civil rights, economic justice, affordable housing, healthcare and employment opportunity. Organisers are coordinating buses and regional delegations from across the United States and anticipate a major national turnout. The official programme start time and march route remain pending, so CityIntel's standard 12:00 timestamp has been applied until operational details are released. Risk assessed as Medium because a large politically significant gathering on the National Mall will require extensive security, crowd and transport management and may attract counter-protest activity, although organisers describe a peaceful civil-rights mobilisation and no event-specific threat has been published."
+},
+
+  
+  {
+  title: "National Anti-Israel March — Mexico City",
+  city: "Mexico City",
+  lat: 19.42294,
+  lng: -99.17585,
+  address: "Estela de Luz, Paseo de la Reforma — march to the Zócalo",
+  postcode: "11580",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-01T09:30:00",
+  source: "https://www.periodicocentral.mx/rayas-s/activismo/alistan-marcha-pacifica-anti-israel-en-puebla-ciudades-de-24-estados-se-unen/497285/",
+  summary: "Civil organisations have called a coordinated national mobilisation in Mexico City on Saturday 1 August 2026. Participants will assemble at the Estela de Luz at 09:30 before marching toward the Zócalo. The campaign demands transparency and possible cancellation of agreements between Mexican authorities and Israeli companies, including water-management arrangements, and calls for investigations into officials involved in those agreements. Risk assessed as Medium because the politically sensitive procession will affect Paseo de la Reforma and access to the Historic Centre and may attract counter-protest or verbal confrontation. Rolling road closures, police monitoring and public-transport disruption are likely, although no verified plan for violence has been identified."
+},
+
+{
+  title: "National Anti-Israel March — Puebla",
+  city: "Puebla",
+  lat: 19.04753,
+  lng: -98.20844,
+  address: "Reloj El Gallito, 11 Sur at Avenida Reforma — march to the Puebla State Attorney General's Office",
+  postcode: "72000",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-01T09:30:00",
+  source: "https://www.periodicocentral.mx/rayas-s/activismo/alistan-marcha-pacifica-anti-israel-en-puebla-ciudades-de-24-estados-se-unen/497285/",
+  summary: "Civil organisations in Puebla have confirmed participation in the coordinated national mobilisation on Saturday 1 August 2026. Demonstrators will gather beside the Reloj El Gallito in Paseo Bravo at 09:30 before marching to the Puebla State Attorney General's Office. Organisers are opposing agreements between government bodies and Israeli companies and are demanding greater transparency and investigation of public officials associated with those arrangements. Risk assessed as Medium because the moving demonstration will affect Avenida Reforma, 11 Sur and roads approaching the prosecutor's offices and may require rolling traffic controls and a visible police presence. The politically charged subject creates some potential for counter-presence, although no specific violence warning has been published."
+},
+
+{
+  title: "National Anti-Israel March — Mexicali",
+  city: "Mexicali",
+  lat: 32.65135,
+  lng: -115.47273,
+  address: "Glorieta del Caballito, Boulevard Adolfo López Mateos — march to Glorieta de la Pagoda",
+  postcode: "21010",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-01T09:30:00",
+  source: "https://www.periodicocentral.mx/rayas-s/activismo/alistan-marcha-pacifica-anti-israel-en-puebla-ciudades-de-24-estados-se-unen/497285/",
+  summary: "Mexicali is one of the cities confirmed for the coordinated national mobilisation on Saturday 1 August 2026. Participants will assemble at the Glorieta del Caballito at 09:30 before proceeding toward the Glorieta de la Pagoda. The campaign opposes agreements between Mexican authorities and Israeli companies and calls for public disclosure, cancellation of disputed arrangements and investigation of officials involved. Risk assessed as Medium because a moving procession through major Mexicali road junctions may cause congestion and temporary lane closures and will likely require municipal traffic and police management. Counter-protest or verbal disagreement is possible because of the politically sensitive messaging, but no event-specific violent intent has been identified."
+},
+
+{
+  title: "National Anti-Israel March — Monterrey",
+  city: "Monterrey",
+  lat: 25.6718,
+  lng: -100.30936,
+  address: "Explanada de los Héroes, Macroplaza — march to Palacio Municipal",
+  postcode: "64000",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-08-01T09:30:00",
+  source: "https://www.periodicocentral.mx/rayas-s/activismo/alistan-marcha-pacifica-anti-israel-en-puebla-ciudades-de-24-estados-se-unen/497285/",
+  summary: "Civil organisations in Monterrey will participate in the national mobilisation scheduled for Saturday 1 August 2026. Demonstrators will assemble at the Explanada de los Héroes in Macroplaza at 09:30 and march toward the Palacio Municipal. The action demands transparency concerning agreements between Mexican public authorities and Israeli companies and calls for cancellation and investigation where organisers believe public interests may have been compromised. Risk assessed as Medium because a procession through Monterrey's government and civic district may affect Macroplaza access and surrounding roads and require barriers, police monitoring and temporary traffic restrictions. The sensitive political subject may draw counter-presence, although no verified threat of serious disorder has been reported."
+},
+
+
+  {
+  title: "Defence Mobilisation at Cali's Monument to Resistance",
+  city: "Cali",
+  lat: 3.40936,
+  lng: -76.51857,
+  address: "Monumento a la Resistencia, Puerto Resistencia, Calle 36 at Carrera 46 / Autopista Simón Bolívar",
+  postcode: "760013",
+  country: "Colombia",
+  continent: "South America",
+  risk: "High",
+  time: "2026-08-07T12:00:00",
+  source: "https://elpais.com/america-colombia/2026-07-13/el-monumento-a-la-resistencia-de-cali-ante-la-amenaza-de-derribo-lo-vamos-a-defender-247.html",
+  summary: "Community organisers, artists, former members of protest front-line groups and residents around Puerto Resistencia are preparing to defend Cali's Monument to Resistance on Friday 7 August 2026. President-elect Abelardo de la Espriella has publicly promised to order the monument's removal when he assumes office on that date, describing the structure as a symbol of terrorism, while defenders regard it as a memorial to people killed and injured during Colombia's 2021 national strike. Local participants have pledged to protect the site continuously, and defeated presidential candidate Iván Cepeda has visited the monument and publicly supported its defence and peaceful civil disobedience. No formal demonstration start time has been published, so CityIntel's standard 12:00 timestamp has been applied to the confirmed 7 August flashpoint. Risk assessed as High because any demolition or police operation could bring security forces, monument defenders and opposing political groups into direct confrontation at a location strongly associated with road blockades, serious protest violence and fatalities during the 2021 unrest. Significant disruption to the Autopista Simón Bolívar, Calle 36, Carrera 46 and nearby MÍO services is possible."
+},
+
+  {
+  title: "National Mototaxi Strike and Anti-Extortion Mobilisation",
+  city: "Lima",
+  lat: -12.0464,
+  lng: -77.0428,
+  address: "Lima Metropolitan Area and Callao — final assembly points and vehicle routes pending (map anchor: central Lima)",
+  postcode: "15001",
+  country: "Peru",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-12T12:00:00",
+  source: "https://elcomercio.pe/lima/transporte/gremio-de-mototaxistas-anuncia-un-paro-a-nivel-nacional-para-el-12-de-agosto-por-amenazas-de-extorsionadores-ultimas-noticia/",
+  summary: "The Confederación Nacional de Mototaxis del Perú has announced a nationwide stoppage and major vehicle mobilisation for Wednesday 12 August 2026 in response to extortion, targeted killings and explosive attacks affecting mototaxi drivers and associations. The protest was approved unanimously during a recent union plenary and will use a 'driver and vehicle' format, with participants taking their mototaxis onto the streets. Organisers report that the threat affects districts including Breña, San Juan de Lurigancho, Vitarte, Santa Anita, Villa María del Triunfo, San Juan de Miraflores and Chosica, as well as Callao. The union is seeking an urgent meeting and formal security working group with the incoming government, police and other authorities. A definitive start time, assembly location and route were not available at collection threshold, so CityIntel's standard 12:00 timestamp and a transparent central-Lima map anchor have been applied pending refresh. Risk assessed as Medium because a coordinated stoppage involving large numbers of small transport vehicles may cause widespread local road disruption and congestion across Lima and Callao, although no event-specific call for violence has been identified."
+},
+
+
+  {
+  title: "SINAMED National Doctors' Strike — 24 August",
+  city: "Asunción",
+  lat: -25.29125,
+  lng: -57.62607,
+  address: "Nationwide public hospitals and Family Health Units — map anchor: Ministry of Public Health and Social Welfare, Avenida Silvio Pettirossi at Brasil",
+  postcode: "001222",
+  country: "Paraguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-24T12:00:00",
+  source: "https://www.abc.com.py/nacionales/2026/07/24/medicos-ratifican-huelga-del-24-al-28-de-agosto-que-atenciones-se-suspenden/",
+  summary: "The Sindicato Nacional de Médicos, SINAMED, has confirmed the opening day of a nationwide doctors' strike on Monday 24 August 2026. Approximately 10,000 medical professionals may participate across Ministry of Public Health hospitals and Family Health Units. Scheduled consultations, outpatient services and elective surgery are expected to be suspended, while emergency treatment, intensive care, dialysis and other urgent procedures will continue. Doctors who are not assigned to essential duties also plan to travel to Asunción to demonstrate, although a definitive public assembly point and start time have not yet been issued. CityIntel's standard 12:00 timestamp and a transparent Ministry of Public Health headquarters map anchor have therefore been applied pending an operational update. The union is demanding salary restoration after years of lost purchasing power, improved employment stability, enhanced hospital staffing and infrastructure, payment arrangements for public holidays and adequate medical supplies. Risk assessed as Medium because the action may produce nationwide healthcare disruption and a sizeable mobilisation in Asunción, but emergency services will remain available and no event-specific violence warning has been identified."
+},
+
+{
+  title: "SINAMED National Doctors' Strike — 25 August",
+  city: "Asunción",
+  lat: -25.29125,
+  lng: -57.62607,
+  address: "Nationwide public hospitals and Family Health Units — map anchor: Ministry of Public Health and Social Welfare, Avenida Silvio Pettirossi at Brasil",
+  postcode: "001222",
+  country: "Paraguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-25T12:00:00",
+  source: "https://www.abc.com.py/nacionales/2026/07/24/medicos-ratifican-huelga-del-24-al-28-de-agosto-que-atenciones-se-suspenden/",
+  summary: "SINAMED's nationwide doctors' strike is scheduled to continue on Tuesday 25 August 2026 across Ministry of Public Health hospitals and Family Health Units. Scheduled consultations, outpatient appointments and elective operations are expected to remain suspended, while emergency departments, intensive care, dialysis and urgent surgery will continue under essential-service arrangements. No universal daily start time or confirmed street-demonstration location has been published, so CityIntel's standard 12:00 timestamp and the Ministry of Public Health headquarters in Asunción have been used as a transparent national map anchor. The strike seeks salary restoration, improved employment stability, stronger staffing and infrastructure, holiday compensation and adequate hospital supplies. Risk assessed as Medium because the action may cause significant appointment cancellations and pressure on emergency services nationwide, although no serious public-disorder indicator has been identified."
+},
+
+{
+  title: "SINAMED National Doctors' Strike — 26 August",
+  city: "Asunción",
+  lat: -25.29125,
+  lng: -57.62607,
+  address: "Nationwide public hospitals and Family Health Units — map anchor: Ministry of Public Health and Social Welfare, Avenida Silvio Pettirossi at Brasil",
+  postcode: "001222",
+  country: "Paraguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-26T12:00:00",
+  source: "https://www.abc.com.py/nacionales/2026/07/24/medicos-ratifican-huelga-del-24-al-28-de-agosto-que-atenciones-se-suspenden/",
+  summary: "SINAMED's nationwide doctors' strike is scheduled to continue on Wednesday 26 August 2026 across public hospitals and Family Health Units throughout Paraguay. Routine consultations, outpatient care and planned surgical procedures are expected to be suspended, while emergency treatment, intensive care, dialysis and urgent operations will remain protected. No definitive daily operating time or physical protest venue has been announced, so CityIntel's standard 12:00 timestamp and the Ministry of Public Health headquarters in Asunción have been applied as a transparent map anchor. The doctors are demanding restoration of lost purchasing power, improved contractual stability, additional personnel, better infrastructure and supplies and fair compensation for holiday work. Risk assessed as Medium because the third consecutive day may deepen disruption to scheduled healthcare and increase patient pressure on essential services, although no event-specific unrest warning has been published."
+},
+
+{
+  title: "SINAMED National Doctors' Strike — 27 August",
+  city: "Asunción",
+  lat: -25.29125,
+  lng: -57.62607,
+  address: "Nationwide public hospitals and Family Health Units — map anchor: Ministry of Public Health and Social Welfare, Avenida Silvio Pettirossi at Brasil",
+  postcode: "001222",
+  country: "Paraguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-27T12:00:00",
+  source: "https://www.abc.com.py/nacionales/2026/07/24/medicos-ratifican-huelga-del-24-al-28-de-agosto-que-atenciones-se-suspenden/",
+  summary: "SINAMED's national doctors' strike is scheduled to remain active on Thursday 27 August 2026, affecting Ministry of Public Health hospitals, outpatient departments and Family Health Units across Paraguay. Scheduled appointments and elective surgery may remain suspended, while emergencies, intensive care, dialysis and other urgent procedures will continue. Because the strike is decentralised and no nationwide daily start time or single assembly location has been published, CityIntel's standard 12:00 timestamp and the Ministry of Public Health headquarters have been used as a transparent national map anchor. The union's demands concern salary restoration, employment stability, hospital staffing, infrastructure, essential supplies and compensation for work performed on public holidays. Risk assessed as Medium because prolonged interruption may create growing backlogs and operational pressure across the public-health system, but no serious public-order threat has been identified."
+},
+
+{
+  title: "SINAMED National Doctors' Strike — 28 August",
+  city: "Asunción",
+  lat: -25.29125,
+  lng: -57.62607,
+  address: "Nationwide public hospitals and Family Health Units — map anchor: Ministry of Public Health and Social Welfare, Avenida Silvio Pettirossi at Brasil",
+  postcode: "001222",
+  country: "Paraguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-28T12:00:00",
+  source: "https://www.abc.com.py/nacionales/2026/07/24/medicos-ratifican-huelga-del-24-al-28-de-agosto-que-atenciones-se-suspenden/",
+  summary: "The fifth and final scheduled day of SINAMED's nationwide doctors' strike is Friday 28 August 2026. Public hospitals and Family Health Units may continue operating without routine consultations, outpatient appointments and elective surgery, while emergency care, intensive care, dialysis and urgent procedures remain guaranteed. A definitive daily start time and central demonstration site have not been published, so CityIntel's standard 12:00 timestamp and the Ministry of Public Health headquarters in Asunción have been applied as a transparent national map anchor. The strike concerns salary restoration following a substantial loss of purchasing power, permanent appointments and employment stability, hospital staffing and infrastructure, adequate medical supplies and holiday compensation. Risk assessed as Medium because five consecutive days of disrupted scheduled treatment may generate major backlogs and patient frustration across Paraguay, although no event-specific indication of violent disorder has been identified."
+},
+
+  
+  {
+  title: "PIT-CNT Partial General Strike and March to the Legislative Palace",
+  city: "Montevideo",
+  lat: -34.90258,
+  lng: -56.17634,
+  address: "University of the Republic, Avenida 18 de Julio 1824 — march to the Legislative Palace, Avenida de las Leyes",
+  postcode: "11200",
+  country: "Uruguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-11T09:00:00",
+  source: "https://www.pitcnt.uy/novedades/pit-cnt-realizara-paro-general-parcial-el-11-de-agosto-por-mas-recursos-la-educacion",
+  summary: "Uruguay's PIT-CNT national trade-union centre has called a partial general strike across Montevideo and the metropolitan area from 09:00 to 13:00 on Tuesday 11 August 2026. Participants will mobilise from the main building of the University of the Republic to the Legislative Palace. The action demands increased public funding for education, measures addressing child and adolescent poverty, a proposed additional wealth-tax contribution from the richest one percent, reduced working hours without loss of pay and compliance with agreements reached during the national Social Security Dialogue. Departmental union bodies elsewhere in Uruguay are expected to organise separate local activities, but these have not been entered individually because exact assembly locations and times remain unpublished. Risk assessed as Medium because a coordinated general strike and central Montevideo march may disrupt public services, workplaces, buses and traffic around Avenida 18 de Julio and the parliamentary district and will require police and traffic management; no event-specific indication of planned violence has been identified."
+},
+
+  {
+  title: "National Teachers' Strike and Federal Educational Mobilisation",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Nationwide education action — Buenos Aires assembly point pending (map anchor: Plaza del Congreso)",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-03T12:00:00",
+  source: "https://cta.org.ar/por-la-tierra-y-el-agua.html",
+  summary: "Argentina's education unions and labour organisations have announced a national teachers' strike, Federal Educational March and protest actions across the provinces on Monday 3 August 2026. The mobilisation will defend public education and universities and oppose proposed education, labour and pension changes. A definitive Buenos Aires assembly point, route and start time had not been published at collection threshold, so CityIntel's standard 12:00 timestamp and a transparent Plaza del Congreso map anchor have been applied pending refresh. Risk assessed as Medium because the nationwide strike may disrupt the return to classes and generate sizeable demonstrations in Buenos Aires and provincial capitals, although no event-specific violence warning has been identified."
+},
+
+{
+  title: "Land and Water Sovereignty Mobilisation at Congress",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-06T12:00:00",
+  source: "https://www.eldiarioar.com/politica/convocan-marchar-congreso-dia-gobierno-busque-aprobar-aliados-venta-tierra-extranjeros_1_13405402.html",
+  summary: "The two CTA labour confederations and a broad coalition of social, environmental, Indigenous, faith, union and opposition organisations have called a mobilisation outside Argentina's National Congress on Thursday 6 August 2026. The action will oppose legislation that organisers say could expand foreign ownership of rural land and will also highlight concerns over water sovereignty and the privatisation framework affecting AySA. No final public start time was available at collection threshold, so CityIntel's standard 12:00 timestamp has been used pending refresh. Risk assessed as Medium because the protest coincides with a politically sensitive Senate debate and is likely to require barriers, traffic controls and a substantial police presence around Congress, although no specific call for violence has been identified."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 12 August",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-08-12T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside the National Congress on 12 August 2026, demanding higher pensions, protected healthcare and an end to austerity measures affecting older people. Current July 2026 reporting confirms that the demonstrations remain a weekly Wednesday action, but a separate start time for this date had not been published at collection threshold, so CityIntel's standard 12:00 timestamp has been applied pending refresh. Risk assessed as High because these recurring protests have repeatedly produced tense police operations, crowd-control deployments, injuries and detentions around Congress."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 19 August",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-08-19T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside the National Congress on 19 August 2026, demanding higher pensions, protected healthcare and an end to austerity measures affecting older people. Current July 2026 reporting confirms that the demonstrations remain a weekly Wednesday action, but a separate start time for this date had not been published at collection threshold, so CityIntel's standard 12:00 timestamp has been applied pending refresh. Risk assessed as High because these recurring protests have repeatedly produced tense police operations, crowd-control deployments, injuries and detentions around Congress."
+},
+
+{
+  title: "Household Debt Protest at the Ministry of Economy",
+  city: "Buenos Aires",
+  lat: -34.608181,
+  lng: -58.370279,
+  address: "Ministry of Economy, Hipólito Yrigoyen 250",
+  postcode: "C1086AAB",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-22T12:00:00",
+  source: "https://cta.org.ar/por-la-tierra-y-el-agua.html",
+  summary: "The CTA de los Trabajadores has announced a mobilisation at Argentina's Ministry of Economy on Saturday 22 August 2026 to protest household indebtedness through credit cards and digital wallets used to purchase food and other essentials. The action forms part of the labour confederations' wider campaign against the government's economic and social policies. A definitive start time and detailed assembly footprint had not been published at collection threshold, so CityIntel's standard 12:00 timestamp and the ministry's official address have been used pending refresh. Risk assessed as Medium because a politically charged demonstration beside the Economy Ministry and Plaza de Mayo security zone may cause road restrictions, crowding and a visible police deployment, although no event-specific violence warning has been identified."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 26 August",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-08-26T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside the National Congress on 26 August 2026, demanding higher pensions, protected healthcare and an end to austerity measures affecting older people. Current July 2026 reporting confirms that the demonstrations remain a weekly Wednesday action, but a separate start time for this date had not been published at collection threshold, so CityIntel's standard 12:00 timestamp has been applied pending refresh. Risk assessed as High because these recurring protests have repeatedly produced tense police operations, crowd-control deployments, injuries and detentions around Congress."
+},
+
+  {
+  title: "MG-050 Road-Safety Mobilisation at Posto Planalto",
+  city: "Formiga",
+  lat: -20.4490111,
+  lng: -45.4595892,
+  address: "Posto Planalto access, Rodovia MG-050, km 203, Bairro Planalto",
+  postcode: "35574-849",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-01T10:00:00",
+  source: "https://www.instagram.com/p/DbJmqd5TKpU/",
+  summary: "Residents, road users and local campaigners have announced a public mobilisation for road safety at the Posto Planalto access on km 203 of the MG-050 from 10:00 to 13:00 on Saturday 1 August 2026. The action follows repeated collisions and fatalities on the Formiga section and calls for effective engineering, enforcement and concessionaire measures to protect life. Risk assessed as Medium because a roadside gathering beside a major regional highway may involve lane restrictions, slow traffic, police or concessionaire controls and significant secondary congestion, although no violent intent has been identified."
+},
+
+{
+  title: "20th Contagem LGBTQIAPN+ Pride Parade",
+  city: "Contagem",
+  lat: -19.9447301,
+  lng: -44.0378536,
+  address: "Praça Nossa Senhora da Glória — procession along Avenida João César de Oliveira; final endpoint pending",
+  postcode: "32315-130",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-02T12:00:00",
+  source: "https://www.instagram.com/reel/DbJzBrakzWs/",
+  summary: "The City of Contagem and local LGBTQIAPN+ organisers have confirmed the 20th Contagem Pride Parade for Sunday 2 August 2026, with concentration from 12:00 at Praça da Glória. Participants are expected to proceed with a sound truck along Avenida João César de Oliveira in a demonstration marking two decades of local organising for equality, citizenship, inclusion and protection from discrimination. Risk assessed as Medium because a large moving Pride crowd on a principal commercial avenue will require police, stewarding, road closures and public-transport management, although no event-specific threat supporting a High assessment has been published."
+},
+
+{
+  title: "Divinópolis Municipal Workers' Chamber Protest and Strike Assembly",
+  city: "Divinópolis",
+  lat: -20.1405435,
+  lng: -44.8994425,
+  address: "Câmara Municipal de Divinópolis, Rua São Paulo 277, Praça Jovelino Rabelo, Centro",
+  postcode: "35500-006",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-06T12:00:00",
+  source: "https://www.sistemampa.com.br/noticias/greve-negociacao-prefeitura-servidores/",
+  summary: "Municipal workers and the SINTRAM and SINTEMD unions plan to gather in the plenary area of Divinópolis City Council on 6 August 2026 to pressure councillors and publicise unresolved pension-reform, salary and employment-rights demands. A general assembly will follow the protest to decide whether workers accept the municipal executive's proposals or resume their suspended general strike. No public start time was specified, so CityIntel's standard 12:00 timestamp has been applied pending refresh. Risk assessed as Medium because renewed labour mobilisation inside and around the legislative building may disrupt council access and municipal services and could immediately trigger a wider strike, although no violence warning has been identified."
+},
+
+{
+  title: "3rd Black LGBT+ Pride Parade of Belo Horizonte",
+  city: "Belo Horizonte",
+  lat: -19.919868,
+  lng: -43.934247,
+  address: "Viaduto Santa Tereza, central Belo Horizonte",
+  postcode: "30110-002",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-09T14:00:00",
+  source: "https://www.instagram.com/p/DbGyLbGjDV_/",
+  summary: "Rede Afro LGBT Minas and partner organisers have announced the third Black LGBT+ Pride Parade of Belo Horizonte from 14:00 on Sunday 9 August 2026 at Viaduto Santa Tereza. The action centres Black LGBTQIA+ visibility, memory, democracy, resistance and demands for equal rights and protection from racism and LGBT-phobic violence. Risk assessed as Medium because the gathering is expected to occupy a major central cultural and transport landmark and may require traffic restrictions, crowd controls, police liaison and counter-protest monitoring; no event-specific threat supporting a High assessment has been identified."
+},
+
+{
+  title: "9th Western Santa Catarina LGBTQIA+ Struggle Parade",
+  city: "Chapecó",
+  lat: -27.1042154,
+  lng: -52.6139282,
+  address: "Praça Coronel Bertaso, Centro",
+  postcode: "89801-016",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-16T14:00:00",
+  source: "https://www.instagram.com/reel/DbJy5JEBhlU/",
+  summary: "Organisers have rescheduled the ninth Western Santa Catarina LGBTQIA+ Struggle Parade for 14:00 on Sunday 16 August 2026 at Praça Coronel Bertaso in central Chapecó. The public action promotes LGBTQIA+ visibility, resistance, equal rights and opposition to discrimination across western Santa Catarina. Risk assessed as Medium because a Pride mobilisation in the principal central square may require police protection, stewarding, traffic controls and monitoring for hostile counter-presence, although no specific threat or planned disorder has been confirmed."
+},
+
+{
+  title: "23rd Santo André LGBTQIA+ Pride Parade",
+  city: "Santo André",
+  lat: -23.6557542,
+  lng: -46.5354333,
+  address: "Avenida Dom Pedro II at Rua Catequese — procession toward Avenida Industrial and Rua Padre Vieira",
+  postcode: "09090-400",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-23T11:00:00",
+  source: "https://www.instagram.com/reel/DbLTd1TRqGQ/",
+  summary: "ONG ABCD'S and partner organisers have confirmed the 23rd Santo André LGBTQIA+ Pride Parade for Sunday 23 August 2026, with concentration from 11:00 at the junction of Avenida Dom Pedro II and Rua Catequese. The procession is expected to continue toward Avenida Industrial and conclude near Rua Padre Vieira, promoting the right to live, dignity and enforcement of São Paulo State's anti-discrimination protections. Risk assessed as Medium because a large moving parade through the ABC commercial corridor will require extensive road closures, police, stewarding and public-transport measures; no specific event-related violence warning has been identified."
+},
+
+{
+  title: "19th Sorocaba LGBTQIA+ Pride Parade",
+  city: "Sorocaba",
+  lat: -23.50291,
+  lng: -47.4606,
+  address: "Praça Frei Baraúna, Centro",
+  postcode: "18035-170",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-08-30T12:00:00",
+  source: "https://www.instagram.com/p/Da1Nk-kx0id/",
+  summary: "The official Sorocaba Pride organisation has confirmed the city's 19th LGBTQIA+ Pride Parade for Sunday 30 August 2026, with concentration from 12:00 at Praça Frei Baraúna. The action combines celebration with public advocacy for citizenship, respect, inclusion, accessibility, human rights and protection from discrimination. Risk assessed as Medium because a large Pride gathering and procession in central Sorocaba will require road restrictions, police, stewarding, emergency access and public-transport management, although no event-specific threat supporting a High assessment has been published."
+},
+
+  {
+  title: "Reykjavík Pride Parade 2026",
+  city: "Reykjavík",
+  lat: 64.1417,
+  lng: -21.9266,
+  address: "Hallgrímskirkja, Hallgrímstorg 1 — Skólavörðustígur — Bankastræti — Lækjargata — Fríkirkjuvegur — Hljómskálagarður",
+  postcode: "101",
+  country: "Iceland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T14:00:00",
+  source: "https://hinsegindagar.is/en/pride-parade/",
+  summary: "Reykjavík Pride confirms that its 2026 human-rights parade will depart promptly from Hallgrímskirkja at 14:00 on Saturday 8 August. The published route proceeds along Skólavörðustígur, Bankastræti, Lækjargata and Fríkirkjuvegur before participants continue into Hljómskálagarður for the outdoor Pride programme. The parade is the principal public demonstration of Reykjavík Pride, which runs from 4 to 9 August and promotes LGBTQIA+ visibility, equality, human rights and social inclusion. Risk assessed as Medium because one of Iceland's largest annual public gatherings will create extensive pedestrian concentrations, road closures and public-transport disruption across central Reykjavík and will require police, stewarding and crowd-management measures. No event-specific threat or planned counter-demonstration supporting a High assessment has been identified."
+},
+
+  {
+  title: "Hiroshima Peace and Non-Violence Gathering",
+  city: "Vantaa",
+  lat: 60.2909,
+  lng: 25.043,
+  address: "Väritehtaanranta, opposite Vernissa across the river, Tikkurila",
+  postcode: "01300",
+  country: "Finland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T17:00:00",
+  source: "https://rauhanpuolustajat.org/events/hiroshima-tapahtuma-vantaa/",
+  summary: "Vantaan Rauhanpuolustajat and the DSL Study Centre have confirmed an annual Hiroshima remembrance and peace gathering at Väritehtaanranta in Tikkurila from 17:00 to 18:00 on Thursday 6 August 2026. The programme will include speeches and music and explicitly calls participants to support peace and non-violence while commemorating the victims of the atomic bombing. Risk assessed as Low because this is a short, stationary and organised remembrance event beside the river with no identified counter-protest or disruption warning; limited pedestrian clustering and amplified speech are possible."
+},
+
+{
+  title: "Oulu Pride 2026 Equality Parade",
+  city: "Oulu",
+  lat: 65.0205,
+  lng: 25.4632,
+  address: "Kuusisaari Event Park, Raatintie 7 — parade leaving from and returning to Kuusisaari",
+  postcode: "90100",
+  country: "Finland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T12:00:00",
+  source: "https://www.instagram.com/p/DU8kL3SjBmC/",
+  summary: "Oulu Pride has confirmed that its 2026 equality parade will begin at 12:00 on Saturday 8 August from Kuusisaari, with the procession returning to the island for the Pride park gathering. The parade forms the principal public demonstration of Oulu Pride Week, running from 3 to 9 August, and promotes LGBTQIA+ visibility, equal rights and community safety. Risk assessed as Medium because a moving Pride procession through central Oulu will require police, stewarding, road and pedestrian management and may attract counter-protest attention, although no event-specific threat or violence warning has been identified."
+},
+
+{
+  title: "Turku Pride 2026 Equality and Human Rights Demonstration",
+  city: "Turku",
+  lat: 60.4515,
+  lng: 22.2765,
+  address: "Vanha Suurtori / Aura riverfront — procession toward Kupittaanpuisto; final route details pending",
+  postcode: "20500",
+  country: "Finland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T12:00:00",
+  source: "https://turkupride.fi/kulkue/",
+  summary: "Turku Pride has confirmed its principal 2026 public demonstration for Saturday 29 August. Organiser communications state that participants gather in the Vanha Suurtori and Aura riverfront area before the procession begins at 12:00, while the current route page states that the march will leave the riverfront and end at Kupittaanpuisto, with detailed routing to follow. The action promotes improved rights, equality and treatment for sexual and gender minorities. Risk assessed as Medium because a moving Pride procession through central Turku will require traffic restrictions, police and stewarding coordination and possible counter-protest monitoring; no specific threat supporting a High assessment has been published."
+},
+
+
+  {
+  title: "Stockholm Pride Parade 2026",
+  city: "Stockholm",
+  lat: 59.3274,
+  lng: 18.0542,
+  address: "Norr Mälarstrand, near Stockholm City Hall — 4.5 km parade route to Slussplan",
+  postcode: "112 20",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.stockholmpride.org/en/",
+  summary: "Stockholm Pride confirms that the 2026 Pride Parade will begin on Norr Mälarstrand near Stockholm City Hall at 13:00 on Saturday 1 August before following an approximately 4.5-kilometre route through central Stockholm to Slussplan. The organiser describes the event as Scandinavia's largest Pride parade and a public demonstration for equal human rights, with around 50,000 participants and spectators expected. Risk assessed as Medium because the large moving crowd will require extensive road closures, public-transport adjustments, stewarding and police coordination across the city centre. Organisers and police report established security cooperation, and no specific event-related threat supporting a High rating has been published."
+},
+
+{
+  title: "Malmöfestivalen Pride Parade 2026",
+  city: "Malmö",
+  lat: 55.6094,
+  lng: 13.0049,
+  address: "Bagers plats — Pride parade through the Malmöfestivalen area",
+  postcode: "211 20",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T15:00:00",
+  source: "https://www.malmopride.com/",
+  summary: "Malmö Pride has confirmed a second 2026 Pride parade beginning at Bagers plats at 15:00 on Friday 14 August and moving through the Malmöfestivalen area. Organisers describe the action as a renewed public demonstration for LGBTQ+ visibility and equal rights beyond the main July Pride week. Risk assessed as Medium because the moving parade will overlap with one of Malmö's largest city festivals, increasing crowd density, road-control requirements and the need for police and stewarding coordination. No verified event-specific threat or planned counter-demonstration has been identified."
+},
+
+{
+  title: "Nödinge Manifestation for a Humane Migration Policy",
+  city: "Nödinge",
+  lat: 57.892,
+  lng: 12.0497,
+  address: "Stage outside Nödinge Library, Vitklövergatan 1",
+  postcode: "449 31",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T12:00:00",
+  source: "https://www.mittskifte.org/events/nodinge-manifestation-for-en-human-migrationspolitik",
+  summary: "Churches and community groups in Ale municipality have announced a non-party-political manifestation outside Nödinge Library from 12:00 to 13:00 on Saturday 22 August 2026. The programme will include music, singing and speeches calling for a more humane and rights-based Swedish migration policy, stronger protection for people seeking asylum and opposition to forced removals and prolonged legal uncertainty. Risk assessed as Low because the action is a stationary, one-hour community event with a defined programme and no identified counter-protest or disruption warning."
+},
+
+{
+  title: "24 Hours for the Climate — Stockholm Climate Vigil",
+  city: "Stockholm",
+  lat: 59.3326,
+  lng: 18.0649,
+  address: "Sergels torg — overnight mobilisation continuing toward Vasaparken",
+  postcode: "111 57",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T13:00:00",
+  source: "https://extinctionrebellion.se/rebellmammorna/24-timmar-for-klimatet/",
+  summary: "Rebellmammorna, Rebellpapporna and Researchers Desk have announced a 24-hour climate manifestation beginning at Sergels torg at 13:00 on Saturday 22 August 2026, with participants gathering from 12:30. The programme will use art, music, scientific contributions, discussion and family activities to demand stronger political action on climate change before Sweden's election period, before moving toward Vasaparken and joining the national climate demonstration the following day. Risk assessed as Medium because the prolonged occupation of a major central square and overnight movement between locations may require continuous police liaison, public-space management and sanitation or access controls, although organisers describe a peaceful civic mobilisation."
+},
+
+{
+  title: "The Great Climate Demonstration — United for the Climate",
+  city: "Stockholm",
+  lat: 59.3408,
+  lng: 18.0417,
+  address: "Vasaparken — central Stockholm march route to be finalised",
+  postcode: "113 24",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://www.naturskyddsforeningen.se/kampanj/den-stora-klimatdemonstrationen/",
+  summary: "The Swedish Society for Nature Conservation, Rebellmammorna, Rebellpapporna and Researchers Desk have confirmed a major national climate demonstration assembling in Vasaparken at 12:00 on Sunday 23 August 2026. Organisers intend to fill central Stockholm's streets with demands for stronger climate policy and have publicly set an ambition of approximately 10,000 participants. Risk assessed as Medium because the nationally promoted march and large attendance objective will require substantial police, stewarding, road-closure and public-transport measures. The event is presented as a peaceful, non-party-political mobilisation and no specific violence warning has been identified."
+},
+
+{
+  title: "Mora Manifestation for a Humane Migration Policy",
+  city: "Mora",
+  lat: 61.0047,
+  lng: 14.5377,
+  address: "Emma Zorns torg, Kyrkogatan 10",
+  postcode: "792 30",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T11:30:00",
+  source: "https://www.mittskifte.org/events/demonstrationsvecka-for-en-human-migrationspolitik-1",
+  summary: "The national campaign for a humane migration policy has announced a Mora gathering at Emma Zorns torg on Saturday 29 August 2026. Participants are asked to assemble from 11:30 before a public manifestation running from 12:00 to 14:00 in support of people threatened with deportation and a more lawful, predictable and compassionate migration system. Risk assessed as Low because the event is a stationary town-centre gathering with a defined time window and no identified counter-protest or disorder indicator."
+},
+
+{
+  title: "Lund Manifestation for a Humane Migration Policy",
+  city: "Lund",
+  lat: 55.7042,
+  lng: 13.1925,
+  address: "Stortorget",
+  postcode: "222 23",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T12:00:00",
+  source: "https://www.mittskifte.org/events/lund-for-en-human-migrationspolitik",
+  summary: "The nationwide campaign for a humane migration policy has confirmed a public manifestation at Stortorget in Lund from 12:00 on Saturday 29 August 2026. The action forms part of demonstrations across Sweden opposing restrictive asylum and deportation policies and supporting human rights, legal certainty and humane treatment for migrants and asylum seekers. Risk assessed as Low because the event is currently presented as a stationary civic gathering with no identified confrontation or major-disruption indicator."
+},
+
+{
+  title: "Östersund Migration-Rights Action at Pride",
+  city: "Östersund",
+  lat: 63.1772,
+  lng: 14.6325,
+  address: "Badhusparken",
+  postcode: "831 30",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T12:00:00",
+  source: "https://www.mittskifte.org/events/ostersund-for-en-human-migrationspolitik",
+  summary: "Campaigners for a humane migration policy will gather in Badhusparken at 12:00 on Saturday 29 August 2026 alongside Östersund Pride. Participants plan to distribute information and collect petition signatures in support of migrant rights, humane asylum rules and people facing deportation. Risk assessed as Low because this is a small stationary outreach action integrated into a larger public event, with limited direct disruption expected and no identified counter-protest warning."
+},
+
+{
+  title: "Umeå Folk Festival for a Humane Migration Policy",
+  city: "Umeå",
+  lat: 63.8254,
+  lng: 20.2633,
+  address: "Renmarkstorget",
+  postcode: "903 26",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://www.mittskifte.org/events/demonstrationsvecka-for-en-human-migrationspolitik",
+  summary: "The network Nu är det nog! Umeå, representing around 30 organisations, has announced a public folk festival and manifestation at Renmarkstorget from 13:00 to 14:30 on Saturday 29 August 2026. The programme includes political speeches, spoken word, live music and collective singing in support of a humane migration policy and people threatened with deportation. Risk assessed as Low because the action is a structured stationary event with a short published programme and no identified disorder or counter-protest warning."
+},
+
+{
+  title: "Västervik Manifestation for a Humane Migration Policy",
+  city: "Västervik",
+  lat: 57.7584,
+  lng: 16.6378,
+  address: "Rådhustorget / Stora torget, Stora torget 4",
+  postcode: "593 33",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-29T13:00:00",
+  source: "https://www.mittskifte.org/events/manifestation-for-en-human-migrationspolitik-i-vastervik",
+  summary: "Local organisers have announced a migration-rights manifestation at Rådhustorget or Stora torget in Västervik from 13:00 to 15:00 on Saturday 29 August 2026. The event will combine speeches from people with varied experiences with music and dance, promoting solidarity and a more humane Swedish migration policy. The organiser describes the square location as approximate pending final confirmation. Risk assessed as Low because the planned action is stationary and community-oriented, with no identified counter-protest or major disruption warning."
+},
+
+{
+  title: "Gothenburg Demonstration for a Humane Migration Policy",
+  city: "Gothenburg",
+  lat: 57.7073,
+  lng: 11.9667,
+  address: "Gustav Adolfs torg — march route to be announced",
+  postcode: "411 10",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T14:00:00",
+  source: "https://www.mittskifte.org/events/goteborg-demonstration-for-en-human-migrationspolitik",
+  summary: "A coalition of migrant-rights, labour, humanitarian and community organisations has announced a demonstration beginning at Gustav Adolfs torg at 14:00 on Saturday 29 August 2026. Speeches and music will precede a march whose final route is still to be published. Organisers are demanding reversal of laws restricting asylum and citizenship, stronger rights for asylum seekers, undocumented people and residents, and an end to deportations. Risk assessed as Medium because the moving multi-organisation demonstration will require police and traffic management in central Gothenburg, although no event-specific threat or planned confrontation has been identified."
+},
+
+{
+  title: "Stockholm Demonstration for a Humane Migration Policy",
+  city: "Stockholm",
+  lat: 59.3326,
+  lng: 18.0649,
+  address: "Sergels torg 3 — venue subject to final police confirmation",
+  postcode: "111 57",
+  country: "Sweden",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-30T13:00:00",
+  source: "https://www.mittskifte.org/events/stockholm-mobiliserar-for-en-human-migrationspolitik",
+  summary: "The nationwide campaign for a humane migration policy has announced a Stockholm demonstration at Sergels torg from 13:00 to 14:30 on Sunday 30 August 2026. The action will oppose deportations and increasingly restrictive asylum and citizenship rules while supporting legal certainty, human rights and compassionate treatment of migrants. Organisers state that the application was submitted to police in March but the exact time and location were still awaiting final police confirmation at collection threshold. Risk assessed as Medium because a capital-city mobilisation in a major central square may attract a substantial crowd and require police, barrier and pedestrian controls; no specific violence warning has been identified."
+},
+  
+  {
+  title: "Protest Against Russia's Invasion of Ukraine — 15 August",
+  city: "Oslo",
+  lat: 59.91349,
+  lng: 10.73936,
+  address: "Eidsvolls plass, outside the Norwegian Parliament",
+  postcode: "0026",
+  country: "Norway",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T17:00:00",
+  source: "https://www.stortinget.no/no/Hva-skjer-pa-Stortinget/?eventTypeFlags=eidsvollItem&pid=all",
+  summary: "The Norwegian Parliament's official Eidsvolls plass calendar confirms a protest against Russia's invasion of Ukraine from 17:00 to 18:00 on Saturday 15 August 2026, organised by Den ukrainske forening i Norge. The stationary demonstration will take place directly outside the Storting and is expected to feature Ukrainian flags, speeches and calls for continued Norwegian support for Ukraine. Risk assessed as Low because the action has a short one-hour window and no identified disorder or counter-protest warning, although routine police monitoring and limited pedestrian congestion are likely at the politically sensitive parliamentary location."
+},
+
+{
+  title: "Solidarity for Ukraine 2026 — Independence Day Gathering",
+  city: "Oslo",
+  lat: 59.91349,
+  lng: 10.73936,
+  address: "Eidsvolls plass, outside the Norwegian Parliament",
+  postcode: "0026",
+  country: "Norway",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://www.facebook.com/events/eidsvolls-plass-0026-oslo-norge/-solidaritet-for-ukraina-2026-/1737313797421672/",
+  summary: "Norsk-Ukrainsk Venneforening and partner Ukraine-support groups have announced a major solidarity gathering at Eidsvolls plass from 12:00 on Sunday 23 August 2026, linked to Ukraine's Independence Day period and continued opposition to Russia's war. Organiser channels describe the action as a large public show of support and list several hundred people as interested before the event. Risk assessed as Medium because the nationally significant gathering will occupy the square outside Parliament, may draw a substantial crowd and could require barriers, police liaison and pedestrian controls; no specific threat or planned confrontation has been identified."
+},
+
+{
+  title: "STÅ OPP 2026 — National Climate and Nature Rally",
+  city: "Oslo",
+  lat: 59.91349,
+  lng: 10.73936,
+  address: "Eidsvolls plass, outside the Norwegian Parliament",
+  postcode: "0026",
+  country: "Norway",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T17:00:00",
+  source: "https://www.facebook.com/events/eidsvolls-plass-0026-oslo-norge/st%C3%A5-opp-2026-stormarkering-for-klima-og-natur/1510913597307496/",
+  summary: "Natur og Ungdom has announced the national STÅ OPP 2026 climate-and-nature rally at Eidsvolls plass from 17:00 on Saturday 29 August 2026. The organisation is calling participants to demand stronger action on the climate and nature crisis and notes that the previous campaign mobilised thousands of people across Norway. The event is also listed in Natur og Ungdom's official national activity calendar. Risk assessed as Medium because a nationally promoted mobilisation outside Parliament may attract a sizeable crowd and require police, barrier and pedestrian-management measures, although the organiser presents it as a peaceful public rally and no specific disorder threat has been identified."
+},
+
+
+  {
+  title: "Copenhagen Pride 2026 Human Rights Parade",
+  city: "Copenhagen",
+  lat: 55.67809,
+  lng: 12.53285,
+  address: "Frederiksberg City Hall, Smallegade 1 — Allegade — Frederiksberg Allé — Vesterbrogade — Hammerichsgade — Studiestræde — Vester Voldgade — Pride Square",
+  postcode: "2000",
+  country: "Denmark",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T13:00:00",
+  source: "https://www.copenhagenpride.dk/en/event/copenhagen-pride-parade-2026-2/",
+  summary: "Copenhagen Pride confirms its 30th-anniversary human-rights parade from 13:00 to 17:00 on Saturday 15 August 2026. The procession begins at Frederiksberg City Hall and follows Allegade, Frederiksberg Allé, Vesterbrogade, Hammerichsgade and Studiestræde before ending at Pride Square via Vester Voldgade. More than 100 LGBTQIA+, human-rights, trade-union, political and partner groups are expected, while the organiser states that the parade regularly brings more than 250,000 people onto the streets. Risk assessed as Medium because the very large moving crowd and approximately four-kilometre central-city route will require extensive police, stewarding, traffic and public-transport management. Copenhagen Pride has confirmed active liaison with the authorities and a large professional security team; no specific threat supporting a High assessment has been published."
+},
+
+{
+  title: "Copenhagen Animal Liberation March 2026",
+  city: "Copenhagen",
+  lat: 55.67614,
+  lng: 12.56414,
+  address: "Axeltorv 12 — march through Copenhagen streets to Folkets Hus, Stengade 50",
+  postcode: "1609",
+  country: "Denmark",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T14:00:00",
+  source: "https://www.facebook.com/events/axeltorv-1609-k%C3%B8benhavn-v-danmark/dyrefrig%C3%B8relsesmarch-2026-animal-liberation-march-2026/1607743881015254/",
+  summary: "Dyrerettighedsmarch København, DyrenesDetektiv and partner animal-rights groups have announced an Animal Liberation March beginning at Axeltorv at 14:00 on Saturday 29 August 2026. Participants will march through Copenhagen to Folkets Hus, using banners and loud chants to oppose animal exploitation and industrial-farming practices, with particular emphasis on the treatment of pigs. Organisers describe the action as legal and notified to police and aim to make it Denmark's largest march for animals. Risk assessed as Medium because the moving and deliberately loud procession will require temporary traffic and pedestrian management across central Copenhagen, although no event-specific confrontation or violence warning has been identified."
+},
+
+{
+  title: "Peace Gathering — The Right to Wear the Hijab",
+  city: "Copenhagen",
+  lat: 55.70117,
+  lng: 12.54268,
+  address: "Den Sorte Plads, Superkilen, Nørrebro",
+  postcode: "2200",
+  country: "Denmark",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-31T18:00:00",
+  source: "https://www.facebook.com/events/den-sorte-plads/fredsevent-med-retten-til-at-b%C3%A6re-hijab/1507076753974413/",
+  summary: "En Verden uden Krige og uden Vold and organiser Claus Kiaer have announced a public peace event at Den Sorte Plads from 18:00 to 20:00 on Monday 31 August 2026 focusing on the right to wear the hijab and wider freedom of religion and personal expression. The action is expected to be a stationary advocacy gathering rather than a procession. Risk assessed as Low because the published event has a limited two-hour window and no identified confrontation or disruption indicator, although speeches, signs and localized pedestrian clustering are likely in the Superkilen area."
+},
+
+
+{
+  title: "LRE Rinisja National Renewal Gathering — March of Dignity Anniversary",
+  city: "Tirana",
+  lat: 41.3275,
+  lng: 19.8187,
+  address: "Central Tirana — final public venue and assembly footprint pending",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T12:00:00",
+  source: "https://www.facebook.com/lretirana/posts/1123454343547212/",
+  summary: "LRE Rinisja Tirana has announced a public political remobilisation on 21 August 2026, marking the fifth anniversary of its 2021 March of Dignity and calling supporters to gather again under the message that the earlier dignity movement should continue as a national renewal. The organiser has repeatedly confirmed the date but had not published a definitive start time, venue or route at collection threshold. CityIntel's standard 12:00 timestamp and a transparent central-Tirana map anchor have therefore been applied pending refresh. Risk assessed as Medium because the gathering is an opposition-oriented political mobilisation during an unusually active and occasionally confrontational protest period in Tirana, making police liaison, crowd controls and possible interaction with wider anti-government demonstrations likely; no event-specific call for violence has been identified."
+},
+  
+
+  {
+  title: "BSP National Political Rally — For Socialism with a Future",
+  city: "Buzludzha",
+  lat: 42.7339,
+  lng: 25.3938,
+  address: "Historic Meadow below Buzludzha Peak, Shipka Pass area",
+  postcode: "6140",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T12:00:00",
+  source: "https://www.bta.bg/bg/news/bulgaria/1162276-bezplaten-transport-shte-bade-osiguren-ot-gabrovo-za-sabora-na-bsp-na-buzludzha",
+  summary: "The Bulgarian Socialist Party has confirmed its traditional national political rally and gathering at the Historic Meadow below Buzludzha Peak on Saturday 1 August 2026. Held under the slogan 'For Socialism with a Future', the event marks 135 years since the beginning of Bulgaria's organised socialist movement and is expected to draw party members, supporters and organised transport from multiple regions. A definitive central programme start time was not available at collection threshold, so CityIntel's standard 12:00 timestamp has been applied pending refresh. Risk assessed as Medium because a national political mobilisation at a remote mountain site will generate concentrated coach and private-vehicle traffic, parking pressure and possible access restrictions on the Shipka–Buzludzha roads, although no event-specific disorder warning has been identified."
+},
+  
+
+{
+  title: "10 August — No Forgetting, No Impunity Protest",
+  city: "Bucharest",
+  lat: 44.452456,
+  lng: 26.084145,
+  address: "Piața Victoriei, outside Victoria Palace",
+  postcode: "011791",
+  country: "Romania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-10T18:30:00",
+  source: "https://www.facebook.com/coruptia.ucide/videos/-dac%C4%83-represiunea-din-10-august-r%C4%83m%C3%A2ne-nepedepsit%C4%83-ce-%C3%AEi-va-opri-s%C4%83-o-repetehai-/4434286596852314/",
+  summary: "The Corupția Ucide civic community has called a protest in Bucharest's Piața Victoriei from 18:30 on 10 August 2026, marking eight years since the violent police intervention against demonstrators on 10 August 2018. Organiser messaging states that the action will demand accountability, ask who ordered the repression and oppose the case ending through statutory limitation, under the message that 10 August must not be forgotten or left unpunished. Risk assessed as Medium because the politically and emotionally significant anniversary will take place directly outside the Romanian government headquarters and is likely to require barriers, traffic controls and a substantial gendarmerie presence. The historic association with serious clashes increases sensitivity, although no verified 2026 call for violence has been identified."
+},
+
+  
+{
+  title: "TISZA Szigetek National Meeting on St Stephen's Day",
+  city: "Budapest",
+  lat: 47.4979,
+  lng: 19.0402,
+  address: "Budapest — final venue, public programme and event footprint pending",
+  postcode: "1051",
+  country: "Hungary",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T12:00:00",
+  source: "https://www.facebook.com/peter.magyar.102/posts/augusztus-20-%C3%A1n-az-%C3%A1llami-%C3%BCnneps%C3%A9g-mellett-megtartjuk-a-tisza-szigetek-orsz%C3%A1gos-/28182689178005496/",
+  summary: "Prime Minister Péter Magyar has announced a national meeting of the TISZA Szigetek community in Budapest on 20 August 2026 alongside Hungary's official St Stephen's Day programme. The central announcement states that operational details will follow, and subsequent reporting has discussed possible venues without confirming a final public site. No definitive start time has been issued, so CityIntel's standard 12:00 timestamp and a transparent central-Budapest map anchor have been applied pending refresh. Risk assessed as Medium because a national political mobilisation on a major public holiday will overlap with large official celebrations, transport restrictions and security zones, requiring crowd, traffic and police coordination; no event-specific violence warning is currently published."
+},
+
+
+  
+
+{
+  title: "PRIDE Košice 2026 — IM/PULZ",
+  city: "Košice",
+  lat: 48.720995,
+  lng: 21.257747,
+  address: "Košice city centre — final 2026 venue, assembly point and route pending",
+  postcode: "040 01",
+  country: "Slovakia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T12:00:00",
+  source: "https://www.instagram.com/pride.kosice/",
+  summary: "PRIDE Košice confirms its 2026 public Pride event for Saturday 22 August under the theme IM/PULZ, promoting LGBTI+ visibility, community participation and positive social change. Organiser communications describe the 2026 edition as shorter and more intimate, but a final public start time, assembly point and street route were not available at collection threshold. CityIntel's standard 12:00 timestamp and a transparent Košice city-centre map anchor have therefore been used pending refresh. Risk assessed as Medium because Pride activity in a politically polarised environment may require police protection, stewarding and counter-protest monitoring, although no specific threat or planned disorder has been announced."
+},
+
+{
+  title: "Poprad Pride 2026 — Srdcom kvír",
+  city: "Poprad",
+  lat: 49.05571,
+  lng: 20.30143,
+  address: "Poprad city centre — precise 2026 venue, assembly point and route pending",
+  postcode: "058 01",
+  country: "Slovakia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T12:00:00",
+  source: "https://www.instagram.com/srdcom_kvir/",
+  summary: "Slovak LGBTI+ organisations and the Srdcom kvír organiser channel confirm a Pride event in Poprad on Saturday 29 August 2026. The action forms part of Slovakia's 2026 regional Pride calendar and is intended to increase queer visibility and community solidarity outside the capital. A reliable public start time, exact venue and route were not available at collection threshold, so CityIntel's standard 12:00 timestamp and a transparent central-Poprad map anchor have been applied pending refresh. Risk assessed as Medium because a regional Pride gathering may require police liaison and counter-protest monitoring, although no specific threat or violence warning has been identified."
+},
+
+  
+  
+{
+  title: "Warsaw Uprising Commemoration at Rynek Kościuszki",
+  city: "Białystok",
+  lat: 53.13257,
+  lng: 23.15975,
+  address: "Rynek Kościuszki, in front of the former Kino Ton",
+  postcode: "15-091",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T16:00:00",
+  source: "https://bip.bialystok.pl/urzad_miejski/zgromadzenia/zgromadzenia-2026/upamietnienie-powstancow-warszawskich.html",
+  summary: "Białystok's official public-assembly register confirms a gathering at Rynek Kościuszki in front of the former Kino Ton from 16:00 to 18:00 on 1 August 2026 to commemorate the participants of the Warsaw Uprising. Risk assessed as Low because this is a stationary and structured remembrance event; a moment of silence, flags and temporary pedestrian clustering are likely, but no disorder indicator is published."
+},
+
+{
+  title: "15th Warsaw Uprising March",
+  city: "Warsaw",
+  lat: 52.22972,
+  lng: 21.01218,
+  address: "Rondo Romana Dmowskiego — central Warsaw march route",
+  postcode: "00-026",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T17:00:00",
+  source: "https://dorzeczy.pl/kraj/919660/marsz-powstania-warszawskiego-sad-po-stronie-organizatorow.html",
+  summary: "Organisers have announced the 15th Warsaw Uprising March for 17:00 on 1 August 2026, assembling at Rondo Romana Dmowskiego before moving through central Warsaw. The nationalist remembrance march follows the annual 17:00 'W Hour' commemorations and is expected to feature patriotic banners, speeches and a substantial police and stewarding operation. Risk assessed as Medium because a moving political-nationalist crowd in the city centre may cause significant traffic disruption and require counter-protest monitoring, although no verified event-specific violence warning is currently published."
+},
+
+{
+  title: "March of Memory for Civilian Victims of the Warsaw Uprising",
+  city: "Warsaw",
+  lat: 52.24245,
+  lng: 20.9873,
+  address: "Skwer Pamięci at Leszno / al. Solidarności — march to Warsaw Insurgents Cemetery, Wolska 174/176",
+  postcode: "01-199",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-05T19:00:00",
+  source: "https://www.1944.pl/artykul/program-obchodow-82.-rocznicy-powstania-warszaw%2C5788.html",
+  summary: "The Warsaw Rising Museum and City of Warsaw programme confirms a remembrance ceremony at Skwer Pamięci from 18:00 on 5 August 2026, followed by the public March of Memory at 19:00 to the Warsaw Insurgents Cemetery on Wolska Street. The event commemorates civilian victims of the Wola massacre and the wider uprising. Risk assessed as Medium because a moving commemorative procession will affect roads and public transport along the route and require police traffic management, although the event is solemn and no specific disorder threat is identified."
+},
+
+{
+  title: "Belarus Dignity March Against the Lukashenko Regime",
+  city: "Gdańsk",
+  lat: 54.34821,
+  lng: 18.65312,
+  address: "Neptune Fountain, Długi Targ — Długa — Tkacka — Węglarska — Podmłyńska — Rajska — Wały Piastowskie — European Solidarity Centre",
+  postcode: "80-828",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-09T15:00:00",
+  source: "https://ecs.gda.pl/wydarzenia/dzien-godnosci-2026/",
+  summary: "The European Solidarity Centre and Gdańsk public-assembly notification confirm a Belarus Dignity March from 15:00 to 17:00 on 9 August 2026. The procession begins beside Neptune Fountain at Długi Targ and travels through the Main City to the European Solidarity Centre at Plac Solidarności. The action marks the sixth anniversary of Belarus's disputed 2020 presidential election and supports democratic change and political prisoners. Risk assessed as Medium because the moving procession crosses a heavily visited city centre and carries a sensitive anti-regime message, requiring road, pedestrian and police management; no specific violence warning is published."
+},
+
+{
+  title: "Belarus Dignity and Solidarity Rally",
+  city: "Białystok",
+  lat: 53.13243,
+  lng: 23.15938,
+  address: "Square outside Restauracja Żubrowisko, Rynek Kościuszki 10",
+  postcode: "15-426",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T17:00:00",
+  source: "https://bip.bialystok.pl/urzad_miejski/zgromadzenia/zgromadzenia-2026/koncert-oraz-wiec-godnosci-i-solidarnosci-w-6-rocznice-sfalszowanych-przez-rezim-lukaszenki-wyborow-prezydenckich-na-bialorusi-i-poczatku-najwiekszych-bialoruskich-protestow-2020-roku.html",
+  summary: "Białystok's official public-assembly register confirms a concert and dignity-and-solidarity rally outside Restauracja Żubrowisko from 17:00 to 19:00 on 9 August 2026. The action marks six years since the presidential election described by organisers as falsified by the Lukashenko regime and the beginning of the mass Belarusian protests of 2020. Risk assessed as Low because the event is a stationary solidarity gathering with a defined two-hour window; amplified music, flags and routine police observation are possible."
+},
+
+{
+  title: "Anti-Abortion Protest Outside AboTak Clinic — 20 August",
+  city: "Warsaw",
+  lat: 52.22666,
+  lng: 21.02473,
+  address: "Pavement outside AboTak, Wiejska 9",
+  postcode: "00-480",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T08:00:00",
+  source: "https://bip.warszawa.pl/ogloszenia-obwieszczenia-zawiadomienia",
+  summary: "Warsaw's public-notice register records an accepted public assembly on the pavement at Wiejska 9 from 08:00 on 20 August 2026. The location is the AboTak reproductive-health clinic, where recurring anti-abortion demonstrations have been documented by Polish media and local residents. Risk assessed as Medium because the action concerns a highly sensitive issue at an operating clinic and previous protests at this address have generated complaints about noise, obstruction and confrontation; police or municipal monitoring and access-management measures may be required."
+},
+
+{
+  title: "Anti-Abortion Protest Outside AboTak Clinic — 21 August",
+  city: "Warsaw",
+  lat: 52.22666,
+  lng: 21.02473,
+  address: "Pavement outside AboTak, Wiejska 9",
+  postcode: "00-480",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T08:00:00",
+  source: "https://bip.warszawa.pl/ogloszenia-obwieszczenia-zawiadomienia",
+  summary: "Warsaw's public-notice register records a second accepted public assembly on the pavement at Wiejska 9 from 08:00 on 21 August 2026. The address is the AboTak reproductive-health clinic and the event has been classified as part of the recurring anti-abortion protest pattern at the site. Risk assessed as Medium because the sensitive clinic setting creates a heightened possibility of verbal confrontation, access disruption and noise complaints, even though no specific planned violence is indicated."
+},
+
+{
+  title: "7th Toruń Equality March — Love Without Borders",
+  city: "Toruń",
+  lat: 53.01013,
+  lng: 18.60734,
+  address: "Równik community centre, Mostowa 9/41 — route through Toruń to be published",
+  postcode: "87-100",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T12:00:00",
+  source: "https://www.facebook.com/events/ulmostowa-941-toru%C5%84/vii-toru%C5%84ski-marsz-r%C3%B3wno%C5%9Bci/2084477135822260/",
+  summary: "Równik confirms that the 7th Toruń Equality March will take place on 29 August 2026 under the slogan 'Love Without Borders', linking queer liberation with solidarity for refugees and migrants. The organiser's published event identifies Mostowa 9/41 as the event location, but a reliable final public start time and street-by-street route were not consistently available at collection threshold; CityIntel's standard 12:00 default has therefore been applied pending refresh. Risk assessed as Medium because a moving Pride march may require road closures, police protection and counter-protest monitoring, although no specific threat has been announced."
+},
+
+{
+  title: "ZNP National Teachers' Demonstration — Politicians to the Blackboard",
+  city: "Warsaw",
+  lat: 52.215,
+  lng: 21.02779,
+  address: "Chancellery of the Prime Minister, Aleje Ujazdowskie 1/3",
+  postcode: "00-583",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-31T12:00:00",
+  source: "https://znp.edu.pl/manifestacja-31-sierpnia-informacja-po-konferencji-prasowej-znp/",
+  summary: "The Polish Teachers' Union, ZNP, has announced the opening action of a national protest campaign outside the Chancellery of the Prime Minister on 31 August 2026 under the slogan 'Politicians to the Blackboard! Decent Pay: Keep Your Word!' The union is demanding progress on legislation linking teachers' pay to average national earnings and warns that further collective-dispute measures may follow without substantive talks. The central announcement confirms the date and location but not a definitive start time, so CityIntel's standard 12:00 default has been used pending an operational update. Risk assessed as Medium because national union mobilisation at the prime minister's office is likely to produce significant crowding, road controls and a visible police presence."
+},
+
+
+
+  {
+  title: "Falun Gong Human Rights Information Action — 1 August",
+  city: "Prague",
+  lat: 50.083598,
+  lng: 14.423316,
+  address: "Lower Wenceslas Square, junction of Na Příkopě and Na Můstku",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-01T13:30:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register records a Falun Gong human-rights information action at the lower end of Wenceslas Square from 13:30 to 17:30 on 1 August 2026. The notified purpose is to discuss persecution of Falun Gong practitioners and wider human-rights conditions under the Chinese communist authorities, with 3–20 participants and three organisers declared. Risk assessed as Low because this is a small stationary outreach action, although signs, conversations and limited pedestrian clustering are likely in a busy retail location."
+},
+
+{
+  title: "Prague Demonstration in Support of Ukraine — 2 August",
+  city: "Prague",
+  lat: 50.087467,
+  lng: 14.421194,
+  address: "Old Town Square, southwest of the Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-02T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a demonstration supporting Ukraine and opposing Russian aggression at Old Town Square from 13:00 to 17:00 on 2 August 2026. The notification lists 20 expected participants and identifies Pražský Majdan as the convener. Risk assessed as Low because the action is a small, scheduled and stationary solidarity gathering; flags, speeches and a routine police presence are possible, but no event-specific disorder warning is published."
+},
+
+{
+  title: "Animal Liberation Information Action — 3 August",
+  city: "Prague",
+  lat: 50.085195,
+  lng: 14.42565,
+  address: "Na Příkopě 1–7, outside New Yorker",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-03T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Na Příkopě 1–7, outside New Yorker from 13:15 to 21:00 on 3 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Animal Liberation Information Action — 4 August",
+  city: "Prague",
+  lat: 50.085195,
+  lng: 14.42565,
+  address: "Na Příkopě 1–7, outside New Yorker",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-04T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Na Příkopě 1–7, outside New Yorker from 13:15 to 21:00 on 4 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Protest Against Chinese Human Rights Abuses — 5 August",
+  city: "Prague",
+  lat: 50.102524,
+  lng: 14.398257,
+  address: "Pelléova 17, opposite the entrance to the Embassy of the People's Republic of China",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-05T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a protest opposite the Chinese Embassy from 08:00 to 10:00 on 5 August 2026. The notified purpose is to oppose human-rights violations by the Chinese communist authorities and the persecution of Falun Gong practitioners, while commemorating victims; 2–30 participants and two organisers are declared. Risk assessed as Low because the event is small and scheduled, although its diplomatic location makes routine police observation and access management likely."
+},
+
+{
+  title: "Animal Liberation Information Action — 5 August",
+  city: "Prague",
+  lat: 50.085195,
+  lng: 14.42565,
+  address: "Na Příkopě 1–7, outside New Yorker",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-05T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Na Příkopě 1–7, outside New Yorker from 13:15 to 21:00 on 5 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Animal Liberation Information Action — 6 August",
+  city: "Prague",
+  lat: 50.087401,
+  lng: 14.426289,
+  address: "Celetná, in front of Trčkovský House",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Celetná, in front of Trčkovský House from 13:15 to 21:00 on 6 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Animal Liberation Information Action — 7 August",
+  city: "Prague",
+  lat: 50.087401,
+  lng: 14.426289,
+  address: "Celetná, in front of Trčkovský House",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Celetná, in front of Trčkovský House from 13:15 to 21:00 on 7 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Prague Pride 2026 Equality and Respect Parade",
+  city: "Prague",
+  lat: 50.083598,
+  lng: 14.423316,
+  address: "Lower Wenceslas Square — Na Příkopě — Republic Square — Celetná — Old Town Square — Pařížská — river embankments — Štvanice Island",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T11:00:00",
+  source: "https://festival.praguepride.com/en/ucinkujici/pride-parade/",
+  summary: "Prague Pride confirms assembly from 11:00 and a 12:00 departure on 8 August 2026, with the equality and respect parade moving from lower Wenceslas Square through Na Příkopě, Republic Square, Celetná, Old Town Square, Pařížská and the river embankments to Štvanice Island. The municipal notification allows an operational window of 06:00–23:00 and declares up to 50,000 participants. Risk assessed as Medium because a very large moving crowd will require extensive police, stewarding and traffic measures across Prague 1 and Prague 7, and counter-protest monitoring may be necessary; no verified event-specific violence warning supports a High rating."
+},
+
+{
+  title: "Animal Liberation Information Action — 8 August",
+  city: "Prague",
+  lat: 50.087401,
+  lng: 14.426289,
+  address: "Celetná, in front of Trčkovský House",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-08T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Celetná, in front of Trčkovský House from 13:15 to 21:00 on 8 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Prague Demonstration in Support of Ukraine — 9 August",
+  city: "Prague",
+  lat: 50.087467,
+  lng: 14.421194,
+  address: "Old Town Square, southwest of the Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a demonstration supporting Ukraine and opposing Russian aggression at Old Town Square from 13:00 to 17:00 on 9 August 2026. The notification lists 20 expected participants and identifies Pražský Majdan as the convener. Risk assessed as Low because the action is a small, scheduled and stationary solidarity gathering; flags, speeches and a routine police presence are possible, but no event-specific disorder warning is published."
+},
+
+{
+  title: "Animal Liberation Information Action — 9 August",
+  city: "Prague",
+  lat: 50.087401,
+  lng: 14.426289,
+  address: "Celetná, in front of Trčkovský House",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-09T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Celetná, in front of Trčkovský House from 13:15 to 21:00 on 9 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Animal Liberation Information Action — 10 August",
+  city: "Prague",
+  lat: 50.085195,
+  lng: 14.42565,
+  address: "Na Příkopě 1–7, outside New Yorker",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-10T13:15:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms an animal-liberation information action at Na Příkopě 1–7, outside New Yorker from 13:15 to 21:00 on 10 August 2026. Organisers plan to show footage from animal industries and hold conversations opposing what they describe as unnecessary exploitation, with 20–90 participants and three organisers declared. Risk assessed as Low because the activity is a stationary advocacy and outreach event, although graphic displays and prolonged use of a busy pedestrian shopping corridor may generate complaints or localized crowding."
+},
+
+{
+  title: "Protest Against Chinese Human Rights Abuses — 12 August",
+  city: "Prague",
+  lat: 50.102524,
+  lng: 14.398257,
+  address: "Pelléova 17, opposite the entrance to the Embassy of the People's Republic of China",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-12T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a protest opposite the Chinese Embassy from 08:00 to 10:00 on 12 August 2026. The notified purpose is to oppose human-rights violations by the Chinese communist authorities and the persecution of Falun Gong practitioners, while commemorating victims; 2–30 participants and two organisers are declared. Risk assessed as Low because the event is small and scheduled, although its diplomatic location makes routine police observation and access management likely."
+},
+
+{
+  title: "Falun Gong Human Rights Information Action — 15 August",
+  city: "Prague",
+  lat: 50.087078,
+  lng: 14.428286,
+  address: "Republic Square, pavement in front of the Municipal House",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-15T13:30:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a Falun Gong human-rights information action outside the Municipal House on Republic Square from 13:30 to 17:30 on 15 August 2026. The notified purpose is to discuss persecution in China and promote principles of truthfulness, compassion and tolerance, with 3–20 participants and three organisers expected. Risk assessed as Low because it is a small stationary outreach action with only minor pedestrian impact anticipated."
+},
+
+{
+  title: "Prague Demonstration in Support of Ukraine — 16 August",
+  city: "Prague",
+  lat: 50.087467,
+  lng: 14.421194,
+  address: "Old Town Square, southwest of the Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-16T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a demonstration supporting Ukraine and opposing Russian aggression at Old Town Square from 13:00 to 17:00 on 16 August 2026. The notification lists 20 expected participants and identifies Pražský Majdan as the convener. Risk assessed as Low because the action is a small, scheduled and stationary solidarity gathering; flags, speeches and a routine police presence are possible, but no event-specific disorder warning is published."
+},
+
+{
+  title: "Protest Against Chinese Human Rights Abuses — 19 August",
+  city: "Prague",
+  lat: 50.102524,
+  lng: 14.398257,
+  address: "Pelléova 17, opposite the entrance to the Embassy of the People's Republic of China",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-19T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a protest opposite the Chinese Embassy from 08:00 to 10:00 on 19 August 2026. The notified purpose is to oppose human-rights violations by the Chinese communist authorities and the persecution of Falun Gong practitioners, while commemorating victims; 2–30 participants and two organisers are declared. Risk assessed as Low because the event is small and scheduled, although its diplomatic location makes routine police observation and access management likely."
+},
+
+{
+  title: "Protest Against Russia's Ongoing Aggression in Ukraine",
+  city: "Prague",
+  lat: 50.101855,
+  lng: 14.399274,
+  address: "Boris Nemtsov Square, near the Embassy of the Russian Federation",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T09:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a protest against Russia's continuing aggression in Ukraine at Boris Nemtsov Square from 09:00 to 22:00 on 20 August 2026. Post Bellum is listed as organiser, with 300 participants and ten organisers declared. Risk assessed as Medium because the event occupies a sensitive diplomatic location for an extended period and may attract counter-protest or enhanced police protection, although no specific violent intent is identified."
+},
+
+{
+  title: "1968 Warsaw Pact Invasion Memorial Assembly at Czech Radio",
+  city: "Prague",
+  lat: 50.078728,
+  lng: 14.435932,
+  address: "Czech Radio, Vinohradská 1409/12",
+  postcode: "120 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T09:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a memorial assembly outside Czech Radio from 09:00 to 15:30 on 21 August 2026 to mark the August 1968 invasion and honour those killed near the radio building. The notification declares 2,000 participants and ten organisers. Risk assessed as Medium because the politically significant anniversary and high attendance will affect pedestrian and road movement around Vinohradská and are likely to require barriers and a visible police presence; the event is commemorative and no specific disorder threat is published."
+},
+
+{
+  title: "Falun Gong Human Rights Information Action — 22 August",
+  city: "Prague",
+  lat: 50.083598,
+  lng: 14.423316,
+  address: "Lower Wenceslas Square, junction of Na Příkopě and Na Můstku",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T13:30:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a Falun Gong human-rights information action at lower Wenceslas Square from 13:30 to 17:30 on 22 August 2026. The action concerns persecution in China and promotes truthfulness, compassion and tolerance, with 3–20 participants and three organisers declared. Risk assessed as Low because this is a small stationary advocacy event, although limited clustering and conversations with passers-by are likely."
+},
+
+{
+  title: "Prague Demonstration in Support of Ukraine — 22 August",
+  city: "Prague",
+  lat: 50.087467,
+  lng: 14.421194,
+  address: "Old Town Square, by the Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-22T15:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a demonstration supporting Ukraine and opposing Russian aggression at Old Town Square from 15:00 to 18:00 on 22 August 2026. The notification lists 100 expected participants and identifies an individual organiser as the convener. This separately notified event has an expected attendance of 100 and runs until 18:00. Risk assessed as Low because the action is a small, scheduled and stationary solidarity gathering; flags, speeches and a routine police presence are possible, but no event-specific disorder warning is published."
+},
+
+{
+  title: "Prague Demonstration in Support of Ukraine — 23 August",
+  city: "Prague",
+  lat: 50.087467,
+  lng: 14.421194,
+  address: "Old Town Square, southwest of the Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-23T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a demonstration supporting Ukraine and opposing Russian aggression at Old Town Square from 13:00 to 17:00 on 23 August 2026. The notification lists 20 expected participants and identifies Pražský Majdan as the convener. Risk assessed as Low because the action is a small, scheduled and stationary solidarity gathering; flags, speeches and a routine police presence are possible, but no event-specific disorder warning is published."
+},
+
+{
+  title: "Protest Against Chinese Human Rights Abuses — 26 August",
+  city: "Prague",
+  lat: 50.102524,
+  lng: 14.398257,
+  address: "Pelléova 17, opposite the entrance to the Embassy of the People's Republic of China",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a protest opposite the Chinese Embassy from 08:00 to 10:00 on 26 August 2026. The notified purpose is to oppose human-rights violations by the Chinese communist authorities and the persecution of Falun Gong practitioners, while commemorating victims; 2–30 participants and two organisers are declared. Risk assessed as Low because the event is small and scheduled, although its diplomatic location makes routine police observation and access management likely."
+},
+
+{
+  title: "Prayer Assembly Opposing Abortion",
+  city: "Prague",
+  lat: 50.073642,
+  lng: 14.42146,
+  address: "Church of St Ignatius, Charles Square — U Nemocnice — Viničná — Apolinářská 18",
+  postcode: "128 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register records a prayer assembly from 08:00 to 09:30 on 26 August 2026, beginning at the Church of St Ignatius and using the Charles Square, U Nemocnice, Viničná and Apolinářská area. Its stated purpose is advocacy for protection of life from conception to natural death and the view that abortion is not a good solution; 3–10 participants are declared. Risk assessed as Low because this is a very small religious advocacy action, though its sensitive subject may generate verbal disagreement."
+},
+
+{
+  title: "Satirical Protest Over Completion of Libeň Bridge",
+  city: "Prague",
+  lat: 50.104429,
+  lng: 14.47436,
+  address: "Unused Palmovka tram stop, direction of Libeň Bridge",
+  postcode: "180 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-26T16:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a satirical protest titled around completing Libeň Bridge 'by self-help' at the unused Palmovka tram stop from 16:00 to 20:00 on 26 August 2026. The action is intended to draw attention to the condition of the bridge and other problematic structures in Palmovka through reflective vests and tools, with 50 participants and three organisers declared. Risk assessed as Low because the event is small and symbolic, although it may create local curiosity, media activity and minor pedestrian congestion near transport infrastructure."
+},
+
+{
+  title: "Prague Demonstration in Support of Ukraine — 30 August",
+  city: "Prague",
+  lat: 50.087467,
+  lng: 14.421194,
+  address: "Old Town Square, southwest of the Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-30T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260724-pdf",
+  summary: "Prague's official public-assembly register confirms a demonstration supporting Ukraine and opposing Russian aggression at Old Town Square from 13:00 to 17:00 on 30 August 2026. The notification lists 20 expected participants and identifies Pražský Majdan as the convener. Risk assessed as Low because the action is a small, scheduled and stationary solidarity gathering; flags, speeches and a routine police presence are possible, but no event-specific disorder warning is published."
+},
+
+
+
+{
+  title: "Fernpass Package Protest — Reutte/Katzenberg Assembly",
+  city: "Reutte",
+  lat: 47.4756,
+  lng: 10.7208,
+  address: "B 179 Fernpassstraße, Reutte/Katzenberg closure area (organiser assembly footprint may vary)",
+  postcode: "6600",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T09:45:00",
+  source: "https://www.tirol.gv.at/buergerservice/sperre-der-b-179-fernpassstrasse/",
+  summary: "The Tyrol authorities confirm one of two registered citizen-initiative assemblies on the B 179 Fernpass route on Saturday 1 August 2026, with the Reutte/Katzenberg section closed to all traffic from 09:45 to 12:00. The Bürgerinitiative Gurgltal–Außerfern–Mieminger Plateau is campaigning against the regional Fernpass package, including the proposed toll tunnel, and for lower transit and heavy-goods traffic, cleaner air and alternative transport measures. The displayed coordinate is a transparent map anchor for the Reutte/Katzenberg closure area because a precise assembly pin has not been publicly issued. Risk assessed as Medium because the action will deliberately stop a major Alpine transit route during peak summer travel, with police traffic controls, long diversions and significant secondary congestion likely; no current source indicates an intent to use violence."
+},
+
+{
+  title: "Fernpass Package Protest — Nassereith/Rastland Assembly",
+  city: "Nassereith",
+  lat: 47.362574,
+  lng: 10.831581,
+  address: "B 179 Fernpassstraße, Rastland area, Fernpass 487",
+  postcode: "6465",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T09:45:00",
+  source: "https://www.tirol.gv.at/buergerservice/sperre-der-b-179-fernpassstrasse/",
+  summary: "The Tyrol authorities confirm a second registered citizen-initiative assembly on the B 179 Fernpass route on Saturday 1 August 2026, with the Nassereith/Rastland section closed to all traffic from 09:45 to 12:00. The action forms part of the Bürgerinitiative Gurgltal–Außerfern–Mieminger Plateau campaign against the Fernpass package and proposed toll tunnel and highlights local concerns over transit volumes, heavy-goods traffic, pollution and pressure on communities along the route. Risk assessed as Medium because the coordinated closure at both ends of the Fernpass will prevent through movement on a major north–south holiday route and may produce extensive delays, police-managed diversions and congestion on surrounding roads; no current source indicates a planned violent component."
+},
+
+{
+  title: "Vienna Anti-Government March for Peace and Neutrality",
+  city: "Vienna",
+  lat: 48.208749,
+  lng: 16.363834,
+  address: "Federal Chancellery, Ballhausplatz 2 — march through Vienna's 1st district",
+  postcode: "1010",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T13:00:00",
+  source: "https://www.demo-info.at/events/wien-anti-regierungs-demo-frieden-neutralitaet-2026-08/",
+  summary: "Direktdemokratisch and organiser Martin Rutter have announced an anti-government demonstration beginning outside the Austrian Federal Chancellery at 13:00 on Saturday 1 August 2026, followed by a march through Vienna's 1st district. Organiser messaging promotes peace and Austrian neutrality while opposing the federal government's direction and what participants describe as war-oriented European policy. The advertised event window runs until 18:00, although a street-by-street route has not been published. Risk assessed as Medium because the action targets the national government, includes a moving procession through the historic centre and may require road closures, barriers and a visible police presence; no verified event-specific evidence currently supports a High rating."
+},
+
+{
+  title: "Hiroshima–Nagasaki Anti-War and Neutrality Rally",
+  city: "Vienna",
+  lat: 48.208492,
+  lng: 16.373127,
+  address: "Stephansplatz, beside St Stephen's Cathedral",
+  postcode: "1010",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T16:30:00",
+  source: "https://ethos.at/events/ankuendigung/2026-08-06-hiroshima-nagasaki-gedenktag/",
+  summary: "Stimmen für Neutralität has announced a Hiroshima–Nagasaki commemoration and political rally at Stephansplatz from 16:30 on Thursday 6 August 2026. The published call combines remembrance of the atomic-bomb victims with opposition to war, fascism, nuclear escalation and military alignment, and advocates Austrian neutrality and diplomacy. The gathering is expected to remain stationary and peaceful. Risk assessed as Low because it is a scheduled two-hour remembrance rally by established peace activists, although local crowding, amplified speeches and a modest police presence are possible in the heavily visited Stephansplatz area."
+},
+
+{
+  title: "Hiroshima Memorial Peace Rally and Lights Ceremony",
+  city: "Vienna",
+  lat: 48.198281,
+  lng: 16.3719,
+  address: "Karlsplatz, in front of Karlskirche",
+  postcode: "1040",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T19:00:00",
+  source: "https://www.unsere-zeitung.at/events/hiroshima-gedenkveranstaltung-am-karlsplatz/",
+  summary: "The Hiroshima Group, Austrian Peace Council, ICAN, IPPNW and International Fellowship of Reconciliation have confirmed a public Hiroshima memorial rally in front of Karlskirche at Karlsplatz from 19:00 to 21:00 on 6 August 2026. The programme includes international participation, statements from peace organisations, music and a concluding lights ceremony, linking remembrance with nuclear-disarmament and anti-war advocacy. Risk assessed as Low because the event is a structured, peaceful commemoration at a spacious public square; temporary pedestrian congestion and routine stewarding or police monitoring may occur."
+},
+
+{
+  title: "Villach Hiroshima–Nagasaki Peace Remembrance Gathering",
+  city: "Villach",
+  lat: 46.612824,
+  lng: 13.844036,
+  address: "Peace Tree, Grünes Eck Stadtmauer, access via Schanzgasse",
+  postcode: "9500",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-07T11:00:00",
+  source: "https://kaerntner-schriftsteller.at/lesung-am-friedensbaum-2026/",
+  summary: "The Kärntner Schriftsteller:innen Verband and partner organisations have confirmed a public Hiroshima and Nagasaki remembrance gathering at Villach's Peace Tree in the Grünes Eck by the city wall at 11:00 on Friday 7 August 2026. The programme includes peace-focused contributions, testimony and literary readings under the message 'warn, remember, commemorate', with cooperation from Friedensplattform Kärnten/Koroška mirovna platforma, Erinnern Villach and the City Museum. Risk assessed as Low because this is a small, organised and peaceful remembrance event in a park setting, with only limited local pedestrian impact expected."
+},
+
+{
+  title: "March Against Live-Animal Transport",
+  city: "Vienna",
+  lat: 48.196,
+  lng: 16.3396,
+  address: "Christian-Broda-Platz — Mariahilfer Straße — Platz der Menschenrechte",
+  postcode: "1060",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T10:00:00",
+  source: "https://vgt.at/de/aktuelles/detailseite/8871/demozug-gegen-tiertransporte-am-29-august-2026.html",
+  summary: "Verein Gegen Tierfabriken has confirmed a demonstration against live-animal transport in Vienna on Saturday 29 August 2026. Participants assemble at Christian-Broda-Platz from 10:00, the march departs at 10:30 along Mariahilfer Straße and ends with a rally at Platz der Menschenrechte by 12:00. A campaign vehicle displaying images of cattle in transport will lead participants calling for an end to live-animal shipments by sea and to non-EU countries and for an end to long-distance calf transport. Risk assessed as Medium because the moving demonstration will occupy one of Vienna's principal shopping streets and require temporary traffic, tram or delivery-access controls, although the organiser has announced a peaceful advocacy action and no specific disorder threat is identified."
+},
+
+  
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-10T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 10 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-11T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 11 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-12T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 12 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-13T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 13 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 14 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 15 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-16T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 16 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-17T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 17 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. Organisers describe 17 and 18 August as the most disruptive phase, calling on staff to block the return-to-work and school period and inviting the public to end-of-day demonstrations; exact demonstration times and assembly points were not published at collection time, so no separate street-march record has been created. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Geneva Public and Subsidised Sector Austerity Strike",
+  city: "Geneva",
+  lat: 46.201047,
+  lng: 6.146907,
+  address: "Canton of Geneva public and subsidised services (regional strike; map anchor: Hôtel de Ville, Rue de l'Hôtel-de-Ville 2)",
+  postcode: "1204",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-18T12:00:00",
+  source: "https://geneve.ssp-vpod.ch/news/2026/greve-du-10-au-18-aout-2026/",
+  summary: "The Geneva inter-union Cartel, including SSP, SIT, SPG and Union, has called public-service and subsidised-sector personnel across the canton to strike from 10 through 18 August 2026, making 18 August a confirmed strike date. The action opposes the Geneva Council of State's austerity programme, continued blocking of salary mechanisms and annuities, and proposed cuts affecting hospitals, health and social care, education and other public services. The strike is to be adapted by sector during the week of 10 August, so participation and service effects may vary between workplaces. Organisers describe 17 and 18 August as the most disruptive phase, calling on staff to block the return-to-work and school period and inviting the public to end-of-day demonstrations; exact demonstration times and assembly points were not published at collection time, so no separate street-march record has been created. No daily start time was specified, so 12:00 is the CityIntel default. Hôtel de Ville is used only as a transparent canton-government map anchor and is not presented as a confirmed picket or assembly point. Risk assessed as Medium because the action may disrupt education, healthcare, social services and administrative operations across Geneva, although no event-specific evidence currently indicates serious public disorder."
+},
+
+{
+  title: "Khur Pride 2026 LGBTQIA+ Rights Demonstration",
+  city: "Chur",
+  lat: 46.852295,
+  lng: 9.53144,
+  address: "Alexanderplatz, Chur — demonstration through the Old Town to Stadtgarten",
+  postcode: "7000",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T14:00:00",
+  source: "https://www.khurpride.ch/",
+  summary: "Verein Khur Pride has confirmed an LGBTQIA+ rights demonstration in Chur on Saturday 29 August 2026. Participants meet at Alexanderplatz at 14:00 before a roughly one-hour, approximately one-kilometre march through Chur's Old Town, followed by speeches and a community programme in Stadtgarten from 15:15. Under the Romansh motto 'flurir ensemen' ('together we blossom'), organisers state that the march will oppose discrimination, unequal treatment, hatred and stereotyping while promoting visibility, acceptance and equal rights for queer people in Graubünden. Risk assessed as Medium because a moving demonstration through narrow Old Town streets is expected to require temporary road controls and create local pedestrian and traffic congestion; organisers describe a peaceful, accessible march and no specific unrest threat has been identified."
+},
+
+  
+
+{
+  title: "Estoril Sol III Workers' Plenary and Concentration",
+  city: "Estoril",
+  lat: 38.707214,
+  lng: -9.398233,
+  address: "Service entrance, Casino Estoril, Avenida Dr. Stanley Ho",
+  postcode: "2765-190",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-08-06T12:00:00",
+  source: "https://www.cgtp.pt/accao-e-luta/22696-plenario-concentracao-de-trabalhadores-da-estoril-sol-iii-6-de-agosto-12h-junto-a-entrada-de-servico-do-casino-do-estoril",
+  summary: "The Sindicato de Hotelaria Sul, through CGTP-IN, has called a general workers' plenary and public concentration beside the service entrance of Casino Estoril at 12:00 on Thursday 6 August 2026. Workers are seeking information and guarantees concerning Estoril Sol III's reported financial losses, possible restructuring, the future of the casino concession and protection of jobs, pay and established rights. The exact date, time and workplace location are confirmed by the union announcement. Risk assessed as Low because this is expected to be a controlled static workplace action with limited disruption around the casino service access; no evidence currently indicates a large march or confrontation risk."
+},
+
+{
+  title: "Algarve Regional Day of Struggle",
+  city: "Faro",
+  lat: 37.017778,
+  lng: -7.926117,
+  address: "Outside Escola Secundária João de Deus, Avenida 5 de Outubro",
+  postcode: "8004-069",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-07T10:00:00",
+  source: "https://www.cgtp.pt/accao-e-luta/22652-uniao-dos-sindicatos-do-algarve-convoca-dia-de-luta-regional-7-de-agosto",
+  summary: "The União dos Sindicatos do Algarve (USAL/CGTP-IN) has called workers to a regional day of struggle beginning at 10:00 on Friday 7 August 2026 outside Escola Secundária João de Deus in Faro. The mobilisation focuses on higher wages and pensions, repeal of harmful labour-law provisions, defence of collective bargaining, improved working conditions, stronger public services and access to housing, with particular concern about precarious work and low pay in tourism, commerce and services. Risk assessed as Medium because this is a region-wide trade-union mobilisation at a central public location and may create pedestrian congestion, short-duration traffic disruption and a visible policing presence, although organisers have not called for confrontation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-01T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 1 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-02T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 2 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-03T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 3 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-04T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 4 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-05T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 5 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-06T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 6 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-07T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 7 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-08T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 8 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-09T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 9 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-10T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 10 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-11T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 11 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-12T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 12 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-13T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 13 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-14T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 14 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-15T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 15 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-16T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 16 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-17T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 17 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-18T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 18 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-19T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 19 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-20T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 20 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-21T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 21 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-22T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 22 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-23T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 23 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-24T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 24 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-25T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 25 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-26T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 26 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-27T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 27 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-28T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 28 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-29T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 29 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-30T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 30 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
+
+{
+  title: "Vale de Judeus Prison Guards' Safety Strike",
+  city: "Alcoentre",
+  lat: 39.23469,
+  lng: -8.96488,
+  address: "Estabelecimento Prisional de Vale de Judeus, Alcoentre",
+  postcode: "2065-285",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-08-31T12:00:00",
+  source: "https://www.dgaep.gov.pt/index.cfm?ComDest=0&OBJID=32B5C008-D957-4C3E-B00A-2ECE2208212A&Tab=4",
+  summary: "The Sindicato Nacional do Corpo da Guarda Prisional (SNCGP) has extended the total strike by prison guards at Vale de Judeus Prison through 31 August 2026, making 31 August a confirmed strike date. The dispute concerns unresolved security deficiencies following the 2024 prison escape, including incomplete yard-security nets and watchtower works, prison operating schedules and activities that the union considers incompatible with available staffing. Only minimum services are expected; reporting indicates reduced prisoner activities and visits, shorter yard access and possible effects on medical appointments and court transfers. No daily start time was published, so 12:00 is the CityIntel default and does not imply that action is limited to noon. Risk assessed as Medium because the strike has significant operational and custodial consequences within a secure facility, although it is not a public street mobilisation."
+},
 
 
 
@@ -5046,36 +9022,6 @@ window.alertsData =[
 
 
   {
-    title: "Hiroshima Peace Memorial Ceremony and Anti-War Protests",
-    city: "Hiroshima",
-    lat: 34.3955,
-    lng: 132.4536,
-    address: "Hiroshima Peace Memorial Park, Naka Ward",
-    postcode: "730-0811",
-    country: "Japan",
-    continent: "Asia",
-    risk: "Low",
-    time: "2026-08-06T08:15:00",
-    source: "https://en.japantravel.com/hiroshima/peace-memorial-ceremony/1977",
-    summary: "The annual Hiroshima Peace Memorial Ceremony takes place at 0815hrs on 6 August 2026 — the 81st anniversary of the atomic bombing, with a theme of 'Remembrance, Responsibility, and Resilience'. The ceremony begins with the ringing of the Peace Bell and a citywide minute of silence at 0815hrs (the exact time of the bomb drop in 1945). Free and open to the public, with reserved seating for hibakusha survivors and general public seating on a first-come basis. Following the formal ceremony, anti-nuclear and anti-war protest marches typically proceed through the city streets — historically including groups opposing nuclear weapons, and in 2026 the ongoing 'We Want Our Future' anti-constitutional revision movement is expected to use the date for significant mobilisation given the Iran War context. Note: political messages and protest banners are not permitted inside the park during the ceremony itself. Evening lantern festival on the Motoyasu River with approximately 10,000 lanterns. Risk assessed as low."
-  },
-
-  {
-    title: "Nagasaki Peace Memorial Ceremony and Anti-War Protests",
-    city: "Nagasaki",
-    lat: 32.7448,
-    lng: 129.8734,
-    address: "Nagasaki Peace Park, Matsuyamachi",
-    postcode: "852-8117",
-    country: "Japan",
-    continent: "Asia",
-    risk: "Low",
-    time: "2026-08-09T11:02:00",
-    source: "https://nationaltoday.com/hiroshima-day/",
-    summary: "The annual Nagasaki Peace Memorial Ceremony takes place at 1102hrs on 9 August 2026 — the 81st anniversary of the second atomic bombing. The ceremony marks the exact time the plutonium bomb was dropped on Nagasaki. Anti-nuclear and anti-war protest activity is expected around the ceremony, amplified in 2026 by the ongoing Iran War and Japan's internal debate over constitutional revision and nuclear principles under PM Takaichi. International delegations from the Mayors for Peace network typically attend. Risk assessed as low."
-  },
-
-  {
     title: "Anti-War / Anti-Constitutional Revision Rally — National Diet (Ongoing monthly)",
     city: "Tokyo",
     lat: 35.6762,
@@ -5150,52 +9096,6 @@ window.alertsData =[
     time: "2026-07-01T12:00:00",
     source: "https://www.france24.com/en/culture/20260501-workers-across-the-world-march-for-peace-and-better-pay-in-may-day-rallies",
     summary: "Istanbul maintains a persistent monthly protest pattern. Taksim Square access is regularly banned by Turkish authorities, consistently prompting confrontations. Monthly anti-government, labour, and pro-Palestine demonstrations expected throughout July and August 2026. The ongoing Turkish protest movement rooted in the March 2025 arrest of Istanbul Mayor İmamoğlu continues. Risk assessed as medium — Taksim police confrontations are near-routine."
-  },
-
-
-  {
-    title: "March for Australia — Anti-Immigration Demonstration",
-    city: "Sydney",
-    lat: -33.8688,
-    lng: 151.2093,
-    address: "Central Sydney — location TBC",
-    postcode: "2000",
-    country: "Australia",
-    continent: "Asia Pacific",
-    risk: "Medium",
-    time: "2026-08-31T12:00:00",
-    source: "https://en.wikipedia.org/wiki/March_for_Australia",
-    summary: "The 'March for Australia' anti-immigration movement has held annual protests on or around 31 August 2025 (50,000+ across Australia), 19 October 2025, and 26 January 2026. The August 2025 rally was the largest, with counter-protesters also present. ABC News Verify reported that March for Australia organisers had previously shared pro-Nazi content. The August 2026 event is expected to follow the same annual pattern. Risk assessed as medium — counter-protests have been organised at prior events; the August date is the movement's primary annual mobilisation. Note: This assessment is based on the established pattern; the 2026 event has not yet been formally confirmed at time of writing."
-  },
-
-  {
-    title: "March for Australia Counter-Protest — Anti-Racism",
-    city: "Sydney",
-    lat: -33.8688,
-    lng: 151.2093,
-    address: "Central Sydney — likely near the March for Australia rally location",
-    postcode: "2000",
-    country: "Australia",
-    continent: "Asia Pacific",
-    risk: "Medium",
-    time: "2026-08-31T12:00:00",
-    source: "https://en.wikipedia.org/wiki/March_for_Australia",
-    summary: "Anti-racism groups and progressive organisations have organised counter-protests at all prior March for Australia events. Counter-protests are expected alongside the August 2026 March for Australia demonstration. Police estimated 50,000+ combined protesters and counter-protesters at the August 2025 events across Australia. Risk assessed as medium — proximity of opposing groups creates tension, though prior events have been managed without major disorder."
-  },
-
-  {
-    title: "March for Australia — Anti-Immigration Demonstration",
-    city: "Melbourne",
-    lat: -37.8136,
-    lng: 144.9631,
-    address: "Central Melbourne — location TBC",
-    postcode: "3000",
-    country: "Australia",
-    continent: "Asia Pacific",
-    risk: "Medium",
-    time: "2026-08-31T12:00:00",
-    source: "https://en.wikipedia.org/wiki/March_for_Australia",
-    summary: "Melbourne among the Australian cities with confirmed March for Australia events in August 2025 (the primary annual mobilisation date). August 2026 event expected to follow the same pattern. Counter-protests expected simultaneously. Risk assessed as medium."
   },
 
   {
@@ -17316,7 +21216,7 @@ title:"Waitangi Day events & demonstrations — Wellington",
 
  
  {
-    title: "The Human and Civil Rights Coalition ",
+    title: "The Human and Civil Rights Coalition ",
     city: "Capitol Square Southwest in Atlanta",
     country: "United States",
     continent: "North America",
