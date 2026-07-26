@@ -534,13 +534,14 @@
     const riskClass = (r) => r === 'high' ? 'high' : r === 'med' ? 'med' : 'low';
 
     const parseDate = (a) => {
+      if (!a || typeof a !== 'object') return null;
       const d = new Date(a.time || a.datetime || a.date || a.when);
       return isNaN(d) ? null : d;
     };
 
-    const countryOf = (a) => (a.country || a.Country || a.location || '').trim();
-    const cityOf = (a) => (a.city || '').trim();
-    const textOf = (a) => `${a.title || ''} ${a.summary || ''} ${cityOf(a)} ${countryOf(a)}`.toLowerCase();
+    const countryOf = (a) => String(a?.country || a?.Country || a?.location || '').trim();
+    const cityOf = (a) => String(a?.city || '').trim();
+    const textOf = (a) => `${a?.title || ''} ${a?.summary || ''} ${cityOf(a)} ${countryOf(a)}`.toLowerCase();
 
     let requestedRisk = '';
     if (riskParam) {
@@ -556,12 +557,26 @@
     }
 
     const data = Array.isArray(window.alertsData) ? window.alertsData : [];
-    const baseAlerts = data.map(a => {
-      const risk = normalizeRisk(a.risk);
+    const validData = data.filter(a => a && typeof a === 'object' && !Array.isArray(a));
+    const invalidRecordCount = data.length - validData.length;
+
+    if (
+      invalidRecordCount > 0 &&
+      window.CIAuth &&
+      typeof CIAuth.isMasterAdmin === 'function' &&
+      CIAuth.isMasterAdmin()
+    ) {
+      console.warn(
+        `CityIntel Protest Records: ignored ${invalidRecordCount} invalid/empty dataset entr${invalidRecordCount === 1 ? 'y' : 'ies'}.`
+      );
+    }
+
+    const baseAlerts = validData.map(a => {
+      const risk = normalizeRisk(a?.risk);
       const dt = parseDate(a);
-      const cont = (a.continent || a.Continent || '').toLowerCase();
+      const cont = String(a?.continent || a?.Continent || '').toLowerCase();
       return { ...a, risk, _dt: dt, _continent: cont };
-    }).filter(a => a._dt && !isNaN(a._dt));
+    }).filter(a => a && a._dt && !isNaN(a._dt));
 
     function getWindow(value){
       const now = new Date();
@@ -867,6 +882,7 @@
   }
 
   function feedPostToAlert(p){
+    if (!p || typeof p !== 'object') return null;
     const city = p.city || '';
     const country = p.country || '';
     return {
@@ -891,10 +907,11 @@
     const res = await fetch(API_BASE + '/api/protests', { headers: authH() });
     if (res.ok) {
       const data = await res.json().catch(()=>({}));
-      const posts = Array.isArray(data.posts) ? data.posts : (Array.isArray(data.data) ? data.data : []);
+      const postsRaw = Array.isArray(data.posts) ? data.posts : (Array.isArray(data.data) ? data.data : []);
+      const posts = postsRaw.filter(p => p && typeof p === 'object' && !Array.isArray(p));
       if(window.CIAccess) CIAccess.handleApiTier(data, 'Alerts filtered to your region');
       if (posts.length) {
-        const mapped = posts.map(feedPostToAlert);
+        const mapped = posts.map(feedPostToAlert).filter(Boolean);
         const existing = new Set((window.alertsData||[]).map(a=>(a.title||'')+'|'+(a.time||a.datetime||a.date||a.when||'')));
         const newPosts = mapped.filter(m => !existing.has(m.title+'|'+m.time));
         window.alertsData = [...(window.alertsData||[]), ...newPosts];
