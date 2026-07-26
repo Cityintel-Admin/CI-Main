@@ -3414,6 +3414,26 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const d = v ? new Date(v) : null;
     return d && Number.isFinite(d.getTime()) ? d : null;
   }
+  function startOfLocalDay(value=new Date()){
+    const d = value instanceof Date ? value : new Date(value);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  }
+  function protestEndDate(e){
+    return parseDate(
+      e?.end_at ?? e?.ends_at ?? e?.end_time ?? e?.end_datetime ??
+      e?.end_date ?? e?.date_end ?? e?.to ?? e?.until
+    );
+  }
+  function isCurrentOrFutureProtest(e, now=new Date()){
+    const start = e?._dt || parseDate(e?.time ?? e?.datetime ?? e?.date ?? e?.when ?? e?.event_at);
+    if (!start) return false;
+    const activeBoundary = startOfLocalDay(now);
+    const explicitEnd = protestEndDate(e);
+    // Calendar-date lifecycle: today's protest remains active for the whole
+    // day. Multi-day records remain active while their explicit end date is
+    // today or later.
+    return (explicitEnd || start) >= activeBoundary;
+  }
   function coords(e){
     const lat = Number(e?.lat ?? e?.latitude ?? e?.Latitude ?? e?.event_lat ?? e?.eventLat);
     const lon = Number(e?.lon ?? e?.lng ?? e?.longitude ?? e?.Longitude ?? e?.event_lon ?? e?.eventLng);
@@ -3547,10 +3567,14 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     });
     return Array.from(map.values());
   }
-  function getProtests(){
+  function getAllProtests(){
     const base = arr(window.alertsData).map(normaliseProtest).filter(Boolean);
     const feed = arr(window.CICityIntelFeedPosts).filter(isProtestFeedPost).map(normaliseFeedPost).filter(Boolean);
     return dedupe(base.concat(feed)).sort((a,b) => (a._dt?.getTime?.() || Infinity) - (b._dt?.getTime?.() || Infinity));
+  }
+  function getProtests(){
+    const now = new Date();
+    return getAllProtests().filter(e => isCurrentOrFutureProtest(e, now));
   }
   function getOperationalEvents(){
     const protests = getProtests();
@@ -3588,24 +3612,32 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   function diagnostics(){
     const base = arr(window.alertsData).map(normaliseProtest).filter(Boolean);
     const feedRaw = arr(window.CICityIntelFeedPosts);
+    const feedNormalised = feedRaw.map(normaliseFeedPost).filter(Boolean);
+    const allProtests = getAllProtests();
     const protests = getProtests();
     const operational = getOperationalEvents();
+    const expiredProtests = allProtests.filter(x => x._dt && !isCurrentOrFutureProtest(x));
+    const unparsedProtests = allProtests.filter(x => !x._dt);
     const sourceCounts = {
-      manual_protest_database: base.filter(x => x._ciSourceType === 'manual_protest_database').length,
-      approved_protest: base.filter(x => x._ciSourceType === 'approved_protest').length,
-      organisation_submission: base.filter(x => x._ciSourceType === 'organisation_submission').length,
-      cityintel_feed_protest: feedRaw.filter(isProtestFeedPost).length,
+      manual_protest_database: protests.filter(x => x._ciSourceType === 'manual_protest_database').length,
+      approved_protest: protests.filter(x => x._ciSourceType === 'approved_protest').length,
+      organisation_submission: protests.filter(x => x._ciSourceType === 'organisation_submission').length,
+      cityintel_feed_protest: protests.filter(x => x._ciSourceType === 'cityintel_feed_protest').length,
       cityintel_live_feed: feedRaw.filter(p => !isProtestFeedPost(p)).length
     };
+    const allOperationalDeduped = dedupe(allProtests.concat(feedNormalised));
     return {
       sourceCounts,
-      protestRaw: base.length + sourceCounts.cityintel_feed_protest,
+      protestRaw: base.length + feedRaw.filter(isProtestFeedPost).length,
+      allProtests: allProtests.length,
       protests: protests.length,
       protestMapped: protests.filter(x => !!coords(x)).length,
       protestMissingCoordinates: protests.filter(x => !coords(x)).length,
+      expiredProtests: expiredProtests.length,
+      unparsedProtests: unparsedProtests.length,
       operational: operational.length,
       operationalMapped: operational.filter(x => !!coords(x)).length,
-      duplicatesConsolidated: Math.max(0, base.length + feedRaw.length - operational.length)
+      duplicatesConsolidated: Math.max(0, base.length + feedNormalised.length - allOperationalDeduped.length)
     };
   }
   function ensureAdminDiagnostic(){
@@ -3625,16 +3657,18 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     if (!host) return;
     const c = diag.sourceCounts;
     host.innerHTML = `
-      <summary>${diag.protests} protest records loaded · ${diag.protestMapped} mapped · ${diag.protestMissingCoordinates} awaiting coordinates</summary>
+      <summary>${diag.protests} current/future protest records · ${diag.protestMapped} mapped · ${diag.protestMissingCoordinates} awaiting coordinates</summary>
       <div class="ci-unified-admin-grid">
-        <div class="ci-unified-admin-row"><span>Manual protest database</span><span>${c.manual_protest_database}</span></div>
-        <div class="ci-unified-admin-row"><span>Approved protest records</span><span>${c.approved_protest}</span></div>
-        <div class="ci-unified-admin-row"><span>Organisation submissions</span><span>${c.organisation_submission}</span></div>
-        <div class="ci-unified-admin-row"><span>Protest-qualified Live Feed</span><span>${c.cityintel_feed_protest}</span></div>
+        <div class="ci-unified-admin-row"><span>Active manual protest database</span><span>${c.manual_protest_database}</span></div>
+        <div class="ci-unified-admin-row"><span>Active approved protest records</span><span>${c.approved_protest}</span></div>
+        <div class="ci-unified-admin-row"><span>Active organisation submissions</span><span>${c.organisation_submission}</span></div>
+        <div class="ci-unified-admin-row"><span>Active protest-qualified Live Feed</span><span>${c.cityintel_feed_protest}</span></div>
         <div class="ci-unified-admin-row"><span>General Live Feed for exposure</span><span>${c.cityintel_live_feed}</span></div>
+        <div class="ci-unified-admin-row"><span>Expired protest records excluded</span><span>${diag.expiredProtests}</span></div>
+        <div class="ci-unified-admin-row"><span>Unparsed-date records excluded</span><span>${diag.unparsedProtests}</span></div>
         <div class="ci-unified-admin-row"><span>Operational records mapped</span><span>${diag.operationalMapped}</span></div>
         <div class="ci-unified-admin-row"><span>Duplicates consolidated</span><span>${diag.duplicatesConsolidated}</span></div>
-        <div class="ci-unified-admin-row"><span>Retention in this view</span><span>Current loaded feed</span></div>
+        <div class="ci-unified-admin-row"><span>Active protest lifecycle</span><span>Today and future</span></div>
       </div>`;
   }
   function refresh(reason='manual'){
@@ -3648,13 +3682,22 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const signature = JSON.stringify(diag);
     if (isMasterAdmin() && signature !== lastDiagnosticSignature) {
       lastDiagnosticSignature = signature;
-      console.info('CityIntel unified intelligence layer', { reason, protests:diag.protests, operational:diag.operational, mapped:diag.operationalMapped });
+      console.info('CityIntel unified intelligence layer', {
+        reason,
+        activeProtests:diag.protests,
+        expiredExcluded:diag.expiredProtests,
+        unparsedExcluded:diag.unparsedProtests,
+        operational:diag.operational,
+        mapped:diag.operationalMapped
+      });
       console.table([
-        { source:'Manual protest database', records:diag.sourceCounts.manual_protest_database },
-        { source:'Approved protest records', records:diag.sourceCounts.approved_protest },
-        { source:'Organisation submissions', records:diag.sourceCounts.organisation_submission },
-        { source:'Protest-qualified Live Feed', records:diag.sourceCounts.cityintel_feed_protest },
-        { source:'General Live Feed (exposure only)', records:diag.sourceCounts.cityintel_live_feed }
+        { source:'Active manual protest database', records:diag.sourceCounts.manual_protest_database },
+        { source:'Active approved protest records', records:diag.sourceCounts.approved_protest },
+        { source:'Active organisation submissions', records:diag.sourceCounts.organisation_submission },
+        { source:'Active protest-qualified Live Feed', records:diag.sourceCounts.cityintel_feed_protest },
+        { source:'General Live Feed (exposure only)', records:diag.sourceCounts.cityintel_live_feed },
+        { source:'Expired protest records excluded', records:diag.expiredProtests },
+        { source:'Unparsed-date records excluded', records:diag.unparsedProtests }
       ]);
     }
     try { window.dispatchEvent(new CustomEvent('ci:unified-intelligence-updated',{ detail:{ reason, diagnostics:diag } })); } catch(_) {}
@@ -3663,6 +3706,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 
   window.CIUnifiedIntel = {
     refresh,
+    getAllProtests,
     getProtests,
     getOperationalEvents,
     getWindowedProtests,
@@ -3673,6 +3717,9 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     coords,
     parseDate,
     classifyOperationalEvent,
+    isCurrentOrFutureProtest,
+    startOfLocalDay,
+    protestEndDate,
     diagnostics,
     isMasterAdmin
   };
@@ -3682,6 +3729,10 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => refresh('dom-ready'), { once:true });
   else setTimeout(() => refresh('initial'), 0);
   if (window.CIApprovedProtestsReady?.then) window.CIApprovedProtestsReady.then(() => refresh('approved-protests')).catch(()=>{});
+  // Re-evaluate the active/current-future boundary on long-open dashboards.
+  // The diagnostic signature prevents repeated console output when counts
+  // have not changed.
+  setInterval(() => refresh('date-lifecycle'), 5 * 60 * 1000);
 })();
 </script>
 <script src="metrics.js"></script>
