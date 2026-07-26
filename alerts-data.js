@@ -15,7 +15,7 @@ window.alertsData =[
   country: "United Kingdom",
   continent: "Europe",
   risk: "High",
-  time: "2026-03-08T12:00:00",
+  time: "2025-03-08T12:00:00",
   source: "https://www.stopwar.org.uk/events/march-together-against-the-far-right/",
   summary: "A large anti-racist and anti-far-right national demonstration assembling in central London. Organisers include trade union blocs and civil society groups. High risk: expected large turnout, extensive policing, possible counter-presence, and significant transport disruption around Westminster and Whitehall."
 },
@@ -1017,52 +1017,262 @@ window.alertsData =[
     summary: "The Palestine Solidarity Campaign's monthly national demonstration programme continues into July 2026. The PSC has maintained a near-monthly schedule of national marches since October 2023. Following the Tommy Robinson 'Unite the Kingdom' rally of 16 May 2026 (110,000–150,000 attendees) and the Nakba Day march of the same weekend which required a 4,000-officer police operation, tensions between opposing groups remain elevated. July march expected to continue the established Russell Square to Whitehall format. Risk assessed as medium."
   },
 
-
-
   {
-    title: "Brighton Pride — Community Parade 'Ravishing Rage'",
+    title: "Brighton & Hove Pride LGBTQ+ Community Parade — The Power of Love",
     city: "Brighton",
-    lat: 50.8225,
-    lng: -0.1372,
-    address: "Brighton city centre — parade to Preston Park; Street Party on Marine Parade and New Steine Gardens",
-    postcode: "BN1 1UG",
+    lat: 50.8244,
+    lng: -0.1677,
+    address: "Hove Lawns, Kingsway — parade through central Brighton to Preston Circus, dispersing via Beaconsfield Road",
+    postcode: "BN3 2FR",
     country: "United Kingdom",
     continent: "Europe",
-    risk: "Low",
-    time: "2026-08-01T12:00:00",
-    source: "https://en.wikipedia.org/wiki/Brighton_Pride",
-    summary: "Brighton Pride 2026 confirmed for 1–2 August. The Community Parade 'Ravishing Rage' takes place on Saturday 1 August, with the Street Party on Marine Parade and New Steine Gardens running Saturday 2 and Sunday 3 August. One of the UK's largest outdoor events with 500,000+ expected. Festival and parade. Risk assessed as low. Note: Brighton Pride has increased its 'protest' framing in 2026 amid UK trans rights legislative debate."
+    risk: "Medium",
+    time: "2026-08-01T11:00:00",
+    source: "https://www.brighton-pride.org/residents/",
+    summary: "Brighton & Hove Pride has confirmed its 2026 LGBTQ+ Community Parade for Saturday 1 August under the theme 'The Power of Love'. Participants assemble on Hove Lawns and the parade begins at 11:00, following Kingsway, West Street, the Clock Tower, North Street, Castle Square, Old Steine, Marlborough Place, Gloucester Place, St Georges Place, York Place and London Road before ending at Preston Circus and dispersing northbound on Beaconsfield Road. The organiser frames the parade around LGBTQ+ visibility, solidarity, resistance and community campaigning. Road closures begin from 09:30 and are expected to remain in place into the afternoon. Risk assessed as Medium because more than 300,000 participants and spectators are expected along the city-centre route, with extensive traffic restrictions and crowd-density pressures; no specific disorder indication has been identified."
   },
 
   {
-    title: "Manchester Village Pride — Parade",
+    title: "Manchester Village Pride Parade — No Place Like Home",
     city: "Manchester",
-    lat: 53.4772,
-    lng: -2.2342,
-    address: "Canal Street Gay Village — four-day festival culminating in a candlelit vigil at Sackville Gardens on Monday 31 August",
-    postcode: "M1 1JJ",
+    lat: 53.4769,
+    lng: -2.2357,
+    address: "Manchester city centre — route finishing in the Gay Village; Sackville Gardens used as the current map anchor pending the final assembly point",
+    postcode: "M1 3HB",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-29T12:00:00",
+    source: "https://www.manchestervillagepride.org/the-event/",
+    summary: "Manchester Village Pride CIC has confirmed its community-led Pride Parade for Saturday 29 August 2026 under the theme 'No Place Like Home'. The parade will march through Manchester city centre and finish in the Gay Village, with LGBTQ+ charities and grassroots organisations prioritised within the procession. The organiser describes the day as 'Marching for equality' and identifies the Village as a place to gather, celebrate and protest. A dependable organiser-published start time and full street route were not available at collection time, so the CityIntel default time of 12:00 has been applied and Sackville Gardens is used only as a temporary map anchor. Risk assessed as Medium because a major city-centre procession, road closures, dense crowds and a substantial stewarding and policing operation are likely, although the event is organised as a peaceful equality march."
+  },
+
+  // CityIntel August 2026 UK verified batch — added 26 July 2026
+  {
+    title: "Trans Pride Manchester 2026 March",
+    city: "Manchester",
+    lat: 53.4769,
+    lng: -2.2357,
+    address: "Sackville Gardens, Manchester",
+    postcode: "M1 3HB",
     country: "United Kingdom",
     continent: "Europe",
     risk: "Low",
-    time: "2026-08-28T12:00:00",
-    source: "https://www.skiddle.com/news/all/Manchester-Village-Pride-returns-for-2026/61250/",
-    summary: "Manchester Village Pride 2026 confirmed for 28–31 August (August Bank Holiday weekend), relaunched as a community-led event after the previous Manchester Pride Events Ltd entered voluntary liquidation in October 2025. Manchester City Council passed a unanimous motion to support the return of Pride under a new community-led structure. Parade on Saturday 29 August. Closes with a candlelit vigil on Monday 31 August at Sackville Gardens. 150,000+ expected. Risk assessed as low."
+    time: "2026-08-01T10:00:00",
+    source: "https://museumoftransology.com/trans-pride-collective/trans-pride-manchester/?page=3",
+    summary: "Trans Pride Manchester has confirmed its annual protest march for Saturday 1 August 2026. Speeches begin at 10:00 in Sackville Gardens before participants march through central Manchester and return to the gardens for further speeches and a queer-choir performance, with the rally programme expected to finish at about 13:00. The organisers describe their work as supporting and protecting trans people and confirm that the wider programme will address activism, rights, health and hope. The route is step-free and a stationary rally point will remain in Sackville Gardens for participants who do not join the march. Risk assessed as Low because the mobilisation is organised as an accessible and peaceful community protest, although localised pedestrian congestion and temporary traffic management are possible around the Gay Village."
   },
 
   {
-    title: "National March for Palestine — London",
-    city: "London",
-    lat: 51.5074,
-    lng: -0.1278,
-    address: "Assemble Russell Square — march to Whitehall (standard PSC route)",
-    postcode: "WC1B 5EH",
+    title: "RMT East Midlands Railway Safety Strike",
+    city: "Derby",
+    lat: 52.9165,
+    lng: -1.4634,
+    address: "East Midlands Railway network — Derby railway station, Railway Terrace, used as the operational map anchor; no individual picket point confirmed",
+    postcode: "DE1 2RU",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-01T12:00:00",
+    source: "https://www.rmt.org.uk/news/rmt-strike-action-over-safety-at-east-midlands-railway/",
+    summary: "The RMT has confirmed strike action by members working at East Midlands Railway on Saturday 1 August 2026 over safety concerns involving the Class 810 fleet. The union alleges that recurring faults can require full train resets and may leave services without active safety systems or effective communication between drivers, dispatchers and trackside staff. No strike start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and Derby station is used only as an operational network anchor. Risk assessed as Medium because reduced rail services, crowding, timetable changes and significant passenger disruption are likely across the East Midlands Railway network; the record does not imply that a street demonstration is taking place at Derby station."
+  },
+
+  {
+    title: "RMT East Midlands Railway Safety Strike",
+    city: "Derby",
+    lat: 52.9165,
+    lng: -1.4634,
+    address: "East Midlands Railway network — Derby railway station, Railway Terrace, used as the operational map anchor; no individual picket point confirmed",
+    postcode: "DE1 2RU",
     country: "United Kingdom",
     continent: "Europe",
     risk: "Medium",
     time: "2026-08-08T12:00:00",
-    source: "https://palestinecampaign.org/events/",
-    summary: "Continuation of the PSC monthly national demonstration programme into August 2026. Date estimated based on the established first/second Saturday of each month pattern — confirm on palestinecampaign.org closer to the date. The PSC has held national marches in London nearly every month since October 2023. Risk assessed as medium given the ongoing elevated tensions in the city between pro-Palestine and counter-demonstration groups."
+    source: "https://www.rmt.org.uk/news/rmt-strike-action-over-safety-at-east-midlands-railway/",
+    summary: "The RMT has confirmed a second Saturday of strike action by members working at East Midlands Railway on 8 August 2026 over safety concerns involving the Class 810 fleet. The union alleges that recurring faults can require full train resets and may leave services without active safety systems or effective communication between drivers, dispatchers and trackside staff. No strike start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and Derby station is used only as an operational network anchor. Risk assessed as Medium because reduced rail services, crowding, timetable changes and significant passenger disruption are likely across the East Midlands Railway network; the record does not imply that a street demonstration is taking place at Derby station."
   },
+
+  {
+    title: "RMT East Midlands Railway Safety Strike",
+    city: "Derby",
+    lat: 52.9165,
+    lng: -1.4634,
+    address: "East Midlands Railway network — Derby railway station, Railway Terrace, used as the operational map anchor; no individual picket point confirmed",
+    postcode: "DE1 2RU",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-15T12:00:00",
+    source: "https://www.rmt.org.uk/news/rmt-strike-action-over-safety-at-east-midlands-railway/",
+    summary: "The RMT has confirmed a third Saturday of strike action by members working at East Midlands Railway on 15 August 2026 over safety concerns involving the Class 810 fleet. The union alleges that recurring faults can require full train resets and may leave services without active safety systems or effective communication between drivers, dispatchers and trackside staff. No strike start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and Derby station is used only as an operational network anchor. Risk assessed as Medium because reduced rail services, crowding, timetable changes and significant passenger disruption are likely across the East Midlands Railway network; the record does not imply that a street demonstration is taking place at Derby station."
+  },
+
+  {
+    title: "South London and Maudsley NHS Estates Workers' Equal-Pay Strike",
+    city: "London",
+    lat: 51.4695,
+    lng: -0.0920,
+    address: "South London and Maudsley NHS sites — Maudsley Hospital, Denmark Hill, used as the map anchor; action also affects Bethlem Royal, Lambeth and Lewisham hospitals",
+    postcode: "SE5 8AZ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-01T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/south-london-maudsley-nhs-estates-workers-strike-over-fair-pay",
+    summary: "Unite has confirmed strike action by estates and maintenance workers employed by South London and Maudsley NHS Foundation Trust on 1 August 2026 as part of a stoppage running from 28 July to 3 August. The dispute concerns alleged unequal grading and pay, with skilled staff said to be placed on lower salary bands than colleagues carrying out comparable work. The action affects Bethlem Royal, Lambeth, Lewisham and Maudsley hospitals. No daily start time or public picket location was published, so 12:00 has been applied as the CityIntel default and Maudsley Hospital is used only as a multi-site operational anchor. Risk assessed as Medium because maintenance and estates services may be disrupted across several mental-health facilities, although no large public demonstration or disorder risk is currently indicated."
+  },
+
+  {
+    title: "South London and Maudsley NHS Estates Workers' Equal-Pay Strike",
+    city: "London",
+    lat: 51.4695,
+    lng: -0.0920,
+    address: "South London and Maudsley NHS sites — Maudsley Hospital, Denmark Hill, used as the map anchor; action also affects Bethlem Royal, Lambeth and Lewisham hospitals",
+    postcode: "SE5 8AZ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-02T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/south-london-maudsley-nhs-estates-workers-strike-over-fair-pay",
+    summary: "Unite has confirmed strike action by estates and maintenance workers employed by South London and Maudsley NHS Foundation Trust on 2 August 2026 as part of a stoppage running from 28 July to 3 August. The dispute concerns alleged unequal grading and pay, with skilled staff said to be placed on lower salary bands than colleagues carrying out comparable work. The action affects Bethlem Royal, Lambeth, Lewisham and Maudsley hospitals. No daily start time or public picket location was published, so 12:00 has been applied as the CityIntel default and Maudsley Hospital is used only as a multi-site operational anchor. Risk assessed as Medium because maintenance and estates services may be disrupted across several mental-health facilities, although no large public demonstration or disorder risk is currently indicated."
+  },
+
+  {
+    title: "South London and Maudsley NHS Estates Workers' Equal-Pay Strike",
+    city: "London",
+    lat: 51.4695,
+    lng: -0.0920,
+    address: "South London and Maudsley NHS sites — Maudsley Hospital, Denmark Hill, used as the map anchor; action also affects Bethlem Royal, Lambeth and Lewisham hospitals",
+    postcode: "SE5 8AZ",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Medium",
+    time: "2026-08-03T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/south-london-maudsley-nhs-estates-workers-strike-over-fair-pay",
+    summary: "Unite has confirmed strike action by estates and maintenance workers employed by South London and Maudsley NHS Foundation Trust on 3 August 2026 as the final day of a stoppage running from 28 July to 3 August. The dispute concerns alleged unequal grading and pay, with skilled staff said to be placed on lower salary bands than colleagues carrying out comparable work. The action affects Bethlem Royal, Lambeth, Lewisham and Maudsley hospitals. No daily start time or public picket location was published, so 12:00 has been applied as the CityIntel default and Maudsley Hospital is used only as a multi-site operational anchor. Risk assessed as Medium because maintenance and estates services may be disrupted across several mental-health facilities, although no large public demonstration or disorder risk is currently indicated."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-01T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 1 August 2026 within a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-02T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 2 August 2026 within a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-03T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 3 August 2026 within a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-04T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 4 August 2026 within a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-05T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 5 August 2026 within a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-06T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 6 August 2026 within a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "Institute of Cancer Research Jobs, Pay and Conditions Strike",
+    city: "London",
+    lat: 51.4906,
+    lng: -0.1787,
+    address: "Institute of Cancer Research, 123 Old Brompton Road, Chelsea — map anchor for action affecting the organisation's Chelsea and Sutton sites",
+    postcode: "SW7 3RP",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-07T12:00:00",
+    source: "https://www.unitetheunion.org/news-events/news/2026/july/cancer-researchers-in-london-missing-meals-and-struggling-with-bills-due-to-low-pay",
+    summary: "Unite has confirmed continued strike action by staff at the Institute of Cancer Research on 7 August 2026 as the final day of a stoppage running from 13 July until 7 August. The dispute concerns pay, job security and working conditions, with the union stating that some employees are struggling with living costs despite the institute holding substantial reserves. The action affects the organisation's Chelsea and Sutton sites. No daily start time or confirmed picket location was published, so 12:00 has been applied as the CityIntel default and the Old Brompton Road headquarters is used only as the map anchor. Risk assessed as Low because the principal impact is expected to fall on scientific research, administration and supporting operations, with limited wider public or transport disruption."
+  },
+
+  {
+    title: "George House Trust HIV/AIDS Remembrance Vigil",
+    city: "Manchester",
+    lat: 53.4769,
+    lng: -2.2357,
+    address: "Beacon of Hope, Sackville Gardens, Manchester",
+    postcode: "M1 3HB",
+    country: "United Kingdom",
+    continent: "Europe",
+    risk: "Low",
+    time: "2026-08-31T12:00:00",
+    source: "https://www.manchestervillagepride.org/the-event/",
+    summary: "Manchester Village Pride CIC and George House Trust have confirmed a remembrance vigil at the Beacon of Hope in Sackville Gardens on Monday 31 August 2026. The vigil forms the reflective conclusion to Manchester Village Pride and will remember people lost to HIV/AIDS while expressing solidarity with people living with HIV and the wider LGBTQ+ community. The organiser describes the music stopping, candles being lit and participants standing together in silence. A dependable organiser-published start time was not available at collection time, so the CityIntel default of 12:00 has been applied. Risk assessed as Low because this is a peaceful static vigil, with only localised pedestrian crowding expected within Sackville Gardens and the surrounding Gay Village."
+  },
+
 
 
   {
