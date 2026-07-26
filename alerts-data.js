@@ -8,6 +8,22 @@ window.alertsData =[
 
 
   
+  
+{
+  title: "PTI August 5 Rally for Imran Khan's Release",
+  city: "Peshawar",
+  lat: 34.0303,
+  lng: 71.6636,
+  address: "Open ground near Peshawar Motorway and Ring Road Interchange — precise field location TBC",
+  postcode: "25000",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-08-05T12:00:00",
+  source: "https://tribune.com.pk/story/2620091/pti-shifts-august-5-rally-to-motorway-ground",
+  summary: "Pakistan Tehreek-e-Insaf has confirmed a major public rally in Peshawar on 5 August 2026 as part of a wider nationwide opposition protest movement led alongside the Tehreek Tahaffuz-e-Ayin Pakistan alliance. The gathering will demand the release of former prime minister and PTI founder Imran Khan, Bushra Bibi and other political detainees, while also raising concerns over political victimisation, governance, economic conditions and civil liberties. Khyber Pakhtunkhwa Chief Minister Sohail Afridi confirmed that the venue was moved from Imran Khan Cricket Stadium to a larger open ground near the Peshawar Motorway to accommodate participants travelling from Peshawar and other districts. PTI leaders have described the rally as a decisive stage of their campaign and indicated that the party's future protest strategy will be announced during the gathering. No dependable start time has yet been published, so 12:00 has been applied as the default. Risk assessed as High because this will be a major opposition mobilisation concerning the imprisonment of a former prime minister, with potentially substantial attendance, extensive police deployment, access restrictions and traffic disruption around the motorway and Ring Road approaches. The party has publicly called for peaceful participation, but confrontation may occur if authorities attempt to restrict access or disperse participants."
+},
+  
 
 {
   title: "People's Safety and Judicial Justice Rally Against Drug and Drink Driving",
