@@ -44,6 +44,31 @@
 	
 <script src="auth.js"></script>
 <script src="whitelabel.js"></script>
+<script id="ci-source-metadata-compat">
+(function mountCityIntelSourceMetadataCompat(){
+  'use strict';
+  function hasSourceMetadata(record){
+    if (!record || typeof record !== 'object') return false;
+    const meta = record.metadata && typeof record.metadata === 'object' ? record.metadata : {};
+    return [
+      record.published_at, record.publishedAt,
+      record.provider_received_at, record.providerReceivedAt,
+      record.indexed_at, record.indexedAt,
+      record.collection_provider, record.collectionProvider,
+      record.source_url, record.source,
+      meta.published_at, meta.publishedAt,
+      meta.provider_received_at, meta.providerReceivedAt,
+      meta.indexed_at, meta.indexedAt,
+      meta.collection_provider, meta.collectionProvider
+    ].some(v => v !== undefined && v !== null && String(v).trim() !== '');
+  }
+  // Compatibility for source-timing snippets that call hasMetadata(record)
+  // directly. Defining the function on window keeps older/newer page fragments
+  // interoperable and prevents the ReferenceError seen in the console.
+  if (typeof window.hasMetadata !== 'function') window.hasMetadata = hasSourceMetadata;
+  window.CIHasSourceMetadata = hasSourceMetadata;
+})();
+</script>
 	
 <script>
 (function(){
@@ -2755,7 +2780,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <section class="card" id="proximityRadiusCard" style="grid-column: span 12;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <div style="flex:1;min-width:220px">
             <h3 style="margin:0 0 4px">Proximity radius</h3>
-            <small style="color:var(--muted)" id="proximityRadiusSub">Applies to the map below and the affected-by-protest cards. Centred on your organisation's default location.</small>
+            <small style="color:var(--muted)" id="proximityRadiusSub">Applies to protest KPIs and to all nearby operational intelligence shown when a traveller or asset marker is selected. Centred on your organisation's default location.</small>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
             Radius
@@ -3344,6 +3369,320 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     return [];
   }
 })();
+
+</script>
+
+<style id="ci-unified-intelligence-css">
+  .ci-unified-admin-diagnostic{
+    margin:7px 0 10px;padding:8px 10px;border:1px solid rgba(154,200,255,.20);
+    border-radius:11px;background:rgba(35,71,105,.12);color:#b9c7d7;font-size:11px;
+  }
+  .ci-unified-admin-diagnostic summary{cursor:pointer;color:#dce9f8;font-weight:800;list-style:none}
+  .ci-unified-admin-diagnostic summary::-webkit-details-marker{display:none}
+  .ci-unified-admin-diagnostic summary::before{content:'▸';display:inline-block;margin-right:7px;color:#9ac8ff}
+  .ci-unified-admin-diagnostic[open] summary::before{content:'▾'}
+  .ci-unified-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin-top:9px}
+  .ci-unified-admin-row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid rgba(255,255,255,.055);padding-top:5px}
+  .ci-unified-admin-row span:last-child{color:#eef5fd;font-weight:800}
+  .ci-operational-focus-marker{background:transparent;border:none}
+  .ci-operational-focus-marker .ci-op-diamond{
+    width:22px;height:22px;display:grid;place-items:center;transform:rotate(45deg);
+    border:2px solid #9ac8ff;background:#173454;box-shadow:0 0 0 2px rgba(0,0,0,.72),0 0 11px rgba(154,200,255,.45);
+  }
+  .ci-operational-focus-marker .ci-op-diamond span{transform:rotate(-45deg);color:#fff;font:900 12px/1 system-ui}
+  @media(max-width:720px){.ci-unified-admin-grid{grid-template-columns:1fr}}
+</style>
+
+<script id="ci-unified-intelligence-layer">
+(function mountCityIntelUnifiedIntelligence(){
+  'use strict';
+
+  let lastDiagnosticSignature = '';
+
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function text(v){ return String(v ?? '').trim(); }
+  function normText(v){
+    return text(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/https?:\/\/\S+/g,' ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function parseDate(v){
+    if (v instanceof Date) return Number.isFinite(v.getTime()) ? v : null;
+    try {
+      const helper = window.CIHelpers?.parseWhenAny?.(v);
+      if (helper instanceof Date && Number.isFinite(helper.getTime())) return helper;
+    } catch(_) {}
+    const d = v ? new Date(v) : null;
+    return d && Number.isFinite(d.getTime()) ? d : null;
+  }
+  function coords(e){
+    const lat = Number(e?.lat ?? e?.latitude ?? e?.Latitude ?? e?.event_lat ?? e?.eventLat);
+    const lon = Number(e?.lon ?? e?.lng ?? e?.longitude ?? e?.Longitude ?? e?.event_lon ?? e?.eventLng);
+    return Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180 && !(lat === 0 && lon === 0)
+      ? [lat, lon] : null;
+  }
+  function risk(v){
+    const s = normText(v);
+    if (s.startsWith('hi') || s.includes('critical') || s.includes('severe')) return 'High';
+    if (s.startsWith('me') || s === 'med') return 'Medium';
+    return 'Low';
+  }
+  function isMasterAdmin(){
+    try { if (window.CIAuth?.isMasterAdmin?.()) return true; } catch(_) {}
+    try {
+      const u = window.CIAuth?.who?.() || {};
+      const role = normText(u.roleKey || u.role_key || u.role || '');
+      return role === 'master admin' || role === 'masteradmin' || role === 'master';
+    } catch(_) { return false; }
+  }
+  function isProtestFeedPost(p){
+    if (!p || typeof p !== 'object') return false;
+    if (p.include_in_protests === true || p.protests_only === true) return true;
+    const explicit = normText(p.intelligence_type || p.event_type || p.category || p.topic || '');
+    return explicit === 'protest' || explicit === 'civil unrest' || explicit === 'demonstration';
+  }
+  function classifyOperationalEvent(e, protestQualified=false){
+    if (protestQualified) return 'protest';
+    const t = normText(`${e?.intelligence_type || ''} ${e?.event_type || ''} ${e?.category || ''} ${e?.title || ''} ${e?.body || e?.summary || ''}`);
+    if (/\b(protest|demonstration|march|rally|strike|civil unrest|riot|clash)\b/.test(t)) return 'protest';
+    if (/\b(fire|evacuation|hazmat|chemical|gas leak|medical|casualt|injur)\b/.test(t)) return 'safety';
+    if (/\b(power outage|blackout|rail|train|airport|road closure|road closed|traffic|transport|disruption|derail)\b/.test(t)) return 'disruption';
+    if (/\b(flood|storm|weather|earthquake|wildfire|heatwave|environment)\b/.test(t)) return 'environmental';
+    if (/\b(shooting|stabbing|armed|assault|attack|terror|bomb|explosion|hostage|police|security|crime)\b/.test(t)) return 'security';
+    return 'operational';
+  }
+  function sourceInfo(a){
+    if (a?._orgSubmission) return { type:'organisation_submission', label:'Organisation intelligence', score:90 };
+    if (a?._fromApprovedIntel) return { type:'approved_protest', label:'Approved CityIntel protest intelligence', score:100 };
+    if (a?._feedPostId || a?._fromCityIntelFeed) return { type:'cityintel_feed_protest', label:'CityIntel Live Feed · protest-qualified', score:80 };
+    return { type:'manual_protest_database', label:'CityIntel protest database', score:70 };
+  }
+  function normaliseProtest(a){
+    if (!a || typeof a !== 'object') return null;
+    const ll = coords(a);
+    const si = sourceInfo(a);
+    const dt = parseDate(a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at);
+    return {
+      ...a,
+      id: a.id ?? a._feedId ?? a._submissionId ?? null,
+      title: text(a.title) || 'Protest event',
+      summary: text(a.summary || a.body || a.description),
+      city: text(a.city || a.location_label),
+      country: text(a.country || a.Country),
+      risk: risk(a.risk),
+      time: a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at ?? null,
+      lat: ll ? ll[0] : null,
+      lon: ll ? ll[1] : null,
+      lng: ll ? ll[1] : null,
+      _dt: dt,
+      _ll: ll,
+      _ciSourceType: si.type,
+      _ciSourceLabel: si.label,
+      _ciSourceScore: si.score,
+      _ciEventType: 'protest',
+      _ciProtestQualified: true,
+      _ciUnified: true
+    };
+  }
+  function normaliseFeedPost(p){
+    if (!p || typeof p !== 'object') return null;
+    const protestQualified = isProtestFeedPost(p);
+    const ll = coords(p);
+    const dt = parseDate(p.event_at ?? p.created_at ?? p.time ?? p.when);
+    const eventType = classifyOperationalEvent(p, protestQualified);
+    return {
+      ...p,
+      id: p.id ?? null,
+      title: text(p.title) || 'CityIntel operational intelligence',
+      summary: text(p.body || p.summary || p.description),
+      body: text(p.body || p.summary || p.description),
+      city: text(p.city || p.location_label),
+      country: text(p.country),
+      risk: risk(p.risk),
+      time: p.event_at ?? p.created_at ?? p.time ?? p.when ?? null,
+      lat: ll ? ll[0] : null,
+      lon: ll ? ll[1] : null,
+      lng: ll ? ll[1] : null,
+      source: p.source_url || p.source || null,
+      _dt: dt,
+      _ll: ll,
+      _feedPostId: p.id,
+      _fromCityIntelFeed: true,
+      _ciSourceType: protestQualified ? 'cityintel_feed_protest' : 'cityintel_live_feed',
+      _ciSourceLabel: protestQualified ? 'CityIntel Live Feed · protest-qualified' : 'CityIntel Live Feed · operational',
+      _ciSourceScore: protestQualified ? 80 : 60,
+      _ciEventType: eventType,
+      _ciProtestQualified: protestQualified,
+      _ciUnified: true
+    };
+  }
+  function fingerprint(e){
+    const id = text(e?.id || e?._feedId || e?._submissionId);
+    if (id) return `id|${id}`;
+    const dt = e?._dt || parseDate(e?.time ?? e?.event_at ?? e?.created_at);
+    const minute = dt ? dt.toISOString().slice(0,16) : '';
+    const ll = e?._ll || coords(e);
+    const place = ll ? `${ll[0].toFixed(4)},${ll[1].toFixed(4)}` : normText(`${e?.city || ''}|${e?.country || e?.Country || ''}`);
+    return `fp|${normText(e?.title)}|${minute}|${place}`;
+  }
+  function mergePreferred(current, incoming){
+    const a = current || {}, b = incoming || {};
+    const preferB = Number(b._ciSourceScore || 0) > Number(a._ciSourceScore || 0);
+    const primary = preferB ? b : a;
+    const secondary = preferB ? a : b;
+    const merged = { ...secondary, ...primary };
+    for (const key of ['summary','body','city','country','continent','address','postcode','source','source_url','time','event_at','created_at','lat','lon','lng']) {
+      if ((merged[key] === undefined || merged[key] === null || String(merged[key]).trim() === '') && secondary[key] !== undefined) merged[key] = secondary[key];
+    }
+    merged._ciSourceTypes = Array.from(new Set([...(arr(a._ciSourceTypes)), a._ciSourceType, ...(arr(b._ciSourceTypes)), b._ciSourceType].filter(Boolean)));
+    merged._ciSourceLabels = Array.from(new Set([...(arr(a._ciSourceLabels)), a._ciSourceLabel, ...(arr(b._ciSourceLabels)), b._ciSourceLabel].filter(Boolean)));
+    merged._ll = coords(merged);
+    merged._dt = parseDate(merged.time ?? merged.event_at ?? merged.created_at);
+    return merged;
+  }
+  function dedupe(rows){
+    const map = new Map();
+    arr(rows).filter(Boolean).forEach(row => {
+      const key = fingerprint(row);
+      map.set(key, map.has(key) ? mergePreferred(map.get(key), row) : row);
+    });
+    return Array.from(map.values());
+  }
+  function getProtests(){
+    const base = arr(window.alertsData).map(normaliseProtest).filter(Boolean);
+    const feed = arr(window.CICityIntelFeedPosts).filter(isProtestFeedPost).map(normaliseFeedPost).filter(Boolean);
+    return dedupe(base.concat(feed)).sort((a,b) => (a._dt?.getTime?.() || Infinity) - (b._dt?.getTime?.() || Infinity));
+  }
+  function getOperationalEvents(){
+    const protests = getProtests();
+    const feed = arr(window.CICityIntelFeedPosts).map(normaliseFeedPost).filter(Boolean);
+    return dedupe(protests.concat(feed)).sort((a,b) => (a._dt?.getTime?.() || Infinity) - (b._dt?.getTime?.() || Infinity));
+  }
+  function inRange(e, start, end, includePredictive=true){
+    const dt = e?._dt || parseDate(e?.time ?? e?.event_at ?? e?.created_at);
+    if (!dt || !start || !end || dt < start || dt >= end) return false;
+    if (!includePredictive && e?.predictive === true) return false;
+    return true;
+  }
+  function getWindowedProtests(range, opts={}){
+    const start = range?.start || new Date();
+    const end = range?.end || new Date(Date.now() + 7*86400000);
+    const includePredictive = opts.includePredictive !== false;
+    return getProtests().filter(e => inRange(e,start,end,includePredictive));
+  }
+  function getWindowedOperationalEvents(range, opts={}){
+    const start = range?.start || new Date();
+    const end = range?.end || new Date(Date.now() + 7*86400000);
+    const includePredictive = opts.includePredictive !== false;
+    const lookbackHours = Math.max(0, Number(opts.lookbackHours ?? 24));
+    const operationalStart = new Date(start.getTime() - lookbackHours*3600000);
+    return getOperationalEvents().filter(e => {
+      const eventStart = e._ciEventType === 'protest' ? start : operationalStart;
+      if (!inRange(e,eventStart,end,includePredictive)) return false;
+      if (e.expires_at) {
+        const expiry = parseDate(e.expires_at);
+        if (expiry && expiry < new Date()) return false;
+      }
+      return true;
+    });
+  }
+  function diagnostics(){
+    const base = arr(window.alertsData).map(normaliseProtest).filter(Boolean);
+    const feedRaw = arr(window.CICityIntelFeedPosts);
+    const protests = getProtests();
+    const operational = getOperationalEvents();
+    const sourceCounts = {
+      manual_protest_database: base.filter(x => x._ciSourceType === 'manual_protest_database').length,
+      approved_protest: base.filter(x => x._ciSourceType === 'approved_protest').length,
+      organisation_submission: base.filter(x => x._ciSourceType === 'organisation_submission').length,
+      cityintel_feed_protest: feedRaw.filter(isProtestFeedPost).length,
+      cityintel_live_feed: feedRaw.filter(p => !isProtestFeedPost(p)).length
+    };
+    return {
+      sourceCounts,
+      protestRaw: base.length + sourceCounts.cityintel_feed_protest,
+      protests: protests.length,
+      protestMapped: protests.filter(x => !!coords(x)).length,
+      protestMissingCoordinates: protests.filter(x => !coords(x)).length,
+      operational: operational.length,
+      operationalMapped: operational.filter(x => !!coords(x)).length,
+      duplicatesConsolidated: Math.max(0, base.length + feedRaw.length - operational.length)
+    };
+  }
+  function ensureAdminDiagnostic(){
+    if (!isMasterAdmin()) return null;
+    let host = document.getElementById('ciUnifiedAdminDiagnostic');
+    if (host) return host;
+    const meta = document.getElementById('riskMapMeta');
+    if (!meta?.parentNode) return null;
+    host = document.createElement('details');
+    host.id = 'ciUnifiedAdminDiagnostic';
+    host.className = 'ci-unified-admin-diagnostic';
+    meta.insertAdjacentElement('afterend', host);
+    return host;
+  }
+  function renderAdminDiagnostic(diag){
+    const host = ensureAdminDiagnostic();
+    if (!host) return;
+    const c = diag.sourceCounts;
+    host.innerHTML = `
+      <summary>${diag.protests} protest records loaded · ${diag.protestMapped} mapped · ${diag.protestMissingCoordinates} awaiting coordinates</summary>
+      <div class="ci-unified-admin-grid">
+        <div class="ci-unified-admin-row"><span>Manual protest database</span><span>${c.manual_protest_database}</span></div>
+        <div class="ci-unified-admin-row"><span>Approved protest records</span><span>${c.approved_protest}</span></div>
+        <div class="ci-unified-admin-row"><span>Organisation submissions</span><span>${c.organisation_submission}</span></div>
+        <div class="ci-unified-admin-row"><span>Protest-qualified Live Feed</span><span>${c.cityintel_feed_protest}</span></div>
+        <div class="ci-unified-admin-row"><span>General Live Feed for exposure</span><span>${c.cityintel_live_feed}</span></div>
+        <div class="ci-unified-admin-row"><span>Operational records mapped</span><span>${diag.operationalMapped}</span></div>
+        <div class="ci-unified-admin-row"><span>Duplicates consolidated</span><span>${diag.duplicatesConsolidated}</span></div>
+        <div class="ci-unified-admin-row"><span>Retention in this view</span><span>Current loaded feed</span></div>
+      </div>`;
+  }
+  function refresh(reason='manual'){
+    const protests = getProtests();
+    const operational = getOperationalEvents();
+    const diag = diagnostics();
+    window.CIUnifiedProtestEvents = protests;
+    window.CIUnifiedOperationalEvents = operational;
+    window.CIUnifiedDiagnostics = diag;
+    renderAdminDiagnostic(diag);
+    const signature = JSON.stringify(diag);
+    if (isMasterAdmin() && signature !== lastDiagnosticSignature) {
+      lastDiagnosticSignature = signature;
+      console.info('CityIntel unified intelligence layer', { reason, protests:diag.protests, operational:diag.operational, mapped:diag.operationalMapped });
+      console.table([
+        { source:'Manual protest database', records:diag.sourceCounts.manual_protest_database },
+        { source:'Approved protest records', records:diag.sourceCounts.approved_protest },
+        { source:'Organisation submissions', records:diag.sourceCounts.organisation_submission },
+        { source:'Protest-qualified Live Feed', records:diag.sourceCounts.cityintel_feed_protest },
+        { source:'General Live Feed (exposure only)', records:diag.sourceCounts.cityintel_live_feed }
+      ]);
+    }
+    try { window.dispatchEvent(new CustomEvent('ci:unified-intelligence-updated',{ detail:{ reason, diagnostics:diag } })); } catch(_) {}
+    return { protests, operational, diagnostics:diag };
+  }
+
+  window.CIUnifiedIntel = {
+    refresh,
+    getProtests,
+    getOperationalEvents,
+    getWindowedProtests,
+    getWindowedOperationalEvents,
+    normaliseProtest,
+    normaliseFeedPost,
+    isProtestFeedPost,
+    coords,
+    parseDate,
+    classifyOperationalEvent,
+    diagnostics,
+    isMasterAdmin
+  };
+
+  window.addEventListener('ci:alerts-data-updated', () => refresh('protest-data'));
+  window.addEventListener('ci:feed-posts-updated', () => refresh('live-feed'));
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => refresh('dom-ready'), { once:true });
+  else setTimeout(() => refresh('initial'), 0);
+  if (window.CIApprovedProtestsReady?.then) window.CIApprovedProtestsReady.then(() => refresh('approved-protests')).catch(()=>{});
+})();
 </script>
 <script src="metrics.js"></script>
 <script>
@@ -3538,15 +3877,18 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   window.CIHelpers = { parseWhenAny };
 
   // diagnostics
-  const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+  const data = window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
   const diag = data.map(a=>{
     const raw = a.time ?? a.datetime ?? a.date ?? a.when ?? null;
     const parsed = parseWhenAny(raw);
     return { title:a.title||'', city:a.city||'', raw_time:raw, parsed_ok:!!parsed, parsed_iso: parsed?parsed.toISOString():'' };
   });
   const unparsed = diag.filter(r=>!r.parsed_ok);
-  console.info(`CityIntel: alerts=${data.length}, parsed=${diag.length-unparsed.length}, unparsed=${unparsed.length}`);
-  if (unparsed.length) console.table(unparsed.slice(0,10));
+  const canShowDiagnostics = (()=>{ try{return !!window.CIAuth?.isMasterAdmin?.();}catch(_){return false;} })();
+  if (canShowDiagnostics) {
+    console.info(`CityIntel: alerts=${data.length}, parsed=${diag.length-unparsed.length}, unparsed=${unparsed.length}`);
+    if (unparsed.length) console.table(unparsed.slice(0,10));
+  }
 })();
 </script>
 
@@ -3572,7 +3914,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:${c};font-weight:700">${t}</span>`;
   };
 
-  const items = window.alertsData
+  const items = (window.CIUnifiedIntel?.getProtests?.() || window.alertsData || [])
     .map(a => ({...a, _dt: parse(a.time ?? a.datetime ?? a.date ?? a.when)}))
     .filter(a => a._dt && sameDay(a._dt, today))
     .sort((a,b) => a._dt - b._dt);
@@ -3651,7 +3993,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
 
   const now = new Date();
   const end = new Date(now.getTime() + 7 * 86400000);
-  const weekly = (Array.isArray(window.alertsData) ? window.alertsData : [])
+  const weekly = (window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []))
     .map(a => ({...a,_dt:parse(a.time ?? a.datetime ?? a.date ?? a.when),_risk:normRisk(a.risk)}))
     .filter(a => a._dt && a._dt >= now && a._dt <= end)
     .sort((a,b)=>a._dt-b._dt);
@@ -3842,7 +4184,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   function render(){
     box.innerHTML = '';
 
-    const soon = (Array.isArray(window.alertsData) ? window.alertsData : [])
+    const soon = (window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []))
       .map(a => ({...a, _dt: parse(a.time ?? a.datetime ?? a.date ?? a.when), risk: normRisk(a.risk)}))
       .filter(a => a._dt && a._dt >= new Date())
       .sort((a,b)=> a._dt - b._dt);
@@ -3911,7 +4253,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     return `<span class="ci-risk-pill ${r}">${txt}</span>`;
   };
 
-  const rows = CIFilter.upcoming(window.alertsData).slice(0,6);
+  const rows = CIFilter.upcoming(window.CIUnifiedIntel?.getProtests?.() || window.alertsData || []).slice(0,6);
   tbody.innerHTML = '';
   if (countBadge) countBadge.textContent = `${rows.length} shown`;
 
@@ -3956,7 +4298,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   // TEMP: debug table inputs
   (function debugUpcoming(){
     const now = new Date();
-    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const data = window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
     const rows = data.map(a=>{
       const raw = a.time ?? a.datetime ?? a.date ?? a.when ?? null;
       const dt = window.CIHelpers.parseWhenAny(raw);
@@ -3991,7 +4333,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const elDelta = document.getElementById('kpi-active-24h-delta');
     if (!elVal) return;
 
-    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const data = window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
 
     const now  = new Date();
     const t1   = new Date(now.getTime() + 24*60*60*1000);      // next 24h window end
@@ -4023,6 +4365,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   // Initial render + refresh every 600s
   render();
   window.addEventListener('ci:alerts-data-updated', render);
+  window.addEventListener('ci:unified-intelligence-updated', render);
   if (window.CIApprovedProtestsReady) window.CIApprovedProtestsReady.then(render).catch(()=>{});
   setInterval(render, 600000);
 })();
@@ -4051,7 +4394,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const elDelta = document.getElementById('kpi-upcoming-7d-delta');
     if (!elVal) return;
 
-    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const data = window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
 
     const now   = new Date();
     const next7 = new Date(now.getTime() + 7*24*60*60*1000);   // end of forward window
@@ -4098,7 +4441,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     const elTitle = document.getElementById('kpi-remaining-month-title');
     if (!elVal) return;
 
-    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const data = window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
     const now  = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -4188,9 +4531,11 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
   function getWindowedProtests(){
     if (!window.CIMapHelpers) return [];
     const win = window.CIMapHelpers.getWindowRange();
-    const data = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const includePredictive = window.CIMapHelpers.getIncludePredictive?.() !== false;
+    const data = window.CIUnifiedIntel?.getWindowedProtests?.(win,{ includePredictive })
+      || (window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []));
     return data
-      .map(a => ({ ...a, _dt: a._dt || (a.time ? new Date(a.time) : null), _ll: window.CIMapHelpers.getEventLatLon(a) }))
+      .map(a => ({ ...a, _dt: a._dt || (a.time ? new Date(a.time) : null), _ll: a._ll || window.CIMapHelpers.getEventLatLon(a) }))
       .filter(a => a._dt && a._dt >= win.start && a._dt < win.end && a._ll);
   }
 
@@ -4659,7 +5004,7 @@ window.CIApprovedProtestsReady = (async function loadApprovedProtestsForDashboar
     return true;
   }
   function findExistingMatch(sub){
-    const alerts = Array.isArray(window.alertsData) ? window.alertsData : [];
+    const alerts = window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
     return alerts.find(a => !a._orgSubmission && likelySameEvent(sub,a)) || null;
   }
   function localRead(){
@@ -5843,7 +6188,7 @@ function ciMapRiskLabel(risk){
 function ciProtestPopupHtml(a, pretty, cityCountry, locationLine, orgStatusLine){
   const riskBand = ciMapRiskBand(a.risk);
   const summary = String(a.summary || a.body || '').trim();
-  const sourceLabel = a._feedPostId ? 'CityIntel Live Feed' : (a._orgSubmission ? 'Organisation intelligence' : 'Verified protest intelligence');
+  const sourceLabel = a._ciSourceLabel || (a._feedPostId ? 'CityIntel Live Feed · protest-qualified' : (a._orgSubmission ? 'Organisation intelligence' : 'CityIntel protest intelligence'));
   return `
     <div class="ci-map-protest-popup">
       <div class="ci-map-protest-kicker">Mapped protest</div>
@@ -5868,22 +6213,10 @@ function ciProtestPopupHtml(a, pretty, cityCountry, locationLine, orgStatusLine)
 function renderProtestMarkers(){
   protestLayer.clearLayers();
   const win = mapWindowRange();
-  const feedEvents = (Array.isArray(window.CICityIntelFeedPosts) ? window.CICityIntelFeedPosts : [])
-    .filter(p => eventLatLon(p))
-    .map(p => ({
-      ...p,
-      title: p.title || 'CityIntel feed post',
-      city: p.location_label || 'CityIntel feed',
-      country: '',
-      risk: p.risk || 'info',
-      time: p.event_at || p.created_at,
-      source: 'CityIntel Feed',
-      summary: p.body || '',
-      _feedPostId: p.id
-    }));
-
-  const rows = (Array.isArray(window.alertsData) ? window.alertsData : []).concat(feedEvents)
-    .map(a => ({...a, _dt: parseTime(a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at)}))
+  const sourceRows = window.CIUnifiedIntel?.getWindowedProtests?.(win,{includePredictive})
+    || (window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []));
+  const rows = sourceRows
+    .map(a => ({...a, _dt: a._dt || parseTime(a.time ?? a.datetime ?? a.date ?? a.when ?? a.event_at ?? a.created_at)}))
     .filter(a => {
       if (!a._dt || a._dt < win.start || a._dt >= win.end) return false;
       if (!includePredictive && a.predictive === true) return false;
@@ -5902,32 +6235,35 @@ function renderProtestMarkers(){
     const marker = L.marker(ll, { icon: protestIconFor(a.risk,a), keyboard:false })
       .addTo(protestLayer)
       .bindPopup(ciProtestPopupHtml(a, pretty, cityCountry, locationLine, orgStatusLine), {
-        className:'ci-protest-map-popup',
-        maxWidth:340,
-        minWidth:270,
-        autoPan:true,
-        closeButton:true
+        className:'ci-protest-map-popup', maxWidth:340, minWidth:270, autoPan:true, closeButton:true
       });
     marker.on('click', () => {
-      // v19: always re-evaluate proximity on every marker click. The drawer
-      // may have been closed after a previous marker, and events with zero
-      // affected monitored records should still open an informative panel.
-      if (window.CIProximityPanel?.openForProtest) {
-        window.CIProximityPanel.openForProtest(a, ll);
-      }
+      if (window.CIProximityPanel?.openForProtest) window.CIProximityPanel.openForProtest(a, ll);
     });
   });
   updateMapMeta(rows.length);
 }
 
+function operationalFeedIconFor(){
+  return L.divIcon({
+    className:'ci-operational-focus-marker',
+    html:'<div class="ci-op-diamond"><span>!</span></div>',
+    iconSize:[24,24],iconAnchor:[12,12],popupAnchor:[0,-14]
+  });
+}
+
 window.CIFocusFeedPostOnMap = function(postId){
   const post = (window.CICityIntelFeedPosts || []).find(p => String(p.id) === String(postId));
-  if (!post || !eventLatLon(post)) return;
-  const ll = eventLatLon(post);
+  const event = window.CIUnifiedIntel?.normaliseFeedPost?.(post) || post;
+  if (!event || !eventLatLon(event)) return;
+  const ll = eventLatLon(event);
   feedFocusLayer.clearLayers();
-  const marker = L.marker(ll, { icon: protestIconFor(post.risk || 'info',post), keyboard:false })
+  const marker = L.marker(ll, { icon: operationalFeedIconFor(), keyboard:false })
     .addTo(feedFocusLayer)
-    .bindPopup(`<b>${escapeHtml(post.title || 'CityIntel feed post')}</b><br>${escapeHtml(post.location_label || '')}${post.event_at ? '<br>' + escapeHtml(new Date(post.event_at).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })) : ''}`);
+    .bindPopup(`<b>${escapeHtml(event.title || 'CityIntel operational intelligence')}</b><br>${escapeHtml(event.location_label || event.city || '')}${event.time ? '<br>' + escapeHtml(new Date(event.time).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })) : ''}<br><span style="color:#9ac8ff;font-weight:700">${escapeHtml(event._ciEventType === 'protest' ? 'Protest intelligence' : 'Operational intelligence')}</span>`);
+  marker.on('click', () => {
+    if (window.CIProximityPanel?.openForOperationalEvent) window.CIProximityPanel.openForOperationalEvent(event, ll);
+  });
   map.setView(ll, Math.max(map.getZoom(), 13), { animate:true });
   marker.openPopup();
   const mapEl = document.getElementById('riskMap');
@@ -5935,6 +6271,9 @@ window.CIFocusFeedPostOnMap = function(postId){
 };
 
 window.addEventListener('ci:feed-posts-updated', () => {
+  try { renderProtestMarkers(); } catch(_) {}
+});
+window.addEventListener('ci:unified-intelligence-updated', () => {
   try { renderProtestMarkers(); } catch(_) {}
 });
 window.addEventListener('ci:alerts-data-updated', () => {
@@ -6109,7 +6448,7 @@ function countPresenceForCountry(countryName){
           f.properties.ADMIN = n;
         });
 
-        const alerts = window.alertsData || [];
+        const alerts = window.CIUnifiedIntel?.getProtests?.() || window.alertsData || [];
         const agg = aggregate(alerts);
         if (geoLayer) { geoLayer.remove(); geoLayer = null; }
 
@@ -6308,6 +6647,7 @@ function countPresenceForCountry(countryName){
     getEventLatLon: (a) => eventLatLon(a),
     getRadiusKm: () => proximityRadiusKm,
     getCenter: () => proximityCenter,
+    getIncludePredictive: () => includePredictive,
   };
 })();
 </script>
@@ -6322,10 +6662,30 @@ function countPresenceForCountry(countryName){
     const p=getProfile(); if(!p||!p.email) return null;
     return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : {};
   }
+  function resolvedOrgId(){
+    try{
+      const u=window.CIAuth?.who?.()||{};
+      const id=u.org_id||u.orgId||u.organisation_id||u.organisationId||'';
+      if(id && String(id).toLowerCase()!=='master-admin') return String(id);
+    }catch(_){}
+    try{
+      const id=localStorage.getItem('ci_org_id')||localStorage.getItem('cityintel.orgId')||'';
+      if(id && String(id).toLowerCase()!=='master-admin') return String(id);
+    }catch(_){}
+    return '';
+  }
   function canPollOrgPanic(){
-    try{if(!window.CIAuth||!CIAuth.isLoggedIn()) return false; return CIAuth.isMasterAdmin()||CIAuth.isOrgAdmin();}catch(_){}
+    try{
+      if(!window.CIAuth||!CIAuth.isLoggedIn()) return false;
+      if(CIAuth.isOrgAdmin()) return true;
+      // The organisation panic endpoint requires organisation context. A
+      // platform-level Master Admin session without a selected org previously
+      // generated repeated HTTP 400 console errors on this page.
+      if(CIAuth.isMasterAdmin()) return !!resolvedOrgId();
+    }catch(_){}
     const p=getProfile(); const rk=String(p?.roleKey||'').toLowerCase(); const r=String(p?.role||'').toLowerCase();
-    return rk==='master-admin'||rk==='org-admin'||r==='admin'||r==='org admin';
+    if(rk==='org-admin'||r==='admin'||r==='org admin') return true;
+    return (rk==='master-admin'||r==='master admin') && !!resolvedOrgId();
   }
   function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function fmtElapsed(iso){
@@ -6608,7 +6968,7 @@ function CI_updatePanicMapOverlayIndex(st){
   const now = new Date();
   const next7 = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const upcoming = (Array.isArray(window.alertsData) ? window.alertsData : [])
+  const upcoming = (window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []))
     .map(a => ({ ...a, _dt: parse(a.time ?? a.datetime ?? a.date ?? a.when), _risk: normRisk(a.risk) }))
     .filter(a => a._dt && a._dt >= now && a._dt <= next7)
     .sort((a,b) => a._dt - b._dt);
@@ -7669,6 +8029,34 @@ document.addEventListener("DOMContentLoaded",function(){
       .sort((x, y) => x._distanceKm - y._distanceKm);
   }
 
+  function matchOperationalForItem(item){
+    const a = api();
+    if (!a) return [];
+    const ll = a.latLonOf(item);
+    if (!ll) return [];
+    const win = window.CIMapHelpers?.getWindowRange?.() || { start:new Date(), end:new Date(Date.now()+7*86400000) };
+    const includePredictive = window.CIMapHelpers?.getIncludePredictive?.() !== false;
+    const events = window.CIUnifiedIntel?.getWindowedOperationalEvents?.(win,{ includePredictive, lookbackHours:24 })
+      || a.getWindowedProtests();
+    const r = radiusKm();
+    return events
+      .map(event => {
+        const ell = event._ll || window.CIUnifiedIntel?.coords?.(event) || window.CIMapHelpers?.getEventLatLon?.(event);
+        return ell ? Object.assign({}, event, { _ll:ell, _distanceKm:a.haversineKm(ll[0],ll[1],ell[0],ell[1]) }) : null;
+      })
+      .filter(event => event && event._distanceKm <= r)
+      .sort((x,y) => x._distanceKm - y._distanceKm);
+  }
+
+  function operationalTypeLabel(event){
+    const t = String(event?._ciEventType || 'operational').toLowerCase();
+    return t === 'protest' ? 'Protest' :
+      t === 'security' ? 'Security incident' :
+      t === 'safety' ? 'Safety incident' :
+      t === 'disruption' ? 'Infrastructure disruption' :
+      t === 'environmental' ? 'Environmental incident' : 'Operational intelligence';
+  }
+
   // Returns { travellers: [{item,_distanceKm}], assets: [{item,_distanceKm}] },
   // nearest first, for a given protest's coordinates.
   function matchItemsForProtest(protest, ll){
@@ -7696,7 +8084,7 @@ document.addEventListener("DOMContentLoaded",function(){
     return (km < 10 ? km.toFixed(1) : Math.round(km)) + 'km';
   }
   function prettyDateOf(p){
-    const dt = p._dt || (p.time ? new Date(p.time) : null);
+    const dt = p._dt || (p.time ? new Date(p.time) : (p.event_at ? new Date(p.event_at) : null));
     return (dt && !isNaN(dt)) ? dt.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
   }
 
@@ -7720,7 +8108,7 @@ document.addEventListener("DOMContentLoaded",function(){
     return `<div class="ci-prox-hero">${kicker}${title}${sub}${badges}${stats}</div>`;
   }
 
-  // ── Send a protest through to incident.html the same way Live Alerts does:
+  // ── Send protest or operational intelligence to incident.html the same way Live Alerts does:
   // stash a full incident-shaped object in sessionStorage under a generated
   // id and open with ?id=... — this is the reliable path (PATH A in
   // incident.html); it doesn't depend on re-matching a freshly loaded
@@ -7738,7 +8126,7 @@ document.addEventListener("DOMContentLoaded",function(){
     const prettyWhen = prettyDateOf(p);
     const cityCountry = [p.city, p.country || p.Country].filter(Boolean).join(', ');
     const incidentData = {
-      title: p.title || 'Protest event',
+      title: p.title || (p._ciEventType === 'protest' ? 'Protest event' : 'Operational intelligence'),
       meta: normRisk + (prettyWhen ? ` • ${prettyWhen}` : ''),
       summary: p.summary || '',
       location: cityCountry || 'Location refining.',
@@ -7798,6 +8186,31 @@ document.addEventListener("DOMContentLoaded",function(){
       btn.addEventListener('click', () => {
         const p = protests[Number(btn.dataset.idx)];
         if (p) openIncidentFromProtest(p);
+      });
+    });
+  }
+
+  function operationalSnippetHtml(event, idx){
+    const cityCountry = [event.city, event.country || event.Country].filter(Boolean).join(', ');
+    const pretty = prettyDateOf(event);
+    const riskClass = riskClassForValue(event.risk);
+    const distTxt = distanceLabel(event._distanceKm);
+    const metaParts = [operationalTypeLabel(event), cityCountry, pretty, distTxt].filter(Boolean).join(' · ');
+    return `
+      <div class="ci-prox-protest-card">
+        <div class="ci-prox-protest-title">${esc(event.title || 'Operational intelligence')}</div>
+        <div class="ci-prox-protest-meta">
+          ${esc(metaParts)}
+          <span class="ci-risk-pill ${riskClass}" style="margin-left:6px">${esc(event.risk || 'low')}</span>
+        </div>
+        <button type="button" class="ci-prox-view-operational" data-idx="${idx}">View full record →</button>
+      </div>`;
+  }
+  function wireOperationalRecordLinks(container, events){
+    container.querySelectorAll('.ci-prox-view-operational').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const event = events[Number(btn.dataset.idx)];
+        if (event) openIncidentFromProtest(event);
       });
     });
   }
@@ -7967,6 +8380,84 @@ document.addEventListener("DOMContentLoaded",function(){
     wireProtestRecordLinks(bodyEl, list);
   }
 
+  // ── Operational marker view (protests + general security intelligence) ──
+  function renderOperationalDetail(kind,item,events){
+    const list = (events && events.length) ? events : matchOperationalForItem(item);
+    const protestCount = list.filter(e => e._ciEventType === 'protest').length;
+    const otherCount = list.length - protestCount;
+    const highCount = countHighRisk(list);
+    const nearest = list[0];
+    titleEl.textContent = itemLabel(kind,item);
+    subEl.textContent = itemSub(kind,item) || (kind === 'traveller' ? 'Traveller' : 'Asset');
+    updateChrome(false);
+    bodyEl.innerHTML = heroCardHtml({
+      kicker: kind === 'traveller' ? 'Traveller operational exposure' : 'Asset operational exposure',
+      title: itemLabel(kind,item),
+      sub: 'Nearby protest and wider CityIntel security intelligence within the configured radius.',
+      badges:[
+        { label:`${list.length} nearby intelligence record${list.length===1?'':'s'}`, className:'accent-red' },
+        ...(protestCount ? [{ label:`${protestCount} protest`, className:'accent-gold' }] : []),
+        ...(otherCount ? [{ label:`${otherCount} other security`, className:'accent-blue' }] : []),
+        ...(nearest && Number.isFinite(nearest._distanceKm) ? [{ label:`Nearest · ${distanceLabel(nearest._distanceKm)}`, className:'accent-green' }] : [])
+      ],
+      stats:[
+        { label:'Nearby intelligence', value:String(list.length), sub:'protest and operational feed records' },
+        { label:'Highest concern', value:highCount?'High':'Normal', sub:highCount?`${highCount} high-risk record${highCount===1?'':'s'}`:'no high-risk records nearby' }
+      ]
+    }) + `<div class="ci-prox-section-title">Nearby operational intelligence (${list.length})</div>` +
+      (list.length ? list.map((event,i)=>operationalSnippetHtml(event,i)).join('') : `<div class="ci-prox-empty">No operational intelligence currently within radius.</div>`);
+    wireOperationalRecordLinks(bodyEl,list);
+  }
+
+  function renderOperationalGroup(kind,items){
+    const rows = items.map(item => ({ item, events:matchOperationalForItem(item) })).filter(row => row.events.length);
+    titleEl.textContent = kind === 'traveller' ? 'Travellers at this location' : 'Assets at this location';
+    subEl.textContent = `${rows.length} linked to nearby operational intelligence`;
+    updateChrome(false);
+    if (!rows.length) {
+      bodyEl.innerHTML = `<div class="ci-prox-empty">No nearby protest or operational intelligence for this location.</div>`;
+      return;
+    }
+    const total = rows.reduce((sum,row)=>sum+row.events.length,0);
+    const highCount = rows.reduce((sum,row)=>sum+countHighRisk(row.events),0);
+    bodyEl.innerHTML = heroCardHtml({
+      kicker:kind === 'traveller' ? 'Grouped traveller exposure' : 'Grouped asset exposure',
+      title:kind === 'traveller' ? 'Travellers at this location' : 'Assets at this location',
+      sub:'Several monitored records share this location and are linked to protest or wider security intelligence.',
+      badges:[{label:`${rows.length} matched record${rows.length===1?'':'s'}`,className:'accent-red'},...(highCount?[{label:`${highCount} high-risk link${highCount===1?'':'s'}`,className:'accent-gold'}]:[])],
+      stats:[{label:'Affected records',value:String(rows.length),sub:'within the same location bubble'},{label:'Nearby intelligence',value:String(total),sub:'across all grouped records'}]
+    }) + rows.map((row,i)=>{
+      const nearest=row.events[0];
+      return `<div class="ci-prox-row" data-i="${i}"><div><div class="ci-prox-name">${esc(itemLabel(kind,row.item))}</div><div class="ci-prox-sub">${esc(itemSub(kind,row.item))}</div>${nearest?`<div class="ci-prox-sub" style="margin-top:4px">Nearest: ${esc(nearest.title||'Operational intelligence')} · ${esc(distanceLabel(nearest._distanceKm))} · ${esc(operationalTypeLabel(nearest))}</div>`:''}</div><div class="ci-prox-row-right"><span class="ci-prox-count">${row.events.length} record${row.events.length===1?'':'s'}</span><span class="ci-prox-chevron">›</span></div></div>`;
+    }).join('');
+    bodyEl.querySelectorAll('.ci-prox-row').forEach(el=>el.addEventListener('click',()=>{const row=rows[Number(el.dataset.i)];navigateTo(()=>renderOperationalDetail(kind,row.item,row.events));}));
+  }
+
+  function renderForOperationalEvent(event,matches){
+    const typeLabel = operationalTypeLabel(event);
+    const cityCountry = [event.city,event.country||event.Country].filter(Boolean).join(', ');
+    const when = prettyDateOf(event);
+    const travRows = matches.travellers.map(m=>({item:m.item,distanceKm:m._distanceKm,events:matchOperationalForItem(m.item)}));
+    const assetRows = matches.assets.map(m=>({item:m.item,distanceKm:m._distanceKm,events:matchOperationalForItem(m.item)}));
+    titleEl.textContent = event.title || typeLabel;
+    subEl.textContent = [typeLabel,cityCountry,when].filter(Boolean).join(' · ');
+    updateChrome(false);
+    const riskClass=riskClassForValue(event.risk),riskLabel=riskLabelForValue(event.risk);
+    let body = heroCardHtml({
+      kicker:typeLabel,
+      title:event.title || typeLabel,
+      sub:[cityCountry,event.summary].filter(Boolean).join(' · '),
+      badges:[{label:riskLabel,className:riskClass==='high'?'accent-red':riskClass==='med'?'accent-gold':'accent-green'},...(when?[{label:when,className:'accent-blue'}]:[]),{label:`Radius · ${radiusKm()}km`,className:'accent-blue'}],
+      stats:[{label:'Travellers',value:String(travRows.length),sub:'monitored travellers within radius'},{label:'Assets',value:String(assetRows.length),sub:'registered assets within radius'}]
+    });
+    if (!travRows.length && !assetRows.length) body += `<div class="ci-prox-empty">No tracked travellers or assets are currently within radius of this intelligence record.</div>`;
+    const rowHtml=(row,group,i)=>`<div class="ci-prox-row" data-group="${group}" data-i="${i}"><div><div class="ci-prox-name">${esc(itemLabel(group==='trav'?'traveller':'asset',row.item))}</div><div class="ci-prox-sub">${esc(itemSub(group==='trav'?'traveller':'asset',row.item))}</div><div class="ci-prox-sub" style="margin-top:4px">${esc(distanceLabel(row.distanceKm))} from this record</div></div><div class="ci-prox-row-right"><span class="ci-prox-chevron">›</span></div></div>`;
+    if (travRows.length) body += `<div class="ci-prox-group-heading">Travellers (${travRows.length})</div>` + travRows.map((r,i)=>rowHtml(r,'trav',i)).join('');
+    if (assetRows.length) body += `<div class="ci-prox-group-heading">Assets (${assetRows.length})</div>` + assetRows.map((r,i)=>rowHtml(r,'asset',i)).join('');
+    bodyEl.innerHTML=body;
+    bodyEl.querySelectorAll('.ci-prox-row').forEach(el=>el.addEventListener('click',()=>{const group=el.dataset.group;const row=(group==='trav'?travRows:assetRows)[Number(el.dataset.i)];navigateTo(()=>renderOperationalDetail(group==='trav'?'traveller':'asset',row.item,row.events));}));
+  }
+
   // ── Protest-triggered view (who is this protest affecting) ─────────────
   function renderForProtest(protest, matches){
     titleEl.textContent = protest.title || 'Protest event';
@@ -8099,14 +8590,18 @@ document.addEventListener("DOMContentLoaded",function(){
       open(() => renderList(key));
     },
     openForItem(kind, item){
-      const protests = matchProtestsForItem(item);
-      if (!protests.length) return; // not affected — let the normal Leaflet popup handle it
-      open(() => renderDetail(kind, item, protests));
+      const events = matchOperationalForItem(item);
+      if (!events.length) return; // normal Leaflet popup remains available
+      open(() => renderOperationalDetail(kind, item, events));
     },
     openForItemGroup(kind, items){
-      const anyAffected = items.some(item => matchProtestsForItem(item).length);
+      const anyAffected = items.some(item => matchOperationalForItem(item).length);
       if (!anyAffected) return;
-      open(() => renderForGroup(kind, items));
+      open(() => renderOperationalGroup(kind, items));
+    },
+    openForOperationalEvent(event, ll){
+      const matches = matchItemsForProtest(event, ll);
+      open(() => renderForOperationalEvent(event, matches));
     },
     openForProtest(protest, ll){
       const matches = matchItemsForProtest(protest, ll);
@@ -8238,17 +8733,10 @@ document.addEventListener("DOMContentLoaded",function(){
 
   // ── Matching ────────────────────────────────────────────────────────
   function getCandidateProtests(){
-    const feedEvents = (Array.isArray(window.CICityIntelFeedPosts) ? window.CICityIntelFeedPosts : [])
-      .map(p => ({
-        title: p.title || 'CityIntel feed post',
-        summary: p.body || '',
-        city: p.location_label || '',
-        country: '',
-        risk: p.risk || 'info',
-        time: p.event_at || p.created_at,
-        source: 'CityIntel Feed'
-      }));
-    return (Array.isArray(window.alertsData) ? window.alertsData : []).concat(feedEvents);
+    // Watchlist is protest-specific. General CityIntel Live Feed security
+    // posts remain available to the operational exposure layer, but do not
+    // contaminate protest-group matching.
+    return window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData) ? window.alertsData : []);
   }
   function matchTerms(group){
     const terms = [group.name, ...(Array.isArray(group.aliases) ? group.aliases : [])]
@@ -8702,7 +9190,7 @@ document.addEventListener("DOMContentLoaded",function(){
     destroyMaps();
     const now=new Date();
     const end=new Date(now.getTime()+7*86400000);
-    const upcoming=(Array.isArray(window.alertsData)?window.alertsData:[])
+    const upcoming=(window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData)?window.alertsData:[]))
       .map(a=>({...a,_dt:parse(a.time??a.datetime??a.date??a.when),_risk:normRisk(a.risk)}))
       .filter(a=>a._dt && a._dt>=now && a._dt<=end);
     const grouped=new Map();
@@ -8817,18 +9305,18 @@ document.addEventListener("DOMContentLoaded",function(){
     const clusters=[];rows.forEach(row=>{let target=null;for(const c of clusters){if(c.records.some(x=>likelySameEvent(x,row))){target=c;break}}if(!target){target={records:[]};clusters.push(target)}target.records.push(row)});
     return clusters.map((cluster,idx)=>{const records=cluster.records.slice().sort((a,b)=>recordQualityScore(b)-recordQualityScore(a)||(a._featuredDt?.getTime?.()||0)-(b._featuredDt?.getTime?.()||0));const earliest=cluster.records.slice().sort((a,b)=>a._featuredDt-b._featuredDt)[0],best=records[0],bestLL=latLonOf(best)||latLonOf(earliest),maxAtt=Math.max(...cluster.records.map(r=>attendanceOf(r)||0)),longest=cluster.records.slice().sort((a,b)=>titleOf(b).length-titleOf(a).length)[0];return{...best,title:titleOf(longest||best)||titleOf(best),city:best.city||earliest.city,country:best.country||best.Country||earliest.country||earliest.Country,Country:best.Country||best.country||earliest.Country||earliest.country,risk:best.risk,approx_attending:maxAtt||attendanceOf(best),_featuredDt:earliest._featuredDt,_clusterRecords:cluster.records.slice(),_clusterCount:cluster.records.length,_featureKey:`ci-featured-${idx}-${fingerprintOf(earliest)}`,_ll:bestLL||undefined,lat:bestLL?bestLL[0]:(best.lat??earliest.lat),lon:bestLL?bestLL[1]:(best.lon??best.lng??earliest.lon??earliest.lng),time:earliest.time||earliest.datetime||best.time||best.datetime,datetime:earliest.datetime||earliest.time||best.datetime||best.time,when:earliest.when||best.when,date:earliest.date||best.date,verified:cluster.records.some(r=>r.verified===true||r._fromApprovedIntel===true||r.approved===true),_merged:cluster.records.length>1,_sourceIds:cluster.records.map(r=>r.id).filter(Boolean)};});
   }
-  function selectFeatured(){const now=new Date(),end=new Date(now.getTime()+7*86400000);return clusterRecords((Array.isArray(window.alertsData)?window.alertsData:[]).map(a=>({...a,_featuredDt:parseWhen(a.time??a.datetime??a.date??a.when??a.event_at??a.created_at)})).filter(a=>a._featuredDt&&a._featuredDt>=now&&a._featuredDt<=end).filter(a=>!!latLonOf(a)&&!!attendanceOf(a))).sort((a,b)=>a._featuredDt-b._featuredDt||Number(b.verified)-Number(a.verified)||riskRank(b.risk)-riskRank(a.risk)||(attendanceOf(b)||0)-(attendanceOf(a)||0)).slice(0,3);}
+  function selectFeatured(){const now=new Date(),end=new Date(now.getTime()+7*86400000);return clusterRecords((window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData)?window.alertsData:[])).map(a=>({...a,_featuredDt:parseWhen(a.time??a.datetime??a.date??a.when??a.event_at??a.created_at)})).filter(a=>a._featuredDt&&a._featuredDt>=now&&a._featuredDt<=end).filter(a=>!!latLonOf(a)&&!!attendanceOf(a))).sort((a,b)=>a._featuredDt-b._featuredDt||Number(b.verified)-Number(a.verified)||riskRank(b.risk)-riskRank(a.risk)||(attendanceOf(b)||0)-(attendanceOf(a)||0)).slice(0,3);}
   function destroyMiniMaps(){miniMaps.forEach(m=>{try{m.remove()}catch(_){}});miniMaps=[];miniMapStates=[];}
   function focusOnMap(a){const ll=latLonOf(a),map=window.ciIndexMap,mapEl=document.getElementById('riskMap');if(!ll||!map||typeof L==='undefined'){if(window.CIProximityPanel?.openIncidentFromProtest)window.CIProximityPanel.openIncidentFromProtest(a);return}map.setView(ll,Math.max(map.getZoom(),11),{animate:true});try{if(focusMarker)map.removeLayer(focusMarker);focusMarker=L.circleMarker(ll,{radius:9,color:'#fff',weight:2,fillColor:riskColor(a.risk),fillOpacity:.95}).addTo(map).bindPopup(`<b>${esc(a.title||'Protest event')}</b><br>${esc(placeOf(a))}<br>${esc(prettyDate(a))}<br>Risk: <b>${esc(riskLabel(a.risk))}</b>`,{autoPan:false});focusMarker.openPopup();map.panTo(ll,{animate:true,duration:.35})}catch(_){ }if(window.CIProximityPanel?.openForProtest)window.CIProximityPanel.openForProtest(a,ll);if(mapEl)mapEl.scrollIntoView({behavior:'smooth',block:'center'});}
   function openRecord(a){if(window.CIProximityPanel?.openIncidentFromProtest){window.CIProximityPanel.openIncidentFromProtest(a);return}focusOnMap(a);}
-  function nearbyMapEvents(a){const centre=latLonOf(a);if(!centre)return[];const now=new Date(),end=new Date(now.getTime()+7*86400000);const raw=(Array.isArray(window.alertsData)?window.alertsData:[]).map(item=>({...item,_featuredDt:parseWhen(item.time??item.datetime??item.date??item.when??item.event_at??item.created_at)})).filter(item=>item._featuredDt&&item._featuredDt>=now&&item._featuredDt<=end).filter(item=>!!latLonOf(item)).filter(item=>localHaversineKm(centre,latLonOf(item))<=30);return clusterRecords(raw).sort((x,y)=>localHaversineKm(centre,latLonOf(x))-localHaversineKm(centre,latLonOf(y))).slice(0,7);}
+  function nearbyMapEvents(a){const centre=latLonOf(a);if(!centre)return[];const now=new Date(),end=new Date(now.getTime()+7*86400000);const raw=(window.CIUnifiedIntel?.getProtests?.() || (Array.isArray(window.alertsData)?window.alertsData:[])).map(item=>({...item,_featuredDt:parseWhen(item.time??item.datetime??item.date??item.when??item.event_at??item.created_at)})).filter(item=>item._featuredDt&&item._featuredDt>=now&&item._featuredDt<=end).filter(item=>!!latLonOf(item)).filter(item=>localHaversineKm(centre,latLonOf(item))<=30);return clusterRecords(raw).sort((x,y)=>localHaversineKm(centre,latLonOf(x))-localHaversineKm(centre,latLonOf(y))).slice(0,7);}
   function featuredProtestIconFor(risk,isFeatured=false){const n=normRisk(risk),band=n==='high'?'high':n==='med'?'medium':'low',size=isFeatured?24:20;return L.divIcon({className:`ci-protest-marker ${band}${isFeatured?' ci-featured-marker-focus':''}`,html:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});}
   function panelHtml(a,idx){const risk=normRisk(a.risk),attendance=attendanceOf(a),radius=monitoringRadiusOf(a),impacts=impactCounts(a),hasCoords=!!latLonOf(a);return `<h4 class="ci-featured-title">${esc(a.title||'Protest event')}</h4><div class="ci-featured-risk-label ${risk}">${esc(riskLabel(a.risk))}</div><div class="ci-featured-selection-note"><strong>Interactive local view:</strong> select another marker above to preview that upcoming protest here. The main map only moves when you choose Locate on map.</div><div class="ci-featured-meta-grid"><div class="ci-featured-meta">Expected attendance<strong>${attendance?esc(attendance.toLocaleString())+'+':'Not recorded'}</strong></div><div class="ci-featured-meta">${esc(radius.label)}<strong>${esc(radius.value)} km</strong></div><div class="ci-featured-meta">Event time<strong>${esc(prettyDate(a))}</strong></div><div class="ci-featured-meta">Map status<strong>${hasCoords?'Location available':'Coordinates pending'}</strong></div></div><div class="ci-featured-impact"><span>👤 ${impacts.travellers??0} traveller${impacts.travellers===1?'':'s'} nearby</span><span>◆ ${impacts.assets??0} asset${impacts.assets===1?'':'s'} nearby</span>${a._clusterCount>1?`<span>↺ ${esc(a._clusterCount)} matched updates consolidated</span>`:''}</div><div class="ci-featured-actions"><button class="ci-featured-btn primary" type="button" data-action="map" data-featured-index="${idx}">${hasCoords?'Locate on map':'View event'}</button><button class="ci-featured-btn" type="button" data-action="record" data-featured-index="${idx}">View full record</button></div>`;}
   function updateCardSelection(idx,a){featuredStates[idx]=a;const panel=document.querySelector(`[data-featured-panel-index="${idx}"]`);if(panel){panel.innerHTML=panelHtml(a,idx);panel.classList.remove('ci-panel-updated');void panel.offsetWidth;panel.classList.add('ci-panel-updated')}const name=document.getElementById(`ciFeaturedCityName${idx}`),dot=document.getElementById(`ciFeaturedRiskDot${idx}`),tag=document.getElementById(`ciFeaturedLiveTag${idx}`);if(name)name.textContent=placeOf(a)||'Location pending';if(dot)dot.className=`ci-featured-risk-dot ${normRisk(a.risk)}`;if(tag)tag.textContent=(a.verified===true||a._fromApprovedIntel===true||a.approved===true)?'Verified':'Live';const state=miniMapStates[idx];if(state){state.markers.forEach(entry=>{const selected=entry.item===a;entry.marker.setIcon(featuredProtestIconFor(entry.item.risk,selected));entry.marker.setZIndexOffset(selected?1000:0)});const ll=latLonOf(a);if(ll)state.map.panTo(ll,{animate:true,duration:.25});}}
   function renderMiniMap(el,a,idx){const ll=latLonOf(a);if(!el||!ll||typeof L==='undefined')return;try{const m=L.map(el,{zoomControl:false,attributionControl:false,dragging:true,scrollWheelZoom:true,doubleClickZoom:true,boxZoom:false,keyboard:false,tap:true,zoomSnap:1});if(L.DomEvent){L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el)}L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(m);const local=nearbyMapEvents(a),markers=[];let selectedItem=local.find(item=>likelySameEvent(item,a))||a;if(!local.some(item=>item===selectedItem))local.unshift(selectedItem);local.forEach(item=>{const eventLL=latLonOf(item);if(!eventLL)return;const selected=item===selectedItem;const marker=L.marker(eventLL,{icon:featuredProtestIconFor(item.risk,selected),keyboard:false,zIndexOffset:selected?1000:0,title:item.title||'Protest event'}).addTo(m);marker.on('click',e=>{if(e?.originalEvent&&L.DomEvent)L.DomEvent.stopPropagation(e.originalEvent);updateCardSelection(idx,item)});markers.push({marker,item})});m.setView(ll,12,{animate:false});miniMapStates[idx]={map:m,markers};miniMaps.push(m);setTimeout(()=>{try{m.invalidateSize(false)}catch(_){ }},80);}catch(e){console.warn('CityIntel: featured protest mini-map unavailable',e)}}
   function render(){destroyMiniMaps();const featured=selectFeatured();featuredStates=featured.slice();if(!featured.length){host.innerHTML='<div class="ci-featured-empty">No upcoming protests currently meet the featured criteria: next 7 days, mapped location and recorded expected attendance.</div>';return}host.innerHTML=featured.map((a,idx)=>{const risk=normRisk(a.risk),verified=a.verified===true||a._fromApprovedIntel===true||a.approved===true;return `<article class="ci-featured-protest" data-featured-index="${idx}"><div class="ci-featured-map-shell"><div class="ci-featured-protest-map ci-featured-mini-map" id="ciFeaturedMiniMap${idx}"></div><div class="ci-featured-citybar"><div class="ci-featured-cityname"><span id="ciFeaturedRiskDot${idx}" class="ci-featured-risk-dot ${risk}"></span><span id="ciFeaturedCityName${idx}">${esc(placeOf(a)||'Location pending')}</span></div><span id="ciFeaturedLiveTag${idx}" class="ci-featured-live-tag">${verified?'Verified':'Live'}</span></div><div class="ci-featured-map-legend" aria-hidden="true"><span><i class="high"></i>High risk</span><span><i class="med"></i>Medium risk</span><span><i class="low"></i>Low risk</span></div></div><div class="ci-featured-panel" data-featured-panel-index="${idx}">${panelHtml(a,idx)}</div></article>`}).join('');featured.forEach((a,idx)=>renderMiniMap(document.getElementById(`ciFeaturedMiniMap${idx}`),a,idx));}
   if(!host._ciV22Wired){host._ciV22Wired=true;host.addEventListener('click',e=>{const btn=e.target.closest('.ci-featured-btn');if(!btn)return;e.stopPropagation();const a=featuredStates[Number(btn.dataset.featuredIndex)];if(!a)return;if(btn.dataset.action==='record')openRecord(a);else focusOnMap(a);});}
-  window.CIRenderFeaturedProtestIntelligence=render;window.addEventListener('ci:alerts-data-updated',render);window.addEventListener('ci:proximity-ready',render);window.addEventListener('ci:proximity-radius-changed',render);if(window.CIApprovedProtestsReady&&typeof window.CIApprovedProtestsReady.then==='function')window.CIApprovedProtestsReady.then(render).catch(()=>{});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();setTimeout(render,1200);
+  window.CIRenderFeaturedProtestIntelligence=render;window.addEventListener('ci:alerts-data-updated',render);window.addEventListener('ci:unified-intelligence-updated',render);window.addEventListener('ci:proximity-ready',render);window.addEventListener('ci:proximity-radius-changed',render);if(window.CIApprovedProtestsReady&&typeof window.CIApprovedProtestsReady.then==='function')window.CIApprovedProtestsReady.then(render).catch(()=>{});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();setTimeout(render,1200);
 })();
 </script>
 
