@@ -27,14 +27,10 @@
     for (let i=0;i<60;i++){
       const hasTrav = (typeof window.syncOrgTravellers === 'function');
       const hasAssets = (typeof window.syncOrgAssets === 'function');
-      const hasPanic = (typeof window.startPanicPolling === 'function');
       if (hasTrav && hasAssets) {
         try { await Promise.all([window.syncOrgTravellers(), window.syncOrgAssets()]); } catch(e){}
+        return;
       }
-      if (hasPanic) {
-        try { window.startPanicPolling(); } catch(e){}
-      }
-      if ((hasTrav && hasAssets) || hasPanic) return;
       await sleep(100);
     }
   }
@@ -207,135 +203,57 @@
     }
   }
 
-  async function fetchPanic(){
-    const headers = await authHeaders();
-    const res = await fetch(withEmailParam(API_ORIGIN + '/api/org/panic'), { headers });
-    const json = await res.json().catch(()=>null);
-    if(json && json.ok){
-      return json.data || null;
-    }
-    return null;
-  }
-
-  
-  function formatPanicWhen(input) {
-    if (!input) return '';
-    const d = new Date(input);
-    if (Number.isNaN(d.getTime())) return String(input);
-    const pad = (n) => String(n).padStart(2, '0');
-    const day = pad(d.getDate());
-    const mon = pad(d.getMonth() + 1);
-    const year = d.getFullYear();
-    const hh = pad(d.getHours());
-    const mm = pad(d.getMinutes());
-    const ss = pad(d.getSeconds());
-    return `${day}-${mon}-${year} Time: ${hh}:${mm}:${ss}`;
-  }
-
-function ensurePanicBanner() {
-    let el = document.getElementById('panicBanner');
-    if (el) return el;
-
-    el = document.createElement('div');
-    el.id = 'panicBanner';
-    el.style.cssText = `
-      position: sticky; top: 0; z-index: 9999;
-      background: linear-gradient(90deg, rgba(120,0,0,.95), rgba(80,0,0,.95));
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      padding: 10px 14px;
-      color: #fff;
-      display: none;
-    `;
-
-    el.innerHTML = `
-      <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; max-width: 1400px; margin: 0 auto;">
-        <div style="text-align:center; min-width:0;">
-          <div style="font-weight:900; letter-spacing:.6px;">PANIC ALARM ACTIVE</div>
-          <div id="panicMeta" style="opacity:.92; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <a id="panicOpen" href="panicalarm.html" style="
-            color:#fff; text-decoration: underline; font-weight:800;
-          ">Open</a>
-</div>
-      </div>
-    `;
-
-    document.body.insertBefore(el, document.body.firstChild);
-
-    return el;
-  }
-
-  async function startPanicPolling() {
-    const banner = ensurePanicBanner();
-    if (!banner) return;
-    let panicFailures = 0;
-
-    const tick = async () => {
-      try {
-const st = await fetchPanic();
-        panicFailures = 0;
-        if (st && st.active) {
-          window.__ciPanicState = st;
-          const whenRaw = String(st.activated_at || st.activatedAt || st.time || '').trim();
-          const when = formatPanicWhen(whenRaw);
-          const loc = String(st.location || st.loc || '').trim();
-
-          const name = (
-            (((st.firstName || st.surname) ? `${st.firstName || ''} ${st.surname || ''}`.trim() : '') ||
-             st.name || st.actorName || st.fullName || st.displayName || '')
-          ).trim();
-          const email = String(st.email || st.actorEmail || '').trim();
-          const phone = String(st.phone || st.actorPhone || '').trim();
-          const msg = String(st.message || st.msg || '').trim();
-
-          const contacts = [];
-          if (email) contacts.push(email);
-          if (phone) contacts.push(phone);
-
-          let metaText = name || 'Panic alarm';
-          if (loc) metaText += ` at ${loc}`;
-          if (msg) metaText += ` — ${msg}`;
-          if (contacts.length) metaText += ` (${contacts.join(', ')})`;
-          if (when) metaText += ` — ${when}`;
-
-          const metaEl = banner.querySelector('#panicMeta');
-          if (metaEl) metaEl.textContent = metaText;
-
-          banner.style.display = 'block';
-          if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
-            window.CIPanicMap.setState(st).catch(()=>{});
-          }
-          setLiveStatus({ panic:'ok', panicText:'Live', note:'' });
-          markLiveUpdated();
-        } else {
-          window.__ciPanicState = null;
-          banner.style.display = 'none';
-          if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
-            window.CIPanicMap.setState(null).catch(()=>{});
-          }
-          setLiveStatus({ panic:'ok', panicText:'Online', note:'' });
-          markLiveUpdated();
-        }
-} catch (e) {
-        panicFailures += 1;
-        setLiveStatus({
-          panic: panicFailures > 2 ? 'err' : 'warn',
-          panicText: panicFailures > 2 ? 'Offline' : 'Delayed',
-          note: 'Panic polling is delayed. Live alerts remain available, but panic status may be stale.',
-          noteState: panicFailures > 2 ? 'err' : 'warn'
-        });
-      }
-    };
-
-    await tick();
-    setInterval(tick, 8000);
-  }
-
-  // Expose for the boot() shim at the top of the page
+  // Panic alarm polling and banner rendering are now owned by
+  // shared-critical-alerts.js, loaded once by auth.js on every authenticated page.
   window.syncOrgTravellers = syncOrgTravellers;
   window.syncOrgAssets = syncOrgAssets;
-  window.startPanicPolling = startPanicPolling;
+
+  function applySharedPanicState(detail = {}) {
+    const activeAlarms = Array.isArray(detail.activeAlarms) ? detail.activeAlarms : [];
+    const primary = detail.primaryAlarm || activeAlarms[0] || null;
+    window.__ciPanicState = primary || null;
+
+    if (activeAlarms.length) {
+      const countText = activeAlarms.length === 1 ? '1 active' : `${activeAlarms.length} active`;
+      setLiveStatus({
+        panic: detail.online === false ? 'warn' : 'err',
+        panicText: countText,
+        note: detail.online === false
+          ? 'Panic status is delayed. The last confirmed active alarm remains displayed.'
+          : '',
+        noteState: detail.online === false ? 'warn' : 'err'
+      });
+    } else {
+      setLiveStatus({
+        panic: detail.online === false ? 'warn' : 'ok',
+        panicText: detail.online === false ? 'Delayed' : 'Online',
+        note: detail.online === false
+          ? 'Panic polling is delayed. Live alerts remain available, but panic status may be stale.'
+          : '',
+        noteState: 'warn'
+      });
+    }
+
+    markLiveUpdated();
+
+    if (window.CIPanicMap && typeof window.CIPanicMap.setState === 'function') {
+      window.CIPanicMap.setState(primary).catch(()=>{});
+    }
+  }
+
+  window.addEventListener('ci:critical-alerts-updated', event => {
+    applySharedPanicState(event.detail || {});
+  });
+
+  setTimeout(() => {
+    try {
+      const existing = window.CICriticalAlerts?.getState?.();
+      if (existing) applySharedPanicState({
+        ...existing,
+        primaryAlarm: window.CICriticalAlerts?.getPrimaryAlarm?.() || null
+      });
+    } catch (_) {}
+  }, 0);
 
 </script>
 
