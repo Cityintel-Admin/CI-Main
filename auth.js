@@ -48,6 +48,8 @@
       canManageTravellers: true,
       canPublishReports: true,
       canTriageAlerts: true,
+      canRespondPanic: true,
+      canManagePanicDistribution: true,
       canManageOrgData: true,
       canManageUsers: true
     },
@@ -70,6 +72,8 @@
       canManageTravellers: true,
       canPublishReports: true,
       canTriageAlerts: true,
+      canRespondPanic: true,
+      canManagePanicDistribution: true,
       canManageOrgData: true,
       canManageUsers: false
     },
@@ -92,6 +96,8 @@
       canManageTravellers: false,
       canPublishReports: false,
       canTriageAlerts: true,
+      canRespondPanic: true,
+      canManagePanicDistribution: false,
       canManageOrgData: false,
       canManageUsers: false
     }
@@ -395,6 +401,21 @@
       localStorage.removeItem('ci_org_onboarding');
       localStorage.removeItem('ci_auth_mode');
 
+      // Stop and clear the shared critical-alert service before switching user.
+      try { window.CICriticalAlerts?.destroy?.(); } catch (_) {}
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i) || '';
+          if (
+            key.startsWith('ci_critical_alerts_state_v1:') ||
+            key.startsWith('ci_critical_alerts_signal_v1:') ||
+            key.startsWith('ci_critical_alerts_leader_v1:')
+          ) {
+            localStorage.removeItem(key);
+          }
+        }
+      } catch (_) {}
+
       // White-label branding is organisation-scoped. Clear all current and
       // legacy branding caches on logout so a subsequent account can never
       // inherit the previous organisation's cosmetic identity.
@@ -520,6 +541,30 @@ const status = String(
 
   window.CIAuth = CIAuth;
 
+  // ------------- Shared critical-alert service -------------------------
+  // Every authenticated page inherits platform-critical banners without
+  // requiring a page-by-page script tag. The service itself remains isolated
+  // in shared-critical-alerts.js so auth.js only owns bootstrapping.
+  function loadSharedCriticalAlerts() {
+    try {
+      if (!CIAuth.isLoggedIn()) return;
+      if (window.CICriticalAlerts?.version) return;
+      if (document.querySelector('script[data-ci-critical-alerts="true"]')) return;
+
+      const script = document.createElement('script');
+      script.src = 'shared-critical-alerts.js';
+      script.async = true;
+      script.defer = true;
+      script.dataset.ciCriticalAlerts = 'true';
+      script.addEventListener('error', () => {
+        console.warn('CityIntel shared critical alerts could not be loaded.');
+      });
+      (document.head || document.documentElement).appendChild(script);
+    } catch (_) {}
+  }
+
+  window.CILoadSharedCriticalAlerts = loadSharedCriticalAlerts;
+
   // normalize any existing saved profile to the new shape
   (function normalizeBootProfile() {
     try {
@@ -529,6 +574,8 @@ const status = String(
       /* ignore */
     }
   })();
+
+  loadSharedCriticalAlerts();
 
   // ------------- Boot-time subscription refresh -------------
   (async function bootRefresh() {
