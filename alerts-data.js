@@ -7,6 +7,2145 @@ window.alertsData =[
 
 
 
+  
+
+{
+  title: "Aksi Kamisan Human Rights Protest — 3 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Istana Merdeka, Jalan Medan Merdeka Utara",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-03T15:00:00",
+  source: "https://www.instagram.com/aksikamisan/",
+  summary: "The Jaringan Solidaritas Korban untuk Keadilan and supporting human-rights activists are scheduled to continue the established Aksi Kamisan protest opposite Istana Merdeka from 15:00 to 17:00 on Thursday 3 September 2026. Families of victims, campaigners and civil-society supporters will wear black and carry black umbrellas while demanding truth, justice and accountability for unresolved gross human-rights violations, enforced disappearances and state violence. The specific weekly theme may be announced closer to the date. Risk assessed as Low because this is a long-established, peaceful and stationary demonstration. Police observation, temporary barriers and limited pedestrian activity are possible around Jalan Medan Merdeka Utara, but no march or deliberate obstruction is planned."
+},
+
+{
+  title: "Aksi Kamisan Human Rights Protest — 10 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Istana Merdeka, Jalan Medan Merdeka Utara",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-10T15:00:00",
+  source: "https://www.instagram.com/aksikamisan/",
+  summary: "The Jaringan Solidaritas Korban untuk Keadilan and supporting human-rights activists are scheduled to continue the established Aksi Kamisan protest opposite Istana Merdeka from 15:00 to 17:00 on Thursday 10 September 2026. Participants will demand state accountability, judicial resolution of unresolved human-rights violations and justice for victims and their families. The specific weekly theme may be announced closer to the date. Risk assessed as Low because the action is a peaceful stationary gathering with no procession or blockade announced. Routine police monitoring, temporary barriers and localised pedestrian congestion are possible near the presidential palace."
+},
+
+{
+  title: "Aksi Kamisan Human Rights Protest — 17 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Istana Merdeka, Jalan Medan Merdeka Utara",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-17T15:00:00",
+  source: "https://www.instagram.com/aksikamisan/",
+  summary: "The Jaringan Solidaritas Korban untuk Keadilan and supporting human-rights activists are scheduled to continue the established Aksi Kamisan protest opposite Istana Merdeka from 15:00 to 17:00 on Thursday 17 September 2026. Participants will stand in black clothing with black umbrellas while calling for truth, justice and an end to impunity for past and contemporary human-rights violations. The specific weekly theme may be announced closer to the date. Risk assessed as Low because this is a long-running peaceful vigil rather than a moving or disruptive demonstration. Police observation and limited access controls may occur around Jalan Medan Merdeka Utara."
+},
+
+{
+  title: "Aksi Kamisan Human Rights Protest — 24 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Istana Merdeka, Jalan Medan Merdeka Utara",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-24T15:00:00",
+  source: "https://www.instagram.com/aksikamisan/",
+  summary: "The Jaringan Solidaritas Korban untuk Keadilan and supporting human-rights activists are scheduled to continue the established Aksi Kamisan protest opposite Istana Merdeka from 15:00 to 17:00 on Thursday 24 September 2026. Families of victims and civil-society organisations will demand accountability for unresolved gross human-rights violations, protection of civic freedoms and an end to state impunity. The specific weekly theme may be announced closer to the date. Risk assessed as Low because the protest is an established peaceful and stationary action. Routine security monitoring, temporary barriers and minor pedestrian effects are possible near Istana Merdeka."
+},
+  
+
+  {
+  title: "919 Climate Justice March 2026",
+  city: "Seoul",
+  lat: 37.5724,
+  lng: 126.9769,
+  address: "Gwanghwamun Square and Seoul City Hall area — final assembly point and march route TBC",
+  postcode: "03154",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://action4climatejustice.kr/",
+  summary: "The organising committee for the 919 Climate Justice March has confirmed a major mobilisation across the Gwanghwamun and Seoul City Hall area on Saturday 19 September 2026. Participants will demand stronger action on the climate emergency, an end to fossil-fuel dependence and environmentally destructive development, and policies addressing the links between climate change, war, industrial expansion and social inequality. The organiser has not yet published the start time, precise assembly footprint or procession route, so CityIntel's standard 12:00 timestamp has been applied and Gwanghwamun Square is used as a transparent map anchor. Risk assessed as Medium because the central-Seoul mobilisation is likely to require road restrictions, police liaison, crowd management and public-transport adjustments around Sejong-daero and City Hall. No violent action or hostile counter-demonstration has been announced."
+},
+
+  {
+  title: "Free Palestine Ebisu Bridge Standing — 5 September",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-05T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists have confirmed their weekly Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on Saturday 5 September 2026. Participants are expected to display Palestinian flags, banners and signs calling for protection of civilians, humanitarian access and an end to continuing violence affecting Gaza and the Palestinian territories. Risk assessed as Low because this is an established stationary gathering with no march, road occupation or deliberate obstruction announced. Temporary pedestrian congestion is possible at the heavily visited Dotonbori bridge, and organisers note that weather conditions may result in cancellation."
+},
+
+{
+  title: "Stop Nuclear Power Standing at Osaka Station",
+  city: "Osaka",
+  lat: 34.7019,
+  lng: 135.4985,
+  address: "JR Osaka Station south-east-side bus terminal, Umeda, Kita Ward",
+  postcode: "530-0001",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-11T16:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "The Stop Nuclear Power Kansai Network has confirmed a public standing protest outside the south-east side of JR Osaka Station from 16:00 to 17:00 on Friday 11 September 2026. Participants will oppose continued reliance on nuclear power and promote renewable energy, nuclear safety and protection of communities affected by radioactive contamination. Risk assessed as Low because the action is a one-hour stationary demonstration with no procession or transport blockade announced. The gathering may nevertheless create visible pedestrian clustering and routine security monitoring around one of Osaka's busiest transport interchanges."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 12 September",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-12T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists have confirmed their weekly Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on Saturday 12 September 2026. Participants are expected to display Palestinian flags, banners and signs calling for protection of civilians, humanitarian access and an end to continuing violence affecting Gaza and the Palestinian territories. Risk assessed as Low because this is an established stationary gathering with no march, road occupation or deliberate obstruction announced. Temporary pedestrian congestion is possible at the heavily visited Dotonbori bridge, and organisers note that weather conditions may result in cancellation."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 19 September",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-19T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists have confirmed their weekly Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on Saturday 19 September 2026. Participants are expected to display Palestinian flags, banners and signs calling for protection of civilians, humanitarian access and an end to continuing violence affecting Gaza and the Palestinian territories. Risk assessed as Low because this is an established stationary gathering with no march, road occupation or deliberate obstruction announced. Temporary pedestrian congestion is possible at the heavily visited Dotonbori bridge, and organisers note that weather conditions may result in cancellation."
+},
+
+{
+  title: "Free Palestine Ebisu Bridge Standing — 26 September",
+  city: "Osaka",
+  lat: 34.66871,
+  lng: 135.50131,
+  address: "Ebisu Bridge, beneath the Glico sign, Dotonbori 1-6",
+  postcode: "542-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-26T13:00:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "Palestine Bridge Osaka and supporting Kansai activists have confirmed their weekly Palestine-solidarity standing action on Ebisu Bridge from 13:00 to 15:00 on Saturday 26 September 2026. The fourth-Saturday action will be jointly supported by the Santo Kinki Reiwa volunteer group. Participants are expected to display Palestinian flags, banners and signs calling for civilian protection, humanitarian access and an end to continuing violence. Risk assessed as Low because this is an established stationary gathering with no march or deliberate road obstruction announced. Temporary pedestrian congestion is possible in the busy Dotonbori area, and organisers state that adverse weather may result in cancellation."
+},
+  
+
+  {
+  title: "Marcha por la Diversidad Montevideo 2026",
+  city: "Montevideo",
+  lat: -34.9062,
+  lng: -56.1901,
+  address: "Plaza Cagancha / Plaza Libertad — provisional map anchor; final assembly point and procession route TBC",
+  postcode: "11100",
+  country: "Uruguay",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-25T12:00:00",
+  source: "https://www.instagram.com/marchadiversidaduy/",
+  summary: "The Coordinadora de la Marcha por la Diversidad has confirmed Montevideo's 2026 Diversity March for Friday 25 September. The mobilisation will advocate equality, effective enforcement of LGBTQ+ rights, protection from discrimination and recognition of diverse sexual orientations and gender identities. The organiser has not yet published the start time, assembly point or final procession route, so CityIntel's standard 12:00 timestamp has been applied and Plaza Cagancha has been used only as a transparent provisional map anchor based on recent editions. Risk assessed as Medium because the march is traditionally one of Uruguay's largest annual public mobilisations and is likely to require extensive traffic management, police liaison, stewarding and public-transport adjustments in central Montevideo. No specific hostile counter-demonstration or violent threat has been announced."
+},
+
+  {
+  title: "Madres de Plaza de Mayo Thursday March — 3 September",
+  city: "Buenos Aires",
+  lat: -34.6081,
+  lng: -58.3712,
+  address: "Pirámide de Mayo, Plaza de Mayo",
+  postcode: "C1064",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Low",
+  time: "2026-09-03T15:30:00",
+  source: "https://madres.org/category/jueves/",
+  summary: "The Asociación Madres de Plaza de Mayo is scheduled to continue its established weekly Thursday march around the Pirámide de Mayo at 15:30 on 3 September 2026. Participants will demand memory, truth and justice for people disappeared during Argentina's military dictatorship while also addressing current human-rights, democratic and social-policy concerns. Risk assessed as Low because the action is a long-established, peaceful and largely stationary symbolic procession within Plaza de Mayo. Routine police observation, temporary barriers and limited pedestrian congestion are possible around the Casa Rosada and adjoining government buildings."
+},
+
+{
+  title: "Madres de Plaza de Mayo Thursday March — 10 September",
+  city: "Buenos Aires",
+  lat: -34.6081,
+  lng: -58.3712,
+  address: "Pirámide de Mayo, Plaza de Mayo",
+  postcode: "C1064",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Low",
+  time: "2026-09-10T15:30:00",
+  source: "https://madres.org/category/jueves/",
+  summary: "The Asociación Madres de Plaza de Mayo is scheduled to continue its established weekly Thursday march around the Pirámide de Mayo at 15:30 on 10 September 2026. Participants will demand memory, truth and justice for people disappeared during Argentina's military dictatorship while also addressing current human-rights, democratic and social-policy concerns. Risk assessed as Low because the action is a long-established, peaceful and largely stationary symbolic procession within Plaza de Mayo. Routine police observation, temporary barriers and limited pedestrian congestion are possible around the Casa Rosada and adjoining government buildings."
+},
+
+{
+  title: "Madres de Plaza de Mayo Thursday March — 17 September",
+  city: "Buenos Aires",
+  lat: -34.6081,
+  lng: -58.3712,
+  address: "Pirámide de Mayo, Plaza de Mayo",
+  postcode: "C1064",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Low",
+  time: "2026-09-17T15:30:00",
+  source: "https://madres.org/category/jueves/",
+  summary: "The Asociación Madres de Plaza de Mayo is scheduled to continue its established weekly Thursday march around the Pirámide de Mayo at 15:30 on 17 September 2026. The gathering follows one day after the fiftieth anniversary of La Noche de los Lápices and may therefore place additional emphasis on disappeared students, youth activism, public education and opposition to denial of dictatorship-era crimes. Risk assessed as Low because the Thursday round is an established peaceful procession, although the anniversary context may increase attendance and media presence. Police observation, temporary barriers and localised pedestrian congestion are possible."
+},
+
+{
+  title: "Madres de Plaza de Mayo Thursday March — 24 September",
+  city: "Buenos Aires",
+  lat: -34.6081,
+  lng: -58.3712,
+  address: "Pirámide de Mayo, Plaza de Mayo",
+  postcode: "C1064",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Low",
+  time: "2026-09-24T15:30:00",
+  source: "https://madres.org/category/jueves/",
+  summary: "The Asociación Madres de Plaza de Mayo is scheduled to continue its established weekly Thursday march around the Pirámide de Mayo at 15:30 on 24 September 2026. Participants will demand memory, truth and justice for people disappeared during Argentina's military dictatorship while also addressing current human-rights, democratic and social-policy concerns. Risk assessed as Low because the action is a long-established, peaceful and largely stationary symbolic procession within Plaza de Mayo. Routine police observation, temporary barriers and limited pedestrian congestion are possible around the Casa Rosada and adjoining government buildings."
+},
+
+  {
+  title: "13th Buenos Aires Province Pride March",
+  city: "La Plata",
+  lat: -34.9214,
+  lng: -57.9544,
+  address: "Plaza Moreno, junction of Calle 13 and Calle 51 — final procession route TBC",
+  postcode: "B1900",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-05T12:00:00",
+  source: "https://www.instagram.com/p/DYe1PnIjsGV/",
+  summary: "Orgullo Bonaerense and supporting LGBTQIA+ organisations have confirmed the thirteenth Buenos Aires Province Pride March in La Plata on Saturday 5 September 2026. Participants will gather at Plaza Moreno to promote equality, visibility, gender and sexual-diversity rights and opposition to discrimination, hate speech and attempts to reverse existing protections. The organiser has confirmed the date and gathering location but has not yet published the start time or final procession route, so CityIntel's standard 12:00 timestamp has been applied pending an update. Risk assessed as Medium because the provincial mobilisation is likely to attract substantial attendance and require road restrictions, municipal coordination, police liaison, stewarding and pedestrian management around central La Plata. No specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 9 September",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-09-09T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside Argentina's National Congress on 9 September 2026. Participants will demand improved pensions, guaranteed healthcare and medication coverage, protection of social-security rights and an end to austerity measures affecting older people. A separate start time for this September occurrence has not yet been published, so CityIntel's standard 12:00 timestamp has been applied pending an update. Risk assessed as High because the recurring demonstrations regularly result in extensive security deployments, barricades and traffic restrictions and have previously involved confrontations, injuries, crowd-control measures and arrests around Congress."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 16 September",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-09-16T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside Argentina's National Congress on 16 September 2026. Participants will demand improved pensions, guaranteed healthcare and medication coverage, protection of social-security rights and an end to austerity measures affecting older people. A separate start time for this September occurrence has not yet been published, so CityIntel's standard 12:00 timestamp has been applied pending an update. Risk assessed as High because the recurring demonstrations regularly result in extensive security deployments, barricades and traffic restrictions and have previously involved confrontations, injuries, crowd-control measures and arrests around Congress."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 23 September",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-09-23T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside Argentina's National Congress on 23 September 2026. Participants will demand improved pensions, guaranteed healthcare and medication coverage, protection of social-security rights and an end to austerity measures affecting older people. A separate start time for this September occurrence has not yet been published, so CityIntel's standard 12:00 timestamp has been applied pending an update. Risk assessed as High because the recurring demonstrations regularly result in extensive security deployments, barricades and traffic restrictions and have previously involved confrontations, injuries, crowd-control measures and arrests around Congress."
+},
+
+{
+  title: "Weekly Pensioners' Protest at Congress — 30 September",
+  city: "Buenos Aires",
+  lat: -34.609688,
+  lng: -58.390461,
+  address: "Plaza del Congreso, outside the National Congress",
+  postcode: "C1033",
+  country: "Argentina",
+  continent: "South America",
+  risk: "High",
+  time: "2026-09-30T12:00:00",
+  source: "https://www.pagina12.com.ar/2026/07/21/la-cgt-las-dos-cta-marchan-al-congreso-junto-a-los-jubilados/",
+  summary: "Pensioner organisations are expected to continue their established Wednesday protest outside Argentina's National Congress on 30 September 2026. Participants will demand improved pensions, guaranteed healthcare and medication coverage, protection of social-security rights and an end to austerity measures affecting older people. A separate start time for this September occurrence has not yet been published, so CityIntel's standard 12:00 timestamp has been applied pending an update. Risk assessed as High because the recurring demonstrations regularly result in extensive security deployments, barricades and traffic restrictions and have previously involved confrontations, injuries, crowd-control measures and arrests around Congress."
+},
+
+{
+  title: "3rd Ferraz de Vasconcelos Pride Parade",
+  city: "Ferraz de Vasconcelos",
+  lat: -23.5436,
+  lng: -46.3718,
+  address: "Praça dos Trabalhadores / Centro de Convenções, Avenida Brasil 1807, Centro — final local procession route TBC",
+  postcode: "08529-310",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-13T11:00:00",
+  source: "https://paradafv.com.br/",
+  summary: "Organisers have confirmed the third Ferraz de Vasconcelos Pride Parade for Sunday 13 September 2026. Participants will gather at the Centro de Convenções from 11:00, with the main programme scheduled to begin at approximately 12:00. The mobilisation will promote LGBTQI+ visibility, equality, respect, inclusion and protection from discrimination. The final local procession arrangements have not yet been published. Risk assessed as Medium because the politically visible gathering in central Ferraz de Vasconcelos may attract substantial attendance and require municipal coordination, temporary traffic controls, stewarding and pedestrian management around Avenida Brasil. No specific hostile counter-mobilisation or security threat has been announced."
+},
+
+{
+  title: "20th Nova Iguaçu Pride Parade",
+  city: "Nova Iguaçu",
+  lat: -22.7567,
+  lng: -43.4502,
+  address: "Via Light at Rua Dom Walmor, Centro — final procession route TBC",
+  postcode: "26215-220",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-20T14:00:00",
+  source: "https://www.instagram.com/p/DMNhqKfOXZq/",
+  summary: "The Movimento LGBT de Nova Iguaçu and supporting organisations have confirmed the twentieth Nova Iguaçu Pride Parade from 14:00 to approximately 22:00 on Sunday 20 September 2026. Participants will gather on Via Light at the junction with Rua Dom Walmor under the theme 'Nossa História Move o Futuro', promoting LGBTQI+ rights, visibility, resistance, social inclusion and guarantees of equal citizenship. The final moving route has not yet been published. Risk assessed as Medium because the established gathering is expected to attract a large crowd along one of the city's principal central corridors, requiring road restrictions, police liaison, public-transport adjustments, crowd management and protected emergency access. No specific opposing demonstration or violent threat has been identified."
+},
+
+{
+  title: "9th Osasco Pride Parade",
+  city: "Osasco",
+  lat: -23.5290,
+  lng: -46.7748,
+  address: "Largo de Osasco, Centro — final procession route TBC",
+  postcode: "",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://www.instagram.com/paradaoz/",
+  summary: "Parada Oz organisers have confirmed the ninth Osasco Pride Parade for Sunday 20 September 2026, with concentration at Largo de Osasco from 12:00. The public mobilisation will promote LGBTQIAP+ dignity, equality, visibility, freedom of identity and protection of civil rights. The detailed parade route and closing time remain subject to final organiser and municipal announcements. Risk assessed as Medium because the gathering will take place beside a major central transport interchange and is likely to require traffic restrictions, public-transport coordination, police liaison, stewarding and pedestrian controls. Limited hostile counter-presence is possible, although no specific opposing event or threat has been announced."
+},
+
+{
+  title: "21st Jundiaí Pride Parade",
+  city: "Jundiaí",
+  lat: -23.1953,
+  lng: -46.8723,
+  address: "Avenida União dos Ferroviários near Estação Jundiaí — municipal alternative location; final assembly point and route TBC",
+  postcode: "13201-160",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-27T12:00:00",
+  source: "https://inhai.com.br/21a-parada-lgbt-de-jundiai-questiona-veto-em-avenida-liberada-para-evento-religioso-e-caso-vai-ao-ministerio-publico/",
+  summary: "Organisers have confirmed the twenty-first Jundiaí Pride Parade for Sunday 27 September 2026, with concentration planned from 12:00. The final venue remains unresolved after municipal authorities declined the organisers' request to hold the event on Avenida Nove de Julho and proposed Avenida União dos Ferroviários as an alternative. The event will promote LGBTQIAPN+ visibility, equality, freedom, public-space access and protection from discrimination. Risk assessed as Medium because the unresolved route requires continued municipal and police coordination and the eventual procession is likely to cause road restrictions, transport changes and significant pedestrian activity. The rating also reflects the political sensitivity surrounding the location dispute; no specific violent threat has been announced."
+},
+  
+  {
+  title: "23rd Orgulho LGBT+ Bahia Parade",
+  city: "Salvador",
+  lat: -13.0100,
+  lng: -38.5325,
+  address: "Farol da Barra, Largo do Farol da Barra — final 2026 procession route TBC",
+  postcode: "40140-650",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-06T16:00:00",
+  source: "https://grupogaydabahia.com.br/23a-orgulho-lgbt-bahia-de-2026-do-coracao-de-salvador-para-o-mundo/",
+  summary: "The Grupo Gay da Bahia has confirmed the 23rd Orgulho LGBT+ Bahia mobilisation at Farol da Barra in Salvador on Sunday 6 September 2026. The official programme is scheduled to begin at approximately 16:00 under the theme 'Do Coração de Salvador para o Mundo', promoting LGBTQIA+ visibility, equality, freedom, cultural participation and protection from discrimination. The complete 2026 procession route has not yet been published. Risk assessed as Medium because one of Bahia's principal Pride gatherings is expected to attract a substantial crowd and require road restrictions, police liaison, stewarding, emergency-access arrangements and public-transport adjustments around Barra. Limited hostile counter-presence is possible, although no specific threat or opposing mobilisation has been announced."
+},
+
+{
+  title: "3rd Sarandi Diversity Parade",
+  city: "Sarandi",
+  lat: -23.4439,
+  lng: -51.8739,
+  address: "Biblioteca Pública Municipal Izelina Gomes Pereira, Rua Jaçanã 352 — procession towards Praça da Juventude, Avenida Ângelo Perini",
+  postcode: "87111-140",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-06T15:00:00",
+  source: "https://www.instagram.com/p/DbLhJI3udDu/",
+  summary: "The Associação Sarandiense LGBTQIA+ and supporting organisers have confirmed Sarandi's third Diversity Parade for Sunday 6 September 2026. Participants will assemble at the municipal library from approximately 15:00 before undertaking a public procession towards Praça da Juventude. Held under the theme 'Orgulho de Existir, Coragem para Decidir', the programme will combine LGBTQIA+ rights advocacy with artistic performances, cultural activities and public calls for visibility, respect and protection from discrimination. Risk assessed as Medium because the moving procession will require municipal coordination, rolling traffic restrictions, police liaison, stewarding and pedestrian management between central Sarandi and Parque São Pedro. No specific counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "12th Madre de Deus Diversity Parade",
+  city: "Madre de Deus",
+  lat: -12.7445,
+  lng: -38.6182,
+  address: "Biblioteca Municipal, Rua Francisco Leitão, Centro — final procession route TBC",
+  postcode: "42600-000",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-27T15:00:00",
+  source: "https://www.instagram.com/p/DbDvkbERvRo/",
+  summary: "Arco-Íris LGBTQIA+ Madre de Deus and supporting organisers have confirmed the municipality's 12th Diversity Parade for Sunday 27 September 2026. Participants will depart from the Biblioteca Municipal at approximately 15:00 for a public mobilisation promoting LGBTQIAPN+ visibility, dignity, inclusion and opposition to discrimination. The wider programme is expected to include music, public performances and community participation, although the final procession route has not yet been released. Risk assessed as Medium because the established parade will create a sizeable moving crowd within the compact island municipality and require temporary road controls, police or municipal liaison, stewarding and protected emergency access. No specific hostile counter-mobilisation or violent threat has been identified."
+},
+
+{
+  title: "Marcha Concentración por el Día Nacional de la Biblia 2026",
+  city: "Santo Domingo",
+  lat: 18.4939,
+  lng: -69.8997,
+  address: "Avenida Pedro Livio Cedeño at Avenida Juan Pablo Duarte — final procession route and concentration venue TBC",
+  postcode: "10409",
+  country: "Dominican Republic",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-24T13:30:00",
+  source: "https://www.instagram.com/p/DVz99e-DqlP/",
+  summary: "Evangelical churches and Christian organisations have confirmed a Marcha Concentración commemorating the Dominican Republic's National Bible Day in Santo Domingo at 13:30 on Thursday 24 September 2026. Participants will assemble at the junction of Avenida Pedro Livio Cedeño and Avenida Juan Pablo Duarte before undertaking a public procession promoting Christian faith, biblical teaching, prayer and national unity. The final route and closing concentration venue have not yet been published. Risk assessed as Medium because the established annual moving procession is likely to attract substantial participation and require temporary traffic restrictions, police or municipal coordination, stewarding and pedestrian management along busy urban roads. The rating reflects anticipated operational disruption rather than an expectation of violence."
+},
+  
+{
+  title: "Marcha para Jesús Guatemala 2026",
+  city: "Guatemala City",
+  lat: 14.6306,
+  lng: -90.5150,
+  address: "Palacio Municipal, 21 Calle 6-77 Zona 1 — 7a Avenida — 18 Calle — 6a Avenida — Plaza de la Constitución",
+  postcode: "01001",
+  country: "Guatemala",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T13:00:00",
+  source: "https://www.liberalgt.com/se-presenta-oficialmente-la-marcha-para-jesus-2026-bajo-el-lema-proclamando-su-reino/",
+  summary: "The Unidos Para Orar commission of the Evangelical Alliance of Guatemala has confirmed Marcha para Jesús 2026 in Guatemala City on Saturday 26 September. Participants will assemble beside the Palacio de la Loba at the Municipal Palace from 13:00 before the procession departs at 14:00. The route will use 7th Avenue, turn along 18th Street and continue north on 6th Avenue before finishing at Plaza de la Constitución, where a closing programme of public prayer, music, school bands and community activities will begin at approximately 15:00. Organisers expect thousands of families and participants and state that related preparations involve 16 departments across Guatemala. Risk assessed as Medium because the large moving procession through the Centro Cívico and historic centre will require road closures, traffic diversions, municipal coordination, stewarding and crowd management. The rating reflects operational disruption rather than an expectation of violence."
+},
+
+{
+  title: "Marcha Nacional Bisexual 2026",
+  city: "Tijuana",
+  lat: 32.5231,
+  lng: -117.0134,
+  address: "Glorieta Cuauhtémoc, Zona Río — provisional map anchor; final assembly point and march route TBC",
+  postcode: "22010",
+  country: "Mexico",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.instagram.com/p/DbMWWAfJOOW/",
+  summary: "LGBTQ+ activists and community organisations have confirmed the Marcha Nacional Bisexual 2026 in Tijuana at 12:00 on Saturday 26 September. The mobilisation forms part of Bisexual Visibility Month and will promote recognition, respect, representation and protection from discrimination for bisexual people in Mexico. The final assembly point and procession route have not yet been published. Glorieta Cuauhtémoc has therefore been used as a provisional and transparent map anchor because the national march was initially announced during a bisexual-visibility gathering at that location. Risk assessed as Medium because the politically visible moving demonstration is likely to require municipal liaison, temporary traffic controls and pedestrian management and may attract limited hostile counter-presence. No specific threat or plan for violent action has been identified."
+},
+
+{
+  title: "Victoria Labour Day Picnic 2026",
+  city: "Esquimalt",
+  lat: 48.4302,
+  lng: -123.4137,
+  address: "Memorial Park, 1200 Esquimalt Road",
+  postcode: "V9A 3N8",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-07T11:00:00",
+  source: "https://victorialabour.ca/events/labour-day-picnic-2026/",
+  summary: "The Victoria Labour Council has confirmed its annual Labour Day Picnic at Memorial Park in Esquimalt from 11:00 to 14:00 on Monday 7 September 2026. The public gathering will celebrate organised labour, collective-bargaining achievements, women and gender-rights campaigning and continuing priorities for workers and their communities. The programme will include community partners and a youth-action area. Risk assessed as Low because the event will operate within an established public park and no march, blockade, hostile counter-demonstration or deliberate disruption has been announced. Increased pedestrian activity, parking pressure and routine event-security measures are likely around Esquimalt Road."
+},
+
+{
+  title: "London Labour Day BBQ 2026",
+  city: "London",
+  lat: 42.9958,
+  lng: -81.2158,
+  address: "East Lions Park and Community Centre, 1731 Churchill Avenue",
+  postcode: "N5W 5P4",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-07T12:00:00",
+  source: "https://londonlabour.ca/events/ldlc-labour-day-bbq-2026/",
+  summary: "The London and District Labour Council has confirmed its Labour Day BBQ at East Lions Park from 12:00 to 15:00 on Monday 7 September 2026. The public labour gathering will promote workers' rights, collective bargaining and the protected right to strike while highlighting concerns about private-sector job losses, potential federal public-service reductions, corporate profits and possible weakening of labour protections. Risk assessed as Low because the event is a formally organised park-based gathering rather than a march or disruptive protest. Increased attendance, parking demand and local pedestrian activity are likely around Churchill Avenue, but no obstruction or hostile counter-mobilisation has been announced."
+},
+
+{
+  title: "Toronto Rally and March for Migrant Justice",
+  city: "Toronto",
+  lat: 43.6653,
+  lng: -79.4203,
+  address: "Christie Pits Park, 750 Bloor Street West — subsequent march route TBC",
+  postcode: "M6G 3B1",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-20T14:00:00",
+  source: "https://migrantrights.ca/events/sep20/",
+  summary: "The Migrant Rights Network has confirmed a rally and march departing from Christie Pits Park at 14:00 on Sunday 20 September 2026 as part of a cross-country day of action immediately before Parliament returns. Participants will demand permanent-resident status for migrants, automatic renewal of expiring work and study permits, an end to employer-tied permits, equal labour and healthcare rights and an end to deportations, immigration detention and family separation. The subsequent procession route has not yet been published. Risk assessed as Medium because the politically visible moving demonstration will require police liaison, temporary traffic management and pedestrian controls and may attract hostile counter-presence. No specific opposing event or violent action has been announced."
+},
+
+{
+  title: "River Run 2026 — Grassy Narrows Mercury Justice March",
+  city: "Toronto",
+  lat: 43.6532,
+  lng: -79.3832,
+  address: "Downtown Toronto — exact assembly point and march route TBC",
+  postcode: "M5T 2W7",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-23T12:00:00",
+  source: "https://actionnetwork.org/events/river-run-2026",
+  summary: "Grassy Narrows Solidarity has confirmed the River Run rally and march in downtown Toronto from 12:00 to approximately 14:00 on Wednesday 23 September 2026. Grassy Narrows youth, community leaders and supporters will demand fair compensation for people affected by mercury poisoning, action to end continuing industrial pollution and protection against mining and nuclear-waste proposals threatening the community's territory and waterways. Organisers state that the previous River Run brought approximately 8,000 people into Toronto's streets. The exact assembly point and route remain pending. Risk assessed as Medium because a potentially large Indigenous-rights and environmental-justice procession through downtown Toronto will require road closures, police liaison, crowd management and possible access controls near government or commercial locations. Organisers describe the event as accessible, family-friendly and peaceful."
+},
+  
+
+ {
+  title: "Calgary Pride Parade 2026",
+  city: "Calgary",
+  lat: 51.0446,
+  lng: -114.0737,
+  address: "9th Avenue SW at 5th Street SW — east along 9th Avenue to 4th Street SE, East Village",
+  postcode: "",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-06T12:00:00",
+  source: "https://calgarypride.ca/pride-2026/pride-parade/",
+  summary: "Calgary Pride has confirmed its 2026 Pride Parade for Sunday 6 September. Participants will gather in downtown Calgary at 9th Avenue SW and 5th Street SW before travelling east along 9th Avenue and finishing at 4th Street SE in East Village. The procession will bring together 2SLGBTQIA+ community groups, artists, organisations and allies advocating visibility, safety, equality and the right to live free from discrimination. The organiser has not yet released the start time, so CityIntel's standard 12:00 timestamp has been applied pending an update. Risk assessed as Medium because thousands of participants and spectators are expected along a major downtown corridor, requiring road closures, Calgary Transit adjustments, police liaison, crowd management and monitoring for possible hostile counter-presence. No specific threat or opposing demonstration has been announced."
+},
+
+{
+  title: "Toronto Labour Day Parade 2026",
+  city: "Toronto",
+  lat: 43.6505,
+  lng: -79.3864,
+  address: "University Avenue south of Queen Street West — procession towards the Canadian National Exhibition at Dufferin Gate",
+  postcode: "M5G 1P5",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-07T08:30:00",
+  source: "https://osstftoronto.ca/event/labour-day-parade-2026/",
+  summary: "Toronto labour unions and affiliated workers' organisations have confirmed the annual Labour Day Parade for Monday 7 September 2026. Union contingents will assemble around University Avenue and Queen Street West from approximately 08:30 before proceeding through central Toronto towards the Canadian National Exhibition grounds at Dufferin Gate. The mobilisation will commemorate the city's historic labour movement and promote workers' rights, collective bargaining, employment protections, public services and union solidarity. Risk assessed as Medium because the large moving procession will require extensive road closures, TTC diversions, police deployment and pedestrian controls along the route and around Exhibition Place. The event is formally organised and no violent action has been announced."
+},
+
+{
+  title: "Ottawa Labour Day March and Picnic 2026",
+  city: "Ottawa",
+  lat: 45.4201,
+  lng: -75.6896,
+  address: "Ottawa City Hall, Lisgar Street side — Elgin Street — Gladstone Avenue — McNabb Park, 435 Bronson Avenue",
+  postcode: "K1P 1J1",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-07T12:00:00",
+  source: "https://ottawalabour.labourcouncils.ca/events/2026-ottawa-labour-day-march-and-picnic/",
+  summary: "The Ottawa and District Labour Council has confirmed its 2026 Labour Day March and Picnic for Monday 7 September. The march will leave the Lisgar Street side of Ottawa City Hall at 12:00, travel south along Elgin Street, continue west along Gladstone Avenue and proceed towards Bronson Avenue before finishing at McNabb Park. A labour picnic and community programme will continue at the park until approximately 16:00. Participants will celebrate organised labour and advocate workers' rights, fair employment conditions, public services and collective solidarity. Risk assessed as Medium because the procession will move through central Ottawa and require temporary road closures, OC Transpo adjustments, police liaison and pedestrian management. No violent action or counter-demonstration has been announced."
+},
+
+{
+  title: "Metro Vancouver Labour Day Celebration 2026",
+  city: "Burnaby",
+  lat: 49.2196,
+  lng: -122.9473,
+  address: "Edmonds Park, 7433 Humphries Avenue",
+  postcode: "V3N 1B1",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-07T11:00:00",
+  source: "https://vdlc.ca/events/metro-vancouver-labour-day-celebration-4/",
+  summary: "The Vancouver and District Labour Council and New Westminster and District Labour Council have confirmed a joint Labour Day gathering at Edmonds Park in Burnaby from 11:00 to 14:30 on Monday 7 September 2026. The programme will include labour and community speakers, union information stands, live music, family activities, food and public discussion celebrating workers and organised labour. Confirmed speakers include labour representatives, Indigenous community leadership and municipal officials. Risk assessed as Low because the event will operate primarily within an established public park and no march, blockade, hostile counter-demonstration or deliberate disruption has been announced. Increased pedestrian activity, parking demand and routine event-security measures are likely around Humphries Avenue."
+},
+
+{
+  title: "Elk Valley Pride Ride Parade 2026",
+  city: "Fernie",
+  lat: 49.5044,
+  lng: -115.0631,
+  address: "Fernie Arts Station, 601 1st Avenue — local bike-parade route subject to final organiser notice",
+  postcode: "V0B 1M0",
+  country: "Canada",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-16T16:30:00",
+  source: "https://ferniepride.ca/program/bike-decoration-2026/",
+  summary: "The Fernie Pride Society has confirmed the opening Pride Ride bike-parade activity at the Fernie Arts Station from 16:30 on Wednesday 16 September 2026 as part of the Elk Valley Pride Festival. Participants will gather to decorate bicycles before joining a community Pride ride promoting 2SLGBTQ+ visibility, inclusion, acceptance and community participation. The final local riding route has not yet been published, so the Arts Station has been used as the transparent map anchor. Risk assessed as Low because this is expected to be a small, organised and family-friendly cycling procession. Temporary roadside attention, minor traffic controls and short local access effects are possible, but no hostile counter-mobilisation or specific security threat has been announced."
+},
+
+{
+  title: "Peterborough-Nogojiwanong Pride Parade 2026",
+  city: "Peterborough",
+  lat: 44.309,
+  lng: -78.3207,
+  address: "Peterborough City Hall, 500 George Street North — George Street — Millennium Park",
+  postcode: "K9H 3R9",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T13:00:00",
+  source: "https://www.peterboroughpride.ca/parade/",
+  summary: "Peterborough-Nogojiwanong Pride has confirmed its annual Pride March and Parade for approximately 13:00 on Saturday 26 September 2026. Participants will leave Peterborough City Hall and follow an approximately one-kilometre downtown route, including George Street, before finishing at Millennium Park. Pride in the Park will follow until approximately 17:30. The 2026 theme, Woven Together, highlights solidarity, community resilience, visibility and opposition to transphobia, homophobia, racism, ableism and other forms of discrimination. Risk assessed as Medium because the politically visible moving procession will require temporary downtown traffic restrictions, police or municipal liaison, stewarding and pedestrian management and may attract limited hostile counter-presence. No specific threat or opposing demonstration has been announced."
+}, 
+
+
+  {
+  title: "Rutland Rally for Democracy — 4 September",
+  city: "Rutland",
+  lat: 43.606179,
+  lng: -72.972051,
+  address: "Main Street Park edge, corner of Route 7 / Main Street and West Street",
+  postcode: "05701",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-04T17:00:00",
+  source: "https://indivisible.org/events/rally-for-democracy-5/",
+  summary: "Rutland County Indivisible has scheduled its weekly Rally for Democracy from 17:00 to 18:00 on Friday 4 September 2026 at the edge of Main Street Park, beside the junction of Route 7 and West Street. Participants will oppose what organisers describe as unconstitutional, anti-democratic, corrupt and harmful actions by the Trump administration while promoting peaceful civic resistance and support for democratic institutions. Risk assessed as Low because the action is a one-hour, non-violent and stationary roadside gathering. Localised pedestrian activity, passing-vehicle attention and limited traffic-management requirements are possible, but no march, blockade or hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Wilton Weekly Saturday Protest — 5 September",
+  city: "Wilton",
+  lat: 41.211266,
+  lng: -73.433618,
+  address: "Wilton High School, 395 Danbury Road",
+  postcode: "06897",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-05T10:00:00",
+  source: "https://goodmorningwilton.com/organizer/indivisible-fairfield/",
+  summary: "Indivisible Fairfield has confirmed its weekly Saturday protest outside Wilton High School from 10:00 to 11:00 on Saturday 5 September 2026. Organisers invite residents to demonstrate against the Trump administration through peaceful sign-holding and roadside visibility, with participants encouraged to attend in a welcoming and non-violent manner. Risk assessed as Low because the action is a one-hour stationary gathering with no march, obstruction or confrontation announced. Brief roadside distraction, increased pedestrian activity and routine monitoring may occur along Danbury Road."
+},
+
+{
+  title: "Brookline Rally for Democracy — 5 September",
+  city: "Brookline",
+  lat: 42.345931,
+  lng: -71.124497,
+  address: "Coolidge Corner, junction of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-05T13:00:00",
+  source: "https://www.mobilize.us/mobilize/event/980325/",
+  summary: "Speak Out, Seniors! and supporting Brookline pro-democracy groups have scheduled their weekly Rally for Democracy at Coolidge Corner from 13:00 to 14:00 on Saturday 5 September 2026. Participants will advocate democratic rights, immigrant and human rights, racial justice, free expression and peaceful civic participation while opposing authoritarian government policies. Organisers describe the rallies as peaceful, spirited and uplifting. Risk assessed as Low because the event is a short, established and stationary public gathering. Minor pedestrian congestion and visible police or stewarding activity may occur around the Beacon Street and Harvard Street junction."
+},
+
+{
+  title: "New York City Labor Day Rally and March 2026",
+  city: "New York City",
+  lat: 40.70961,
+  lng: -74.01196,
+  address: "Liberty Street between Church Street and Broadway, Financial District",
+  postcode: "10006",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-08T16:30:00",
+  source: "https://nycclc.org/events/labor-day-rally-march",
+  summary: "The New York City Central Labor Council, AFL-CIO, has confirmed the 2026 Labor Day Rally and March on Liberty Street between Church Street and Broadway from 16:30 to 19:00 on Tuesday 8 September 2026. The mobilisation will bring together New York labour organisations and supporters under the theme 'Our City, Our Fight, Our Future' to recognise working people and promote labour solidarity. Risk assessed as Medium because the rally and march will take place in the Financial District during the evening travel period and may require road closures, police deployment, pedestrian controls and changes to local access. No violent action has been announced."
+},
+
+{
+  title: "Rutland Rally for Democracy — 11 September",
+  city: "Rutland",
+  lat: 43.606179,
+  lng: -72.972051,
+  address: "Main Street Park edge, corner of Route 7 / Main Street and West Street",
+  postcode: "05701",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-11T17:00:00",
+  source: "https://indivisible.org/events/rally-for-democracy-5/",
+  summary: "Rutland County Indivisible has scheduled its weekly Rally for Democracy from 17:00 to 18:00 on Friday 11 September 2026 at the edge of Main Street Park, beside the junction of Route 7 and West Street. Participants will oppose what organisers describe as unconstitutional, anti-democratic, corrupt and harmful actions by the Trump administration while promoting peaceful civic resistance and support for democratic institutions. Risk assessed as Low because the action is a one-hour, non-violent and stationary roadside gathering. Localised pedestrian activity, passing-vehicle attention and limited traffic-management requirements are possible, but no march, blockade or hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Wilton Weekly Saturday Protest — 12 September",
+  city: "Wilton",
+  lat: 41.211266,
+  lng: -73.433618,
+  address: "Wilton High School, 395 Danbury Road",
+  postcode: "06897",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-12T10:00:00",
+  source: "https://goodmorningwilton.com/organizer/indivisible-fairfield/",
+  summary: "Indivisible Fairfield has confirmed its weekly Saturday protest outside Wilton High School from 10:00 to 11:00 on Saturday 12 September 2026. Organisers invite residents to demonstrate against the Trump administration through peaceful sign-holding and roadside visibility, with participants encouraged to attend in a welcoming and non-violent manner. Risk assessed as Low because the action is a one-hour stationary gathering with no march, obstruction or confrontation announced. Brief roadside distraction, increased pedestrian activity and routine monitoring may occur along Danbury Road."
+},
+
+{
+  title: "Brookline Rally for Democracy — 12 September",
+  city: "Brookline",
+  lat: 42.345931,
+  lng: -71.124497,
+  address: "Coolidge Corner, junction of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-12T13:00:00",
+  source: "https://www.mobilize.us/mobilize/event/980325/",
+  summary: "Speak Out, Seniors! and supporting Brookline pro-democracy groups have scheduled their weekly Rally for Democracy at Coolidge Corner from 13:00 to 14:00 on Saturday 12 September 2026. Participants will advocate democratic rights, immigrant and human rights, racial justice, free expression and peaceful civic participation while opposing authoritarian government policies. Organisers describe the rallies as peaceful, spirited and uplifting. Risk assessed as Low because the event is a short, established and stationary public gathering. Minor pedestrian congestion and visible police or stewarding activity may occur around the Beacon Street and Harvard Street junction."
+},
+
+{
+  title: "Rutland Rally for Democracy — 18 September",
+  city: "Rutland",
+  lat: 43.606179,
+  lng: -72.972051,
+  address: "Main Street Park edge, corner of Route 7 / Main Street and West Street",
+  postcode: "05701",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-18T17:00:00",
+  source: "https://indivisible.org/events/rally-for-democracy-5/",
+  summary: "Rutland County Indivisible has scheduled its weekly Rally for Democracy from 17:00 to 18:00 on Friday 18 September 2026 at the edge of Main Street Park, beside the junction of Route 7 and West Street. Participants will oppose what organisers describe as unconstitutional, anti-democratic, corrupt and harmful actions by the Trump administration while promoting peaceful civic resistance and support for democratic institutions. Risk assessed as Low because the action is a one-hour, non-violent and stationary roadside gathering. Localised pedestrian activity, passing-vehicle attention and limited traffic-management requirements are possible, but no march, blockade or hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Wilton Weekly Saturday Protest — 19 September",
+  city: "Wilton",
+  lat: 41.211266,
+  lng: -73.433618,
+  address: "Wilton High School, 395 Danbury Road",
+  postcode: "06897",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-19T10:00:00",
+  source: "https://goodmorningwilton.com/organizer/indivisible-fairfield/",
+  summary: "Indivisible Fairfield has confirmed its weekly Saturday protest outside Wilton High School from 10:00 to 11:00 on Saturday 19 September 2026. Organisers invite residents to demonstrate against the Trump administration through peaceful sign-holding and roadside visibility, with participants encouraged to attend in a welcoming and non-violent manner. Risk assessed as Low because the action is a one-hour stationary gathering with no march, obstruction or confrontation announced. Brief roadside distraction, increased pedestrian activity and routine monitoring may occur along Danbury Road."
+},
+
+{
+  title: "Brookline Rally for Democracy — 19 September",
+  city: "Brookline",
+  lat: 42.345931,
+  lng: -71.124497,
+  address: "Coolidge Corner, junction of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-19T13:00:00",
+  source: "https://www.mobilize.us/mobilize/event/980325/",
+  summary: "Speak Out, Seniors! and supporting Brookline pro-democracy groups have scheduled their weekly Rally for Democracy at Coolidge Corner from 13:00 to 14:00 on Saturday 19 September 2026. Participants will advocate democratic rights, immigrant and human rights, racial justice, free expression and peaceful civic participation while opposing authoritarian government policies. Organisers describe the rallies as peaceful, spirited and uplifting. Risk assessed as Low because the event is a short, established and stationary public gathering. Minor pedestrian congestion and visible police or stewarding activity may occur around the Beacon Street and Harvard Street junction."
+},
+
+{
+  title: "Pride in Dallas — Parade on Cedar Springs 2026",
+  city: "Dallas",
+  lat: 32.811,
+  lng: -96.81,
+  address: "Cedar Springs Road, Oak Lawn — final assembly point and traffic plan TBC",
+  postcode: "75219",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-20T14:00:00",
+  source: "https://prideindallas.org/",
+  summary: "Pride in Dallas has confirmed its grassroots Pride parade on Cedar Springs Road at 14:00 on Sunday 20 September 2026. Organisers expect more than 10,000 community members to march through the Oak Lawn LGBTQ+ district in support of visibility, equality, belonging and continued protection of LGBTQ+ rights. The final assembly point and detailed traffic plan remain pending. Risk assessed as Medium because the large, politically visible moving procession will require road closures, police liaison, crowd management and access restrictions along Cedar Springs Road and may attract limited hostile counter-presence. Organisers describe the event as community-led and peaceful."
+},
+
+{
+  title: "Rutland Rally for Democracy — 25 September",
+  city: "Rutland",
+  lat: 43.606179,
+  lng: -72.972051,
+  address: "Main Street Park edge, corner of Route 7 / Main Street and West Street",
+  postcode: "05701",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-25T17:00:00",
+  source: "https://indivisible.org/events/rally-for-democracy-5/",
+  summary: "Rutland County Indivisible has scheduled its weekly Rally for Democracy from 17:00 to 18:00 on Friday 25 September 2026 at the edge of Main Street Park, beside the junction of Route 7 and West Street. Participants will oppose what organisers describe as unconstitutional, anti-democratic, corrupt and harmful actions by the Trump administration while promoting peaceful civic resistance and support for democratic institutions. Risk assessed as Low because the action is a one-hour, non-violent and stationary roadside gathering. Localised pedestrian activity, passing-vehicle attention and limited traffic-management requirements are possible, but no march, blockade or hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Wilton Weekly Saturday Protest — 26 September",
+  city: "Wilton",
+  lat: 41.211266,
+  lng: -73.433618,
+  address: "Wilton High School, 395 Danbury Road",
+  postcode: "06897",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://goodmorningwilton.com/organizer/indivisible-fairfield/",
+  summary: "Indivisible Fairfield has confirmed its weekly Saturday protest outside Wilton High School from 10:00 to 11:00 on Saturday 26 September 2026. Organisers invite residents to demonstrate against the Trump administration through peaceful sign-holding and roadside visibility, with participants encouraged to attend in a welcoming and non-violent manner. Risk assessed as Low because the action is a one-hour stationary gathering with no march, obstruction or confrontation announced. Brief roadside distraction, increased pedestrian activity and routine monitoring may occur along Danbury Road."
+},
+
+{
+  title: "Brookline Rally for Democracy — 26 September",
+  city: "Brookline",
+  lat: 42.345931,
+  lng: -71.124497,
+  address: "Coolidge Corner, junction of Beacon Street and Harvard Street",
+  postcode: "02446",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-26T13:00:00",
+  source: "https://www.mobilize.us/mobilize/event/980325/",
+  summary: "Speak Out, Seniors! and supporting Brookline pro-democracy groups have scheduled their weekly Rally for Democracy at Coolidge Corner from 13:00 to 14:00 on Saturday 26 September 2026. Participants will advocate democratic rights, immigrant and human rights, racial justice, free expression and peaceful civic participation while opposing authoritarian government policies. Organisers describe the rallies as peaceful, spirited and uplifting. Risk assessed as Low because the event is a short, established and stationary public gathering. Minor pedestrian congestion and visible police or stewarding activity may occur around the Beacon Street and Harvard Street junction."
+},
+  
+
+  {
+  title: "Million Frog March 2026",
+  city: "Washington, D.C.",
+  lat: 38.8893,
+  lng: -77.0502,
+  address: "Lincoln Memorial, 2 Lincoln Memorial Circle NW — march to Lafayette Park",
+  postcode: "20002",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T13:00:00",
+  source: "https://savethefrogs.com/march-2026/",
+  summary: "SAVE THE FROGS! has confirmed the Million Frog March in Washington, D.C., on Saturday 26 September 2026. Participants will gather at the Lincoln Memorial at 13:00 for speeches and environmental advocacy before marching towards Lafayette Park from approximately 14:15. The mobilisation will call for stronger protection of frogs, wetlands and biodiversity while also promoting environmental participation and democratic civic engagement. The programme is expected to conclude near Lafayette Park at approximately 15:45. Risk assessed as Medium because the procession will move between the National Mall and the immediate White House area, requiring police liaison, pedestrian controls and possible temporary road or access restrictions. Organisers describe the event as peaceful and family-friendly."
+},
+
+{
+  title: "Virginia PrideFest 2026",
+  city: "Richmond",
+  lat: 37.5615,
+  lng: -77.4585,
+  address: "Midtown Green, 2401 West Leigh Street",
+  postcode: "23220",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://www.instagram.com/vapride/",
+  summary: "Virginia Pride has confirmed the statewide PrideFest at Midtown Green in Richmond from 12:00 to 20:00 on Saturday 12 September 2026. The public event will promote LGBTQIA+ visibility, equality, community support and opposition to discrimination through speeches, performances, information stands and participation by civil-rights and community organisations. Risk assessed as Medium because the large and politically visible gathering may attract significant attendance, require traffic and pedestrian management around West Leigh Street and potentially draw small-scale hostile counter-presence. No specific threat or opposing demonstration has been announced."
+},
+
+{
+  title: "Greensboro Pride Parade and Festival 2026",
+  city: "Greensboro",
+  lat: 36.0733,
+  lng: -79.7894,
+  address: "Elm Street — parade to LeBauer Park, 208 North Davie Street",
+  postcode: "27401",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-12T10:00:00",
+  source: "https://impaqtgso.org/pride",
+  summary: "The IMPAQT Greensboro Pride organisation has confirmed Greensboro's first Pride parade for Saturday 12 September 2026. The procession will begin along Elm Street at 10:00 and will be followed by the Greensboro Pride Festival at LeBauer Park from 11:00 to 19:00. Participants will advocate LGBTQIA+ equality, community visibility, inclusion and protection from discrimination. Risk assessed as Medium because the inaugural downtown procession will require rolling street closures, police liaison, stewarding and temporary changes to vehicle access. The event is formally organised and no confirmed counter-demonstration or violent threat has been identified."
+},
+
+{
+  title: "Blue Ridge Pride Festival 2026",
+  city: "Asheville",
+  lat: 35.5951,
+  lng: -82.5515,
+  address: "Pack Square Park, 80 Court Plaza",
+  postcode: "28801",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.blueridgepride.org/",
+  summary: "Blue Ridge Pride has confirmed its annual LGBTQIA+ Pride Festival at Pack Square Park in Asheville from 12:00 to 18:00 on Saturday 26 September 2026. The gathering will promote equality, community support and LGBTQIA+ visibility through public speakers, performances, advocacy organisations and community-resource stands. Risk assessed as Medium because the central-city event is likely to attract a substantial regional audience and may require road, pedestrian and security management around Court Plaza. The event is expected to remain peaceful, and no specific counter-mobilisation has been announced."
+},
+
+{
+  title: "Boise Pride Parade 2026",
+  city: "Boise",
+  lat: 43.6044,
+  lng: -116.2298,
+  address: "Ann Morrison Park, 1000 South Americana Boulevard — downtown parade route subject to final organiser notice",
+  postcode: "83706",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-20T10:00:00",
+  source: "https://boisepridefest.org/",
+  summary: "Boise Pride has confirmed its 2026 Pride Parade for Sunday 20 September, during a wider Pride Festival operating at Ann Morrison Park from 18 to 20 September. The public parade is scheduled from 10:00 to 11:00 and will promote LGBTQIA+ equality, visibility, civil rights and community solidarity. The complete operational route remains subject to final organiser and city updates. Risk assessed as Medium because the moving downtown procession will require street closures, police liaison and traffic diversions and may attract limited hostile counter-presence. Organisers promote a peaceful and inclusive event."
+},
+
+{
+  title: "Joliet PrideFest 2026",
+  city: "Joliet",
+  lat: 41.5242,
+  lng: -88.0862,
+  address: "Billie Limacher Bicentennial Park, 201 West Jefferson Street",
+  postcode: "60432",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-19T12:00:00",
+  source: "https://jolietpridenetwork.org/event/joliet-pridefest-2026/",
+  summary: "The Joliet Pride Network has confirmed PrideFest at Billie Limacher Bicentennial Park from 12:00 to 22:00 on Saturday 19 September 2026. The public event will promote LGBTQIA+ inclusion, equality and community support through performances, speakers, advocacy organisations and local services. Risk assessed as Low because the event will operate primarily within an established park venue and no march, deliberate obstruction, hostile counter-demonstration or specific security threat has been announced. Increased pedestrian activity and routine police or event-security presence are likely around West Jefferson Street."
+},
+
+{
+  title: "Charlottesville Pride Festival 2026",
+  city: "Charlottesville",
+  lat: 38.0301,
+  lng: -78.4808,
+  address: "Ting Pavilion, 700 East Main Street",
+  postcode: "22902",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T12:30:00",
+  source: "https://www.cvillepride.org/pridefest",
+  summary: "Charlottesville Pride Community Network has confirmed its annual Pride Festival at Ting Pavilion from 12:30 to 19:30 on Saturday 26 September 2026. The programme will include community speakers, performances, advocacy groups and public activity promoting LGBTQIA+ equality, visibility and protection from discrimination. Risk assessed as Medium because the politically visible gathering will take place on Charlottesville's central pedestrian mall and may require enhanced security, pedestrian management and monitoring for hostile counter-presence. No specific opposing event or violent threat has been announced."
+},
+
+  {
+  title: "Uniformed Services Protest Ahead of the Thessaloniki International Fair",
+  city: "Thessaloniki",
+  lat: 40.6328,
+  lng: 22.9527,
+  address: "Thessaloniki city centre — final assembly point TBC; commemorative gathering planned at the Georgios Lyggeridis bust, Sintrivani Square",
+  postcode: "546 21",
+  country: "Greece",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T18:00:00",
+  source: "https://www.poasy.gr/index.php/el/anakoinwseis/omospondiwn/omospondiwn-2026/item/3317-thessaloniki-4-septemvriou-2026-i-parousia-olon-dynami-efthyni-kai-timi",
+  summary: "Federations representing police officers, firefighters, coast-guard personnel and serving and retired members of the armed forces have confirmed a joint public mobilisation in Thessaloniki at 18:00 on Friday 4 September 2026, immediately before the opening of the Thessaloniki International Fair. Participants will demand improvements to pensions and service-related allowances, restoration of the thirteenth and fourteenth salary payments, extension of recognised hazardous-service credit and abolition of the pension solidarity contribution. Organisers also plan a commemorative gathering at the bust of police officer Georgios Lyggeridis in Sintrivani Square, which has therefore been used as the transparent map anchor while the principal assembly point remains pending. Risk assessed as Medium because the uniformed-services mobilisation will occur in central Thessaloniki during the security build-up for the international fair and may require traffic restrictions, police liaison and access controls. No violent action has been announced."
+},
+
+{
+  title: "PAME National Popular Rally at the Thessaloniki International Fair",
+  city: "Thessaloniki",
+  lat: 40.6258,
+  lng: 22.9545,
+  address: "Plateia CHANTH, beside the Thessaloniki International Fair grounds",
+  postcode: "546 21",
+  country: "Greece",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-05T17:30:00",
+  source: "https://pamehellas.gr/oloi-oles-megalo-pallaiko-syllalitirio-sti-thessaloniki-savvato-5-septemvri-stis-5-30mm-stin-plateia-chanth",
+  summary: "The All-Workers Militant Front, supporting trade unions, labour centres, pensioner organisations, farmers' associations and community groups have confirmed a major public rally at Plateia CHANTH at 17:30 on Saturday 5 September 2026 during the opening of the Thessaloniki International Fair. Participants will demand wage increases, collective agreements, improved healthcare and education, stronger social protections and increased public funding while opposing privatisation, military expenditure and policies that organisers say prioritise corporate profits over workers' living standards. Risk assessed as High because the mobilisation will take place directly beside the international-fair grounds during the prime ministerial programme and shortly before separate demonstrations elsewhere in the city centre. Extensive police deployment, barriers, road closures and public-transport disruption should be expected, although organisers have called for an organised public rally rather than violent action."
+},
+
+{
+  title: "GSEE DETH Labour Rally",
+  city: "Thessaloniki",
+  lat: 40.6374,
+  lng: 22.9443,
+  address: "Eleftherios Venizelos Statue, Egnatia Street at Aristotelous Square",
+  postcode: "546 24",
+  country: "Greece",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-05T18:00:00",
+  source: "https://www.gsee.gr/uplds/DIAKHRYKSH%20ATHINA_EPARXIA.pdf",
+  summary: "The Greek General Confederation of Labour and the Thessaloniki Labour Centre have confirmed their annual Thessaloniki International Fair demonstration at the Eleftherios Venizelos statue at 18:00 on Saturday 5 September 2026. Trade-union members will demand improved collective bargaining, higher wages, reduced working time, affordable housing, stronger labour protections and measures addressing the cost of living and declining household purchasing power. Anti-racist and Palestine-solidarity organisations have separately announced a parallel mobilisation at the same location and time, increasing the expected diversity and density of the crowd. Risk assessed as High because several large demonstrations will operate simultaneously around the international fair and central Thessaloniki during a politically sensitive government programme. Extensive road closures, police cordons, transport changes and potential friction between demonstrators and security personnel should be anticipated, although the principal organisers have not announced violent action."
+},
+
+
+  {
+  title: "Laois Pride Parade 2026",
+  city: "Portlaoise",
+  lat: 53.0344,
+  lng: -7.2998,
+  address: "Fitzmaurice Place, outside Laois School of Music — final parade route TBC",
+  postcode: "R32",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://www.laois-nationalist.ie/news/fifth-annual-laois-pride-to-take-place-in-portlaoise_arid-95837.html",
+  summary: "Laois Pride has confirmed its fifth annual Pride parade in Portlaoise on Saturday 12 September 2026. Participants will assemble at Fitzmaurice Place outside Laois School of Music between 11:00 and 11:30 before the parade begins at 12:00. A Pride street festival and community programme will follow until approximately 17:00. The event promotes LGBTQIA+ visibility, equality, inclusion and community solidarity across County Laois. Risk assessed as Medium because the moving town-centre procession will require temporary road controls, Garda liaison and pedestrian management. The parade is formally organised and expected to remain peaceful."
+},
+
+{
+  title: "Affordable Ireland National Cost-of-Living Protest",
+  city: "Dublin",
+  lat: 53.3539,
+  lng: -6.2641,
+  address: "Parnell Square — final march route TBC",
+  postcode: "D01",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T13:00:00",
+  source: "https://www.pbp.ie/join-the-affordable-ireland-protest-19-september-2026/",
+  summary: "People Before Profit and the Affordable Ireland campaign have confirmed a national cost-of-living protest at Parnell Square in Dublin at 13:00 on Saturday 19 September 2026. The mobilisation is supported by organisations including the Irish Congress of Trade Unions, student unions and the Irish Senior Citizens Parliament. Participants will demand controls on food, fuel and electricity prices, energy credits, increased wages, pensions and welfare payments, free public transport, reduced childcare and college costs and stronger rent controls. Risk assessed as Medium because a broad national mobilisation in central Dublin is likely to attract a substantial crowd and require road closures, Garda deployment and public-transport diversions. No violent action has been announced."
+},
+
+{
+  title: "15th Annual March for Choice",
+  city: "Dublin",
+  lat: 53.3498,
+  lng: -6.2603,
+  address: "Dublin city centre — assembly point and march route TBC",
+  postcode: "",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://www.facebook.com/abortionrightscampaign/posts/1009493631590696/",
+  summary: "The Abortion Rights Campaign has confirmed the fifteenth annual March for Choice in Dublin at 14:00 on Saturday 26 September 2026. Participants will call for free, safe, legal and locally accessible abortion services and highlight continuing legal, financial and geographic barriers affecting reproductive healthcare after the repeal of the Eighth Amendment. The final assembly point and procession route have not yet been published. Risk assessed as Medium because the reproductive-rights march will move through central Dublin, require traffic management and Garda liaison and may attract anti-abortion counter-protesters. Organisers promote peaceful public mobilisation."
+},
+
+{
+  title: "March for Jesus Dublin 2026",
+  city: "Dublin",
+  lat: 53.3539,
+  lng: -6.2641,
+  address: "Garden of Remembrance, Parnell Square — planned march to Merrion Square",
+  postcode: "D01",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-26T14:00:00",
+  source: "https://marchforjesus.ie/",
+  summary: "Christian Voice Ireland has confirmed March for Jesus Dublin for Saturday 26 September 2026. The current schedule indicates a 14:00 procession from the Garden of Remembrance towards Merrion Square, followed by a central gathering and worship programme until approximately 17:00, although final route logistics remain subject to confirmation. Organisers describe the event as a non-political, family-friendly Christian procession rather than a protest. Risk assessed as High because organisers report that more than 25,000 people participated in 2025 and a similar large crowd would require extensive road closures, public-transport diversions, stewarding and Garda deployment across central Dublin. The rating reflects operational disruption rather than an expectation of violence."
+},
+
+{
+  title: "Walk In Our Shoes — 26-County Family Court Reform Day",
+  city: "Nationwide",
+  lat: 53.1424,
+  lng: -7.6921,
+  address: "County towns across all 26 counties — local one-mile meeting points published separately by organisers",
+  postcode: "",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-27T11:00:00",
+  source: "https://www.facebook.com/events/ireland-country/walk-in-our-shoes-2026-26-counties-national-day-of-action-for-family-court-refor/1333294945592103/",
+  summary: "Walk In Our Shoes has confirmed a coordinated national day of action across all 26 counties at 11:00 on Sunday 27 September 2026. Families and supporters will undertake local one-mile walks, often carrying children's shoes, to call for a family justice system that is transparent, trauma-informed, accountable and responsive to the voices and welfare of children. Local assembly points are being organised separately within individual county towns, so this record represents the coordinated nationwide mobilisation rather than an inferred single location. Risk assessed as Low because the actions are peaceful, short-distance community walks expected to cause only limited localised pedestrian and traffic effects."
+},
+
+{
+  title: "Walk In Our Shoes National Family Court Reform March",
+  city: "Dublin",
+  lat: 53.3455,
+  lng: -6.2734,
+  address: "Four Courts, Inns Quay — march to Leinster House, Kildare Street",
+  postcode: "D07 A78X",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-30T11:30:00",
+  source: "https://www.facebook.com/100066503712597/posts/1364668572426587/",
+  summary: "Walk In Our Shoes has confirmed a national family-court reform march in Dublin on Wednesday 30 September 2026. Participants will assemble outside the Four Courts at 11:30 before walking to Leinster House. Families, campaigners and supporters will carry children's shoes to represent children affected by the family justice system and will demand transparent decision-making, trauma-informed procedures, institutional accountability and meaningful recognition of children's experiences and welfare. Risk assessed as Medium because the procession will connect two sensitive judicial and government locations in central Dublin and may require Garda management, traffic restrictions and controlled access around Inns Quay and Leinster House. Organisers describe the action as peaceful."
+},
+
+  {
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 1 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-02T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 2 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 3 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-04T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 4 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 5 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 6 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-07T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 7 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-08T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 8 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-09T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 9 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-10T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 10 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-11T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 11 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 12 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-13T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 13 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-14T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 14 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-15T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 15 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-16T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 16 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 17 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-18T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 18 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 19 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-20T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 20 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-21T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 21 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-22T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 22 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-23T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 23 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-24T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Thursday 24 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-25T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Friday 25 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Saturday 26 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-27T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Sunday 27 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-28T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Monday 28 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-29T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Tuesday 29 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Daily Gaza Solidarity Protest at Brussels Stock Exchange",
+  city: "Brussels",
+  lat: 50.848236,
+  lng: 4.34956,
+  address: "Place de la Bourse / Beursplein, central Brussels",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-30T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current Belgian protest agenda confirms a Gaza solidarity protest at the Brussels Stock Exchange every evening at 19:00, including Wednesday 30 September 2026. The static action calls for public solidarity with Palestinians and continued political pressure concerning Gaza. Risk assessed as Low because this is an established recurring gathering, although police monitoring and limited pedestrian congestion may occur at the prominent central-city location."
+},
+
+{
+  title: "Ghent Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.0543,
+  lng: 3.725,
+  address: "Stadshal Gent, Poeljemarkt",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest at Stadshal Gent every Thursday at 19:00, including Thursday 3 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the gathering is recurring and stationary; minor pedestrian congestion and routine police observation are possible around the Stadshal."
+},
+
+{
+  title: "Ghent Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.0543,
+  lng: 3.725,
+  address: "Stadshal Gent, Poeljemarkt",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-10T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest at Stadshal Gent every Thursday at 19:00, including Thursday 10 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the gathering is recurring and stationary; minor pedestrian congestion and routine police observation are possible around the Stadshal."
+},
+
+{
+  title: "Ghent Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.0543,
+  lng: 3.725,
+  address: "Stadshal Gent, Poeljemarkt",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest at Stadshal Gent every Thursday at 19:00, including Thursday 17 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the gathering is recurring and stationary; minor pedestrian congestion and routine police observation are possible around the Stadshal."
+},
+
+{
+  title: "Ghent Gaza Solidarity Protest",
+  city: "Ghent",
+  lat: 51.0543,
+  lng: 3.725,
+  address: "Stadshal Gent, Poeljemarkt",
+  postcode: "9000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-24T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest at Stadshal Gent every Thursday at 19:00, including Thursday 24 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the gathering is recurring and stationary; minor pedestrian congestion and routine police observation are possible around the Stadshal."
+},
+
+{
+  title: "Leuven Liberation Fridays Gaza Protest",
+  city: "Leuven",
+  lat: 50.8814,
+  lng: 4.7155,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-04T18:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms the Liberation Fridays Gaza solidarity action at Martelarenplein in Leuven every Friday at 18:00, including Friday 4 September 2026. Participants call for Palestinian rights, humanitarian protection and stronger political action. Risk assessed as Low because the action is a recurring stationary gathering, although the station-front location may create limited pedestrian congestion and visible police monitoring."
+},
+
+{
+  title: "Leuven Liberation Fridays Gaza Protest",
+  city: "Leuven",
+  lat: 50.8814,
+  lng: 4.7155,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-11T18:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms the Liberation Fridays Gaza solidarity action at Martelarenplein in Leuven every Friday at 18:00, including Friday 11 September 2026. Participants call for Palestinian rights, humanitarian protection and stronger political action. Risk assessed as Low because the action is a recurring stationary gathering, although the station-front location may create limited pedestrian congestion and visible police monitoring."
+},
+
+{
+  title: "Leuven Liberation Fridays Gaza Protest",
+  city: "Leuven",
+  lat: 50.8814,
+  lng: 4.7155,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-18T18:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms the Liberation Fridays Gaza solidarity action at Martelarenplein in Leuven every Friday at 18:00, including Friday 18 September 2026. Participants call for Palestinian rights, humanitarian protection and stronger political action. Risk assessed as Low because the action is a recurring stationary gathering, although the station-front location may create limited pedestrian congestion and visible police monitoring."
+},
+
+{
+  title: "Leuven Liberation Fridays Gaza Protest",
+  city: "Leuven",
+  lat: 50.8814,
+  lng: 4.7155,
+  address: "Martelarenplein, outside Leuven railway station",
+  postcode: "3000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-25T18:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms the Liberation Fridays Gaza solidarity action at Martelarenplein in Leuven every Friday at 18:00, including Friday 25 September 2026. Participants call for Palestinian rights, humanitarian protection and stronger political action. Risk assessed as Low because the action is a recurring stationary gathering, although the station-front location may create limited pedestrian congestion and visible police monitoring."
+},
+
+{
+  title: "Antwerp Gaza Solidarity Protest at City Hall",
+  city: "Antwerp",
+  lat: 51.2212,
+  lng: 4.3997,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-07T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest outside Antwerp City Hall every Monday at 19:00, including Monday 7 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the action is an established stationary protest, although the sensitive civic location may bring police monitoring and short access controls around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Gaza Solidarity Protest at City Hall",
+  city: "Antwerp",
+  lat: 51.2212,
+  lng: 4.3997,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-14T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest outside Antwerp City Hall every Monday at 19:00, including Monday 14 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the action is an established stationary protest, although the sensitive civic location may bring police monitoring and short access controls around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Gaza Solidarity Protest at City Hall",
+  city: "Antwerp",
+  lat: 51.2212,
+  lng: 4.3997,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-21T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest outside Antwerp City Hall every Monday at 19:00, including Monday 21 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the action is an established stationary protest, although the sensitive civic location may bring police monitoring and short access controls around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Antwerp Gaza Solidarity Protest at City Hall",
+  city: "Antwerp",
+  lat: 51.2212,
+  lng: 4.3997,
+  address: "Antwerp City Hall, Grote Markt 1 / Suikerrui",
+  postcode: "2000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-28T19:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity protest outside Antwerp City Hall every Monday at 19:00, including Monday 28 September 2026. Participants call for protection of Palestinian civilians, humanitarian access and political accountability. Risk assessed as Low because the action is an established stationary protest, although the sensitive civic location may bring police monitoring and short access controls around Grote Markt and Suikerrui."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.23204,
+  lng: 2.91738,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 5 September 2026. The static action expresses solidarity with Palestinians and opposition to continuing violence in Gaza. Risk assessed as Low because the gathering is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.94129,
+  lng: 4.5481,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a weekly Red Line Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 5 September 2026. Participants demand political action and accountability concerning Palestinians. Risk assessed as Low because the gathering is small, static and community based, with only minor roadside or pedestrian disruption expected."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.19033,
+  lng: 4.44901,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the Antwerp International Airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 5 September 2026. The picket demands closure of the airport on climate, noise, public-finance and land-use grounds. Risk assessed as Low because this is a short, established and non-violent roadside protest, although brief access or parking friction may occur."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.23204,
+  lng: 2.91738,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 12 September 2026. The static action expresses solidarity with Palestinians and opposition to continuing violence in Gaza. Risk assessed as Low because the gathering is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.94129,
+  lng: 4.5481,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a weekly Red Line Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 12 September 2026. Participants demand political action and accountability concerning Palestinians. Risk assessed as Low because the gathering is small, static and community based, with only minor roadside or pedestrian disruption expected."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.19033,
+  lng: 4.44901,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the Antwerp International Airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 12 September 2026. The picket demands closure of the airport on climate, noise, public-finance and land-use grounds. Risk assessed as Low because this is a short, established and non-violent roadside protest, although brief access or parking friction may occur."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.23204,
+  lng: 2.91738,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 19 September 2026. The static action expresses solidarity with Palestinians and opposition to continuing violence in Gaza. Risk assessed as Low because the gathering is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.94129,
+  lng: 4.5481,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a weekly Red Line Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 19 September 2026. Participants demand political action and accountability concerning Palestinians. Risk assessed as Low because the gathering is small, static and community based, with only minor roadside or pedestrian disruption expected."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.19033,
+  lng: 4.44901,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the Antwerp International Airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 19 September 2026. The picket demands closure of the airport on climate, noise, public-finance and land-use grounds. Risk assessed as Low because this is a short, established and non-violent roadside protest, although brief access or parking friction may occur."
+},
+
+{
+  title: "Ostend Gaza Solidarity Stand-In",
+  city: "Ostend",
+  lat: 51.23204,
+  lng: 2.91738,
+  address: "Wapenplein, Ostend",
+  postcode: "8400",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:30:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a Gaza solidarity stand-in at Wapenplein in Ostend every Saturday at 14:30, including Saturday 26 September 2026. The static action expresses solidarity with Palestinians and opposition to continuing violence in Gaza. Risk assessed as Low because the gathering is recurring and peaceful; limited pedestrian congestion may occur in the central square."
+},
+
+{
+  title: "Kampenhout Red Line for Gaza",
+  city: "Kampenhout",
+  lat: 50.94129,
+  lng: 4.5481,
+  address: "Villa Lucie, Dorpsstraat 7, Kampenhout",
+  postcode: "1910",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T11:00:00",
+  source: "https://www.youca.be/doe-mee/protestagenda",
+  summary: "YOUCA's current protest agenda confirms a weekly Red Line Gaza solidarity action at Villa Lucie in Kampenhout every Saturday at 11:00, including Saturday 26 September 2026. Participants demand political action and accountability concerning Palestinians. Risk assessed as Low because the gathering is small, static and community based, with only minor roadside or pedestrian disruption expected."
+},
+
+{
+  title: "Doe Deurne Dicht Airport-Closure Picket",
+  city: "Deurne",
+  lat: 51.19033,
+  lng: 4.44901,
+  address: "Airport perimeter fence on Vosstraat, Deurne",
+  postcode: "2100",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T11:00:00",
+  source: "https://www.doedeurnedicht.be/kom-jij-zaterdag-ook-aan-het-hek-staan/",
+  summary: "Doe Deurne Dicht confirms that campaigners assemble at the Antwerp International Airport perimeter fence on Vosstraat every Saturday from 11:00 to 11:30, including Saturday 26 September 2026. The picket demands closure of the airport on climate, noise, public-finance and land-use grounds. Risk assessed as Low because this is a short, established and non-violent roadside protest, although brief access or parking friction may occur."
+},
+
+{
+  title: "Miles for Humanity 2026 — Human Rights Solidarity Trail",
+  city: "Leuven",
+  lat: 50.869444,
+  lng: 4.692667,
+  address: "KU Leuven Sportcampus Arenberg, Tervuursevest 101, Heverlee",
+  postcode: "3001",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-20T10:00:00",
+  source: "https://11.be/evenementen/miles-humanity-2026",
+  summary: "11.11.11 has confirmed the third Miles for Humanity solidarity trail at KU Leuven Sportcampus Arenberg from 10:00 on Sunday 20 September 2026. Hundreds of participants are invited to walk or run routes of 5, 10 or 21 kilometres while fundraising for organisations defending human rights worldwide. Risk assessed as Low because this is an organised sporting and solidarity event rather than a contentious demonstration, although temporary participant traffic, parking pressure and route-management requirements are likely around the campus and adjoining woodland paths."
+},
+
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-04T12:45:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Vrouwen in het Zwart has confirmed its monthly public wake beside the Lieverdje statue on Spui from 12:45 to 13:45 on Friday 4 September 2026. Participants will protest Israeli military and occupation policies affecting Palestinians and call for protection of civilians, humanitarian access, justice and accountability. Risk assessed as Low because this is a small, long-established and stationary demonstration with no march or disruption mechanism. Minor pedestrian congestion and routine police observation are possible in the central shopping area."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Maastricht",
+  lat: 50.85173,
+  lng: 5.69037,
+  address: "Markt, beside the J.P. Minckelers statue near Boschstraat",
+  postcode: "6211 CK",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T16:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Vrouwen in het Zwart has confirmed its monthly Palestine-solidarity wake beside the J.P. Minckelers statue on Markt from 16:00 to 17:00 on Saturday 5 September 2026. Participants will protest violence and occupation affecting Palestinians and call for peace, justice and accountability. Risk assessed as Low because this is an established stationary vigil without a procession, blockade or anticipated confrontation. Minor pedestrian congestion is possible on the market square."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Breed Platform Palestina and Vrouwen in het Zwart have confirmed their weekly demonstration on Haarlem's Grote Markt from 14:00 to 15:00 on Sunday 6 September 2026. Participants will oppose Israeli military and occupation policies and call for civilian protection, humanitarian access, justice and accountability. Risk assessed as Low because this is an established stationary demonstration with no march or disruptive action announced. Routine police observation and localised pedestrian crowding are possible."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48 has confirmed its continuing Sunday silent protest beside the Lieverdje statue on Spui at 17:00 on 6 September 2026. Israeli, Palestinian, Dutch and other participants will call for civilian protection, unrestricted humanitarian assistance, justice, accountability and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil with no march or disruption mechanism. A small police presence and limited pedestrian crowding are possible."
+},
+
+{
+  title: "Stille Rode Lijn Vigil for Victims of War",
+  city: "Zaltbommel",
+  lat: 51.8127,
+  lng: 5.2445,
+  address: "Waalkade",
+  postcode: "",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-11T19:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Organisers have confirmed a Stille Rode Lijn silent vigil on the Waalkade in Zaltbommel from 19:00 to 19:30 on Friday 11 September 2026. Participants will commemorate victims in Gaza and the West Bank as well as victims of violence in Sudan, Syria, Iran and Ukraine. The action forms part of a recurring second-and-fourth-Friday schedule during 2026. Risk assessed as Low because this is a brief, peaceful and stationary vigil with no march, obstruction or hostile counter-presence announced."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Groningen",
+  lat: 53.21849,
+  lng: 6.56666,
+  address: "Waagplein",
+  postcode: "9712 JZ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T13:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Vrouwen in het Zwart has confirmed a Palestine-solidarity wake on Waagplein in Groningen from 13:00 to 14:00 on Saturday 12 September 2026. Participants will protest Israeli military and occupation policies affecting Palestinians and call for civilian protection, peace, justice and accountability. Risk assessed as Low because this is a small, established and non-violent stationary vigil. Only minor pedestrian congestion is expected around the square."
+},
+
+{
+  title: "Klimaatmars 2026 — Kies voor onze toekomst, weg met fossiel",
+  city: "Amsterdam",
+  lat: 52.3676,
+  lng: 4.9041,
+  address: "Amsterdam city centre — assembly point and march route TBC",
+  postcode: "",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-12T12:00:00",
+  source: "https://klimaatmars.nl/",
+  summary: "The Klimaatcrisis Coalitie has confirmed a major climate march in Amsterdam on Saturday 12 September 2026 under the message 'Choose our future — away from fossil fuels'. Thousands of participants are expected to demand climate justice, an accelerated transition away from fossil fuels, stronger political action and greater accountability for major polluters. The organiser has confirmed the city and date but has not yet published the assembly point, route or start time, so CityIntel's standard 12:00 timestamp and an Amsterdam city-centre map anchor have been applied transparently. Risk assessed as High because the mobilisation may attract a very large crowd and require extensive road closures, police deployment, stewarding and changes to tram and bus services. Organisers describe an authorised public march and have not announced violent action."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-13T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Breed Platform Palestina and Vrouwen in het Zwart have confirmed their weekly demonstration on Haarlem's Grote Markt from 14:00 to 15:00 on Sunday 13 September 2026. Participants will oppose violence and occupation affecting Palestinians and call for civilian protection, humanitarian assistance, justice and accountability. Risk assessed as Low because this is an established stationary demonstration with no march or obstruction announced. Minor pedestrian crowding and routine police monitoring are possible."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-13T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48 has confirmed its continuing Sunday silent protest beside the Lieverdje statue on Spui at 17:00 on 13 September 2026. Participants from Israeli, Palestinian, Dutch and other communities will call for civilian protection, humanitarian access, justice, accountability and an end to occupation and violence. Risk assessed as Low because this is an established one-hour silent vigil with no procession or deliberate disruption. Limited pedestrian congestion and routine police observation are possible."
+},
+
+{
+  title: "National Demonstration Against Asylum-Reception Centres",
+  city: "The Hague",
+  lat: 52.0837,
+  lng: 4.3165,
+  address: "Malieveld",
+  postcode: "2594 AA",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-19T12:30:00",
+  source: "https://www.facebook.com/NederlandZegtNeeTegenAZC/",
+  summary: "Nederland Zegt Nee Tegen AZC and supporting local campaigns have announced a national demonstration at Malieveld in The Hague from approximately 12:30 on Saturday 19 September 2026. Participants will oppose asylum-reception centres, emergency accommodation and current national migration and asylum policies. Organisers are promoting a public manifestation and have not called for violent action. Risk assessed as High because a separate anti-asylum mobilisation at Malieveld in September 2025 escalated into serious disorder involving attacks on police and journalists, property damage, an incursion onto the A12 and a burning police vehicle. Significant police deployment, barriers, transport controls and possible counter-demonstrations should therefore be anticipated."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-20T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Breed Platform Palestina and Vrouwen in het Zwart have confirmed their weekly demonstration on Haarlem's Grote Markt from 14:00 to 15:00 on Sunday 20 September 2026. Participants will protest Israeli military and occupation policies and call for civilian protection, humanitarian access, justice and accountability. Risk assessed as Low because this is an established stationary action with no march, blockade or confrontation announced. Minor pedestrian congestion and routine police monitoring are possible."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-20T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48 has confirmed its continuing Sunday silent protest beside the Lieverdje statue on Spui at 17:00 on 20 September 2026. Participants will call for civilian protection, unrestricted humanitarian assistance, justice, accountability and an end to occupation and violence affecting Palestinians. Risk assessed as Low because this is an established and non-violent one-hour vigil without a procession or disruption mechanism. Only localised pedestrian crowding is expected."
+},
+
+{
+  title: "Stille Rode Lijn Vigil for Victims of War",
+  city: "Zaltbommel",
+  lat: 51.8127,
+  lng: 5.2445,
+  address: "Waalkade",
+  postcode: "",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-25T19:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "A Stille Rode Lijn silent vigil has been confirmed on the Waalkade in Zaltbommel from 19:00 to 19:30 on Friday 25 September 2026. Participants will commemorate victims in Gaza and the West Bank and victims of violence in Sudan, Syria, Iran and Ukraine. The event forms part of the organisers' recurring second-and-fourth-Friday schedule. Risk assessed as Low because this is a peaceful, brief and stationary vigil with no anticipated road obstruction or hostile counter-presence."
+},
+
+{
+  title: "Vrouwen in het Zwart Palestine Solidarity Wake",
+  city: "Groningen",
+  lat: 53.21849,
+  lng: 6.56666,
+  address: "Waagplein",
+  postcode: "9712 JZ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T13:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Vrouwen in het Zwart has confirmed a Palestine-solidarity wake on Waagplein in Groningen from 13:00 to 14:00 on Saturday 26 September 2026. Participants will oppose Israeli military and occupation policies and call for protection of Palestinians, peace, justice and accountability. Risk assessed as Low because this is an established, peaceful and stationary vigil without a procession or disruption plan. Minor pedestrian congestion is possible."
+},
+
+{
+  title: "Mensen in het Zwart Palestine Solidarity Wake",
+  city: "Nijmegen",
+  lat: 51.8459,
+  lng: 5.8657,
+  address: "Koningsplein to Mariënburg",
+  postcode: "",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Mensen in het Zwart has confirmed its monthly Palestine-solidarity wake between Koningsplein and Mariënburg in Nijmegen from 14:00 to 16:00 on Saturday 26 September 2026. Participants will form a long line displaying individual protest signs opposing violence and policies affecting Palestinians and calling for justice and accountability. Risk assessed as Low because this is a peaceful and stationary public wake with no march, blockade or confrontation announced. Localised pedestrian congestion is possible in the central shopping district."
+},
+
+{
+  title: "Demonstration Against Israel's Actions in Palestine",
+  city: "Haarlem",
+  lat: 52.38158,
+  lng: 4.63562,
+  address: "Grote Markt",
+  postcode: "2011 RC",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-27T14:00:00",
+  source: "https://rightsforum.org/agenda/page/2/",
+  summary: "Breed Platform Palestina and Vrouwen in het Zwart have confirmed their weekly demonstration on Haarlem's Grote Markt from 14:00 to 15:00 on Sunday 27 September 2026. Participants will oppose Israeli military and occupation policies and call for civilian protection, humanitarian access, justice and accountability. Risk assessed as Low because this is an established stationary demonstration with no march or disruptive activity announced. Routine police observation and minor pedestrian congestion are possible."
+},
+
+{
+  title: "Gate48 Sunday Silent Protest for Palestine",
+  city: "Amsterdam",
+  lat: 52.36881,
+  lng: 4.88911,
+  address: "Spui, beside 't Lieverdje",
+  postcode: "1012 WX",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-27T17:00:00",
+  source: "https://gate48.org/silent-protest/",
+  summary: "Gate48 has confirmed its continuing Sunday silent protest beside the Lieverdje statue on Spui at 17:00 on 27 September 2026. Participants will call for protection of Palestinian civilians, humanitarian access, justice, accountability and an end to occupation and continuing violence. Risk assessed as Low because this is an established one-hour silent vigil without a procession or deliberate disruption. Only minor pedestrian congestion and routine police observation are anticipated."
+},
+  
 
 {
   title: "ATVO Venice Public Transport Strike",
