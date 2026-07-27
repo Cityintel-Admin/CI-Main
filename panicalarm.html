@@ -441,7 +441,7 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
         </div>
 
         <div class="grid-2">
-          <section class="card">
+          <section class="card" id="panicDistributionCard">
             <h3>Share with employee</h3>
             <p style="color:#8e97a3;font-size:13px;margin-bottom:16px">Send a panic access link directly to an employee's email or copy it for other channels. The link opens a stripped-down mobile page — no login required.</p>
 
@@ -507,7 +507,7 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" id="panicActivationCard">
             <div class="status-head">
               <div class="status-pill" id="statusPill">
                 <span class="dot" id="statusDot"></span>
@@ -517,9 +517,10 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
             </div>
 
             <div class="status-meta muted" id="statusMeta"></div>
+            <div id="panicResponderNotice" style="display:none;margin-top:12px;padding:10px 12px;border:1px solid rgba(227,27,35,.30);border-radius:10px;background:rgba(227,27,35,.07);color:#dce4ee;font-size:12px"></div>
             <div class="divider"></div>
 
-            <div class="form-grid">
+            <div class="form-grid" id="panicActivationForm">
               <div class="field" id="inviteBlock">
                 <label for="inviteCode">Invite code (for shared links)</label>
                 <input id="inviteCode" type="text" placeholder="e.g. 8-char invite code" autocomplete="off" />
@@ -563,7 +564,7 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
               </div>
             </div>
 
-            <div class="actions">
+            <div class="actions" id="panicActivationActions">
               <button id="activateBtn" class="btn danger">Activate Panic Alarm</button>
 
               <select id="resetReason" class="btn" title="Reset reason" style="max-width: 220px;">
@@ -723,6 +724,58 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
       els.inviteCode.placeholder = "not required when logged in";
     }
   })();
+
+
+  function isOperatorResponder() {
+    try {
+      return !!(
+        window.CIAuth &&
+        CIAuth.isLoggedIn() &&
+        CIAuth.isOperator?.() &&
+        !CIAuth.isOrgAdmin?.() &&
+        !CIAuth.isMasterAdmin?.()
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function applyPanicPageRolePermissions() {
+    if (!isOperatorResponder()) return;
+
+    const distribution = document.getElementById('panicDistributionCard');
+    const grid = document.querySelector('.grid-2');
+    const form = document.getElementById('panicActivationForm');
+    const activate = document.getElementById('activateBtn');
+    const reset = document.getElementById('resetBtn');
+    const resetReason = document.getElementById('resetReason');
+    const notice = document.getElementById('panicResponderNotice');
+    const subtitle = document.querySelector('.page-header .muted');
+
+    if (distribution) distribution.style.display = 'none';
+    if (grid) grid.style.gridTemplateColumns = 'minmax(0,1fr)';
+    if (form) form.style.display = 'none';
+    if (activate) activate.style.display = 'none';
+
+    // Operators resolve one specific alarm from the Alarm Log or the shared
+    // platform banner. The legacy reset-all controls remain admin-only.
+    if (reset) reset.style.display = 'none';
+    if (resetReason) resetReason.style.display = 'none';
+
+    if (notice) {
+      notice.style.display = 'block';
+      notice.textContent = 'Responder mode: you can acknowledge and resolve active panic alarms. Employee link distribution and administrative activation remain restricted to organisation administrators.';
+    }
+    if (subtitle) {
+      subtitle.textContent = 'Emergency response view for monitoring, acknowledgement and resolution of active panic alarms.';
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyPanicPageRolePermissions);
+  } else {
+    applyPanicPageRolePermissions();
+  }
 
   // --- UI helpers (these were missing; fixes your console error) ---
   function setPill(active) {
@@ -973,6 +1026,11 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
   async function onActivate() {
     clearMsg();
 
+    if (isOperatorResponder()) {
+      setMsg('Operators cannot activate panic alarms on behalf of another person.');
+      return;
+    }
+
     try {
       await ensureSharedJoin();
     } catch {
@@ -1020,6 +1078,10 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
 
   async function onReset() {
     clearMsg();
+    if (isOperatorResponder()) {
+      setMsg('Select a specific active alarm and use Mark resolved.');
+      return;
+    }
     setBusy(true);
     try {
       const reason = els.resetReason?.value || "Confirmed safe";
@@ -1222,6 +1284,7 @@ function getGeoOnce(timeoutMs = 5000){
           <div class="muted" style="font-size:11px">${fmtTime(r.activated_at)}${r.location?' · '+esc(r.location):''}${r.email?' · '+esc(r.email):''}${r.phone?' · '+esc(r.phone):''}</div>
           ${r.message?`<div style="font-size:11px;color:rgba(255,200,180,.7);font-style:italic">"${esc(r.message)}"</div>`:''}
           ${r.acknowledged_by?`<div style="font-size:11px;color:#6fcf6f">Acknowledged by ${esc(r.acknowledged_by)}</div>`:''}
+          ${r.resolved_by?`<div style="font-size:11px;color:#93c5fd">Resolved by ${esc(r.resolved_by)}${r.resolved_at?' at '+fmtTime(r.resolved_at):''}</div>`:''}
         </div>
         <div class="al-resolved-badge">✓ ${esc(r.reset_reason||'Resolved')}</div>
       </div>`;
@@ -1403,6 +1466,13 @@ function getGeoOnce(timeoutMs = 5000){
 
   // ── Send invite via worker ─────────────────────────────────────────
   async function sendInvite() {
+    try {
+      if (window.CIAuth?.isOperator?.() && !window.CIAuth?.isOrgAdmin?.() && !window.CIAuth?.isMasterAdmin?.()) {
+        setStatus('Employee panic-link distribution is restricted to organisation administrators.', 'err');
+        return;
+      }
+    } catch (_) {}
+
     const recipientEmail = (document.getElementById('sendToEmail')?.value || '').trim();
     const recipientName  = (document.getElementById('sendToName')?.value  || '').trim();
     const inviteCode     = getCurrentInviteCode();
@@ -1620,6 +1690,7 @@ function getGeoOnce(timeoutMs = 5000){
   // so admins don't need to look it up manually
   (async function loadOrgInviteCode() {
     try {
+      if (window.CIAuth?.isOperator?.() && !window.CIAuth?.isOrgAdmin?.() && !window.CIAuth?.isMasterAdmin?.()) return;
       const profile = JSON.parse(localStorage.getItem('ci_profile') || '{}');
       if (!profile.email) return;
 
