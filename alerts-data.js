@@ -7,6 +7,702 @@ window.alertsData =[
 
 
 
+
+{
+  title: "ATVO Venice Public Transport Strike",
+  city: "Venice",
+  lat: 45.4380,
+  lng: 12.3184,
+  address: "ATVO network across Venice province — map anchor: Piazzale Roma bus terminal",
+  postcode: "30135",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T16:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL and FAISA-CISAL have registered a four-hour strike involving ATVO public-transport personnel in Venice province from 16:00 to 20:00 on Saturday 5 September 2026. The action may reduce bus connections serving Venice, Mestre, Marco Polo Airport, the eastern Veneto coastal area and surrounding municipalities. The official Ministry of Infrastructure and Transport notice confirms the timing and affected operator but does not currently identify an associated public rally. Risk assessed as Medium because cancellations and reduced services may affect airport transfers, evening travel and visitor movements across the Venice transport network."
+},
+
+{
+  title: "Trenitalia Piemonte Regional Rail Strike",
+  city: "Turin",
+  lat: 45.0615,
+  lng: 7.6780,
+  address: "Trenitalia regional network across Piedmont — map anchor: Torino Porta Nuova station",
+  postcode: "10125",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-07T21:18:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "ORSA Ferrovie has registered a 24-hour strike involving Trenitalia Regional Customer Operations personnel across Piedmont from 21:18 on Monday 7 September until 21:17 on Tuesday 8 September 2026. Regional trains, customer assistance, ticketing and station-related operations may experience cancellations, reduced staffing and delays. The official notice does not currently identify a demonstration or picket location. Risk assessed as High because the action covers a complete weekday operating period and may disrupt commuter and intercity connections through Turin and across the wider Piedmont rail network."
+},
+
+{
+  title: "DB Cargo Lombardia Freight-Rail Strike",
+  city: "Milan",
+  lat: 45.4915,
+  lng: 9.2714,
+  address: "DB Cargo rail-freight operations across Lombardy — map anchor: Milano Smistamento freight yard",
+  postcode: "20134",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T00:01:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL and ORSA Ferrovie have registered a 24-hour strike by DB Cargo Italia personnel in Lombardy from 00:01 to 23:59 on Thursday 10 September 2026. Freight-rail services, industrial deliveries, terminal movements and cross-border cargo connections may experience delays or cancellations. The official notice confirms the regional freight action but does not list a public demonstration. Risk assessed as Medium because the strike may affect industrial supply chains and logistics terminals across Lombardy, although direct disruption to passenger services is expected to be limited."
+},
+
+{
+  title: "ATAF Foggia Public Transport Strike",
+  city: "Foggia",
+  lat: 41.4622,
+  lng: 15.5446,
+  address: "ATAF city bus network — map anchor: Piazza Cavour",
+  postcode: "71121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T08:30:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL and FAISA-CISAL have registered an eight-hour strike affecting ATAF public-transport personnel in Foggia on Thursday 10 September 2026. The action will operate from 08:30 to 12:30 and again from 15:30 to 19:30. Urban bus cancellations, longer waiting times and increased pressure on road traffic and alternative transport are possible throughout the city. Risk assessed as Medium because the two strike periods cover significant daytime and evening commuter windows, although the official notice does not confirm a public demonstration or deliberate road obstruction."
+},
+
+{
+  title: "Rome Airports Security Personnel Strike",
+  city: "Fiumicino",
+  lat: 41.8003,
+  lng: 12.2389,
+  address: "Rome Fiumicino and Ciampino airports — map anchor: Fiumicino Airport terminals",
+  postcode: "00054",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-13T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAST-Confsal has registered a 24-hour nationwide-relevance strike involving ADR Security personnel at Rome Fiumicino and Ciampino airports on Sunday 13 September 2026. Passenger screening, access controls and airport-security operations may experience reduced staffing, longer queues and associated flight or terminal delays. The Ministry of Infrastructure and Transport confirms the full-day action but does not currently announce a public rally. Risk assessed as High because both airports serving the Italian capital are affected and disruption to security processing may have significant consequences for domestic and international passengers."
+},
+
+{
+  title: "Arriva Italia Bergamo Public Transport Strike",
+  city: "Bergamo",
+  lat: 45.6904,
+  lng: 9.6753,
+  address: "Arriva Italia Bergamo network — map anchor: Bergamo bus station, Piazzale Marconi",
+  postcode: "24122",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T08:30:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL and FAISA-CISAL have registered a four-hour strike involving Arriva Italia's Bergamo operating unit from 08:30 to 12:30 on Monday 14 September 2026. Bus services linking Bergamo with surrounding municipalities may be reduced or cancelled during the morning travel period. Risk assessed as Medium because the action coincides with weekday commuter and school movements and may increase road congestion and pressure on alternative services. No public demonstration is currently listed in the official notice."
+},
+
+{
+  title: "Naples Metro Operations Strike",
+  city: "Naples",
+  lat: 40.8529,
+  lng: 14.2726,
+  address: "ANM metro network — map anchor: Napoli Garibaldi metro station",
+  postcode: "80142",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T12:45:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "USB Lavoro Privato has registered a four-hour strike affecting ANM metro and rail-area personnel in Naples from 12:45 to 16:45 on Tuesday 15 September 2026. Metro services may be suspended, reduced or subject to longer intervals during the afternoon, with additional crowding possible on buses and at major interchange stations. Risk assessed as Medium because the action affects core urban rail infrastructure during an active weekday period, although no associated demonstration or station occupation is currently confirmed."
+},
+
+{
+  title: "Autolinee Toscane Florence 24-Hour Bus Strike",
+  city: "Florence",
+  lat: 43.7765,
+  lng: 11.2470,
+  address: "Autolinee Toscane Florence network — map anchor: Santa Maria Novella transport hub",
+  postcode: "50123",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-15T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "COBAS Lavoro Privato and FAISA-CISAL have registered separate 24-hour strikes affecting Autolinee Toscane personnel serving the Florence basin and the city's former Linea network on Tuesday 15 September 2026. Urban and regional bus services may experience extensive cancellations outside legally protected operating windows. Risk assessed as High because multiple operating units in the Florence public-transport system are affected throughout the day, potentially causing substantial commuter, visitor and city-centre traffic disruption. The official register does not currently confirm a central rally or picket."
+},
+
+{
+  title: "Autolinee Toscane Prato 24-Hour Bus Strike",
+  city: "Prato",
+  lat: 43.8794,
+  lng: 11.0967,
+  address: "Autolinee Toscane Prato operating network — map anchor: Prato Centrale station",
+  postcode: "59100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAISA-CISAL has registered a 24-hour strike involving Autolinee Toscane personnel at the Prato operating unit on Tuesday 15 September 2026. Bus connections within Prato and between neighbouring municipalities may be cancelled or reduced outside guaranteed service periods. Risk assessed as Medium because the full-day action may significantly affect commuting, school travel and access to Prato's rail stations, although no public procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Autolinee Toscane Florence Urban Bus Strike",
+  city: "Florence",
+  lat: 43.7765,
+  lng: 11.2470,
+  address: "Core Florence urban bus network — map anchor: Santa Maria Novella transport hub",
+  postcode: "50123",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-18T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAISA-CISAL has registered a 24-hour strike affecting Autolinee Toscane personnel assigned to Florence's principal urban bus network on Friday 18 September 2026. Extensive cancellations or reduced frequencies may occur outside statutory guarantee windows. Risk assessed as High because the action affects core urban routes on a working Friday and may increase congestion, taxi demand and crowding around Santa Maria Novella and central Florence. No related public rally has yet been listed."
+},
+
+{
+  title: "RFI Bologna Rail Operations Strike",
+  city: "Bologna",
+  lat: 44.5055,
+  lng: 11.3410,
+  address: "RFI ONAE–ONI Bologna operations — map anchor: Bologna Centrale station",
+  postcode: "40121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-21T09:01:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL and ORSA Ferrovie have registered an eight-hour strike involving operational and administrative RFI ONAE–ONI personnel in Bologna from 09:01 to 17:00 on Monday 21 September 2026. Infrastructure management and rail operations may experience delays, reduced staffing or timetable disruption through the major Bologna rail junction. Risk assessed as Medium because Bologna Centrale is a critical national interchange, although the strike is limited to a specified RFI workforce and no public demonstration is currently confirmed."
+},
+
+{
+  title: "Busitalia Umbria Regional Public Transport Strike",
+  city: "Perugia",
+  lat: 43.1036,
+  lng: 12.3755,
+  address: "Busitalia Sita Nord network across Umbria — map anchor: Perugia Fontivegge station",
+  postcode: "06124",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-22T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "USB Lavoro Privato has registered a 24-hour regional strike involving Busitalia Sita Nord personnel across Umbria on Tuesday 22 September 2026. The official notice states that different operating arrangements will apply across the regional network. Bus and related public-transport services in Perugia, Terni and other municipalities may be reduced outside guaranteed periods. Risk assessed as Medium because the action covers an entire region and may affect commuters, students and interurban travel, although no public rally or blockade has been confirmed."
+},
+
+{
+  title: "CSLE–FISI Nationwide Multi-Sector Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Nationwide — public and private sectors, rail, maritime and local public transport",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-25T21:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "CSLE has registered a nationwide multi-sector strike with participation from FISI covering public and private-sector workers from Friday 25 into Saturday 26 September 2026. Rail and maritime personnel are scheduled to strike from 21:00 on 25 September until 21:00 on 26 September, while local public transport is scheduled to be affected between 08:00 and 21:00 on 26 September. Other participating sectors will follow their applicable 24-hour arrangements. Risk assessed as High because the combined action may disrupt rail, ferry, bus, public-service and private-sector operations across Italy simultaneously. The official transport register confirms the strike but does not yet list central demonstrations or city-specific pickets."
+},
+
+{
+  title: "Nationwide ENAV and Techno Sky Air-Traffic Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Airports and air-navigation facilities nationwide",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-30T13:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "UILT-UIL has registered coordinated four-hour strikes involving personnel at ENAV and Techno Sky from 13:00 to 17:00 on Wednesday 30 September 2026. ENAV provides air-traffic management services while Techno Sky supports the technology and infrastructure used for air-navigation operations. Flight delays, regulated departures, cancellations and knock-on disruption may affect airports throughout Italy. Risk assessed as High because the action concerns nationally significant air-traffic infrastructure during the afternoon operating period, although statutory protections and guaranteed flights may limit the final impact."
+},
+  
+
+{
+  title: "Brescia Pride 2026",
+  city: "Brescia",
+  lat: 45.5507,
+  lng: 10.2214,
+  address: "Campo Marte, Via Campo Marte — city-centre procession returning to Campo Marte",
+  postcode: "25128",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T15:30:00",
+  source: "https://www.instagram.com/p/DOBuplMCJ5_/",
+  summary: "The Brescia Pride organising committee has confirmed its 2026 LGBTQIA+ rights march for Saturday 5 September. Participants will assemble at Campo Marte, with the procession beginning at 15:30 and travelling through central Brescia before returning to Campo Marte for the closing programme. The mobilisation will promote equality, protection from discrimination, transgender and LGBTQIA+ rights, bodily autonomy and greater inclusion within public institutions and local communities. Risk assessed as Medium because the moving city-centre procession, vehicles and music are likely to require rolling road closures, police liaison, stewarding and temporary changes to local bus services. The organisers promote a peaceful public march and no specific counter-demonstration has been identified."
+},
+
+{
+  title: "Brianza Pride 2026 — Cologno Monzese to Brugherio",
+  city: "Cologno Monzese",
+  lat: 45.5303,
+  lng: 9.2780,
+  address: "Cologno Centro M2 Metro Station — march to Brugherio",
+  postcode: "20093",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T15:30:00",
+  source: "https://www.opl.it/evento/12-09-2026-BRIANZA-PRIDE-2026-.php",
+  summary: "Rete Brianza Pride has confirmed an LGBTQIA+ rights procession from Cologno Monzese to Brugherio on Saturday 12 September 2026. Participants will assemble at Cologno Centro Metro station before the march departs at 15:30, crossing from the Milan metropolitan area into the Province of Monza and Brianza. Organisers describe the route as a political effort to bring visibility, equality and community organising into suburban territories that are often marginalised within national debates about LGBTQIA+ rights. Risk assessed as Medium because the inter-municipal procession will require rolling traffic restrictions, police and steward coordination and temporary changes to local transport. No violent intent or confirmed hostile counter-mobilisation has been announced."
+},
+
+{
+  title: "First Legnano Pride March",
+  city: "Legnano",
+  lat: 45.5947,
+  lng: 8.9188,
+  address: "Piazza Monumento / Piazza Alberto da Giussano — march to Piazza Mercato",
+  postcode: "20025",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T12:00:00",
+  source: "https://www.liberastampa.net/legnano-pride-parte-da-centro-pertini-13-settembre-prima-sfilata-in-citta/",
+  summary: "Local LGBTQIA+ organisations have confirmed Legnano's first Pride procession for Sunday 13 September 2026. The march will begin beside the Alberto da Giussano monument and travel through the city to Piazza Mercato, where a closing stage, information stands, performances and contributions from community organisations are planned. The campaign is being developed around inclusion, civil rights, transfeminism, disability, migrant communities and participation by people who are frequently marginalised. No dependable public start time has yet been published, so CityIntel's standard 12:00 timestamp has been applied pending an organiser update. Risk assessed as Medium because the city's first Pride procession will require road closures, stewarding and police liaison and may attract political or religious opposition, although no specific counter-protest has been announced."
+},
+
+{
+  title: "Milan Fashion Week March to End Fur",
+  city: "Milan",
+  lat: 45.4658,
+  lng: 9.1866,
+  address: "Piazza Cordusio — final march route TBC",
+  postcode: "20123",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:30:00",
+  source: "https://www.instagram.com/p/DbHPbpeCIOO/",
+  summary: "Animal-rights campaigners have confirmed a major anti-fur march from Piazza Cordusio at 14:30 on Saturday 26 September 2026 during Milan Fashion Week. The action forms part of six days of protest targeting the fashion industry's continued use and promotion of animal fur. Participants will demand that fashion houses, retailers and industry bodies eliminate fur and adopt animal-free materials. A final procession route and list of targeted fashion locations remain pending. Risk assessed as Medium because the demonstration will occur during Milan Fashion Week in the heavily congested central shopping and fashion district, where police barriers, traffic restrictions and direct actions outside commercial premises are possible. Organisers promote non-violent animal-rights campaigning, but confrontation with security personnel or counter-presence cannot be ruled out."
+},
+  
+
+  {
+  title: "Catalan Diada Independence Demonstration — Barcelona",
+  city: "Barcelona",
+  lat: 41.3851,
+  lng: 2.1734,
+  address: "Two columns: Gran Via at Carrer de Casanova and Via Laietana beside Barcelona Cathedral — converging on Plaça de Catalunya",
+  postcode: "08007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-11T17:14:00",
+  source: "https://diada.assemblea.cat/barcelona/",
+  summary: "The Assemblea Nacional Catalana and partner organisations have confirmed a major Catalan Diada independence demonstration in Barcelona at 17:14 on Friday 11 September 2026. Two processions will move simultaneously towards Plaça de Catalunya. The 'Present' column will begin at Gran Via and Carrer de Casanova and travel through Plaça Universitat and Ronda Universitat. The 'Future' column will begin on Via Laietana beside Barcelona Cathedral and travel through Ronda de Sant Pere. Organisers will advocate Catalan independence, protection of the Catalan language, improved public services, national self-determination and greater control over economic and territorial policy. Risk assessed as High because the annual Diada mobilisation can attract very large crowds and will involve two simultaneous central-city processions, extensive road closures, Metro congestion and a substantial police and stewarding operation. The organisers promote peaceful civic mobilisation, but isolated political counter-presence or friction remains possible."
+},
+
+{
+  title: "Catalan Diada Independence Demonstration — Girona",
+  city: "Girona",
+  lat: 41.9824,
+  lng: 2.8249,
+  address: "Plaça de Pompeu Fabra, outside the Generalitat offices — march via Gran Via de Jaume I and Avinguda Ramon Folch to La Copa",
+  postcode: "17002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T17:14:00",
+  source: "https://diada.assemblea.cat/girona/",
+  summary: "Catalan independence organisations have confirmed a Diada demonstration beginning outside the Generalitat offices at Plaça de Pompeu Fabra in Girona at 17:14 on Friday 11 September 2026. Participants will march along Gran Via de Jaume I and Avinguda Ramon Folch, passing the Rotonda del Rellotge before concluding at La Copa. The mobilisation will demand Catalan independence, national self-determination, protection of the Catalan language and stronger public and social institutions. Risk assessed as Medium because the moving city-centre demonstration will require road closures, police liaison, stewarding and temporary changes to bus and vehicle access. The event is promoted as peaceful and civic, and no specific disorder warning has been published."
+},
+
+{
+  title: "Catalan Diada Independence Demonstration — Amposta",
+  city: "Amposta",
+  lat: 40.7103,
+  lng: 0.5808,
+  address: "Two columns from Carrer Sebastià Juan Arbó at Carrer Itàlia and Avinguda Santa Bàrbara at Carrer Elisabets — converging on the Amposta Suspension Bridge",
+  postcode: "43870",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T16:30:00",
+  source: "https://diada.assemblea.cat/amposta/",
+  summary: "The Assemblea Nacional Catalana and supporting organisations have confirmed a decentralised Catalan Diada mobilisation in Amposta from 16:30 on Friday 11 September 2026. The 'Present' column will depart from the junction of Carrer Sebastià Juan Arbó and Carrer Itàlia and travel via Avinguda de la Ràpita, Carrer de Sant Josep and the N-340a. The 'Future' column will depart from Avinguda Santa Bàrbara at Carrer Elisabets and travel through Avinguda Alcalde Palau and the N-340a. Both processions will converge at the Amposta Suspension Bridge. Risk assessed as Medium because the two moving columns and convergence at a major river crossing will require road closures, traffic diversions, police deployment and stewarding. Organisers promote peaceful civic action and no violent intent has been announced."
+},
+
+  {
+  title: "Mallorca March for Enforcement of Feline-Colony Protection Law",
+  city: "Palma",
+  lat: 39.5743,
+  lng: 2.6531,
+  address: "Plaça d'Espanya — march to Plaça de Cort",
+  postcode: "07002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.instagram.com/reel/DaherNyiv17/",
+  summary: "Animal-welfare organisations, feline-colony managers, rescuers and supporters have confirmed a public march in Palma at 12:00 on Sunday 6 September 2026. Participants will assemble at Plaça d'Espanya before marching to Plaça de Cort as part of the nationwide 'Ayuntamientos, cumplid la ley' mobilisation. The campaign demands effective municipal enforcement of Spain's Law 7/2023, adequate resources for community-cat colonies, continuous capture-neuter-return programmes, veterinary attention, population monitoring and formal protection for volunteer colony managers. Risk assessed as Low because this is a peaceful animal-welfare procession with no blockade or confrontation announced. Temporary traffic restrictions and pedestrian congestion are likely between Plaça d'Espanya and the city hall area."
+},
+
+{
+  title: "Jaén Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Jaén",
+  lat: 37.7658,
+  lng: -3.7905,
+  address: "Outside Jaén City Hall, Plaza de Santa María 1",
+  postcode: "23002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.instagram.com/p/DbJK6YvIxXG/",
+  summary: "Feline-colony managers, animal-rescue organisations and supporters have confirmed a public concentration outside Jaén City Hall at 12:00 on Sunday 6 September 2026. The action forms part of a nationwide mobilisation demanding that municipalities comply fully with Law 7/2023 and establish properly funded, transparent and continuous programmes for the management and veterinary care of community-cat colonies. Participants will also seek greater institutional recognition and protection for volunteer caregivers. Risk assessed as Low because the protest is a stationary animal-welfare rally with no march, obstruction or confrontation announced. Routine local police observation and limited pedestrian congestion are possible around Plaza de Santa María."
+},
+
+{
+  title: "Gran Canaria Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Las Palmas de Gran Canaria",
+  lat: 28.1116,
+  lng: -15.4217,
+  address: "Plaza de la Feria 24",
+  postcode: "35003",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T11:00:00",
+  source: "https://www.instagram.com/p/DbJarX3Oj_W/",
+  summary: "Animal-protection organisations and community-cat caregivers have confirmed a concentration at Plaza de la Feria 24 in Las Palmas de Gran Canaria at 11:00 on Sunday 6 September 2026. The gathering is part of the nationwide campaign demanding municipal compliance with Law 7/2023, including funding for feline-colony management, veterinary treatment, effective capture-neuter-return programmes, reliable population records and institutional support for volunteer caregivers. Risk assessed as Low because the action is expected to be a peaceful and stationary gathering without a march or road blockade. Minor pavement congestion and routine police monitoring are possible around the government-administration district."
+},
+
+{
+  title: "Tenerife Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Santa Cruz de Tenerife",
+  lat: 28.4671,
+  lng: -16.2556,
+  address: "Plaza del General Weyler",
+  postcode: "38004",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T11:00:00",
+  source: "https://www.instagram.com/p/DbDWXr8NRsZ/",
+  summary: "Community-cat managers, animal-welfare organisations, rescuers and supporters have confirmed a rally at Plaza del General Weyler in Santa Cruz de Tenerife at 11:00 local time on Sunday 6 September 2026. The action forms part of the nationwide 'Ayuntamientos, cumplid la ley' campaign calling for effective municipal implementation of Law 7/2023, properly funded feline-colony programmes, veterinary support, population monitoring and recognition and protection of volunteer caregivers. Risk assessed as Low because the protest is a peaceful stationary gathering with no procession or deliberate obstruction announced. Localised pedestrian congestion and police observation are possible around the central square."
+},
+
+  {
+  title: "Galgo March Against Hunting-Dog Abuse — Mainz",
+  city: "Mainz",
+  lat: 49.9989,
+  lng: 8.2725,
+  address: "Gutenbergplatz — final march route TBC",
+  postcode: "55116",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.veto-tierschutz.de/galgo-marsch/",
+  summary: "VETO and supporting animal-welfare organisations have confirmed a Galgo March departing from Gutenbergplatz in Mainz at 12:00 on Saturday 26 September 2026. Participants, many accompanied by rescued greyhounds and other dogs, will protest the exploitation, abandonment and killing of galgos, podencos and other hunting dogs, particularly in Spain. Organisers will call for stronger animal-protection laws, enforcement against abuse and an end to practices that exclude hunting dogs from meaningful protection. Risk assessed as Low because this is a peaceful animal-welfare procession with no confrontation or blockade announced, although temporary traffic and pedestrian controls may be required along the final route."
+},
+
+{
+  title: "Galgo March Against Hunting-Dog Abuse — Stuttgart",
+  city: "Stuttgart",
+  lat: 48.7784,
+  lng: 9.1799,
+  address: "Schlossplatz — final march route TBC",
+  postcode: "70173",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.veto-tierschutz.de/galgo-marsch/",
+  summary: "Animal-welfare organisations have confirmed a Galgo March from Schlossplatz in Stuttgart at 12:00 on Saturday 26 September 2026. Participants will raise awareness of the mistreatment, abandonment and killing of Spanish galgos, podencos and other hunting dogs and demand stronger legal protections and enforcement. Rescued dogs are expected to accompany many participants. Risk assessed as Low because the march has a peaceful animal-welfare focus and no hostile counter-mobilisation or deliberate obstruction has been announced. Limited road closures, stewarding and pedestrian management may nevertheless be required around Schlossplatz and the final procession route."
+},
+
+{
+  title: "Galgo March Against Hunting-Dog Abuse — Bremen",
+  city: "Bremen",
+  lat: 53.0738,
+  lng: 8.8177,
+  address: "Theater am Goetheplatz, Goetheplatz 1–3 — final march route TBC",
+  postcode: "28203",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T12:30:00",
+  source: "https://www.veto-tierschutz.de/galgo-marsch/",
+  summary: "A Galgo March has been confirmed from the Theater am Goetheplatz in Bremen at 12:30 on Saturday 26 September 2026. Animal-welfare campaigners and rescued dogs will participate in a public procession opposing abuse and exploitation associated with the hunting and racing of galgos, podencos and other dogs. Organisers will seek stronger legal protection and accountability for abandonment and mistreatment. Risk assessed as Low because this is expected to be a peaceful and stewarded animal-welfare march. Short-term traffic controls and pedestrian congestion are possible around Goetheplatz and along the route, particularly because another national trade-union action is also scheduled in Bremen that day."
+},
+
+{
+  title: "Galgo March Against Hunting-Dog Abuse — Leipzig",
+  city: "Leipzig",
+  lat: 51.3340,
+  lng: 12.3757,
+  address: "Wilhelm-Leuschner-Platz — final march route TBC",
+  postcode: "04109",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T11:00:00",
+  source: "https://www.veto-tierschutz.de/galgo-marsch/",
+  summary: "Animal-welfare campaigners have confirmed a Galgo March assembling at Wilhelm-Leuschner-Platz in Leipzig at 11:00 on Saturday 26 September 2026. Participants will protest the exploitation, abandonment and killing of galgos, podencos and other hunting dogs and advocate stronger animal-protection laws and enforcement. Many participants are expected to attend with rescued dogs. Risk assessed as Low because this is a peaceful public-awareness procession with no confrontation or deliberate obstruction announced. Temporary traffic management and pedestrian congestion may occur along the route, particularly because Leipzig is also listed for the nationwide DGB social-state action day."
+},
+
+{
+  title: "Herborn Demonstration Against Job Cuts and Social-Welfare Reductions",
+  city: "Herborn",
+  lat: 50.6813,
+  lng: 8.3030,
+  address: "Marktplatz Herborn",
+  postcode: "35745",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T11:55:00",
+  source: "https://hessen-thueringen.dgb.de/veranstaltungen/veranstaltung/demonstration-und-kundgebung-in-herborn-rote-karte-gegen-sozialabbau/",
+  summary: "IG Metall Herborn-Betzdorf and DGB Mittelhessen have confirmed a demonstration and rally at Marktplatz Herborn from 11:55 to 14:00 on Friday 11 September 2026. Participants will oppose regional job losses, industrial closures, relocation of production, weakened collective agreements and proposed reductions to pensions, healthcare, care provision and other social protections. Organisers will call for secure employment, investment, strong collective bargaining, workplace participation and a properly funded welfare state. Risk assessed as Medium because the labour mobilisation may attract workers from several major regional employers and affect traffic and access around central Herborn. The demonstration is formally organised and no violent action has been announced."
+},
+
+{
+  title: "Berlin Sterndemo — Time for Change",
+  city: "Berlin",
+  lat: 52.5186,
+  lng: 13.4081,
+  address: "Seven feeder marches from across Berlin converging on the Rotes Rathaus, Rathausstraße 15",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-12T12:00:00",
+  source: "https://sterndemo.de/",
+  summary: "A broad coalition of Berlin civil-society organisations has confirmed a citywide Sterndemo on Saturday 12 September 2026, one week before the Berlin state election. Seven themed processions will travel from different districts and converge at the Rotes Rathaus. The marches will address climate protection, social justice, affordable housing, sustainable transport, anti-racism, feminism and defence of democratic institutions. No universal starting time for all seven routes was available at collection threshold, so CityIntel's standard 12:00 timestamp has been applied pending publication of the individual feeder schedules. Risk assessed as High because multiple simultaneous processions will cross the city during a politically sensitive election period, potentially causing extensive road closures, public-transport disruption and significant police deployment."
+},
+
+{
+  title: "DGB National Social-State Action Day — Berlin",
+  city: "Berlin",
+  lat: 52.5068,
+  lng: 13.4020,
+  address: "IG Metall Haus, Alte Jakobstraße — march to the Rotes Rathaus",
+  postcode: "10969",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://berlin-brandenburg.dgb.de/veranstaltungen/veranstaltung/demonstration-fuer-einen-gerechten-sozialstaat/",
+  summary: "The German Trade Union Confederation and its member unions have confirmed a central Berlin demonstration on Saturday 26 September 2026 as part of the nationwide 'Hart verdient' action day. Participants will assemble at the IG Metall Haus at 12:00 before marching to the Rotes Rathaus for a closing rally. The mobilisation will oppose proposed reductions to pensions, healthcare, care provision and employee protections and will call for secure jobs, fair working conditions and a properly financed welfare state. Risk assessed as Medium because the moving procession through central Berlin will require road closures, police deployment and public-transport management. The action is formally organised and no violent intent has been announced."
+},
+
+{
+  title: "DGB National Social-State Action Day — Essen",
+  city: "Essen",
+  lat: 51.4569,
+  lng: 7.0116,
+  address: "Burgplatz",
+  postcode: "45127",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:00:00",
+  source: "https://nrw.dgb.de/mitmachen/aktionstag-sozialstaat/",
+  summary: "DGB North Rhine-Westphalia and its member unions have confirmed a major regional rally at Burgplatz in Essen from 11:00 to 14:00 on Saturday 26 September 2026. The event forms part of the nationwide 'Hart verdient' action day opposing proposed reductions affecting pensions, healthcare, nursing care, employment rights and social benefits. DGB national chair Yasmin Fahimi is scheduled as the principal speaker, alongside music and supporting organisations. Risk assessed as Medium because the central NRW mobilisation may attract participants from across the state and create crowding, traffic restrictions and additional public-transport demand around Essen city centre. No violent or civil-disobedience activity has been announced."
+},
+
+{
+  title: "DGB Social-State Defenders Rally — Hamburg",
+  city: "Hamburg",
+  lat: 53.5503,
+  lng: 9.9920,
+  address: "Rathausmarkt",
+  postcode: "20095",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:55:00",
+  source: "https://nord.dgb.de/presse/pressemitteilungen/pressemitteilung/hart-verdient-fuer-einen-starken-sozialstaat-und-den-schutz-von-arbeitnehmerinnenrechten-dgb-ruft-zu-bundesweiten-demonstrationen-am-26-september-auf/",
+  summary: "DGB Hamburg and its member unions have confirmed a rally at Rathausmarkt at 11:55 on Saturday 26 September 2026 under the slogan 'Social-State Defenders Stand Together'. Participants will oppose reductions to pensions, healthcare, family support and workers' rights, including proposed changes to working hours and sickness arrangements. Organisers will call for stronger public services, secure employment and greater taxation of wealth to fund social protections. Risk assessed as Medium because previous Hamburg social-state demonstrations have attracted several thousand people, and the central Rathausmarkt gathering may require road controls, police deployment and public-transport management. The action is organised and expected to remain peaceful."
+},
+
+{
+  title: "DGB National Social-State Action Day — Kiel",
+  city: "Kiel",
+  lat: 54.3233,
+  lng: 10.1350,
+  address: "Rathausplatz",
+  postcode: "24103",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:55:00",
+  source: "https://igbau.de/Demos2026.html",
+  summary: "The German Trade Union Confederation and its member unions have scheduled a rally at Kiel Rathausplatz at 11:55 on Saturday 26 September 2026 as part of the nationwide action day against social-welfare reductions. Participants will defend pension provision, healthcare, care services, collective employment rights and secure working conditions while opposing measures that transfer the cost of national reforms onto employees and benefit recipients. Risk assessed as Medium because a regional union gathering in Kiel's central government district may cause crowding, temporary road restrictions and changes to bus movements around the Rathaus. The rally is formally organised and no confrontation or deliberate obstruction has been announced."
+},
+
+{
+  title: "DGB National Social-State Action Day — Nuremberg",
+  city: "Nuremberg",
+  lat: 49.4486,
+  lng: 11.0760,
+  address: "Kornmarkt",
+  postcode: "90402",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:33:00",
+  source: "https://bayern.dgb.de/veranstaltungen/veranstaltung/grosskundgebung-zur-sozialstaatskampagne/",
+  summary: "DGB Bavaria has confirmed a major rally at Kornmarkt in Nuremberg from 11:33 to 15:00 on Saturday 26 September 2026. The gathering is part of the nationwide 'Hart verdient' campaign opposing reductions to social security, pensions, healthcare, care provision and workplace protections. Trade union members and supporters will call for secure jobs, collective agreements, reasonable working hours and a welfare system capable of supporting employees during economic change. Risk assessed as Medium because a large regional trade-union gathering in central Nuremberg is likely to require road restrictions, police liaison and public-transport management around Kornmarkt. No violent action has been announced."
+},
+
+{
+  title: "DGB National Social-State Action Day — Rostock",
+  city: "Rostock",
+  lat: 54.0815,
+  lng: 12.1280,
+  address: "DGB Gewerkschaftshaus, August-Bebel-Straße 89",
+  postcode: "18055",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:55:00",
+  source: "https://igbau.de/Demos2026.html",
+  summary: "The German Trade Union Confederation and its member unions have scheduled a demonstration at the DGB Gewerkschaftshaus in Rostock at 11:55 on Saturday 26 September 2026. The action forms part of the nationwide mobilisation against proposed reductions to pensions, healthcare, care provision, employment protections and other elements of the social state. Participants will call for secure employment, strong collective agreements, investment in public services and social reforms that do not transfer costs onto workers. Risk assessed as Medium because a regional trade-union mobilisation may involve a moving procession, temporary road restrictions and police management around August-Bebel-Straße and central Rostock. No violent intent has been announced."
+},
+  
+
+{
+  title: "Caen Rally in Solidarity with Palestine",
+  city: "Caen",
+  lat: 49.18168,
+  lng: -0.36143,
+  address: "Place de Gaza, outside the former Chamber of Commerce, 41 Boulevard Maréchal Leclerc",
+  postcode: "14000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T15:00:00",
+  source: "https://www.france-palestine.org/Rassemblement-pour-la-Palestine-55565",
+  summary: "The Collectif 14 de Solidarité avec la Palestine, including the Calvados branch of Association France Palestine Solidarité, has confirmed a public rally at Place de Gaza in central Caen at 15:00 on Saturday 5 September 2026. Participants will call for protection of Palestinian civilians, an end to military operations and forced displacement in Gaza, humanitarian access and stronger international action. The gathering will take place outside the former Chamber of Commerce, opposite the central Monoprix on Boulevard Maréchal Leclerc. Risk assessed as Low because this is an established stationary solidarity action with no march, blockade or civil-disobedience plan announced. Police observation and limited pedestrian congestion are possible in the city-centre shopping area."
+},
+
+{
+  title: "Cahors Monthly Palestine Solidarity Rally — September",
+  city: "Cahors",
+  lat: 44.44683,
+  lng: 1.44062,
+  address: "Forecourt of Cahors Hôtel de Ville, 73 Boulevard Gambetta",
+  postcode: "46000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T11:00:00",
+  source: "https://www.ladepeche.fr/2026/01/13/une-action-pour-maintenir-lattention-sur-la-palestine-13158894.php",
+  summary: "Association France Palestine Solidarité 46 has established a Palestine-solidarity gathering on the first Saturday of every month throughout 2026. The September edition will therefore take place outside Cahors Hôtel de Ville at 11:00 on Saturday 5 September 2026. Participants will call for respect for international law, protection of Palestinian civilians, humanitarian access and continued public attention to conditions in Gaza and the occupied Palestinian territories. Risk assessed as Low because the recurring gatherings are small, peaceful and stationary, with no march or obstruction announced. Minor pavement activity and routine local-authority monitoring are possible outside the town hall."
+},
+
+{
+  title: "Rally for Comprehensive Sexual-Violence Framework Legislation",
+  city: "Paris",
+  lat: 48.86745,
+  lng: 2.32951,
+  address: "Place Vendôme",
+  postcode: "75001",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T19:00:00",
+  source: "https://idf.fsu.fr/mobilisation-vss/",
+  summary: "The feminist coalition campaigning for a comprehensive framework law against sexual violence, supported by FSU Île-de-France and partner organisations, has confirmed a rally at Place Vendôme in Paris at 19:00 on Monday 7 September 2026. Participants will demand adoption and full funding of legislation addressing sexual violence against women and children, improved victim protection, stronger judicial and institutional responses and sufficient resources for prevention and support services. Risk assessed as Medium because the action will take place in a highly sensitive central-government and judicial district, where police barriers, security controls and access restrictions are likely. The rally is formally organised and no violent or disruptive action has been announced."
+},
+
+{
+  title: "Nîmes Day-Long Anti-Corrida Demonstration",
+  city: "Nîmes",
+  lat: 43.83489,
+  lng: 4.35959,
+  address: "Outside the Arènes de Nîmes, Place des Arènes",
+  postcode: "30000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T11:30:00",
+  source: "https://paroledanimaux.fr/19-septembre-nimes-rassemblement-anti-corrida/",
+  summary: "Animal-rights campaigners have confirmed an anti-corrida demonstration outside the Arènes de Nîmes from approximately 11:30 to 18:30 on Saturday 19 September 2026. Unlike previous actions focused on a single bullfight, organisers intend to maintain a presence covering both corridas scheduled during the day. Participants will oppose bullfighting, animal suffering and the killing of bulls for public entertainment. Final stewarding and assembly details remain subject to organiser updates. Risk assessed as Medium because the prolonged protest will coincide directly with two bullfighting events and may produce verbal confrontation with spectators, enhanced policing, barriers and controlled access around the arena. Organisers are preparing a declared public demonstration and have not called for violence."
+},
+  
+  
+{
+  title: "Aberystwyth March for Independence 2026",
+  city: "Aberystwyth",
+  lat: 52.4140,
+  lng: -4.0810,
+  address: "Aberystwyth town centre — meeting point and march route TBC",
+  postcode: "SY23",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T13:00:00",
+  source: "https://www.yes.cymru/aber",
+  summary: "YesCymru and AUOBCymru have confirmed a March for Independence in Aberystwyth from 13:00 to 15:00 on Saturday 26 September 2026. The event will be the first March for Independence held in mid Wales and the eleventh mobilisation in the organisers' national series. Participants from across Wales will advocate Welsh independence through a public procession, speeches and cultural activity. The precise assembly point, street route, speakers and performers remain pending, so Aberystwyth town centre has been used as a transparent map anchor. Risk assessed as Medium because organisers expect thousands of participants and a moving procession through the town, likely requiring road closures, police liaison, stewarding and temporary changes to traffic and public-transport access. The organisers describe the march as positive and peaceful, and no event-specific disorder warning has been identified."
+},
+  
+
+{
+  title: "March for Life UK 2026",
+  city: "London",
+  lat: 51.49644,
+  lng: -0.12920,
+  address: "Emmanuel Centre, 9–23 Marsham Street — march to Parliament Square",
+  postcode: "SW1P 3DW",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:30:00",
+  source: "https://www.marchforlife.co.uk/2026-event-page/",
+  summary: "March for Life UK has confirmed its annual anti-abortion and pro-life mobilisation in central London on Saturday 5 September 2026. The principal public march will depart from the Emmanuel Centre on Marsham Street at 13:30 and proceed towards Parliament Square, where speeches and campaign activity are planned. Participants will advocate opposition to abortion and support for alternatives for pregnant women and families. A separate abortion-rights counter-demonstration has also been advertised for Parliament Square, although its final time and operating arrangements remain pending. Risk assessed as Medium because the politically and socially sensitive mobilisation will move through Westminster, may attract several thousand participants and opposing activists, and is likely to require police separation, rolling traffic controls and access management around Parliament Square. Both principal organiser groups currently promote public demonstration rather than violent action."
+},
+
+{
+  title: "Brighton World Naked Bike Ride — 20th Anniversary",
+  city: "Brighton",
+  lat: 50.84043,
+  lng: -0.14678,
+  address: "Preston Park, Preston Road — city-centre cycling route TBC",
+  postcode: "BN1 6SD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://wiki.worldnakedbikeride.org/wiki/Brighton_%26_Hove",
+  summary: "Brighton and Hove World Naked Bike Ride organisers have confirmed the twentieth-anniversary ride for Saturday 12 September 2026, with participants assembling at Preston Park from 12:00. The moving demonstration promotes cyclist visibility and safety, reduced dependence on oil and motor vehicles, environmental awareness and body positivity. The final city-centre route remains pending. The event was rescheduled from its original June date after organisers raised safety concerns concerning other simultaneous demonstrations. Risk assessed as Medium because the moving cycle protest will require police and traffic coordination across central Brighton, may affect major roads and pedestrian areas and can attract hostile or disruptive counter-presence because of its public-nudity format. The ride itself has an established peaceful record."
+},
+  
+
+  {
+  title: "Sixth Anniversary Beirut Port Explosion Justice March",
+  city: "Beirut",
+  lat: 33.9010,
+  lng: 35.5195,
+  address: "Lebanese Emigrant Statue, Charles Helou Avenue, entrance to Beirut Port — march route TBC",
+  postcode: "",
+  country: "Lebanon",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-04T17:30:00",
+  source: "https://www.facebook.com/LegalAgenda/photos/957364506426368/",
+  summary: "The Association of Families of Victims of the Beirut Port Explosion has called for a public march and commemoration on Tuesday 4 August 2026, marking the sixth anniversary of the catastrophic 2020 port explosion. Families, survivors and supporters will renew demands for truth, judicial accountability and prosecution of those responsible for the storage and handling failures that led to the blast. The central gathering is expected beside the Lebanese Emigrant Statue at the entrance to Beirut Port from approximately 17:30, while the complete starting points and procession route remain pending. Risk assessed as Medium because the anniversary mobilisation is likely to attract a significant crowd near a sensitive port and transport corridor, requiring police deployment, traffic controls and access management along Charles Helou Avenue. The event is commemorative and justice-focused, and organisers have not announced violent action."
+},
+
+{
+  title: "Protest Against CCP Persecution of Falun Gong Practitioners",
+  city: "Tel Aviv",
+  lat: 32.1096,
+  lng: 34.8413,
+  address: "Outside the Chinese Embassy, 30 HaBarzel Street, opposite 29 HaBarzel Street",
+  postcode: "6971041",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-08-04T17:30:00",
+  source: "https://www.gov.il/he/departments/dynamiccollectors/ishurmivtza?skip=0",
+  summary: "Falun Gong practitioners and supporters have received police conditions for a protest outside the Embassy of the People's Republic of China in Tel Aviv from 17:30 to 19:30 on Tuesday 4 August 2026. The gathering will oppose the Chinese Communist Party's persecution and treatment of Falun Gong practitioners in China. Israel Police records indicate an expected attendance of approximately 20 people and require the protest to remain at 30 HaBarzel Street, directly opposite the embassy at number 29. Participants are prohibited from entering the embassy building, obstructing its entrance or attaching signs or materials to the diplomatic premises. Risk assessed as Medium despite the limited expected turnout because the protest targets an operating foreign embassy and will involve police monitoring, diplomatic security restrictions and controlled access around the entrance. The action is expected to remain peaceful and stationary, with no march or road blockade authorised."
+},  
   
   
 {
@@ -7664,12 +8360,12 @@ window.alertsData =[
   city: "Paris",
   lat: 48.8675,
   lng: 2.3640,
-  address: "Place de la République (rassemblement national attendu dans les grandes villes)",
-  postcode: "75011",
+  address: "Nationwide public-sector strike and demonstrations — Paris assembly point and route TBC",
+  postcode: "75000",
   country: "France",
   continent: "Europe",
   risk: "High",
-  time: "2026-09-29T09:00:00",
+  time: "2026-09-29T12:00:00",
   source: "https://www.cestlagreve.fr/greve/fonction-publique-septembre-2026/",
   summary: "A nationwide strike and mobilization day confirmed for Tuesday 29 September 2026, called jointly by every major public-sector union (CGT, CFDT, UNSA, FSU, Solidaires, CFE-CGC, FA-FP) across state, local government, and hospital public services. Core demands: a significant increase to the civil service pay index, restoration of full sick-pay, and improved working conditions amid recruitment difficulties. Confirmed via multiple independent union sources (FSU, CFDT, Solidaires, CGT branches). Expect widespread school closures/reduced services, disrupted government office hours, and non-urgent hospital appointment delays nationwide, plus union marches in major cities — exact Paris route to be published closer to the date, but Place de la République is the customary assembly point for actions of this scale. Risk assessed as High given the scale (all three arms of the public service, unprecedented full-union unity) and precedent for large disruptive turnout on comparable past mobilisation days."
 },
@@ -7901,21 +8597,6 @@ window.alertsData =[
   source: "https://www.infobae.com/politica/2026/07/07/la-cgt-comenzara-su-plan-de-lucha-el-22-de-este-mes-cual-sera-la-primera-medida-y-que-incluye-la-agenda-de-las-protestas/",
   summary: "Fifth stage of the CGT/CTA/UTEP escalating labour protest calendar: a mobilisation proposed by Rodolfo Daer (Food Workers' Union) to mark Argentina's Industry Day, aimed at drawing attention to factory closures, suspensions, and industrial recession under the current economic programme. Confirmed as part of the calendar via multiple independent outlets, though the specific route hadn't been published yet at time of writing. Risk assessed as Medium pending more specific routing information closer to the date."
 },
-{
-  title: "Semana Social (Catholic Church-organised labour/social dialogue week)",
-  city: "Córdoba",
-  lat: -31.4201,
-  lng: -64.1888,
-  address: "Córdoba city (venue TBC)",
-  postcode: "5000",
-  country: "Argentina",
-  continent: "South America",
-  risk: "Low",
-  time: "2026-09-04T00:00:00",
-  source: "https://www.infobae.com/politica/2026/07/07/la-cgt-comenzara-su-plan-de-lucha-el-22-de-este-mes-cual-sera-la-primera-medida-y-que-incluye-la-agenda-de-las-protestas/",
-  summary: "A three-day 'Social Week' (4-6 September 2026) organised by the Comisión Episcopal Argentina (the Catholic Bishops' Conference), with confirmed CGT/CTA/UTEP delegations attending as part of their broader protest calendar. This is a more institutional dialogue/conference event rather than a street protest — included for completeness given the union confederations' confirmed participation, but risk is assessed as Low given its dialogue-oriented, church-organised nature rather than a mobilisation."
-},
-
 
 
   {
@@ -8243,221 +8924,23 @@ window.alertsData =[
 
 
 
-
-
-{
-  title: "National Trade Union Mobilisation",
-  city: "Seoul",
-  lat: 37.5665,
-  lng: 126.9780,
-  address: "Gwanghwamun Square",
-  postcode: "03172",
-  country: "South Korea",
-  continent: "Asia",
-  risk: "High",
-  time: "2026-09-12T14:00:00",
-  source: "https://www.kctu.org/",
-  summary: "The Korean Confederation of Trade Unions (KCTU) is expected to organise large-scale labour demonstrations in Seoul during September 2026 focusing on employment protections, wages and labour reform issues. Protest activity is expected around Gwanghwamun Square and central government districts. Previous KCTU mobilisations have attracted significant turnout and large police deployments. Risk is assessed as High."
-},
-{
-  title: "Constitution and Peace Rally",
-  city: "Tokyo",
-  lat: 35.6895,
-  lng: 139.6917,
-  address: "National Diet Building Area",
-  postcode: "100-0014",
-  country: "Japan",
-  continent: "Asia",
-  risk: "Medium",
-  time: "2026-09-19T12:00:00",
-  source: "https://english.kyodonews.net/",
-  summary: "Peace and constitutional activist groups are expected to organise rallies near the National Diet Building in Tokyo during September 2026. Demonstrations are expected to focus on constitutional reform, defence policy and regional security issues. The events are expected to remain peaceful but may attract large crowds in central Tokyo. Risk is assessed as Medium."
-},
-{
-  title: "Student and Youth Protest Mobilisation",
-  city: "Manila",
-  lat: 14.5995,
-  lng: 120.9842,
-  address: "Mendiola / University Belt",
-  postcode: "1000",
-  country: "Philippines",
-  continent: "Asia",
-  risk: "High",
-  time: "2026-09-21T12:00:00",
-  source: "https://www.bulatlat.com/",
-  summary: "Student organisations and activist coalitions are expected to organise demonstrations in Manila during September linked to education funding, labour rights and governance issues. Protest activity is expected around Mendiola and university districts. Demonstrations in these areas frequently involve large police deployments due to their political sensitivity. Risk is assessed as High."
-},
-{
-  title: "Farmers and Labour Protest Activity",
-  city: "New Delhi",
-  lat: 28.6139,
-  lng: 77.2090,
-  address: "Jantar Mantar",
-  postcode: "110001",
-  country: "India",
-  continent: "Asia",
-  risk: "High",
-  time: "2026-09-10T12:00:00",
-  source: "https://www.thehindu.com/",
-  summary: "Farmers unions and labour organisations are expected to continue mobilisation efforts in New Delhi during September 2026 over agricultural pricing, privatisation and labour conditions. Protest activity is expected around Jantar Mantar and other established demonstration zones. Large crowds and traffic disruption are possible. Risk is assessed as High."
-},
-{
-  title: "Public Sector and Labour Demonstration",
-  city: "Istanbul",
-  lat: 41.0082,
-  lng: 28.9784,
-  address: "Kadıköy / Central Istanbul",
-  postcode: "34710",
-  country: "Turkey",
-  continent: "Asia",
-  risk: "High",
-  time: "2026-09-15T12:00:00",
-  source: "https://www.reuters.com/world/middle-east/",
-  summary: "Labour groups and public sector unions are expected to organise demonstrations in Istanbul during September 2026 over wages, inflation and labour protections. Protest activity is expected in Kadıköy and surrounding central districts. Given Turkey's recent history of political tension and heavy police deployment at demonstrations, the risk is assessed as High."
-},
-{
-  title: "Climate and Student Demonstration",
-  city: "Jakarta",
-  lat: -6.2088,
-  lng: 106.8456,
-  address: "National Monument (Monas)",
-  postcode: "10110",
-  country: "Indonesia",
-  continent: "Asia",
-  risk: "Medium",
-  time: "2026-09-25T12:00:00",
-  source: "https://www.thejakartapost.com/",
-  summary: "Environmental and student activist groups are expected to organise demonstrations in Jakarta during global climate mobilisation week in September 2026. Protesters are expected to gather near Monas before conducting marches through central areas. Moderate disruption is possible in surrounding districts. Risk is assessed as Medium."
-},
-
-  
-  {
-  title: "UN General Assembly High-Level Week Protest Window",
-  city: "New York City",
-  lat: 40.7490,
-  lng: -73.9678,
-  address: "United Nations Headquarters, 405 E 42nd Street",
-  postcode: "10017",
-  country: "United States",
-  continent: "North America",
-  risk: "High",
-  time: "2026-09-22T12:00:00",
-  source: "https://www.un.org/en/academic-impact/2026-calendar-selected-united-nations-events",
-  summary: "The UN General Assembly High-Level Week is scheduled for 22–28 September 2026 at UN Headquarters in New York. Protest activity is expected around the UN area during this period, particularly linked to climate policy, international conflicts, human rights, Palestine/Israel, Iran, migration and global economic issues. Heightened security, motorcades, street closures and large crowds are likely. Risk is assessed as High."
-},
-{
-  title: "Climate Week NYC Mobilisation Window",
-  city: "New York City",
-  lat: 40.7580,
-  lng: -73.9855,
-  address: "Midtown Manhattan / UN Headquarters Area",
-  postcode: "10017",
-  country: "United States",
-  continent: "North America",
-  risk: "Medium",
-  time: "2026-09-20T12:00:00",
-  source: "https://www.climateweeknyc.org/",
-  summary: "Climate Week NYC is confirmed for 20–27 September 2026. The event normally attracts climate organisations, campaigners, NGOs, corporate delegations and political figures. Demonstrations, marches and direct actions are likely around Midtown Manhattan, the UN area and corporate targets during the week. Risk is assessed as Medium due to likely disruption, though most climate mobilisation is expected to remain organised and non-violent."
-},
-{
-  title: "New York City Labor Day Parade and March",
-  city: "New York City",
-  lat: 40.7549,
-  lng: -73.9840,
-  address: "44th Street and Fifth Avenue to 64th Street",
-  postcode: "10036",
-  country: "United States",
-  continent: "North America",
-  risk: "Medium",
-  time: "2026-09-06T10:00:00",
-  source: "https://www.nyc.gov/main/events/?id=461675&permalinkName=labor-day-parade&sequence=1",
-  summary: "New York City's Labor Day Parade is listed as starting at 10:00 from 44th Street and Fifth Avenue, marching north to the grandstand at 64th Street. The event brings together labour unions and workers' organisations and is expected to cause road closures along Fifth Avenue. Risk is assessed as Medium due to city-centre disruption and large organised turnout."
-},
 {
   title: "Toronto Labour Day Parade",
   city: "Toronto",
   lat: 43.6332,
   lng: -79.4177,
-  address: "Dufferin Gate, Exhibition Place",
+  address: "University Avenue south of Queen Street West — parade to Dufferin Gate, Exhibition Place",
   postcode: "M6K 3C3",
   country: "Canada",
   continent: "North America",
   risk: "Low",
-  time: "2026-09-07T12:00:00",
+  time: "2026-09-07T09:30:00",
   source: "https://www.theex.com/walks/labour-day-parade-2/",
   summary: "The Toronto Labour Day Parade is confirmed as returning to the Canadian National Exhibition on 7 September 2026. Details list Dufferin Gate as the location, with timing still to be confirmed. The event is a long-running labour movement parade rather than a confrontational protest. Risk is assessed as Low, with localised crowd and traffic disruption expected."
 },
 
-  {
-  title: "UN General Assembly Protest Mobilisation",
-  city: "New York",
-  lat: 40.7484,
-  lng: -73.9857,
-  address: "United Nations Headquarters Area",
-  postcode: "10017",
-  country: "United States",
-  continent: "North America",
-  risk: "High",
-  time: "2026-09-22T12:00:00",
-  source: "https://www.un.org/en/high-level-week-2026",
-  summary: "Activist organisations and international advocacy groups are expected to organise demonstrations around the United Nations General Assembly High-Level Week in New York City. Previous UNGA periods have attracted protests related to climate policy, international conflicts, human rights and global economic issues. Large crowds and heightened security measures are expected around the UN Headquarters area. Risk is assessed as High."
-},
-{
-  title: "Student Cost of Living Demonstration",
-  city: "Toronto",
-  lat: 43.6532,
-  lng: -79.3832,
-  address: "Queen's Park / University District",
-  postcode: "M5S",
-  country: "Canada",
-  continent: "North America",
-  risk: "Medium",
-  time: "2026-09-15T12:00:00",
-  source: "https://www.cfsontario.ca/",
-  summary: "Student organisations are expected to organise demonstrations in Toronto focused on tuition costs, housing affordability and student debt as universities begin the autumn term. Protest activity is expected near Queen's Park and the university district. Moderate pedestrian and traffic disruption is possible. Risk is assessed as Medium."
-},
-{
-  title: "Climate Strike Mobilisation",
-  city: "Vancouver",
-  lat: 49.2827,
-  lng: -123.1207,
-  address: "Vancouver Art Gallery",
-  postcode: "V6Z 2H7",
-  country: "Canada",
-  continent: "North America",
-  risk: "Medium",
-  time: "2026-09-25T12:00:00",
-  source: "https://fridaysforfuture.org/",
-  summary: "Climate activist groups are expected to organise demonstrations and marches in downtown Vancouver as part of global climate mobilisation campaigns scheduled for September. Participants are expected to gather near the Vancouver Art Gallery before marching through central areas. Risk is assessed as Medium due to likely city-centre disruption."
-},
-{
-  title: "Public Sector Union Rally",
-  city: "Chicago",
-  lat: 41.8781,
-  lng: -87.6298,
-  address: "Daley Plaza",
-  postcode: "60602",
-  country: "United States",
-  continent: "North America",
-  risk: "Medium",
-  time: "2026-09-18T12:00:00",
-  source: "https://www.afscme.org/",
-  summary: "Public sector union members are expected to gather at Daley Plaza in Chicago for demonstrations related to wages, staffing levels and labour protections. Organisers have indicated that rallies and speeches will take place in central civic areas. The protest is expected to remain organised and peaceful. Risk is assessed as Medium."
-},
-{
-  title: "Immigration and Border Policy Demonstration",
-  city: "Washington",
-  lat: 38.9072,
-  lng: -77.0369,
-  address: "National Mall",
-  postcode: "20004",
-  country: "United States",
-  continent: "North America",
-  risk: "High",
-  time: "2026-09-12T12:00:00",
-  source: "https://www.aclu.org/",
-  summary: "Immigration advocacy organisations are expected to organise demonstrations in Washington, D.C. concerning border policy and migrant protections. Protesters are expected to gather around the National Mall area for rallies and marches. Given the political sensitivity and potential for counter-demonstrations, the risk is assessed as High."
-},
+
+
 
   {
   title: "National Silent Walking Vigil for Peace",
@@ -8473,34 +8956,8 @@ window.alertsData =[
   source: "https://www.quaker.org.uk/events/national-silent-walking-vigil-for-peace",
   summary: "Quakers in Britain are organising a National Silent Walking Vigil for Peace in central London on 19 September 2026 from noon to 4pm. Organisers describe it as a peaceful walking vigil rather than a protest or march. Participants are expected to walk slowly and quietly, pausing for worship along the route. Risk is assessed as Low due to the explicitly peaceful format, though minor pedestrian disruption may occur."
 },
-{
-  title: "CROUS Staff National Strike Notice",
-  city: "Paris",
-  lat: 48.8566,
-  lng: 2.3522,
-  address: "CROUS / University Services Network",
-  postcode: "75000",
-  country: "France",
-  continent: "Europe",
-  risk: "Medium",
-  time: "2026-09-01T12:00:00",
-  source: "https://striketracker.app/strikes-in-france/crous-strike-france-11-april-2026",
-  summary: "UN-CGT CROUS has filed a national strike notice covering France's student services network from 1 April to 30 September 2026. The action affects university restaurants and residences and may continue into September as students return for the academic year. Risk is assessed as Medium due to possible disruption across higher education services, though this is a strike notice rather than a single street demonstration."
-},
-{
-  title: "Saint-Nazaire / CARENE Territorial Workers Strike Notice",
-  city: "Saint-Nazaire",
-  lat: 47.2735,
-  lng: -2.2138,
-  address: "Saint-Nazaire / CARENE Local Authority Services",
-  postcode: "44600",
-  country: "France",
-  continent: "Europe",
-  risk: "Medium",
-  time: "2026-09-01T12:00:00",
-  source: "https://striketracker.app/strikes-in-france",
-  summary: "CGT territorial workers in Saint-Nazaire and the CARENE intercommunal authority have filed a strike notice running from 22 April to 30 September 2026. The action may affect local public services into September. Risk is assessed as Medium because disruption is possible across municipal and intercommunal services, though no specific march route is currently listed."
-},
+
+
 
  {
     title: "No Kings Day — July 4th Independence Day",
