@@ -827,6 +827,38 @@ body{
    Expired itinerary + no fresh/recent tracking:
    use city context only; do not use registered coordinates for precise matching. */
 </style>
+
+<style id="ci-reports-v24-7-internal-diagnostics">
+/* Phase 16C.2 — raw source counts and platform diagnostics are internal. */
+.ci-internal-diagnostic{display:none!important}
+html.ci-master-report-user .ci-internal-diagnostic.ci-inline{display:inline-flex!important}
+html.ci-master-report-user .ci-internal-diagnostic.ci-block{display:block!important}
+</style>
+<script id="ci-reports-v24-7-role-visibility">
+(function(){
+  function isMaster(){
+    try {
+      if (window.CIAuth && typeof CIAuth.isMasterAdmin === 'function' && CIAuth.isMasterAdmin()) return true;
+      const raw = localStorage.getItem('ci_profile') || localStorage.getItem('ci_user') || '{}';
+      const u = JSON.parse(raw);
+      const role = String(u?.role || u?.roleKey || '').toLowerCase();
+      return !!(u?.is_master_admin || u?.masterAdmin || role.includes('master'));
+    } catch(_) { return false; }
+  }
+  window.CIReportsIsMasterAdmin = isMaster;
+  if (isMaster()) document.documentElement.classList.add('ci-master-report-user');
+})();
+</script>
+
+
+<style id="ci-reports-v24-7-phase-marker">
+/* Reports v24.7 — Phase 16C.2
+   - Strict null coordinate handling
+   - Live Alerts limited to current 24-hour snapshots
+   - Master-only raw source diagnostics
+   - Client-safe exported source coverage */
+</style>
+
 </head>
 <body>
   <div class="ci-reports-loading-overlay" id="ciReportsLoadingOverlay" aria-live="polite" aria-busy="true">
@@ -930,12 +962,12 @@ body{
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px">
           <div>
             <h2 style="margin-bottom:4px">Intelligence Report Framework</h2>
-            <div class="subtle">Phase 16C.1.1 corrects expired-itinerary geographic matching: when current presence is unconfirmed, registered traveller coordinates are not used for precise exposure classification. Asset exposure reporting remains unchanged.</div>
+            <div class="subtle">Phase 16C.2 makes operational reporting time-aware: Live Alerts are restricted to current 24-hour snapshots, forward outlooks use scheduled or continuing intelligence, and internal source diagnostics are limited to CityIntel Master Admins.</div>
           </div>
-          <span class="source-lock">Verified CityIntel baseline protected</span>
+          <span class="source-lock ci-internal-diagnostic ci-inline" id="internalSourceLock">Verified CityIntel baseline protected</span>
         </div>
-        <div id="protestDataSourceStatus" class="ci-report-source-status">Loading consolidated Protest Intelligence data sources…</div>
-        <div id="operationalDataSourceStatus" class="ci-report-source-status">Operational exposure feeds load on demand when an entity report uses an operational subject.</div>
+        <div id="protestDataSourceStatus" class="ci-report-source-status ci-internal-diagnostic ci-block">Loading consolidated Protest Intelligence data sources…</div>
+        <div id="operationalDataSourceStatus" class="ci-report-source-status ci-internal-diagnostic ci-block">Operational exposure feeds load on demand when an entity report uses an operational subject.</div>
         <div class="framework-grid">
           <div class="field wide">
             <label for="intelSubjectSelect">Intelligence subject</label>
@@ -1005,9 +1037,9 @@ body{
             <label for="entityWindowSelect">Entity time window</label>
             <select class="select" id="entityWindowSelect">
               <option value="report_period">Use selected report period</option>
-              <option value="24h">Next 24 hours</option>
-              <option value="7d">Next 7 days</option>
-              <option value="30d">Next 30 days</option>
+              <option value="24h">Current 24-hour snapshot — includes recent Live Alerts</option>
+              <option value="7d">Next 7 days — forward outlook, excludes Live Alerts</option>
+              <option value="30d">Next 30 days — forward outlook, excludes Live Alerts</option>
               <option value="travel_dates">Traveller itinerary dates</option>
             </select>
           </div>
@@ -1531,17 +1563,56 @@ body{
       if(subject==='traveller') return rows.filter(r=>['protest','live','infrastructure','transport','power','flight'].includes(r.sourceType));
       return rows;
     }
-    function sourceCoverageForMatches(matches=[]){
-      const stats=reportOperationalState.sourceStats||{}; const matched={}; matches.forEach(r=>matched[r.sourceType]=(matched[r.sourceType]||0)+1);
+    function entityLiveAlertPolicy(type='preview', windowMode='report_period'){
+      // The current Live Alerts endpoint is a present-state cache, not a
+      // historical archive and not a future-events calendar.
+      if(windowMode==='24h') return 'current_snapshot';
+      return 'excluded';
+    }
+    function applyEntitySourceTimePolicy(events=[], type='preview', range=null, windowMode='report_period'){
+      const policy=entityLiveAlertPolicy(type,windowMode);
+      const now=Date.now();
+      const recentCutoff=now-(24*60*60*1000);
+      return (events||[]).filter(e=>{
+        if(e?.sourceType!=='live') return true;
+        if(policy!=='current_snapshot') return false;
+        const t=(e.when instanceof Date?e.when:opDate(e.when,null));
+        if(!t) return false;
+        const ms=t.getTime();
+        return ms>=recentCutoff && ms<=now;
+      });
+    }
+    function entitySourceTimingNote(type='preview', windowMode='report_period'){
+      if(windowMode==='24h'){
+        return 'Live Alerts are treated as current incident context and are limited to alerts published within the previous 24 hours.';
+      }
+      return 'Live Alerts are excluded from forward-looking and period reports because the current endpoint is a live cache rather than a future schedule or historical archive. A dedicated archived-alert source will be required before they are used in retrospective weekly or monthly reviews.';
+    }
+    function sourceCoverageForMatches(matches=[], detailed=false){
+      const stats=reportOperationalState.sourceStats||{};
+      const matched={}; matches.forEach(r=>matched[r.sourceType]=(matched[r.sourceType]||0)+1);
       const order=['protest','live','infrastructure','transport','power','flight'];
-      const cards=order.filter(k=>stats[k]||matched[k]).map(k=>{ const m=OP_SOURCE_META[k]||{label:k}; const available=Number(stats[k]?.count||0); const used=Number(matched[k]||0); const note=stats[k]?.ok===false?'Unavailable or restricted':`${available.toLocaleString('en-GB')} available`; return `<div class="source-coverage-card"><div class="k">${esc(m.label)}</div><div class="v">${used} matched</div><div class="s">${esc(note)}</div></div>`; }).join('');
+      const visibleKeys=detailed
+        ? order.filter(k=>stats[k]||matched[k])
+        : order.filter(k=>Number(matched[k]||0)>0);
+      const cards=visibleKeys.map(k=>{
+        const m=OP_SOURCE_META[k]||{label:k};
+        const available=Number(stats[k]?.count||0);
+        const used=Number(matched[k]||0);
+        const note=detailed
+          ? (stats[k]?.ok===false?'Unavailable or restricted':`${available.toLocaleString('en-GB')} available`)
+          : `${used} relevant match${used===1?'':'es'}`;
+        return `<div class="source-coverage-card"><div class="k">${esc(m.label)}</div><div class="v">${detailed?`${used} matched`:used}</div><div class="s">${esc(note)}</div></div>`;
+      }).join('');
+      if(!cards) return '<div class="source-coverage-note">No operational source layer produced a relevant match in the selected scope.</div>';
+      if(!detailed) return `<div class="source-coverage-grid">${cards}</div>`;
       const failed=Object.entries(reportOperationalState.errors||{}).map(([k,v])=>`${OP_SOURCE_META[k]?.short||k}: ${v}`).slice(0,4);
       return `<div class="source-coverage-grid">${cards}</div>${failed.length?`<div class="source-coverage-note"><strong>Unavailable feeds:</strong> ${esc(failed.join(' · '))}. The report continues using the sources available to this organisation.</div>`:''}`;
     }
 
     function entityText(v=''){ return String(v ?? '').trim(); }
     function entityNorm(v=''){ return entityText(v).toLowerCase().replace(/\s+/g,' '); }
-    function entityNum(v){ const n = Number(v); return Number.isFinite(n) ? n : null; }
+    function entityNum(v){ if(v===null || v===undefined || (typeof v==='string' && !v.trim())) return null; const n=Number(v); return Number.isFinite(n) ? n : null; }
     function entityArrayPayload(payload){
       if (Array.isArray(payload)) return payload;
       if (Array.isArray(payload?.data)) return payload.data;
@@ -1932,8 +2003,10 @@ body{
       if(!selectedEntity) return alert(`Select a ${el.entityScopeSelect?.value === 'asset' ? 'registered asset' : 'registered traveller'} before building the report.`);
       const meta=subjectMeta(subject), radiusKm=Math.max(1,Number(el.entityRadiusSelect?.value || 10)), range=entityTimeRange(type,selectedEntity);
       const entity=selectedEntity.type==='traveller'?resolveTravellerEntityForRange(selectedEntity,range):selectedEntity;
-      const sourceEvents=await subjectEventsForEntity(subject,entity);
-      if (!sourceEvents.length) return alert(`No ${meta.label} records are available from the permitted report sources for entity matching.`);
+      const rawSourceEvents=await subjectEventsForEntity(subject,entity);
+      const entityWindowMode=el.entityWindowSelect?.value||'report_period';
+      const sourceEvents=applyEntitySourceTimePolicy(rawSourceEvents,type,range,entityWindowMode);
+      if (!sourceEvents.length) return alert(`No ${meta.label} records are available from the permitted report sources for this report type and time window.`);
       const matches = matchEventsToEntity(sourceEvents,entity,range,radiusKm);
       const counts={High:0,Medium:0,Low:0}; matches.forEach(x=>counts[x.risk]=(counts[x.risk]||0)+1);
       const dominant=entityExposureLevel(entity,matches);
@@ -1943,8 +2016,10 @@ body{
       const subtitle=`${meta.label} matched to ${entity.name} for ${range.label} using a ${radiusKm} km exposure radius and ${entityLocationBasisLabel(entity.locationBasis)} as the location basis.`;
       const locationLine = [entity.address,entity.city,entity.country].filter(Boolean).join(', ') || 'Location not recorded';
       const usesOperational = entityOperationalSubject(subject);
-      const sourceAssurance = usesOperational ? 'CityIntel verified protest intelligence combined with authenticated operational feeds available to the organisation' : (subject==='protest' ? 'Consolidated CityIntel verified protest dataset' : `Master Admin verified ${meta.label} evidence pack`);
-      const sourceCoverageHtml = usesOperational ? sourceCoverageForMatches(matches) : '';
+      const sourceAssurance = usesOperational ? 'CityIntel verified intelligence combined with current operational sources relevant to the selected entity' : (subject==='protest' ? 'Consolidated CityIntel verified protest dataset' : `Master Admin verified ${meta.label} evidence pack`);
+      const sourceTimingNote = usesOperational ? entitySourceTimingNote(type,entityWindowMode) : '';
+      const draftSourceCoverageHtml = usesOperational ? sourceCoverageForMatches(matches,!!window.CIReportsIsMasterAdmin?.()) : '';
+      const clientSourceCoverageHtml = usesOperational ? sourceCoverageForMatches(matches,false) : '';
       const travelWindow=entity.type==='traveller'?(entity.itineraryDateLine||[entity.from,entity.to].filter(Boolean).join(' to ')||'Not recorded'):'';
       const trackingLabel=entity.type==='traveller'?(entity.trackingTitle||'No active tracking session'):'';
       const trackingDetail=entity.type==='traveller'?(entity.trackingDetail||`${entity.activeRiskAlerts} active proximity alert${entity.activeRiskAlerts===1?'':'s'}`):'';
@@ -1969,9 +2044,9 @@ body{
       const metricGridClass=entity.type==='traveller'?'mini-grid entity-four':'mini-grid';
       const welfareMetric=entity.type==='traveller'?`<div class="mini-card"><div class="k">Welfare posture</div><div class="v" style="font-size:17px">${esc(entity.welfarePosture)}</div></div>`:'';
       const welfareSection=entity.type==='traveller'?`<div class="section"><h3>Traveller welfare &amp; response posture</h3>${welfareSummary}<ul><li>Tracking source: ${esc(entity.trackingTitle)}${entity.trackingDetail?` · ${esc(entity.trackingDetail)}`:''}${entity.trackingUsed?' · used for geographic matching':' · not used for precise geographic matching'}.</li><li>Travel status: ${esc(entity.itineraryLabel)} · ${esc(entity.itineraryDetail)}.</li><li>Check-in workflow: ${esc(entity.checkinStatus)}${entity.checkinLastAt?` · latest activity ${esc(formatEntityMoment(entity.checkinLastAt))}`:''}.</li><li>Active panic alarms: ${entity.activePanicCount}; active proximity risk alerts: ${entity.activeRiskAlerts}; relevant escalation contacts: ${entity.escalationContactCount}.</li></ul></div>`:'';
-      el.draftBody.innerHTML=`<div class="section"><h3>Entity profile</h3>${profileHtml}</div><div class="${metricGridClass}"><div class="mini-card"><div class="k">Relevant matches</div><div class="v">${matches.length}</div></div><div class="mini-card"><div class="k">Direct / likely</div><div class="v">${direct+likely}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${counts.High||0}</div></div>${welfareMetric}</div><div class="section"><h3>Source assurance</h3><p>${esc(sourceAssurance)}. Matching is based on coordinates where available, with transparent city/country fallbacks.</p>${sourceCoverageHtml}</div><div class="section"><h3>Executive assessment</h3>${summaryHtml}</div>${welfareSection}<div class="section"><h3>Relevant intelligence</h3><div class="list-tight">${eventsHtml}</div></div><div class="section"><h3>Operational implications</h3><ul><li>${entity.type==='asset'?'Potential effects include site access, staffing, deliveries, visitor movement and transport availability.':'Potential effects include traveller movement, hotel access, airport or station routes, tracking confidence, check-in cadence and welfare support.'}</li><li>Matches marked “Context only” should not be treated as direct exposure without further analyst verification.</li><li>Rebuild the report when routes, timings, traveller positions, check-in posture or asset details change.</li></ul></div><div class="section"><h3>Recommended actions</h3>${recommendationsHtml}</div>`;
+      el.draftBody.innerHTML=`<div class="section"><h3>Entity profile</h3>${profileHtml}</div><div class="${metricGridClass}"><div class="mini-card"><div class="k">Relevant matches</div><div class="v">${matches.length}</div></div><div class="mini-card"><div class="k">Direct / likely</div><div class="v">${direct+likely}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${counts.High||0}</div></div>${welfareMetric}</div><div class="section"><h3>Source assurance</h3><p>${esc(sourceAssurance)}. Matching is based on coordinates where available, with transparent city/country fallbacks.</p>${sourceTimingNote?`<p class="draft-note">${esc(sourceTimingNote)}</p>`:''}${draftSourceCoverageHtml}</div><div class="section"><h3>Executive assessment</h3>${summaryHtml}</div>${welfareSection}<div class="section"><h3>Relevant intelligence</h3><div class="list-tight">${eventsHtml}</div></div><div class="section"><h3>Operational implications</h3><ul><li>${entity.type==='asset'?'Potential effects include site access, staffing, deliveries, visitor movement and transport availability.':'Potential effects include traveller movement, hotel access, airport or station routes, tracking confidence, check-in cadence and welfare support.'}</li><li>Matches marked “Context only” should not be treated as direct exposure without further analyst verification.</li><li>Rebuild the report when routes, timings, traveller positions, check-in posture or asset details change.</li></ul></div><div class="section"><h3>Recommended actions</h3>${recommendationsHtml}</div>`;
       const exportTitle=`${entityKind} Report — ${entity.name}`;
-      currentDraftState={buildType:type,reportSubject:subject,reportSubjectLabel:meta.label,sourceMode:usesOperational?'verified_api':'verified',sourceTrust:sourceAssurance,audience:currentReportDefinition.audience||'ops',monthKey:range.monthKey,periodLabel:range.label,regionFilter:'',scopeMode:'entity',selectedRegions:[],scopeSelectionKey:`${entity.type}:${entity.id}`,entityType:entity.type,entityId:entity.id,entityName:entity.name,entityRadiusKm:radiusKm,entityWindow:el.entityWindowSelect?.value||'report_period',locationBasis:entity.locationBasis,title,exportTitle,typeLabel:reportTypeLabel(type),subtitle,risk:dominant,riskClass:riskClass(dominant),notes:`${entityKind} draft for ${entity.name}; ${matches.length} intelligence match${matches.length===1?'':'es'} using ${entity.locationBasis.replace(/_/g,' ')}.`,keywords:[subject,entity.type,entity.name,entity.city,entity.country,'entity-aware',usesOperational?'multi-source':'verified'].filter(Boolean),metrics:{events:matches.length,high:counts.High||0,countries:new Set(matches.map(x=>x.country).filter(Boolean)).size},welfarePosture:entity.type==='traveller'?entity.welfarePosture:'',trackingFreshness:entity.type==='traveller'?entity.trackingFreshness:'',trackingAgeText:entity.type==='traveller'?entity.trackingAgeText:'',itineraryState:entity.type==='traveller'?entity.itineraryState:'',currentPresenceUnconfirmed:entity.type==='traveller'?entity.currentPresenceUnconfirmed:false,checkinStatus:entity.type==='traveller'?entity.checkinStatus:'',activePanicCount:entity.type==='traveller'?entity.activePanicCount:0,activeRiskAlerts:entity.type==='traveller'?entity.activeRiskAlerts:0,escalationContactCount:entity.type==='traveller'?entity.escalationContactCount:0,compareMeta:null,compareScope:`${entity.type} exposure`,comparePreviousId:'',comparePreviousTitle:'',summaryHtml,entityProfileHtml,sourceCoverageHtml,preparedFor:orgName(),deltaHtml:'',eventsHtml,themesHtml:'',regionalHtml,recommendationsHtml,namedRegionsLine:locationLine,thematicWatch:`${meta.label} · ${matches.length} relevant matches${usesOperational?` across ${new Set(matches.map(x=>x.sourceType)).size} source layers`:''}`,exportFilename:`CityIntel_${slugify(exportTitle)}.html`,savedHtml:`<!doctype html><html><head><meta charset="utf-8"><title>${esc(exportTitle)}</title></head><body>${el.draftBody.innerHTML}</body></html>`};
+      currentDraftState={buildType:type,reportSubject:subject,reportSubjectLabel:meta.label,sourceMode:usesOperational?'verified_api':'verified',sourceTrust:sourceAssurance,audience:currentReportDefinition.audience||'ops',monthKey:range.monthKey,periodLabel:range.label,regionFilter:'',scopeMode:'entity',selectedRegions:[],scopeSelectionKey:`${entity.type}:${entity.id}`,entityType:entity.type,entityId:entity.id,entityName:entity.name,entityRadiusKm:radiusKm,entityWindow:el.entityWindowSelect?.value||'report_period',locationBasis:entity.locationBasis,title,exportTitle,typeLabel:reportTypeLabel(type),subtitle,risk:dominant,riskClass:riskClass(dominant),notes:`${entityKind} draft for ${entity.name}; ${matches.length} intelligence match${matches.length===1?'':'es'} using ${entity.locationBasis.replace(/_/g,' ')}.`,keywords:[subject,entity.type,entity.name,entity.city,entity.country,'entity-aware',usesOperational?'multi-source':'verified'].filter(Boolean),metrics:{events:matches.length,high:counts.High||0,countries:new Set(matches.map(x=>x.country).filter(Boolean)).size},welfarePosture:entity.type==='traveller'?entity.welfarePosture:'',trackingFreshness:entity.type==='traveller'?entity.trackingFreshness:'',trackingAgeText:entity.type==='traveller'?entity.trackingAgeText:'',itineraryState:entity.type==='traveller'?entity.itineraryState:'',currentPresenceUnconfirmed:entity.type==='traveller'?entity.currentPresenceUnconfirmed:false,checkinStatus:entity.type==='traveller'?entity.checkinStatus:'',activePanicCount:entity.type==='traveller'?entity.activePanicCount:0,activeRiskAlerts:entity.type==='traveller'?entity.activeRiskAlerts:0,escalationContactCount:entity.type==='traveller'?entity.escalationContactCount:0,compareMeta:null,compareScope:`${entity.type} exposure`,comparePreviousId:'',comparePreviousTitle:'',summaryHtml,entityProfileHtml,sourceCoverageHtml:clientSourceCoverageHtml,preparedFor:orgName(),deltaHtml:'',eventsHtml,themesHtml:'',regionalHtml,recommendationsHtml,namedRegionsLine:locationLine,thematicWatch:`${meta.label} · ${matches.length} relevant matches${usesOperational?` across ${new Set(matches.map(x=>x.sourceType)).size} source layers`:''}`,exportFilename:`CityIntel_${slugify(exportTitle)}.html`,savedHtml:`<!doctype html><html><head><meta charset="utf-8"><title>${esc(exportTitle)}</title></head><body>${el.draftBody.innerHTML}</body></html>`};
       currentDraftState.brandedHtml=buildBrandedReportHtml(currentDraftState);
       el.saveOrgDraftBtn.disabled=false; el.publishOrgBtn.disabled=false; el.saveMasterBtn.style.display=isAdmin()?'':'none';
       el.draftShell.scrollIntoView({behavior:'smooth',block:'start'});
@@ -2013,7 +2088,7 @@ body{
       }
       const resolvedSourceLabel = usesOperational ? 'Verified + authenticated operational feeds' : sourceLabel;
       el.frameworkNote.innerHTML = meta.status === 'active'
-        ? `Current build mode: <strong>${esc(meta.label)}</strong> · ${esc(resolvedSourceLabel)} · ${esc(audience)} audience${entityLabel}. ${entityScope === 'overview' ? (def.subject==='operational_exposure' ? 'Multi-Source Operational Exposure requires a selected asset or traveller.' : 'This preserves the trusted verified-data workflow for general intelligence reports.') : (usesOperational ? 'The report will combine verified protests with permitted Live Alerts, organisation infrastructure incidents, transport, power and traveller-relevant airport disruption. Each unavailable feed is disclosed rather than inferred.' : 'Organisation records are loaded privately and matched to verified intelligence using coordinates, city and country fallbacks.')}`
+        ? `Current build mode: <strong>${esc(meta.label)}</strong> · ${esc(resolvedSourceLabel)} · ${esc(audience)} audience${entityLabel}. ${entityScope === 'overview' ? (def.subject==='operational_exposure' ? 'Multi-Source Operational Exposure requires a selected asset or traveller.' : 'This preserves the trusted verified-data workflow for general intelligence reports.') : (usesOperational ? 'The report combines verified scheduled intelligence with permitted operational sources. Live Alerts are included only in the Current 24-hour snapshot; they are excluded from 7-day, 30-day and report-period outlooks because the current feed is not a future calendar or historical archive.' : 'Organisation records are loaded privately and matched to verified intelligence using coordinates, city and country fallbacks.')}`
         : `<strong>${esc(meta.label)}</strong> is staged for a later phase. This subject needs verified queue records before a report can be generated. Master Admins can review and verify candidate items in the Source Verification Queue.`;
     }
     let showArchived = false;
