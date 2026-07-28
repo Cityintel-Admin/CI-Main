@@ -34,7 +34,7 @@
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Reports v24.4 · Operational Exposure Reporting</title>
+<title>CityIntel — Reports v24.5 · Traveller Welfare Reporting</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -755,10 +755,28 @@ body{
 .entity-match-meta{font-size:12px;color:#8e97a3;margin-top:4px}.entity-match-summary{font-size:12.5px;color:#d8dee7;margin-top:8px;line-height:1.55}
 .entity-match-reason{font-size:11px;color:#a9b4c2;margin-top:7px}
 .entity-privacy-note{border:1px solid rgba(147,197,253,.22);background:rgba(147,197,253,.05);border-radius:10px;padding:10px 11px;color:#c9ddf6;font-size:11.5px;line-height:1.5}
+.traveller-welfare-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:10px}
+.traveller-welfare-card{border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#090c10;padding:10px 11px;min-width:0}
+.traveller-welfare-card .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:#7f8b99;font-weight:850}
+.traveller-welfare-card .v{font-size:13px;font-weight:850;color:#f2f6fa;margin-top:5px;line-height:1.35;overflow-wrap:anywhere}
+.traveller-welfare-card .s{font-size:10.5px;color:#8e9aa8;margin-top:3px;line-height:1.35}
+.traveller-welfare-card.alert{border-color:rgba(255,90,95,.35);background:rgba(255,90,95,.045)}
+.traveller-welfare-card.warn{border-color:rgba(240,180,41,.3);background:rgba(240,180,41,.04)}
+.traveller-welfare-card.ok{border-color:rgba(51,196,141,.25);background:rgba(51,196,141,.035)}
+.traveller-welfare-summary{margin-top:10px;padding:11px 12px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#090c10;color:#d6dde6;font-size:12px;line-height:1.55}
+.traveller-welfare-summary strong{color:#fff}
+.mini-grid.entity-four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1150px){.traveller-welfare-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.traveller-welfare-grid,.mini-grid.entity-four{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.traveller-welfare-grid,.mini-grid.entity-four{grid-template-columns:1fr}}
 @media(max-width:1000px){.entity-profile-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.entity-profile-grid{grid-template-columns:1fr}}
 </style>
 
+
+<style id="ci-reports-v24-5-traveller-welfare-marker">
+/* Reports v24.5 — Phase 16C: traveller welfare, check-in, panic and escalation context */
+</style>
 
 <style id="ci-reports-v24-4-full-width-kpis">
 /* Reports v24.4 — Phase 16B.1: full-width report library KPI ribbon */
@@ -898,7 +916,7 @@ body{
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px">
           <div>
             <h2 style="margin-bottom:4px">Intelligence Report Framework</h2>
-            <div class="subtle">Phase 16B expands entity-aware reporting: selected assets and travellers can now be assessed against verified protests plus authenticated Live Alerts, transport disruption, power outages, organisation infrastructure incidents and traveller-relevant airport disruption.</div>
+            <div class="subtle">Phase 16C deepens traveller safety reporting: selected travellers can now be assessed against verified operational intelligence together with live tracking freshness, check-in posture, active panic indicators and escalation coverage. Asset exposure reporting remains unchanged.</div>
           </div>
           <span class="source-lock">Verified CityIntel baseline protected</span>
         </div>
@@ -1326,7 +1344,7 @@ body{
     let currentReportDefinition = { subject:'protest', sourceMode:'verified', audience:'ops' };
 
     // Phase 16A — organisation entity data used by asset/traveller reports.
-    const reportEntityState = { assets:[], travellers:[], sessions:[], loaded:false, loading:false, error:'' };
+    const reportEntityState = { assets:[], travellers:[], sessions:[], checkins:[], checkinSummary:{}, panicAlarms:[], escalationContacts:[], loaded:false, loading:false, error:'' };
     let reportEntitiesReady = null;
 
 
@@ -1548,6 +1566,50 @@ body{
         || rows.find(s => name && entityNorm(s.employee_name || s.traveller?.name) === name)
         || null;
     }
+    function travellerIdentity(t={}){
+      return {
+        id:entityNorm(t.id || t.traveller_id || t.travellerId || ''),
+        email:entityNorm(t.email || t.employee_email || t.workEmail || ''),
+        name:entityNorm(t.name || t.fullName || t.full_name || t.traveller || t.employee_name || '')
+      };
+    }
+    function checkinForTraveller(t={}){
+      const ident=travellerIdentity(t);
+      const rows=reportEntityState.checkins || [];
+      return rows.find(r=>{ const s=r?.schedule || r || {}; return ident.email && entityNorm(s.employee_email||s.email)===ident.email; })
+        || rows.find(r=>{ const s=r?.schedule || r || {}; return ident.name && entityNorm(s.employee_name||s.name)===ident.name; })
+        || null;
+    }
+    function panicForTraveller(t={}){
+      const ident=travellerIdentity(t);
+      return (reportEntityState.panicAlarms || []).filter(a=>{
+        const alarmEmail=entityNorm(a.email||a.actorEmail||'');
+        const alarmName=entityNorm([a.first_name||a.firstName,a.surname||a.lastName].filter(Boolean).join(' ') || a.name || '');
+        return (ident.email && alarmEmail===ident.email) || (ident.name && alarmName===ident.name);
+      });
+    }
+    function checkinPosture(entry=null){
+      if(!entry) return {label:'No active schedule',tone:'warn',status:'none',detail:'No active check-in schedule matched'};
+      const schedule=entry.schedule || entry || {}; const ev=entry.latest_event || null; const now=Date.now();
+      const status=entityNorm(ev?.status || ''); const due=Date.parse(ev?.due_at || '');
+      if(status==='missed' || status==='escalated') return {label:'Missed / escalated',tone:'alert',status:'missed',detail:ev?.stage_label || schedule.label || 'Check-in requires response'};
+      if(status==='pending' && Number.isFinite(due) && due<=now) return {label:'Overdue',tone:'alert',status:'overdue',detail:ev?.stage_label || schedule.label || 'Check-in overdue'};
+      if(status==='pending') return {label:'Pending',tone:'warn',status:'pending',detail:ev?.stage_label || schedule.label || 'Awaiting acknowledgement'};
+      if(status==='acknowledged') return {label:'Acknowledged',tone:'ok',status:'acknowledged',detail:ev?.stage_label || schedule.label || 'Latest check-in acknowledged'};
+      return {label:'Scheduled',tone:'ok',status:'scheduled',detail:schedule.label || 'Active check-in schedule'};
+    }
+    function formatEntityMoment(value=''){
+      const d=new Date(value||'');
+      return Number.isFinite(d.getTime()) ? d.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    }
+    function relevantEscalationContacts(city='',country=''){
+      const c=entityNorm(city), k=entityNorm(country);
+      return (reportEntityState.escalationContacts||[]).filter(x=>{
+        if(x?.active===0 || x?.active===false) return false;
+        const xc=entityNorm(x.city||''), xk=entityNorm(x.country||'');
+        return (!xc && !xk) || (c && xc===c) || (k && xk===k);
+      });
+    }
     function normaliseTravellerEntity(t, i=0){
       const session = sessionForTraveller(t);
       const sessLat = entityNum(session?.last_lat), sessLng = entityNum(session?.last_lng);
@@ -1558,13 +1620,25 @@ body{
       const city = entityText(session?.traveller?.city || t.city || t.destination_city || t.destinationCity || t.location || '');
       const country = entityText(session?.traveller?.country || t.country || t.destination_country || t.destinationCountry || '');
       const hotel = entityText(t.hotel || t.hotelName || t.hotel_name || t.accommodation || session?.traveller?.hotel || '');
+      const checkin=checkinForTraveller(t); const checkinState=checkinPosture(checkin); const panicAlarms=panicForTraveller(t);
+      const escalationContacts=relevantEscalationContacts(city,country); const activeRiskAlerts=Number(session?.active_risk_alerts||0);
+      const freshness=entityText(session?.freshness || (session?'offline':''));
+      let welfarePosture='Stable', welfareTone='ok';
+      if(panicAlarms.length){ welfarePosture='Critical response'; welfareTone='alert'; }
+      else if(['missed','overdue'].includes(checkinState.status) || (activeRiskAlerts>0 && freshness==='offline')){ welfarePosture='High attention'; welfareTone='alert'; }
+      else if(['pending'].includes(checkinState.status) || ['stale','offline'].includes(freshness) || activeRiskAlerts>0){ welfarePosture='Monitor'; welfareTone='warn'; }
+      const schedule=checkin?.schedule || checkin || {}; const latestEvent=checkin?.latest_event || null;
       return {
-        raw:t, session, id:entityText(t.id || t.traveller_id || t.travellerId || `traveller_${i}`), type:'traveller', name:travellerLabel(t,i),
+        raw:t, session, checkin, panicAlarms, escalationContacts, id:entityText(t.id || t.traveller_id || t.travellerId || `traveller_${i}`), type:'traveller', name:travellerLabel(t,i),
         role:entityText(t.role || t.title || t.job_title || ''), status:entityText(t.riskStatus || t.status || t.travelStatus || t.travel_status || 'Registered'),
         city, country, address:hotel || entityText(t.address || ''), hotel,
         from:entityText(t.from || t.start || t.startDate || t.start_date || t.departure_date || ''),
         to:entityText(t.to || t.end || t.endDate || t.end_date || t.return_date || ''),
-        lat, lng, trackingFreshness:entityText(session?.freshness || ''), trackingStatus:entityText(session?.status || ''),
+        lat, lng, trackingFreshness:freshness, trackingStatus:entityText(session?.status || ''), lastPingAt:entityText(session?.last_ping_at || ''),
+        activeRiskAlerts, checkinStatus:checkinState.label, checkinTone:checkinState.tone, checkinDetail:checkinState.detail,
+        checkinNextAt:entityText(schedule?.next_checkin_at||''), checkinDueAt:entityText(latestEvent?.due_at||''), checkinLastAt:entityText(latestEvent?.acknowledged_at||latestEvent?.sent_at||''),
+        checkinType:entityText(schedule?.type||''), activePanicCount:panicAlarms.length, escalationContactCount:escalationContacts.length,
+        welfarePosture,welfareTone,
         locationBasis:useSession ? `latest_tracking_${entityText(session?.freshness || 'position')}` : ((ownLat !== null && ownLng !== null) ? (hotel ? 'registered_hotel_coordinates' : 'registered_traveller_coordinates') : (city ? 'registered_itinerary_city' : 'registered_traveller_record'))
       };
     }
@@ -1580,17 +1654,22 @@ body{
       setEntityStatus('Loading organisation assets, travellers and active tracking sessions…');
       reportEntitiesReady = (async()=>{
         const results = await Promise.allSettled([
-          entityFetch('/api/org/assets'), entityFetch('/api/org/travellers'), entityFetch('/api/org/tracking/sessions')
+          entityFetch('/api/org/assets'), entityFetch('/api/org/travellers'), entityFetch('/api/org/tracking/sessions'),
+          entityFetch('/api/org/checkin/status'), entityFetch('/api/org/panic'), entityFetch('/api/org/escalation-contacts')
         ]);
         reportEntityState.assets = results[0].status === 'fulfilled' ? entityArrayPayload(results[0].value) : [];
         reportEntityState.travellers = results[1].status === 'fulfilled' ? entityArrayPayload(results[1].value) : [];
         reportEntityState.sessions = results[2].status === 'fulfilled' ? (Array.isArray(results[2].value?.sessions) ? results[2].value.sessions : entityArrayPayload(results[2].value)) : [];
+        reportEntityState.checkins = results[3].status === 'fulfilled' ? (Array.isArray(results[3].value?.schedules) ? results[3].value.schedules : []) : [];
+        reportEntityState.checkinSummary = results[3].status === 'fulfilled' ? (results[3].value?.summary || {}) : {};
+        reportEntityState.panicAlarms = results[4].status === 'fulfilled' ? (Array.isArray(results[4].value?.activeAlarms) ? results[4].value.activeAlarms : []) : [];
+        reportEntityState.escalationContacts = results[5].status === 'fulfilled' ? entityArrayPayload(results[5].value) : [];
         const failures = results.filter(r=>r.status==='rejected');
         reportEntityState.loaded = true; reportEntityState.loading = false;
         reportEntityState.error = failures.map(r=>String(r.reason?.message || r.reason || '')).filter(Boolean).join(' · ');
         renderEntityOptions();
         const tone = failures.length ? 'warn' : 'ok';
-        setEntityStatus(`${reportEntityState.assets.length} asset${reportEntityState.assets.length===1?'':'s'} · ${reportEntityState.travellers.length} traveller${reportEntityState.travellers.length===1?'':'s'} · ${reportEntityState.sessions.length} tracking session${reportEntityState.sessions.length===1?'':'s'} loaded${failures.length ? ' · one or more optional sources were unavailable' : ''}.`, tone);
+        setEntityStatus(`${reportEntityState.assets.length} asset${reportEntityState.assets.length===1?'':'s'} · ${reportEntityState.travellers.length} traveller${reportEntityState.travellers.length===1?'':'s'} · ${reportEntityState.sessions.length} tracking session${reportEntityState.sessions.length===1?'':'s'} · ${reportEntityState.checkins.length} active check-in schedule${reportEntityState.checkins.length===1?'':'s'} · ${reportEntityState.panicAlarms.length} active panic alarm${reportEntityState.panicAlarms.length===1?'':'s'} · ${reportEntityState.escalationContacts.length} escalation contact${reportEntityState.escalationContacts.length===1?'':'s'} loaded${failures.length ? ' · one or more optional welfare sources were unavailable' : ''}.`, tone);
         return reportEntityState;
       })();
       return reportEntitiesReady;
@@ -1709,8 +1788,16 @@ body{
       const base = entity.type==='asset'
         ? ['Confirm site access, staffing, deliveries and emergency access against the highest-priority nearby event.','Brief site security and facilities teams on the relevant event dates and likely transport effects.','Review remote-working or altered opening arrangements where direct exposure overlaps operating hours.']
         : ['Contact the traveller with a concise location-specific briefing and confirm acknowledgement.','Review itinerary, hotel access, airport or station routes and alternative transport against the matched events.','Increase check-in frequency where direct or likely operational exposure overlaps the traveller’s itinerary.'];
+      if(entity.type==='traveller'){
+        if(entity.activePanicCount>0) base.unshift('Maintain the active panic-response workflow until the traveller is contacted, acknowledged and confirmed safe.');
+        if(['Missed / escalated','Overdue'].includes(entity.checkinStatus)) base.unshift('Follow the missed check-in escalation process and establish direct contact with the traveller.');
+        else if(entity.checkinStatus==='No active schedule') base.push('Consider enabling a check-in schedule for the active travel period.');
+        if(['stale','offline'].includes(entity.trackingFreshness)) base.push('Confirm the traveller’s current location because the latest tracking position is stale or offline.');
+        if(entity.activeRiskAlerts>0) base.push(`Review ${entity.activeRiskAlerts} active traveller proximity risk alert${entity.activeRiskAlerts===1?'':'s'} and document the disposition.`);
+        if(!entity.escalationContactCount) base.push('Add or confirm an appropriate escalation contact for the traveller’s location.');
+      }
       if (!direct && !likely) base.unshift('Maintain monitoring; no direct or likely operational exposure is currently identified in the selected window.');
-      return base;
+      return [...new Set(base)];
     }
     async function buildEntityExposureDraft(type, subject){
       await loadReportEntities();
@@ -1721,7 +1808,9 @@ body{
       if (!sourceEvents.length) return alert(`No ${meta.label} records are available from the permitted report sources for entity matching.`);
       const matches = matchEventsToEntity(sourceEvents,entity,range,radiusKm);
       const counts={High:0,Medium:0,Low:0}; matches.forEach(x=>counts[x.risk]=(counts[x.risk]||0)+1);
-      const dominant = counts.High?'High':counts.Medium?'Medium':'Low';
+      let dominant = counts.High?'High':counts.Medium?'Medium':'Low';
+      if(entity.type==='traveller' && ['Critical response','High attention'].includes(entity.welfarePosture)) dominant='High';
+      else if(entity.type==='traveller' && entity.welfarePosture==='Monitor' && dominant==='Low') dominant='Medium';
       const direct = matches.filter(x=>x.relevanceRank===4).length, likely = matches.filter(x=>x.relevanceRank===3).length, monitor = matches.filter(x=>x.relevanceRank===2).length;
       const entityKind = entity.type==='asset'?'Asset Exposure':'Traveller Safety';
       const title = `Draft Builder — ${entityKind} Report: ${entity.name}`;
@@ -1730,9 +1819,15 @@ body{
       const usesOperational = entityOperationalSubject(subject);
       const sourceAssurance = usesOperational ? 'CityIntel verified protest intelligence combined with authenticated operational feeds available to the organisation' : (subject==='protest' ? 'Consolidated CityIntel verified protest dataset' : `Master Admin verified ${meta.label} evidence pack`);
       const sourceCoverageHtml = usesOperational ? sourceCoverageForMatches(matches) : '';
-      const profileHtml = `<div class="entity-profile-grid"><div class="entity-profile-card"><b>${entity.type==='asset'?'Asset':'Traveller'}</b><span>${esc(entity.name)}</span></div><div class="entity-profile-card"><b>Location</b><span>${esc(locationLine)}</span></div><div class="entity-profile-card"><b>Location basis</b><span>${esc(entity.locationBasis.replace(/_/g,' '))}</span></div><div class="entity-profile-card"><b>Status</b><span>${esc(entity.status || 'Registered')}</span></div></div>${entity.type==='traveller'?`<div class="entity-privacy-note" style="margin-top:10px">Precise live coordinates, phone numbers, email addresses and tracking history are not inserted into the exported report. The report records only the location basis and operationally necessary location description.</div>`:''}`;
-      const entityProfileHtml = `<div class="entity-snapshot"><div class="entity-snapshot-card"><div class="k">${entity.type==='asset'?'Asset':'Traveller'}</div><div class="v">${esc(entity.name)}</div></div><div class="entity-snapshot-card"><div class="k">Location</div><div class="v">${esc(locationLine)}</div></div><div class="entity-snapshot-card"><div class="k">Location basis</div><div class="v">${esc(entity.locationBasis.replace(/_/g,' '))}</div></div><div class="entity-snapshot-card"><div class="k">Status</div><div class="v">${esc(entity.status || 'Registered')}</div></div></div>`;
-      const summaryHtml = `<p><strong>${esc(entity.name)}</strong> has ${matches.length ? `<strong>${matches.length}</strong> relevant intelligence match${matches.length===1?'':'es'}` : 'no currently identified intelligence matches'} during ${esc(range.label)}. ${direct ? `${direct} match${direct===1?' is':'es are'} classified as direct exposure.` : ''} ${likely ? `${likely} match${likely===1?' is':'es are'} assessed as likely operational impact.` : ''} The assessment uses ${esc(entity.locationBasis.replace(/_/g,' '))} and a ${radiusKm} km radius, with same-city and high-risk same-country fallbacks where exact coordinates are unavailable.</p>`;
+      const travelWindow=entity.type==='traveller'?[entity.from,entity.to].filter(Boolean).join(' to ')||'Not recorded':'';
+      const trackingLabel=entity.type==='traveller'?(entity.session?`${entity.trackingFreshness||'offline'}${entity.lastPingAt?` · ${formatEntityMoment(entity.lastPingAt)}`:''}`:'No active tracking session'):'';
+      const checkinLabel=entity.type==='traveller'?`${entity.checkinStatus}${entity.checkinNextAt?` · next ${formatEntityMoment(entity.checkinNextAt)}`:''}`:'';
+      const welfareGrid=entity.type==='traveller'?`<div class="traveller-welfare-grid"><div class="traveller-welfare-card"><div class="k">Travel window</div><div class="v">${esc(travelWindow)}</div><div class="s">Registered itinerary dates</div></div><div class="traveller-welfare-card ${entity.trackingFreshness==='fresh'?'ok':(['stale','offline'].includes(entity.trackingFreshness)?'warn':'')}"><div class="k">Tracking</div><div class="v">${esc(trackingLabel)}</div><div class="s">${entity.activeRiskAlerts} active proximity alert${entity.activeRiskAlerts===1?'':'s'}</div></div><div class="traveller-welfare-card ${esc(entity.checkinTone||'')}"><div class="k">Check-in</div><div class="v">${esc(checkinLabel)}</div><div class="s">${esc(entity.checkinDetail||'No workflow detail')}</div></div><div class="traveller-welfare-card ${esc(entity.welfareTone||'')}"><div class="k">Welfare posture</div><div class="v">${esc(entity.welfarePosture)}</div><div class="s">${entity.activePanicCount} active panic alarm${entity.activePanicCount===1?'':'s'}</div></div><div class="traveller-welfare-card ${entity.escalationContactCount?'ok':'warn'}"><div class="k">Escalation cover</div><div class="v">${entity.escalationContactCount} relevant contact${entity.escalationContactCount===1?'':'s'}</div><div class="s">Location-relevant or global contacts</div></div></div>`:'';
+      const welfareSummary=entity.type==='traveller'?`<div class="traveller-welfare-summary"><strong>Traveller welfare and response posture:</strong> ${esc(entity.welfarePosture)}. Tracking is ${esc(entity.session?(entity.trackingFreshness||'offline'):'not active')}; check-in status is ${esc(entity.checkinStatus)}; ${entity.activePanicCount} active panic alarm${entity.activePanicCount===1?' is':'s are'} matched; ${entity.activeRiskAlerts} active proximity risk alert${entity.activeRiskAlerts===1?' is':'s are'} recorded; and ${entity.escalationContactCount} relevant escalation contact${entity.escalationContactCount===1?' is':'s are'} available.</div>`:'';
+      const profileHtml = `<div class="entity-profile-grid"><div class="entity-profile-card"><b>${entity.type==='asset'?'Asset':'Traveller'}</b><span>${esc(entity.name)}</span></div><div class="entity-profile-card"><b>Location</b><span>${esc(locationLine)}</span></div><div class="entity-profile-card"><b>Location basis</b><span>${esc(entity.locationBasis.replace(/_/g,' '))}</span></div><div class="entity-profile-card"><b>Status</b><span>${esc(entity.status || 'Registered')}</span></div></div>${welfareGrid}${welfareSummary}${entity.type==='traveller'?`<div class="entity-privacy-note" style="margin-top:10px">Precise live coordinates, phone numbers, email addresses, named escalation contacts and tracking history are not inserted into the exported report. The report records only operationally necessary posture and location information.</div>`:''}`;
+      const entityProfileHtml = `<div class="entity-snapshot"><div class="entity-snapshot-card"><div class="k">${entity.type==='asset'?'Asset':'Traveller'}</div><div class="v">${esc(entity.name)}</div></div><div class="entity-snapshot-card"><div class="k">Location</div><div class="v">${esc(locationLine)}</div></div><div class="entity-snapshot-card"><div class="k">Location basis</div><div class="v">${esc(entity.locationBasis.replace(/_/g,' '))}</div></div><div class="entity-snapshot-card"><div class="k">Status</div><div class="v">${esc(entity.status || 'Registered')}</div></div></div>${welfareGrid}${welfareSummary}`;
+      const welfareSentence=entity.type==='traveller'?` Current welfare workflow posture is <strong>${esc(entity.welfarePosture)}</strong>, with tracking ${esc(entity.session?(entity.trackingFreshness||'offline'):'not active')} and check-in status ${esc(entity.checkinStatus)}.`:'';
+      const summaryHtml = `<p><strong>${esc(entity.name)}</strong> has ${matches.length ? `<strong>${matches.length}</strong> relevant intelligence match${matches.length===1?'':'es'}` : 'no currently identified intelligence matches'} during ${esc(range.label)}. ${direct ? `${direct} match${direct===1?' is':'es are'} classified as direct exposure.` : ''} ${likely ? `${likely} match${likely===1?' is':'es are'} assessed as likely operational impact.` : ''}${welfareSentence} The assessment uses ${esc(entity.locationBasis.replace(/_/g,' '))} and a ${radiusKm} km radius, with same-city and high-risk same-country fallbacks where exact coordinates are unavailable.</p>`;
       const recommendations = entityRecommendations(entity,matches);
       const recommendationsHtml = `<ul class="rec-list">${recommendations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
       const eventsHtml = matches.length ? matches.slice(0,20).map(entityMatchCard).join('') : '<div class="muted">No direct, likely or monitor-level intelligence matches were identified for the selected entity and reporting window.</div>';
@@ -1742,9 +1837,12 @@ body{
       if (el.draftScopeTools){ el.draftScopeTools.classList.remove('active'); el.draftScopeTools.innerHTML=''; }
       if (el.regionPanelIntro) el.regionPanelIntro.textContent='Entity-aware report scope. The panel records the selected entity and location basis rather than offering geographic include/exclude controls.';
       if (el.regionPanel) el.regionPanel.innerHTML=regionalHtml;
-      el.draftBody.innerHTML=`<div class="section"><h3>Entity profile</h3>${profileHtml}</div><div class="mini-grid"><div class="mini-card"><div class="k">Relevant matches</div><div class="v">${matches.length}</div></div><div class="mini-card"><div class="k">Direct / likely</div><div class="v">${direct+likely}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${counts.High||0}</div></div></div><div class="section"><h3>Source assurance</h3><p>${esc(sourceAssurance)}. Matching is based on coordinates where available, with transparent city/country fallbacks.</p>${sourceCoverageHtml}</div><div class="section"><h3>Executive assessment</h3>${summaryHtml}</div><div class="section"><h3>Relevant intelligence</h3><div class="list-tight">${eventsHtml}</div></div><div class="section"><h3>Operational implications</h3><ul><li>${entity.type==='asset'?'Potential effects include site access, staffing, deliveries, visitor movement and transport availability.':'Potential effects include traveller movement, hotel access, airport or station routes, check-in cadence and welfare support.'}</li><li>Matches marked “Context only” should not be treated as direct exposure without further analyst verification.</li><li>Rebuild the report when routes, timings, traveller positions or asset details change.</li></ul></div><div class="section"><h3>Recommended actions</h3>${recommendationsHtml}</div>`;
+      const metricGridClass=entity.type==='traveller'?'mini-grid entity-four':'mini-grid';
+      const welfareMetric=entity.type==='traveller'?`<div class="mini-card"><div class="k">Welfare posture</div><div class="v" style="font-size:17px">${esc(entity.welfarePosture)}</div></div>`:'';
+      const welfareSection=entity.type==='traveller'?`<div class="section"><h3>Traveller welfare &amp; response posture</h3>${welfareSummary}<ul><li>Tracking source: ${esc(entity.session?`${entity.trackingStatus||'active'} · ${entity.trackingFreshness||'offline'}`:'No active tracking session')}.</li><li>Check-in workflow: ${esc(entity.checkinStatus)}${entity.checkinLastAt?` · latest activity ${esc(formatEntityMoment(entity.checkinLastAt))}`:''}.</li><li>Active panic alarms: ${entity.activePanicCount}; active proximity risk alerts: ${entity.activeRiskAlerts}; relevant escalation contacts: ${entity.escalationContactCount}.</li></ul></div>`:'';
+      el.draftBody.innerHTML=`<div class="section"><h3>Entity profile</h3>${profileHtml}</div><div class="${metricGridClass}"><div class="mini-card"><div class="k">Relevant matches</div><div class="v">${matches.length}</div></div><div class="mini-card"><div class="k">Direct / likely</div><div class="v">${direct+likely}</div></div><div class="mini-card"><div class="k">High risk</div><div class="v">${counts.High||0}</div></div>${welfareMetric}</div><div class="section"><h3>Source assurance</h3><p>${esc(sourceAssurance)}. Matching is based on coordinates where available, with transparent city/country fallbacks.</p>${sourceCoverageHtml}</div><div class="section"><h3>Executive assessment</h3>${summaryHtml}</div>${welfareSection}<div class="section"><h3>Relevant intelligence</h3><div class="list-tight">${eventsHtml}</div></div><div class="section"><h3>Operational implications</h3><ul><li>${entity.type==='asset'?'Potential effects include site access, staffing, deliveries, visitor movement and transport availability.':'Potential effects include traveller movement, hotel access, airport or station routes, tracking confidence, check-in cadence and welfare support.'}</li><li>Matches marked “Context only” should not be treated as direct exposure without further analyst verification.</li><li>Rebuild the report when routes, timings, traveller positions, check-in posture or asset details change.</li></ul></div><div class="section"><h3>Recommended actions</h3>${recommendationsHtml}</div>`;
       const exportTitle=`${entityKind} Report — ${entity.name}`;
-      currentDraftState={buildType:type,reportSubject:subject,reportSubjectLabel:meta.label,sourceMode:usesOperational?'verified_api':'verified',sourceTrust:sourceAssurance,audience:currentReportDefinition.audience||'ops',monthKey:range.monthKey,periodLabel:range.label,regionFilter:'',scopeMode:'entity',selectedRegions:[],scopeSelectionKey:`${entity.type}:${entity.id}`,entityType:entity.type,entityId:entity.id,entityName:entity.name,entityRadiusKm:radiusKm,entityWindow:el.entityWindowSelect?.value||'report_period',locationBasis:entity.locationBasis,title,exportTitle,typeLabel:reportTypeLabel(type),subtitle,risk:dominant,riskClass:riskClass(dominant),notes:`${entityKind} draft for ${entity.name}; ${matches.length} intelligence match${matches.length===1?'':'es'} using ${entity.locationBasis.replace(/_/g,' ')}.`,keywords:[subject,entity.type,entity.name,entity.city,entity.country,'entity-aware',usesOperational?'multi-source':'verified'].filter(Boolean),metrics:{events:matches.length,high:counts.High||0,countries:new Set(matches.map(x=>x.country).filter(Boolean)).size},compareMeta:null,compareScope:`${entity.type} exposure`,comparePreviousId:'',comparePreviousTitle:'',summaryHtml,entityProfileHtml,sourceCoverageHtml,preparedFor:orgName(),deltaHtml:'',eventsHtml,themesHtml:'',regionalHtml,recommendationsHtml,namedRegionsLine:locationLine,thematicWatch:`${meta.label} · ${matches.length} relevant matches${usesOperational?` across ${new Set(matches.map(x=>x.sourceType)).size} source layers`:''}`,exportFilename:`CityIntel_${slugify(exportTitle)}.html`,savedHtml:`<!doctype html><html><head><meta charset="utf-8"><title>${esc(exportTitle)}</title></head><body>${el.draftBody.innerHTML}</body></html>`};
+      currentDraftState={buildType:type,reportSubject:subject,reportSubjectLabel:meta.label,sourceMode:usesOperational?'verified_api':'verified',sourceTrust:sourceAssurance,audience:currentReportDefinition.audience||'ops',monthKey:range.monthKey,periodLabel:range.label,regionFilter:'',scopeMode:'entity',selectedRegions:[],scopeSelectionKey:`${entity.type}:${entity.id}`,entityType:entity.type,entityId:entity.id,entityName:entity.name,entityRadiusKm:radiusKm,entityWindow:el.entityWindowSelect?.value||'report_period',locationBasis:entity.locationBasis,title,exportTitle,typeLabel:reportTypeLabel(type),subtitle,risk:dominant,riskClass:riskClass(dominant),notes:`${entityKind} draft for ${entity.name}; ${matches.length} intelligence match${matches.length===1?'':'es'} using ${entity.locationBasis.replace(/_/g,' ')}.`,keywords:[subject,entity.type,entity.name,entity.city,entity.country,'entity-aware',usesOperational?'multi-source':'verified'].filter(Boolean),metrics:{events:matches.length,high:counts.High||0,countries:new Set(matches.map(x=>x.country).filter(Boolean)).size},welfarePosture:entity.type==='traveller'?entity.welfarePosture:'',trackingFreshness:entity.type==='traveller'?entity.trackingFreshness:'',checkinStatus:entity.type==='traveller'?entity.checkinStatus:'',activePanicCount:entity.type==='traveller'?entity.activePanicCount:0,activeRiskAlerts:entity.type==='traveller'?entity.activeRiskAlerts:0,escalationContactCount:entity.type==='traveller'?entity.escalationContactCount:0,compareMeta:null,compareScope:`${entity.type} exposure`,comparePreviousId:'',comparePreviousTitle:'',summaryHtml,entityProfileHtml,sourceCoverageHtml,preparedFor:orgName(),deltaHtml:'',eventsHtml,themesHtml:'',regionalHtml,recommendationsHtml,namedRegionsLine:locationLine,thematicWatch:`${meta.label} · ${matches.length} relevant matches${usesOperational?` across ${new Set(matches.map(x=>x.sourceType)).size} source layers`:''}`,exportFilename:`CityIntel_${slugify(exportTitle)}.html`,savedHtml:`<!doctype html><html><head><meta charset="utf-8"><title>${esc(exportTitle)}</title></head><body>${el.draftBody.innerHTML}</body></html>`};
       currentDraftState.brandedHtml=buildBrandedReportHtml(currentDraftState);
       el.saveOrgDraftBtn.disabled=false; el.publishOrgBtn.disabled=false; el.saveMasterBtn.style.display=isAdmin()?'':'none';
       el.draftShell.scrollIntoView({behavior:'smooth',block:'start'});
@@ -2539,6 +2637,14 @@ body{
   .entity-snapshot-card{border:1px solid #dfe6ee;border-radius:13px;background:#f8fafc;padding:11px 12px;min-width:0}
   .entity-snapshot-card .k{font-size:10px;letter-spacing:.065em;text-transform:uppercase;color:#718096;font-weight:800;margin-bottom:5px}
   .entity-snapshot-card .v{font-size:13px;line-height:1.38;color:#142033;font-weight:750;overflow-wrap:anywhere}
+  .traveller-welfare-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0 14px}
+  .traveller-welfare-card{border:1px solid #dfe6ee;border-radius:12px;background:#f8fafc;padding:10px;min-width:0}
+  .traveller-welfare-card .k{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#718096;font-weight:850}
+  .traveller-welfare-card .v{font-size:12px;line-height:1.35;color:#142033;font-weight:800;margin-top:4px;overflow-wrap:anywhere}
+  .traveller-welfare-card .s{font-size:10px;color:#667281;margin-top:3px;line-height:1.35}
+  .traveller-welfare-card.alert{border-color:#efb1b1;background:#fff2f2}.traveller-welfare-card.warn{border-color:#ead08b;background:#fff9e8}.traveller-welfare-card.ok{border-color:#b7dfd0;background:#f0fbf6}
+  .traveller-welfare-summary{margin:10px 0 13px;padding:10px 11px;border:1px solid #dfe6ee;border-radius:11px;background:#f8fafc;color:#263548;font-size:12px;line-height:1.5}
+  .traveller-welfare-summary strong{color:#0f172a}
   .source-layer-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid #cdd9e6;background:#f4f7fa;color:#32445a;font-size:10px;font-weight:850;white-space:nowrap}
   .source-layer-badge.protest{color:#7c2a86;border-color:#dfb8e6;background:#fff5ff}.source-layer-badge.live{color:#9f1515;border-color:#efb1b1;background:#fff2f2}.source-layer-badge.transport{color:#875100;border-color:#efcc8d;background:#fff8e9}.source-layer-badge.power{color:#786000;border-color:#eadb77;background:#fffce3}.source-layer-badge.flight{color:#285f9e;border-color:#bdd4ee;background:#f0f7ff}.source-layer-badge.infrastructure{color:#08786b;border-color:#a9ded7;background:#effcf9}
   .source-coverage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:10px}
@@ -2633,10 +2739,14 @@ body{
     .entity-snapshot-card{padding:7px 8px;border-radius:10px}
     .entity-snapshot-card .k{font-size:8.5px;margin-bottom:3px}
     .entity-snapshot-card .v{font-size:10.5px;line-height:1.3}
+    .traveller-welfare-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:7px 0 9px}
+    .traveller-welfare-card{padding:6px 7px;border-radius:9px;break-inside:avoid}
+    .traveller-welfare-card .k{font-size:7.5px}.traveller-welfare-card .v{font-size:9.5px}.traveller-welfare-card .s{font-size:8px}
+    .traveller-welfare-summary{padding:7px 8px;margin:7px 0 9px;font-size:9px;line-height:1.35}
     .theme-list li,.rec-list li{margin:6px 0}
     .footer{position:fixed;left:14mm;right:14mm;bottom:6mm;padding:0}
   }
-  @media (max-width:900px){.hero-grid,.deck,.summary-band,.delta-grid{grid-template-columns:1fr}.brand-row{grid-template-columns:1fr}.hero-copy{padding-top:0}.cover-summary{white-space:normal}.hero-right{min-height:auto}.logo-box{width:124px;height:124px;min-width:124px;margin:0 auto 6px}.cover-footer{position:static;left:auto;right:auto;bottom:auto;margin-top:20px}.cover-callout{position:static;left:auto;transform:none;bottom:auto;width:auto;max-width:none;margin:18px 0 0}.entity-snapshot{grid-template-columns:1fr 1fr}}
+  @media (max-width:900px){.hero-grid,.deck,.summary-band,.delta-grid{grid-template-columns:1fr}.brand-row{grid-template-columns:1fr}.hero-copy{padding-top:0}.cover-summary{white-space:normal}.hero-right{min-height:auto}.logo-box{width:124px;height:124px;min-width:124px;margin:0 auto 6px}.cover-footer{position:static;left:auto;right:auto;bottom:auto;margin-top:20px}.cover-callout{position:static;left:auto;transform:none;bottom:auto;width:auto;max-width:none;margin:18px 0 0}.entity-snapshot{grid-template-columns:1fr 1fr}.traveller-welfare-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
