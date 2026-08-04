@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>CityIntel — Panic Access</title>
+  <title>CityIntel — Panic Access v2.1</title>
   <meta name="theme-color" content="#9d2b2b" />
   <meta name="description" content="Rapid emergency panic alarm access for enrolled CityIntel employees." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -49,6 +49,15 @@
     .ack{display:none;border:1px solid rgba(51,196,141,.42);background:rgba(51,196,141,.08);color:#9df0ca;border-radius:13px;padding:13px;margin-bottom:14px;font-weight:800}.ack.show{display:block}.safe-sent{display:none;color:var(--ok);font-size:13px;margin-top:10px}.safe-sent.show{display:block}
     .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100vw - 28px);background:#171b20;border:1px solid var(--line);border-radius:12px;padding:11px 15px;font-size:13px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;text-align:center}.toast.show{opacity:1}.toast.err{border-color:rgba(255,90,95,.5);color:#ff9ca0}.toast.ok{border-color:rgba(51,196,141,.45);color:#89e8bd}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:60}.modal.show{display:flex}.sheet{width:100%;max-width:560px;margin:0 auto;background:#11151a;border:1px solid var(--line);border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom))}.sheet h3{margin:0 0 8px}.sheet p{color:var(--muted);font-size:13px}.steps{padding-left:20px;color:#dce3ec}.steps li{margin:7px 0}
+
+    .setup-complete-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin:0 0 16px;background:rgba(51,196,141,.12);border:1px solid rgba(51,196,141,.42);color:var(--ok);font-size:30px;font-weight:950;box-shadow:0 10px 28px rgba(51,196,141,.10)}
+    .install-focus{border-color:rgba(147,197,253,.34);background:radial-gradient(circle at 92% 2%,rgba(75,145,255,.12),transparent 34%),linear-gradient(180deg,rgba(24,34,49,.96),rgba(12,15,19,.98))}
+    .install-focus h3{font-size:19px;margin:0 0 6px}.install-focus .lead{margin:0 0 14px;font-size:13px}
+    .install-benefits{margin:14px 0;padding:0;list-style:none}.install-benefits li{position:relative;padding:7px 0 7px 27px;color:#dce3ec;font-size:13px}.install-benefits li::before{content:"✓";position:absolute;left:0;top:7px;color:var(--ok);font-weight:950}
+    .install-person{display:flex;align-items:center;gap:11px;margin:0 0 15px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(0,0,0,.18)}
+    .install-person .avatar{width:40px;height:40px}.install-person-name{font-weight:900}.install-person-org{color:var(--muted);font-size:12px}
+    .install-note{margin:10px 2px 0;color:var(--muted);font-size:12px;text-align:center}
+
     @media(max-width:420px){main{padding-left:12px;padding-right:12px}.two{grid-template-columns:1fr}.card{padding:15px}.hold-wrap{padding:14px}.hdr{padding-left:12px;padding-right:12px}}
   </style>
 </head>
@@ -78,6 +87,31 @@
       </div>
       <button class="btn red full" id="saveAccessBtn">Save Panic Access</button>
       <p class="safety-note">This phone stores a random device credential. The shared organisation access code is not kept.</p>
+    </section>
+
+
+    <section class="screen" id="screenInstall">
+      <div class="setup-complete-icon" aria-hidden="true">✓</div>
+      <div class="eyebrow">Setup complete</div>
+      <h1>Panic Access is saved</h1>
+      <p class="lead">Your details are securely enrolled on this phone. Add the dedicated Panic Access icon now so the original invitation email is no longer needed.</p>
+      <div class="card install-focus">
+        <div class="install-person">
+          <div class="avatar" id="installProfileAvatar">CI</div>
+          <div><div class="install-person-name" id="installProfileName">Enrolled employee</div><div class="install-person-org" id="installProfileOrg">CityIntel organisation</div></div>
+        </div>
+        <h3>Add Panic Access to your home screen</h3>
+        <p class="lead" id="installIntroText">Use the button below to create a secure app-style shortcut.</p>
+        <ul class="install-benefits">
+          <li>Open the alarm directly from your phone's home screen.</li>
+          <li>Your saved identity is ready automatically.</li>
+          <li>Only location and an optional message need updating.</li>
+        </ul>
+        <button class="btn red full" id="installNowBtn" type="button">Add Panic Access to Home Screen</button>
+        <p class="install-note">Your phone or browser must ask for confirmation. CityIntel cannot silently install an icon without your approval.</p>
+      </div>
+      <button class="btn full ghost" id="continueReadyBtn" type="button">Continue to Panic Alarm</button>
+      <p class="safety-note">You can install later from the Panic Access ready screen.</p>
     </section>
 
     <section class="screen" id="screenReady">
@@ -123,6 +157,8 @@
   const PROFILE_KEY = 'ci_panic_device_profile_v1';
   const CLIENT_ID_KEY = 'ci_panic_client_device_id_v1';
   const LAST_LOG_KEY = 'ci_panic_last_log_id_v1';
+  const INSTALL_INTRO_KEY = 'ci_panic_install_intro_seen_v1';
+  const PWA_INSTALLED_KEY = 'ci_panic_pwa_installed_v1';
   const HOLD_MS = 2000;
 
   let token = localStorage.getItem(TOKEN_KEY) || '';
@@ -146,7 +182,15 @@
   function initials(name){ const p=String(name||'CI').trim().split(/\s+/); return ((p[0]?.[0]||'C')+(p[1]?.[0]||'')).toUpperCase(); }
   function deviceHeaders(){ return {'Content-Type':'application/json','Accept':'application/json','X-Panic-Device-Token':token}; }
   function clientDeviceId(){ let id=localStorage.getItem(CLIENT_ID_KEY)||''; if(!id){ id='web_'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random().toString(36).slice(2)); localStorage.setItem(CLIENT_ID_KEY,id); } return id; }
-  function isStandalone(){ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+  function isStandaloneShell(){ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+  function isPanicInstalled(){
+    const source=readParam('source').trim().toLowerCase();
+    return localStorage.getItem(PWA_INSTALLED_KEY)==='true' ||
+      (isStandaloneShell() && (source==='pwa' || source==='shortcut'));
+  }
+  function shouldShowInstallIntro(){
+    return !isPanicInstalled() && localStorage.getItem(INSTALL_INTRO_KEY)!=='true';
+  }
   function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
 
   function updateNetwork(){ const online=navigator.onLine; $('netStatus').textContent=online?'Online':'Offline'; $('netStatus').classList.toggle('online',online); $('offlineWarning').classList.toggle('show',!online); $('holdBtn').disabled=!online; }
@@ -163,12 +207,31 @@
     $('inviteField').style.display=(editing||!token)&&!inviteCode?'block':'none';
   }
   function suggestDeviceLabel(){ const mobile=/mobile|iphone|android/i.test(navigator.userAgent); return mobile?'Personal mobile phone':'Personal device'; }
-  function renderReady(){
+  function profileDisplay(){
     const full=[profile?.firstName,profile?.surname].filter(Boolean).join(' ')||'Enrolled employee';
-    $('profileName').textContent=full; $('profileAvatar').textContent=initials(full); $('profileOrg').textContent=profile?.orgName||'CityIntel organisation';
+    return { full, org:profile?.orgName||'CityIntel organisation' };
+  }
+
+  function renderInstallOnboarding(){
+    const display=profileDisplay();
+    $('installProfileName').textContent=display.full;
+    $('installProfileAvatar').textContent=initials(display.full);
+    $('installProfileOrg').textContent=display.org;
+    $('installIntroText').textContent=deferredInstallPrompt
+      ? 'Your browser is ready to install the dedicated Panic Access icon.'
+      : (isIOS()
+          ? 'On iPhone or iPad, use Safari and choose Share → Add to Home Screen.'
+          : 'Use the button for the browser install prompt or guided home-screen steps.');
+    showScreen('screenInstall');
+    updateNetwork();
+  }
+
+  function renderReady(){
+    const display=profileDisplay();
+    $('profileName').textContent=display.full; $('profileAvatar').textContent=initials(display.full); $('profileOrg').textContent=display.org;
     $('profileContact').textContent=[profile?.email,profile?.phone].filter(Boolean).join(' · ')||profile?.deviceLabel||'Enrolled device';
     $('liveLocationInput').value=$('liveLocationInput').value||profile?.defaultLocation||'';
-    $('installCard').classList.toggle('installed',isStandalone());
+    $('installCard').classList.toggle('installed',isPanicInstalled());
     showScreen('screenReady'); updateNetwork();
   }
 
@@ -193,6 +256,7 @@
       deviceLabel:$('deviceLabelInput').value.trim()||suggestDeviceLabel()
     };
     if(!body.firstName&&!body.surname){ toast('Please enter your name','err'); return; }
+    const wasEditing=editing;
     const btn=$('saveAccessBtn'); btn.disabled=true; btn.textContent=editing?'Saving changes…':'Enrolling device…';
     try {
       let data;
@@ -200,7 +264,9 @@
       else { if(!body.inviteCode){ throw new Error('Organisation access code is required.'); } data=await api('/api/public/panic-device/enrol',{method:'POST',headers:{'Content-Type':'application/json','X-Invite-Code':body.inviteCode},body:JSON.stringify(body)}); token=data.token; localStorage.setItem(TOKEN_KEY,token); }
       profile=data.device; saveJson(PROFILE_KEY,profile); inviteCode=''; editing=false;
       try { history.replaceState({},'',location.pathname+'?source=enrolled'); } catch(_){}
-      toast('Panic Access saved','ok'); renderReady();
+      toast('Panic Access saved','ok');
+      if(wasEditing){ renderReady(); }
+      else { localStorage.removeItem(INSTALL_INTRO_KEY); renderInstallOnboarding(); }
     } catch(e){ toast(e.message||'Could not save Panic Access','err'); }
     finally { btn.disabled=false; btn.textContent='Save Panic Access'; }
   }
@@ -260,24 +326,53 @@
     $('installModal').classList.add('show');
   }
   async function installApp(){
-    if(deferredInstallPrompt){ deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice.catch(()=>null); deferredInstallPrompt=null; return; }
+    if(deferredInstallPrompt){
+      const promptEvent=deferredInstallPrompt;
+      deferredInstallPrompt=null;
+      promptEvent.prompt();
+      const choice=await promptEvent.userChoice.catch(()=>null);
+      if(choice?.outcome==='accepted'){
+        localStorage.setItem(INSTALL_INTRO_KEY,'true');
+        toast('Installation accepted — the Panic Access icon is being added','ok');
+      } else {
+        toast('Installation was not completed. You can continue and install later.','err');
+      }
+      return;
+    }
     showInstallInstructions();
   }
 
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installText').textContent='Install the secure Panic Access icon on this phone.';});
-  addEventListener('appinstalled',()=>{$('installCard').classList.add('installed');toast('Panic Access added to your home screen','ok');});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentLogId)checkStatus();});
+  addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    deferredInstallPrompt=e;
+    if($('installText')) $('installText').textContent='Install the secure Panic Access icon on this phone.';
+    if($('installIntroText')) $('installIntroText').textContent='Your browser is ready to install the dedicated Panic Access icon.';
+  });
+  addEventListener('appinstalled',()=>{
+    localStorage.setItem(PWA_INSTALLED_KEY,'true');
+    localStorage.setItem(INSTALL_INTRO_KEY,'true');
+    $('installCard').classList.add('installed');
+    toast('Panic Access added to your home screen','ok');
+    if($('screenInstall').classList.contains('active')) setTimeout(renderReady,500);
+  });
+  document.addEventListener('visibilitychange' ,()=>{if(!document.hidden&&currentLogId)checkStatus();});
 
   $('saveAccessBtn').addEventListener('click',saveAccess);
   $('setupGeoBtn').addEventListener('click',function(){getGps(this,$('defaultLocationInput'));});
   $('readyGeoBtn').addEventListener('click',function(){getGps(this,$('liveLocationInput'));});
   $('editProfileBtn').addEventListener('click',()=>{editing=true;fillProfileForm(profile||{});$('inviteField').style.display='none';showScreen('screenSetup');});
-  $('installBtn').addEventListener('click',installApp); $('closeInstallModal').addEventListener('click',()=> $('installModal').classList.remove('show'));
+  $('installBtn').addEventListener('click',installApp);
+  $('installNowBtn').addEventListener('click',installApp);
+  $('continueReadyBtn').addEventListener('click',()=>{
+    localStorage.setItem(INSTALL_INTRO_KEY,'true');
+    renderReady();
+  });
+  $('closeInstallModal').addEventListener('click',()=> $('installModal').classList.remove('show'));
   $('installModal').addEventListener('click',e=>{if(e.target===$('installModal'))$('installModal').classList.remove('show');});
   $('holdBtn').addEventListener('pointerdown',beginHold); ['pointerup','pointercancel','pointerleave'].forEach(n=>$('holdBtn').addEventListener(n,endHold));
   $('holdBtn').addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!holdStart)beginHold(e);}); $('holdBtn').addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')endHold(e);});
   $('safeBtn').addEventListener('click',sendSafeUpdate);
-  $('clearDeviceBtn').addEventListener('click',()=>{localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(PROFILE_KEY);localStorage.removeItem(LAST_LOG_KEY);token='';profile=null;currentLogId='';editing=false;fillProfileForm({});showScreen('screenSetup');});
+  $('clearDeviceBtn').addEventListener('click',()=>{localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(PROFILE_KEY);localStorage.removeItem(LAST_LOG_KEY);localStorage.removeItem(INSTALL_INTRO_KEY);localStorage.removeItem(PWA_INSTALLED_KEY);token='';profile=null;currentLogId='';editing=false;fillProfileForm({});showScreen('screenSetup');});
 
   if('serviceWorker' in navigator){ addEventListener('load',()=>navigator.serviceWorker.register('/panic-sw.js',{scope:'/panic-employee.html'}).catch(err=>console.warn('Panic Access service worker registration failed',err))); }
 
@@ -287,6 +382,7 @@
       const valid=await validateDevice();
       if(valid){
         if(currentLogId){ const data=await api('/api/public/panic-device/status?logId='+encodeURIComponent(currentLogId),{headers:deviceHeaders()}); if(data.active){ $('confirmedName').textContent=[profile?.firstName,profile?.surname].filter(Boolean).join(' ')||'Employee'; $('confirmedLocation').textContent=profile?.defaultLocation||'Not supplied'; $('confirmedTime').textContent=data.alarm?.activated_at?new Date(data.alarm.activated_at).toLocaleString('en-GB'):'—'; $('confirmedId').textContent=currentLogId; showScreen('screenConfirmed'); startStatusPolling(); return; } localStorage.removeItem(LAST_LOG_KEY); currentLogId=''; }
+        if(shouldShowInstallIntro()){ renderInstallOnboarding(); return; }
         renderReady(); return;
       }
       profile=null; saveJson(PROFILE_KEY,null); fillProfileForm({}); showScreen('screenSetup');
