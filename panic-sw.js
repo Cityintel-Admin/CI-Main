@@ -1,10 +1,12 @@
 /* CityIntel Panic Access service worker — Phase 2 */
-const CACHE_NAME = 'cityintel-panic-access-v2';
+const CACHE_NAME = 'cityintel-panic-access-v3';
 const SHELL = [
   '/panic-employee.html',
   '/panic-manifest.json',
   '/CityintLogo.jpg',
   '/favicon-512.png',
+  '/panic-icon-192.png',
+  '/panic-icon-512.png',
   '/favicon.ico'
 ];
 
