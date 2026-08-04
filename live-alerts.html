@@ -652,7 +652,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v42</title>
+<title>CityIntel — Live Alerts v45</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -5656,7 +5656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <button type="button" id="geofenceEditBtn" class="queue-geofence-edit" title="Set up / redraw geofence">⚙</button>
       </div>
     </div>
-    <div class="small" style="opacity:.75;margin-top:6px;">Queues filter your cached alerts across all feeds.</div>
+    <div class="small" style="opacity:.75;margin-top:6px;">Verified and Unverified use the selected time window. Feed totals can overlap when one incident matches multiple feeds.</div>
   </div>
 
   <div class="manual-alert-slot">
@@ -6145,16 +6145,23 @@ window.ciFeedSummaries = window.ciFeedSummaries || {};
 function publishFeedSummary(feed, events){
   if (!feed || !feed.id) return;
   const incomingList = Array.isArray(events) ? events : [];
-  const mergedList = (typeof ciAlertStoreMerge === 'function')
-    ? ciAlertStoreMerge(feed, incomingList)
+  if (incomingList.length && typeof ciAlertStoreMerge === 'function') {
+    ciAlertStoreMerge(feed, incomingList);
+  }
+  const mergedList = (typeof ciAlertStoreForFeed === 'function')
+    ? ciAlertStoreForFeed(feed)
     : incomingList;
+  const windowHours = (typeof getCurrentWindowHours === 'function') ? getCurrentWindowHours() : 6;
+  const cutoffMs = Date.now() - windowHours * 3600_000;
 
-  // Feed tiles show the operator's active working set. Once an alert is
-  // deleted, escalated, monitored, or cleared, remove it from feed counts
-  // and leave it in the relevant operator queue instead.
+  // Feed tiles show the verified, untriaged working set for the same selected
+  // time window used by the cards and the global Verified queue.
   const list = (mergedList || []).filter(ev => {
     if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
-    return (typeof getDisposition === 'function') ? getDisposition(ev) === 'untriaged' : true;
+    if (typeof getDisposition === 'function' && getDisposition(ev) !== 'untriaged') return false;
+    if (typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev)) return false;
+    const t = Date.parse(eventWhen(ev));
+    return Number.isFinite(t) && t >= cutoffMs;
   });
 
   let hi = 0, med = 0, low = 0;
@@ -7730,8 +7737,9 @@ function updateFeedHeaderStats(feed, events){
   const inWindow = list.filter(ev => {
     if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
     if (typeof getDisposition === 'function' && getDisposition(ev) !== 'untriaged') return false;
+    if (typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev)) return false;
     const t = Date.parse(eventWhen(ev));
-    return !isNaN(t) && t >= cutoffMs;
+    return Number.isFinite(t) && t >= cutoffMs;
   });
 
   if (!inWindow.length){
@@ -7827,6 +7835,16 @@ function getCurrentWindowHours() {
   return Math.min(72, h);
 }
 
+function ciAlertWithinActiveWindow(ev){
+  const cutoffMs = Date.now() - getCurrentWindowHours() * 3600_000;
+  const t = Date.parse(eventWhen(ev));
+  return Number.isFinite(t) && t >= cutoffMs;
+}
+
+function ciActiveWindowEvents(list){
+  return (Array.isArray(list) ? list : []).filter(ciAlertWithinActiveWindow);
+}
+
 function initWindowSelector() {
   const sel = document.getElementById('windowSelect');
   if (!sel) return;
@@ -7841,8 +7859,12 @@ function initWindowSelector() {
     const h = Number(sel.value || '6') || 6;
     const clamped = Math.max(1, Math.min(72, h));
     localStorage.setItem(WINDOW_STORAGE_KEY, String(clamped));
-    // re-run all feeds with the new window
+    // Re-run cards, queue counters and the global strip against one shared window.
     renderFeeds();
+    setTimeout(() => {
+      try { if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts(); } catch(_) {}
+      try { if (typeof recomputeGlobalStrip === 'function') recomputeGlobalStrip(); } catch(_) {}
+    }, 0);
   });
 }
 
@@ -8062,14 +8084,32 @@ function recomputeGlobalStrip(){
   const feeds = loadFeeds();
   let all = [];
 
-  feeds.forEach(feed => {
-    const evs = getEventsForFeed(feed);
-    evs.forEach(ev => {
+  // Prefer the unified store so the NOW strip counts unique incidents rather
+  // than counting one incident again in overlapping regional and city feeds.
+  if (typeof ciAlertStoreGetAll === 'function') {
+    all = ciAlertStoreGetAll().filter(ev => {
+      if (typeof isAlertHidden === 'function' && isAlertHidden(ev)) return false;
+      if (typeof getDisposition === 'function' && getDisposition(ev) !== 'untriaged') return false;
+      if (typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev)) return false;
       const t = Date.parse(eventWhen(ev));
-      if (!t || t < cutoffMs) return;
-      all.push({ ...ev, __feedId: feed.id });
+      return Number.isFinite(t) && t >= cutoffMs;
+    }).map(ev => ({ ...ev, __feedId: ev._feedId || (Array.isArray(ev._feedIds) ? ev._feedIds[0] : '') }));
+  }
+
+  // First-paint fallback before the unified store has hydrated.
+  if (!all.length) {
+    feeds.forEach(feed => {
+      const evs = getEventsForFeed(feed);
+      evs.forEach(ev => {
+        if (typeof getDisposition === 'function' && getDisposition(ev) !== 'untriaged') return;
+        if (typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev)) return;
+        const t = Date.parse(eventWhen(ev));
+        if (!Number.isFinite(t) || t < cutoffMs) return;
+        all.push({ ...ev, __feedId: feed.id });
+      });
     });
-  });
+    all = normaliseAlertList(all);
+  }
 
   // empty state
   if (!all.length){
@@ -10723,15 +10763,11 @@ function renderEventsIntoCard(cardEl, events, feed) {
   const archived   = loadArchive(feed.id);
   const renderList = (archived && archived.length) ? archived : listEvents;
 
-  // Keep it “fresh” by default: prefer last 3h if available
-  const now       = Date.now();
-  const MAX_AGE_MS = 3 * 60 * 60 * 1000;
-  const fresh = renderList.filter(ev => {
-    const t = Date.parse(eventWhen(ev));
-    return !isNaN(t) && (now - t <= MAX_AGE_MS);
-  });
+  // Use the operator-selected window exactly. The previous hard-coded 3-hour
+  // preference silently discarded valid rows from wider selected windows.
+  const windowEvents = ciActiveWindowEvents(renderList);
 
-  const displayEvents = (fresh.length ? fresh : renderList)
+  const displayEvents = windowEvents
     .filter(ev => eventMatchesFeed(ev, feed))
     .map(ev => ciApplyGeoValidation(ev, feed))
     .filter(Boolean)
@@ -10748,10 +10784,12 @@ function renderEventsIntoCard(cardEl, events, feed) {
   // Low-confidence location rows are deliberately held out of the main feed/map counts
   // and placed into the Unverified queue below, so operators do not treat weak geo as confirmed.
   if (typeof ciAlertStoreMerge === 'function') {
-    ciAlertStoreMerge(feed, verifiedEvents);
+    // Keep both verified and unverified rows in the shared store so freshly
+    // collected low-confidence items appear immediately in Unverified.
+    ciAlertStoreMerge(feed, scoredDisplayEvents);
   }
-  updateFeedHeaderStats(feed, verifiedEvents);
-  publishFeedSummary(feed, verifiedEvents);
+  updateFeedHeaderStats(feed, scoredDisplayEvents);
+  publishFeedSummary(feed, scoredDisplayEvents);
 	
   // Track some stats for the refresh scheduler
   cardEl.__state = cardEl.__state || { lastLen: 0, lastHighAt: 0 };
@@ -14419,7 +14457,8 @@ function redrawIncidentRadius(){
       });
     } catch(_) {}
 
-    // sort newest first
+    // Deduplicate after adding manual and queued snapshots, then sort newest first.
+    out = normaliseAlertList(out);
     out.sort((a,b)=>(Date.parse(eventWhen(b))||0)-(Date.parse(eventWhen(a))||0));
     return out;
   }
@@ -14554,25 +14593,26 @@ function redrawIncidentRadius(){
     ciQueueFilterState.activeQueue = st || 'all';
     ciBindQueueFilters();
     const label =
-      st === 'all' ? 'Verified alerts' :
+      st === 'all' ? `Verified alerts · last ${getCurrentWindowHours()}h` :
       st === 'draft' ? 'Draft queue' :
       st === 'escalated' ? 'Escalated queue' :
       st === 'monitoring' ? 'Monitoring queue' :
-      st === 'unverified' ? 'Unverified location queue' :
+      st === 'unverified' ? `Unverified location queue · last ${getCurrentWindowHours()}h` :
       st === 'cleared' ? 'Cleared queue' :
       st === 'geofence' ? ((typeof window.ciGetGeofence === 'function' && window.ciGetGeofence()) ? (window.ciGetGeofence().label || 'Geofence queue') : 'Geofence queue') :
       'Queue';
 
-    const all = collectAllCachedEvents();
-    const unverified = all.filter(ev =>
-      !(typeof isAlertHidden === 'function' && isAlertHidden(ev)) &&
+    const all = collectAllCachedEvents().filter(ev => !(typeof isAlertHidden === 'function' && isAlertHidden(ev)));
+    const activeAll = ciActiveWindowEvents(all);
+    const unverified = activeAll.filter(ev =>
+      getDisposition(ev) === 'untriaged' &&
       (typeof ciIsLowGeoConfidence === 'function' ? ciIsLowGeoConfidence(ev) : false)
     );
-    // Route unverified low-confidence items out of Verified until an operator
-    // verifies/triages them. This keeps the main feed focused on confirmed data.
-    const verifiedAll = all.filter(ev => {
+    // Verified and Unverified are the unique, active-window intake queues.
+    // Monitoring/Escalated/Cleared remain persistent operational workflows.
+    const verifiedAll = activeAll.filter(ev => {
       const isLowGeo = (typeof ciIsLowGeoConfidence === 'function') ? ciIsLowGeoConfidence(ev) : false;
-      return !(isLowGeo && getDisposition(ev) === 'untriaged');
+      return getDisposition(ev) === 'untriaged' && !isLowGeo;
     });
 
     const baseItems = (st === 'all'
@@ -14580,9 +14620,9 @@ function redrawIncidentRadius(){
       : st === 'draft'
         ? all.filter(ev => hasTransitionDraft(ev))
         : st === 'unverified'
-          ? unverified.filter(ev => getDisposition(ev) === 'untriaged')
+          ? unverified
           : st === 'geofence'
-            ? all.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev))
+            ? activeAll.filter(ev => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(ev))
                 .concat(
                   (Array.isArray(window.CICityIntelAdminPosts) ? window.CICityIntelAdminPosts : [])
                     .filter(p => typeof window.ciEventInGeofence === 'function' && window.ciEventInGeofence(p))
@@ -14783,17 +14823,15 @@ function redrawIncidentRadius(){
 
   function updateQueueCounts(){
     const all = collectAllCachedEvents().filter(ev => !(typeof isAlertHidden === 'function' && isAlertHidden(ev)));
-    const unv = all.filter(ev =>
+    const activeAll = ciActiveWindowEvents(all);
+    const unv = activeAll.filter(ev =>
       getDisposition(ev) === 'untriaged' &&
       (typeof ciIsLowGeoConfidence === 'function' ? ciIsLowGeoConfidence(ev) : false)
     ).length;
-    // Verified excludes untriaged, low-confidence location items; they live only
-    // in Unverified until an operator verifies or routes them to Monitoring/Cleared.
-    const verifiedAll = all.filter(ev => {
+    const total = activeAll.filter(ev => {
       const isLowGeo = (typeof ciIsLowGeoConfidence === 'function') ? ciIsLowGeoConfidence(ev) : false;
-      return !(isLowGeo && getDisposition(ev) === 'untriaged');
-    });
-    const total = verifiedAll.length;
+      return getDisposition(ev) === 'untriaged' && !isLowGeo;
+    }).length;
     const esc = filterByDisposition(all, 'escalated').length;
     const mon = filterByDisposition(all, 'monitoring').length;
     const clr = filterByDisposition(all, 'cleared').length;
