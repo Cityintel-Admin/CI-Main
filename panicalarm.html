@@ -50,7 +50,7 @@
 <meta charset="utf-8" />
 
 <title>CityIntel — Panic Alarm</title>
-<!-- Visual refinement: v13 -->
+<!-- Visual refinement: v14 — Employee Panic Access PWA management -->
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -194,6 +194,18 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
     .al-history-row:last-child { border-bottom:none; }
     .al-history-name { font-weight:700; color:#c9d0d8; }
     .al-resolved-badge { color:#6fcf6f; font-size:11px; font-weight:700; }
+
+    .panic-device-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+    .panic-device-card{border:1px solid #2b3139;border-radius:13px;background:#0b0f13;padding:13px}
+    .panic-device-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .panic-device-name{font-weight:850;color:#f0f4f8}.panic-device-label{font-size:11px;color:#8e97a3;margin-top:2px}
+    .panic-device-meta{font-size:11px;color:#9ba7b6;margin-top:9px;display:grid;gap:3px}
+    .panic-device-status{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;padding:3px 7px;border-radius:999px;border:1px solid}
+    .panic-device-status.active{color:#6ee7b7;border-color:rgba(51,196,141,.35);background:rgba(51,196,141,.08)}
+    .panic-device-status.revoked{color:#ff8b91;border-color:rgba(255,90,95,.35);background:rgba(255,90,95,.08)}
+    .panic-device-actions{margin-top:10px;display:flex;justify-content:flex-end}
+    .panic-device-revoke{border:1px solid rgba(255,90,95,.35);background:rgba(255,90,95,.07);color:#ff9ca0;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:750;cursor:pointer}
+    .al-safe-info{margin-top:6px;padding:7px 9px;border-radius:8px;border:1px solid rgba(51,196,141,.30);background:rgba(51,196,141,.07);color:#8be4ba;font-size:11px;font-weight:700}
   </style>
 
 
@@ -443,7 +455,7 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
         <div class="grid-2">
           <section class="card" id="panicDistributionCard">
             <h3>Share with employee</h3>
-            <p style="color:#8e97a3;font-size:13px;margin-bottom:16px">Send a panic access link directly to an employee's email or copy it for other channels. The link opens a stripped-down mobile page — no login required.</p>
+            <p style="color:#8e97a3;font-size:13px;margin-bottom:16px">Send a one-time enrolment link directly to an employee. They save their details, add CityIntel Panic Access to their home screen, and the phone receives its own revocable emergency credential.</p>
 
             <!-- Invite code for sharing — always visible to admin, separate from the activation field -->
             <div style="margin-bottom:16px">
@@ -491,7 +503,7 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
             <!-- QR code panel -->
             <div id="qrPanel" style="display:none;text-align:center;padding:16px;background:#1c1e22;border:1px solid #2e3238;border-radius:12px;margin-bottom:16px">
               <canvas id="qrCanvas" width="180" height="180" style="border-radius:8px;background:#fff;padding:8px"></canvas>
-              <div style="font-size:12px;color:#8e97a3;margin-top:8px">Employee scans this to open the alarm page on their phone.<br>They can then add it to their home screen.</div>
+              <div style="font-size:12px;color:#8e97a3;margin-top:8px">Employee scans this to enrol their phone.<br>After saving their details, they can add Panic Access to the home screen.</div>
               <button id="downloadQrBtn" class="btn ghost" style="margin-top:10px;width:auto;padding:8px 14px;font-size:12px">Download QR image</button>
             </div>
 
@@ -602,6 +614,17 @@ input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,.22);
               <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#8e97a3;margin-bottom:8px">Alarm History</div>
               <div id="alarmHistoryTable" style="font-size:13px;color:#8e97a3">Loading alarm log…</div>
             </div>
+          </section>
+
+          <section class="card" style="margin-top:18px;display:none" id="panicDevicesSection">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+              <div>
+                <div style="font-weight:800;font-size:15px;color:#e9edf2">Registered Panic Devices</div>
+                <div class="muted" style="font-size:12px;margin-top:2px">Phones enrolled through employee invitation links. Revoke a lost or replaced device without changing the organisation access code.</div>
+              </div>
+              <button id="refreshPanicDevicesBtn" class="btn ghost" style="width:auto;padding:6px 14px;font-size:12px">Refresh devices</button>
+            </div>
+            <div id="panicDevicesList" class="panic-device-grid"><div class="muted" style="font-size:12px">Loading enrolled devices…</div></div>
           </section>
 
       </div>
@@ -1257,6 +1280,7 @@ function getGeoOnce(timeoutMs = 5000){
             <span>&#x23F0; ${fmtTime(a.activated_at)}</span>
           </div>
           ${a.message?`<div class="al-msg">"${esc(a.message)}"</div>`:''}
+          ${a.employee_safe_at?`<div class="al-safe-info">✓ Employee reports they are safe${a.employee_safe_message?' — '+esc(a.employee_safe_message):''}<br><span style="font-weight:500;opacity:.8">Responder resolution is still required · ${fmtTime(a.employee_safe_at)}</span></div>`:''}
           <div class="al-ack-info">${isAck?`✓ Acknowledged by ${esc(a.acknowledged_by)} at ${fmtTime(a.acknowledged_at)}`:''}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
@@ -1320,6 +1344,38 @@ function getGeoOnce(timeoutMs = 5000){
   }
   // Refresh log every 15 seconds
   setInterval(loadLog, 15000);
+})();
+</script>
+
+
+<script>
+// ── Employee Panic Access device management ──────────────────────────────
+(function(){
+  const API='https://api.cityintelapi.com';
+  const section=document.getElementById('panicDevicesSection');
+  const list=document.getElementById('panicDevicesList');
+  function isAdmin(){ try{return !!(window.CIAuth&&(CIAuth.isMasterAdmin?.()||CIAuth.isOrgAdmin?.()));}catch(_){return false;} }
+  function headers(){ return window.CIAuth?.headers?CIAuth.headers():{'Content-Type':'application/json'}; }
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function fmt(v){if(!v)return 'Never';try{return new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(_){return v;}}
+  async function revoke(id,name){
+    if(!confirm(`Revoke Panic Access for ${name}? The employee will need a new invitation to enrol this device again.`))return;
+    const res=await fetch(API+'/api/org/panic/devices/revoke',{method:'POST',headers:headers(),body:JSON.stringify({deviceId:id})});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||data.ok===false){alert(data.error||'Could not revoke device');return;} load();
+  }
+  function render(devices){
+    if(!devices.length){list.innerHTML='<div class="muted" style="font-size:12px">No employee phones have been enrolled yet.</div>';return;}
+    list.innerHTML=devices.map(d=>{const name=[d.first_name,d.surname].filter(Boolean).join(' ')||d.email||'Employee device';const active=String(d.status||'active').toLowerCase()==='active';return `<div class="panic-device-card"><div class="panic-device-head"><div><div class="panic-device-name">${esc(name)}</div><div class="panic-device-label">${esc(d.device_label||'Personal device')}</div></div><span class="panic-device-status ${active?'active':'revoked'}">${active?'Active':'Revoked'}</span></div><div class="panic-device-meta">${d.email?`<div>✉ ${esc(d.email)}</div>`:''}${d.phone?`<div>☎ ${esc(d.phone)}</div>`:''}${d.default_location?`<div>📍 ${esc(d.default_location)}</div>`:''}<div>Enrolled: ${fmt(d.created_at)}</div><div>Last used: ${fmt(d.last_used_at)}</div><div>Last alarm: ${fmt(d.last_activation_at)}</div></div>${active?`<div class="panic-device-actions"><button class="panic-device-revoke" data-id="${esc(d.id)}" data-name="${esc(name)}">Revoke access</button></div>`:''}</div>`;}).join('');
+    list.querySelectorAll('.panic-device-revoke').forEach(btn=>btn.addEventListener('click',()=>revoke(btn.dataset.id,btn.dataset.name)));
+  }
+  async function load(){
+    if(!isAdmin()){if(section)section.style.display='none';return;}
+    if(section)section.style.display='block'; if(list)list.innerHTML='<div class="muted" style="font-size:12px">Loading enrolled devices…</div>';
+    try{const res=await fetch(API+'/api/org/panic/devices',{headers:headers(),cache:'no-store'});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok===false)throw new Error(data.error||'Load failed');render(data.devices||[]);}catch(e){if(list)list.innerHTML='<div style="font-size:12px;color:#ff9ca0">Could not load enrolled panic devices.</div>';}
+  }
+  document.getElementById('refreshPanicDevicesBtn')?.addEventListener('click',load);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
 })();
 </script>
 
