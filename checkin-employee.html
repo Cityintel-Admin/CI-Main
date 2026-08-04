@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 
 <title>CityIntel — Check-in</title>
+<!-- Employee Check-in v4: public invite authentication repair -->
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -276,6 +277,14 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:flex-
     setTimeout(()=>t.classList.remove('show'),3000);
   }
   function setStatus(el,msg,type){el.textContent=msg;el.className='status-bar'+' '+type;}
+  function apiErrorMessage(data, fallback='Request failed'){
+    const code=String(data?.code||data?.error||'').trim().toLowerCase();
+    if(code==='authentication_required'||code==='auth_required') return 'This employee check-in link could not be verified. Refresh the page or request a new check-in email.';
+    if(code.includes('invalid invite')) return 'This organisation check-in link is no longer valid. Request a new check-in email.';
+    if(code.includes('event not found')) return 'This check-in request could not be found or has expired.';
+    if(code==='module_not_entitled'||code.includes('not included in your organisation')) return 'The Check-in service is not currently enabled for this organisation.';
+    return String(data?.error||fallback);
+  }
 
   // ── Read URL params ────────────────────────────────────────────────
   function readParams(){
@@ -439,7 +448,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:flex-
           </div>`;
         showScreen('screenAcknowledged');
       }else{
-        setStatus(statusEl,'Error: '+(d.error||'Failed'),'err');
+        setStatus(statusEl,apiErrorMessage(d,'Check-in could not be submitted'),'err');
         this.disabled=false;this.textContent='✓ Confirm & Submit';
       }
     }catch(e){
@@ -494,7 +503,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:flex-
           <div class="row"><span class="lbl">Time</span><span class="val">${fmtTime(new Date().toISOString())}</span></div>`;
         showScreen('screenPanicActivated');
       }else{
-        setStatus(statusEl,'Error: '+(d.error||'Failed'),'err');
+        setStatus(statusEl,apiErrorMessage(d,'Panic alarm could not be sent'),'err');
         this.disabled=false;this.textContent='🚨 ACTIVATE PANIC ALARM';
       }
     }catch(e){
@@ -558,8 +567,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:flex-
           try{renderStages(JSON.parse(eventData.trip_stages));}catch{}
         }
       }else{
-        document.getElementById('schedLabel').textContent='Check-in';
-        document.getElementById('schedMessage').textContent='Could not load check-in details.';
+        document.getElementById('schedLabel').textContent='Check-in unavailable';
+        document.getElementById('schedMessage').textContent=apiErrorMessage(d,'Could not load check-in details.');
+        setStatus(document.getElementById('setupStatus'),apiErrorMessage(d,'Could not load check-in details.'),'err');
       }
     }catch{
       document.getElementById('schedLabel').textContent='Check-in';
