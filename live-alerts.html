@@ -652,7 +652,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v46</title>
+<title>CityIntel — Live Alerts v47</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -2521,7 +2521,7 @@ padding-bottom: 12px;
   display:none !important;
 }
 
-/* Live Alerts v46 — visible window control + Master Admin collection diagnostics */
+/* Live Alerts v47 — visible window control + Master Admin diagnostics/status repair */
 .ci-window-control{
   display:flex;
   align-items:center;
@@ -2574,6 +2574,12 @@ padding-bottom: 12px;
   overflow:hidden;
 }
 .ci-live-diagnostics.open{display:block;}
+#liveMapCard > .ci-live-diagnostics-external{
+  margin:8px 0 14px;
+  position:relative;
+  z-index:2;
+}
+
 .ci-live-diagnostics-head{
   display:flex;
   justify-content:space-between;
@@ -5715,6 +5721,20 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
+  <div class="ci-live-diagnostics ci-live-diagnostics-external" id="ciLiveDiagnosticsPanel" aria-live="polite">
+      <div class="ci-live-diagnostics-head">
+        <div>
+          <div class="ci-live-diagnostics-title">Master Admin collection diagnostics</div>
+          <div class="ci-live-diagnostics-sub">Visible to Master Admin only · cache, duplicate-linking, active-window and provider collection stages.</div>
+        </div>
+        <div class="ci-live-diagnostics-time" id="ciLiveDiagnosticsTime">Waiting…</div>
+      </div>
+      <div class="ci-live-diagnostics-body" id="ciLiveDiagnosticsBody">
+        Diagnostics will populate after the cache and provider checks complete.
+      </div>
+    </div>
+
+
 <!-- Global Risk & Exposure Map card body -->
 <div class="global-map-wrap">
 
@@ -5802,18 +5822,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
     <div class="small" style="opacity:.75;margin-top:6px;">Verified and Unverified use the selected time window. Feed totals can overlap when one incident matches multiple feeds.</div>
-    <div class="ci-live-diagnostics" id="ciLiveDiagnosticsPanel" aria-live="polite">
-      <div class="ci-live-diagnostics-head">
-        <div>
-          <div class="ci-live-diagnostics-title">Master Admin collection diagnostics</div>
-          <div class="ci-live-diagnostics-sub">Cache, duplicate-linking, active-window and provider collection stages.</div>
-        </div>
-        <div class="ci-live-diagnostics-time" id="ciLiveDiagnosticsTime">Waiting…</div>
-      </div>
-      <div class="ci-live-diagnostics-body" id="ciLiveDiagnosticsBody">
-        Diagnostics will populate after the cache and provider checks complete.
-      </div>
-    </div>
   </div>
 
   <div class="manual-alert-slot">
@@ -7993,7 +8001,15 @@ window.CI_PERSISTENT_CACHE_EVENTS = window.CI_PERSISTENT_CACHE_EVENTS || [];
 
 function ciCanViewLiveDiagnostics(){
   try {
-    return !!(window.CIAuth && typeof CIAuth.isMasterAdmin === 'function' && CIAuth.isMasterAdmin());
+    if (!window.CIAuth) return false;
+    if (typeof CIAuth.isMasterAdmin === 'function' && CIAuth.isMasterAdmin()) return true;
+    const profile =
+      (typeof CIAuth.who === 'function' && CIAuth.who()) ||
+      (typeof CIAuth.getProfile === 'function' && CIAuth.getProfile()) ||
+      {};
+    const role = String(profile.role || profile.user_role || profile.type || '')
+      .trim().toLowerCase().replace(/[\s_]+/g, '-');
+    return role === 'master-admin' || role === 'masteradmin';
   } catch (_) {
     return false;
   }
@@ -8162,7 +8178,9 @@ function initWindowSelector() {
     const clamped = Math.max(1, Math.min(72, h));
     localStorage.setItem(WINDOW_STORAGE_KEY, String(clamped));
     // Re-run cards, queue counters and the global strip against one shared window.
-    renderFeeds();
+    // Changing the viewing window is a cache/display action and should not
+    // launch a new provider collection for every selection.
+    renderFeeds({ skipProviderRun:true, syncLabel:'Applying timeframe…' });
     setTimeout(() => {
       try { if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts(); } catch(_) {}
       try { if (typeof recomputeGlobalStrip === 'function') recomputeGlobalStrip(); } catch(_) {}
@@ -11425,13 +11443,19 @@ if (places.length) {
 });
 
 // -------------------- CARD RENDER --------------------
-async function renderFeeds(){
+async function renderFeeds(options = {}){
   if (window.__ciRenderFeedsActive) return;
   window.__ciRenderFeedsActive = true;
+  const renderBatchId = (Number(window.__ciFeedRenderBatchId) || 0) + 1;
+  window.__ciFeedRenderBatchId = renderBatchId;
+  const refreshPromises = [];
   try {
   try { ciGuardFeedCacheForCurrentOrg(); } catch(_) {}
   const grid = document.getElementById('feedsGrid');
-  setLiveStatus({ syncText:'Refreshing alerts…' });
+  setLiveStatus({
+    sync:'load',
+    syncText: options.syncLabel || (options.skipProviderRun ? 'Updating view…' : 'Refreshing alerts…')
+  });
 
   // use let (we mutate this below)
   let feeds = loadFeeds();
@@ -11623,10 +11647,14 @@ try {
   }
 
 // 3) always go fetch fresh + schedule
-refreshSingleFeedCard(card, feed, {
-  trigger:window.CI_INITIAL_COLLECTION_TRIGGER || 'page_load',
-  skipProviderRun:window.CI_RECENT_HUB_REFRESH === true
-});
+refreshPromises.push(
+  Promise.resolve(refreshSingleFeedCard(card, feed, {
+    trigger:window.CI_INITIAL_COLLECTION_TRIGGER || 'page_load',
+    skipProviderRun: options.skipProviderRun === true || window.CI_RECENT_HUB_REFRESH === true
+  })).catch(err => {
+    console.warn('CityIntel: feed refresh completed with issues', feed?.id, err);
+  })
+);
 	    // after all cards are created / refreshed
   recomputeGlobalStrip();
   // Yield between feed cards so a large archive cannot monopolise the browser UI thread.
@@ -11639,6 +11667,37 @@ refreshSingleFeedCard(card, feed, {
   if (typeof window.ciUpdateMapSidebar === 'function') {
     window.ciUpdateMapSidebar(window.ciFeedSummaries || {});
   }
+
+  // Every render path now owns its Sync badge completion. Previously only the
+  // first page-load promise reset the badge, so later timeframe changes could
+  // leave it showing “Refreshing alerts…” indefinitely.
+  let batchSettled = false;
+  const finishRenderBatch = (delayed = false) => {
+    if (window.__ciFeedRenderBatchId !== renderBatchId) return;
+    markLiveUpdated();
+    const modeText = (window.CILiveStatus && window.CILiveStatus.modeText) || 'Org data';
+    setLiveStatus({
+      sync: delayed ? 'warn' : 'ok',
+      syncText: delayed ? 'Provider checks continuing' : 'Alerts ready',
+      mode:'ok',
+      modeText,
+      note: delayed ? 'The current cache is available while slower provider checks continue.' : '',
+      noteState:'warn'
+    });
+    try { if (typeof ciRenderLiveDiagnostics === 'function') ciRenderLiveDiagnostics(); } catch(_) {}
+  };
+
+  Promise.allSettled(refreshPromises).then(() => {
+    batchSettled = true;
+    finishRenderBatch(false);
+  });
+
+  // Safety status: never leave the interface claiming a refresh is still
+  // active indefinitely if an upstream provider is slow.
+  setTimeout(() => {
+    if (!batchSettled) finishRenderBatch(true);
+  }, options.skipProviderRun ? 12000 : 45000);
+
   } finally {
     window.__ciRenderFeedsActive = false;
   }
@@ -18670,3 +18729,4 @@ document.addEventListener("DOMContentLoaded",function(){
 </body>
 </html>
 
+<!-- CityIntel Live Alerts v44: queue pagination + coordinate-bearing live alert map layer -->
