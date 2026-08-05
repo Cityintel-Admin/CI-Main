@@ -652,7 +652,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v47</title>
+<title>CityIntel — Live Alerts v48</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -2521,7 +2521,7 @@ padding-bottom: 12px;
   display:none !important;
 }
 
-/* Live Alerts v47 — visible window control + Master Admin diagnostics/status repair */
+/* Live Alerts v48 — Location Integrity Guard + cache revalidation */
 .ci-window-control{
   display:flex;
   align-items:center;
@@ -2607,6 +2607,19 @@ padding-bottom: 12px;
   white-space:nowrap;
 }
 .ci-live-diagnostics-body{padding:9px 10px 10px;}
+.ci-live-diagnostics-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.ci-live-diag-action{border:1px solid rgba(208,22,22,.65);background:rgba(208,22,22,.12);color:#fff;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;}
+.ci-live-diag-action:hover{background:rgba(208,22,22,.25);}
+.ci-live-diag-action:disabled{opacity:.55;cursor:wait;}
+.ci-location-integrity-card{margin-top:10px;border:1px solid #263141;border-radius:10px;background:#0e141c;padding:10px 12px;}
+.ci-location-integrity-card strong{color:#f2f5f8;}
+.ci-location-integrity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin-top:7px;font-size:12px;color:#aeb8c5;}
+.ci-location-integrity-grid b{color:#e5e9ef;}
+.ci-location-integrity-status{display:inline-flex;margin-left:6px;padding:2px 7px;border-radius:999px;border:1px solid #3b4655;font-size:10px;text-transform:uppercase;letter-spacing:.04em;}
+.ci-location-integrity-status.confirmed,.ci-location-integrity-status.corrected{border-color:#15704d;color:#7ee0b3;background:rgba(21,112,77,.14);}
+.ci-location-integrity-status.conflict,.ci-location-integrity-status.feed_context_only,.ci-location-integrity-status.country_only,.ci-location-integrity-status.unknown{border-color:#8b3a3f;color:#ffb5ba;background:rgba(139,58,63,.14);}
+@media(max-width:700px){.ci-location-integrity-grid{grid-template-columns:1fr;}}
+
 .ci-live-diagnostics-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -5727,7 +5740,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="ci-live-diagnostics-title">Master Admin collection diagnostics</div>
           <div class="ci-live-diagnostics-sub">Visible to Master Admin only · cache, duplicate-linking, active-window and provider collection stages.</div>
         </div>
-        <div class="ci-live-diagnostics-time" id="ciLiveDiagnosticsTime">Waiting…</div>
+        <div class="ci-live-diagnostics-actions">
+          <button type="button" class="ci-live-diag-action" id="ciRevalidateLocationBtn">Revalidate 72h cache</button>
+          <div class="ci-live-diagnostics-time" id="ciLiveDiagnosticsTime">Waiting…</div>
+        </div>
       </div>
       <div class="ci-live-diagnostics-body" id="ciLiveDiagnosticsBody">
         Diagnostics will populate after the cache and provider checks complete.
@@ -6377,7 +6393,14 @@ function ciCompactUiCacheEvent(ev) {
     collection_route: ev.collection_route || ev.collectionRoute || '',
     last_collection_trigger: ev.last_collection_trigger || ev.lastCollectionTrigger || '',
     last_collection_route: ev.last_collection_route || ev.lastCollectionRoute || '',
-    location_confidence: ev.location_confidence || ev.locationConfidence || ''
+    location_confidence: ev.location_confidence || ev.locationConfidence || '',
+    feed_city: ev.feed_city || '', feed_country: ev.feed_country || '',
+    provider_city: ev.provider_city || '', provider_country: ev.provider_country || '',
+    text_city: ev.text_city || '', text_country: ev.text_country || '',
+    location_integrity_status: ev.location_integrity_status || '',
+    location_integrity_reason: ev.location_integrity_reason || '',
+    location_integrity_version: ev.location_integrity_version || '',
+    retrospective_flag: Number(ev.retrospective_flag || 0), retrospective_reason: ev.retrospective_reason || ''
   };
 }
 
@@ -6484,19 +6507,37 @@ function normaliseAlertEvent(ev){
   const source_credibility = ev.source_credibility ?? ev.sourceCredibility ?? ev.source_score ?? ev.sourceScore ?? null;
   const source_credibility_label = ev.source_credibility_label || ev.sourceCredibilityLabel || '';
   const source_note = ev.source_note || ev.sourceNote || '';
+  const country = ev.country || ev.Country || '';
+  const feed_city = ev.feed_city || ev.feedCity || '';
+  const feed_country = ev.feed_country || ev.feedCountry || '';
+  const provider_city = ev.provider_city || ev.providerCity || '';
+  const provider_country = ev.provider_country || ev.providerCountry || '';
+  const text_city = ev.text_city || ev.textCity || '';
+  const text_country = ev.text_country || ev.textCountry || '';
+  const location_integrity_status = ev.location_integrity_status || ev.locationIntegrityStatus || '';
+  const location_integrity_reason = ev.location_integrity_reason || ev.locationIntegrityReason || '';
+  const location_integrity_version = ev.location_integrity_version || ev.locationIntegrityVersion || '';
+  const retrospective_flag = Number(ev.retrospective_flag || ev.retrospectiveFlag || 0);
+  const retrospective_reason = ev.retrospective_reason || ev.retrospectiveReason || '';
 
   return Object.assign({}, ev, {
-    id, title, city, risk, when, src, status,
+    id, title, city, country, risk, when, src, status,
     published_at, provider_received_at, indexed_at, first_seen_at, last_seen_at,
     collection_provider, collection_trigger, collection_route,
     last_collection_trigger, last_collection_route,
     location_confidence, language, geo_confidence, geo_reason, geo_validated,
-    source_domain, source_credibility, source_credibility_label, source_note
+    source_domain, source_credibility, source_credibility_label, source_note,
+    feed_city, feed_country, provider_city, provider_country, text_city, text_country,
+    location_integrity_status, location_integrity_reason, location_integrity_version,
+    retrospective_flag, retrospective_reason
   });
 }
 
+function ciIsRetrospectiveSuppressed(ev){
+  return Number(ev?.retrospective_flag || ev?.retrospectiveFlag || 0) === 1;
+}
 function normaliseAlertList(list){
-  return dedupeClientEvents((Array.isArray(list) ? list : []).map(normaliseAlertEvent).filter(Boolean));
+  return dedupeClientEvents((Array.isArray(list) ? list : []).map(normaliseAlertEvent).filter(Boolean).filter(ev => !ciIsRetrospectiveSuppressed(ev)));
 }
 
 function eventWhen(ev){
@@ -6631,6 +6672,8 @@ function ciGeoValidation(ev, feed){
   const city = e.city || '';
   const text = ciGeoText(e);
   const locConf = ciNormGeoText(e.location_confidence || '');
+  const integrityStatus = ciNormGeoText(e.location_integrity_status || '').replace(/\s+/g, '_');
+  const integrityReason = e.location_integrity_reason || '';
   const hasCoords = ciGeoHasCoords(e);
   const cityMention = city && ciTextMentionsCity(text, city);
   const sourceHint = city && ciSourceHintsCity(text, city);
@@ -6638,8 +6681,15 @@ function ciGeoValidation(ev, feed){
   const weakFeedContext = locConf.includes('feed context') || locConf.includes('city inferred') || locConf === 'unknown';
   const regionFeed = ciFeedHasOnlyRegionPlaces(feed);
 
-  let confidence = exactish ? 0.95 : 0.42;  // raised from 0.35 — feed-context alone is enough to surface
-  let reason = exactish ? 'coordinates or source-level geo supplied' : 'feed-level city context only';
+  let confidence = exactish ? 0.95 : 0.42;
+  let reason = integrityReason || (exactish ? 'coordinates or source-level geo supplied' : 'feed-level city context only');
+
+  if (integrityStatus === 'confirmed') confidence = Math.max(confidence, 0.86);
+  if (integrityStatus === 'corrected') confidence = Math.max(confidence, 0.78);
+  if (['conflict','feed_context_only','country_only','unknown'].includes(integrityStatus)) {
+    confidence = integrityStatus === 'conflict' ? 0.12 : integrityStatus === 'feed_context_only' ? 0.24 : 0.18;
+    reason = integrityReason || `location integrity status: ${integrityStatus.replace(/_/g,' ')}`;
+  }
 
   if (cityMention) { confidence = Math.max(confidence, 0.82); reason = 'city/location mentioned in headline, summary, or source text'; }
   else if (sourceHint) { confidence = Math.max(confidence, 0.68); reason = 'city inferred from known local source domain'; }
@@ -6650,14 +6700,19 @@ function ciGeoValidation(ev, feed){
   }
 
   if (ciHeadlineLooksGenericGlobal(e) && weakFeedContext && !cityMention && !hasCoords) {
-    confidence = Math.min(confidence, 0.22);  // raised from 0.18
+    confidence = Math.min(confidence, 0.22);
     reason = 'generic/global headline with weak feed-context location';
+  }
+
+  if (['conflict','feed_context_only','country_only','unknown'].includes(integrityStatus)) {
+    confidence = integrityStatus === 'conflict' ? 0.12 : integrityStatus === 'feed_context_only' ? 0.24 : 0.18;
+    reason = integrityReason || `location integrity status: ${integrityStatus.replace(/_/g,' ')}`;
   }
 
   const level = confidence >= 0.75 ? 'high' : confidence >= 0.38 ? 'medium' : 'low';
   // Lowered pass threshold from 0.45 → 0.35 so feed-context alerts surface in the queue
   // rather than being silently dropped. Operators can still verify/dismiss them.
-  const ok = regionFeed ? true : confidence >= 0.35;
+  const ok = ['conflict','feed_context_only','country_only','unknown'].includes(integrityStatus) ? false : (regionFeed ? true : confidence >= 0.35);
   return { ok, confidence, level, reason, cityMention, sourceHint, exactish };
 }
 function ciApplyGeoValidation(ev, feed){
@@ -6685,7 +6740,9 @@ function ciIsLowGeoConfidence(ev){
     const g = ciGeoValidation(ev, null);
     const label = String(ev?.geo_confidence_label || g.level || '').toLowerCase();
     const score = Number(ev?.geo_confidence ?? g.confidence ?? 0);
-    return ev?.geo_suspect === true || label === 'low' || score < 0.35;
+    const integrity = String(ev?.location_integrity_status || '').toLowerCase();
+    const weakIntegrity = ['conflict','feed_context_only','country_only','unknown'].includes(integrity);
+    return weakIntegrity || ev?.geo_suspect === true || label === 'low' || score < 0.35;
   } catch(_) {
     return false;
   }
@@ -8096,15 +8153,24 @@ function ciRenderLiveDiagnostics(){
   const raw = Array.isArray(window.CI_PERSISTENT_CACHE_RAW_EVENTS) ? window.CI_PERSISTENT_CACHE_RAW_EVENTS : [];
   const unique = Array.isArray(window.CI_PERSISTENT_CACHE_EVENTS) ? window.CI_PERSISTENT_CACHE_EVENTS : [];
   const rawActive = (typeof ciActiveWindowEvents === 'function') ? ciActiveWindowEvents(raw) : raw;
-  const uniqueActive = (typeof ciActiveWindowEvents === 'function') ? ciActiveWindowEvents(unique) : unique;
-  const weak = uniqueActive.filter(ev => {
-    try { return typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev); }
-    catch (_) { return false; }
-  }).length;
-  const outside = Math.max(0, unique.length - uniqueActive.length);
-  const linked = Math.max(0, rawActive.length - uniqueActive.length);
-  const verified = ciDiagNum(document.getElementById('qAllAlerts')?.textContent);
-  const unverified = ciDiagNum(document.getElementById('qUnverified')?.textContent);
+  const queueSourceRaw = (typeof collectAllCachedEvents === 'function') ? collectAllCachedEvents() : unique;
+  const queueSource = (typeof ciActiveWindowEvents === 'function') ? ciActiveWindowEvents(queueSourceRaw) : queueSourceRaw;
+  const activeIntake = dedupeClientEvents(queueSource.filter(ev => {
+    try { return getDisposition(ev) === 'untriaged' && !ciIsRetrospectiveSuppressed(ev) && !(typeof isAlertHidden === 'function' && isAlertHidden(ev)); }
+    catch (_) { return true; }
+  }));
+  const verifiedEvents = activeIntake.filter(ev => !(typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev)));
+  const unverifiedEvents = activeIntake.filter(ev => typeof ciIsLowGeoConfidence === 'function' && ciIsLowGeoConfidence(ev));
+  const weak = unverifiedEvents.length;
+  const outside = Math.max(0, unique.length - ((typeof ciActiveWindowEvents === 'function') ? ciActiveWindowEvents(unique).length : unique.length));
+  const linked = Math.max(0, rawActive.length - dedupeClientEvents(rawActive).length);
+  const verified = verifiedEvents.length;
+  const unverified = unverifiedEvents.length;
+  const integrityCounts = activeIntake.reduce((acc, ev) => {
+    const key = String(ev.location_integrity_status || 'unknown').toLowerCase();
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
   const cacheState = window.CILiveDiagnostics?.cache || {};
   const workerDiag = cacheState.worker || {};
   const latestRun = Array.isArray(window.CILiveDiagnostics?.providerRuns) ? window.CILiveDiagnostics.providerRuns[0] : null;
@@ -8114,19 +8180,23 @@ function ciRenderLiveDiagnostics(){
     <div class="ci-live-diagnostics-grid">
       <div class="ci-live-diag-chip"><span>D1 returned</span><strong>${ciDiagNum(workerDiag.dbRows ?? raw.length)}</strong></div>
       <div class="ci-live-diag-chip"><span>Unique cache</span><strong>${unique.length}</strong></div>
-      <div class="ci-live-diag-chip"><span>Inside ${windowHours}h</span><strong>${uniqueActive.length}</strong></div>
+      <div class="ci-live-diag-chip"><span>Active intake ${windowHours}h</span><strong>${activeIntake.length}</strong></div>
       <div class="ci-live-diag-chip"><span>Outside window</span><strong>${outside}</strong></div>
       <div class="ci-live-diag-chip"><span>Linked duplicates</span><strong>${linked}</strong></div>
       <div class="ci-live-diag-chip"><span>Weak location</span><strong>${weak}</strong></div>
       <div class="ci-live-diag-chip"><span>Verified queue</span><strong>${verified}</strong></div>
       <div class="ci-live-diag-chip"><span>Unverified queue</span><strong>${unverified}</strong></div>
+      <div class="ci-live-diag-chip"><span>Location corrected</span><strong>${ciDiagNum(integrityCounts.corrected)}</strong></div>
+      <div class="ci-live-diag-chip"><span>Location conflicts</span><strong>${ciDiagNum(integrityCounts.conflict)}</strong></div>
+      <div class="ci-live-diag-chip"><span>Feed-context only</span><strong>${ciDiagNum(integrityCounts.feed_context_only)}</strong></div>
+      <div class="ci-live-diag-chip"><span>Retrospective suppressed</span><strong>${ciDiagNum(workerDiag.retrospectiveSuppressed)}</strong></div>
     </div>
     <div class="ci-live-diag-provider">
       <b>Cache pipeline:</b> DB ${ciDiagNum(workerDiag.dbRows ?? raw.length)}
       → cleaned ${ciDiagNum(workerDiag.cleanedRows ?? raw.length)}
       → tier allowed ${ciDiagNum(workerDiag.tierAllowedRows ?? raw.length)}
       → unique ${unique.length}
-      → active ${uniqueActive.length}.<br>
+      → active intake ${activeIntake.length} (${verified} verified + ${unverified} unverified).<br>
       <b>Latest provider check:</b><br>${ciProviderStatusText(latestRun)}
     </div>
   `;
@@ -8140,6 +8210,38 @@ function ciRenderLiveDiagnostics(){
 }
 window.ciRenderLiveDiagnostics = ciRenderLiveDiagnostics;
 window.ciRecordProviderDiagnostic = ciRecordProviderDiagnostic;
+
+async function ciRevalidateRecentLocationCache(){
+  if (!ciCanViewLiveDiagnostics()) return;
+  const btn = document.getElementById('ciRevalidateLocationBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Revalidating…'; }
+  try {
+    const headers = await authHeaders({ 'Content-Type':'application/json', 'Accept':'application/json' });
+    const res = await fetch(`${API_ORIGIN}/api/live-alerts/location-revalidate?hours=72&limit=500`, { method:'POST', headers, cache:'no-store' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+    const s = data.stats || {};
+    if (btn) btn.textContent = `Updated ${Number(s.changed || 0)} / ${Number(s.reviewed || 0)}`;
+    CI_PERSISTENT_ALERT_CACHE_PROMISE = null;
+    CI_PERSISTENT_ALERT_CACHE_AT = 0;
+    await fetchPersistentAlertCache();
+    try { renderFeeds(); } catch(_) {}
+    try { if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts(); } catch(_) {}
+    ciRenderLiveDiagnostics();
+    setTimeout(() => { if (btn) btn.textContent = 'Revalidate 72h cache'; }, 3500);
+  } catch (e) {
+    console.error('CityIntel location revalidation failed', e);
+    if (btn) btn.textContent = 'Revalidation failed';
+    setTimeout(() => { if (btn) btn.textContent = 'Revalidate 72h cache'; }, 3500);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.ciRevalidateRecentLocationCache = ciRevalidateRecentLocationCache;
+document.addEventListener('click', event => {
+  const btn = event.target.closest('#ciRevalidateLocationBtn');
+  if (btn) ciRevalidateRecentLocationCache();
+});
 document.addEventListener('DOMContentLoaded', () => setTimeout(ciRenderLiveDiagnostics, 0));
 
 
@@ -8402,11 +8504,14 @@ function ciBuildSourceTimingHtml(item, publishedAt, providerReceivedAt, indexedA
 
 function ciLocationConfidenceLabel(value){
   const raw = String(value || 'unknown').replace(/_/g, ' ').trim().toLowerCase();
-  if (raw === 'exact') return 'exact coordinates';
-  if (raw === 'feed context') return 'feed context';
-  if (raw === 'city inferred') return 'city inferred';
-  if (raw === 'unknown') return 'unknown';
-  return raw;
+  const labels = {
+    'exact':'exact coordinates', 'provider coordinates':'provider coordinates',
+    'headline city':'headline-confirmed city', 'description city':'description-confirmed city',
+    'provider city':'provider-confirmed city', 'geocoded city':'geocoded city',
+    'feed context only':'feed context only', 'country only':'country only',
+    'conflict':'location conflict', 'unknown':'unknown'
+  };
+  return labels[raw] || raw;
 }
 
 // ---- Global "Now" strip across all feeds ----
@@ -10131,6 +10236,25 @@ function ciAdminPostDetailHtml(item){
     '<div class="ci-admin-detail-row"><div class="ci-admin-detail-label">Summary</div><div class="ci-admin-detail-body">' + esc(body || title) + '</div></div>';
 }
 
+function ciLocationIntegrityDetailHtml(item){
+  if (!item || String(item.sourceType || '').toLowerCase() === 'cityintel-admin-post') return '';
+  const esc = (v) => typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const status = String(item.location_integrity_status || 'unknown').toLowerCase();
+  const resolved = [item.city, item.country].filter(Boolean).join(', ') || 'Unresolved';
+  const original = [item.feed_city, item.feed_country].filter(Boolean).join(', ') || 'Not recorded';
+  const provider = [item.provider_city, item.provider_country].filter(Boolean).join(', ') || 'Not supplied';
+  const text = [item.text_city, item.text_country].filter(Boolean).join(', ') || 'No explicit place detected';
+  const reason = item.location_integrity_reason || item.geo_reason || 'No integrity explanation recorded';
+  return `<div class="ci-location-integrity-card">
+    <strong>Location integrity <span class="ci-location-integrity-status ${esc(status)}">${esc(status.replace(/_/g,' '))}</span></strong>
+    <div class="ci-location-integrity-grid">
+      <div><b>Resolved:</b> ${esc(resolved)}</div><div><b>Feed context:</b> ${esc(original)}</div>
+      <div><b>Provider:</b> ${esc(provider)}</div><div><b>Article text:</b> ${esc(text)}</div>
+      <div style="grid-column:1/-1"><b>Decision:</b> ${esc(reason)}</div>
+    </div>
+  </div>`;
+}
+
 function openDetailPanel(item, relatedList){
   // item = {title, city, risk, when, ...}
   // relatedList = array of all events in that feed (for "earlier today")
@@ -10260,8 +10384,9 @@ const geoWarnHtml = isGeoLow
   : '';
 const linkedDetailHtml = ciLinkedDetailHtml(item);
 const sourceQualityHtml = ciSourceQualityDetailHtml(item);
+const locationIntegrityHtml = ciLocationIntegrityDetailHtml(item);
 detailSummaryEl.innerHTML =
-  `<div>${esc(buildIntelSummary(item, earlier))}</div>${linkedDetailHtml}${sourceQualityHtml}${geoWarnHtml}`;
+  `<div>${esc(buildIntelSummary(item, earlier))}</div>${linkedDetailHtml}${sourceQualityHtml}${locationIntegrityHtml}${geoWarnHtml}`;
   }
   renderLanguageTools(item);
 
