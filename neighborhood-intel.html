@@ -55,7 +55,7 @@
 
 <meta charset="utf-8" />
 
-<title>CityIntel — Neighbourhood Intel v33</title>
+<title>CityIntel — Neighbourhood Intel v34</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -3530,6 +3530,24 @@ body{
         </div>
 
         
+        <div class="ni-row one" id="sourceAttributionSection" style="display:none;">
+          <div style="width:100%;padding:12px 14px;border:1px solid rgba(208,22,22,.28);border-radius:12px;background:rgba(208,22,22,.055);">
+            <div class="ni-label" style="color:#ff9a9e;">Source attribution — Master Admin only</div>
+            <div class="ni-row" style="margin:8px 0 0;">
+              <div>
+                <div class="ni-subnote">Source name</div>
+                <input class="ni-input" id="newSourceName" list="neighborSourceOptions" placeholder="e.g., City of London Police (COLP)" autocomplete="off" />
+                <datalist id="neighborSourceOptions"></datalist>
+              </div>
+              <div>
+                <div class="ni-subnote">Original source link</div>
+                <input class="ni-input" id="newSourceUrl" type="url" placeholder="https://x.com/CityPolice/status/…" autocomplete="off" />
+              </div>
+            </div>
+            <div class="ni-note" id="sourceMemoryNote">Previously used source names are suggested from CityIntel’s backend. Link to the exact notice or social post, not only the organisation profile.</div>
+          </div>
+        </div>
+
         <div class="ni-row one">
           <div>
             <div class="ni-label">Case tag (optional)</div>
@@ -3713,6 +3731,42 @@ function authHeaders(extra = {}) {
   return Object.assign({}, base, extra);
 }
 
+function currentUserIsMasterAdmin() {
+  try {
+    if (window.CIAuth?.isMasterAdmin) return !!CIAuth.isMasterAdmin();
+    const u = window.CIAuth?.who ? CIAuth.who() : {};
+    const roles = [u?.role_key, u?.roleKey, u?.role, u?.role_label, u?.roleLabel]
+      .map(v => String(v || '').trim().toLowerCase().replace(/_/g,'-'));
+    return roles.some(r => r === 'master-admin' || r === 'admin' || r === 'master');
+  } catch (_) {
+    return false;
+  }
+}
+
+let rememberedNeighborSourcesLoaded = false;
+async function loadRememberedNeighborSources(force = false) {
+  if (!currentUserIsMasterAdmin() || !els || !els.neighborSourceOptions) return;
+  if (rememberedNeighborSourcesLoaded && !force) return;
+  try {
+    const res = await apiFetch(API_BASE + '/api/neighbor/sources', { method:'GET' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.ok) throw new Error(data?.detail || data?.error || 'Unable to load saved sources');
+    const sources = Array.isArray(data.sources) ? data.sources : [];
+    els.neighborSourceOptions.innerHTML = sources.map(s => {
+      const label = `${s.name}${Number(s.usage_count || 0) > 1 ? ` · used ${Number(s.usage_count)} times` : ''}`;
+      return `<option value="${escapeAttr(s.name)}" label="${escapeAttr(label)}"></option>`;
+    }).join('');
+    rememberedNeighborSourcesLoaded = true;
+    if (els.sourceMemoryNote) {
+      els.sourceMemoryNote.textContent = sources.length
+        ? `${sources.length} previously used source${sources.length === 1 ? '' : 's'} available. Link to the exact notice or social post, not only the organisation profile.`
+        : 'Source names will be remembered after the first attributed post is published. Link to the exact notice or social post.';
+    }
+  } catch (e) {
+    if (els.sourceMemoryNote) els.sourceMemoryNote.textContent = 'Saved source suggestions are temporarily unavailable; you can still enter a new source manually.';
+  }
+}
+
 function isPinSet() {
   return !!(pinLatLng && typeof pinLatLng.lat === 'number' && typeof pinLatLng.lng === 'number');
 }
@@ -3783,6 +3837,11 @@ async function loadOrgHQ() {
     newCategory: document.getElementById('newCategory'),
     newSeverity: document.getElementById('newSeverity'),
     newGeoLabel: document.getElementById('newGeoLabel'),
+    sourceAttributionSection: document.getElementById('sourceAttributionSection'),
+    newSourceName: document.getElementById('newSourceName'),
+    newSourceUrl: document.getElementById('newSourceUrl'),
+    neighborSourceOptions: document.getElementById('neighborSourceOptions'),
+    sourceMemoryNote: document.getElementById('sourceMemoryNote'),
     newCaseTag: document.getElementById('newCaseTag'),
     btnAutoCaseTag: document.getElementById('btnAutoCaseTag'),
     newBody: document.getElementById('newBody'),
@@ -3805,6 +3864,11 @@ async function loadOrgHQ() {
     vehDirection: document.getElementById('vehDirection'),
     vehFeatures: document.getElementById('vehFeatures'),
   };
+
+  if (els.sourceAttributionSection) {
+    els.sourceAttributionSection.style.display = currentUserIsMasterAdmin() ? '' : 'none';
+  }
+  if (currentUserIsMasterAdmin()) loadRememberedNeighborSources().catch(() => {});
 
   function normalizeAreaForCaseTag(){
     const raw = (els.newGeoLabel?.value || '').trim() || (els.newTitle?.value || '').trim() || 'AREA';
@@ -5618,6 +5682,7 @@ function drawPostTrail(post, comments) {
             <span>${escapeHtml(formatWhen(p.observed_at || p.created_at))}</span>
             <span>${escapeHtml(p.geo_label || 'Approx. pin')}</span>
           </div>
+          ${p.source_name ? `<div style="margin-top:7px;"><span class="tag" style="border-color:rgba(208,22,22,.45);background:rgba(208,22,22,.1);color:#ffb3b3;">Source · ${escapeHtml(p.source_name)}</span></div>` : ''}
           <div class="excerpt">${escapeHtml((p.body||'').slice(0, 160))}${(p.body||'').length>160?'…':''}</div>
           ${Array.isArray(p.attachments) && p.attachments.length ? `<div style="margin-top:6px"><span class="att-count-badge">📎 ${p.attachments.length} image${p.attachments.length>1?'s':''}</span></div>` : ''}
         `;
@@ -5749,7 +5814,13 @@ comments = (function dedupe(list){
           ${(() => { const m = extractMetaFromBody(p.body); return renderSubjectsStructured(m.subjects); })()}
           <div class="detail-row"><span class="k">Location:</span><span class="v">${escapeHtml(p.geo_label || 'Approx. pin')}</span></div>
           <div class="detail-row"><span class="k">Actions taken:</span><span class="v">${escapeHtml(p.actions_taken || '—')}</span></div>
-          <div class="detail-row"><span class="k">Posted by:</span><span class="v">${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</span></div>
+          ${p.source_name ? `
+            <div class="detail-row"><span class="k">Source:</span><span class="v">${escapeHtml(p.source_name)}</span></div>
+            <div class="detail-row"><span class="k">Original source:</span><span class="v">${p.source_url ? `<a href="${escapeAttr(p.source_url)}" target="_blank" rel="noopener noreferrer" style="color:#ff8080;text-decoration:none;">Open original source ↗</a>` : '—'}</span></div>
+            <div class="detail-row"><span class="k">Added to CityIntel:</span><span class="v">${fmtTime(p.created_at)}</span></div>
+          ` : `
+            <div class="detail-row"><span class="k">Posted by:</span><span class="v">${escapeHtml(p.org_name || p.org_id || 'Org')} • ${fmtTime(p.created_at)}</span></div>
+          `}
         </div>
 
         ${(() => {
@@ -5913,7 +5984,8 @@ comments = (function dedupe(list){
             city: p.city || (p.geo_label ? p.geo_label.split(',')[0].trim() : ''),
             country: p.country || '',
             risk: p.severity || 'high',
-            source: 'Neighbourhood Intel',
+            source: p.source_name || 'Neighbourhood Intel',
+            source_url: p.source_url || '',
             summary: (p.body || '').slice(0, 500),
             brief_type: 'sitrep'
           };
@@ -6634,6 +6706,10 @@ els.btnRefresh.addEventListener('click', async () => {
     if (els.attachFiles) els.attachFiles.value = '';
     if (typeof renderAttachPreview === 'function') renderAttachPreview();
     els.newGeoLabel.value = '';
+    if (els.newSourceName) els.newSourceName.value = '';
+    if (els.newSourceUrl) els.newSourceUrl.value = '';
+    if (els.sourceAttributionSection) els.sourceAttributionSection.style.display = currentUserIsMasterAdmin() ? '' : 'none';
+    if (currentUserIsMasterAdmin()) loadRememberedNeighborSources().catch(() => {});
     if (els.newCaseTag) els.newCaseTag.value = '';
     els.newConfirm.checked = false;
     els.btnSubmitPost.disabled = true;
@@ -6659,10 +6735,13 @@ els.btnRefresh.addEventListener('click', async () => {
   });
 
   function validatePost() {
-    const ok = !!els.newConfirm.checked && !!els.newTitle.value.trim() && !!els.newBody.value.trim() && !!pinLatLng;
+    const sourceName = (els.newSourceName?.value || '').trim();
+    const sourceUrl = (els.newSourceUrl?.value || '').trim();
+    const sourcePairOk = (!sourceName && !sourceUrl) || (!!sourceName && /^https?:\/\//i.test(sourceUrl));
+    const ok = !!els.newConfirm.checked && !!els.newTitle.value.trim() && !!els.newBody.value.trim() && !!pinLatLng && sourcePairOk;
     els.btnSubmitPost.disabled = !ok;
   }
-  for (const el of [els.newConfirm, els.newTitle, els.newBody]) {
+  for (const el of [els.newConfirm, els.newTitle, els.newBody, els.newSourceName, els.newSourceUrl].filter(Boolean)) {
     el.addEventListener('input', validatePost);
     el.addEventListener('change', validatePost);
   }
@@ -6763,6 +6842,8 @@ btnSubmitPost.addEventListener('click', async () => {
       wanted_for: (els.newWantedFor?.value || '').trim(),
       post_status: (els.newPostStatus?.value || 'ongoing'),
       bolo: !!(els.newBolo?.checked),
+      source_name: currentUserIsMasterAdmin() ? (els.newSourceName?.value || '').trim() : '',
+      source_url: currentUserIsMasterAdmin() ? (els.newSourceUrl?.value || '').trim() : '',
     };
 
     try {
@@ -6774,7 +6855,11 @@ btnSubmitPost.addEventListener('click', async () => {
       if (res.ok && data?.ok) {
         bumpCaseSeqIfNeeded((els.newCaseTag?.value || '').trim());
         closeModal();
-        await refresh();
+        rememberedNeighborSourcesLoaded = false;
+        await Promise.all([
+          refresh(),
+          currentUserIsMasterAdmin() ? loadRememberedNeighborSources(true) : Promise.resolve()
+        ]);
         toast('Post published.');
         return;
       }
