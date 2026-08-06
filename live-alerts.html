@@ -146,6 +146,8 @@
   function setLiveStatus(patch){
     window.CILiveStatus = Object.assign(window.CILiveStatus || {}, patch || {});
     const st = window.CILiveStatus;
+    if (patch && patch.sync === 'load') window.__ciSyncStartedAt = Date.now();
+    else if (patch && patch.sync && patch.sync !== 'load') window.__ciSyncStartedAt = 0;
     const syncEl = document.getElementById('syncStatusBadge');
     const panicEl = document.getElementById('panicStatusBadge');
     const modeEl = document.getElementById('dataModeBadge');
@@ -164,6 +166,22 @@
   function markLiveUpdated(){
     setLiveStatus({ lastUpdated: ciStatusTime() });
   }
+
+
+  // v49 safety guard: provider requests run in the background, but the visible
+  // cache should never look permanently unavailable because one request hangs.
+  setInterval(() => {
+    const started = Number(window.__ciSyncStartedAt || 0);
+    const state = window.CILiveStatus || {};
+    if (state.sync === 'load' && started && Date.now() - started > 60000) {
+      setLiveStatus({
+        sync:'warn',
+        syncText:'Cache ready · provider checks background',
+        note:'Current cached alerts are available while slower provider checks finish.',
+        noteState:'warn'
+      });
+    }
+  }, 10000);
 
   async function syncOrgTravellers(){
     try{
@@ -652,7 +670,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v48</title>
+<title>CityIntel — Live Alerts v49</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -5436,6 +5454,25 @@ body{background:radial-gradient(circle at 84% -12%,rgba(208,22,22,.075),transpar
 }
 
 </style>
+
+<style>
+.ci-filter-audit{margin-top:10px;border:1px solid #263249;border-radius:10px;background:#080d18;overflow:hidden}
+.ci-filter-audit>summary{cursor:pointer;list-style:none;padding:10px 12px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#dbeafe;background:#0e1627}
+.ci-filter-audit>summary::-webkit-details-marker{display:none}
+.ci-filter-audit>summary:after{content:'▾';float:right;color:#ef4444}
+.ci-filter-funnel{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:7px;padding:10px}
+.ci-filter-step{border:1px solid #263249;border-radius:8px;padding:8px;background:#0c1322}
+.ci-filter-step span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#93a4ba}
+.ci-filter-step strong{display:block;margin-top:3px;font-size:15px;color:#f8fafc}
+.ci-filter-step em{display:block;margin-top:2px;font-size:9px;color:#f59e0b;font-style:normal}
+.ci-filter-samples{padding:0 10px 10px;display:grid;gap:8px}
+.ci-filter-sample-group{border:1px solid #263249;border-radius:8px;padding:8px;background:#0a101d}
+.ci-filter-sample-title{font-size:10px;font-weight:900;text-transform:uppercase;color:#fca5a5;margin-bottom:5px}
+.ci-filter-sample{font-size:10px;color:#cbd5e1;line-height:1.4;padding:5px 0;border-top:1px solid rgba(148,163,184,.12)}
+.ci-filter-sample:first-of-type{border-top:0}
+.ci-cache-audit-empty{padding:10px;color:#94a3b8;font-size:10px}
+</style>
+
 </head>
 
 <script>
@@ -5591,7 +5628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- Top title bar for page -->
     <div class="page-title-bar">
       <div class="page-title-main">
-        <h2>Live Alerts Command Centre</h2>
+        <h2>Live Alerts </h2>
         <div class="page-title-sub">
           Live collection, source validation, operational queues and exposure mapping.
         </div>
@@ -8137,6 +8174,63 @@ function ciProviderStatusText(run){
     ${reason ? `<br><b>Result:</b> ${ciDiagEsc(reason.replace(/_/g,' '))}` : ''}`;
 }
 
+
+function ciFilterAuditHtml(run){
+  if (!run) return '<div class="ci-cache-audit-empty">Run a normal live-provider refresh to populate the filter audit.</div>';
+  const d = run.diagnostics || {};
+  const f = d.filterCounts || {};
+  const accepted = ciDiagNum(d.acceptedCount ?? f.afterRiskFilter ?? run.eventsReturned);
+  const stages = [
+    ['Raw merged', ciDiagNum(f.rawFetched ?? d.rawProviderResults), 0],
+    ['After dedupe', ciDiagNum(f.afterDedupe), ciDiagNum(f.duplicatesRemoved)],
+    ['After incident', ciDiagNum(f.afterLikelyIncident), Math.max(0, ciDiagNum(f.afterDedupe)-ciDiagNum(f.afterLikelyIncident))],
+    ['After noise', ciDiagNum(f.afterNoiseFilter), Math.max(0, ciDiagNum(f.afterLikelyIncident)-ciDiagNum(f.afterNoiseFilter))],
+    ['After location', ciDiagNum(f.afterLocationFilter), Math.max(0, ciDiagNum(f.afterNoiseFilter)-ciDiagNum(f.afterLocationFilter))],
+    ['Inside 72h', ciDiagNum(f.afterTimeFilter), Math.max(0, ciDiagNum(f.afterLocationFilter)-ciDiagNum(f.afterTimeFilter))],
+    ['Risk matched', ciDiagNum(f.afterRiskFilter), Math.max(0, ciDiagNum(f.afterTimeFilter)-ciDiagNum(f.afterRiskFilter))],
+    ['Geo resolved', ciDiagNum(f.afterGeoEnrich), ciDiagNum(f.acceptedWithoutCoordinates)],
+    ['Accepted', accepted, 0]
+  ];
+  const samples = d.rejectionSamples || f.rejectionSamples || {};
+  const stageLabels = {
+    retrospective:'Retrospective suppressed', incident_filter:'Incident relevance rejected', noise_filter:'Noise rejected',
+    location_filter:'Location evidence rejected', time_filter:'Time window rejected', risk_filter:'Risk band rejected',
+    fallback_retrospective:'Fallback retrospective', fallback_incident_filter:'Fallback incident rejected',
+    fallback_noise_filter:'Fallback noise rejected', fallback_location_filter:'Fallback location rejected',
+    fallback_time_filter:'Fallback time rejected', fallback_risk_filter:'Fallback risk rejected',
+    accepted_without_coordinates:'Accepted without coordinates'
+  };
+  const sampleGroups = Object.entries(samples).filter(([,rows]) => Array.isArray(rows) && rows.length).map(([key,rows]) => `
+    <div class="ci-filter-sample-group">
+      <div class="ci-filter-sample-title">${ciDiagEsc(stageLabels[key] || key.replace(/_/g,' '))} · ${rows.length} sample${rows.length===1?'':'s'}</div>
+      ${rows.map(r => `<div class="ci-filter-sample"><b>${ciDiagEsc(r.title || 'Untitled')}</b>${r.city || r.country ? ` · ${ciDiagEsc([r.city,r.country].filter(Boolean).join(', '))}` : ''}<br><span>${ciDiagEsc(r.reason || '')}</span></div>`).join('')}
+    </div>`).join('');
+  const coord = d.coordinateCoverage || {};
+  return `
+    <details class="ci-filter-audit">
+      <summary>Provider filter audit · why raw articles were accepted or rejected</summary>
+      <div class="ci-filter-funnel">
+        ${stages.map(([label,count,dropped]) => `<div class="ci-filter-step"><span>${ciDiagEsc(label)}</span><strong>${count}</strong>${dropped ? `<em>−${dropped} at stage</em>` : ''}</div>`).join('')}
+        <div class="ci-filter-step"><span>Accepted without coords</span><strong>${ciDiagNum(coord.withoutCoordinates ?? f.acceptedWithoutCoordinates)}</strong><em>not automatically rejected</em></div>
+      </div>
+      <div class="ci-filter-samples">${sampleGroups || '<div class="ci-cache-audit-empty">No rejection samples were returned in this provider response.</div>'}</div>
+    </details>`;
+}
+
+function ciCacheIntegrityAuditHtml(activeIntake){
+  const rows = (Array.isArray(activeIntake) ? activeIntake : []).filter(ev => {
+    const s = String(ev.location_integrity_status || '').toLowerCase();
+    return ['conflict','feed_context_only','country_only','unknown'].includes(s) || ciIsRetrospectiveSuppressed(ev);
+  }).slice(0, 12);
+  return `
+    <details class="ci-filter-audit">
+      <summary>Current cache integrity review · exception samples</summary>
+      <div class="ci-filter-samples">
+        ${rows.length ? rows.map(ev => `<div class="ci-filter-sample-group"><div class="ci-filter-sample-title">${ciDiagEsc(ev.location_integrity_status || (ciIsRetrospectiveSuppressed(ev) ? 'retrospective' : 'review'))}</div><div class="ci-filter-sample"><b>${ciDiagEsc(ev.title || 'Untitled')}</b><br>${ciDiagEsc([ev.city,ev.country].filter(Boolean).join(', ') || 'No resolved location')} · ${ciDiagEsc(ev.location_integrity_reason || ev.retrospective_reason || ev.location_confidence || 'Review required')}</div></div>`).join('') : '<div class="ci-cache-audit-empty">No active cache exceptions in the selected window.</div>'}
+      </div>
+    </details>`;
+}
+
 function ciRenderLiveDiagnostics(){
   const panel = document.getElementById('ciLiveDiagnosticsPanel');
   const body = document.getElementById('ciLiveDiagnosticsBody');
@@ -8175,6 +8269,7 @@ function ciRenderLiveDiagnostics(){
   const workerDiag = cacheState.worker || {};
   const latestRun = Array.isArray(window.CILiveDiagnostics?.providerRuns) ? window.CILiveDiagnostics.providerRuns[0] : null;
   const windowHours = (typeof getCurrentWindowHours === 'function') ? getCurrentWindowHours() : 6;
+  const noCoordinates = activeIntake.filter(ev => !(Number.isFinite(Number(ev.lat)) && Number.isFinite(Number(ev.lon ?? ev.lng)))).length;
 
   body.innerHTML = `
     <div class="ci-live-diagnostics-grid">
@@ -8190,6 +8285,7 @@ function ciRenderLiveDiagnostics(){
       <div class="ci-live-diag-chip"><span>Location conflicts</span><strong>${ciDiagNum(integrityCounts.conflict)}</strong></div>
       <div class="ci-live-diag-chip"><span>Feed-context only</span><strong>${ciDiagNum(integrityCounts.feed_context_only)}</strong></div>
       <div class="ci-live-diag-chip"><span>Retrospective suppressed</span><strong>${ciDiagNum(workerDiag.retrospectiveSuppressed)}</strong></div>
+      <div class="ci-live-diag-chip"><span>No coordinates</span><strong>${noCoordinates}</strong></div>
     </div>
     <div class="ci-live-diag-provider">
       <b>Cache pipeline:</b> DB ${ciDiagNum(workerDiag.dbRows ?? raw.length)}
@@ -8199,6 +8295,8 @@ function ciRenderLiveDiagnostics(){
       → active intake ${activeIntake.length} (${verified} verified + ${unverified} unverified).<br>
       <b>Latest provider check:</b><br>${ciProviderStatusText(latestRun)}
     </div>
+    ${ciFilterAuditHtml(latestRun)}
+    ${ciCacheIntegrityAuditHtml(activeIntake)}
   `;
   const stamp = latestRun?.at || cacheState.fetchedAt || '';
   if (timeEl) {
@@ -8225,9 +8323,13 @@ async function ciRevalidateRecentLocationCache(){
     CI_PERSISTENT_ALERT_CACHE_PROMISE = null;
     CI_PERSISTENT_ALERT_CACHE_AT = 0;
     await fetchPersistentAlertCache();
-    try { renderFeeds(); } catch(_) {}
+    try { await renderFeeds({ skipProviderRun:true, syncLabel:'Applying revalidated cache…' }); } catch(_) {}
     try { if (typeof window.ciUpdateQueueCounts === 'function') window.ciUpdateQueueCounts(); } catch(_) {}
     ciRenderLiveDiagnostics();
+    try {
+      const modeText = (window.CILiveStatus && window.CILiveStatus.modeText) || 'Org data';
+      setLiveStatus({ sync:'ok', syncText:'Alerts ready', mode:'ok', modeText, note:'' });
+    } catch(_) {}
     setTimeout(() => { if (btn) btn.textContent = 'Revalidate 72h cache'; }, 3500);
   } catch (e) {
     console.error('CityIntel location revalidation failed', e);
@@ -8315,6 +8417,16 @@ function feedQueryPlaces(feed){
   return places;
 }
 
+async function ciFetchLiveWithTimeout(url, options = {}, timeoutMs = 15000){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...(options || {}), signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
   const params = new URLSearchParams();
   const queryPlaces = feedQueryPlaces(feed);
@@ -8359,7 +8471,7 @@ async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
 
   for (const url of urls) {
     try {
-      const res = await fetch(url, { headers: requestHeaders });
+      const res = await ciFetchLiveWithTimeout(url, { headers: requestHeaders }, 15000);
       if (!res.ok) continue;
 
       const data = await res.json().catch(() => ({}));
@@ -8386,6 +8498,12 @@ async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
       if (!events.length) continue;
       return events;
     } catch (err) {
+      if (typeof ciRecordProviderDiagnostic === 'function') {
+        ciRecordProviderDiagnostic(feed, {
+          events:[],
+          collection:{ provider:'newsdata', stored:0, refreshed:0, diagnostics:{ emptyReason: err?.name === 'AbortError' ? 'request_timeout' : 'network_error' } }
+        }, url, 0);
+      }
       continue;
     }
   }
