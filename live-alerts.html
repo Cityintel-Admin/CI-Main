@@ -670,7 +670,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v49</title>
+<title>CityIntel — Live Alerts v50</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -5778,6 +5778,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="ci-live-diagnostics-sub">Visible to Master Admin only · cache, duplicate-linking, active-window and provider collection stages.</div>
         </div>
         <div class="ci-live-diagnostics-actions">
+          <button type="button" class="ci-live-diag-action" id="ciExportCollectionAuditBtn">Export Collection Audit</button>
           <button type="button" class="ci-live-diag-action" id="ciRevalidateLocationBtn">Revalidate 72h cache</button>
           <div class="ci-live-diagnostics-time" id="ciLiveDiagnosticsTime">Waiting…</div>
         </div>
@@ -8309,6 +8310,125 @@ function ciRenderLiveDiagnostics(){
 window.ciRenderLiveDiagnostics = ciRenderLiveDiagnostics;
 window.ciRecordProviderDiagnostic = ciRecordProviderDiagnostic;
 
+// ---- Live Alerts Collection Audit 1A (Master Admin only) ----
+function ciAuditSafeDisposition(ev){
+  try { return (typeof getDisposition === 'function') ? String(getDisposition(ev) || 'untriaged') : 'unknown'; }
+  catch (_) { return 'unknown'; }
+}
+
+function ciAuditEventSnapshot(ev){
+  if (!ev || typeof ev !== 'object') return null;
+  const copy = {};
+  const fields = [
+    'id','title','city','country','country_iso','risk','when','when_ts','published_at',
+    'provider_received_at','indexed_at','first_seen_at','last_seen_at','src','url','description',
+    'lat','lon','lng','collection_provider','collection_trigger','collection_route',
+    'last_collection_trigger','last_collection_route','location_confidence','feed_city','feed_country',
+    'provider_city','provider_country','text_city','text_country','location_integrity_status',
+    'location_integrity_reason','location_integrity_version','location_integrity_checked_at',
+    'retrospective_flag','retrospective_reason','status','created_at','priority_score','priority_label',
+    'priority_category','priority_reason','recommended_action','recommended_label','recommended_score',
+    'recommended_reasons','recommended_blockers','recommended_next_step','recommendation_version'
+  ];
+  for (const key of fields) {
+    if (ev[key] !== undefined) copy[key] = ev[key];
+  }
+  copy.disposition = ciAuditSafeDisposition(ev);
+  return copy;
+}
+
+function ciAuditDispositionCounts(events){
+  return (Array.isArray(events) ? events : []).reduce((acc, ev) => {
+    const key = ciAuditSafeDisposition(ev);
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function ciAuditIntegrityCounts(events){
+  return (Array.isArray(events) ? events : []).reduce((acc, ev) => {
+    const key = String(ev?.location_integrity_status || 'unknown').toLowerCase();
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function ciAuditDownloadJson(payload){
+  const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json;charset=utf-8' });
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = `cityintel-live-alerts-collection-audit-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 1500);
+}
+
+async function ciExportCollectionAudit(){
+  if (!ciCanViewLiveDiagnostics()) return;
+  const btn = document.getElementById('ciExportCollectionAuditBtn');
+  const original = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparing audit…'; }
+
+  const generatedAt = new Date().toISOString();
+  const raw = Array.isArray(window.CI_PERSISTENT_CACHE_RAW_EVENTS) ? window.CI_PERSISTENT_CACHE_RAW_EVENTS : [];
+  const unique = Array.isArray(window.CI_PERSISTENT_CACHE_EVENTS) ? window.CI_PERSISTENT_CACHE_EVENTS : [];
+  const windowHours = (typeof getCurrentWindowHours === 'function') ? getCurrentWindowHours() : 6;
+  const rawActive = (typeof ciActiveWindowEvents === 'function') ? ciActiveWindowEvents(raw) : raw;
+  const uniqueActive = (typeof ciActiveWindowEvents === 'function') ? ciActiveWindowEvents(unique) : unique;
+  const providerRuns = Array.isArray(window.CILiveDiagnostics?.providerRuns) ? window.CILiveDiagnostics.providerRuns : [];
+  const cacheDiagnostics = window.CILiveDiagnostics?.cache || {};
+
+  let backend = null;
+  let backendError = '';
+  try {
+    const headers = await authHeaders({ 'Accept':'application/json' });
+    const res = await fetch(`${API_ORIGIN}/api/live-alerts/collection-audit?hours=72&limit=500&_=${Date.now()}`, { headers, cache:'no-store' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+    backend = data;
+  } catch (e) {
+    backendError = String(e?.message || e || 'Backend audit unavailable');
+    console.warn('CityIntel collection audit backend snapshot unavailable; exporting browser diagnostics only', e);
+  }
+
+  const payload = {
+    schema: 'cityintel.live_alerts.collection_audit',
+    version: '1A',
+    generated_at: generatedAt,
+    purpose: 'Master Admin diagnostic export for external public-source comparison and collection-pipeline validation.',
+    collection_behaviour_changed: false,
+    browser: {
+      active_window_hours: windowHours,
+      cache: {
+        raw_count: raw.length,
+        unique_count: unique.length,
+        raw_active_count: rawActive.length,
+        unique_active_count: uniqueActive.length,
+        linked_duplicates_active: Math.max(0, rawActive.length - dedupeClientEvents(rawActive).length),
+        disposition_counts: ciAuditDispositionCounts(uniqueActive),
+        location_integrity_counts: ciAuditIntegrityCounts(uniqueActive),
+        diagnostics: cacheDiagnostics
+      },
+      provider_runs: providerRuns,
+      raw_cache_events: raw.map(ciAuditEventSnapshot).filter(Boolean),
+      unique_cache_events: unique.map(ciAuditEventSnapshot).filter(Boolean),
+      active_unique_events: uniqueActive.map(ciAuditEventSnapshot).filter(Boolean)
+    },
+    backend_snapshot: backend,
+    backend_error: backendError || null
+  };
+
+  ciAuditDownloadJson(payload);
+  window.CILiveDiagnostics.lastAuditExportAt = generatedAt;
+  if (btn) btn.textContent = backendError ? 'Exported · browser audit' : 'Audit exported';
+  setTimeout(() => { if (btn) btn.textContent = original || 'Export Collection Audit'; }, 3000);
+  if (btn) btn.disabled = false;
+}
+window.ciExportCollectionAudit = ciExportCollectionAudit;
+
 async function ciRevalidateRecentLocationCache(){
   if (!ciCanViewLiveDiagnostics()) return;
   const btn = document.getElementById('ciRevalidateLocationBtn');
@@ -8341,6 +8461,8 @@ async function ciRevalidateRecentLocationCache(){
 }
 window.ciRevalidateRecentLocationCache = ciRevalidateRecentLocationCache;
 document.addEventListener('click', event => {
+  const exportBtn = event.target.closest('#ciExportCollectionAuditBtn');
+  if (exportBtn) { ciExportCollectionAudit(); return; }
   const btn = event.target.closest('#ciRevalidateLocationBtn');
   if (btn) ciRevalidateRecentLocationCache();
 });
