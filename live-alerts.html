@@ -8334,6 +8334,9 @@ function ciRenderLiveDiagnostics(){
       → unique ${unique.length}
       → active intake ${activeIntake.length} (${verified} verified + ${unverified} unverified).<br>
       <b>Provider health:</b> ${ciDiagEsc(ciProviderHealthText(window.CILiveDiagnostics?.providerRuns || []))}<br>
+      <b>Audit 2A.1 quality:</b> ${latestRun?.diagnostics?.filterCounts?.qualityAssessment
+        ? `${ciDiagNum(latestRun.diagnostics.filterCounts.qualityAssessment.eligible)} eligible · ${ciDiagNum(latestRun.diagnostics.filterCounts.qualityAssessment.rejected)} rejected · ${ciDiagEsc(latestRun.diagnostics.filterCounts.qualityAssessment.version || 'AQ-2A.1')}`
+        : 'waiting for next provider collection'}<br>
       <b>Latest provider check:</b><br>${ciProviderStatusText(latestRun)}
     </div>
     ${ciFilterAuditHtml(latestRun)}
@@ -8368,7 +8371,8 @@ function ciAuditEventSnapshot(ev){
     'location_integrity_reason','location_integrity_version','location_integrity_checked_at',
     'retrospective_flag','retrospective_reason','status','created_at','priority_score','priority_label',
     'priority_category','priority_reason','recommended_action','recommended_label','recommended_score',
-    'recommended_reasons','recommended_blockers','recommended_next_step','recommendation_version'
+    'recommended_reasons','recommended_blockers','recommended_next_step','recommendation_version',
+    'quality_version','quality_eligible','quality_reason','quality_significance','quality_flags'
   ];
   for (const key of fields) {
     if (ev[key] !== undefined) copy[key] = ev[key];
@@ -8436,10 +8440,10 @@ async function ciExportCollectionAudit(){
 
   const payload = {
     schema: 'cityintel.live_alerts.collection_audit',
-    version: '1B.1',
+    version: '2A.1',
     generated_at: generatedAt,
-    purpose: 'Master Admin diagnostic export for external public-source comparison, provider transport reliability, key health and bounded fallback validation.',
-    collection_behaviour_changed: 'provider_efficiency_and_key_health_only',
+    purpose: 'Master Admin diagnostic export for public-source comparison plus Audit 2A.1 incident eligibility, noise/context, category-integrity and location-promotion validation.',
+    collection_behaviour_changed: 'audit_2a1_quality_classification_for_new_collection_only; existing_72h_cache_not_bulk_revalidated',
     browser: {
       active_window_hours: windowHours,
       cache: {
@@ -8461,7 +8465,9 @@ async function ciExportCollectionAudit(){
         in_flight_requests: Number(window.CI_LIVE_PROVIDER_INFLIGHT?.size || 0),
         longest_duration_ms: providerRuns.reduce((m,r)=>Math.max(m, Number(r?.transport?.durationMs || 0)),0),
         key_health_summary: ciProviderHealthText(providerRuns),
-        bounded_gdelt_fallback: { max_calls:18, per_request_timeout_ms:4500, balanced_city_rotation:true }
+        bounded_gdelt_fallback: { max_calls:18, per_request_timeout_ms:4500, balanced_city_rotation:true },
+        audit_2a1_quality_version: 'AQ-2A.1',
+        latest_quality_assessment: providerRuns[0]?.diagnostics?.filterCounts?.qualityAssessment || null
       },
       raw_cache_events: raw.map(ciAuditEventSnapshot).filter(Boolean),
       unique_cache_events: unique.map(ciAuditEventSnapshot).filter(Boolean),
@@ -8589,7 +8595,7 @@ function feedQueryPlaces(feed){
   return places;
 }
 
-// ---- Live Alerts v52 / Audit 1B.1: provider efficiency & key health ----
+// ---- Live Alerts v53 / Audit 2A.1: quality classification audit visibility ----
 // Audit 1B.1 keeps the longer browser allowance but the Worker now bounds GDELT
 // fallback work and can switch to the alternate NewsData key inside the same request.
 // Keep one request per feed in flight and do not fan out four fallback requests after
