@@ -8165,6 +8165,31 @@ function ciRecordProviderDiagnostic(feed, data, requestUrl = '', httpStatus = 20
   setTimeout(ciRenderLiveDiagnostics, 0);
 }
 
+function ciProviderHealthText(runs){
+  const list = Array.isArray(runs) ? runs : [];
+  const state = { key1:'unknown', key2:'unknown', gdelt:false };
+  for (const run of list) {
+    const d = run?.diagnostics || {};
+    const kh = d.keyHealth || {};
+    for (const slot of ['key1','key2']) {
+      if (state[slot] === 'healthy') continue;
+      if (kh[slot] === 'healthy') state[slot] = 'healthy';
+      else if (kh[slot] === 'rate_limited' && state[slot] === 'unknown') state[slot] = 'rate_limited';
+      else if (kh[slot] === 'auth_error' && state[slot] === 'unknown') state[slot] = 'auth_error';
+    }
+    const outcomes = Array.isArray(d.outcomes) ? d.outcomes : [];
+    for (const o of outcomes) {
+      if (!['key1','key2'].includes(o?.keySlot)) continue;
+      if (o.status === 'ok') state[o.keySlot] = 'healthy';
+      else if (o.status === 'quota_or_rate_limit' && state[o.keySlot] !== 'healthy') state[o.keySlot] = 'rate_limited';
+      else if (o.status === 'authentication_error' && state[o.keySlot] === 'unknown') state[o.keySlot] = 'auth_error';
+    }
+    if (d.fallbackProvider === 'gdelt' || Number(d.fallbackRawResults || 0) > 0) state.gdelt = true;
+  }
+  const label = (slot, value) => `${slot === 'key1' ? 'Key 1' : 'Key 2'} ${String(value).replace(/_/g,' ')}`;
+  return `${label('key1',state.key1)} · ${label('key2',state.key2)} · GDELT fallback ${state.gdelt ? 'available' : 'not observed'}`;
+}
+
 function ciProviderStatusText(run){
   if (!run) return '<span class="warn">No provider collection response recorded yet.</span>';
   const d = run.diagnostics || {};
@@ -8308,6 +8333,7 @@ function ciRenderLiveDiagnostics(){
       → tier allowed ${ciDiagNum(workerDiag.tierAllowedRows ?? raw.length)}
       → unique ${unique.length}
       → active intake ${activeIntake.length} (${verified} verified + ${unverified} unverified).<br>
+      <b>Provider health:</b> ${ciDiagEsc(ciProviderHealthText(window.CILiveDiagnostics?.providerRuns || []))}<br>
       <b>Latest provider check:</b><br>${ciProviderStatusText(latestRun)}
     </div>
     ${ciFilterAuditHtml(latestRun)}
@@ -8410,10 +8436,10 @@ async function ciExportCollectionAudit(){
 
   const payload = {
     schema: 'cityintel.live_alerts.collection_audit',
-    version: '1B',
+    version: '1B.1',
     generated_at: generatedAt,
-    purpose: 'Master Admin diagnostic export for external public-source comparison, collection-pipeline validation and provider transport reliability.',
-    collection_behaviour_changed: 'transport_reliability_only',
+    purpose: 'Master Admin diagnostic export for external public-source comparison, provider transport reliability, key health and bounded fallback validation.',
+    collection_behaviour_changed: 'provider_efficiency_and_key_health_only',
     browser: {
       active_window_hours: windowHours,
       cache: {
@@ -8433,7 +8459,9 @@ async function ciExportCollectionAudit(){
         timeouts: providerRuns.filter(r => String(r?.transport?.outcome || r?.diagnostics?.emptyReason || '') === 'request_timeout').length,
         network_errors: providerRuns.filter(r => String(r?.transport?.outcome || r?.diagnostics?.emptyReason || '') === 'network_error').length,
         in_flight_requests: Number(window.CI_LIVE_PROVIDER_INFLIGHT?.size || 0),
-        longest_duration_ms: providerRuns.reduce((m,r)=>Math.max(m, Number(r?.transport?.durationMs || 0)),0)
+        longest_duration_ms: providerRuns.reduce((m,r)=>Math.max(m, Number(r?.transport?.durationMs || 0)),0),
+        key_health_summary: ciProviderHealthText(providerRuns),
+        bounded_gdelt_fallback: { max_calls:18, per_request_timeout_ms:4500, balanced_city_rotation:true }
       },
       raw_cache_events: raw.map(ciAuditEventSnapshot).filter(Boolean),
       unique_cache_events: unique.map(ciAuditEventSnapshot).filter(Boolean),
@@ -8561,9 +8589,9 @@ function feedQueryPlaces(feed){
   return places;
 }
 
-// ---- Live Alerts v51 / Audit 1B: provider transport reliability ----
-// The Worker may legitimately take longer than 15s for regional feeds because a
-// single run can perform several provider calls, filtering, fallback and D1 writes.
+// ---- Live Alerts v52 / Audit 1B.1: provider efficiency & key health ----
+// Audit 1B.1 keeps the longer browser allowance but the Worker now bounds GDELT
+// fallback work and can switch to the alternate NewsData key inside the same request.
 // Keep one request per feed in flight and do not fan out four fallback requests after
 // a transport timeout/network failure — that amplifies load while the first Worker
 // request may still be finishing server-side.
@@ -19157,3 +19185,4 @@ document.addEventListener("DOMContentLoaded",function(){
 </body>
 </html>
 
+<!-- CityIntel Live Alerts v44: queue pagination + coordinate-bearing live alert map layer -->
