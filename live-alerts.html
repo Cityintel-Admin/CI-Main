@@ -670,7 +670,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts</title>
+<title>CityIntel — Live Alerts v51</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -8121,19 +8121,19 @@ function ciDiagNum(value){
   return Number.isFinite(n) ? n : 0;
 }
 
-function ciRecordProviderDiagnostic(feed, data, requestUrl = '', httpStatus = 200){
+function ciRecordProviderDiagnostic(feed, data, requestUrl = '', httpStatus = 200, transport = {}){
   if (!ciCanViewLiveDiagnostics()) return;
   const collection = data && data.collection && typeof data.collection === 'object' ? data.collection : {};
   const eventCount = Array.isArray(data?.events) ? data.events.length : 0;
   let diagnostics = collection.diagnostics || data?.diagnostics || null;
-  if (!diagnostics && !collection.provider && eventCount <= 0) return;
+  if (!diagnostics && !collection.provider && eventCount <= 0 && !transport?.outcome) return;
   if (!diagnostics) {
     const fallbackProvider = String(requestUrl || '').includes('/api/live-news') ? 'newsdata-live-news' : 'unknown';
     diagnostics = {
       requestedProvider: fallbackProvider,
       rawProviderResults: eventCount,
       acceptedCount: eventCount,
-      emptyReason: eventCount ? '' : 'provider_returned_no_results'
+      emptyReason: eventCount ? '' : (transport?.outcome || 'provider_returned_no_results')
     };
   }
   const run = {
@@ -8148,10 +8148,20 @@ function ciRecordProviderDiagnostic(feed, data, requestUrl = '', httpStatus = 20
     refreshed: ciDiagNum(collection.refreshed),
     httpStatus: ciDiagNum(httpStatus),
     requestUrl: String(requestUrl || ''),
+    transport: {
+      outcome: String(transport?.outcome || (httpStatus ? 'http_response' : 'unknown')),
+      durationMs: ciDiagNum(transport?.durationMs),
+      timeoutMs: ciDiagNum(transport?.timeoutMs),
+      attempt: ciDiagNum(transport?.attempt),
+      requestKind: String(transport?.requestKind || ''),
+      errorName: String(transport?.errorName || ''),
+      errorMessage: String(transport?.errorMessage || '').slice(0, 240),
+      inFlightReused: transport?.inFlightReused === true
+    },
     diagnostics: diagnostics || {}
   };
   const state = window.CILiveDiagnostics = window.CILiveDiagnostics || { cache:{}, providerRuns:[] };
-  state.providerRuns = [run, ...(Array.isArray(state.providerRuns) ? state.providerRuns : [])].slice(0, 12);
+  state.providerRuns = [run, ...(Array.isArray(state.providerRuns) ? state.providerRuns : [])].slice(0, 20);
   setTimeout(ciRenderLiveDiagnostics, 0);
 }
 
@@ -8170,8 +8180,12 @@ function ciProviderStatusText(run){
   const cls = accepted > 0 || stored > 0 || refreshed > 0 ? 'ok' : (reason.includes('quota') || reason.includes('http') || reason.includes('not_configured') ? 'err' : 'warn');
   const keyText = d.keyPreference ? ` · key ${ciDiagEsc(d.keyPreference)}` : '';
   const fallbackText = d.fallbackUsed ? ` · fallback ${ciDiagEsc(d.fallbackProvider || 'used')}` : '';
+  const t = run.transport || {};
+  const durationText = Number(t.durationMs) > 0 ? ` · ${(Number(t.durationMs)/1000).toFixed(1)}s` : '';
+  const attemptText = Number(t.attempt) > 0 ? ` · attempt ${Number(t.attempt)}` : '';
+  const transportText = t.outcome && t.outcome !== 'http_response' && t.outcome !== 'unknown' ? ` · ${ciDiagEsc(t.outcome.replace(/_/g,' '))}` : '';
   return `<span class="${cls}"><b>${ciDiagEsc(run.feedLabel)}</b> · ${ciDiagEsc(run.provider)}${keyText}${fallbackText}</span><br>
-    HTTP ${ciDiagEsc(statuses || run.httpStatus || 'n/a')} · raw ${raw} · accepted ${accepted} · stored ${stored} · refreshed ${refreshed}
+    HTTP ${ciDiagEsc(statuses || run.httpStatus || 'n/a')} · raw ${raw} · accepted ${accepted} · stored ${stored} · refreshed ${refreshed}${durationText}${attemptText}${transportText}
     ${reason ? `<br><b>Result:</b> ${ciDiagEsc(reason.replace(/_/g,' '))}` : ''}`;
 }
 
@@ -8396,10 +8410,10 @@ async function ciExportCollectionAudit(){
 
   const payload = {
     schema: 'cityintel.live_alerts.collection_audit',
-    version: '1A',
+    version: '1B',
     generated_at: generatedAt,
-    purpose: 'Master Admin diagnostic export for external public-source comparison and collection-pipeline validation.',
-    collection_behaviour_changed: false,
+    purpose: 'Master Admin diagnostic export for external public-source comparison, collection-pipeline validation and provider transport reliability.',
+    collection_behaviour_changed: 'transport_reliability_only',
     browser: {
       active_window_hours: windowHours,
       cache: {
@@ -8413,6 +8427,14 @@ async function ciExportCollectionAudit(){
         diagnostics: cacheDiagnostics
       },
       provider_runs: providerRuns,
+      provider_reliability: {
+        runs_recorded: providerRuns.length,
+        successful_http_responses: providerRuns.filter(r => Number(r.httpStatus) >= 200 && Number(r.httpStatus) < 300).length,
+        timeouts: providerRuns.filter(r => String(r?.transport?.outcome || r?.diagnostics?.emptyReason || '') === 'request_timeout').length,
+        network_errors: providerRuns.filter(r => String(r?.transport?.outcome || r?.diagnostics?.emptyReason || '') === 'network_error').length,
+        in_flight_requests: Number(window.CI_LIVE_PROVIDER_INFLIGHT?.size || 0),
+        longest_duration_ms: providerRuns.reduce((m,r)=>Math.max(m, Number(r?.transport?.durationMs || 0)),0)
+      },
       raw_cache_events: raw.map(ciAuditEventSnapshot).filter(Boolean),
       unique_cache_events: unique.map(ciAuditEventSnapshot).filter(Boolean),
       active_unique_events: uniqueActive.map(ciAuditEventSnapshot).filter(Boolean)
@@ -8539,17 +8561,25 @@ function feedQueryPlaces(feed){
   return places;
 }
 
-async function ciFetchLiveWithTimeout(url, options = {}, timeoutMs = 15000){
+// ---- Live Alerts v51 / Audit 1B: provider transport reliability ----
+// The Worker may legitimately take longer than 15s for regional feeds because a
+// single run can perform several provider calls, filtering, fallback and D1 writes.
+// Keep one request per feed in flight and do not fan out four fallback requests after
+// a transport timeout/network failure — that amplifies load while the first Worker
+// request may still be finishing server-side.
+window.CI_LIVE_PROVIDER_INFLIGHT = window.CI_LIVE_PROVIDER_INFLIGHT || new Map();
+
+async function ciFetchLiveWithTimeout(url, options = {}, timeoutMs = 60000){
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...(options || {}), signal: controller.signal });
+    return await fetch(url, { ...(options || {}), signal: controller.signal, cache:'no-store' });
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
+async function ciFetchMockEventsForFeedCore(feed, collectionTrigger = 'page_load') {
   const params = new URLSearchParams();
   const queryPlaces = feedQueryPlaces(feed);
   if (queryPlaces?.length)   params.set('cities',   queryPlaces.join(','));
@@ -8571,66 +8601,99 @@ async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
     params.set('diagnostics', '1');
   }
 
-  // Important separation:
-  // - unticked modal checkbox => feed.useLive === true => real Worker run-now route.
-  //   This saves returned alerts into D1 so they are available later from /api/live-alerts/cache.
-  // - ticked modal checkbox => feed.useLive === false => mock/demo route only.
+  const regionRequest = (queryPlaces?.length || 0) > 8;
+  const providerTimeoutMs = regionRequest ? 90000 : 60000;
   const urls = feed.useLive
     ? [
-        `${base}/api/live-alerts/run-now?${params.toString()}&provider=${provider}`,
-        `${base}/api/live-alerts/run-now?${params.toString()}&provider=${provider}&alt=1`,
-        // Fallback only: if run-now returns no accepted rows, try both Newsdata keys
-        // through the legacy live-news route before declaring the feed quiet.
-        `${base}/api/live-news?${params.toString()}&provider=${provider}`,
-        `${base}/api/live-news?${params.toString()}&provider=${provider}&alt=1`
+        { url:`${base}/api/live-alerts/run-now?${params.toString()}&provider=${provider}`, kind:'run-now-key1' },
+        { url:`${base}/api/live-alerts/run-now?${params.toString()}&provider=${provider}&alt=1`, kind:'run-now-key2' },
+        // Legacy route is retained only as an application-level fallback after a
+        // valid Worker response with zero accepted rows. It is NOT attempted after
+        // a timeout/network failure because that would duplicate the same expensive work.
+        { url:`${base}/api/live-news?${params.toString()}&provider=${provider}`, kind:'live-news-key1' },
+        { url:`${base}/api/live-news?${params.toString()}&provider=${provider}&alt=1`, kind:'live-news-key2' }
       ]
     : [
-        `${base}/api/live?${params.toString()}`,
-        `${base}/api/live?${params.toString()}&alt=1`
+        { url:`${base}/api/live?${params.toString()}`, kind:'mock-key1' },
+        { url:`${base}/api/live?${params.toString()}&alt=1`, kind:'mock-key2' }
       ];
 
   const requestHeaders = await authHeaders({ 'Accept': 'application/json' });
+  let sawValidWorkerResponse = false;
 
-  for (const url of urls) {
+  for (let i=0; i<urls.length; i++) {
+    const request = urls[i];
+    const started = performance.now();
     try {
-      const res = await ciFetchLiveWithTimeout(url, { headers: requestHeaders }, 15000);
-      if (!res.ok) continue;
+      const res = await ciFetchLiveWithTimeout(request.url, { headers: requestHeaders }, providerTimeoutMs);
+      const durationMs = Math.round(performance.now() - started);
+      sawValidWorkerResponse = true;
+
+      if (!res.ok) {
+        if (typeof ciRecordProviderDiagnostic === 'function') {
+          ciRecordProviderDiagnostic(feed, {
+            events:[], collection:{ provider:'newsdata', stored:0, refreshed:0, diagnostics:{ emptyReason:`http_${res.status}` } }
+          }, request.url, res.status, { outcome:'http_error', durationMs, timeoutMs:providerTimeoutMs, attempt:i+1, requestKind:request.kind });
+        }
+        continue;
+      }
 
       const data = await res.json().catch(() => ({}));
       if (!data || data.ok === false) {
-        console.warn('CityIntel: live feed response not ok', data);
         if (typeof ciRecordProviderDiagnostic === 'function') {
-          ciRecordProviderDiagnostic(feed, data || {}, url, res.status);
+          ciRecordProviderDiagnostic(feed, data || {}, request.url, res.status, { outcome:'application_error', durationMs, timeoutMs:providerTimeoutMs, attempt:i+1, requestKind:request.kind });
         }
         continue;
       }
 
       if (typeof ciRecordProviderDiagnostic === 'function') {
-        ciRecordProviderDiagnostic(feed, data, url, res.status);
+        ciRecordProviderDiagnostic(feed, data, request.url, res.status, { outcome:'http_response', durationMs, timeoutMs:providerTimeoutMs, attempt:i+1, requestKind:request.kind });
       }
 
       let events = Array.isArray(data.events) ? data.events : [];
       events = dedupeClientEvents(events.map(normaliseAlertEvent).filter(Boolean));
-
-      // FRONTEND safety filter (client-side guard)
       events = events.filter(isLikelyIncidentClient);
-
-      // A successful 200 with zero accepted rows must not stop the fallback chain.
-      // Continue to the alternate key and live-news fallback routes.
       if (!events.length) continue;
       return events;
     } catch (err) {
+      const durationMs = Math.round(performance.now() - started);
+      const timeout = err?.name === 'AbortError';
       if (typeof ciRecordProviderDiagnostic === 'function') {
         ciRecordProviderDiagnostic(feed, {
           events:[],
-          collection:{ provider:'newsdata', stored:0, refreshed:0, diagnostics:{ emptyReason: err?.name === 'AbortError' ? 'request_timeout' : 'network_error' } }
-        }, url, 0);
+          collection:{ provider:'newsdata', stored:0, refreshed:0, diagnostics:{ emptyReason: timeout ? 'request_timeout' : 'network_error' } }
+        }, request.url, 0, {
+          outcome: timeout ? 'request_timeout' : 'network_error',
+          durationMs,
+          timeoutMs:providerTimeoutMs,
+          attempt:i+1,
+          requestKind:request.kind,
+          errorName:err?.name || '',
+          errorMessage:err?.message || ''
+        });
       }
+      // Transport failure means the Worker route itself did not complete for the
+      // browser. Do not immediately launch alternate/legacy requests and multiply load.
+      if (feed.useLive) break;
       continue;
     }
   }
 
   return [];
+}
+
+async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
+  const key = String(feed?.id || feed?.displayLabel || feed?.rawCities || 'feed');
+  const inflight = window.CI_LIVE_PROVIDER_INFLIGHT;
+  if (inflight.has(key)) {
+    return inflight.get(key);
+  }
+  const promise = ciFetchMockEventsForFeedCore(feed, collectionTrigger)
+    .finally(() => {
+      if (inflight.get(key) === promise) inflight.delete(key);
+    });
+  inflight.set(key, promise);
+  return promise;
 }
 
 function riskClass(r){
@@ -12061,7 +12124,7 @@ refreshPromises.push(
   // active indefinitely if an upstream provider is slow.
   setTimeout(() => {
     if (!batchSettled) finishRenderBatch(true);
-  }, options.skipProviderRun ? 12000 : 45000);
+  }, options.skipProviderRun ? 12000 : 100000);
 
   } finally {
     window.__ciRenderFeedsActive = false;
@@ -19094,4 +19157,3 @@ document.addEventListener("DOMContentLoaded",function(){
 </body>
 </html>
 
-<!-- CityIntel Live Alerts v44: queue pagination + coordinate-bearing live alert map layer -->
