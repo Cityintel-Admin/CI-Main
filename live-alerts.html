@@ -670,7 +670,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v51</title>
+<title>CityIntel — Live Alerts v55</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -8334,6 +8334,7 @@ function ciRenderLiveDiagnostics(){
       → unique ${unique.length}
       → active intake ${activeIntake.length} (${verified} verified + ${unverified} unverified).<br>
       <b>Provider health:</b> ${ciDiagEsc(ciProviderHealthText(window.CILiveDiagnostics?.providerRuns || []))}<br>
+      <b>Provider queue:</b> ${(()=>{ const q=ciProviderQueueSnapshot(); return `${q.active} active · ${q.queued} queued · max ${q.max_concurrent} · ${q.completed} completed`; })()}<br>
       <b>Audit 2A.1 quality:</b> ${latestRun?.diagnostics?.filterCounts?.qualityAssessment
         ? `${ciDiagNum(latestRun.diagnostics.filterCounts.qualityAssessment.eligible)} eligible · ${ciDiagNum(latestRun.diagnostics.filterCounts.qualityAssessment.rejected)} rejected · ${ciDiagEsc(latestRun.diagnostics.filterCounts.qualityAssessment.version || 'AQ-2A.1')}`
         : 'waiting for next provider collection'}<br>
@@ -8440,10 +8441,10 @@ async function ciExportCollectionAudit(){
 
   const payload = {
     schema: 'cityintel.live_alerts.collection_audit',
-    version: '2A.1',
+    version: '2A.1b',
     generated_at: generatedAt,
-    purpose: 'Master Admin diagnostic export for public-source comparison plus Audit 2A.1 incident eligibility, noise/context, category-integrity and location-promotion validation.',
-    collection_behaviour_changed: 'audit_2a1_quality_classification_for_new_collection_only; existing_72h_cache_not_bulk_revalidated',
+    purpose: 'Master Admin diagnostic export for public-source comparison plus Audit 2A.1 intelligence-quality validation and Audit 2A.1b global provider-request queue reliability.',
+    collection_behaviour_changed: 'audit_2a1_quality_classification_for_new_collection_only; audit_2a1b_browser_provider_concurrency_serialised_to_1; existing_72h_cache_not_bulk_revalidated',
     browser: {
       active_window_hours: windowHours,
       cache: {
@@ -8463,9 +8464,12 @@ async function ciExportCollectionAudit(){
         timeouts: providerRuns.filter(r => String(r?.transport?.outcome || r?.diagnostics?.emptyReason || '') === 'request_timeout').length,
         network_errors: providerRuns.filter(r => String(r?.transport?.outcome || r?.diagnostics?.emptyReason || '') === 'network_error').length,
         in_flight_requests: Number(window.CI_LIVE_PROVIDER_INFLIGHT?.size || 0),
+        global_provider_queue: ciProviderQueueSnapshot(),
         longest_duration_ms: providerRuns.reduce((m,r)=>Math.max(m, Number(r?.transport?.durationMs || 0)),0),
         key_health_summary: ciProviderHealthText(providerRuns),
-        bounded_gdelt_fallback: { max_calls:18, per_request_timeout_ms:4500, balanced_city_rotation:true },
+        bounded_gdelt_fallback: { max_calls:5, per_request_timeout_ms:2500, balanced_city_rotation:true },
+        transport_guard_version: '2A.1a',
+        provider_queue_version: '2A.1b',
         audit_2a1_quality_version: 'AQ-2A.1',
         latest_quality_assessment: providerRuns[0]?.diagnostics?.filterCounts?.qualityAssessment || null
       },
@@ -8595,13 +8599,62 @@ function feedQueryPlaces(feed){
   return places;
 }
 
-// ---- Live Alerts v53 / Audit 2A.1: quality classification audit visibility ----
-// Audit 1B.1 keeps the longer browser allowance but the Worker now bounds GDELT
-// fallback work and can switch to the alternate NewsData key inside the same request.
-// Keep one request per feed in flight and do not fan out four fallback requests after
-// a transport timeout/network failure — that amplifies load while the first Worker
-// request may still be finishing server-side.
+// ---- Live Alerts v55 / Audit 2A.1b: global provider request queue ----
+// AQ-2A.1 remains the intelligence-quality layer. Audit 2A.1b changes browser transport
+// scheduling only: expensive live-provider collections are serialised globally so EMEA,
+// US, London and APAC do not hit the Worker concurrently during a hard refresh/poll cycle.
+// Per-feed in-flight dedupe remains in place as a second guard.
 window.CI_LIVE_PROVIDER_INFLIGHT = window.CI_LIVE_PROVIDER_INFLIGHT || new Map();
+window.CI_LIVE_PROVIDER_QUEUE_STATE = window.CI_LIVE_PROVIDER_QUEUE_STATE || {
+  version: '2A.1b',
+  maxConcurrent: 1,
+  active: 0,
+  queued: 0,
+  completed: 0,
+  lastStartedAt: '',
+  lastCompletedAt: '',
+  tail: Promise.resolve()
+};
+
+function ciProviderQueueSnapshot(){
+  const q = window.CI_LIVE_PROVIDER_QUEUE_STATE || {};
+  return {
+    version: String(q.version || '2A.1b'),
+    max_concurrent: Number(q.maxConcurrent || 1),
+    active: Number(q.active || 0),
+    queued: Number(q.queued || 0),
+    completed: Number(q.completed || 0),
+    last_started_at: String(q.lastStartedAt || ''),
+    last_completed_at: String(q.lastCompletedAt || '')
+  };
+}
+
+function ciProviderQueueRenderSoon(){
+  try { setTimeout(() => { if (typeof window.ciRenderLiveDiagnostics === 'function') window.ciRenderLiveDiagnostics(); }, 0); } catch (_) {}
+}
+
+function ciEnqueueProviderCollection(task){
+  const q = window.CI_LIVE_PROVIDER_QUEUE_STATE;
+  q.queued += 1;
+  ciProviderQueueRenderSoon();
+  const run = async () => {
+    q.queued = Math.max(0, q.queued - 1);
+    q.active += 1;
+    q.lastStartedAt = new Date().toISOString();
+    ciProviderQueueRenderSoon();
+    try {
+      return await task();
+    } finally {
+      q.active = Math.max(0, q.active - 1);
+      q.completed += 1;
+      q.lastCompletedAt = new Date().toISOString();
+      ciProviderQueueRenderSoon();
+    }
+  };
+  const promise = Promise.resolve(q.tail).then(run, run);
+  q.tail = promise.catch(() => undefined);
+  return promise;
+}
 
 async function ciFetchLiveWithTimeout(url, options = {}, timeoutMs = 60000){
   const controller = new AbortController();
@@ -8722,7 +8775,7 @@ async function fetchMockEventsForFeed(feed, collectionTrigger = 'page_load') {
   if (inflight.has(key)) {
     return inflight.get(key);
   }
-  const promise = ciFetchMockEventsForFeedCore(feed, collectionTrigger)
+  const promise = ciEnqueueProviderCollection(() => ciFetchMockEventsForFeedCore(feed, collectionTrigger))
     .finally(() => {
       if (inflight.get(key) === promise) inflight.delete(key);
     });
