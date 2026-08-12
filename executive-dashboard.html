@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   
-  <title>CityIntel — Executive Dashboard v3.7 Unified Geographic Exposure Map</title>
+  <title>CityIntel — Executive Dashboard </title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/CityintLogo.jpg">
@@ -1157,6 +1157,37 @@ window.CIAccess = {
 
   function riskBand(score){return score>=70?'high':score>=30?'moderate':'low'}
   function renderSummary(m,score){const band=riskBand(score);const bandLabel=band==='high'?'HIGH':band==='moderate'?'MODERATE':'LOW';let driver='Stable platform picture.';if(m.tasks.blocked>0)driver='Blocked operational tasks require management attention.';else if(m.tasks.critical>0)driver='Critical operational tasks are active.';else if((m.maritime||0)>0)driver='Maritime watchlist, port or chokepoint pressure.';else if(m.travel>0)driver='Infrastructure and travel disruption volume.';if(m.critical>0)driver='Critical event pressure across active sources.';if(m.welfare>0)driver='Welfare pressure requiring review.';if(m.cases>0)driver='Open operations cases requiring management.';const el=$('riskBanner');el.className=`card summary-card ${band}`;el.innerHTML=`<div class="summary-title">Executive Summary</div><div class="summary-main">Organisation Risk: ${bandLabel} (${score}/100)</div><div class="summary-points"><span>${m.critical} critical events</span><span>${m.tasks.active.length} open tasks</span><span>${m.tasks.blocked} blocked tasks</span><span>${m.travel} infrastructure signals</span><span>${m.maritime||0} high-risk maritime signals</span><span>${m.welfare?m.welfare+' welfare critical':'No welfare emergencies'}</span><span>${m.cases?m.cases+' open cases':'No open operations cases'}</span><span>Primary pressure: ${esc(driver)}</span></div>`;}
+  // v3.7.1 — restore the diagnostic renderer referenced by render().
+  // Keep technical source diagnostics limited to Master Admin; client roles
+  // still receive the normal status/source-error summary above.
+  function renderDiagnostics(){
+    const el=$('diagnosticStrip');
+    if(!el)return;
+
+    let isMaster=false;
+    try{isMaster=!!(window.CIAuth&&CIAuth.isMasterAdmin&&CIAuth.isMasterAdmin());}catch(_){isMaster=false;}
+    if(!isMaster){
+      el.innerHTML='';
+      el.style.display='none';
+      return;
+    }
+
+    el.style.display='grid';
+    const latencyEntries=Object.entries(state.latencies||{}).filter(([,ms])=>Number.isFinite(Number(ms)));
+    const failedLabels=[...new Set(arr(state.errors).map(v=>String(v||'').trim()).filter(Boolean))];
+    const attempted=latencyEntries.length;
+    const failed=failedLabels.length;
+    const successful=Math.max(0,attempted-failed);
+    const slowest=latencyEntries.slice().sort((a,b)=>Number(b[1])-Number(a[1]))[0]||null;
+    const slowestText=slowest?`${slowest[0]} · ${Number(slowest[1]).toLocaleString('en-GB')} ms`:'—';
+    const errorText=failed?failedLabels.slice(0,3).join(', ')+(failed>3?` +${failed-3} more`:''):'None';
+
+    el.innerHTML=`
+      <div class="strip-card"><b>Source checks</b><span>${attempted}</span></div>
+      <div class="strip-card"><b>Successful</b><span>${successful}</span></div>
+      <div class="strip-card"><b>Source errors</b><span title="${esc(errorText)}">${failed}</span></div>
+      <div class="strip-card"><b>Slowest response</b><span title="${esc(slowestText)}">${esc(slowestText)}</span></div>`;
+  }
   function render(){const m=kpis();const score=riskScore(m);set('dataStatus',state.errors.length?'Partial':'Live');set('lastUpdated',new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));set('roleLabel',roleLabel());set('sourceErrors',state.errors.length);renderSummary(m,score);set('riskScore',score);$('riskBar').style.width=score+'%';$('riskSummary').textContent=score>=70?'High operational pressure. Immediate review recommended.':score>=35?'Moderate pressure. Monitor queue, maritime exposure, tasks and unresolved cases.':'Low current pressure from loaded sources.';renderKpis(m);renderQueue(m);renderTaskAttention(m);renderFunnel();renderHealth(m);renderTimeline(m);renderMap(m);renderDiagnostics();state.firstLoad=false;setTimeout(()=>$('ciExecLoadingOverlay')?.classList.add('hidden'),180);}
   $('refreshBtn').addEventListener('click',load);$('execMapFitBtn')?.addEventListener('click',fitVisibleMap);$('execMapGlobalBtn')?.addEventListener('click',globalMapView);$('execMapSearchBtn')?.addEventListener('click',searchExecutiveMap);$('execMapSearch')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchExecutiveMap();}});$('drawerClose')?.addEventListener('click',closeKpiDrawer);$('kpiDrawerBackdrop')?.addEventListener('click',closeKpiDrawer);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKpiDrawer();});load().catch(e=>{console.error(e);set('dataStatus','Failed');$('actionQueue').innerHTML='<div class="empty">Dashboard failed to load. Check console.</div>';$('ciExecLoadingOverlay')?.classList.add('hidden');});
 })();
