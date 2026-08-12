@@ -670,7 +670,7 @@ async function loadOrgContext() {
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Live Alerts v55</title>
+<title>CityIntel — Live Alerts v56</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -8190,6 +8190,59 @@ function ciProviderHealthText(runs){
   return `${label('key1',state.key1)} · ${label('key2',state.key2)} · GDELT fallback ${state.gdelt ? 'available' : 'not observed'}`;
 }
 
+
+function ciDiscovery2B1Aggregate(runs){
+  const order = [
+    'security_crime','protest_civil_unrest','terrorism','weather_natural_hazard','transport',
+    'aviation','maritime','infrastructure_power','health_welfare','other_operational'
+  ];
+  const labels = {
+    security_crime:'Security/Crime', protest_civil_unrest:'Protest/Unrest', terrorism:'Terrorism',
+    weather_natural_hazard:'Weather/Hazard', transport:'Transport', aviation:'Aviation',
+    maritime:'Maritime', infrastructure_power:'Infrastructure/Power', health_welfare:'Health/Welfare',
+    other_operational:'Other operational'
+  };
+  const families = Object.fromEntries(order.map(k => [k,{queries_issued:0,successful_queries:0,raw_results:0}]));
+  const queryMap = new Map();
+  const list = Array.isArray(runs) ? runs : [];
+  for (const run of list) {
+    const dc = run?.diagnostics?.discoveryCoverage;
+    if (!dc || dc.version !== 'DISC-2B.1') continue;
+    for (const q of (Array.isArray(dc.issued_queries) ? dc.issued_queries : [])) {
+      const key = `${q.query || ''}|${q.city || ''}`;
+      if (!queryMap.has(key)) queryMap.set(key, q);
+    }
+  }
+  for (const q of queryMap.values()) {
+    for (const family of (Array.isArray(q.families) ? q.families : [])) {
+      if (!families[family]) continue;
+      families[family].queries_issued += 1;
+      if (q.successful) families[family].successful_queries += 1;
+      families[family].raw_results += Number(q.rawResults || 0);
+    }
+  }
+  const queried = order.filter(k => families[k].queries_issued > 0);
+  const blind = order.filter(k => families[k].queries_issued === 0);
+  return {
+    version:'DISC-2B.1',
+    observation_only:true,
+    total_families:order.length,
+    queried_families:queried.length,
+    queried_family_names:queried,
+    blind_spot_families:blind,
+    families,
+    queries:[...queryMap.values()],
+    labels
+  };
+}
+
+function ciDiscovery2B1StatusText(runs){
+  const a = ciDiscovery2B1Aggregate(runs);
+  if (!a.queries.length) return 'waiting for DISC-2B.1 provider diagnostics';
+  const covered = a.queried_family_names.map(k => a.labels[k] || k).join(', ');
+  return `${a.queried_families}/${a.total_families} families directly queried · ${a.queries.length} unique queries${covered ? ` · ${covered}` : ''}`;
+}
+
 function ciProviderStatusText(run){
   if (!run) return '<span class="warn">No provider collection response recorded yet.</span>';
   const d = run.diagnostics || {};
@@ -8335,6 +8388,7 @@ function ciRenderLiveDiagnostics(){
       → active intake ${activeIntake.length} (${verified} verified + ${unverified} unverified).<br>
       <b>Provider health:</b> ${ciDiagEsc(ciProviderHealthText(window.CILiveDiagnostics?.providerRuns || []))}<br>
       <b>Provider queue:</b> ${(()=>{ const q=ciProviderQueueSnapshot(); return `${q.active} active · ${q.queued} queued · max ${q.max_concurrent} · ${q.completed} completed`; })()}<br>
+      <b>Audit 2B.1 discovery:</b> ${ciDiagEsc(ciDiscovery2B1StatusText(window.CILiveDiagnostics?.providerRuns || []))}<br>
       <b>Audit 2A.1 quality:</b> ${latestRun?.diagnostics?.filterCounts?.qualityAssessment
         ? `${ciDiagNum(latestRun.diagnostics.filterCounts.qualityAssessment.eligible)} eligible · ${ciDiagNum(latestRun.diagnostics.filterCounts.qualityAssessment.rejected)} rejected · ${ciDiagEsc(latestRun.diagnostics.filterCounts.qualityAssessment.version || 'AQ-2A.1')}`
         : 'waiting for next provider collection'}<br>
@@ -8354,7 +8408,7 @@ function ciRenderLiveDiagnostics(){
 window.ciRenderLiveDiagnostics = ciRenderLiveDiagnostics;
 window.ciRecordProviderDiagnostic = ciRecordProviderDiagnostic;
 
-// ---- Live Alerts Collection Audit 1A (Master Admin only) ----
+// ---- Live Alerts Collection Audit 2B.1 (Master Admin only) ----
 function ciAuditSafeDisposition(ev){
   try { return (typeof getDisposition === 'function') ? String(getDisposition(ev) || 'untriaged') : 'unknown'; }
   catch (_) { return 'unknown'; }
@@ -8441,10 +8495,10 @@ async function ciExportCollectionAudit(){
 
   const payload = {
     schema: 'cityintel.live_alerts.collection_audit',
-    version: '2A.1b',
+    version: '2B.1',
     generated_at: generatedAt,
-    purpose: 'Master Admin diagnostic export for public-source comparison plus Audit 2A.1 intelligence-quality validation and Audit 2A.1b global provider-request queue reliability.',
-    collection_behaviour_changed: 'audit_2a1_quality_classification_for_new_collection_only; audit_2a1b_browser_provider_concurrency_serialised_to_1; existing_72h_cache_not_bulk_revalidated',
+    purpose: 'Master Admin diagnostic export for public-source comparison plus Audit 2B.1 significant-incident discovery coverage baseline, Audit 2A.1 intelligence-quality validation and Audit 2A.1b provider-queue reliability.',
+    collection_behaviour_changed: 'audit_2b1_observation_only_query_family_instrumentation; no_provider_queries_widened; audit_2a1_quality_classification_preserved; audit_2a1b_browser_provider_concurrency_serialised_to_1; existing_72h_cache_not_bulk_revalidated',
     browser: {
       active_window_hours: windowHours,
       cache: {
@@ -8471,6 +8525,8 @@ async function ciExportCollectionAudit(){
         transport_guard_version: '2A.1a',
         provider_queue_version: '2A.1b',
         audit_2a1_quality_version: 'AQ-2A.1',
+        discovery_baseline_version: 'DISC-2B.1',
+        significant_incident_discovery: ciDiscovery2B1Aggregate(providerRuns),
         latest_quality_assessment: providerRuns[0]?.diagnostics?.filterCounts?.qualityAssessment || null
       },
       raw_cache_events: raw.map(ciAuditEventSnapshot).filter(Boolean),
