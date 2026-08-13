@@ -16,7 +16,7 @@
 	
 <meta charset="utf-8" />
 
-<title>CityIntel — Dashboard</title>
+<title>CityIntel — Protest Hub</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -244,6 +244,27 @@ nav a.active{background:rgba(208,22,22,0.15);border-color:#D01616}
 .kpi-grid .kpi-link-card{grid-column:auto !important}
 @media (max-width:880px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Module-gated KPI band ---------------------------------------------------
+   CIAccess.gateCards() hides the Travellers / Assets proximity cards for orgs
+   that don't hold those modules, then stamps the number of cards still
+   visible onto the grid as data-ci-kpi-count. These rules re-flow the band so
+   whatever remains still spans the full width with even spacing, instead of
+   leaving dead columns where the hidden cards used to sit.
+   7 cards (nothing hidden) and 4 fall through to the 4-up rule above. */
+.kpi-grid .kpi-link-card[hidden]{display:none !important}
+.kpi-grid[data-ci-kpi-count="1"]{grid-template-columns:minmax(0,1fr)}
+.kpi-grid[data-ci-kpi-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kpi-grid[data-ci-kpi-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kpi-grid[data-ci-kpi-count="5"]{grid-template-columns:repeat(5,minmax(0,1fr))}
+.kpi-grid[data-ci-kpi-count="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:1024px){
+  /* 5-up gets tight on laptops — drop to 3 + 2 rather than squeezing five across */
+  .kpi-grid[data-ci-kpi-count="5"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:880px){
+  .kpi-grid[data-ci-kpi-count]{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 
@@ -7771,6 +7792,98 @@ function lockCard(cardEl, moduleKey, label){
   cardEl.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
 }
 
+// ── Hide a card/tile outright (module not held) ───────────────────────────
+// The alternative to lockCard(): used where an unavailable module should
+// leave no trace rather than advertise an upgrade. Only cards this helper
+// hid are ever un-hidden again, so anything the page hid for its own
+// reasons stays hidden.
+function hideCard(el){
+  if(!el || el.dataset.ciHidden==='1') return;
+  el.dataset.ciHidden='1';
+  el.hidden=true;
+  el.setAttribute('aria-hidden','true');
+}
+
+function showCard(el){
+  if(!el || el.dataset.ciHidden!=='1') return;
+  delete el.dataset.ciHidden;
+  el.hidden=false;
+  el.removeAttribute('aria-hidden');
+}
+
+// ── Stamp a grid with how many of its children are still visible ──────────
+// CSS keys off data-ci-kpi-count to re-flow the row so the remaining cards
+// span the full width. Purely presentational — no layout maths in JS.
+function rebalanceGrid(gridEl){
+  if(!gridEl) return 0;
+  const children = Array.from(gridEl.children).filter(el => el.nodeType===1);
+  const visible = children.filter(el => el.dataset.ciHidden!=='1' && !el.hidden);
+  gridEl.dataset.ciKpiCount = String(visible.length);
+  return visible.length;
+}
+
+// ── Resolve ids / selectors / elements to a flat element list ─────────────
+function resolveGateEls(entry){
+  const list = Array.isArray(entry) ? entry : [entry];
+  const out = [];
+  list.forEach(item => {
+    if(!item) return;
+    if(typeof item !== 'string'){ if(item.nodeType===1) out.push(item); return; }
+    const byId = document.getElementById(item);
+    if(byId){ out.push(byId); return; }
+    try{ document.querySelectorAll(item).forEach(el => out.push(el)); }catch(_){}
+  });
+  return out;
+}
+
+function applyCardGate(map, modules, opts){
+  const grids = new Set();
+  Object.keys(map || {}).forEach(moduleKey => {
+    const allowed = isModuleAllowed(modules, moduleKey);
+    resolveGateEls(map[moduleKey]).forEach(el => {
+      const grid = opts.grid ? el.closest(opts.grid) : el.parentElement;
+      if(grid) grids.add(grid);
+      if(allowed){ showCard(el); return; }
+      if(opts.mode === 'lock'){
+        const label = (el.querySelector('h3') && el.querySelector('h3').textContent.trim())
+          || el.getAttribute('data-ci-module-label')
+          || moduleKey.replace(/_/g,' ');
+        lockCard(el, moduleKey, label);
+      } else {
+        hideCard(el);
+      }
+    });
+  });
+  if(opts.grid){ document.querySelectorAll(opts.grid).forEach(g => grids.add(g)); }
+  grids.forEach(rebalanceGrid);
+}
+
+// ── Gate a set of cards/tiles by module, then re-flow their container ─────
+// Usage (page load):
+//   CIAccess.gateCards({
+//     travellers: ['kpiTravAffectedCard','kpiTravHighRiskCard'],
+//     assets:     ['kpiAssetAffectedCard','kpiAssetHighRiskCard']
+//   }, { mode:'hide', grid:'.kpi-grid' });
+//
+// Values may be element ids, CSS selectors, elements, or arrays of those.
+// mode 'hide' (default) removes the card from the layout; mode 'lock' keeps
+// the old padlock-and-upsell tile. The cached org config is applied
+// synchronously first so gated cards never flash on screen before the
+// /api/org/onboarding response lands, then the fresh config re-applies and
+// corrects the optimistic pass if the modules have changed.
+async function gateCards(map, options){
+  const opts = Object.assign({ mode:'hide', grid:'' }, options || {});
+  try{
+    const raw = localStorage.getItem('ci_org_onboarding');
+    const cached = raw ? JSON.parse(raw) : null;
+    if(cached && Array.isArray(cached.modules)) applyCardGate(map, cached.modules, opts);
+  }catch(_){}
+  const cfg = await getOrgConfig();
+  const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
+  applyCardGate(map, modules, opts);
+  return modules;
+}
+
 // ── Modal shown when a locked card/tile is clicked ─────────────────────────
 function showLockedModal(label){
   const existing=document.getElementById('ci-locked-modal');
@@ -7803,6 +7916,10 @@ window.CIAccess = {
   showModuleLocked,
   isModuleAllowed,
   lockCard,
+  hideCard,
+  showCard,
+  rebalanceGrid,
+  gateCards,
   showLockedModal,
   TIER_LABELS,
   MODULE_PAGES,
@@ -7835,27 +7952,17 @@ window.CIAccess = {
 document.addEventListener("DOMContentLoaded",function(){
   if(window.CIAccess) CIAccess.initPage(null);  // Dashboard always accessible; shows tier banner only
 
-  // Lock the proximity KPI cards individually if this org doesn't have
-  // the Travellers / Assets modules — the hub itself may be enabled without
-  // either add-on purchased.
-  (async function lockGatedCardsIfNeeded(){
-    if(!window.CIAccess) return;
-    const cfg = await CIAccess.getOrgConfig();
-    const modules = Array.isArray(cfg.modules) ? cfg.modules : [];
-
-    if(!CIAccess.isModuleAllowed(modules, 'travellers')){
-      const travCard = document.getElementById('kpiTravAffectedCard');
-      const travRiskCard = document.getElementById('kpiTravHighRiskCard');
-      if(travCard) CIAccess.lockCard(travCard, 'travellers', 'Travellers Affected by Protests');
-      if(travRiskCard) CIAccess.lockCard(travRiskCard, 'travellers', 'Travellers Affected by High Risk Protests');
-    }
-    if(!CIAccess.isModuleAllowed(modules, 'assets')){
-      const assetCard = document.getElementById('kpiAssetAffectedCard');
-      const assetRiskCard = document.getElementById('kpiAssetHighRiskCard');
-      if(assetCard) CIAccess.lockCard(assetCard, 'assets', 'Assets Affected by Protests');
-      if(assetRiskCard) CIAccess.lockCard(assetRiskCard, 'assets', 'Assets Affected by High Risk Protests');
-    }
-  })();
+  // Hide the proximity KPI cards if this org doesn't hold the Travellers /
+  // Assets modules — the hub itself may be enabled without either add-on
+  // purchased. The band re-flows so the cards that remain still span the
+  // full width (see the data-ci-kpi-count rules in the KPI band CSS).
+  // Swap mode to 'lock' to go back to the padlock-and-upsell tiles instead.
+  if(window.CIAccess && CIAccess.gateCards){
+    CIAccess.gateCards({
+      travellers: ['kpiTravAffectedCard','kpiTravHighRiskCard'],
+      assets:     ['kpiAssetAffectedCard','kpiAssetHighRiskCard']
+    }, { mode:'hide', grid:'.kpi-grid' });
+  }
 });
 </script>
 
