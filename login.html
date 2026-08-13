@@ -172,16 +172,33 @@
         try{ const u = new URL(location.href); return u.searchParams.get(name) || def; }catch{ return def; }
       }
       // Sanitise next= to prevent open redirect — only allow same-origin relative paths
+      // Returns '' when there is no usable explicit target, which now means
+      // "ask CIAuth where this user belongs" rather than "go to index.html".
       function safeNext(raw) {
         try {
           const decoded = decodeURIComponent(raw || '');
           // Allow only relative paths (no protocol, no //host)
-          if (/^https?:\/\//i.test(decoded) || decoded.startsWith('//')) return 'index.html';
+          if (/^https?:\/\//i.test(decoded) || decoded.startsWith('//')) return '';
           // Strip leading slashes beyond one to prevent //evil.com
-          return decoded.replace(/^\/+/, '') || 'index.html';
-        } catch { return 'index.html'; }
+          const clean = decoded.replace(/^\/+/, '');
+          // The landing page and the retired dashboard path are not real
+          // targets — both used to funnel everyone to the Executive Dashboard.
+          if (!clean || clean === 'index.html' || clean === 'dashboard.html') return '';
+          return clean;
+        } catch { return ''; }
       }
-      const nextUrl = safeNext(qs('next','index.html'));
+      const nextUrl = safeNext(qs('next',''));
+
+      // Where to go once signed in: an explicit ?next= wins, unless it points
+      // at a hub this organisation doesn't hold (stale bookmark), in which
+      // case fall through to the module-resolved landing page.
+      async function landingTarget(){
+        try{
+          if (nextUrl && (!CIAuth.landingAllows || CIAuth.landingAllows(nextUrl))) return nextUrl;
+          if (CIAuth.resolveLandingPage) return await CIAuth.resolveLandingPage();
+        }catch(_){}
+        return window.CI_APP_HOME || 'executive-dashboard.html';
+      }
 
       function showErr(msg){ errB.textContent = msg; errB.style.display = 'block'; }
       function clearErr(){ errB.textContent = ''; errB.style.display = 'none'; }
@@ -200,7 +217,7 @@
           if (!CIAuth.isLoggedIn()) {
             await CIAuth.login(email.value, pass.value);
           }
-          location.href = nextUrl;
+          location.href = await landingTarget();
         } catch(err){
           showErr(err?.message || 'Login failed.');
           btn.disabled = false; btn.textContent = 'Log in';
