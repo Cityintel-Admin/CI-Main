@@ -342,6 +342,12 @@ th{padding:10px 12px!important;color:#9fb0c5!important;font-size:11px!important;
 td{padding:10px 12px!important;border-top:1px solid #202832;color:#e7edf5}
 tbody tr{transition:background .15s ease}
 tbody tr:hover{background:rgba(227,27,35,.045)}
+/* Team member revoke control (Organisation card) */
+.ci-revoke-btn{min-height:0!important;padding:5px 12px!important;font-size:12px!important;font-weight:750;
+  border-radius:8px!important;color:#ff9ba0!important;background:rgba(255,90,95,.08)!important;
+  border:1px solid rgba(255,90,95,.42)!important;box-shadow:none!important}
+.ci-revoke-btn:hover{color:#fff!important;background:rgba(227,27,35,.85)!important;border-color:#ff6b70!important}
+.ci-revoke-btn[disabled]{opacity:.5;cursor:not-allowed;transform:none!important}
 details{border:1px solid #252e38;border-radius:10px;padding:10px 12px;background:#090e13}
 summary{color:#aeb9c7!important;font-weight:700}
 #orgConnected>div:first-child{border-color:#2a333d!important;background:#080d12}
@@ -497,15 +503,16 @@ summary{color:#aeb9c7!important;font-weight:700}
 
       <!-- Members table -->
       <div style="overflow:auto;border:1px solid var(--gray-600);border-radius:12px;">
-        <table style="width:100%;border-collapse:collapse;min-width:760px;">
+        <table style="width:100%;border-collapse:collapse;min-width:860px;">
           <thead><tr style="background:#1c1e22">
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Email</th>
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Name</th>
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Role</th>
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Status</th>
             <th style="padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Joined / Invited</th>
+            <th style="padding:8px 12px;text-align:right;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Access</th>
           </tr></thead>
-          <tbody id="orgInviteRows"><tr><td colspan="5" class="muted" style="padding:10px">Loading…</td></tr></tbody>
+          <tbody id="orgInviteRows"><tr><td colspan="6" class="muted" style="padding:10px">Loading…</td></tr></tbody>
         </table>
       </div>
 
@@ -2165,6 +2172,7 @@ summary{color:#aeb9c7!important;font-weight:700}
     if(s==='pending') return 'Invite pending';
     if(s==='expired') return 'Invite expired';
     if(s==='accepted') return 'Accepted';
+    if(s==='revoked') return 'Revoked';
     return v || '—';
   }
   function statusStyle(v){
@@ -2172,6 +2180,7 @@ summary{color:#aeb9c7!important;font-weight:700}
     if(s==='active') return 'color:#bbf7d0;background:rgba(51,196,141,.12);border:1px solid rgba(51,196,141,.35)';
     if(s==='pending') return 'color:#fde68a;background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.35)';
     if(s==='expired') return 'color:#fecaca;background:rgba(255,90,95,.12);border:1px solid rgba(255,90,95,.35)';
+    if(s==='revoked') return 'color:#cbd5e1;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.35)';
     return 'color:#cbd5e1;background:rgba(255,255,255,.05);border:1px solid var(--gray-600)';
   }
   async function loadInvites(){
@@ -2190,15 +2199,22 @@ summary{color:#aeb9c7!important;font-weight:700}
 
       const rows=Array.isArray(data.data)?data.data:[];
       q('orgInviteRows').innerHTML = rows.length ? rows.map(r=>{
-        const when = r.status==='active' ? (r.joined_at || r.created_at) : r.created_at;
+        const when = (r.status==='active' || r.status==='revoked') ? (r.joined_at || r.created_at) : r.created_at;
+        // The worker decides who may be revoked (never yourself, never the last
+        // org admin, never a master admin) and returns can_revoke per row.
+        const kind = r.status==='active' ? 'member' : 'invite';
+        const action = r.can_revoke
+          ? `<button type="button" class="ci-revoke-btn" data-ci-revoke-email="${esc(r.email)}" data-ci-revoke-name="${esc(r.name || r.email)}" data-ci-revoke-kind="${kind}">${kind==='member' ? 'Revoke' : 'Cancel invite'}</button>`
+          : `<span class="muted" style="font-size:12px">${esc(r.revoke_reason || '—')}</span>`;
         return `<tr>
           <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.email)}</td>
           <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.name)}</td>
           <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(r.role_label || r.role_key || 'Operator')}</td>
           <td style="padding:8px 12px;border-top:1px solid var(--gray-600)"><span style="display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;${statusStyle(r.status)}">${esc(statusLabel(r.status))}</span></td>
           <td style="padding:8px 12px;border-top:1px solid var(--gray-600)">${esc(formatDate(when))}</td>
+          <td style="padding:8px 12px;border-top:1px solid var(--gray-600);text-align:right;white-space:nowrap">${action}</td>
         </tr>`;
-      }).join('') : '<tr><td colspan="5" class="muted" style="padding:10px">No team members or invitations found yet.</td></tr>';
+      }).join('') : '<tr><td colspan="6" class="muted" style="padding:10px">No team members or invitations found yet.</td></tr>';
     }catch(e){
       const el=q('inviteSeatStatus');
       if(el) el.textContent='Team manager unavailable: '+(e.message||e);
@@ -2227,8 +2243,45 @@ summary{color:#aeb9c7!important;font-weight:700}
       q('inviteMsg').textContent='Invite failed: '+(e.message||e);
     }
   }
+  async function revokeMember(email, name, kind){
+    if(!email) return;
+    const who = (name && name !== email) ? `${name} (${email})` : email;
+    const question = kind === 'invite'
+      ? `Cancel the pending invitation for ${who}?\n\nThe set-up link in their invitation email stops working immediately, and the reserved seat is released.`
+      : `Revoke CityIntel access for ${who}?\n\nThey are locked out on their next request and cannot log back in unless you re-invite them. Their seat is released back to the organisation.`;
+    if(!window.confirm(question)) return;
+
+    const btns = document.querySelectorAll('.ci-revoke-btn');
+    btns.forEach(b=>{ b.disabled = true; });
+    q('inviteMsg').textContent = kind === 'invite' ? 'Cancelling invitation…' : 'Revoking access…';
+    try{
+      const res=await fetch(API_BASE + '/api/org/members/revoke',{
+        method:'POST',
+        headers:getAuthHeaders(),
+        body:JSON.stringify({ email })
+      });
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.ok) throw new Error(data.error||'Revoke failed');
+      q('inviteMsg').textContent = data.mode === 'invite'
+        ? `Invitation for ${email} cancelled. The seat is free again.`
+        : `Access revoked for ${email}. They are signed out and the seat is free again.`;
+      await loadInvites();
+    }catch(e){
+      btns.forEach(b=>{ b.disabled = false; });
+      q('inviteMsg').textContent='Revoke failed: '+(e.message||e);
+    }
+  }
+
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadInvites); else loadInvites();
-  document.addEventListener('click', e=>{ if(e.target && e.target.id==='sendOrgInviteBtn') sendInvite(); });
+  document.addEventListener('click', e=>{
+    if(!e.target) return;
+    if(e.target.id==='sendOrgInviteBtn'){ sendInvite(); return; }
+    const btn = e.target.closest ? e.target.closest('.ci-revoke-btn') : null;
+    const table = q('orgInviteRows');
+    if(btn && table && table.contains(btn)){
+      revokeMember(btn.dataset.ciRevokeEmail || '', btn.dataset.ciRevokeName || '', btn.dataset.ciRevokeKind || 'member');
+    }
+  });
 })();
 </script>
 
