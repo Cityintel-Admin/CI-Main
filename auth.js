@@ -4,7 +4,7 @@
  * Compatibility:
  * - legacy role string 'Admin' is preserved for internal master accounts so existing pages keep working
  * - new roleKey values: 'master-admin' | 'org-admin' | 'operator'
- */
+ */ 
 (function (window) {
   // ------------- LS helpers -------------
   const LS = {
