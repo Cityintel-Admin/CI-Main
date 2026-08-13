@@ -175,6 +175,68 @@
   // need a safe default without duplicating the legacy dashboard.html path.
   window.CI_APP_HOME = window.CI_APP_HOME || APP_HOME;
 
+  // ------------- Post-login landing resolution --------------------------
+  // The Executive Dashboard stays the canonical home, but an organisation
+  // that only bought a single hub has no executive_dashboard module — so
+  // sending everyone there drops those users on a locked page. Resolution
+  // order:
+  //   1. Executive Dashboard, whenever the org holds it
+  //   2. Protest Hub, as the preferred single-hub landing
+  //   3. any remaining hub, alphabetically, so the landing page is at least
+  //      consistent for an org holding several hubs but no exec dashboard
+  //   4. a standalone page (Assets / Neighbourhood Intel / Travellers)
+  //   5. settings.html, so an org with nothing enabled still lands somewhere
+  //
+  // The hub list mirrors HUBS / STANDALONE in shared-nav.js — a new hub needs
+  // adding in both places. Set window.CI_LANDING_TARGETS before auth.js loads
+  // to override the table entirely.
+  const LANDING_TARGETS = [
+    { module: 'executive_dashboard',   href: 'executive-dashboard.html',   label: 'Executive Dashboard',         rank: 0 },
+    { module: 'protest_hub',           href: 'protest-hub.html',           label: 'Protest Hub',                 rank: 1 },
+    { module: 'intel_hub',             href: 'intel-hub.html',             label: 'Intel Hub',                   rank: 2 },
+    { module: 'monitoring_hub',        href: 'monitoring-hub.html',        label: 'Monitoring Hub',              rank: 2 },
+    { module: 'training_hub',          href: 'training-hub.html',          label: 'Training Hub',                rank: 2 },
+    { module: 'travel_infrastructure', href: 'travel-infrastructure.html', label: 'Travel & Infrastructure Hub', rank: 2 },
+    { module: 'welfare_hub',           href: 'welfare-hub.html',           label: 'Welfare Hub',                 rank: 2 },
+    { module: 'assets',                href: 'assets.html',                label: 'Assets',                      rank: 3 },
+    { module: 'neighbourhood_intel',   href: 'neighborhood-intel.html',    label: 'Neighbourhood Intel',         rank: 3 },
+    { module: 'travellers',            href: 'travellers.html',            label: 'Travellers',                  rank: 3 },
+  ];
+  const LANDING_FALLBACK = 'settings.html';
+
+  // null  = no org config has ever been cached in this browser (offline, or a
+  //         failed fetch) — callers fail OPEN and keep the historic behaviour.
+  // []    = a config genuinely loaded and enables nothing — fail CLOSED.
+  // Same distinction shared-nav.js and CIAccess draw for module visibility.
+  function cachedOrgModules() {
+    try {
+      const raw = localStorage.getItem('ci_org_onboarding');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      return Array.isArray(parsed.modules) ? parsed.modules : [];
+    } catch (_) { return null; }
+  }
+
+  function landingTargets() {
+    const list = Array.isArray(window.CI_LANDING_TARGETS) ? window.CI_LANDING_TARGETS : LANDING_TARGETS;
+    // Sorted at resolve time rather than relying on the literal's order, so a
+    // hub added anywhere in the table still lands in the right position.
+    return list.slice().sort((a, b) =>
+      (Number(a.rank ?? 9) - Number(b.rank ?? 9)) ||
+      String(a.label || a.href).localeCompare(String(b.label || b.href))
+    );
+  }
+
+  function landingPageFor(modules, profile) {
+    // Master admins have no org onboarding row of their own (cacheOrgOnboarding
+    // skips them), so they always get the Executive Dashboard.
+    if (profile && profile.roleKey === 'master-admin') return APP_HOME;
+    if (modules === null) return APP_HOME;
+    const hit = landingTargets().find(t => modules.includes(t.module));
+    return hit ? hit.href : LANDING_FALLBACK;
+  }
+
   async function fetchSubStatus(email) {
     try {
       const url = `${API_BASE}/api/sub-status?email=${encodeURIComponent(email)}`;
@@ -240,6 +302,47 @@
     can(capability) {
       const u = this.who();
       return !!(u && u.capabilities && u.capabilities[capability]);
+    },
+
+    // ------------- Landing page ------------------------------------------
+    // Where this user should go when no specific page was requested.
+    // Synchronous: reads the org config cached at login. Use this anywhere a
+    // redirect has to happen immediately (landing-auth-check.js).
+    landingPage() {
+      try { return landingPageFor(cachedOrgModules(), CIAuth.who()); }
+      catch (_) { return APP_HOME; }
+    },
+
+    // Same answer, but fetches the org config first if this browser has never
+    // cached one. Use where a short await is acceptable (post-login redirect).
+    async resolveLandingPage() {
+      try {
+        const profile = CIAuth.who();
+        if (!profile) return APP_HOME;
+        if (profile.roleKey !== 'master-admin' && cachedOrgModules() === null) {
+          await cacheOrgOnboarding(profile, CIAuth.sessionToken());
+        }
+        return landingPageFor(cachedOrgModules(), profile);
+      } catch (_) { return APP_HOME; }
+    },
+
+    // Guard for ?next= deep links and old bookmarks. Deliberately permissive:
+    // only returns false when the page is a known landing target AND its
+    // module is positively not enabled. Anything not in the table
+    // (settings.html, sources.html, about.html, hub member pages…) passes
+    // through untouched, so this can never strand a user on a page it simply
+    // doesn't know about.
+    landingAllows(page) {
+      try {
+        const wanted = String(page || '').trim().toLowerCase();
+        if (!wanted) return false;
+        const target = landingTargets().find(t => String(t.href).toLowerCase() === wanted);
+        if (!target) return true;
+        if (CIAuth.isMasterAdmin()) return true;
+        const modules = cachedOrgModules();
+        if (modules === null) return true;
+        return modules.includes(target.module);
+      } catch (_) { return true; }
     },
 
     // ------------- Shared API header builder (Phase 2A.2) ----------------
@@ -380,11 +483,16 @@
   }
 
   const params = new URLSearchParams(location.search);
-  const requestedNext = String(params.get('next') || APP_HOME).trim();
-  // Canonicalise legacy/default landing targets onto the Executive Dashboard.
-  const next = (!requestedNext || requestedNext === 'index.html' || requestedNext === 'dashboard.html')
-    ? APP_HOME
-    : requestedNext;
+  const requestedNext = String(params.get('next') || '').trim();
+  // Default targets (none supplied, or the legacy landing/dashboard paths)
+  // resolve to whichever page this organisation's modules entitle them to.
+  // An explicit ?next= still wins, unless it points at a hub the org doesn't
+  // hold — a stale bookmark shouldn't drop someone on a locked page.
+  const isDefaultTarget = !requestedNext
+    || requestedNext === 'index.html'
+    || requestedNext === 'dashboard.html';
+  const home = landingPageFor(cachedOrgModules(), profile);
+  const next = (isDefaultTarget || !CIAuth.landingAllows(requestedNext)) ? home : requestedNext;
   location.href = next;
 
   return profile;
