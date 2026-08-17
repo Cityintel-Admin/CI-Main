@@ -1,4 +1,4 @@
-<!-- CityIntel Live Alerts v60 — Performance Isolation Test: Live News/YouTube, TfL JamCams and Global Cams temporarily disabled; Worker collection logic unchanged -->
+<!-- CityIntel Live Alerts v61 — Performance Isolation Stage 2: static protest dataset, protest merge and top protest ticker temporarily disabled; v60 media/camera isolation retained; Worker unchanged -->
      
 <!doctype html>
 <html lang="en">
@@ -39,7 +39,11 @@
   else boot();
 })();
 </script>
-<script src="alerts-data.js"></script>
+<!-- v61 diagnostic: large static protest baseline intentionally not loaded -->
+<script>
+  window.alertsData = [];
+  window.CIConsolidatedProtestData = [];
+</script>
 
 <script>
 (function pageGuard(){
@@ -81,7 +85,10 @@
   window.CI_LIVE_ALERTS_PERF_ISOLATION = Object.freeze({
     liveNews: true,
     jamcams: true,
-    globalCams: true
+    globalCams: true,
+    protestStaticData: true,
+    protestMerge: true,
+    protestTicker: true
   });
 
   function ciApplyPerformanceIsolationUi(){
@@ -12323,15 +12330,17 @@ renderFeeds()
         new Promise(resolve=>setTimeout(resolve,2800))
       ]);
     } catch(e) { console.warn('CityIntel: initial cache sync failed', e); }
-    try {
-      window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus('Merging verified protest intelligence…');
-      if (typeof window.ciLoadConsolidatedProtestData === 'function') {
-        await Promise.race([
-          window.ciLoadConsolidatedProtestData({ force:false }),
-          new Promise(resolve=>setTimeout(resolve,1800))
-        ]);
-      }
-    } catch(e) { console.warn('CityIntel: protest source merge delayed', e); }
+    if (!window.CI_LIVE_ALERTS_PERF_ISOLATION?.protestMerge) {
+      try {
+        window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus('Merging verified protest intelligence…');
+        if (typeof window.ciLoadConsolidatedProtestData === 'function') {
+          await Promise.race([
+            window.ciLoadConsolidatedProtestData({ force:false }),
+            new Promise(resolve=>setTimeout(resolve,1800))
+          ]);
+        }
+      } catch(e) { console.warn('CityIntel: protest source merge delayed', e); }
+    }
     try {
       window.ciSetLiveLoadingStatus && window.ciSetLiveLoadingStatus('Finalising map, queues and exposure overlays…');
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -18468,6 +18477,21 @@ Generate 3-5 structured steps that will guide the operator through assessing and
   }
 
   window.ciLoadConsolidatedProtestData = async function({ force=false } = {}){
+    if (window.CI_LIVE_ALERTS_PERF_ISOLATION?.protestMerge) {
+      window.alertsData = [];
+      window.CIConsolidatedProtestData = [];
+      window.CIProtestSourceHealth = {
+        staticOk:true,
+        dynamicOk:true,
+        feedOk:true,
+        staticCount:0,
+        dynamicCount:0,
+        mergedCount:0,
+        isolated:true
+      };
+      statusHtml(window.CIProtestSourceHealth);
+      return [];
+    }
     const now = Date.now();
     if (!force && cachePromise && (now - cacheAt) < TTL) return cachePromise;
     cacheAt = now;
@@ -18523,6 +18547,12 @@ Generate 3-5 structured steps that will guide the operator through assessing and
 <script>
 (function mountLiveAlertsSeamlessBanner(){
   async function boot(){
+    if (window.CI_LIVE_ALERTS_PERF_ISOLATION?.protestTicker) {
+      const t = document.getElementById('tickerTrack');
+      const w = t && t.closest('.ticker');
+      if (w) w.style.display = 'none';
+      return;
+    }
     const track = document.getElementById('tickerTrack');
     const wrap  = track && track.closest('.ticker');
     if (!track || !wrap) return;
