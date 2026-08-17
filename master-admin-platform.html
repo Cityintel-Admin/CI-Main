@@ -2488,7 +2488,7 @@ document.addEventListener('DOMContentLoaded',function(){
     finally{ btn.disabled=false; btn.textContent='Save'; }
   }
 
-  let commercialState = { pricing: [], profiles: [], renewals: [], invoices: [], invoiceEvents: {}, selectedOrgId: '', selectedInvoiceId: '', stripeConfigured: false };
+  let commercialState = { pricing: [], profiles: [], renewals: [], invoices: [], invoiceEvents: {}, orderForms: {}, selectedOrgId: '', selectedInvoiceId: '', stripeConfigured: false };
   function invoiceStatusPill(status){ const s=String(status||'draft').toLowerCase(); const cls=s==='paid'?'active':(s==='void'?'disabled':''); return `<span class="commercial-pill ${cls}">${escapeHtml(s)}</span>`; }
   function renderInvoiceCustomerList(){
     if(!els.invoiceList) return;
@@ -2572,8 +2572,10 @@ document.addEventListener('DOMContentLoaded',function(){
       }).join('') || '<div class="lead-muted">No active pricing items. Seed or add items first.</div>'}</div></div>
       <div class="full"><label class="lead-muted">Notes</label><textarea id="invNotes" placeholder="Optional invoice notes"></textarea></div>
       <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="customerPortalBtn" class="btn" type="button">Open Stripe portal</button><button id="invoiceGenerateBtn" class="btn primary" type="button">Generate draft invoice</button></div>
-    </div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Lifecycle audit trail</h3><div id="invoiceAuditTrail">${renderInvoiceEvents(commercialState.selectedInvoiceId)}</div></div>`;
+    </div>${renderOrderFormPanel(profile)}<div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Invoice history</h3>${historyHtml}</div><div style="margin-top:16px"><h3 style="font-size:15px;margin:0 0 8px">Lifecycle audit trail</h3><div id="invoiceAuditTrail">${renderInvoiceEvents(commercialState.selectedInvoiceId)}</div></div>`;
     syncBundleExclusivity();
+    fillOrderFormFields(orgId);
+    if(commercialState.orderForms[orgId] === undefined) loadOrderForm(orgId);
   }
   // If a bundle row is checked, its member pages are covered by that bundle's
   // price — force them unchecked and disabled so they can't accidentally be
@@ -2604,6 +2606,131 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('change', e=>{
     if(e.target && e.target.matches('#invItemList [data-inv-catalogue]')) syncBundleExclusivity();
   });
+  document.addEventListener('click', e=>{
+    if(!e.target) return;
+    if(e.target.id === 'orderFormSaveBtn'){ saveOrderForm(false); return; }
+    if(e.target.id === 'orderFormOpenBtn'){ saveOrderForm(true); return; }
+  });
+  // ── Agreement pack: Order Form ─────────────────────────────────────────
+  // The document a client signs off before any money moves. Terms are saved
+  // to the contract record so the Order Form can be regenerated identically
+  // later, and so the signed status is visible on the contracts dashboard.
+  function renderOrderFormPanel(profile){
+    return `<div style="margin-top:18px;border:1px solid var(--gray-600,#2e3238);border-radius:12px;padding:14px">
+      <h3 style="font-size:15px;margin:0 0 4px">Agreement pack — Order Form</h3>
+      <div class="lead-muted" style="margin-bottom:10px">Fill in the agreed terms, then open the Order Form to print or save as PDF for signature. Issue the Stripe payment link once it comes back signed.</div>
+      <div class="invoice-form-grid">
+        <div class="full"><label class="lead-muted">Plan title (appears on the agreement)</label><input id="ofTitle" placeholder="e.g. Protest Hub — Standalone Package"></div>
+        <div><label class="lead-muted">Client contact name</label><input id="ofContactName" value="${escapeHtml(profile.billing_contact_name||'')}" placeholder="Signatory name"></div>
+        <div><label class="lead-muted">Client contact email</label><input id="ofContactEmail" value="${escapeHtml(profile.billing_contact_email||'')}" placeholder="name@company.com"></div>
+        <div class="full"><label class="lead-muted">Client registered address</label><textarea id="ofAddress" placeholder="Address as it should appear on the agreement"></textarea></div>
+        <div><label class="lead-muted">Start date</label><input id="ofStart" type="date"></div>
+        <div><label class="lead-muted">Billing option</label><select id="ofCycle"><option value="monthly">Monthly</option><option value="annual">Annual, paid in advance</option><option value="client_choice">Client to choose on signature</option></select></div>
+        <div><label class="lead-muted">Initial term (months)</label><input id="ofTerm" type="number" min="1" value="12"></div>
+        <div><label class="lead-muted">Notice period (days)</label><input id="ofNotice" type="number" min="0" value="30"></div>
+        <div><label class="lead-muted">User seats included</label><input id="ofSeats" type="number" min="0" placeholder="6"></div>
+        <div><label class="lead-muted">Monthly price £</label><input id="ofMonthly" type="number" min="0" step="0.01" value="${Number(profile.monthly_value||0)}"></div>
+        <div><label class="lead-muted">Annual discount %</label><input id="ofDiscount" type="number" min="0" step="0.01" value="10"></div>
+        <div><label class="lead-muted">Agreement status</label><select id="ofStatus"><option value="draft">Draft</option><option value="sent">Sent</option><option value="awaiting_signature">Awaiting signature</option><option value="active">Signed / active</option></select></div>
+        <div class="full"><label class="lead-muted">Modules included (one per line)</label><textarea id="ofModules" placeholder="Protest Hub&#10;Protest Records"></textarea></div>
+        <div class="full"><label class="lead-muted">Documents incorporated (one per line — leave blank for the standard five)</label><textarea id="ofDocuments" placeholder="CityIntel Terms of Service&#10;CityIntel Privacy Policy&#10;Data Processing Agreement&#10;Service Level Agreement summary&#10;Sub-processor List"></textarea></div>
+        <div class="full"><label class="lead-muted">Additional terms (optional)</label><textarea id="ofNotes" placeholder="Anything agreed outside the standard terms"></textarea></div>
+        <div class="full"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input id="ofAutoRenew" type="checkbox" checked> Automatically renews at the end of the initial term</label></div>
+        <div class="full" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center">
+          <span class="lead-muted" id="orderFormMsg"></span>
+          <button class="btn" id="orderFormSaveBtn" type="button">Save terms</button>
+          <button class="btn primary" id="orderFormOpenBtn" type="button">Save &amp; open Order Form</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function orderFormPayload(){
+    const v = id => document.getElementById(id);
+    return {
+      contract_title: v('ofTitle')?.value || '',
+      client_contact_name: v('ofContactName')?.value || '',
+      client_contact_email: v('ofContactEmail')?.value || '',
+      client_address: v('ofAddress')?.value || '',
+      contract_start_date: v('ofStart')?.value || '',
+      billing_cycle: v('ofCycle')?.value || 'monthly',
+      term_months: Number(v('ofTerm')?.value || 12),
+      notice_days: Number(v('ofNotice')?.value || 30),
+      seats_included: Number(v('ofSeats')?.value || 0),
+      monthly_price: Number(v('ofMonthly')?.value || 0),
+      annual_discount_percent: Number(v('ofDiscount')?.value || 0),
+      modules_included: v('ofModules')?.value || '',
+      documents_incorporated: v('ofDocuments')?.value || '',
+      notes: v('ofNotes')?.value || '',
+      contract_status: v('ofStatus')?.value || 'draft',
+      auto_renewal: v('ofAutoRenew')?.checked ? 1 : 0
+    };
+  }
+
+  // Populate the panel from a previously saved Order Form. Runs after the
+  // builder has rendered, so it writes into the inputs rather than fighting
+  // the template for control of their default values.
+  function fillOrderFormFields(orgId){
+    const saved = commercialState.orderForms[orgId]?.contract;
+    if(!saved || !document.getElementById('ofTitle')) return;
+    const set = (id, val) => { const el = document.getElementById(id); if(el != null && val != null && val !== '') el.value = val; };
+    set('ofTitle', saved.contract_title);
+    set('ofContactName', saved.client_contact_name);
+    set('ofContactEmail', saved.client_contact_email);
+    set('ofAddress', saved.client_address);
+    set('ofStart', saved.contract_start_date);
+    set('ofCycle', saved.billing_cycle);
+    set('ofTerm', saved.term_months);
+    set('ofNotice', saved.notice_days);
+    set('ofSeats', saved.seats_included);
+    set('ofMonthly', saved.monthly_price);
+    set('ofDiscount', saved.annual_discount_percent);
+    set('ofModules', saved.modules_included);
+    set('ofDocuments', saved.documents_incorporated);
+    set('ofNotes', saved.notes);
+    set('ofStatus', saved.contract_status);
+    const auto = document.getElementById('ofAutoRenew');
+    if(auto) auto.checked = Number(saved.auto_renewal) === 1;
+    const msg = document.getElementById('orderFormMsg');
+    if(msg) msg.textContent = `${saved.contract_reference || 'Saved'} · last updated ${fmtDate(saved.updated_at)}`;
+  }
+
+  async function loadOrderForm(orgId){
+    if(!orgId) return null;
+    try{
+      const data = await api('/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/order-form');
+      commercialState.orderForms[orgId] = data;
+      fillOrderFormFields(orgId);
+      return data;
+    }catch(e){
+      console.warn('order form load failed', e);
+      commercialState.orderForms[orgId] = null;
+      return null;
+    }
+  }
+
+  async function saveOrderForm(openAfter){
+    const orgId = commercialState.selectedOrgId;
+    if(!orgId) return alert('Select a customer profile first.');
+    const msg = document.getElementById('orderFormMsg');
+    if(msg) msg.textContent = 'Saving…';
+    try{
+      const payload = orderFormPayload();
+      if(!payload.monthly_price) throw new Error('Enter the monthly price before generating the agreement.');
+      const existing = commercialState.orderForms[orgId]?.contract;
+      if(existing?.id) payload.contract_id = existing.id;
+      const data = await api('/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/order-form', { method:'POST', body:JSON.stringify(payload) });
+      commercialState.orderForms[orgId] = data;
+      const t = data.terms || {};
+      if(msg) msg.textContent = `Saved ${data.contract?.contract_reference||''} · due to start ${money(t.dueToStart||0)} · term total ${money(t.contractValue||0)}`;
+      // Opened in a new tab, so the document URL carries a short-lived signed
+      // token instead of an auth header.
+      if(openAfter && data.doc_url) window.open(data.doc_url, '_blank');
+    }catch(e){
+      if(msg) msg.textContent = 'Order Form failed: ' + (e.message || e);
+    }
+  }
+
   async function generateInvoice(){
     const orgId = commercialState.selectedOrgId; if(!orgId) return alert('Select a customer profile first.');
     const items = Array.from(document.querySelectorAll('[data-inv-catalogue]:checked')).map(cb=>{ const id=cb.getAttribute('data-inv-catalogue'); const price=document.querySelector(`[data-inv-price="${CSS.escape(id)}"]`)?.value||0; const qty=document.querySelector(`[data-inv-qty="${CSS.escape(id)}"]`)?.value||1; const cat=(commercialState.pricing||[]).find(p=>String(p.id)===String(id)); return { catalogue_id:id, description:cat?.item_name||'CityIntel service', quantity:Math.max(1,Number(qty||1)), unit_price:Number(price||0) }; });
