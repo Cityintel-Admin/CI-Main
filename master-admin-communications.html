@@ -649,6 +649,8 @@
 <option value="morris">Morris</option>
 <option value="unassigned">Unassigned</option>
 </select>
+<span id="meetingRealtimeKitStatus" class="lead-status" title="Cloudflare RealtimeKit connection status">RealtimeKit: checking…</span>
+<button class="btn" id="meetingRealtimeKitCheck" type="button">Test video service</button>
 <button class="btn" id="meetingDiaryRefresh" type="button">Refresh</button>
 <button class="btn primary" id="meetingDiaryAdd" type="button">＋ Add meeting</button>
 </div>
@@ -4924,10 +4926,11 @@
 <div><label for="meetingOwner">Owner</label><select id="meetingOwner"><option value="unassigned">Unassigned</option><option value="carlton">Carlton</option><option value="morris">Morris</option></select></div>
 <div><label for="meetingContactName">Contact / potential client</label><input id="meetingContactName" maxlength="220" placeholder="Contact name"/></div>
 <div><label for="meetingContactEmail">Email address</label><input id="meetingContactEmail" maxlength="220" placeholder="name@example.com" type="email"/></div>
-<div><label for="meetingType">Meeting type</label><select id="meetingType"><option value="zoom">Zoom</option><option value="teams">Microsoft Teams</option><option value="google_meet">Google Meet</option><option value="telephone">Telephone</option><option value="in_person">In person</option><option value="other">Other</option></select></div>
+<div><label for="meetingType">Meeting type</label><select id="meetingType"><option value="cityintel">CityIntel Meeting</option><option value="zoom">Zoom</option><option value="teams">Microsoft Teams</option><option value="google_meet">Google Meet</option><option value="telephone">Telephone</option><option value="in_person">In person</option><option value="other">Other</option></select></div>
 <div><label for="meetingStatus">Status</label><select id="meetingStatus"><option value="scheduled">Scheduled</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="no_show">No-show</option></select></div>
-<div class="full"><label for="meetingLink">Meeting / joining link</label><input id="meetingLink" maxlength="1500" placeholder="Paste a Teams, Meet or existing Zoom link — or generate one below" type="url"/></div>
-<div class="full"><label class="meeting-check"><input id="meetingCreateZoom" type="checkbox"/>Generate a scheduled Zoom meeting and populate the joining link automatically</label><div class="lead-muted" style="margin-top:5px">When editing an existing linked Zoom meeting, CityIntel will also try to synchronise title, date, duration and agenda. The diary edit will still save if Zoom permissions temporarily prevent that synchronisation.</div></div>
+<div class="full"><label for="meetingLink">External meeting / joining link</label><input id="meetingLink" maxlength="1500" placeholder="Paste a Teams, Meet or existing Zoom link. CityIntel rooms are provisioned separately." type="url"/></div>
+<div class="full" id="meetingCityIntelProvisionRow"><label class="meeting-check"><input id="meetingCreateCityIntel" type="checkbox"/>Provision a CityIntel video room using Cloudflare RealtimeKit</label><div class="lead-muted" style="margin-top:5px">M1A.1 provisions the secure video room and stores its provider ID in the diary. The branded join room and guest links are added in M1A.2.</div></div>
+<div class="full" id="meetingZoomProvisionRow"><label class="meeting-check"><input id="meetingCreateZoom" type="checkbox"/>Generate a scheduled Zoom meeting and populate the joining link automatically</label><div class="lead-muted" style="margin-top:5px">When editing an existing linked Zoom meeting, CityIntel will also try to synchronise title, date, duration and agenda. The diary edit will still save if Zoom permissions temporarily prevent that synchronisation.</div></div>
 <div class="full"><label for="meetingAgenda">Agenda</label><textarea id="meetingAgenda" maxlength="4000" placeholder="Discussion points or client-facing agenda"></textarea></div>
 <div class="full"><label for="meetingNotes">Internal notes</label><textarea id="meetingNotes" maxlength="8000" placeholder="Internal preparation notes, follow-ups or context"></textarea></div>
 </div>
@@ -4967,6 +4970,11 @@
   const meetingStatusEl = document.getElementById('meetingStatus');
   const linkEl = document.getElementById('meetingLink');
   const createZoomEl = document.getElementById('meetingCreateZoom');
+  const createCityIntelEl = document.getElementById('meetingCreateCityIntel');
+  const cityIntelProvisionRow = document.getElementById('meetingCityIntelProvisionRow');
+  const zoomProvisionRow = document.getElementById('meetingZoomProvisionRow');
+  const realtimeKitStatusEl = document.getElementById('meetingRealtimeKitStatus');
+  const realtimeKitCheckBtn = document.getElementById('meetingRealtimeKitCheck');
   const agendaEl = document.getElementById('meetingAgenda');
   const notesEl = document.getElementById('meetingNotes');
 
@@ -4996,7 +5004,7 @@
     try{return new Date(iso).toLocaleString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return iso||'—';}
   }
   function isSameLocalDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
-  function typeLabel(v){return ({zoom:'Zoom',teams:'Microsoft Teams',google_meet:'Google Meet',telephone:'Telephone',in_person:'In person',other:'Other'})[v]||String(v||'Other').replace(/_/g,' ');}
+  function typeLabel(v){return ({cityintel:'CityIntel Meeting',zoom:'Zoom',teams:'Microsoft Teams',google_meet:'Google Meet',telephone:'Telephone',in_person:'In person',other:'Other'})[v]||String(v||'Other').replace(/_/g,' ');}
   function statusLabel(v){return String(v||'scheduled').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());}
   function ownerLabel(v){return ({carlton:'Carlton',morris:'Morris',unassigned:'Unassigned'})[v]||'Unassigned';}
   function currentOwner(){
@@ -5004,6 +5012,35 @@
     if(email.includes('morris')) return 'morris';
     if(email.includes('carlton')||email.includes('cjladm')) return 'carlton';
     return 'unassigned';
+  }
+  function syncProviderControls(){
+    const type=String(typeEl?.value||'zoom');
+    if(cityIntelProvisionRow) cityIntelProvisionRow.style.display=type==='cityintel'?'':'none';
+    if(zoomProvisionRow) zoomProvisionRow.style.display=type==='zoom'?'':'none';
+    if(type!=='zoom'&&createZoomEl) createZoomEl.checked=false;
+    if(type!=='cityintel'&&createCityIntelEl) createCityIntelEl.checked=false;
+    if(linkEl){
+      linkEl.disabled=type==='cityintel';
+      linkEl.placeholder=type==='cityintel'?'CityIntel host/guest links arrive in M1A.2':'Paste an external meeting link — or generate Zoom when selected';
+    }
+  }
+  async function checkRealtimeKit(){
+    if(!realtimeKitStatusEl)return;
+    realtimeKitStatusEl.className='lead-status';
+    realtimeKitStatusEl.textContent='RealtimeKit: checking…';
+    if(realtimeKitCheckBtn) realtimeKitCheckBtn.disabled=true;
+    try{
+      const res=await fetch(`${API}/api/admin/realtimekit/status`,{headers:authH(),cache:'no-store'});
+      const d=await res.json().catch(()=>({}));
+      if(!res.ok||!d.ok||!d.connected)throw new Error(d.error||`Connection failed: ${res.status}`);
+      realtimeKitStatusEl.className='lead-status approved';
+      realtimeKitStatusEl.textContent='RealtimeKit: connected';
+      realtimeKitStatusEl.title=`Cloudflare RealtimeKit connected · checked ${new Date(d.checkedAt||Date.now()).toLocaleTimeString('en-GB')}`;
+    }catch(e){
+      realtimeKitStatusEl.className='lead-status rejected';
+      realtimeKitStatusEl.textContent='RealtimeKit: unavailable';
+      realtimeKitStatusEl.title=String(e.message||e);
+    }finally{if(realtimeKitCheckBtn)realtimeKitCheckBtn.disabled=false;}
   }
   function populateOrgOptions(orgs){
     if(!orgOptionsEl) return;
@@ -5057,6 +5094,12 @@
       const contact=[m.contact_name,m.contact_email].filter(Boolean);
       const org=m.org_name||'Prospective / not assigned';
       const linkBtn=m.meeting_link&&m.status!=='cancelled'?`<a class="lead-action-btn approve" href="${esc(m.meeting_link)}" rel="noopener noreferrer" target="_blank">Open link</a>`:'';
+      const rtkReady=String(m.realtimekit_meeting_id||'').trim();
+      const roomBtn=m.meeting_type==='cityintel'
+        ? (rtkReady
+          ? `<span class="lead-status approved" title="RealtimeKit room provisioned">Room ready</span>`
+          : `<button class="lead-action-btn approve" data-meeting-action="provision-cityintel" data-id="${esc(m.id)}">Provision room</button>`)
+        : '';
       const stateActions=m.status==='scheduled'
         ? `<button class="lead-action-btn approve" data-meeting-action="complete" data-id="${esc(m.id)}">Complete</button><button class="lead-action-btn reject" data-meeting-action="cancel" data-id="${esc(m.id)}">Cancel</button>`
         : `<button class="lead-action-btn reply" data-meeting-action="reopen" data-id="${esc(m.id)}">Reopen</button>`;
@@ -5068,7 +5111,7 @@
         <td>${esc(ownerLabel(m.owner_key))}</td>
         <td><span class="meeting-type-chip">${esc(typeLabel(m.meeting_type))}</span></td>
         <td><span class="meeting-status ${esc(m.status)}">${esc(statusLabel(m.status))}</span></td>
-        <td><div class="meeting-actions">${linkBtn}<button class="lead-action-btn reply" data-meeting-action="edit" data-id="${esc(m.id)}">Edit</button>${stateActions}</div></td>
+        <td><div class="meeting-actions">${roomBtn}${linkBtn}<button class="lead-action-btn reply" data-meeting-action="edit" data-id="${esc(m.id)}">Edit</button>${stateActions}</div></td>
       </tr>`;
     }).join('');
   }
@@ -5087,13 +5130,13 @@
   }
   function resetForm(){
     editingId=''; leadContext=null;
-    titleEl.value=''; startEl.value=nextSlot(); durationEl.value='30'; orgNameEl.value=''; orgIdEl.value=''; ownerEl.value=currentOwner(); contactNameEl.value=''; contactEmailEl.value=''; typeEl.value='zoom'; meetingStatusEl.value='scheduled'; linkEl.value=''; createZoomEl.checked=false; agendaEl.value=''; notesEl.value='';
+    titleEl.value=''; startEl.value=nextSlot(); durationEl.value='30'; orgNameEl.value=''; orgIdEl.value=''; ownerEl.value=currentOwner(); contactNameEl.value=''; contactEmailEl.value=''; typeEl.value='zoom'; meetingStatusEl.value='scheduled'; linkEl.value=''; createZoomEl.checked=false; createCityIntelEl.checked=false; syncProviderControls(); agendaEl.value=''; notesEl.value='';
   }
   function openModal(seed={}){
     resetForm(); editingId=seed.id||'';
     modalTitle.textContent=editingId?'Edit meeting':'Add meeting';
     modalHint.textContent=seed.append_to_reply?'Schedule the meeting, create its Zoom link and add the invitation to the selected Lead Inbox reply.':'Add a prospect, customer or internal meeting to the Master Admin diary.';
-    titleEl.value=seed.title||''; startEl.value=seed.scheduled_start?toLocalInput(seed.scheduled_start):nextSlot(); durationEl.value=String(seed.duration_minutes||30); orgNameEl.value=seed.org_name||''; orgIdEl.value=seed.org_id||''; ownerEl.value=seed.owner_key||currentOwner(); contactNameEl.value=seed.contact_name||''; contactEmailEl.value=seed.contact_email||''; typeEl.value=seed.meeting_type||'zoom'; meetingStatusEl.value=seed.status||'scheduled'; linkEl.value=seed.meeting_link||''; createZoomEl.checked=!!seed.create_zoom; agendaEl.value=seed.agenda||''; notesEl.value=seed.notes||'';
+    titleEl.value=seed.title||''; startEl.value=seed.scheduled_start?toLocalInput(seed.scheduled_start):nextSlot(); durationEl.value=String(seed.duration_minutes||30); orgNameEl.value=seed.org_name||''; orgIdEl.value=seed.org_id||''; ownerEl.value=seed.owner_key||currentOwner(); contactNameEl.value=seed.contact_name||''; contactEmailEl.value=seed.contact_email||''; typeEl.value=seed.meeting_type||'zoom'; meetingStatusEl.value=seed.status||'scheduled'; linkEl.value=seed.meeting_link||''; createZoomEl.checked=!!seed.create_zoom; createCityIntelEl.checked=!!seed.create_cityintel || (typeEl.value==='cityintel'&&!seed.realtimekit_meeting_id); syncProviderControls(); agendaEl.value=seed.agenda||''; notesEl.value=seed.notes||'';
     leadContext=seed.append_to_reply?{appendToReply:true,lead_id:seed.lead_id||'',conversation_id:seed.conversation_id||''}:null;
     modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); setTimeout(()=>titleEl.focus(),40);
   }
@@ -5111,7 +5154,7 @@
       org_id:orgIdEl.value||'', org_name:String(orgNameEl.value||'').trim(),
       contact_name:String(contactNameEl.value||'').trim(), contact_email:email,
       owner_key:ownerEl.value||'unassigned', meeting_type:typeEl.value||'zoom', status:meetingStatusEl.value||'scheduled',
-      meeting_link:String(linkEl.value||'').trim(), create_zoom:!!createZoomEl.checked,
+      meeting_link:typeEl.value==='cityintel'?'':String(linkEl.value||'').trim(), create_zoom:!!createZoomEl.checked, create_cityintel:!!createCityIntelEl.checked,
       agenda:String(agendaEl.value||'').trim(), notes:String(notesEl.value||'').trim(),
       source:leadContext?'lead_inbox':'manual', lead_id:leadContext?.lead_id||'', conversation_id:leadContext?.conversation_id||''
     };
@@ -5126,10 +5169,21 @@
         const lines=[`Meeting: ${m.title||title}`,`Date: ${fmtDateTime(m.scheduled_start||payload.scheduled_start)}`,`Join Zoom meeting: ${m.meeting_link}`,m.zoom_password?`Passcode: ${m.zoom_password}`:''].filter(Boolean).join('\n');
         if(reply) reply.value=reply.value?`${reply.value}\n\n${lines}`:lines;
       }
-      const zoomWarning=String(d?.zoom_sync?.warning||d?.warning||'').trim();
+      const providerWarning=String(d?.realtimekit_sync?.warning||d?.zoom_sync?.warning||d?.warning||'').trim();
       closeModal(); await loadMeetings();
-      if(zoomWarning) alert(zoomWarning);
+      if(providerWarning) alert(providerWarning);
     }catch(e){alert(`Unable to save meeting: ${e.message||e}`);}finally{saveBtn.disabled=false;saveBtn.textContent=old||'Save meeting';}
+  }
+  async function provisionCityIntel(id){
+    const m=meetings.find(x=>String(x.id)===String(id)); if(!m)return;
+    if(!confirm(`Provision a CityIntel RealtimeKit room for “${m.title}”?`))return;
+    try{
+      const res=await fetch(`${API}/api/admin/meetings/${encodeURIComponent(id)}/realtimekit/provision`,{method:'POST',headers:authH(),body:'{}'});
+      const d=await res.json().catch(()=>({}));
+      if(!res.ok||!d.ok)throw new Error(d.error||'Room provisioning failed');
+      await loadMeetings();
+      await checkRealtimeKit();
+    }catch(e){alert(`Unable to provision CityIntel room: ${e.message||e}`);}
   }
   async function quickStatus(id,status){
     const m=meetings.find(x=>String(x.id)===String(id)); if(!m)return;
@@ -5145,14 +5199,15 @@
     const b=e.target.closest('[data-meeting-action]'); if(!b)return;
     const m=meetings.find(x=>String(x.id)===String(b.dataset.id)); if(!m)return;
     const a=b.dataset.meetingAction;
-    if(a==='edit')openModal(m); else if(a==='complete')quickStatus(m.id,'completed'); else if(a==='cancel')quickStatus(m.id,'cancelled'); else if(a==='reopen')quickStatus(m.id,'scheduled');
+    if(a==='edit')openModal(m); else if(a==='provision-cityintel')provisionCityIntel(m.id); else if(a==='complete')quickStatus(m.id,'completed'); else if(a==='cancel')quickStatus(m.id,'cancelled'); else if(a==='reopen')quickStatus(m.id,'scheduled');
   });
   addBtn?.addEventListener('click',()=>openModal()); refreshBtn?.addEventListener('click',loadMeetings);
   [searchEl,viewEl,ownerFilterEl].forEach(el=>el?.addEventListener(el===searchEl?'input':'change',render));
   closeBtn?.addEventListener('click',closeModal); cancelBtn?.addEventListener('click',closeModal); saveBtn?.addEventListener('click',saveMeeting);
   modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
   orgNameEl?.addEventListener('change',syncOrgId);
-  typeEl?.addEventListener('change',()=>{if(typeEl.value!=='zoom')createZoomEl.checked=false;});
+  typeEl?.addEventListener('change',syncProviderControls);
+  realtimeKitCheckBtn?.addEventListener('click',checkRealtimeKit);
   document.addEventListener('ci:master-admin-orgs-loaded',e=>populateOrgOptions(e.detail));
   populateOrgOptions(window.CIMasterAdminOrgs||[]);
 
@@ -5161,6 +5216,8 @@
     openFromLead(seed={}){openModal({...seed,scheduled_start:new Date(Date.now()+60*60000).toISOString(),duration_minutes:30,owner_key:currentOwner(),status:'scheduled'});},
     refresh:loadMeetings
   };
+  syncProviderControls();
+  checkRealtimeKit();
   loadMeetings();
 })();
 </script><script>
