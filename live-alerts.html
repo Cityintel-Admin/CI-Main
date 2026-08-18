@@ -1,4 +1,4 @@
-<!-- CityIntel Live Alerts v61 — Performance Isolation Stage 2: static protest dataset, protest merge and top protest ticker temporarily disabled; v60 media/camera isolation retained; Worker unchanged -->
+<!-- CityIntel Live Alerts v62 — Core Render Isolation: repeated alert-map rebuilds, automatic Live Tracking refresh and periodic full feed-card rerenders temporarily disabled; v61 isolation retained; Worker unchanged -->
      
 <!doctype html>
 <html lang="en">
@@ -88,7 +88,12 @@
     globalCams: true,
     protestStaticData: true,
     protestMerge: true,
-    protestTicker: true
+    protestTicker: true,
+
+    // v62 Stage 3 — isolate the remaining high-cost main-thread render paths.
+    liveTrackingAutoRefresh: true,
+    liveAlertMapAutoRefresh: true,
+    periodicFullFeedRerender: true
   });
 
   function ciApplyPerformanceIsolationUi(){
@@ -7525,7 +7530,8 @@ async function loadPersistentEventsForFeed(feed){
 // Pull cached alerts into every visible feed and queue without waiting for a manual refresh.
 // This bridges Worker/D1 `/api/live-alerts/cache` -> cards -> counters -> map.
 async function syncPersistentCacheToFeeds(opts = {}){
-  const renderCards = opts.renderCards !== false;
+  const ciRenderIsolation = !!window.CI_LIVE_ALERTS_PERF_ISOLATION?.periodicFullFeedRerender;
+  const renderCards = opts.renderCards !== false && !(opts.lightweight === true);
   const feeds = (typeof loadFeeds === 'function' ? loadFeeds() : []) || [];
   if (!Array.isArray(feeds) || !feeds.length) return [];
 
@@ -7549,7 +7555,9 @@ async function syncPersistentCacheToFeeds(opts = {}){
     try { archiveMerge(feed.id, matched); } catch (_) {}
     try { storeFeedEvents(feed.id, matched); } catch (_) {}
     try { saveUiCache(feed.id, matched); } catch (_) {}
-    try { if (typeof ciAlertStoreMerge === 'function') ciAlertStoreMerge(feed, matched); } catch (_) {}
+    if (!(opts.lightweight === true && ciRenderIsolation)) {
+      try { if (typeof ciAlertStoreMerge === 'function') ciAlertStoreMerge(feed, matched); } catch (_) {}
+    }
 
     const card = document.querySelector(`.feed-card[data-id="${feed.id}"]`);
     const renderSource = dedupeClientEvents([...(loadArchive(feed.id) || []), ...matched]);
@@ -12358,7 +12366,11 @@ renderFeeds()
 // Keep D1/Worker cache flowing into the UI while the page stays open.
 setInterval(()=>{
   if (typeof syncPersistentCacheToFeeds === 'function') {
-    syncPersistentCacheToFeeds({ renderCards:true }).catch(()=>{});
+    const isolate = !!window.CI_LIVE_ALERTS_PERF_ISOLATION?.periodicFullFeedRerender;
+    syncPersistentCacheToFeeds({
+      renderCards: !isolate,
+      lightweight: isolate
+    }).catch(()=>{});
   }
 }, 60 * 1000);
 
@@ -14022,6 +14034,12 @@ const assetIcon = L.divIcon({
 
   if (liveTrackingToggleBtn) {
     liveTrackingToggleBtn.addEventListener('click', () => {
+      if (window.CI_LIVE_ALERTS_PERF_ISOLATION?.liveTrackingAutoRefresh) {
+        liveTrackingEnabled = false;
+        liveTrackingToggleBtn.classList.remove('active');
+        liveTrackingToggleBtn.textContent = 'Off · test';
+        return;
+      }
       liveTrackingEnabled = !liveTrackingEnabled;
       liveTrackingToggleBtn.classList.toggle('active', liveTrackingEnabled);
       liveTrackingToggleBtn.textContent = liveTrackingEnabled ? 'Loading…' : 'Off';
@@ -14029,8 +14047,18 @@ const assetIcon = L.divIcon({
     });
   }
 
-  setTimeout(()=>refreshLiveTrackingOverlay().catch(()=>{}), 1500);
-  setInterval(()=>refreshLiveTrackingOverlay().catch(()=>{}), 60000);
+  if (!window.CI_LIVE_ALERTS_PERF_ISOLATION?.liveTrackingAutoRefresh) {
+    setTimeout(()=>refreshLiveTrackingOverlay().catch(()=>{}), 1500);
+    setInterval(()=>refreshLiveTrackingOverlay().catch(()=>{}), 60000);
+  } else {
+    liveTrackingEnabled = false;
+    try { liveTrackingLayer.clearLayers(); } catch (_) {}
+    if (liveTrackingToggleBtn) {
+      liveTrackingToggleBtn.classList.remove('active');
+      liveTrackingToggleBtn.textContent = 'Off · test';
+      liveTrackingToggleBtn.title = 'Automatic Live Tracking temporarily disabled for v62 render-isolation testing';
+    }
+  }
 
   map.on('moveend zoomend', () => {
     if (jamcamEnabled) {
@@ -14239,11 +14267,16 @@ const assetIcon = L.divIcon({
     }catch(e){console.warn('CityIntel live alert marker refresh failed',e);}
   }
   window.ciRefreshLiveAlertMarkers=ciRefreshLiveAlertMarkers;
-  window.addEventListener('ci:alertStoreUpdated',()=>setTimeout(ciRefreshLiveAlertMarkers,40));
-  window.addEventListener('ci:queueUpdated',()=>setTimeout(ciRefreshLiveAlertMarkers,40));
-  setTimeout(ciRefreshLiveAlertMarkers,1800);
-  setTimeout(ciRefreshLiveAlertMarkers,5000);
-  setInterval(ciRefreshLiveAlertMarkers,60000);
+  if (!window.CI_LIVE_ALERTS_PERF_ISOLATION?.liveAlertMapAutoRefresh) {
+    window.addEventListener('ci:alertStoreUpdated',()=>setTimeout(ciRefreshLiveAlertMarkers,40));
+    window.addEventListener('ci:queueUpdated',()=>setTimeout(ciRefreshLiveAlertMarkers,40));
+    setTimeout(ciRefreshLiveAlertMarkers,1800);
+    setTimeout(ciRefreshLiveAlertMarkers,5000);
+    setInterval(ciRefreshLiveAlertMarkers,60000);
+  } else {
+    try { ciLiveAlertLayer.clearLayers(); } catch (_) {}
+    window.CILiveAlertMappedCount = 0;
+  }
   // Colour-code protest/admin-post markers by risk, matching the same
   // palette used for risk chips elsewhere (high/medium/low), so the map
   // itself communicates severity rather than every post looking identical.
