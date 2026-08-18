@@ -8,7 +8,264 @@ window.alertsData =[
 
 
 
+// CityIntel September 2026 France verified batch 2
+// Mouvement du 26 Septembre regional mobilisations — 19 August 2026
 
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Angers",
+  city: "Angers",
+  lat: 47.4713123,
+  lng: -0.5450472,
+  address: "Place du Général Leclerc",
+  postcode: "49000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed an Angers mobilisation at Place du Général Leclerc from 14:00 on Saturday 26 September 2026 as part of the nationwide day of action for climate, peace and solidarity. An assembly to decide follow-on activity is scheduled at the same location from approximately 17:00. Risk assessed as Medium because the central-city gathering may generate substantial pedestrian activity, traffic restrictions and police or municipal liaison. No violent or deliberately obstructive action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Reims",
+  city: "Reims",
+  lat: 49.25477,
+  lng: 4.04074,
+  address: "Maison régionale des Syndicats, 15 Boulevard de la Paix",
+  postcode: "51100",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at the Maison des Syndicats in Reims from 14:00 on Saturday 26 September 2026. Participants will join the national campaign for climate action, peace, solidarity and social and ecological justice. A public assembly is scheduled at the same site at approximately 17:00 to determine further activity. Risk assessed as Medium because a coordinated central Reims mobilisation may require crowd management, temporary traffic controls and routine police liaison."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Toulon",
+  city: "Toulon",
+  lat: 43.125826,
+  lng: 5.930468,
+  address: "Place de la Liberté",
+  postcode: "83000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "Organisers of the nationwide 26 September mobilisation have confirmed a Toulon gathering at Place de la Liberté from 14:00 on Saturday 26 September 2026. Participants will mobilise around climate protection, peace, solidarity and ecological and social justice. Risk assessed as Medium because Place de la Liberté is a major central transport and civic space and the gathering may affect bus movements, road access and pedestrian circulation. No violent action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Calais",
+  city: "Calais",
+  lat: 50.95269,
+  lng: 1.85458,
+  address: "Hôtel de Ville, Place du Soldat Inconnu",
+  postcode: "62100",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Calais mobilisation outside the Hôtel de Ville from 14:00 on Saturday 26 September 2026. The action forms part of the nationwide campaign for climate action, peace and solidarity. Organisers plan a follow-on public assembly in Parc Saint-Pierre from approximately 17:00. Risk assessed as Medium because the gathering will take place within the principal civic area and may require traffic, pedestrian and municipal-security management."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Bayonne",
+  city: "Bayonne",
+  lat: 43.49292,
+  lng: -1.47488,
+  address: "Place de la Liberté",
+  postcode: "64100",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Bayonne mobilisation at Place de la Liberté from 14:00 on Saturday 26 September 2026. Participants will join the coordinated national campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because the gathering will occur directly in Bayonne's civic centre outside the Hôtel de Ville and may require temporary traffic restrictions, stewarding and police or municipal liaison. No specific hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Vannes",
+  city: "Vannes",
+  lat: 47.656111,
+  lng: -2.757222,
+  address: "Place des Lices",
+  postcode: "56000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Vannes mobilisation at Place des Lices from 14:00 on Saturday 26 September 2026, followed by an assembly at approximately 17:00. Participants will mobilise around climate, peace, solidarity and social and ecological justice. Risk assessed as Medium because the historic central square is heavily pedestrianised and commercially active and a sizeable gathering could affect access, local traffic and normal city-centre activity."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Douai",
+  city: "Douai",
+  lat: 50.367714,
+  lng: 3.082266,
+  address: "Place d'Armes",
+  postcode: "59500",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at Place d'Armes in Douai from 14:00 on Saturday 26 September 2026. Organisers plan a public assembly at the same location from approximately 17:00 to discuss follow-on action. The mobilisation forms part of the national climate, peace and solidarity campaign. Risk assessed as Medium because the centrally located public gathering may require temporary traffic management, stewarding and police liaison."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Saint-Nazaire",
+  city: "Saint-Nazaire",
+  lat: 47.27605,
+  lng: -2.20407,
+  address: "Place de l'Amérique Latine — map anchor at the adjoining submarine-base frontage",
+  postcode: "44600",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Saint-Nazaire mobilisation at Place de l'Amérique Latine from 14:00 on Saturday 26 September 2026. A follow-on public assembly is scheduled at the same location from approximately 17:00. Participants will mobilise around climate action, peace, solidarity and social and ecological justice. Risk assessed as Medium because the gathering will take place within the busy Ville-Port and submarine-base district and may affect pedestrian access, parking and traffic around the waterfront. The coordinate is anchored at the adjacent submarine-base frontage because the square itself does not have a dependable independently published point coordinate."
+},
+
+
+{
+  title: "National Hospital Public Service Mobilisation — 8 September",
+  city: "Paris",
+  lat: 48.852135,
+  lng: 2.309071,
+  address: "Nationwide hospital-sector mobilisation — Ministry of Health, 14 Avenue Duquesne used as Paris operational anchor; local actions nationwide",
+  postcode: "75007",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-08T12:00:00",
+  source: "https://sante-sociaux.cfdt.fr/sinformer/protection-sociale/fonction-publique-hospitaliere-8-septembre-le-silence-pour-alerter-la-mobilisation-pour-agir",
+  summary: "French hospital public-service workers have been called to a nationwide inter-union mobilisation on Tuesday 8 September 2026 under the theme 'On meurt en silence'. Participating health establishments are expected to organise visible symbolic actions, gatherings and action potentially extending to strike activity. The mobilisation concerns working conditions, staffing pressures and the condition of the public hospital service. No single national rally time or location has been published, so CityIntel's standard 12:00 timestamp has been applied and the Ministry of Health in Paris is used only as a transparent national operational anchor. Risk assessed as Medium because local staffing withdrawals and workplace actions may affect hospital services, although no public-order threat has been announced."
+},
+
+{
+  title: "Global Black Pride 2026 March and Rally",
+  city: "Paris",
+  lat: 48.886196,
+  lng: 2.353671,
+  address: "Square Léon, Goutte d'Or — march via Château Rouge and Château d'Eau to Place de la République",
+  postcode: "75018",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T14:00:00",
+  source: "https://globalblackpride.org/2026-march-rally/",
+  summary: "Global Black Pride has confirmed a major march and rally in Paris from 14:00 to 17:00 on Saturday 12 September 2026. Participants will depart from Square Léon in the Goutte d'Or, proceed through Château Rouge and Château d'Eau and finish at Place de la République. Organisers expect thousands of Black LGBTQ+ community members, allies and activists, with floats, regional delegations, speeches, cultural activity and community-support hubs. Risk assessed as Medium because the sizeable moving procession through northern and central Paris will require rolling road restrictions, police liaison, stewarding and crowd management. The organiser has not announced violent or deliberately disruptive action."
+},
+
+{
+  title: "National Higher Education and Research Mobilisation",
+  city: "Paris",
+  lat: 48.847650,
+  lng: 2.348692,
+  address: "Nationwide university and research mobilisation — Ministry of Higher Education and Research, 25 Rue de la Montagne Sainte-Geneviève used as Paris operational anchor; local actions TBC",
+  postcode: "75005",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T12:00:00",
+  source: "https://www.snptes.fr/doc_num.php?explnum_id=12085",
+  summary: "An inter-union coalition representing French higher education and research has called for a major nationwide mobilisation on Tuesday 15 September 2026, coinciding with the rentrée meeting of the CNESER. The action will oppose chronic underfunding of universities and public research, proposed increases or differentiation in student fees and restrictions affecting access to higher education, while demanding greater public investment and protection of academic freedom. Local institutions are being asked to develop their own action plans, so no single national rally point or time has been announced. CityIntel's standard 12:00 timestamp is therefore applied and the Ministry of Higher Education and Research is used only as a Paris operational anchor. Risk assessed as Medium because teaching, research and university administration may be disrupted across multiple institutions."
+},
+
+{
+  title: "CGT Health and Social Action National Strike",
+  city: "Paris",
+  lat: 48.852135,
+  lng: 2.309071,
+  address: "Nationwide health and social-action strike — Ministry of Health, 14 Avenue Duquesne used as Paris operational anchor; local actions nationwide",
+  postcode: "75007",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T12:00:00",
+  source: "https://orgasociaux.cgt.fr/mediatheque/plfss-2027-vers-lausterite-et-au-dela/",
+  summary: "CGT organisations in the health, social-action and social-protection sectors have called for a nationwide day of strike action and mobilisation on Tuesday 15 September 2026. The mobilisation opposes planned austerity measures affecting health services and social security and calls for increased wages and employment, stronger social-protection funding and preservation of collective social-security rights. Individual local demonstrations and picket arrangements have not yet been published, so CityIntel's default 12:00 timestamp has been used and the Ministry of Health is shown only as a transparent national operational anchor. Risk assessed as Medium because strike participation may disrupt healthcare, social-service and administrative operations across France."
+},
+
+{
+  title: "Climate Emergency Rally at Bercy",
+  city: "Paris",
+  lat: 48.841090,
+  lng: 2.377840,
+  address: "Ministry of the Economy and Finance, 139 Rue de Bercy",
+  postcode: "75012",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T19:30:00",
+  source: "https://www.solidaires.org/canicule-incendies-destructeurs-secheresse-nous-ne-devons-plus-vivre-ca/",
+  summary: "Union Solidaires and supporting climate campaigners have confirmed a major rally outside the Ministry of the Economy and Finance at Bercy from 19:30 to 21:00 on Tuesday 15 September 2026. The mobilisation follows concern over severe heat, destructive fires and drought and will call for sufficient public funding to adapt to and mitigate climate change and address its social, health and environmental impacts. Risk assessed as Medium because the evening gathering is located directly outside a high-security national government complex and may require police barriers, access controls and pedestrian management around Rue de Bercy. No blockade or violent action has been announced."
+},
+
+{
+  title: "CGT Rally Against Trade-Union Repression — Bordeaux",
+  city: "Bordeaux",
+  lat: 44.836488,
+  lng: -0.580985,
+  address: "Tribunal judiciaire de Bordeaux, 30 Rue des Frères Bonie",
+  postcode: "33000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-24T14:00:00",
+  source: "https://orgasociaux.cgt.fr/mediatheque/motion-du-54eme-congres-cgt-soutien-a-nos-5-camarades-de-la-mission-locale-de-merignac/",
+  summary: "The CGT has called for a mass rally outside Bordeaux's criminal court at 14:00 on Thursday 24 September 2026 in support of five CGT activists associated with Mission Locale Technowest de Mérignac who are due before the court. The union describes the case as an attack on trade-union rights and is mobilising around freedom of opinion, freedom of expression and opposition to anti-union repression and discrimination. Risk assessed as Medium because a potentially sizeable organised labour gathering will take place directly outside an active courthouse, likely requiring court-security measures, police liaison and controlled pedestrian access. No violent action has been announced."
+},
+
+{
+  title: "National Climate, Peace and Solidarity March — Paris",
+  city: "Paris",
+  lat: 48.867500,
+  lng: 2.363840,
+  address: "Place de la République — march to Bastille and return to République",
+  postcode: "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed the Paris mobilisation within the nationwide day of action for climate, peace, solidarity and ecological and social justice on Saturday 26 September 2026. A public village will open at Place de la République from 12:00, speeches will begin at 13:15 and the main march will depart at 14:00, following a République–Bastille–République route before an assembly begins at approximately 17:00. Risk assessed as Medium because the central-Paris procession will require substantial traffic controls, stewarding, police liaison and crowd management along major roads around République and Bastille. No specific violent intent has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Nantes",
+  city: "Nantes",
+  lat: 47.215036,
+  lng: -1.549115,
+  address: "Miroir d'eau, Square Élisa-Mercœur, opposite Château des Ducs de Bretagne",
+  postcode: "44000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "Organisers of the nationwide 26 September mobilisation have confirmed a Nantes gathering at the Miroir d'eau opposite the Château des Ducs de Bretagne at 14:00 on Saturday 26 September 2026. Participants will mobilise around climate action, peace, solidarity and ecological and social justice as part of the coordinated national programme. An onward public assembly is planned for approximately 17:00, although the final assembly location remains pending. Risk assessed as Medium because a sizeable city-centre mobilisation at a prominent pedestrian and tourist location may require traffic, crowd and police management. No violent or deliberately obstructive action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Le Mans",
+  city: "Le Mans",
+  lat: 48.007334,
+  lng: 0.198893,
+  address: "Place des Jacobins",
+  postcode: "72000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a climate, peace and solidarity mobilisation at Place des Jacobins in Le Mans from 14:00 on Saturday 26 September 2026. The action forms part of a nationwide campaign calling for urgent climate measures, ecological and social justice, peace and stronger solidarity. An assembly is scheduled to follow at the nearby Jardins de Tessé from approximately 17:00. Risk assessed as Medium because the central-city gathering and associated participant movement may require pedestrian management, traffic controls and routine police liaison. No violent or deliberately disruptive action has been announced."
+},
 
 {
   title: "Glasgow Armed Forces Careers Office Palestine Protest",
