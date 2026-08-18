@@ -7,6 +7,1407 @@ window.alertsData =[
 
 
 
+
+
+
+{
+  title: "Glasgow Armed Forces Careers Office Palestine Protest",
+  city: "Glasgow",
+  lat: 55.859634,
+  lng: -4.251694,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-02T11:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 2 September 2026. Campaigners will protest UK military cooperation with Israel and British military and surveillance activity connected to the conflict in Gaza while distributing information to members of the public. Risk assessed as Low because this is an established stationary demonstration with no procession, blockade or deliberate road obstruction announced. Localised pedestrian activity and routine security or police monitoring are possible around the recruitment office."
+},
+
+{
+  title: "Yeovil Does Pride 2026 March",
+  city: "Yeovil",
+  lat: 50.941345,
+  lng: -2.628260,
+  address: "Outside The Entertainer, 63 Middle Street at the bottom of Vicarage Street — march through town centre and Ninesprings",
+  postcode: "BA20 1LQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T12:00:00",
+  source: "https://yeovildoespride.co.uk/pride2026/",
+  summary: "Yeovil Does Pride has confirmed its 2026 Pride March for Saturday 5 September. Participants will gather on Middle Street outside The Entertainer, close to the bottom of Vicarage Street, with volunteers present from 11:00, a performance in the Triangle from 11:30 and the Pride March beginning at 12:00. The procession will travel through Yeovil town centre and continue through Ninesprings towards the location of the afternoon picnic and community programme. Participants will promote LGBTQ+ equality, visibility, inclusion and opposition to discrimination. Risk assessed as Medium because the moving town-centre procession will require stewarding and pedestrian and traffic management, although no specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Glasgow Armed Forces Careers Office Palestine Protest",
+  city: "Glasgow",
+  lat: 55.859634,
+  lng: -4.251694,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-09T11:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 9 September 2026. Campaigners will protest UK military cooperation with Israel and British military and surveillance activity connected to the conflict in Gaza while distributing information to members of the public. Risk assessed as Low because this is an established stationary demonstration with no procession, blockade or deliberate road obstruction announced. Localised pedestrian activity and routine security or police monitoring are possible around the recruitment office."
+},
+
+{
+  title: "Glasgow Armed Forces Careers Office Palestine Protest",
+  city: "Glasgow",
+  lat: 55.859634,
+  lng: -4.251694,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-16T11:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 16 September 2026. Campaigners will protest UK military cooperation with Israel and British military and surveillance activity connected to the conflict in Gaza while distributing information to members of the public. Risk assessed as Low because this is an established stationary demonstration with no procession, blockade or deliberate road obstruction announced. Localised pedestrian activity and routine security or police monitoring are possible around the recruitment office."
+},
+
+{
+  title: "Glasgow Armed Forces Careers Office Palestine Protest",
+  city: "Glasgow",
+  lat: 55.859634,
+  lng: -4.251694,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-23T11:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 23 September 2026. Campaigners will protest UK military cooperation with Israel and British military and surveillance activity connected to the conflict in Gaza while distributing information to members of the public. Risk assessed as Low because this is an established stationary demonstration with no procession, blockade or deliberate road obstruction announced. Localised pedestrian activity and routine security or police monitoring are possible around the recruitment office."
+},
+
+{
+  title: "Glasgow Armed Forces Careers Office Palestine Protest",
+  city: "Glasgow",
+  lat: 55.859634,
+  lng: -4.251694,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-30T11:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 30 September 2026. Campaigners will protest UK military cooperation with Israel and British military and surveillance activity connected to the conflict in Gaza while distributing information to members of the public. Risk assessed as Low because this is an established stationary demonstration with no procession, blockade or deliberate road obstruction announced. Localised pedestrian activity and routine security or police monitoring are possible around the recruitment office."
+},
+
+{
+  title: "Merton Pride 2026 March",
+  city: "Morden",
+  lat: 51.403074,
+  lng: -0.186952,
+  address: "Morden Hall Park, Morden Hall Road — march to Merton Abbey Mills",
+  postcode: "SM4 5JD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T14:00:00",
+  source: "https://mertonpride.co.uk/schedule/",
+  summary: "Merton Pride has confirmed its 2026 Pride March for Saturday 5 September, departing Morden Hall Park at 14:00 and proceeding along the River Wandle towards Merton Abbey Mills. The march follows a Pride Fair in Morden Hall Park from 10:00 to 14:00 and leads into the main Pride programme at Merton Abbey Mills. Participants will promote LGBTQ+ visibility, equality, inclusion and community solidarity. Risk assessed as Medium because the approximately one-mile moving procession will generate increased pedestrian activity and require stewarding and route management between the two event sites. No specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Pride in Gloucestershire 2026 March",
+  city: "Gloucester",
+  lat: 51.867563,
+  lng: -2.2477145,
+  address: "Gloucester Cathedral, 12 College Green — march through city centre to Gloucester Park",
+  postcode: "GL1 2LX",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T11:45:00",
+  source: "https://prideinglos.org.uk/",
+  summary: "Pride in Gloucestershire has confirmed its 2026 Pride March for Saturday 12 September. Participants will assemble outside Gloucester Cathedral from 11:00 before the procession departs at approximately 11:45 and travels through Gloucester city centre towards Gloucester Park, where arrival is expected at around 12:30. The mobilisation will promote LGBTQ+ visibility, equality, inclusion and community solidarity as part of the organisation's twentieth-anniversary Pride programme. Risk assessed as Medium because the moving city-centre procession will require stewarding, pedestrian management and temporary traffic controls along the route. No specific hostile counter-demonstration or security threat has been announced."
+},
+
+{
+  title: "Rushmoor Pride 2026 Parade",
+  city: "Farnborough",
+  lat: 51.285591,
+  lng: -0.761153,
+  address: "Village Hotel Farnborough, Business Park, Pinehurst Road — march to Princes Mead",
+  postcode: "GU14 7BF",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T11:30:00",
+  source: "https://www.facebook.com/rushmoorpride/",
+  summary: "Rushmoor Pride has confirmed its 2026 Pride March in Farnborough for Saturday 19 September. Current organiser information states that participants will gather at the Village Hotel before the procession sets off at approximately 11:30 and makes its way towards Princes Mead and the main Pride programme in Farnborough town centre. Participants will promote LGBTQ+ visibility, equality, acceptance and community inclusion. Risk assessed as Medium because the moving town-centre parade will require stewarding, pedestrian management and temporary traffic controls. Earlier listings showed a 12:00 departure, but CityIntel is using the more recent organiser-published 11:30 departure time."
+},
+
+{
+  title: "Trans Pride Birmingham 2026 March",
+  city: "Birmingham",
+  lat: 52.4752769,
+  lng: -1.8839068,
+  address: "The Custard Factory, Gibb Street — via the Bullring to Hippodrome Square",
+  postcode: "B9 4AA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://www.instagram.com/transpridebirmingham/",
+  summary: "Trans Pride Birmingham has confirmed its 2026 march for Saturday 19 September, departing the Custard Factory in Digbeth at 12:00. The procession will travel via the Bullring before finishing at Hippodrome Square, where speeches and a rally programme are scheduled from approximately 13:00. Organisers describe the route as just under one mile and the mobilisation will promote transgender rights, visibility, equality, healthcare access and opposition to discrimination. Risk assessed as Medium because the politically visible moving demonstration will pass through heavily used parts of central Birmingham and is likely to require stewarding, pedestrian management and police liaison. No specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Cumbria Pride 2026 Parade",
+  city: "Carlisle",
+  lat: 54.894671,
+  lng: -2.936247,
+  address: "Greenmarket / Bandstand by Zest, Carlisle city centre — parade to main Pride arena at Box Arena",
+  postcode: "CA3 8JE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:15:00",
+  source: "https://www.facebook.com/CumbriaPride/",
+  summary: "Cumbria Pride has confirmed its 2026 Pride Parade in Carlisle for Saturday 26 September, departing at 12:15 from the Bandstand by Zest in the city-centre Greenmarket area before proceeding towards the main Pride arena at Box Arena. The wider programme includes an LGBT+ information market in Carlisle city centre from 10:00 to 14:00 and the principal Pride event from 13:00 to 18:00. The parade will promote LGBTQ+ equality, visibility, inclusion and community solidarity. Risk assessed as Medium because the moving city-centre procession and associated Pride programme will generate significant pedestrian activity and require stewarding and temporary traffic management. No specific hostile counter-mobilisation or security threat has been announced."
+},
+
+{
+  title: "Eastleigh Pride 2026 Parade",
+  city: "Eastleigh",
+  lat: 50.969137,
+  lng: -1.351719,
+  address: "Coffee #1, 38 Market Street — parade through Eastleigh town centre to Leigh Road Recreation Ground",
+  postcode: "SO50 5RA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T11:45:00",
+  source: "https://www.instagram.com/eastleighpridecic/",
+  summary: "Eastleigh Pride has confirmed its 2026 Pride Parade for Saturday 5 September, beginning at 11:45 from the Market Street area outside Coffee #1 before proceeding through Eastleigh town centre towards the main Pride event at Leigh Road Recreation Ground. Participants will promote LGBTQIA+ equality, visibility, inclusion and opposition to discrimination. Risk assessed as Medium because the moving town-centre procession is expected to require stewarding, pedestrian management and temporary traffic controls. The event is organised as a peaceful community mobilisation and no specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Basildon Pride 2026 Parade",
+  city: "Basildon",
+  lat: 51.571136,
+  lng: 0.462817,
+  address: "Former Toys 'R' Us Building, Southernhay — march to Gloucester Park",
+  postcode: "SS14 1AZ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T11:00:00",
+  source: "https://www.basildonpride.co.uk/festival/2026",
+  summary: "Basildon Pride has confirmed its 2026 Pride Parade for Saturday 5 September, departing at 11:00 from the former Toys 'R' Us building on Southernhay. Participants will march from Basildon town centre to the Pride festival site in Gloucester Park while promoting LGBTQ+ equality, visibility, diversity and community inclusion. Risk assessed as Medium because the moving procession will cross the town-centre area and is likely to require stewarding, pedestrian management and temporary traffic controls along the route. No specific opposing demonstration or security threat has been announced."
+},
+
+{
+  title: "Derby Pride 2026 Parade",
+  city: "Derby",
+  lat: 52.931588,
+  lng: -1.505478,
+  address: "Main Markeaton Park car park, off Markeaton Island / Ashbourne Road — circular parade route through the park",
+  postcode: "DE22 4AA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T11:00:00",
+  source: "https://www.facebook.com/DerbyPrideLGBT/posts/derby-pride-2026-is-fast-approaching-get-your-advance-tickets-now-350-per-person/1066362105745066/",
+  summary: "Derby Pride has confirmed that its 2026 Pride Parade will begin at 11:00 on Saturday 12 September from the far end of the main Markeaton Park car park, with participants requested to assemble between 10:30 and 10:45. The procession will follow a circular route around Markeaton Park before finishing at the entrance to the main Pride event. Risk assessed as Low because the parade is principally contained within the park rather than following a major city-centre road route. Increased pedestrian activity, parking demand and event stewarding are nevertheless expected."
+},
+
+{
+  title: "Scarborough Pride 2026 Parade",
+  city: "Scarborough",
+  lat: 54.28081,
+  lng: -0.40231,
+  address: "Outside Brunswick Centre, Westborough — parade towards Scarborough Spa",
+  postcode: "YO11 1UE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T11:00:00",
+  source: "https://www.scarboroughpride.co.uk/the-parade",
+  summary: "Scarborough Pride has confirmed its 2026 Pride Parade for Saturday 12 September, with the organiser's current parade page listing an 11:00 start. Event information identifies the assembly area outside the Brunswick Centre on Westborough before the procession heads towards the wider Pride programme at Scarborough Spa. Participants will promote LGBTQIA+ visibility, equality and inclusion. Risk assessed as Medium because the moving central-Scarborough procession will require stewarding and pedestrian and traffic management. Scarborough Spa separately publishes an 11:30 parade time, so the organiser's direct 11:00 listing is being used by CityIntel pending any later harmonisation of the published timings."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-21T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will begin 25 weekdays of strike action on Monday 21 September 2026 in a long-running dispute over cuts, job losses and compulsory redundancies. The action is scheduled to continue every weekday through 23 October and will coincide with the opening weeks of the academic year. No daily picket time or single picket point has been published, so CityIntel's standard 12:00 time and the Nethergate city campus are used as transparent operational anchors. Risk assessed as Medium because sustained academic and administrative disruption is expected across the university."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-22T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will continue strike action on Tuesday 22 September 2026 as part of a 25-weekday programme running through 23 October over cuts, job losses and compulsory redundancies. No daily picket time or confirmed single picket point has been published, so CityIntel's standard 12:00 time and the Nethergate city campus are used as transparent operational anchors. Risk assessed as Medium because the prolonged dispute is expected to affect teaching, research, administration and other university operations during the opening weeks of the academic year."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-23T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will continue their sustained job-cuts strike on Wednesday 23 September 2026. Staff are opposing further reductions and compulsory redundancies after substantial previous workforce losses. The industrial action runs every weekday from 21 September through 23 October. No daily picket time or single picket location has been announced, so 12:00 and the Nethergate city campus are used as CityIntel defaults. Risk assessed as Medium because widespread disruption to teaching, research and university administration is likely."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-24T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will continue strike action on Thursday 24 September 2026 in opposition to further job cuts and compulsory redundancies. The walkout forms part of a 25-weekday programme lasting from 21 September through 23 October. No daily picket time or single picket location has yet been confirmed, so the CityIntel default of 12:00 and the Nethergate city campus are used as transparent operational anchors. Risk assessed as Medium because sustained disruption to university teaching, research and administrative activity is expected."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will strike on Friday 25 September 2026 as the first week of a 25-day industrial-action programme concludes. The dispute centres on further cuts, job losses and compulsory redundancies. No daily picket time or specific picket location is currently published, so CityIntel's 12:00 default and the university's Nethergate city campus are used as operational anchors. Risk assessed as Medium because the action will affect core university operations during the opening weeks of term, although no wider public-order risk is indicated."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-28T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will resume their weekday strike programme on Monday 28 September 2026 in the continuing dispute over cuts, job losses and compulsory redundancies. The industrial action is scheduled on every weekday from 21 September until 23 October. No daily picket time or individual picket point has been announced, so CityIntel's 12:00 default and the Nethergate city campus are used as operational anchors. Risk assessed as Medium because disruption to teaching, research and university administration is expected to remain significant."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-29T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will continue strike action on Tuesday 29 September 2026 as part of the union's 25-weekday programme over cuts, job losses and compulsory redundancies. No daily picket time or specific picket location has been published, so 12:00 and the Nethergate city campus are used as transparent CityIntel defaults. Risk assessed as Medium because prolonged staff withdrawal is expected to disrupt teaching, research, administration and other university operations, particularly during the start of the academic year."
+},
+
+{
+  title: "University of Dundee Job-Cuts Strike",
+  city: "Dundee",
+  lat: 56.457336,
+  lng: -2.978272,
+  address: "University of Dundee, Tower Building, Nethergate — city-campus operational anchor; individual picket point TBC",
+  postcode: "DD1 4HN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-30T12:00:00",
+  source: "https://sites.dundee.ac.uk/ducu/news-and-events/",
+  summary: "University and College Union members at the University of Dundee will remain on strike on Wednesday 30 September 2026 in their long-running dispute over cuts, job losses and compulsory redundancies. This is the eighth September strike date within a programme continuing every weekday through 23 October. No daily picket time or single confirmed picket location has been published, so CityIntel's standard 12:00 time and the Nethergate city campus are used as operational anchors. Risk assessed as Medium because substantial disruption to teaching, research and administrative activity is expected to continue."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Tuesday 1 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Wednesday 2 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Thursday 3 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Friday 4 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Monday 7 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-08T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Tuesday 8 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-09T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Wednesday 9 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Thursday 10 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Friday 11 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Monday 14 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Tuesday 15 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-16T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Wednesday 16 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-17T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Thursday 17 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-18T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Friday 18 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-21T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Monday 21 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-22T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Tuesday 22 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-23T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Wednesday 23 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-24T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Thursday 24 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Friday 25 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-28T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Monday 28 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-29T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Tuesday 29 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Cwm Taf Morgannwg Health Visitors Pay-Banding Strike",
+  city: "Abercynon",
+  lat: 51.640566,
+  lng: -3.327804,
+  address: "CTM University Health Board — Ynysmeurig House, Navigation Park used as operational map anchor; strike affects Bridgend, Merthyr Tydfil and Rhondda Cynon Taf",
+  postcode: "CF45 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-30T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/july/thousands-of-child-health-appointments-in-wales-being-missed-as-health-worker-strikes-continue",
+  summary: "Unite has confirmed continued strike action by Cwm Taf Morgannwg health visitors on Wednesday 30 September 2026 in the dispute over Band 6 versus Band 7 pay grading. The strike affects community services across Bridgend, Merthyr Tydfil and Rhondda Cynon Taf; no public picket or daily time is published, so 12:00 and the Abercynon health-board HQ are used as CityIntel defaults. Risk assessed as Medium due to continuing disruption to mandatory child-health and family appointments, with no public-order threat indicated."
+},
+
+{
+  title: "Royal Blackburn Biomedical Scientists Holiday-Pay Strike",
+  city: "Blackburn",
+  lat: 53.73596,
+  lng: -2.46273,
+  address: "Royal Blackburn Teaching Hospital, Haslingden Road",
+  postcode: "BB2 3HH",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Royal Blackburn Teaching Hospital remain on strike on Tuesday 1 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Burnley General Biomedical Scientists Holiday-Pay Strike",
+  city: "Burnley",
+  lat: 53.8089,
+  lng: -2.22841,
+  address: "Burnley General Teaching Hospital, Casterton Avenue / Briercliffe Road",
+  postcode: "BB10 2PQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Burnley General Teaching Hospital remain on strike on Tuesday 1 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Royal Blackburn Biomedical Scientists Holiday-Pay Strike",
+  city: "Blackburn",
+  lat: 53.73596,
+  lng: -2.46273,
+  address: "Royal Blackburn Teaching Hospital, Haslingden Road",
+  postcode: "BB2 3HH",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Royal Blackburn Teaching Hospital remain on strike on Wednesday 2 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Burnley General Biomedical Scientists Holiday-Pay Strike",
+  city: "Burnley",
+  lat: 53.8089,
+  lng: -2.22841,
+  address: "Burnley General Teaching Hospital, Casterton Avenue / Briercliffe Road",
+  postcode: "BB10 2PQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Burnley General Teaching Hospital remain on strike on Wednesday 2 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Royal Blackburn Biomedical Scientists Holiday-Pay Strike",
+  city: "Blackburn",
+  lat: 53.73596,
+  lng: -2.46273,
+  address: "Royal Blackburn Teaching Hospital, Haslingden Road",
+  postcode: "BB2 3HH",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Royal Blackburn Teaching Hospital remain on strike on Thursday 3 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Burnley General Biomedical Scientists Holiday-Pay Strike",
+  city: "Burnley",
+  lat: 53.8089,
+  lng: -2.22841,
+  address: "Burnley General Teaching Hospital, Casterton Avenue / Briercliffe Road",
+  postcode: "BB10 2PQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Burnley General Teaching Hospital remain on strike on Thursday 3 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Royal Blackburn Biomedical Scientists Holiday-Pay Strike",
+  city: "Blackburn",
+  lat: 53.73596,
+  lng: -2.46273,
+  address: "Royal Blackburn Teaching Hospital, Haslingden Road",
+  postcode: "BB2 3HH",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Royal Blackburn Teaching Hospital remain on strike on Friday 4 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+{
+  title: "Burnley General Biomedical Scientists Holiday-Pay Strike",
+  city: "Burnley",
+  lat: 53.8089,
+  lng: -2.22841,
+  address: "Burnley General Teaching Hospital, Casterton Avenue / Briercliffe Road",
+  postcode: "BB10 2PQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/news/2026/august/blackburn-and-burnley-hospitals-biomedicine-staff-pay-strikes-escalate",
+  summary: "Unite-represented biomedical and blood-sciences staff at Burnley General Teaching Hospital remain on strike on Friday 4 September 2026 in a dispute over holiday-pay calculations, with the current action extended through 4 September. No daily start time is published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because reduced laboratory capacity can delay routine blood testing and diagnostics, while urgent testing remains available; no public-order threat is indicated."
+},
+
+
+{
+  title: "Glasgow Barclays Palestine Solidarity Protest",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T09:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring Saturday protest outside Barclays Bank on Argyle Street from 09:30 to 13:00 on 5 September 2026. Campaigners will protest Barclays' financial relationships with companies associated with weapons and military technology supplied to Israel and its involvement in Israeli government bond markets. Risk assessed as Low because this is an established stationary bank-front demonstration with no march, blockade or deliberate road obstruction announced. Localised pedestrian clustering, branch-access management and routine security or police observation are possible."
+},
+
+{
+  title: "Glasgow Barclays Palestine Solidarity Protest",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T09:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring Saturday protest outside Barclays Bank on Argyle Street from 09:30 to 13:00 on 12 September 2026. Campaigners will protest Barclays' financial relationships with companies associated with weapons and military technology supplied to Israel and its involvement in Israeli government bond markets. Risk assessed as Low because this is an established stationary bank-front demonstration with no march, blockade or deliberate road obstruction announced. Localised pedestrian clustering, branch-access management and routine security or police observation are possible."
+},
+
+{
+  title: "Glasgow Barclays Palestine Solidarity Protest",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T09:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring Saturday protest outside Barclays Bank on Argyle Street from 09:30 to 13:00 on 19 September 2026. Campaigners will protest Barclays' financial relationships with companies associated with weapons and military technology supplied to Israel and its involvement in Israeli government bond markets. Risk assessed as Low because this is an established stationary bank-front demonstration with no march, blockade or deliberate road obstruction announced. Localised pedestrian clustering, branch-access management and routine security or police observation are possible."
+},
+
+{
+  title: "Glasgow Barclays Palestine Solidarity Protest",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T09:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/glasgow-branch/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch has confirmed its recurring Saturday protest outside Barclays Bank on Argyle Street from 09:30 to 13:00 on 26 September 2026. Campaigners will protest Barclays' financial relationships with companies associated with weapons and military technology supplied to Israel and its involvement in Israeli government bond markets. Risk assessed as Low because this is an established stationary bank-front demonstration with no march, blockade or deliberate road obstruction announced. Localised pedestrian clustering, branch-access management and routine security or police observation are possible."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-02T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Wednesday 2 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Saturday 5 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-09T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Wednesday 9 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Saturday 12 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-16T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Wednesday 16 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Saturday 19 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-23T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Wednesday 23 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Saturday 26 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10–15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-30T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Wednesday 30 September 2026. Campaigners will protest the bank's financial relationships connected to companies involved in weapons and military technology supplied to Israel and its role in Israeli government bond markets. Risk assessed as Low because the action is a recurring stationary demonstration. Localised pedestrian congestion and branch-access management are possible on Princes Street, but no procession or deliberate obstruction has been announced."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T11:00:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 3 September 2026. Campaigners will oppose UK military cooperation with Israel and highlight British military and surveillance activity associated with the conflict in Gaza while distributing information to the public. Risk assessed as Low because the action is a stationary protest and leafleting activity with no march or blockade announced. Localised pedestrian activity and routine security monitoring are possible outside the recruitment office."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-10T11:00:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 10 September 2026. Campaigners will oppose UK military cooperation with Israel and highlight British military and surveillance activity associated with the conflict in Gaza while distributing information to the public. Risk assessed as Low because the action is a stationary protest and leafleting activity with no march or blockade announced. Localised pedestrian activity and routine security monitoring are possible outside the recruitment office."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T11:00:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 17 September 2026. Campaigners will oppose UK military cooperation with Israel and highlight British military and surveillance activity associated with the conflict in Gaza while distributing information to the public. Risk assessed as Low because the action is a stationary protest and leafleting activity with no march or blockade announced. Localised pedestrian activity and routine security monitoring are possible outside the recruitment office."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-24T11:00:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 24 September 2026. Campaigners will oppose UK military cooperation with Israel and highlight British military and surveillance activity associated with the conflict in Gaza while distributing information to the public. Risk assessed as Low because the action is a stationary protest and leafleting activity with no march or blockade announced. Localised pedestrian activity and routine security monitoring are possible outside the recruitment office."
+},
+
+{
+  title: "Burston Strike School Rally 2026",
+  city: "Burston",
+  lat: 52.404334,
+  lng: 1.138699,
+  address: "Church Green, Diss Road",
+  postcode: "IP22 5TP",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T10:00:00",
+  source: "https://burstonandshimplingparishcouncil.gov.uk/events-list/burston-strike-school-rally/",
+  summary: "The annual Burston Strike School Rally has been confirmed for Church Green in Burston from 10:00 to 16:00 on Sunday 6 September 2026. The trade-union gathering commemorates the historic Burston School Strike and brings together unions, campaigners and supporters around workers' rights, trade-union organisation and social justice. Unite has organised the modern annual rally since 1984. Risk assessed as Low because this is a long-established and formally organised village rally with no indication of hostile counter-mobilisation or deliberate disruption. Increased pedestrian activity, parking demand and event traffic are likely around Church Green."
+},
+
+{
+  title: "Reading Pride 2026 Parade",
+  city: "Reading",
+  lat: 51.4584,
+  lng: -0.9712,
+  address: "Reading Station, Station Hill — parade to King's Meadow",
+  postcode: "RG1 1LZ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T11:00:00",
+  source: "https://readingpride.co.uk/love-unites/",
+  summary: "Reading Pride has confirmed its 2026 Pride Parade for Saturday 5 September, with participants setting off from outside Reading railway station at approximately 11:00 before proceeding through central Reading towards the Pride festival at King's Meadow. The mobilisation will promote LGBTQ+ equality, visibility, inclusion and opposition to discrimination. Risk assessed as Medium because the moving town-centre procession will begin beside a major transport interchange and is likely to require road restrictions, stewarding, pedestrian management and police liaison. No specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Leicester Pride 2026 Parade",
+  city: "Leicester",
+  lat: 52.63555,
+  lng: -1.12749,
+  address: "Curve Theatre, 60 Rutland Street — parade through city centre to Abbey Park",
+  postcode: "LE1 1SB",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T12:00:00",
+  source: "https://www.leicesterpride.com/",
+  summary: "Leicester Pride has confirmed its 2026 Pride Parade for Saturday 5 September, departing from outside Curve Theatre at 12:00. The approximately 1.7-mile procession will travel through the city centre, including The Lanes, Jubilee Square and High Street, before continuing to Abbey Park. Participants will promote LGBTQ+ equality, visibility and protection from discrimination. Risk assessed as Medium because the large moving procession through central Leicester will require traffic restrictions, stewarding, pedestrian controls and police or municipal liaison. No specific counter-demonstration or security threat has been announced."
+},
+
+{
+  title: "Penzance Pride 2026 March",
+  city: "Penzance",
+  lat: 50.12000,
+  lng: -5.53333,
+  address: "Market Jew Street by Peacocks — march via Chapel Street to the Promenade",
+  postcode: "TR18 2LG",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://cornwallpride.org/celebrate-pride/penzance-pride",
+  summary: "Cornwall Pride has confirmed the Penzance Pride March for 12:00 on Saturday 12 September 2026. Participants will assemble on Market Jew Street near Peacocks before marching via Chapel Street and Western Promenade Road towards the Promenade. The mobilisation will promote LGBTQ+ visibility, equality, inclusion and community solidarity. Risk assessed as Medium because the moving procession will pass through central streets and is likely to require short-duration traffic and pedestrian management. The march is organised as a peaceful community event and no specific hostile counter-mobilisation has been announced."
+},
+
+{
+  title: "Trans Pride NI 2026 March",
+  city: "Belfast",
+  lat: 54.60240,
+  lng: -5.93054,
+  address: "Writer's Square, Cathedral Quarter — march route TBC",
+  postcode: "",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://www.instagram.com/transprideni/p/DLamImaIw9X/",
+  summary: "Trans Pride NI has confirmed its 2026 march in Belfast for Saturday 12 September, with participants instructed to meet at Writer's Square from 12:00. The mobilisation will promote transgender rights, visibility, healthcare access, equality and protection from discrimination. The final procession route has not yet been published. Risk assessed as Medium because the politically visible city-centre march is likely to require police liaison, traffic management and stewarding and may attract limited opposing activity, although no specific hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "NSSN Lobby and Rally at TUC Congress",
+  city: "Brighton",
+  lat: 50.82220,
+  lng: -0.15243,
+  address: "Holiday Inn Brighton-Seafront, 137 Kings Road",
+  postcode: "BN1 2JF",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-13T13:00:00",
+  source: "https://www.shopstewards.net/2026/07/nssn-775-lobby-tuc-congress-in-september-for-action-programme-to-defend-workers-from-cost-of-living-crisis/",
+  summary: "The National Shop Stewards Network has confirmed a lobby and rally outside the TUC Congress venue in Brighton from 13:00 on Sunday 13 September 2026. Participants will call for above-inflation pay increases, a higher minimum wage, stronger trade-union rights and coordinated action against austerity, public-service cuts and the cost-of-living crisis. Risk assessed as Low because this is a formally organised labour rally outside a conference venue with no march, blockade or hostile counter-demonstration currently announced. Increased pedestrian activity, security presence and controlled access around the hotel are possible."
+},
+
+{
+  title: "Lakenheath Alliance for Peace Anti-Nuclear Vigil",
+  city: "Lakenheath",
+  lat: 52.410991,
+  lng: 0.581456,
+  address: "RAF Lakenheath main gate (Gate 1), Brandon Road",
+  postcode: "IP27 9PN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T12:00:00",
+  source: "https://cnduk.org/events/lakenheath-alliance-for-peace-vigil-20/",
+  summary: "The Lakenheath Alliance for Peace has confirmed its monthly anti-nuclear vigil at the main gate of RAF Lakenheath from 12:00 to 14:00 on Saturday 19 September 2026. Participants will oppose the stationing or return of United States nuclear weapons to Britain and campaign against nuclear weapons and military escalation. Risk assessed as Low because the action is an established peaceful stationary vigil rather than a march or blockade. The military-base setting means routine security monitoring and limited roadside or gate-area access management are likely."
+},
+
+{
+  title: "Shrewsbury Pride 2026 Parade",
+  city: "Shrewsbury",
+  lat: 52.707137,
+  lng: -2.754561,
+  address: "The Square, Shrewsbury — final parade route TBC",
+  postcode: "SY1 1LH",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.instagram.com/shrewsbury_pride/",
+  summary: "Shrewsbury Pride has confirmed its 2026 Pride Parade for Saturday 26 September. Participants will gather around the main stage in Shrewsbury Market Square, with build-up activity from approximately 11:00 and the parade scheduled to begin at 12:00. The mobilisation will promote LGBTQ+ equality, visibility, inclusion and protection from discrimination. The complete procession route has not yet been published. Risk assessed as Medium because a moving town-centre parade will require stewarding, pedestrian management and potentially temporary traffic controls. No specific hostile counter-demonstration or violent threat has been identified."
+},
+
+
+
+{
+  title: "Protest Against Defence Security Resilience Cymru Summit",
+  city: "Newport",
+  lat: 51.60279,
+  lng: -2.92915,
+  address: "ICC Wales, Coldra Woods, Celtic Manor Resort",
+  postcode: "NP18 1DE",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T08:00:00",
+  source: "https://x.com/CardiffStW/status/2088687624147906665",
+  summary: "Cardiff Stop the War Coalition, CND Cymru and supporting anti-war, human-rights, climate, faith and civil-society groups have confirmed a protest outside ICC Wales in Newport from 08:00 on Thursday 3 September 2026 as the Defence Security Resilience Cymru summit begins. Campaigners oppose Welsh Government participation in the defence-sector event and are calling for its cancellation, while advocating greater investment in peaceful and socially useful industries. Risk assessed as Medium because the demonstration is taking place directly outside a major conference venue during delegate arrival, creating potential for access controls, security screening, police liaison and localised traffic or pedestrian disruption around the Celtic Manor site. No specific violent intent or hostile counter-demonstration has been identified."
+},
+
+{
+  title: "Glasgow Caledonian University Job-Cuts Strike",
+  city: "Glasgow",
+  lat: 55.8673,
+  lng: -4.2501,
+  address: "Glasgow Caledonian University, Cowcaddens Road entrance",
+  postcode: "G4 0BA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-07T12:00:00",
+  source: "https://www.eis.org.uk/latest-news/gcu-strike-day-four",
+  summary: "The Educational Institute of Scotland University Lecturers Association has scheduled further strike action at Glasgow Caledonian University for Monday 7 September 2026 if the continuing redundancy dispute remains unresolved. Academic staff are opposing proposals to cut up to 100 jobs and are seeking a guarantee against compulsory redundancies. The EIS confirms that picket activity will take place at the Cowcaddens Road entrance. A September picket start time has not yet been published, so the CityIntel default time of 12:00 has been applied. Risk assessed as Low because disruption is expected to remain concentrated on university teaching, staffing and campus access, with a formally organised picket rather than a large public procession."
+},
+
+{
+  title: "Glasgow Caledonian University Job-Cuts Strike",
+  city: "Glasgow",
+  lat: 55.8673,
+  lng: -4.2501,
+  address: "Glasgow Caledonian University, Cowcaddens Road entrance",
+  postcode: "G4 0BA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-08T12:00:00",
+  source: "https://www.eis.org.uk/latest-news/gcu-strike-day-four",
+  summary: "The Educational Institute of Scotland University Lecturers Association has scheduled a second consecutive day of strike action at Glasgow Caledonian University for Tuesday 8 September 2026 if the continuing redundancy dispute remains unresolved. Academic staff are opposing proposals to cut up to 100 jobs and are seeking a guarantee against compulsory redundancies. The EIS confirms that picket activity will take place at the Cowcaddens Road entrance. A September picket start time has not yet been published, so the CityIntel default time of 12:00 has been applied. Risk assessed as Low because the principal effects are expected to involve university teaching, staffing and campus access, with no wider public demonstration or significant transport disruption currently announced."
+},
+
+{
+  title: "Glasgow Caledonian University Job-Cuts Strike",
+  city: "Glasgow",
+  lat: 55.8673,
+  lng: -4.2501,
+  address: "Glasgow Caledonian University, Cowcaddens Road entrance",
+  postcode: "G4 0BA",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-10T12:00:00",
+  source: "https://www.eis.org.uk/latest-news/gcu-strike-day-four",
+  summary: "The Educational Institute of Scotland University Lecturers Association has scheduled further strike action at Glasgow Caledonian University for Thursday 10 September 2026 if the continuing redundancy dispute remains unresolved. The dispute concerns plans to cut up to 100 university jobs and management's refusal to rule out compulsory redundancies. The EIS confirms that pickets will be based at the Cowcaddens Road entrance. No September picket start time has yet been published, so the CityIntel default time of 12:00 has been applied. Risk assessed as Low because operational effects are expected to remain principally within the university campus, affecting staffing, teaching and access rather than creating substantial wider city disruption."
+},
+
+{
+  title: "Palestine Solidarity March to Labour Conference — Liverpool",
+  city: "Liverpool",
+  lat: 53.408031,
+  lng: -2.979385,
+  address: "St George's Plateau, St George's Place — march towards Labour Conference; final route TBC",
+  postcode: "L1 1JJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://palestinecampaign.org/events/march-tell-andy-burnham-to-stop-arming-israel/",
+  summary: "The Palestine Solidarity Campaign has confirmed a Palestine-solidarity march in Liverpool from 12:00 to 16:00 on Saturday 26 September 2026. Participants will assemble at St George's Plateau and march towards the Labour Party Conference, calling on the government to halt arms supplies to Israel and impose sanctions. The organiser has not yet published the complete procession route. Risk assessed as Medium because the politically sensitive mobilisation will move through central Liverpool immediately around the Labour Conference period and is likely to require police liaison, road restrictions, crowd management and protected access around conference-related locations. No specific violent intent or confirmed hostile counter-demonstration has been announced."
+},
+
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Protest — 4 September",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-04T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/armed-forces-careers-office-glasgow/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed its recurring Friday demonstration outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on 4 September 2026. Participants will leaflet members of the public and protest what organisers describe as UK military involvement in and support for Israeli operations affecting Palestinians in Gaza. Risk assessed as Low because this is an established stationary leafleting demonstration with no procession, blockade or deliberate obstruction announced. Localised pedestrian activity, visible campaigning and routine monitoring are possible around Queen Street."
+},
+
+{
+  title: "Glasgow Barclays Palestine Protest — 5 September",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T09:30:00",
+  source: "https://www.scottishpsc.org.uk/event/barclays-protest-glasgow/2026-09-05/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow Branch and Gaza Genocide Emergency Committee Glasgow have confirmed their weekly demonstration outside Barclays Bank on Argyle Street from 09:30 to 13:00 on Saturday 5 September 2026. Campaigners will oppose Barclays' financial relationships with companies and government financing connected to Israel and will promote boycott and divestment demands concerning the conflict affecting Palestinians. Risk assessed as Low because the action is an established stationary demonstration with no march or blockade announced. Localised pedestrian congestion and increased activity immediately outside the bank are possible."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Protest — 11 September",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-11T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/armed-forces-careers-office-glasgow/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed its recurring Friday demonstration outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on 11 September 2026. Participants will leaflet members of the public and protest what organisers describe as UK military involvement in and support for Israeli operations affecting Palestinians in Gaza. Risk assessed as Low because this is an established stationary leafleting demonstration with no procession, blockade or deliberate obstruction announced. Localised pedestrian activity, visible campaigning and routine monitoring are possible around Queen Street."
+},
+
+{
+  title: "Glasgow Barclays Palestine Protest — 12 September",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T09:30:00",
+  source: "https://www.scottishpsc.org.uk/event/barclays-protest-glasgow/2026-09-12/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow Branch and Gaza Genocide Emergency Committee Glasgow have confirmed their recurring demonstration outside Barclays Bank on Argyle Street from 09:30 to 13:00 on Saturday 12 September 2026. Campaigners will oppose Barclays' financial relationships with companies and government financing connected to Israel and promote boycott and divestment demands concerning the conflict affecting Palestinians. Risk assessed as Low because the action is an established stationary demonstration with no moving procession or deliberate blockade announced. Localised pedestrian congestion and increased activity immediately outside the bank are possible."
+},
+
+{
+  title: "Trans Pride Northern Ireland 2026",
+  city: "Belfast",
+  lat: 54.60206,
+  lng: -5.92992,
+  address: "Writer's Square, Donegall Street — Royal Avenue — Donegall Place — Chichester Street — Victoria Street — Waring Street — Writer's Square",
+  postcode: "BT1 2GQ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:30:00",
+  source: "https://www.paradescommission.org/viewparade.aspx?id=96012",
+  summary: "Trans Pride Northern Ireland has notified the Northern Ireland Parades Commission of a Belfast Pride procession on Saturday 12 September 2026. The parade will depart Writer's Square at 12:30 and travel via Royal Avenue, Donegall Place, Chichester Street, Victoria Street and Waring Street before returning to Writer's Square by approximately 16:00. The official notice anticipates around 2,000 participants and 100 supporters. The mobilisation will promote transgender visibility, equality and community rights. Risk assessed as Medium because the sizeable moving procession through Belfast city centre is likely to require traffic management, stewarding, police liaison and temporary access restrictions along the notified route. No bands are registered with the procession."
+},
+
+{
+  title: "UK Pride 2026 — Newport Pride Parade",
+  city: "Newport",
+  lat: 51.58611,
+  lng: -2.99389,
+  address: "Newport city centre — final parade assembly point and route TBC",
+  postcode: "",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T11:00:00",
+  source: "https://www.goc.org.uk/event/uk-pride-2026-newport/",
+  summary: "Pride in the Port will host UK Pride 2026 in Newport on Saturday 5 September. A public Pride parade is scheduled from approximately 11:00 to 12:30 and is expected to cover around one mile through Newport. The event will promote LGBTQIA+ visibility, equality, community participation and protection from discrimination and forms the first UK Pride hosted in Wales. The detailed assembly point and procession route have not yet been published, so Newport city centre is used only as a transparent map anchor pending further organiser information. Risk assessed as Medium because the nationally designated Pride event is expected to draw substantial attendance and the moving city-centre procession is likely to require road restrictions, stewarding, policing and pedestrian management. No specific hostile counter-demonstration has been identified in the sources checked."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Protest — 18 September",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-18T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/armed-forces-careers-office-glasgow/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed its recurring Friday demonstration outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on 18 September 2026. Participants will leaflet members of the public and protest what organisers describe as UK military involvement in and support for Israeli operations affecting Palestinians in Gaza. Risk assessed as Low because this is an established stationary leafleting demonstration with no procession, blockade or deliberate obstruction announced. Localised pedestrian activity, visible campaigning and routine monitoring are possible around Queen Street."
+},
+
+{
+  title: "Glasgow Barclays Palestine Protest — 19 September",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T09:30:00",
+  source: "https://www.scottishpsc.org.uk/event/barclays-protest-glasgow/2026-09-19/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow Branch and Gaza Genocide Emergency Committee Glasgow have confirmed their weekly demonstration outside Barclays Bank on Argyle Street from 09:30 to 13:00 on Saturday 19 September 2026. Campaigners will oppose Barclays' financial relationships with companies and government financing connected to Israel and promote boycott and divestment demands concerning the conflict affecting Palestinians. Risk assessed as Low because the action is an established stationary demonstration with no moving procession or deliberate blockade announced. Localised pedestrian congestion and increased activity immediately outside the bank are possible."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Protest — 25 September",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-25T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/armed-forces-careers-office-glasgow/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed its recurring Friday demonstration outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on 25 September 2026. Participants will leaflet members of the public and protest what organisers describe as UK military involvement in and support for Israeli operations affecting Palestinians in Gaza. Risk assessed as Low because this is an established stationary leafleting demonstration with no procession, blockade or deliberate obstruction announced. Localised pedestrian activity, visible campaigning and routine monitoring are possible around Queen Street."
+},
+
+{
+  title: "Glasgow Barclays Palestine Protest — 26 September",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T09:30:00",
+  source: "https://www.scottishpsc.org.uk/event/barclays-protest-glasgow/2026-09-26/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow Branch and Gaza Genocide Emergency Committee Glasgow have confirmed their recurring demonstration outside Barclays Bank on Argyle Street from 09:30 to 13:00 on Saturday 26 September 2026. Campaigners will oppose Barclays' financial relationships with companies and government financing connected to Israel and promote boycott and divestment demands concerning the conflict affecting Palestinians. Risk assessed as Low because the action is an established stationary demonstration with no moving procession or deliberate blockade announced. Localised pedestrian congestion and increased activity immediately outside the bank are possible."
+},
   
 
 {
