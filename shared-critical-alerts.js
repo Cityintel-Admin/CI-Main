@@ -40,6 +40,7 @@
   const tabId = `ci-tab-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
   const leaseKey = `ci_critical_alerts_leader_v1:${scopeToken}`;
   const stateKey = `ci_critical_alerts_state_v1:${scopeToken}`;
+  const trainingStateKey = `ci_training_banner_state_v1:${scopeToken}`;
   const stateSignalKey = `ci_critical_alerts_signal_v1:${scopeToken}`;
   const channelName = 'cityintel-critical-alerts-v1';
 
@@ -63,6 +64,17 @@
     online: true,
     error: '',
     source: 'boot'
+  };
+
+  // Training exercises ride on the same poll cycle and leader election as
+  // panic, but are kept in their own state and their own banner. They are not
+  // a critical alert and must never borrow the critical alert's appearance.
+  let trainingState = {
+    active: false,
+    count: 0,
+    primary: null,
+    startedAt: null,
+    checkedAt: null
   };
 
   const esc = (value) => String(value ?? '').replace(/[&<>"]/g, ch => ({
@@ -195,8 +207,11 @@
     const style = document.createElement('style');
     style.id = 'ciCriticalAlertsStyle';
     style.textContent = `
+      #ciAlertStack{
+        position:sticky;top:0;z-index:2147483000;width:100%;
+      }
       #ciCriticalAlertsBanner{
-        position:sticky;top:0;z-index:2147483000;
+        position:relative;
         display:none;width:100%;box-sizing:border-box;
         color:#fff;background:
           radial-gradient(circle at 92% 10%,rgba(255,255,255,.10),transparent 24%),
@@ -263,6 +278,57 @@
       .ci-critical-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
       .ci-critical-modal-error{display:none;margin-top:10px;color:#fecaca;font-size:12px}
       .ci-critical-modal-error[data-visible="true"]{display:block}
+      /* Training banner — deliberately amber, never red, and always labelled
+         as simulated. An operator glancing at the top of the page must never
+         have to work out whether an exercise is a real incident. */
+      #ciTrainingBanner{
+        position:relative;display:none;width:100%;box-sizing:border-box;
+        color:#1b1403;background:linear-gradient(90deg,#f4b942,#ffd479 52%,#eaa81f);
+        border-bottom:1px solid rgba(0,0,0,.30);
+        box-shadow:0 8px 22px rgba(0,0,0,.30);
+        font:13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      }
+      #ciTrainingBanner[data-visible="true"]{display:block}
+      .ci-training-inner{
+        max-width:1600px;margin:0 auto;padding:9px 16px;
+        display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;
+      }
+      .ci-training-copy{min-width:0;display:flex;align-items:flex-start;gap:11px}
+      .ci-training-icon{
+        width:30px;height:30px;flex:0 0 30px;border-radius:9px;display:grid;place-items:center;
+        background:rgba(0,0,0,.14);border:1px solid rgba(0,0,0,.26);font-size:15px;
+      }
+      .ci-training-title{font-size:12px;font-weight:950;letter-spacing:.07em}
+      .ci-training-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+      .ci-training-chip{
+        display:inline-flex;align-items:center;min-height:20px;padding:0 8px;border-radius:999px;
+        border:1px solid rgba(0,0,0,.28);background:rgba(0,0,0,.10);
+        font-size:10px;font-weight:850;white-space:nowrap;
+      }
+      .ci-training-summary{
+        margin-top:2px;min-width:0;color:rgba(27,20,3,.86);font-size:12px;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      }
+      .ci-training-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+      .ci-training-btn{
+        appearance:none;display:inline-flex;align-items:center;justify-content:center;
+        min-height:30px;padding:0 12px;border-radius:9px;
+        border:1px solid rgba(0,0,0,.36);background:rgba(0,0,0,.08);
+        color:#1b1403;text-decoration:none;font:850 11px/1 system-ui;cursor:pointer;white-space:nowrap;
+      }
+      .ci-training-btn.primary{background:#1b1403;color:#ffd479;border-color:#1b1403}
+      .ci-training-btn:hover{background:rgba(0,0,0,.18)}
+      .ci-training-btn.primary:hover{background:#000}
+      /* When a real alarm is running, the exercise strip shrinks out of the
+         way rather than competing with it. */
+      #ciAlertStack[data-panic="true"] #ciTrainingBanner .ci-training-inner{padding:5px 16px}
+      #ciAlertStack[data-panic="true"] #ciTrainingBanner .ci-training-summary{display:none}
+      #ciAlertStack[data-panic="true"] #ciTrainingBanner .ci-training-icon{width:22px;height:22px;flex-basis:22px;font-size:12px}
+      @media(max-width:760px){
+        .ci-training-inner{grid-template-columns:1fr;padding:9px 11px;gap:8px}
+        .ci-training-actions{justify-content:flex-start;padding-left:41px}
+        .ci-training-summary{white-space:normal}
+      }
       @keyframes ciCriticalPulse{50%{box-shadow:0 0 24px rgba(255,255,255,.28);transform:scale(1.035)}}
       @media(max-width:760px){
         .ci-critical-inner{grid-template-columns:1fr;padding:10px 11px;gap:9px}
@@ -276,6 +342,60 @@
       @media(prefers-reduced-motion:reduce){.ci-critical-icon{animation:none}}
     `;
     (document.head || document.documentElement).appendChild(style);
+  }
+
+  // Both banners live in one sticky container so they stack predictably
+  // instead of two sticky elements fighting over the same top edge.
+  function ensureStack() {
+    let stack = document.getElementById('ciAlertStack');
+    if (stack) return stack;
+    ensureStyle();
+    stack = document.createElement('div');
+    stack.id = 'ciAlertStack';
+    const insert = () => {
+      if (!document.body || stack.isConnected) return;
+      document.body.insertBefore(stack, document.body.firstChild);
+    };
+    insert();
+    if (!stack.isConnected) document.addEventListener('DOMContentLoaded', insert, { once: true });
+    return stack;
+  }
+
+  function ensureTrainingBanner() {
+    let banner = document.getElementById('ciTrainingBanner');
+    if (banner) return banner;
+
+    const stack = ensureStack();
+    banner = document.createElement('div');
+    banner.id = 'ciTrainingBanner';
+    banner.setAttribute('role', 'status');
+    banner.setAttribute('aria-live', 'polite');
+    banner.innerHTML = `
+      <div class="ci-training-inner">
+        <div class="ci-training-copy">
+          <div class="ci-training-icon" aria-hidden="true">🎓</div>
+          <div class="ci-training-text">
+            <div class="ci-training-title-row">
+              <span id="ciTrainingTitle" class="ci-training-title">TRAINING EXERCISE — SIMULATED</span>
+              <span id="ciTrainingCount" class="ci-training-chip"></span>
+              <span id="ciTrainingAssigned" class="ci-training-chip"></span>
+            </div>
+            <div id="ciTrainingSummary" class="ci-training-summary"></div>
+          </div>
+        </div>
+        <div class="ci-training-actions">
+          <a id="ciTrainingOpen" class="ci-training-btn primary" href="training-scenario.html">Open exercise</a>
+          <a class="ci-training-btn" href="training-hub.html">Training Hub</a>
+        </div>
+      </div>
+    `;
+    const attach = () => {
+      const target = ensureStack();
+      if (target && !banner.isConnected) target.appendChild(banner);
+    };
+    attach();
+    if (!banner.isConnected) document.addEventListener('DOMContentLoaded', attach, { once: true });
+    return banner;
   }
 
   function ensureBanner() {
@@ -310,8 +430,10 @@
     `;
 
     const insert = () => {
-      if (!document.body || banner.isConnected) return;
-      document.body.insertBefore(banner, document.body.firstChild);
+      const stack = ensureStack();
+      if (!stack || banner.isConnected) return;
+      // Panic always sits above training in the stack.
+      stack.insertBefore(banner, stack.firstChild);
     };
     insert();
     if (!banner.isConnected) document.addEventListener('DOMContentLoaded', insert, { once: true });
@@ -492,6 +614,44 @@
     banner.dataset.visible = 'true';
   }
 
+  function renderTraining() {
+    const banner = ensureTrainingBanner();
+    const stack = document.getElementById('ciAlertStack');
+    const count = Number(trainingState.count || 0);
+
+    if (stack) stack.dataset.panic = Number(state.activeAlarmCount || 0) > 0 ? 'true' : 'false';
+
+    if (!count || !trainingState.active) {
+      banner.dataset.visible = 'false';
+      return;
+    }
+
+    const primary = trainingState.primary || {};
+    const titleEl = banner.querySelector('#ciTrainingTitle');
+    const countEl = banner.querySelector('#ciTrainingCount');
+    const assignedEl = banner.querySelector('#ciTrainingAssigned');
+    const summaryEl = banner.querySelector('#ciTrainingSummary');
+
+    if (titleEl) titleEl.textContent = 'TRAINING EXERCISE — SIMULATED';
+    if (countEl) countEl.textContent = count > 1 ? `${count} scenarios live` : '1 scenario live';
+
+    if (assignedEl) {
+      const who = String(primary.trainee_name || '').trim();
+      assignedEl.textContent = who ? `Assigned: ${who}` : '';
+      assignedEl.style.display = who ? '' : 'none';
+    }
+
+    if (summaryEl) {
+      const place = [primary.city, primary.country].filter(Boolean).join(', ');
+      const risk = String(primary.risk || '').toLowerCase();
+      const riskLabel = risk === 'high' ? 'High risk' : risk === 'low' ? 'Low risk' : 'Medium risk';
+      summaryEl.textContent = [primary.title || 'Training scenario', place, riskLabel]
+        .filter(Boolean).join(' · ');
+    }
+
+    banner.dataset.visible = 'true';
+  }
+
   function emitLifecycleEvents(nextState) {
     const nextIds = new Set((nextState.activeAlarms || []).map(a => String(a.id || '')).filter(Boolean));
     for (const id of nextIds) {
@@ -546,6 +706,9 @@
 
     emitLifecycleEvents(state);
     render();
+    // The training strip collapses while a real alarm is up, so it has to
+    // re-render whenever the panic state changes, not only on its own tick.
+    renderTraining();
 
     window.dispatchEvent(new CustomEvent('ci:critical-alerts-updated', {
       detail: {
@@ -564,6 +727,71 @@
       if (!cached.savedAt || Date.now() - Number(cached.savedAt) > CACHE_MAX_AGE_MS) return;
       applyState({ ...cached, source: 'cache' });
     } catch (_) {}
+  }
+
+  async function fetchTrainingState() {
+    const response = await fetch(`${API_BASE}/api/org/training-active?ts=${Date.now()}`, {
+      method: 'GET',
+      headers: authHeaders({ 'Cache-Control': 'no-cache' }),
+      cache: 'no-store'
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.ok === false) {
+      const error = new Error(payload.error || `Training status failed (${response.status})`);
+      error.status = response.status;
+      throw error;
+    }
+    return {
+      active: !!payload.active,
+      count: Number(payload.count || 0),
+      primary: payload.primary || null,
+      startedAt: payload.startedAt || null,
+      checkedAt: new Date().toISOString()
+    };
+  }
+
+  function applyTrainingState(next, { broadcast = false } = {}) {
+    const wasActive = !!trainingState.active;
+    trainingState = { ...trainingState, ...next };
+    renderTraining();
+
+    if (!wasActive && trainingState.active) {
+      window.dispatchEvent(new CustomEvent('ci:training-started', { detail: { ...trainingState } }));
+    } else if (wasActive && !trainingState.active) {
+      window.dispatchEvent(new CustomEvent('ci:training-ended', { detail: { ...trainingState } }));
+    }
+
+    if (broadcast) {
+      try {
+        localStorage.setItem(trainingStateKey, JSON.stringify({ ...trainingState, savedAt: Date.now(), scope }));
+      } catch (_) {}
+      try {
+        channel?.postMessage({ type: 'training', scope, tabId, state: trainingState });
+      } catch (_) {}
+    }
+  }
+
+  function readCachedTrainingState() {
+    try {
+      const cached = JSON.parse(localStorage.getItem(trainingStateKey) || 'null');
+      if (!cached || cached.scope !== scope) return;
+      if (!cached.savedAt || Date.now() - Number(cached.savedAt) > CACHE_MAX_AGE_MS) return;
+      applyTrainingState(cached);
+    } catch (_) {}
+  }
+
+  async function refreshTraining() {
+    // A 403 here just means the organisation has no training module, so it is
+    // swallowed quietly rather than logged on every poll.
+    try {
+      applyTrainingState(await fetchTrainingState(), { broadcast: true });
+    } catch (error) {
+      const status = Number(error?.status || 0);
+      if (![401, 403, 404].includes(status)) {
+        console.warn('CityIntel training banner:', error?.message || error);
+      }
+      applyTrainingState({ checkedAt: new Date().toISOString() });
+    }
   }
 
   async function fetchState() {
@@ -588,7 +816,9 @@
 
     requestInFlight = (async () => {
       try {
-        const nextState = await fetchState();
+        // Training rides along on the same tick so there is still only one
+        // polling tab per organisation, not two.
+        const [nextState] = await Promise.all([fetchState(), refreshTraining()]);
         applyState(nextState, { broadcast: true });
         return state;
       } catch (error) {
@@ -767,6 +997,10 @@
     try { channel?.close(); } catch (_) {}
     const banner = document.getElementById('ciCriticalAlertsBanner');
     if (banner) banner.remove();
+    const trainingBanner = document.getElementById('ciTrainingBanner');
+    if (trainingBanner) trainingBanner.remove();
+    const stack = document.getElementById('ciAlertStack');
+    if (stack) stack.remove();
     const modal = document.getElementById('ciCriticalResolveModal');
     if (modal) modal.remove();
     window.removeEventListener('storage', onStorage);
@@ -782,6 +1016,8 @@
     resolve,
     openResolveModal,
     canRespond: roleCanRespond,
+    getTrainingState: () => ({ ...trainingState }),
+    refreshTraining: () => refreshTraining(),
     destroy,
     registerType(type, handler) {
       // Reserved extension point for missed check-ins and future critical
@@ -797,7 +1033,9 @@
   function boot() {
     if (destroyed) return;
     ensureBanner();
+    ensureTrainingBanner();
     readCachedState();
+    readCachedTrainingState();
 
     try {
       channel = new BroadcastChannel(channelName);
@@ -806,6 +1044,9 @@
         if (message.scope !== scope || message.tabId === tabId) return;
         if (message.type === 'state' && message.state) {
           applyState({ ...message.state, source: 'broadcast' });
+        }
+        if (message.type === 'training' && message.state) {
+          applyTrainingState(message.state);
         }
       });
     } catch (_) {
