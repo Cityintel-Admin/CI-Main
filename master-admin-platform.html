@@ -1157,7 +1157,63 @@
 <div style="font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Recent calls</div>
 <div id="llmRecentCalls" style="border:1px solid var(--g600);border-radius:8px;overflow:hidden;overflow-x:auto;"></div>
 </div>
-</section><div aria-hidden="true" class="org-lifecycle-modal-backdrop" id="orgLifecycleModalBackdrop">
+</section>
+
+<section class="card" id="subprocessorCard" style="margin-bottom:20px">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+  <div>
+    <h3 style="margin:0">Sub-processor register</h3>
+    <div class="lead-muted" style="margin-top:4px">Published at <a href="sub-processors.html" target="_blank" rel="noopener">city-intel.com/sub-processors.html</a> and referenced by the DPA. Adding a Section A entry triggers the 14-day client notice under DPA clause 6.3.</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <span class="lead-muted" id="subprocReviewed">—</span>
+    <button class="btn" id="subprocReviewBtn" type="button">Mark reviewed today</button>
+    <button class="btn" id="subprocRefreshBtn" type="button">Refresh</button>
+  </div>
+</div>
+
+<div class="lead-table-wrap" style="margin-top:12px">
+  <table class="lead-table">
+    <thead><tr><th>Sub-processor</th><th>Section</th><th>Location</th><th>Status</th><th>Notice</th><th style="text-align:right">Actions</th></tr></thead>
+    <tbody id="subprocRows"><tr><td class="lead-muted" colspan="6">Loading…</td></tr></tbody>
+  </table>
+</div>
+
+<div style="margin-top:16px;border-top:1px solid var(--g600);padding-top:14px">
+  <h4 style="margin:0 0 8px;font-size:14px" id="subprocFormTitle">Add a sub-processor</h4>
+  <div class="invoice-form-grid">
+    <input id="subprocId" type="hidden">
+    <div><label class="lead-muted">Name</label><input id="subprocName" placeholder="e.g. Twilio, Inc."></div>
+    <div><label class="lead-muted">Purpose (short label)</label><input id="subprocPurpose" placeholder="e.g. SMS delivery"></div>
+    <div><label class="lead-muted">Location</label><input id="subprocLocation" placeholder="e.g. US / Global"></div>
+    <div><label class="lead-muted">Section</label><select id="subprocCategory">
+      <option value="client_data">A — may process client personal data</option>
+      <option value="public_source">B — public intelligence source (outbound only)</option>
+    </select></div>
+    <div><label class="lead-muted">Status</label><select id="subprocStatus">
+      <option value="active">Active</option>
+      <option value="planned">Planned (not yet live)</option>
+      <option value="removed">Removed</option>
+    </select></div>
+    <div><label class="lead-muted">Effective from</label><input id="subprocEffective" type="date"></div>
+    <div class="full"><label class="lead-muted">Service provided</label><textarea id="subprocService" placeholder="What this provider does for CityIntel"></textarea></div>
+    <div class="full"><label class="lead-muted">Data processed</label><textarea id="subprocData" placeholder="Categories of data this provider may process, or 'None — public data only'"></textarea></div>
+    <div class="full" style="display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap">
+      <span class="lead-muted" id="subprocMsg"></span>
+      <button class="btn" id="subprocCancelBtn" type="button" style="display:none">Cancel edit</button>
+      <button class="btn primary" id="subprocSaveBtn" type="button">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;border-top:1px solid var(--g600);padding-top:14px">
+  <h4 style="margin:0 0 8px;font-size:14px">Change history</h4>
+  <div class="lead-muted" style="margin-bottom:8px">Additions, removals and notices are shown to clients on the public page — this is the evidence that notice was given.</div>
+  <div id="subprocChanges" style="display:grid;gap:6px"><div class="lead-muted">Loading…</div></div>
+</div>
+</section>
+
+<div aria-hidden="true" class="org-lifecycle-modal-backdrop" id="orgLifecycleModalBackdrop">
 <div aria-labelledby="orgLifecycleModalTitle" aria-modal="true" class="org-lifecycle-modal" role="dialog">
 <h3 id="orgLifecycleModalTitle">Update organisation status</h3>
 <p id="orgLifecycleModalHint">Record a reason and optional internal notes for the lifecycle timeline.</p>
@@ -2728,7 +2784,14 @@ document.addEventListener('DOMContentLoaded',function(){
       const data = await api('/api/admin/commercial/customers/'+encodeURIComponent(orgId)+'/order-form', { method:'POST', body:JSON.stringify(payload) });
       commercialState.orderForms[orgId] = data;
       const t = data.terms || {};
-      if(msg) msg.textContent = `Saved ${data.contract?.contract_reference||''} · due to start ${money(t.dueToStart||0)} · term total ${money(t.contractValue||0)}`;
+      // The document falls back to the trading name when no registered company
+      // name is set, which is easy to miss until it is in front of a client —
+      // so say so rather than letting it pass quietly.
+      const missing = [];
+      if(!payload.client_legal_name) missing.push('registered company name');
+      if(!payload.client_company_number) missing.push('company number');
+      const warn = missing.length ? ` · no ${missing.join(' or ')} set — the agreement will name the trading name only` : '';
+      if(msg) msg.textContent = `Saved ${data.contract?.contract_reference||''} · due to start ${money(t.dueToStart||0)} · term total ${money(t.contractValue||0)}${warn}`;
       // Opened in a new tab, so the document URL carries a short-lived signed
       // token instead of an auth header.
       if(openAfter && data.doc_url) window.open(data.doc_url, '_blank');
@@ -3880,5 +3943,152 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(polish,1500);
   });
 })();
-</script></main></div></body>
+</script></main></div><script>
+(function subprocessorRegister(){
+  var els = {
+    rows: document.getElementById('subprocRows'),
+    changes: document.getElementById('subprocChanges'),
+    reviewed: document.getElementById('subprocReviewed'),
+    msg: document.getElementById('subprocMsg'),
+    formTitle: document.getElementById('subprocFormTitle'),
+    cancel: document.getElementById('subprocCancelBtn')
+  };
+  if(!els.rows) return;
+
+  var API_BASE = (window.CI_API_BASE || 'https://api.cityintelapi.com');
+  var state = { entries: [] };
+  var esc = function(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); };
+  var val = function(id){ var el = document.getElementById(id); return el ? el.value : ''; };
+  var set = function(id, v){ var el = document.getElementById(id); if(el) el.value = (v == null ? '' : v); };
+
+  function fmt(v){
+    if(!v) return '—';
+    var d = new Date(v);
+    return isNaN(d.getTime()) ? String(v) : d.toLocaleDateString('en-GB');
+  }
+
+  async function api(path, opts){
+    var res = await fetch(API_BASE + path, Object.assign({ headers: CIAuth.headers() }, opts || {}));
+    var data = await res.json().catch(function(){ return {}; });
+    if(!res.ok || !data.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+    return data;
+  }
+
+  function render(data){
+    state.entries = data.entries || [];
+    els.reviewed.textContent = data.last_reviewed ? ('Last reviewed ' + fmt(data.last_reviewed)) : 'Never reviewed';
+
+    els.rows.innerHTML = state.entries.length ? state.entries.map(function(r){
+      var section = r.category === 'client_data' ? 'A — client data' : 'B — public source';
+      // Section A entries carry a client notice obligation; Section B does not,
+      // so the notice column only nags where it actually applies.
+      var notice = r.category === 'client_data'
+        ? (r.notice_sent_at
+            ? esc(fmt(r.notice_sent_at))
+            : '<button class="btn" style="padding:4px 10px;font-size:12px" data-subproc-notice="' + esc(r.id) + '">Record notice</button>')
+        : '<span class="lead-muted">n/a</span>';
+      return '<tr>' +
+        '<td><b>' + esc(r.name) + '</b><div class="lead-muted" style="font-size:12px">' + esc(r.purpose || '') + '</div></td>' +
+        '<td>' + section + '</td>' +
+        '<td>' + esc(r.location || '—') + '</td>' +
+        '<td>' + esc(r.status) + '</td>' +
+        '<td>' + notice + '</td>' +
+        '<td style="text-align:right;white-space:nowrap">' +
+          '<button class="btn" style="padding:4px 10px;font-size:12px" data-subproc-edit="' + esc(r.id) + '">Edit</button> ' +
+          (r.status === 'removed' ? '' :
+            '<button class="btn" style="padding:4px 10px;font-size:12px" data-subproc-remove="' + esc(r.id) + '">Retire</button>') +
+        '</td></tr>';
+    }).join('') : '<tr><td class="lead-muted" colspan="6">No entries yet.</td></tr>';
+
+    els.changes.innerHTML = (data.changes || []).length ? (data.changes || []).map(function(c){
+      return '<div class="lead-muted" style="font-size:13px"><b style="color:#e2e8f0">' + fmt(c.created_at) + '</b> · ' +
+             esc(c.change_type) + ' · ' + esc(c.name || '') + (c.summary ? ' — ' + esc(c.summary) : '') +
+             (c.actor ? ' <span style="opacity:.7">(' + esc(c.actor) + ')</span>' : '') + '</div>';
+    }).join('') : '<div class="lead-muted">No changes recorded yet.</div>';
+  }
+
+  async function load(){
+    try { render(await api('/api/admin/sub-processors')); }
+    catch(e){ els.rows.innerHTML = '<tr><td class="lead-muted" colspan="6">Could not load: ' + esc(e.message) + '</td></tr>'; }
+  }
+
+  function clearForm(){
+    ['subprocId','subprocName','subprocPurpose','subprocLocation','subprocEffective','subprocService','subprocData'].forEach(function(id){ set(id, ''); });
+    set('subprocCategory', 'client_data');
+    set('subprocStatus', 'active');
+    els.formTitle.textContent = 'Add a sub-processor';
+    els.cancel.style.display = 'none';
+    els.msg.textContent = '';
+  }
+
+  function editEntry(id){
+    var r = state.entries.filter(function(x){ return x.id === id; })[0];
+    if(!r) return;
+    set('subprocId', r.id); set('subprocName', r.name); set('subprocPurpose', r.purpose);
+    set('subprocLocation', r.location); set('subprocEffective', r.effective_from);
+    set('subprocService', r.service); set('subprocData', r.data_processed);
+    set('subprocCategory', r.category); set('subprocStatus', r.status);
+    els.formTitle.textContent = 'Editing: ' + r.name;
+    els.cancel.style.display = '';
+    els.msg.textContent = '';
+    var nameEl = document.getElementById('subprocName');
+    if(nameEl && nameEl.scrollIntoView) nameEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  async function save(){
+    var name = val('subprocName').trim();
+    if(!name){ els.msg.textContent = 'Enter a name first.'; return; }
+    var payload = {
+      id: val('subprocId'), name: name, purpose: val('subprocPurpose'), location: val('subprocLocation'),
+      service: val('subprocService'), data_processed: val('subprocData'),
+      category: val('subprocCategory'), status: val('subprocStatus'), effective_from: val('subprocEffective')
+    };
+    els.msg.textContent = 'Saving…';
+    try {
+      await api('/api/admin/sub-processors', { method:'POST', body: JSON.stringify(payload) });
+      var wasNew = !payload.id;
+      clearForm();
+      await load();
+      els.msg.textContent = (wasNew && payload.category === 'client_data')
+        ? 'Saved. This is a Section A entry — give clients 14 days\u2019 notice, then record it above.'
+        : 'Saved.';
+    } catch(e){ els.msg.textContent = 'Save failed: ' + e.message; }
+  }
+
+  async function retire(id){
+    var r = state.entries.filter(function(x){ return x.id === id; })[0];
+    if(!r) return;
+    if(!window.confirm('Retire ' + r.name + '?\n\nIt is removed from the published list and recorded in the change history clients can see.')) return;
+    try {
+      await api('/api/admin/sub-processors', { method:'POST', body: JSON.stringify({ id: id, name: r.name, status: 'removed' }) });
+      await load();
+    } catch(e){ els.msg.textContent = 'Retire failed: ' + e.message; }
+  }
+
+  document.addEventListener('click', async function(e){
+    var t = e.target;
+    if(!t || !t.dataset) return;
+    if(t.id === 'subprocRefreshBtn') return load();
+    if(t.id === 'subprocSaveBtn') return save();
+    if(t.id === 'subprocCancelBtn') return clearForm();
+    if(t.id === 'subprocReviewBtn'){
+      try { await api('/api/admin/sub-processors/review', { method:'POST', body:'{}' }); await load(); }
+      catch(err){ els.msg.textContent = 'Could not mark reviewed: ' + err.message; }
+      return;
+    }
+    if(t.dataset.subprocEdit) return editEntry(t.dataset.subprocEdit);
+    if(t.dataset.subprocRemove) return retire(t.dataset.subprocRemove);
+    if(t.dataset.subprocNotice){
+      try {
+        await api('/api/admin/sub-processors/notice', { method:'POST', body: JSON.stringify({ id: t.dataset.subprocNotice }) });
+        await load();
+      } catch(err){ els.msg.textContent = 'Could not record notice: ' + err.message; }
+    }
+  });
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+})();
+</script>
+</body>
 </html>
