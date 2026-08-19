@@ -1733,29 +1733,58 @@
               </div>
 
               <div class="form-field full">
-                <label>Trainees / Observer</label>
-                <input type="text" id="scTrainees" placeholder="e.g. J. Smith, Team Alpha — saved with session record">
-              </div>
-
-            </div>
-
-            <!-- Stealth Mode Toggle -->
-            <div style="margin-top:12px;margin-bottom:4px;">
-              <div class="stealth-toggle-wrap" id="stealthToggleWrap" onclick="toggleStealth()">
-                <div class="stealth-switch"></div>
-                <div class="stealth-label-text">
-                  <div class="stealth-label-title">🕵️ Stealth Mode <span class="stealth-badge">ACTIVE</span></div>
-                  <div class="stealth-label-sub">When on, operators see this as a real alert — no training badge, banner, or label. Admin tracking still records it internally.</div>
+                <label>Assign to (optional)</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <select id="scTraineeSelect" style="flex:1 1 220px;min-width:0">
+                    <option value="">Not assigned — anyone on the desk can respond</option>
+                  </select>
+                  <input type="text" id="scTrainees" placeholder="…or type a name / team" style="flex:1 1 220px;min-width:0">
                 </div>
+                <div class="field-hint">Pick a team member where one person holds the seat, or type a name for a shared desk. Either way the responder enters their own name when they answer, so a shared login still identifies who was on shift.</div>
               </div>
+
             </div>
+
+            <!-- Stealth mode was removed with the move to a standalone training
+                 page. Exercises now always carry a training banner and run
+                 outside Live Alerts, so an unlabelled inject is no longer
+                 possible — and no longer needed. -->
 
             <button class="inject-btn" id="btnInject" onclick="injectScenario()" style="margin-top:10px;">
-              ⚡ Inject into operator feed
+              ⚡ Inject training scenario
             </button>
           </div>
         </div>
 
+
+
+        <!-- Escalation thresholds -->
+        <div class="card" id="thresholdCard" style="margin-top:16px">
+          <div class="card-head">
+            <div>
+              <div class="card-title">⚖️ Escalation thresholds</div>
+              <div class="card-sub">Your organisation's own escalation rules. Where these are set, exercises are scored against them instead of against the scenario's own wording — so "correct" means what your desk actually requires.</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <span class="field-hint" id="thresholdStatus">Loading…</span>
+              <button type="button" class="btn" id="thresholdSaveBtn">Save thresholds</button>
+            </div>
+          </div>
+
+          <div id="thresholdRules" style="display:grid;gap:10px;margin-top:12px"></div>
+
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field">
+              <label>Proximity radius (km)</label>
+              <input type="number" id="thresholdProximity" min="0" step="0.5" value="2">
+              <div class="field-hint">Distance at which a traveller or asset counts as affected.</div>
+            </div>
+            <div class="form-field full">
+              <label>Notes (optional)</label>
+              <input type="text" id="thresholdNotes" placeholder="e.g. Out of hours, escalate to the on-call number rather than the duty desk">
+            </div>
+          </div>
+        </div>
 
         <!-- Scenario Sequencer -->
         <div class="card" id="sequencerCard">
@@ -2245,7 +2274,10 @@ let selectedRisk       = 'high';
 let selectedCategory   = '';
 let selectedPreset     = -1;
 let selectedDifficulty = 'intermediate';  // beginner | intermediate | advanced
-let stealthMode        = false;           // when true, operator sees real alert (no training labelling)
+// Stealth mode removed: every inject is labelled as training. Kept as a
+// permanently-false constant so any older handler still referencing it is
+// harmless rather than a ReferenceError.
+const stealthMode      = false;
 let sessionPaused      = false;
 let scenarios        = [];
 let sessionStartTime = null;
@@ -2339,16 +2371,8 @@ function setDifficulty(level) {
 }
 
 function toggleStealth() {
-  stealthMode = !stealthMode;
-  const wrap = document.getElementById('stealthToggleWrap');
-  const ind  = document.getElementById('stealthIndicator');
-  if (stealthMode) {
-    wrap.classList.add('stealth-on');
-    if (ind) ind.style.display = '';
-  } else {
-    wrap.classList.remove('stealth-on');
-    if (ind) ind.style.display = 'none';
-  }
+  /* Stealth mode removed — retained as a no-op so any stale inline handler
+     or bookmarked call does nothing instead of throwing. */
 }
 
 function buildPresets() {
@@ -2404,8 +2428,6 @@ function applyPreset(idx) {
   setRisk(p.risk);
   setCategory(p.category);
   setDefaultDateTime();
-  // Reset stealth to off when loading a preset (intentional default)
-  if (stealthMode) toggleStealth();
   setDifficulty(p.difficulty || 'intermediate');
 }
 
@@ -2446,6 +2468,8 @@ function injectScenario() {
   const lngRaw = parseFloat(document.getElementById('scLng')?.value);
 
   const scenario = buildScenarioObj({
+    traineeName: resolvedTrainee(),
+    traineeEmail: (document.getElementById('scTraineeSelect')?.value || ''),
     title, city,
     country:  document.getElementById('scCountry').value.trim(),
     location: document.getElementById('scLocation').value.trim(),
@@ -2457,7 +2481,7 @@ function injectScenario() {
     when: document.getElementById('scWhen').value ? new Date(document.getElementById('scWhen').value).toISOString() : new Date().toISOString(),
     targetResponseMin: parseInt(document.getElementById('scTargetResponse')?.value, 10) || 0,
     difficulty: selectedDifficulty,
-    stealth: stealthMode,
+    stealth: false,
     lat: isNaN(latRaw) ? null : latRaw,
     lng: isNaN(lngRaw) ? null : lngRaw,
   });
@@ -2471,15 +2495,16 @@ function injectScenario() {
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
-  // Stealth mode: strip all training identifiers so operator sees a real-looking alert
-  const isLive   = stealth === true || stealth === 'true';
-  const srcLabel = isLive ? 'CityIntel Intelligence Feed' : 'CityIntel Training Feed';
-  const srcType  = isLive ? 'live'     : 'training';
-  const confVal  = isLive ? (confidence && confidence !== 'Training scenario' ? confidence : 'Open source report')
-                          : (confidence || 'Training scenario');
+  // Every scenario is labelled as training. Stealth mode was removed when
+  // exercises moved off Live Alerts onto their own page: an inject that looked
+  // like a real alert could trigger real escalation, and an operator who has
+  // been told drills are unlabelled starts doubting genuine alarms.
+  const srcLabel = 'CityIntel Training Feed';
+  const srcType  = 'training';
+  const confVal  = confidence || 'Training scenario';
 
   return {
     id: `training_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
@@ -2495,10 +2520,14 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     autoEscalateAfterMin: autoEscalateMin || 0, auto_escalate_min: autoEscalateMin || 0,
     // Stealth mode control
     src: srcLabel, sourceType: srcType,
-    stealth: isLive,            // admin-side flag for tracking and debrief
+    stealth: false,
     // Scoring metadata
     targetResponseMin: targetResponseMin || 0,
     difficulty: difficulty || 'intermediate',
+    traineeName: traineeName || '',
+    trainee_name: traineeName || '',
+    traineeEmail: traineeEmail || '',
+    trainee_email: traineeEmail || '',
     status: 'active', operatorResponse: null, description: summary || '', type: catInfo.id,
     // Map coordinates
     lat: (lat !== null && lat !== undefined && !isNaN(lat)) ? lat : null,
@@ -4143,5 +4172,138 @@ document.addEventListener('DOMContentLoaded',function(){
 <script src="shared-nav.js"></script>
 <script src="support-widget.js"></script>
 	
+
+<script>
+/* ════════════════════════════════════════════════
+   TRAINEE PICKER + ESCALATION THRESHOLDS
+════════════════════════════════════════════════ */
+(function trainingAdminExtras(){
+  'use strict';
+  var API = String(window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
+  function headers(){ return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type':'application/json' }; }
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+
+  /* ── Team members for the assign dropdown ─────────────────────────── */
+  async function loadTeam(){
+    var sel = document.getElementById('scTraineeSelect');
+    if (!sel) return;
+    try {
+      var res = await fetch(API + '/api/org/invites', { headers: headers() });
+      var data = await res.json().catch(function(){ return {}; });
+      var rows = (data && Array.isArray(data.data)) ? data.data : [];
+      rows.filter(function(r){ return r.status === 'active'; }).forEach(function(r){
+        var opt = document.createElement('option');
+        // Value carries the email so the scenario can be tied to an account;
+        // the label is what appears on the exercise and in the record.
+        opt.value = r.email || '';
+        opt.textContent = (r.name && r.name !== r.email) ? (r.name + ' (' + r.email + ')') : (r.email || '');
+        opt.dataset.name = r.name || r.email || '';
+        sel.appendChild(opt);
+      });
+    } catch (_) { /* dropdown simply stays empty; free text still works */ }
+  }
+
+  // Free text wins if both are filled — it is the more specific instruction.
+  window.resolvedTrainee = function(){
+    var free = (document.getElementById('scTrainees') || {}).value || '';
+    if (free.trim()) return free.trim();
+    var sel = document.getElementById('scTraineeSelect');
+    if (!sel || !sel.value) return '';
+    var opt = sel.options[sel.selectedIndex];
+    return (opt && opt.dataset.name) || sel.value;
+  };
+
+  /* ── Escalation thresholds ────────────────────────────────────────── */
+  var RISKS = [
+    { key:'high', label:'High risk' },
+    { key:'med',  label:'Medium risk' },
+    { key:'low',  label:'Low risk' }
+  ];
+  var ACTIONS = [
+    { key:'escalate',  label:'Escalate' },
+    { key:'notify',    label:'Notify' },
+    { key:'monitor',   label:'Monitor' },
+    { key:'log_only',  label:'Log only' },
+    { key:'no_action', label:'No action' }
+  ];
+
+  function ruleRow(rule){
+    var r = rule || {};
+    return '<div class="row" data-risk-row="' + esc(r.risk) + '" style="gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<span style="min-width:110px;font-weight:800">' + esc((RISKS.filter(function(x){return x.key===r.risk;})[0]||{}).label || r.risk) + '</span>' +
+      '<select data-th="action" style="flex:0 1 160px">' + ACTIONS.map(function(a){
+        return '<option value="' + a.key + '"' + (a.key === r.action ? ' selected' : '') + '>' + a.label + '</option>';
+      }).join('') + '</select>' +
+      '<input type="number" data-th="within" min="0" placeholder="mins" value="' + (r.within_min || '') + '" style="flex:0 1 100px">' +
+      '<input type="text" data-th="notify" placeholder="Who to notify" value="' + esc(r.notify || '') + '" style="flex:1 1 220px;min-width:0">' +
+    '</div>';
+  }
+
+  function renderRules(rules){
+    var byRisk = {};
+    (rules || []).forEach(function(r){ byRisk[r.risk] = r; });
+    document.getElementById('thresholdRules').innerHTML = RISKS.map(function(x){
+      return ruleRow(byRisk[x.key] || { risk:x.key, action:(x.key === 'high' ? 'escalate' : x.key === 'med' ? 'notify' : 'log_only') });
+    }).join('');
+  }
+
+  async function loadThresholds(){
+    var status = document.getElementById('thresholdStatus');
+    if (!status) return;
+    try {
+      var res = await fetch(API + '/api/org/escalation-policy', { headers: headers() });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Could not load');
+      var p = data.policy || {};
+      renderRules(p.rules);
+      document.getElementById('thresholdProximity').value = p.proximity_km != null ? p.proximity_km : 2;
+      document.getElementById('thresholdNotes').value = p.notes || '';
+      status.textContent = data.configured
+        ? ('Saved' + (p.updated_at ? ' ' + new Date(p.updated_at).toLocaleDateString('en-GB') : ''))
+        : 'Not set — scenarios score against their own wording';
+    } catch (e) {
+      renderRules([]);
+      status.textContent = 'Could not load thresholds';
+    }
+  }
+
+  async function saveThresholds(){
+    var status = document.getElementById('thresholdStatus');
+    var rules = Array.prototype.map.call(document.querySelectorAll('[data-risk-row]'), function(row){
+      return {
+        risk: row.getAttribute('data-risk-row'),
+        action: row.querySelector('[data-th="action"]').value,
+        within_min: Number(row.querySelector('[data-th="within"]').value || 0) || 0,
+        notify: row.querySelector('[data-th="notify"]').value || ''
+      };
+    });
+    status.textContent = 'Saving…';
+    try {
+      var res = await fetch(API + '/api/org/escalation-policy', {
+        method: 'PUT',
+        headers: headers(),
+        body: JSON.stringify({
+          rules: rules,
+          proximity_km: Number(document.getElementById('thresholdProximity').value || 0) || 0,
+          notes: document.getElementById('thresholdNotes').value || ''
+        })
+      });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
+      status.textContent = 'Saved just now';
+    } catch (e) {
+      status.textContent = 'Save failed: ' + (e.message || e);
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.id === 'thresholdSaveBtn') saveThresholds();
+  });
+
+  function boot(){ loadTeam(); loadThresholds(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
 </body>
 </html>
