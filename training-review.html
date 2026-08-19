@@ -129,7 +129,7 @@
 
 
   /* ═══════════════════════════════════════════════════════════════
-     CITYINTEL TRAINING RECORD VISUAL REFINEMENT — v6
+     CITYINTEL TRAINING RECORD VISUAL REFINEMENT — v7
      ═══════════════════════════════════════════════════════════════ */
   :root{--ci-red:#ef2329;--ci-line:#27313b;--ci-panel:#11171d;--ci-panel-deep:#0a0f14;--ci-copy:#9badc2}
   body{
@@ -202,6 +202,13 @@
   ::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:#090d11}::-webkit-scrollbar-thumb{background:#303a45;border-radius:9px}
   @media(max-width:900px){.review-hero{padding:17px}.main{padding:16px}.kpi-row{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:700px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:12px}.kpi-row{grid-template-columns:1fr}.review-actions{width:100%}.review-btn{flex:1}.score-row{grid-template-columns:1fr}}
+
+  .process-line{margin-top:7px;font-size:12px;color:#a9b8ca;line-height:1.55}
+  .process-line b{color:#e6edf5}
+  .process-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .process-pill{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;border:1px solid rgba(147,197,253,.28);background:rgba(147,197,253,.08);color:#bfdbfe}
+  .process-pill.missed{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.08);color:#fecaca}
+
 </style>
 </head>
 
@@ -469,11 +476,11 @@ function renderScoredScenario(s, i){
   const category = sc.category || '';
   const responded = s.responded !== undefined ? s.responded : !!s.action;
   const action = s.action || sc.status || '';
-  const actionCorrect = s.actionCorrect;
+  const expectedAction = s.expectedAction || sc.expectedAction || '';
+  const actionCorrect = s.actionCorrect !== undefined ? s.actionCorrect : (!!expectedAction && action === expectedAction);
   const responseMs = s.responseMs || 0;
   const pct  = typeof s.pct === 'number' ? s.pct : 0;
   const tier = s.tier || (pct>=80?'pass':pct>=50?'warn':responded?'fail':'no-response');
-  const expectedAction = s.expectedAction || sc.expectedAction || '';
 
   const pillCls = tier==='pass'?'pill-pass':tier==='warn'?'pill-warn':tier==='no-response'?'pill-none':'pill-fail';
   const pillTxt = tier==='pass'?'Pass':tier==='warn'?'Partial':tier==='no-response'?'No Response':'Needs Work';
@@ -508,6 +515,14 @@ function renderScoredScenario(s, i){
         ${respStr ? `<span>⏱ ${respStr}</span>` : ''}
         ${action ? `<span>Action: <strong style="color:var(--text)">${esc(action)}</strong></span>` : ''}
       </div>
+      ${(Array.isArray(s.completedChecks) || Array.isArray(s.expectedChecks)) ? `
+        <div class="process-line"><b>Operational checks:</b> ${s.processPct==null?'not scored':s.processPct+'%'}</div>
+        <div class="process-pills">
+          ${(s.completedChecks||[]).map(x=>`<span class="process-pill">${esc(String(x).replace(/_/g,' '))}</span>`).join('')}
+          ${(s.missingChecks||[]).map(x=>`<span class="process-pill missed">Missed: ${esc(String(x).replace(/_/g,' '))}</span>`).join('')}
+        </div>` : ''}
+      ${s.nearestLocationName || s.distanceM!=null ? `<div class="process-line"><b>Proximity:</b> ${esc(s.nearestLocationName||'Nearest location')}${s.distanceM!=null?' · '+(Number(s.distanceM)<1000?Math.round(Number(s.distanceM))+' m':(Math.round(Number(s.distanceM)/100)/10)+' km'):''}</div>` : ''}
+      ${s.note ? `<div class="process-line"><b>Reasoning:</b> ${esc(s.note)}</div>` : ''}
       ${feedback ? `<div class="sc-feedback ${fbCls}">${feedback}</div>` : ''}
     </div>`;
 }
@@ -522,6 +537,9 @@ function buildRecommendations(scores, overallPct){
     return (sc.risk||'').toLowerCase()==='high' && (s.action||'')!=='escalated';
   });
 
+  const processMisses = scores.filter(s => Array.isArray(s.missingChecks) && s.missingChecks.length);
+  if(processMisses.length > 0)
+    recs.push(`${processMisses.length} scenario${processMisses.length>1?'s had':' had'} expected operational checks missed — review OSINT, assets, travellers and SOP steps before the next exercise.`);
   if(noResponse.length > 0)
     recs.push(`You did not respond to ${noResponse.length} scenario${noResponse.length>1?'s':''} — always take an action, even if it's clearing a false positive.`);
   if(highRiskMissed.length > 0)
@@ -727,6 +745,24 @@ document.addEventListener('DOMContentLoaded',function(){
       var viaShared = r.responder_name && r.operator_email &&
         String(r.responder_name).toLowerCase() !== String(r.operator_name || '').toLowerCase();
       var mins = Number(r.response_ms || 0) > 0 ? Math.round(Number(r.response_ms) / 60000) : null;
+      var checks = [];
+      var expected = [];
+      try { checks = Array.isArray(r.checks_json) ? r.checks_json : JSON.parse(r.checks_json || '[]'); } catch(_){}
+      try { expected = Array.isArray(r.expected_checks) ? r.expected_checks : JSON.parse(r.expected_checks || '[]'); } catch(_){}
+      var missing = expected.filter(function(k){ return checks.indexOf(k) === -1; });
+      var processPct = expected.length ? Math.round(((expected.length-missing.length)/expected.length)*100) : null;
+      var dist = r.distance_m == null ? null : Number(r.distance_m);
+      var prox = (r.nearest_location_name || dist !== null)
+        ? ('<div class="muted" style="font-size:12px;margin-top:4px"><b style="color:#dbe3ec">Proximity:</b> ' +
+            esc(r.nearest_location_name || 'Nearest location') +
+            (dist !== null ? ' · ' + (dist < 1000 ? Math.round(dist)+' m' : (Math.round(dist/100)/10)+' km') : '') + '</div>')
+        : '';
+      var checkHtml = (checks.length || expected.length)
+        ? ('<div class="muted" style="font-size:12px;margin-top:4px"><b style="color:#dbe3ec">Operational checks:</b> ' +
+            (processPct===null ? checks.length+' recorded' : processPct+'%') +
+            (checks.length ? ' · completed: ' + esc(checks.join(', ')) : '') +
+            (missing.length ? ' · missed: ' + esc(missing.join(', ')) : '') + '</div>')
+        : '';
       return '<div style="border-bottom:1px solid #24272c;padding:10px 0;display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap">' +
         '<div style="min-width:0;flex:1 1 320px">' +
           '<div style="font-weight:700;font-size:13px">' + esc(r.scenario_title || 'Training scenario') + '</div>' +
@@ -735,7 +771,8 @@ document.addEventListener('DOMContentLoaded',function(){
             (viaShared ? ' <span style="opacity:.75">(account: ' + esc(r.operator_email) + ')</span>' : '') +
             (r.trainee_name ? ' · assigned to ' + esc(r.trainee_name) : '') +
           '</div>' +
-          (r.note ? '<div class="muted" style="font-size:12px;margin-top:4px">“' + esc(r.note) + '”</div>' : '') +
+          (r.note ? '<div class="muted" style="font-size:12px;margin-top:4px"><b style="color:#dbe3ec">Reasoning:</b> “' + esc(r.note) + '”</div>' : '') +
+          checkHtml + prox +
         '</div>' +
         '<div style="text-align:right;white-space:nowrap">' +
           '<div style="font-weight:800;font-size:12px;color:' + (ACTION_COLOR[r.action] || '#cfe1ff') + '">' +
