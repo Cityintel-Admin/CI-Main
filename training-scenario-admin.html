@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- CityIntel Training Phase 9B.1 — editable factual scenario draft summaries -->
 <html lang="en">
 <head>
 	
@@ -1929,8 +1930,12 @@
               </div>
 
               <div class="form-field full">
-                <label>Summary / Details</label>
-                <textarea id="scSummary" rows="3" placeholder="Describe what's happening, who's affected, and the recommended operator action…"></textarea>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                  <label style="margin:0">Summary / Details</label>
+                  <button type="button" class="btn" id="scGenerateSummaryBtn" onclick="generateScenarioDraftSummary()">✨ Generate draft summary</button>
+                </div>
+                <textarea id="scSummary" rows="3" placeholder="Describe the incident facts, location, source context and known impact…"></textarea>
+                <div class="form-hint">Shown to the operator. Generate draft creates an editable factual summary from the builder fields only — it deliberately excludes the expected response, required checks and escalation guidance.</div>
               </div>
 
               <div class="form-field full">
@@ -3115,6 +3120,78 @@ function buildThresholdGuidance(rule) {
   if (rule.exceptions) parts.push('Exceptions: ' + rule.exceptions + '.');
   return parts.join(' ').replace(/\s+/g,' ').trim();
 }
+
+function scenarioDraftPlace() {
+  const location = document.getElementById('scLocation')?.value?.trim() || '';
+  const city = document.getElementById('scCity')?.value?.trim() || '';
+  const country = document.getElementById('scCountry')?.value?.trim() || '';
+  const geographic = [city, country].filter(Boolean).join(', ');
+  if (location && geographic) return location + ', ' + geographic;
+  return location || geographic;
+}
+
+function buildScenarioDraftSummary() {
+  const title = document.getElementById('scTitle')?.value?.trim() || '';
+  const place = scenarioDraftPlace();
+  const confidence = document.getElementById('scConfidence')?.value?.trim() || '';
+  const distanceRaw = Number(document.getElementById('scDistance')?.value || 0);
+  const nearest = document.getElementById('scNearestRef')?.value?.trim() || '';
+  const cat = CATEGORIES.find(c => c.id === selectedCategory);
+  const categoryLabel = cat?.label || '';
+  const riskLabel = selectedRisk === 'high' ? 'High' : selectedRisk === 'low' ? 'Low' : 'Medium';
+
+  const sentences = [];
+  const cleanTitle = title.replace(/[.!?]+$/g, '').trim();
+  if (cleanTitle && place) sentences.push(cleanTitle + ' has been reported at ' + place + '.');
+  else if (cleanTitle) sentences.push(cleanTitle + ' has been reported.');
+  else if (place && categoryLabel) sentences.push('A ' + categoryLabel.toLowerCase() + ' incident has been reported at ' + place + '.');
+  else if (place) sentences.push('A training incident has been reported at ' + place + '.');
+  else if (categoryLabel) sentences.push('A ' + categoryLabel.toLowerCase() + ' training incident has been reported.');
+  else sentences.push('A training incident has been reported.');
+
+  sentences.push('The event is currently assessed as ' + riskLabel + ' risk' + (categoryLabel ? ' under ' + categoryLabel : '') + '.');
+
+  if (Number.isFinite(distanceRaw) && distanceRaw > 0) {
+    sentences.push('The incident is approximately ' + Math.round(distanceRaw) + ' m from ' + (nearest || 'the nearest recorded organisation location') + '.');
+  } else if (nearest) {
+    sentences.push('The nearest recorded organisation location is ' + nearest + '.');
+  }
+
+  if (confidence && confidence !== 'Training scenario') {
+    const sourcePhrase = {
+      'Operator observed':'operator observation',
+      'Trusted source':'a trusted source',
+      'Open source report':'an open source report',
+      'Unverified report':'an unverified report'
+    }[confidence] || confidence.toLowerCase();
+    sentences.push('Initial information is based on ' + sourcePhrase + '.');
+  }
+
+  sentences.push('Details should be verified and updated as the situation develops, including any confirmed impact on nearby personnel, assets or travel.');
+  return sentences.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function generateScenarioDraftSummary() {
+  const field = document.getElementById('scSummary');
+  if (!field) return;
+  const applyDraft = () => {
+    field.value = buildScenarioDraftSummary();
+    field.dispatchEvent(new Event('input', { bubbles:true }));
+    field.focus();
+    toast('✨ Draft summary generated — edit any wording before injecting', 'success');
+  };
+
+  if (field.value.trim()) {
+    showConfirm(
+      'Replace current summary?',
+      'Generate a new factual draft from the current scenario fields? Your existing summary text will be replaced.',
+      applyDraft
+    );
+  } else {
+    applyDraft();
+  }
+}
+window.generateScenarioDraftSummary = generateScenarioDraftSummary;
 
 function applySelectedThresholdDefaults() {
   const rule = thresholdRuleById(selectedThresholdRuleId);
