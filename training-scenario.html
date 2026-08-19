@@ -29,6 +29,7 @@
   <link rel="icon" type="image/png" href="/CityintLogo.jpg" />
   <link rel="apple-touch-icon" href="/CityintLogo.jpg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <style>
     :root{--brand-red:#D01616;--brand-black:#0C0C0C;--gray-900:#111214;--gray-800:#16171a;--gray-700:#1c1e22;--gray-600:#24272c;--gray-500:#2e3238;--muted:#8e97a3;--text:#e9edf2;--ok:#33c48d;--warn:#f0b429;--danger:#ff5a5f;--info:#93c5fd;--radius:16px;--shadow:0 8px 24px rgba(0,0,0,.35)}
     *{box-sizing:border-box}html,body{height:100%;margin:0}body{font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));color:var(--text);overflow-x:hidden}
@@ -48,7 +49,7 @@
   
 
     /* ═══════════════════════════════════════════════════════════════
-       CITYINTEL TRAINING VISUAL REFINEMENT — v7
+       CITYINTEL TRAINING VISUAL REFINEMENT — v8
        Cosmetic only: all existing IDs, APIs and workflow logic remain intact.
        ═══════════════════════════════════════════════════════════════ */
     :root{
@@ -251,6 +252,47 @@
   .tr-policy-rule{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--gray-600);font-size:12px}
   .tr-policy-rule:last-child{border-bottom:0}
   .tr-policy-rule .a{font-weight:800;color:var(--text)}
+
+  .tr-ops-context{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;
+  }
+  @media(max-width:720px){.tr-ops-context{grid-template-columns:1fr}}
+  .tr-context-card{
+    border:1px solid var(--gray-500);background:#10151b;border-radius:13px;padding:11px 12px;min-width:0;
+  }
+  .tr-context-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px}
+  .tr-context-value{font-size:13px;font-weight:850;color:#eef3f8;line-height:1.45}
+  .tr-context-sub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .tr-proximity.inside{border-color:rgba(255,90,95,.42);background:rgba(255,90,95,.07)}
+  .tr-proximity.inside .tr-context-value{color:#fecaca}
+  .tr-proximity.outside{border-color:rgba(51,196,141,.35);background:rgba(51,196,141,.05)}
+  .tr-map{
+    height:230px;border-radius:13px;overflow:hidden;border:1px solid var(--gray-500);margin-top:12px;background:#0c1116;
+  }
+  .tr-map-fallback{height:100%;display:grid;place-items:center;text-align:center;padding:18px;color:var(--muted);font-size:12px}
+  .tr-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:7px}
+  @media(max-width:650px){.tr-checks{grid-template-columns:1fr}}
+  .tr-check{
+    display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border:1px solid var(--gray-500);
+    border-radius:11px;background:#12171d;color:#dbe3ec;font-size:12px;cursor:pointer;line-height:1.35;
+  }
+  .tr-check:hover{border-color:#45515e}
+  .tr-check input{margin-top:2px;accent-color:var(--brand-red);flex:0 0 auto}
+  .tr-check .tr-check-text{min-width:0;flex:1}
+  .tr-check .tr-check-link{font-size:10px;color:#bfdbfe;text-decoration:none;white-space:nowrap}
+  .tr-check .tr-check-link:hover{text-decoration:underline}
+  .tr-feedback{
+    margin-top:12px;border:1px solid rgba(147,197,253,.30);background:rgba(147,197,253,.07);
+    border-radius:13px;padding:12px 13px;color:#dbeafe;
+  }
+  .tr-feedback.good{border-color:rgba(51,196,141,.35);background:rgba(51,196,141,.07);color:#d1fae5}
+  .tr-feedback.warn{border-color:rgba(240,180,41,.36);background:rgba(240,180,41,.07);color:#fef3c7}
+  .tr-feedback.bad{border-color:rgba(255,90,95,.38);background:rgba(255,90,95,.07);color:#fee2e2}
+  .tr-feedback-title{font-size:12px;font-weight:900;margin-bottom:6px}
+  .tr-feedback-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;font-size:11px;line-height:1.45}
+  @media(max-width:650px){.tr-feedback-grid{grid-template-columns:1fr}}
+  .tr-feedback-note{margin-top:7px;font-size:11px;color:inherit;opacity:.9}
+
 </style>
 </head>
 <body>
@@ -464,14 +506,42 @@ window.CIAccess = {
 </script>
 <!-- ── /CIAccess ───────────────────────────────────────────────────────── -->
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
 <script>
 (function trainingExercise(){
   'use strict';
 
   var API = String(window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
   var NAME_KEY = 'ci_training_responder_name';
+  var DRAFT_KEY = 'ci_training_response_drafts_v2';
 
-  var state = { scenarios: [], responded: {}, selected: {}, policy: null, busy: false };
+  var CHECKS = [
+    { key:'osint', label:'Review OSINT / official sources', hint:'Validate the incident through credible open or official reporting.' },
+    { key:'assets', label:'Check organisation assets', hint:'Review offices, sites or other registered assets for exposure.', href:'assets.html' },
+    { key:'travellers', label:'Check travellers', hint:'Review registered travellers who may be in or moving through the area.', href:'travellers.html' },
+    { key:'sop', label:'Review escalation threshold / SOP', hint:'Apply the organisation\'s configured escalation policy and proximity threshold.' }
+  ];
+
+  function loadDrafts(){
+    try {
+      var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+      return d && typeof d === 'object' ? d : {};
+    } catch (_) { return {}; }
+  }
+  function saveDrafts(){
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state.drafts || {})); } catch (_) {}
+  }
+  function draftFor(id){
+    if (!state.drafts[id]) state.drafts[id] = { note:'', checks:[] };
+    if (!Array.isArray(state.drafts[id].checks)) state.drafts[id].checks = [];
+    return state.drafts[id];
+  }
+
+  var state = {
+    scenarios: [], responded: {}, selected: {}, policy: null, busy: false,
+    drafts: loadDrafts(), signature:'', maps:{}
+  };
 
   function esc(v){
     return String(v == null ? '' : v).replace(/[&<>"]/g, function(c){
@@ -505,6 +575,188 @@ window.CIAccess = {
     return 'med';
   }
 
+
+  function num(v){
+    var n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function formatDistance(m){
+    var n = num(m);
+    if (n === null || n < 0) return '';
+    if (n < 1000) return Math.round(n) + ' m';
+    return (Math.round((n/1000)*10)/10) + ' km';
+  }
+
+  function expectedCheckLabel(key){
+    var found = CHECKS.filter(function(c){ return c.key === key; })[0];
+    return found ? found.label : key;
+  }
+
+  function scenarioSignature(list){
+    return JSON.stringify((list || []).map(function(sc){
+      return [
+        sc.id, sc.title, sc.city, sc.country, sc.location, sc.risk, sc.category,
+        sc.summary, sc.confidence, sc.target_response_min, sc.trainee_name,
+        sc.difficulty, sc.injected_at, sc.latitude, sc.longitude, sc.lat, sc.lng,
+        sc.nearest_location_name, sc.distance_m
+      ];
+    }));
+  }
+
+  function destroyMaps(){
+    Object.keys(state.maps || {}).forEach(function(k){
+      try { state.maps[k].remove(); } catch (_) {}
+    });
+    state.maps = {};
+  }
+
+  function initScenarioMaps(){
+    if (!window.L) return;
+    (state.scenarios || []).forEach(function(sc){
+      if (state.responded[sc.id]) return;
+      var lat = num(sc.latitude != null ? sc.latitude : sc.lat);
+      var lng = num(sc.longitude != null ? sc.longitude : sc.lng);
+      if (lat === null || lng === null) return;
+      var el = document.getElementById('tr-map-' + sc.id);
+      if (!el || state.maps[sc.id]) return;
+      try {
+        var map = L.map(el, { zoomControl:true, attributionControl:true, scrollWheelZoom:false }).setView([lat,lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom:19, attribution:'&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        L.circleMarker([lat,lng], {
+          radius:8, weight:2, color:'#ff5a5f', fillColor:'#D01616', fillOpacity:.85
+        }).addTo(map).bindPopup('<b>Simulated scenario location</b><br>' + esc(sc.location || sc.city || 'Training location'));
+        state.maps[sc.id] = map;
+        setTimeout(function(){ try { map.invalidateSize(); } catch (_) {} }, 50);
+      } catch (_) {
+        el.innerHTML = '<div class="tr-map-fallback">Map could not be loaded. Coordinates: ' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</div>';
+      }
+    });
+  }
+
+  function renderChecks(sc){
+    var d = draftFor(sc.id);
+    return '<div class="tr-field">' +
+      '<label>Operational checks performed</label>' +
+      '<div class="small" style="margin-bottom:7px">Record what you actually checked before committing to your action.</div>' +
+      '<div class="tr-checks">' +
+      CHECKS.map(function(c){
+        var checked = d.checks.indexOf(c.key) !== -1 ? ' checked' : '';
+        var link = c.href ? '<a class="tr-check-link" href="' + c.href + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open ↗</a>' : '';
+        return '<label class="tr-check">' +
+          '<input type="checkbox" data-training-check="' + esc(c.key) + '" data-for="' + esc(sc.id) + '"' + checked + '>' +
+          '<span class="tr-check-text"><b>' + esc(c.label) + '</b><br><span style="color:var(--muted)">' + esc(c.hint) + '</span></span>' +
+          link +
+        '</label>';
+      }).join('') +
+      '</div>' +
+    '</div>';
+  }
+
+  function proximityBlock(sc){
+    var name = String(sc.nearest_location_name || '').trim();
+    var distance = num(sc.distance_m);
+    if (!name && distance === null) return '';
+    var thresholdKm = state.policy && state.policy.proximity_km != null ? Number(state.policy.proximity_km) : null;
+    var inside = distance !== null && Number.isFinite(thresholdKm) ? distance <= thresholdKm * 1000 : null;
+    var cls = inside === true ? ' inside' : inside === false ? ' outside' : '';
+    var distText = distance !== null ? formatDistance(distance) : 'Distance not recorded';
+    var policyText = Number.isFinite(thresholdKm)
+      ? 'Configured threshold: ' + formatDistance(thresholdKm * 1000) + (inside === true ? ' · inside threshold' : inside === false ? ' · outside threshold' : '')
+      : 'Apply your organisation\'s proximity guidance.';
+    return '<div class="tr-context-card tr-proximity' + cls + '" data-proximity-for="' + esc(sc.id) + '">' +
+      '<div class="tr-context-label">Organisation proximity</div>' +
+      '<div class="tr-context-value">' + esc(name || 'Nearest organisation location') + ' · ' + esc(distText) + '</div>' +
+      '<div class="tr-context-sub">' + esc(policyText) + '</div>' +
+    '</div>';
+  }
+
+  function mapAndContext(sc){
+    var lat = num(sc.latitude != null ? sc.latitude : sc.lat);
+    var lng = num(sc.longitude != null ? sc.longitude : sc.lng);
+    var hasCoords = lat !== null && lng !== null;
+    var context = '';
+    var p = proximityBlock(sc);
+    if (p || hasCoords) {
+      context += '<div class="tr-ops-context">';
+      if (p) context += p;
+      if (hasCoords) {
+        context += '<div class="tr-context-card">' +
+          '<div class="tr-context-label">Scenario coordinates</div>' +
+          '<div class="tr-context-value">' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</div>' +
+          '<div class="tr-context-sub">Simulated operational location supplied by the exercise controller.</div>' +
+        '</div>';
+      }
+      context += '</div>';
+    }
+    if (hasCoords) context += '<div class="tr-map" id="tr-map-' + esc(sc.id) + '"><div class="tr-map-fallback">Loading simulated location map…</div></div>';
+    return context;
+  }
+
+  function feedbackBlock(done, sc){
+    var fb = done && done.feedback ? done.feedback : {};
+    var process = fb.process || {};
+    var correct = fb.correct;
+    var cls = correct === true ? ' good' : correct === false ? ' bad' : ' warn';
+    var expectedLabel = fb.expected ? ({escalated:'Escalate',monitoring:'Monitor',cleared:'No action',notified:'Notify'}[fb.expected] || fb.expected) : 'Not defined';
+    var completed = Array.isArray(process.completed) ? process.completed : (done.checks || []);
+    var missing = Array.isArray(process.missing) ? process.missing : [];
+    var processText = process.expected && process.expected.length
+      ? ((process.pct != null ? process.pct : 0) + '% · ' + completed.length + '/' + process.expected.length + ' expected checks')
+      : (completed.length + ' checks recorded');
+    var prox = fb.proximity || {};
+    var proxText = '';
+    if (prox.distanceM != null) {
+      proxText = formatDistance(prox.distanceM) + (prox.locationName ? ' from ' + prox.locationName : '');
+      if (prox.policyKm != null) proxText += ' · threshold ' + formatDistance(Number(prox.policyKm) * 1000);
+    }
+    return '<div class="tr-feedback' + cls + '">' +
+      '<div class="tr-feedback-title">Training feedback</div>' +
+      '<div class="tr-feedback-grid">' +
+        '<div><b>Action:</b> ' + esc(done.actionLabel || '') + '</div>' +
+        '<div><b>Policy expected:</b> ' + esc(expectedLabel) + '</div>' +
+        '<div><b>Process checks:</b> ' + esc(processText) + '</div>' +
+        '<div><b>Response target:</b> ' + (fb.targetResponseMin ? esc(String(fb.targetResponseMin)) + ' min' : 'Standard target') + '</div>' +
+        (proxText ? '<div style="grid-column:1/-1"><b>Proximity:</b> ' + esc(proxText) + '</div>' : '') +
+      '</div>' +
+      (missing.length ? '<div class="tr-feedback-note"><b>Missed expected checks:</b> ' + missing.map(expectedCheckLabel).map(esc).join(', ') + '</div>' : '') +
+      (fb.expectedResponse ? '<div class="tr-feedback-note"><b>Exercise guidance:</b> ' + esc(fb.expectedResponse) + '</div>' : '') +
+    '</div>';
+  }
+
+  function updateProximityContext(){
+    (state.scenarios || []).forEach(function(sc){
+      var el = document.querySelector('[data-proximity-for="' + CSS.escape(sc.id) + '"]');
+      if (!el) return;
+      var name = String(sc.nearest_location_name || '').trim() || 'Nearest organisation location';
+      var distance = num(sc.distance_m);
+      var thresholdKm = state.policy && state.policy.proximity_km != null ? Number(state.policy.proximity_km) : null;
+      var inside = distance !== null && Number.isFinite(thresholdKm) ? distance <= thresholdKm * 1000 : null;
+      el.classList.toggle('inside', inside === true);
+      el.classList.toggle('outside', inside === false);
+      var sub = el.querySelector('.tr-context-sub');
+      if (sub) sub.textContent = Number.isFinite(thresholdKm)
+        ? 'Configured threshold: ' + formatDistance(thresholdKm*1000) + (inside === true ? ' · inside threshold' : inside === false ? ' · outside threshold' : '')
+        : 'Apply your organisation\'s proximity guidance.';
+      var value = el.querySelector('.tr-context-value');
+      if (value) value.textContent = name + ' · ' + (distance !== null ? formatDistance(distance) : 'Distance not recorded');
+    });
+  }
+
+  function updateElapsedClocks(){
+    (state.scenarios || []).forEach(function(sc){
+      var el = document.querySelector('[data-elapsed-for="' + CSS.escape(sc.id) + '"]');
+      if (!el) return;
+      var mins = elapsedMin(sc.injected_at);
+      var target = Number(sc.target_response_min || 0);
+      var over = target > 0 && mins !== null && mins > target;
+      el.classList.toggle('over', over);
+      el.textContent = mins !== null ? ('⏱ ' + mins + ' min elapsed' + (target ? ' · target ' + target + ' min' : '')) : '⏱ timing unavailable';
+    });
+  }
+
   function scenarioCard(sc){
     var mins = elapsedMin(sc.injected_at);
     var target = Number(sc.target_response_min || 0);
@@ -512,11 +764,12 @@ window.CIAccess = {
     var place = [sc.location, sc.city, sc.country].filter(Boolean).join(' · ');
     var done = state.responded[sc.id];
     var chosen = state.selected[sc.id] || '';
+    var d = draftFor(sc.id);
 
     var chips = [
       '<span class="tr-chip risk-' + riskClass(sc.risk) + '">' + esc(String(sc.risk || 'med').toUpperCase()) + ' RISK</span>',
       sc.category ? '<span class="tr-chip">' + esc(sc.category_emoji || '') + ' ' + esc(sc.category) + '</span>' : '',
-      mins !== null ? '<span class="tr-chip clock' + (over ? ' over' : '') + '">⏱ ' + mins + ' min elapsed' + (target ? ' · target ' + target + ' min' : '') + '</span>' : '',
+      mins !== null ? '<span class="tr-chip clock' + (over ? ' over' : '') + '" data-elapsed-for="' + esc(sc.id) + '">⏱ ' + mins + ' min elapsed' + (target ? ' · target ' + target + ' min' : '') + '</span>' : '',
       sc.trainee_name ? '<span class="tr-chip">Assigned: ' + esc(sc.trainee_name) + '</span>' : '',
       (sc.difficulty && sc.difficulty !== 'intermediate') ? '<span class="tr-chip">' + esc(String(sc.difficulty).toUpperCase()) + '</span>' : ''
     ].filter(Boolean).join('');
@@ -531,10 +784,7 @@ window.CIAccess = {
           '<div class="small">Logged as <b>' + esc(done.responder) + '</b> · action: <b>' + esc(done.actionLabel) + '</b>' +
           (done.note ? ' · “' + esc(done.note) + '”' : '') + '</div>' +
         '</div>' +
-        (sc.expected_response
-          ? '<div class="tr-expected"><div class="lbl">Expected response</div>' +
-            '<div class="small" style="color:#dbe3ec">' + esc(sc.expected_response) + '</div></div>'
-          : '') +
+        feedbackBlock(done, sc) +
         '<div class="row" style="margin-top:12px"><a class="btn" href="training-review.html">See it in my record</a></div>' +
       '</section>';
     }
@@ -545,6 +795,8 @@ window.CIAccess = {
       (place ? '<div class="small" style="margin-top:8px">' + esc(place) + '</div>' : '') +
       (sc.summary ? '<p class="tr-summary">' + esc(sc.summary) + '</p>' : '') +
       (sc.confidence ? '<div class="small" style="margin-top:8px">Source confidence: ' + esc(sc.confidence) + '</div>' : '') +
+      mapAndContext(sc) +
+      renderChecks(sc) +
       '<div style="margin-top:16px">' +
         '<label style="display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">What would you do?</label>' +
         '<div class="tr-actions">' +
@@ -556,7 +808,8 @@ window.CIAccess = {
       '</div>' +
       '<div class="tr-field">' +
         '<label for="note-' + esc(sc.id) + '">Reasoning (optional but recommended)</label>' +
-        '<textarea id="note-' + esc(sc.id) + '" placeholder="Why this action? What did you check first?"></textarea>' +
+        '<textarea id="note-' + esc(sc.id) + '" data-training-note="' + esc(sc.id) + '" placeholder="Why this action? What did you check first?">' + esc(d.note || '') + '</textarea>' +
+        '<div class="hint">Draft is saved in this browser while the exercise remains open.</div>' +
       '</div>' +
       '<div class="tr-err" id="err-' + esc(sc.id) + '"></div>' +
       '<div class="row" style="margin-top:12px">' +
@@ -569,6 +822,7 @@ window.CIAccess = {
   function render(){
     var wrap = document.getElementById('trScenarios');
     if (!wrap) return;
+    destroyMaps();
     if (!state.scenarios.length) {
       wrap.innerHTML = '<div class="card"><div class="tr-empty">' +
         '<div class="big">🎓</div>' +
@@ -579,6 +833,8 @@ window.CIAccess = {
       return;
     }
     wrap.innerHTML = state.scenarios.map(scenarioCard).join('');
+    updateProximityContext();
+    setTimeout(initScenarioMaps, 0);
   }
 
   function renderPolicy(){
@@ -591,25 +847,37 @@ window.CIAccess = {
     }).join('');
   }
 
-  async function load(){
+  async function load(forceRender){
     try {
       var res = await fetch(API + '/api/org/training-active?ts=' + Date.now(), { headers: headers(), cache:'no-store' });
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || ('Could not load scenarios (' + res.status + ')'));
-      state.scenarios = Array.isArray(data.scenarios) ? data.scenarios : [];
+      var next = Array.isArray(data.scenarios) ? data.scenarios : [];
+      var sig = scenarioSignature(next);
+      var changed = sig !== state.signature;
+      state.scenarios = next;
+      if (forceRender || changed) {
+        state.signature = sig;
+        render();
+      } else {
+        updateElapsedClocks();
+        updateProximityContext();
+      }
     } catch (e) {
-      var wrap = document.getElementById('trScenarios');
-      if (wrap) wrap.innerHTML = '<div class="card"><div class="muted">Could not load scenarios: ' + esc(e.message || e) + '</div></div>';
-      return;
+      // Do not replace an active form while somebody is typing. Only show the
+      // load error when there is no current scenario UI to preserve.
+      if (!state.scenarios.length) {
+        var wrap = document.getElementById('trScenarios');
+        if (wrap) wrap.innerHTML = '<div class="card"><div class="muted">Could not load scenarios: ' + esc(e.message || e) + '</div></div>';
+      }
     }
-    render();
   }
 
   async function loadPolicy(){
     try {
       var res = await fetch(API + '/api/org/escalation-policy', { headers: headers() });
       var data = await res.json().catch(function(){ return {}; });
-      if (res.ok && data.ok && data.configured) { state.policy = data.policy; renderPolicy(); }
+      if (res.ok && data.ok && data.configured) { state.policy = data.policy; renderPolicy(); updateProximityContext(); }
     } catch (_) {}
   }
 
@@ -637,7 +905,9 @@ window.CIAccess = {
     if (!action) { show('Choose an action first.'); return; }
 
     var noteEl = document.getElementById('note-' + scenarioId);
-    var note = String((noteEl && noteEl.value) || '').trim();
+    var draft = draftFor(scenarioId);
+    var note = String((noteEl && noteEl.value) || draft.note || '').trim();
+    var checks = Array.isArray(draft.checks) ? draft.checks.slice() : [];
     var started = Date.parse(sc.injected_at || '');
     var responseMs = isFinite(started) ? Math.max(0, Date.now() - started) : 0;
 
@@ -653,14 +923,20 @@ window.CIAccess = {
           note: note,
           responderName: responder,
           responseMs: responseMs,
-          sessionId: sc.session_id || ''
+          sessionId: sc.session_id || '',
+          checks: checks
         })
       });
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || ('Could not record response (' + res.status + ')'));
 
       var picked = ACTIONS.filter(function(a){ return a.key === action; })[0] || {};
-      state.responded[scenarioId] = { responder: responder, note: note, actionLabel: picked.title || action };
+      state.responded[scenarioId] = {
+        responder: responder, note: note, actionLabel: picked.title || action,
+        checks: checks, feedback: data.feedback || null
+      };
+      delete state.drafts[scenarioId];
+      saveDrafts();
       render();
     } catch (e) {
       show(e.message || String(e));
@@ -686,30 +962,56 @@ window.CIAccess = {
 
     var submitBtn = target.closest('[data-submit]');
     if (submitBtn) { submit(submitBtn.getAttribute('data-submit')); return; }
-    if (target.id === 'trRefresh') load();
+    if (target.id === 'trRefresh') load(true);
+  });
+
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if (!t) return;
+    var id = t.getAttribute && t.getAttribute('data-training-note');
+    if (id) {
+      draftFor(id).note = t.value || '';
+      saveDrafts();
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if (!t || !t.matches || !t.matches('[data-training-check]')) return;
+    var id = t.getAttribute('data-for');
+    var key = t.getAttribute('data-training-check');
+    if (!id || !key) return;
+    var d = draftFor(id);
+    var set = new Set(d.checks || []);
+    if (t.checked) set.add(key); else set.delete(key);
+    d.checks = Array.from(set);
+    saveDrafts();
   });
 
   function boot(){
-    // Prefill from this browser so the name isn't retyped for every inject in
-    // a session, while staying editable when the desk changes hands.
-    try {
-      var saved = localStorage.getItem(NAME_KEY);
-      if (saved) document.getElementById('trResponderName').value = saved;
-    } catch (_) {}
+    var input = document.getElementById('trResponderName');
+    var saved = '';
+    try { saved = localStorage.getItem(NAME_KEY) || ''; } catch (_) {}
 
     try {
       var who = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : {};
-      if (who.email) {
+      var authName = String(who.name || who.displayName || who.display_name || '').trim();
+      var authEmail = String(who.email || '').trim();
+      if (input) input.value = authName || saved || authEmail || '';
+      if (authEmail) {
         document.getElementById('trAccountNote').textContent =
-          'Signed in as ' + who.email + '. If this is a shared desk account, the name above is what identifies you in the record.';
+          (authName ? 'Prefilled from your signed-in CityIntel account (' + authEmail + '). ' : 'Signed in as ' + authEmail + '. ') +
+          'Keep the name editable where a shared desk account is being used.';
       }
-    } catch (_) {}
+    } catch (_) {
+      if (input && saved) input.value = saved;
+    }
 
-    load();
+    load(false);
     loadPolicy();
-    setInterval(load, 20000);
-    window.addEventListener('ci:training-started', load);
-    window.addEventListener('ci:training-ended', load);
+    setInterval(function(){ load(false); }, 20000);
+    window.addEventListener('ci:training-started', function(){ load(true); });
+    window.addEventListener('ci:training-ended', function(){ load(true); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
