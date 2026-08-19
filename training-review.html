@@ -257,7 +257,21 @@
           <div class="loading">Loading your training sessions…</div>
         </div>
       </div>
-    </main>
+    
+      <section class="card" id="responseLogCard" style="margin-top:16px">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <div class="section-title" style="margin:0">Response log</div>
+            <div class="muted" style="font-size:12px;margin-top:4px">
+              Every recorded response, with the name the responder entered. On a shared desk login this is what identifies who was on shift.
+            </div>
+          </div>
+          <input id="respFilter" type="text" placeholder="Filter by name…"
+                 style="background:#1c1e22;border:1px solid #2e3238;border-radius:10px;color:#e9edf2;padding:8px 12px;font:13px system-ui;min-width:180px">
+        </div>
+        <div id="responseLog" style="margin-top:12px"><div class="muted">Loading…</div></div>
+      </section>
+</main>
   </div>
 
   <!-- Detail overlay -->
@@ -670,5 +684,87 @@ document.addEventListener('DOMContentLoaded',function(){
 <script src="shared-chip.js"></script>
 
 <script src="shared-nav.js"></script>
+
+<script>
+/* ── Response log ─────────────────────────────────────────────────────
+   Reads individual responses rather than saved sessions, so a response is
+   visible in the record even when no session was formally closed. */
+(function responseLog(){
+  'use strict';
+  var API = String(window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
+  var rows = [];
+
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function headers(){ return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type':'application/json' }; }
+
+  var ACTION_LABEL = { monitoring:'Monitor', escalated:'Escalate', cleared:'No action' };
+  var ACTION_COLOR = { monitoring:'#fde68a', escalated:'#fecaca', cleared:'#bbf7d0' };
+
+  function when(v){
+    var d = new Date(v || '');
+    return isNaN(d.getTime()) ? '—' : d.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function render(){
+    var filter = String((document.getElementById('respFilter')||{}).value || '').trim().toLowerCase();
+    var list = rows.filter(function(r){
+      if (!filter) return true;
+      return [r.responder_name, r.trainee_name, r.operator_name, r.operator_email]
+        .some(function(v){ return String(v||'').toLowerCase().indexOf(filter) !== -1; });
+    });
+
+    var host = document.getElementById('responseLog');
+    if (!list.length) {
+      host.innerHTML = '<div class="muted">' + (rows.length ? 'No responses match that name.' : 'No training responses recorded yet.') + '</div>';
+      return;
+    }
+
+    host.innerHTML = list.map(function(r){
+      // The name typed at response time is the useful one; fall back to the
+      // account only where an older record predates that field.
+      var who = r.responder_name || r.operator_name || r.operator_email || 'Unknown';
+      var viaShared = r.responder_name && r.operator_email &&
+        String(r.responder_name).toLowerCase() !== String(r.operator_name || '').toLowerCase();
+      var mins = Number(r.response_ms || 0) > 0 ? Math.round(Number(r.response_ms) / 60000) : null;
+      return '<div style="border-bottom:1px solid #24272c;padding:10px 0;display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap">' +
+        '<div style="min-width:0;flex:1 1 320px">' +
+          '<div style="font-weight:700;font-size:13px">' + esc(r.scenario_title || 'Training scenario') + '</div>' +
+          '<div class="muted" style="font-size:12px;margin-top:3px">' +
+            'Responded by <b style="color:#e9edf2">' + esc(who) + '</b>' +
+            (viaShared ? ' <span style="opacity:.75">(account: ' + esc(r.operator_email) + ')</span>' : '') +
+            (r.trainee_name ? ' · assigned to ' + esc(r.trainee_name) : '') +
+          '</div>' +
+          (r.note ? '<div class="muted" style="font-size:12px;margin-top:4px">“' + esc(r.note) + '”</div>' : '') +
+        '</div>' +
+        '<div style="text-align:right;white-space:nowrap">' +
+          '<div style="font-weight:800;font-size:12px;color:' + (ACTION_COLOR[r.action] || '#cfe1ff') + '">' +
+            esc(ACTION_LABEL[r.action] || r.action || '—') + '</div>' +
+          '<div class="muted" style="font-size:11px;margin-top:3px">' + when(r.responded_at) +
+            (mins !== null ? ' · ' + mins + ' min' : '') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function load(){
+    try {
+      var res = await fetch(API + '/api/org/training-responses', { headers: headers() });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok || data.ok === false) throw new Error(data.error || 'Could not load responses');
+      rows = Array.isArray(data.data) ? data.data : [];
+      render();
+    } catch (e) {
+      var host = document.getElementById('responseLog');
+      if (host) host.innerHTML = '<div class="muted">Could not load responses: ' + esc(e.message || e) + '</div>';
+    }
+  }
+
+  document.addEventListener('input', function(e){ if (e.target && e.target.id === 'respFilter') render(); });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
+  else load();
+})();
+</script>
 </body>
 </html>
