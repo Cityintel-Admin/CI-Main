@@ -7,9 +7,487 @@ window.alertsData =[
 
 
 
+{
+  title: "Marche des Fiertés du Vignoble Nantais 2026",
+  city: "Clisson",
+  lat: 47.085997,
+  lng: -1.286271,
+  address: "Parvis de la Gare de Clisson — Pride march towards the Garenne Lemot programme",
+  postcode: "44190",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T14:00:00",
+  source: "https://www.instagram.com/quinousaimenoussuive/",
+  summary: "The organising collective Qui nous aime nous suive has confirmed the 2026 Marche des Fiertés du Vignoble Nantais in Clisson for Saturday 12 September, with the procession departing from the forecourt of Clisson railway station at 14:00. The wider Pride programme continues at the Garenne Lemot, where community and association activity is planned. Participants will promote LGBTQIA+ equality, visibility and opposition to discrimination. Risk assessed as Medium because the moving Pride procession will require stewarding and may temporarily affect pedestrian and road movements through Clisson. No specific hostile counter-demonstration or violent threat has been announced."
+},
 
-// CityIntel September 2026 France verified batch 2
-// Mouvement du 26 Septembre regional mobilisations — 19 August 2026
+{
+  title: "Marche des Fiertés de Limoges 2026",
+  city: "Limoges",
+  lat: 45.83194,
+  lng: 1.26003,
+  address: "Place de la République",
+  postcode: "87000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T14:00:00",
+  source: "https://www.europe-en-france.gouv.fr/fr/evenements/stand-information-village-associatif-cinquieme",
+  summary: "Centre LGBTI+ Lim'Bow and partner organisations have confirmed the fifth Marche des Fiertés de Limoges for Saturday 12 September 2026 at Place de la République. The Pride village opens at 10:00, speeches are scheduled from 13:30 and the march will depart at 14:00 before the programme returns to performances and community activity through 18:00. Participants will promote LGBTQIA+ equality, visibility, inclusion and opposition to discrimination. Risk assessed as Medium because the central-city procession and associated Pride village are expected to generate significant pedestrian activity and require stewarding and temporary traffic management. No specific hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Firefighters 'Colonnes de la Révolte' Mobilisation",
+  city: "Paris",
+  lat: 48.867500,
+  lng: 2.363840,
+  address: "Place de la République",
+  postcode: "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-29T12:00:00",
+  source: "https://www.sudsdis69.fr/videos.html",
+  summary: "SUD SDIS has confirmed that the firefighters' 'Colonne de renfort de la révolte' mobilisation at Place de la République runs from Saturday 26 through Tuesday 29 September 2026, completing the four-day Paris action already recorded by CityIntel for 26-28 September. Firefighters and SDIS personnel are mobilising over staffing shortages, deteriorating working conditions, occupational-health concerns and funding for fire and rescue services. No specific 29 September start time has been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because the action coincides with the wider nationwide public-service strike and demonstrations on 29 September, increasing the potential for crowding, police liaison and traffic disruption in central Paris."
+},
+
+{
+  title: "Rally in Support of Prosecuted Labour Inspectors",
+  city: "Paris",
+  lat: 48.852148,
+  lng: 2.309055,
+  address: "Ministère du Travail et des Solidarités, 14 Avenue Duquesne",
+  postcode: "75007",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T09:00:00",
+  source: "https://www.ldh-france.org/evenements/rassemblement-en-soutien-aux-2-inspecteurs-poursuivis-et-en-faveur-de-moyens-pour-linspection-du-travail/",
+  summary: "The Ligue des droits de l'Homme has called for a rally outside the Ministry of Labour at 09:00 on Tuesday 15 September 2026 in support of two labour inspectors, Pierre and Benoît, who are facing disciplinary proceedings. Participants will demand an end to what organisers describe as judicial and disciplinary harassment, protection of trade-union activity and additional resources for France's labour-inspection services. Risk assessed as Medium because the demonstration will take place directly outside a national government ministry and may require security controls and pedestrian management, although no blockade or violent action has been announced."
+},
+
+{
+  title: "March Against Racism, Discrimination and Threats to Democracy",
+  city: "Évreux",
+  lat: 49.0241,
+  lng: 1.1514,
+  address: "Place Armand Mandle",
+  postcode: "27000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T10:30:00",
+  source: "https://www.ldh-france.org/evenements/rassemblement-luttons-contre-toutes-les-formes-de-discriminations-de-racisme-et-pour-defendre-la-democratie/",
+  summary: "The Ligue des droits de l'Homme and partner civil-society organisations have called for a major gathering and procession in Évreux on Saturday 19 September 2026 as part of activities linked to the International Day of Democracy. Participants will assemble at Place Armand Mandle from 10:30, with activity scheduled through approximately 14:30. The mobilisation will oppose racism, discrimination and hate directed at people on the basis of origin, perceived religion, skin colour or gender and will promote equality, solidarity and democratic rights. Risk assessed as Medium because organisers explicitly call for a large procession through the city and temporary traffic controls, stewarding and police liaison are likely. No violent action has been announced."
+},
+
+{
+  title: "Firefighters 'Colonnes de la Révolte' Static Demonstration",
+  city: "Paris",
+  lat: 48.867500,
+  lng: 2.363840,
+  address: "Place de la République",
+  postcode: "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.leparisien.fr/societe/on-est-tres-decus-lintersyndicale-des-pompiers-appelle-a-la-mobilisation-a-paris-le-29-septembre-apres-une-rencontre-avec-laurent-nunez-13-08-2026-54VBUGIMOJGTZI5WJNG6NPWZ7E.php",
+  summary: "France's firefighter inter-union coalition has announced a static demonstration at Place de la République on Saturday 26 September 2026 under the banner 'Colonnes de la Révolte', beginning three consecutive days of protest before a larger national firefighter mobilisation on 29 September. Firefighters are demanding increased staffing, modernisation of the civil-security system, improved occupational-health funding, negotiations over working conditions and sustainable emergency-service financing. No daily start time has been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium. This action will overlap geographically with the separately confirmed national climate, peace and solidarity mobilisation already scheduled at Place de la République on 26 September, increasing crowd-density, access-control and traffic-management requirements."
+},
+
+{
+  title: "Firefighters 'Colonnes de la Révolte' Static Demonstration",
+  city: "Paris",
+  lat: 48.867500,
+  lng: 2.363840,
+  address: "Place de la République",
+  postcode: "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-27T12:00:00",
+  source: "https://www.leparisien.fr/societe/on-est-tres-decus-lintersyndicale-des-pompiers-appelle-a-la-mobilisation-a-paris-le-29-septembre-apres-une-rencontre-avec-laurent-nunez-13-08-2026-54VBUGIMOJGTZI5WJNG6NPWZ7E.php",
+  summary: "France's firefighter inter-union coalition has announced a second consecutive static demonstration at Place de la République on Sunday 27 September 2026 as part of the 'Colonnes de la Révolte' mobilisation. The action precedes the national firefighter mobilisation planned for 29 September and focuses on staffing shortages, ageing equipment, occupational health, working conditions and funding for France's civil-security services. No daily start time has been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because sustained firefighter mobilisation in the prominent central Paris square may generate significant pedestrian activity, vehicle movements, union infrastructure and police liaison, although no violent or deliberately obstructive action has been announced."
+},
+
+{
+  title: "Firefighters 'Colonnes de la Révolte' Static Demonstration",
+  city: "Paris",
+  lat: 48.867500,
+  lng: 2.363840,
+  address: "Place de la République",
+  postcode: "75003",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-28T12:00:00",
+  source: "https://www.leparisien.fr/societe/on-est-tres-decus-lintersyndicale-des-pompiers-appelle-a-la-mobilisation-a-paris-le-29-septembre-apres-une-rencontre-avec-laurent-nunez-13-08-2026-54VBUGIMOJGTZI5WJNG6NPWZ7E.php",
+  summary: "France's firefighter inter-union coalition has announced a third consecutive static demonstration at Place de la République on Monday 28 September 2026 under the 'Colonnes de la Révolte' banner. The protest is the final preparatory day before firefighters join a major national mobilisation in Paris on 29 September. Core demands include recruitment of additional professional firefighters, modernisation of civil-security legislation, occupational-health funding and improved working conditions. No daily start time has been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because sustained protest activity at Place de la République immediately before the national action may require crowd management, police liaison and temporary access controls."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Beg-Meil",
+  city: "Fouesnant",
+  lat: 47.85994,
+  lng: -3.98668,
+  address: "Chapelle Saint-Guénolé, Rue Saint-Guénolé, Beg-Meil",
+  postcode: "29170",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a climate, peace and solidarity mobilisation at the Chapelle Saint-Guénolé in Beg-Meil, Fouesnant, from 14:00 on Saturday 26 September 2026. A public assembly to discuss follow-on action is scheduled at the same location from approximately 17:00. Participants will campaign for urgent climate measures, peace, solidarity and ecological and social justice. Risk assessed as Low because the action is located in a small coastal community and no procession, blockade or confrontational activity has been announced. Localised pedestrian and parking impacts are possible around the church."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Combourg",
+  city: "Combourg",
+  lat: 48.40957,
+  lng: -1.74971,
+  address: "Place Piquette",
+  postcode: "35270",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at Place Piquette in Combourg from 14:00 on Saturday 26 September 2026. A public assembly intended to determine follow-on activity is planned at the same location from approximately 17:00. The mobilisation forms part of the nationwide campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Low because this is a local civic gathering in a smaller regional centre with no deliberate obstruction or disruptive direct action announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Guéret",
+  city: "Guéret",
+  lat: 46.168789,
+  lng: 1.870833,
+  address: "Place Bonnyaud",
+  postcode: "23000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Guéret mobilisation at Place Bonnyaud from 14:00 on Saturday 26 September 2026. Participants will join the nationwide campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because Place Bonnyaud is Guéret's principal civic square and contains the Hôtel de Ville, courthouse and other public facilities, meaning a sizeable gathering may require traffic controls, crowd management and municipal or police liaison. No violent or deliberately disruptive action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Thonon-les-Bains",
+  city: "Thonon-les-Bains",
+  lat: 46.370758,
+  lng: 6.480942,
+  address: "Place des Arts",
+  postcode: "74200",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at Place des Arts in Thonon-les-Bains from 14:00 on Saturday 26 September 2026. A follow-on public assembly is scheduled at the same location at approximately 17:00. Participants will campaign around climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because Place des Arts is a significant central public space associated with parking, public transport and cultural facilities and sustained attendance may affect pedestrian and vehicle movements. No deliberate transport blockade or violent activity has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Aubenas",
+  city: "Aubenas",
+  lat: 44.62024,
+  lng: 4.38700,
+  address: "Agora paysagère, Place du Champ de Mars",
+  postcode: "07200",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T18:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed an Aubenas mobilisation at the Agora from 18:00 on Saturday 26 September 2026, followed by a public assembly from approximately 19:00. Participants will join the national campaign for urgent climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because the evening gathering will take place within the redeveloped Champ de Mars civic area and may produce sustained crowding and local traffic or parking impacts. No violent or deliberately obstructive action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Paillet",
+  city: "Paillet",
+  lat: 44.68640,
+  lng: -0.36361,
+  address: "Place de la Mairie / Hôtel de Ville, 7 Place Gambetta",
+  postcode: "33550",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Paillet mobilisation outside the town hall from 14:00 on Saturday 26 September 2026. Participants will campaign for climate action, peace, solidarity and ecological and social justice as part of the coordinated national mobilisation. Risk assessed as Low because this is a small-town civic gathering with no procession, blockade or hostile counter-demonstration currently announced. Minor pedestrian, parking and local-road impacts are possible around the mairie."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Le Buisson-de-Cadouin",
+  city: "Le Buisson-de-Cadouin",
+  lat: 44.845325,
+  lng: 0.909432,
+  address: "Place du Cinéma / Place du Général de Gaulle, outside Cinéma Lux Louis Delluc",
+  postcode: "24480",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at Place du Cinéma in Le Buisson-de-Cadouin from 10:00 on Saturday 26 September 2026. Participants will join the nationwide campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Low because this is a local morning mobilisation in a small rural town with no march, blockade or disruptive direct action currently announced. Localised pedestrian activity and parking impacts may occur around Place du Général de Gaulle and the cinema."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Paray-Vieille-Poste",
+  city: "Paray-Vieille-Poste",
+  lat: 48.71261,
+  lng: 2.36378,
+  address: "Place de la République — town-centre map anchor",
+  postcode: "91550",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Paray-Vieille-Poste mobilisation at Place de la République from 14:00 on Saturday 26 September 2026. A public assembly is scheduled from approximately 17:00. Participants will campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Low because the action is a suburban civic gathering with no procession, blockade or deliberately disruptive activity currently announced. The published organiser location is retained, while the coordinate uses the central Paray-Vieille-Poste map point because an independently published point coordinate for the square could not be established."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Compiègne",
+  city: "Compiègne",
+  lat: 49.421418,
+  lng: 2.827781,
+  address: "Cours Guynemer",
+  postcode: "60200",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a climate, peace and solidarity mobilisation at Cours Guynemer in Compiègne from 14:00 on Saturday 26 September 2026. The action forms part of the coordinated national campaign for urgent climate measures, peace, solidarity and social and ecological justice. Risk assessed as Medium because Cours Guynemer is a central riverside thoroughfare and gathering area where a sizeable mobilisation may affect vehicle access, parking and pedestrian movement. No violent or deliberately obstructive action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Châteaubriant",
+  city: "Châteaubriant",
+  lat: 47.721194,
+  lng: -1.376117,
+  address: "Place Ernest Bréant, outside Hôtel de Ville",
+  postcode: "44110",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a local mobilisation outside Châteaubriant town hall from 10:00 on Saturday 26 September 2026. Participants will join the nationwide campaign for climate action, peace, solidarity and social and ecological justice. Risk assessed as Low because this is a morning civic gathering in a smaller regional centre with no procession, blockade or confrontational action announced. Temporary pedestrian activity and limited municipal or police monitoring are possible around Place Ernest Bréant."
+},
+
+{
+  title: "Climate, Peace and Solidarity Civic Walk — Lamballe",
+  city: "Lamballe-Armor",
+  lat: 48.468611,
+  lng: -2.517778,
+  address: "Square de la Quintaine, between the post office and Pont Calmette",
+  postcode: "22400",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has published a detailed Lamballe programme beginning at Square de la Quintaine at 10:00 on Saturday 26 September 2026. A civic information point will operate until 11:00, followed by an ecological and peaceful walk departing Pont Calmette and travelling along the Gouessant towpath and the banks of the Ville Gaudu pond. Participants will return at approximately 12:30 for a public assembly. Risk assessed as Low because organisers explicitly describe the activity as peaceful and accessible to bicycles, pushchairs and people with reduced mobility, with only localised pedestrian and route-management impacts expected."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Mâcon",
+  city: "Mâcon",
+  lat: 46.303650,
+  lng: 4.832240,
+  address: "Place Saint-Pierre",
+  postcode: "71000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at Place Saint-Pierre in central Mâcon from 14:00 on Saturday 26 September 2026. A public assembly intended to determine follow-on activity is scheduled at the same location from approximately 17:00. Participants will mobilise around climate protection, peace, solidarity and ecological and social justice. Risk assessed as Medium because Place Saint-Pierre is a prominent pedestrian and civic area where sustained attendance may affect surrounding access, commercial activity and traffic circulation."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Valence",
+  city: "Valence",
+  lat: 44.930378,
+  lng: 4.894389,
+  address: "Fontaine Monumentale, 15 Boulevard Bancel",
+  postcode: "26000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Valence mobilisation at the Fontaine Monumentale from 14:00 on Saturday 26 September 2026. A follow-on public assembly is scheduled at the same location from approximately 17:00. The action forms part of the national campaign for climate action, peace, solidarity and social and ecological justice. Risk assessed as Medium because the Fontaine Monumentale sits at a major central-city junction and a sizeable gathering may require traffic restrictions, pedestrian management and police or municipal liaison."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Salon-de-Provence",
+  city: "Salon-de-Provence",
+  lat: 43.640663,
+  lng: 5.099439,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "13300",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a mobilisation at Place de l'Hôtel de Ville in Salon-de-Provence from 10:00 on Saturday 26 September 2026. A public assembly is scheduled at the same location from approximately 11:00. Participants will campaign around climate action, peace, solidarity and social and ecological justice. Risk assessed as Low because this is a relatively short local civic mobilisation with no march, blockade or disruptive direct action announced. Local pedestrian congestion and municipal-security monitoring are possible around the town hall."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Houilles",
+  city: "Houilles",
+  lat: 48.923241,
+  lng: 2.186991,
+  address: "Hôtel de Ville, 16 Rue Gambetta",
+  postcode: "78800",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T11:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Houilles mobilisation outside the Hôtel de Ville on Rue Gambetta from 11:00 on Saturday 26 September 2026. Participants will join the nationwide mobilisation for climate action, peace, solidarity and ecological and social justice. Organisers have not yet fixed the location or timing of any follow-on public assembly. Risk assessed as Low because the announced component is a local stationary civic gathering with no procession or deliberate obstruction currently published."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Argenteuil",
+  city: "Argenteuil",
+  lat: 48.941500,
+  lng: 2.254300,
+  address: "Gare du centre-ville, Place Pierre-Semard / Boulevard Karl Marx",
+  postcode: "95100",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T13:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed an Argenteuil mobilisation from 13:00 on Saturday 26 September 2026 at the city's central railway station. Participants will campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because the action is positioned directly at an active suburban rail and bus interchange and may affect station approaches, pedestrian circulation and interchange activity even if rail services themselves remain operational. No deliberate transport blockade or violent action has been announced."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Cholet",
+  city: "Cholet",
+  lat: 47.06179,
+  lng: -0.88038,
+  address: "Place Travot",
+  postcode: "49300",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a local climate, peace and solidarity gathering at Place Travot in Cholet from 10:00 on Saturday 26 September 2026. Organisers indicate that the Cholet action will conclude between approximately 12:00 and 13:00 so participants can travel to the larger Angers mobilisation beginning at 14:00. The action forms part of the nationwide campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Low because the Cholet event is described as a local morning gathering rather than a major procession, although pedestrian activity and limited traffic management may occur around Place Travot."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Saumur",
+  city: "Saumur",
+  lat: 47.2603284,
+  lng: -0.0776305,
+  address: "Place Bilange",
+  postcode: "49400",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a local mobilisation at Place Bilange in Saumur from 10:00 on Saturday 26 September 2026. The organiser states that the gathering will end between approximately 12:00 and 13:00, allowing participants to travel onward to the Angers mobilisation scheduled for 14:00. Participants will campaign for climate action, peace, solidarity and social and ecological justice. Risk assessed as Low because the announced Saumur component is a finite morning gathering with no blockade or confrontational activity announced. Localised pedestrian and traffic disruption is possible around Place Bilange."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Segré",
+  city: "Segré-en-Anjou Bleu",
+  lat: 47.6806873,
+  lng: -0.868634,
+  address: "Sous-préfecture de Segré-en-Anjou Bleu, 2 Rue Lamartine",
+  postcode: "49500",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a gathering outside the Sous-préfecture de Segré-en-Anjou Bleu from 10:00 on Saturday 26 September 2026. Organisers plan to conclude the local mobilisation around midday to early afternoon before participants travel to the larger Angers action at 14:00. The campaign focuses on climate action, peace, solidarity and social and ecological justice. Risk assessed as Low because the announced Segré component is a small local civic gathering with no disruptive direct action identified, although temporary crowding and administrative-building security monitoring are possible."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Tourcoing",
+  city: "Tourcoing",
+  lat: 50.722104,
+  lng: 3.159891,
+  address: "Place de la République, parvis de l'Église Saint-Christophe",
+  postcode: "59200",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Tourcoing mobilisation at Place de la République on the forecourt of Saint-Christophe Church from 14:00 on Saturday 26 September 2026. A follow-on public assembly is scheduled in Parc Clemenceau from approximately 17:00. Participants will campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because activity will span two central public locations and may involve participant movement through the town centre, requiring pedestrian management, temporary traffic controls and routine police or municipal liaison."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Laval",
+  city: "Laval",
+  lat: 48.070616,
+  lng: -0.773733,
+  address: "Hôtel de Ville, Place du 11-Novembre",
+  postcode: "53000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Laval mobilisation outside the Hôtel de Ville from 14:00 on Saturday 26 September 2026. A public assembly intended to determine follow-on action is scheduled at the same location from approximately 17:00. Participants will campaign around climate protection, peace, solidarity and ecological and social justice. Risk assessed as Medium because Place du 11-Novembre is a major civic and transport focal point in central Laval and a sizeable gathering may affect pedestrian circulation, bus activity and local road access."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Orthez",
+  city: "Orthez",
+  lat: 43.4890,
+  lng: -0.7690,
+  address: "Place d'Armes",
+  postcode: "64300",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed an Orthez mobilisation at Place d'Armes from 14:00 on Saturday 26 September 2026. Organisers plan a follow-on public assembly at Place de la Poustelle from approximately 17:00. Participants will mobilise for climate action, peace, solidarity and social and ecological justice. Risk assessed as Low because the action is a comparatively small-town civic mobilisation and no blockade, direct action or hostile counter-demonstration has been announced. Local pedestrian activity and short-duration traffic management are possible."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Saint-Quentin",
+  city: "Saint-Quentin",
+  lat: 49.8462542,
+  lng: 3.2870634,
+  address: "Place de l'Hôtel de Ville",
+  postcode: "02100",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Saint-Quentin mobilisation at Place de l'Hôtel de Ville from 14:00 on Saturday 26 September 2026. A public assembly is scheduled at the same central square from approximately 16:00. The action forms part of the nationwide campaign for climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because the mobilisation will occupy Saint-Quentin's principal civic square and may require municipal or police liaison, pedestrian management and temporary access controls around surrounding central streets."
+},
+
+{
+  title: "Climate, Peace and Solidarity Mobilisation — Menton",
+  city: "Menton",
+  lat: 43.774722,
+  lng: 7.493056,
+  address: "Parvis de la Gare de Menton, Place de la Gare",
+  postcode: "06500",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T10:30:00",
+  source: "https://26septembre.org/carte/",
+  summary: "The Mouvement du 26 Septembre has confirmed a Menton mobilisation on the forecourt of the city's main railway station from 10:30 on Saturday 26 September 2026. Participants will join the nationwide mobilisation for climate action, peace, solidarity and ecological and social justice. Risk assessed as Medium because the gathering is positioned immediately outside an active railway station and may affect pedestrian circulation, station access and adjoining road or taxi movements. No deliberate transport blockade or violent action has been announced."
+},
+
+
 
 {
   title: "Climate, Peace and Solidarity Mobilisation — Angers",
