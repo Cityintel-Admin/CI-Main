@@ -1530,6 +1530,14 @@
     ::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:#090d11}::-webkit-scrollbar-thumb{background:#303a45;border-radius:9px}::-webkit-scrollbar-thumb:hover{background:#46515d}
     @media(max-width:1100px){.page-grid{grid-template-columns:1fr}.main{padding:18px}.page-title-bar{padding:17px!important}}
     @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:12px}.page-title-bar h2{font-size:25px!important}.tab-nav{width:100%}.tab-btn{flex:1}.form-grid{grid-template-columns:1fr}}
+
+    /* Phase 8 — operational decision workflow */
+    .expected-check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:4px}
+    .expected-check-option{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.035);font-size:12px;color:#cbd5e1;cursor:pointer;line-height:1.35}
+    .expected-check-option:hover{border-color:rgba(239,35,41,.45);background:rgba(208,22,22,.05)}
+    .expected-check-option input{margin-top:2px;accent-color:var(--brand-red);flex:0 0 auto}
+    @media(max-width:700px){.expected-check-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1697,6 +1705,29 @@
                 <label>Expected operator response</label>
                 <textarea id="scExpectedResponse" rows="2" placeholder="What should the operator do? e.g. Escalate and notify duty manager, check traveller status for London…"></textarea>
                 <div class="form-hint">This is internal guidance — not shown to operators.</div>
+              </div>
+
+              <div class="form-field">
+                <label>Nearest office / asset <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+                <input type="text" id="scNearestLocation" placeholder="e.g. London Office">
+                <div class="form-hint">Displayed to the trainee as operational proximity context.</div>
+              </div>
+
+              <div class="form-field">
+                <label>Distance from location (metres)</label>
+                <input type="number" id="scDistanceM" min="0" step="1" placeholder="e.g. 150">
+                <div class="form-hint">Stored in metres; the trainee page converts larger distances to km automatically.</div>
+              </div>
+
+              <div class="form-field full">
+                <label>Expected operational checks</label>
+                <div class="expected-check-grid" data-expected-check-group="sc">
+                  <label class="expected-check-option"><input type="checkbox" data-expected-check="osint"> <span><b>Review OSINT / official sources</b><br><span class="form-hint">Validate the reporting before deciding.</span></span></label>
+                  <label class="expected-check-option"><input type="checkbox" data-expected-check="assets"> <span><b>Check organisation assets</b><br><span class="form-hint">Review offices, sites or other registered assets.</span></span></label>
+                  <label class="expected-check-option"><input type="checkbox" data-expected-check="travellers"> <span><b>Check travellers</b><br><span class="form-hint">Review potentially exposed personnel.</span></span></label>
+                  <label class="expected-check-option"><input type="checkbox" data-expected-check="sop"> <span><b>Review escalation threshold / SOP</b><br><span class="form-hint">Apply the organisation's configured policy.</span></span></label>
+                </div>
+                <div class="form-hint">These form the process mark scheme. Trainees see the same four possible checks, but are not told which ones are expected for this scenario.</div>
               </div>
 
               <div class="form-field full">
@@ -2047,6 +2078,32 @@
           <label>Expected operator response</label>
           <textarea id="seqStepExpected" rows="2" placeholder="What should the operator do at this step?"></textarea>
         </div>
+
+        <div class="form-field">
+          <label>Nearest office / asset</label>
+          <input type="text" id="seqStepNearestLocation" placeholder="e.g. London Office">
+        </div>
+        <div class="form-field">
+          <label>Distance (metres)</label>
+          <input type="number" id="seqStepDistanceM" min="0" step="1" placeholder="e.g. 150">
+        </div>
+        <div class="form-field">
+          <label>Latitude</label>
+          <input type="number" id="seqStepLat" step="any" placeholder="e.g. 51.5007">
+        </div>
+        <div class="form-field">
+          <label>Longitude</label>
+          <input type="number" id="seqStepLng" step="any" placeholder="e.g. -0.1246">
+        </div>
+        <div class="form-field full">
+          <label>Expected operational checks</label>
+          <div class="expected-check-grid" data-expected-check-group="seq">
+            <label class="expected-check-option"><input type="checkbox" data-expected-check="osint"> <span>Review OSINT / official sources</span></label>
+            <label class="expected-check-option"><input type="checkbox" data-expected-check="assets"> <span>Check organisation assets</span></label>
+            <label class="expected-check-option"><input type="checkbox" data-expected-check="travellers"> <span>Check travellers</span></label>
+            <label class="expected-check-option"><input type="checkbox" data-expected-check="sop"> <span>Review escalation threshold / SOP</span></label>
+          </div>
+        </div>
       </div>
 
       <!-- Trigger condition -->
@@ -2284,6 +2341,7 @@ let sessionStartTime = null;
 let sessionTimerInterval = null;
 let confirmCallback  = null;
 let lastResponsePoll = '';
+let sessionResponseCache = [];
 
 // Sequencer state
 let sequenceSteps    = [];          // [{id, title, city, country, risk, category, summary, expectedResponse, trigger, delayMin, status, scenarioId}]
@@ -2330,6 +2388,38 @@ function setDefaultDateTime() {
   const now = new Date(); now.setSeconds(0,0);
   document.getElementById('scWhen').value = now.toISOString().slice(0,16);
 }
+
+const TRAINING_CHECK_KEYS = ['osint','assets','travellers','sop'];
+
+function inferExpectedChecks(text='') {
+  const t = String(text || '').toLowerCase();
+  const out = [];
+  if (/osint|official source|open source|verify|confirm|monitor source|social media|police source/.test(t)) out.push('osint');
+  if (/asset|office|site|building|facility/.test(t)) out.push('assets');
+  if (/travell?er|personnel|employee|staff|check[- ]?in/.test(t)) out.push('travellers');
+  if (/escalat|threshold|sop|policy|duty manager|notify/.test(t)) out.push('sop');
+  return [...new Set(out)];
+}
+
+function getExpectedChecks(group='sc') {
+  return Array.from(document.querySelectorAll('[data-expected-check-group="' + group + '"] [data-expected-check]:checked'))
+    .map(el => el.getAttribute('data-expected-check'))
+    .filter(v => TRAINING_CHECK_KEYS.includes(v));
+}
+
+function setExpectedChecks(group='sc', checks=[]) {
+  const set = new Set(Array.isArray(checks) ? checks : []);
+  document.querySelectorAll('[data-expected-check-group="' + group + '"] [data-expected-check]')
+    .forEach(el => { el.checked = set.has(el.getAttribute('data-expected-check')); });
+}
+
+function parseOptionalNumber(id) {
+  const el = document.getElementById(id);
+  if (!el || String(el.value || '').trim() === '') return null;
+  const n = Number(el.value);
+  return Number.isFinite(n) ? n : null;
+}
+
 
 /* ════════════════════════════════════════════════
    CATEGORY / RISK / PRESET BUILDERS
@@ -2425,6 +2515,9 @@ function applyPreset(idx) {
   document.getElementById('scConfidence').value = p.confidence || 'Open source report';
   document.getElementById('scSummary').value = p.summary;
   document.getElementById('scExpectedResponse').value = p.expectedResponse;
+  if (document.getElementById('scNearestLocation')) document.getElementById('scNearestLocation').value = p.nearestLocationName || p.nearest_location_name || '';
+  if (document.getElementById('scDistanceM')) document.getElementById('scDistanceM').value = p.distanceM ?? p.distance_m ?? '';
+  setExpectedChecks('sc', p.expectedChecks || p.expected_checks || inferExpectedChecks(p.expectedResponse || ''));
   setRisk(p.risk);
   setCategory(p.category);
   setDefaultDateTime();
@@ -2436,7 +2529,9 @@ function loadPresetSequence(idx) {
   if (!ps) return;
   showConfirm('Load preset sequence?', `This will replace your current sequence with "${ps.label}" (${ps.steps.length} steps).`, () => {
     sequenceSteps = ps.steps.map((s,i) => ({
-      ...s, id: `seq_${Date.now()}_${i}`, status: 'pending', scenarioId: null,
+      ...s,
+      expectedChecks: s.expectedChecks || inferExpectedChecks(s.expectedResponse || ''),
+      id: `seq_${Date.now()}_${i}`, status: 'pending', scenarioId: null,
     }));
     renderSequenceList();
     toast(`✅ Loaded: ${ps.label}`, 'success');
@@ -2484,6 +2579,9 @@ function injectScenario() {
     stealth: false,
     lat: isNaN(latRaw) ? null : latRaw,
     lng: isNaN(lngRaw) ? null : lngRaw,
+    nearestLocationName: document.getElementById('scNearestLocation')?.value?.trim() || '',
+    distanceM: parseOptionalNumber('scDistanceM'),
+    expectedChecks: getExpectedChecks('sc'),
   });
 
   if (delay > 0) {
@@ -2495,7 +2593,7 @@ function injectScenario() {
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, nearestLocationName, distanceM, expectedChecks }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
   // Every scenario is labelled as training. Stealth mode was removed when
@@ -2528,6 +2626,12 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     trainee_name: traineeName || '',
     traineeEmail: traineeEmail || '',
     trainee_email: traineeEmail || '',
+    nearestLocationName: nearestLocationName || '',
+    nearest_location_name: nearestLocationName || '',
+    distanceM: (distanceM !== null && distanceM !== undefined && !isNaN(distanceM)) ? Number(distanceM) : null,
+    distance_m: (distanceM !== null && distanceM !== undefined && !isNaN(distanceM)) ? Number(distanceM) : null,
+    expectedChecks: Array.isArray(expectedChecks) ? expectedChecks : [],
+    expected_checks: Array.isArray(expectedChecks) ? expectedChecks : [],
     status: 'active', operatorResponse: null, description: summary || '', type: catInfo.id,
     // Map coordinates
     lat: (lat !== null && lat !== undefined && !isNaN(lat)) ? lat : null,
@@ -2667,6 +2771,11 @@ function openSeqModal(idx) {
   document.getElementById('seqStepCountry').value  = step ? step.country  : '';
   document.getElementById('seqStepSummary').value  = step ? step.summary  : '';
   document.getElementById('seqStepExpected').value = step ? step.expectedResponse : '';
+  document.getElementById('seqStepNearestLocation').value = step ? (step.nearestLocationName || '') : '';
+  document.getElementById('seqStepDistanceM').value = step && step.distanceM != null ? step.distanceM : '';
+  document.getElementById('seqStepLat').value = step && step.lat != null ? step.lat : '';
+  document.getElementById('seqStepLng').value = step && step.lng != null ? step.lng : '';
+  setExpectedChecks('seq', step ? (step.expectedChecks || inferExpectedChecks(step.expectedResponse || '')) : []);
   document.getElementById('seqStepCategory').value = step ? step.category : 'civil_unrest';
   document.getElementById('seqStepDelay').value    = step ? (step.delayMin || 5) : 5;
   setSeqRisk(step ? step.risk : 'high');
@@ -2698,6 +2807,11 @@ function saveSeqStep() {
     risk: seqRisk, category: catId, categoryEmoji: catInfo.emoji, categoryLabel: catInfo.label,
     summary: document.getElementById('seqStepSummary').value.trim(),
     expectedResponse: document.getElementById('seqStepExpected').value.trim(),
+    nearestLocationName: document.getElementById('seqStepNearestLocation').value.trim(),
+    distanceM: parseOptionalNumber('seqStepDistanceM'),
+    lat: parseOptionalNumber('seqStepLat'),
+    lng: parseOptionalNumber('seqStepLng'),
+    expectedChecks: getExpectedChecks('seq'),
     trigger: seqTrigger,
     delayMin: seqTrigger === 'timed' ? (parseInt(document.getElementById('seqStepDelay').value,10) || 5) : 0,
     status: 'pending',
@@ -2837,6 +2951,10 @@ async function fireNextStep() {
     summary: step.summary, expectedResponse: step.expectedResponse,
     risk: step.risk, category: catInfo, autoEscalateMin: 0,
     when: new Date().toISOString(),
+    lat: step.lat ?? null, lng: step.lng ?? null,
+    nearestLocationName: step.nearestLocationName || '',
+    distanceM: step.distanceM ?? null,
+    expectedChecks: step.expectedChecks || inferExpectedChecks(step.expectedResponse || ''),
   });
 
   const injected = await doInject(scenario, currentStepIdx);
@@ -3119,16 +3237,42 @@ function renderDebrief() {
 }
 
 function gatherSessionResponses() {
-  // Collect from localStorage fallback (includes same-device responses)
   const resp = [];
+
+  // Server responses observed by the admin listener are authoritative.
+  sessionResponseCache.forEach(r => {
+    let checks = [];
+    try { checks = Array.isArray(r.checks) ? r.checks : JSON.parse(r.checks_json || '[]'); } catch(_) {}
+    resp.push({
+      id:r.id,
+      scenarioId:r.scenario_id || r.scenarioId,
+      action:r.action,
+      operatorName:r.responder_name || r.operator_name || r.operator_email || 'Operator',
+      responderName:r.responder_name || '',
+      note:r.note || '',
+      checks,
+      expectedChecks:(()=>{ try { return Array.isArray(r.expected_checks) ? r.expected_checks : JSON.parse(r.expected_checks || '[]'); } catch(_){ return []; } })(),
+      ts:r.responded_at || r.created_at,
+    });
+  });
+
+  // Same-device fallback for deployments where the server listener was offline.
   try {
     const raw = JSON.parse(localStorage.getItem('ci_training_responses_v1') || '[]');
-    raw.forEach(r => resp.push({
-      scenarioId: r.scenarioId || r.scenario_id,
-      action: r.action,
-      operatorName: r.operator || r.operator_email || r.operator_name || 'Operator',
-      ts: r.ts || r.responded_at,
-    }));
+    raw.forEach(r => {
+      const sid = r.scenarioId || r.scenario_id;
+      const ts = r.ts || r.responded_at;
+      if (resp.some(x => x.scenarioId === sid && x.ts === ts)) return;
+      resp.push({
+        scenarioId:sid, action:r.action,
+        operatorName:r.operator || r.operator_email || r.operator_name || 'Operator',
+        responderName:r.responder_name || '',
+        note:r.note || '',
+        checks:Array.isArray(r.checks) ? r.checks : [],
+        expectedChecks:Array.isArray(r.expectedChecks) ? r.expectedChecks : [],
+        ts,
+      });
+    });
   } catch(_) {}
   return resp;
 }
@@ -3183,8 +3327,20 @@ function scoreScenarios(scenarios, responses) {
     }
 
     const tier = pct >= 80 ? 'pass' : pct >= 50 ? 'warn' : responded ? 'fail' : 'no-response';
+    let expectedChecks = Array.isArray(sc.expectedChecks) ? sc.expectedChecks : [];
+    if (!expectedChecks.length) {
+      try { expectedChecks = Array.isArray(sc.expected_checks) ? sc.expected_checks : JSON.parse(sc.expected_checks || '[]'); } catch(_) {}
+    }
+    if (!expectedChecks.length && resp && Array.isArray(resp.expectedChecks)) expectedChecks = resp.expectedChecks;
+    const completedChecks = resp && Array.isArray(resp.checks) ? resp.checks : [];
+    const missingChecks = expectedChecks.filter(k => !completedChecks.includes(k));
+    const processPct = expectedChecks.length ? Math.round(((expectedChecks.length - missingChecks.length) / expectedChecks.length) * 100) : null;
 
-    return { sc, responded, action, actionCorrect, responseMs, pct, tier, expectedAction };
+    return {
+      sc, responded, action, actionCorrect, responseMs, pct, tier, expectedAction,
+      responderName:resp?.responderName||'', note:resp?.note||'',
+      completedChecks, expectedChecks, missingChecks, processPct
+    };
   });
 }
 
@@ -3216,6 +3372,8 @@ function renderScoredScenario(s, i) {
         ${sc.stealth ? '<br><span style="font-size:10px;font-weight:800;color:#e9d5ff;background:rgba(168,85,247,0.15);padding:1px 7px;border-radius:999px;border:1px solid rgba(168,85,247,0.4);">🕵️ Stealth</span>' : ''}
       </div>
       ${sc.expectedResponse ? `<div class="dsc-meta" style="margin-top:4px;font-style:italic;"><strong>Guidance:</strong> ${esc((sc.expectedResponse||sc.expected_response||'').slice(0,100))}…</div>` : ''}
+      ${responded ? `<div class="dsc-meta" style="margin-top:5px;"><strong>Process checks:</strong> ${s.processPct===null?'not scored':s.processPct+'%'} · completed ${(s.completedChecks||[]).map(k=>k.replace('_',' ')).join(', ')||'none'}${(s.missingChecks||[]).length?` · <strong>missed:</strong> ${(s.missingChecks||[]).map(k=>k.replace('_',' ')).join(', ')}`:''}</div>` : ''}
+      ${s.note ? `<div class="dsc-meta" style="margin-top:5px;"><strong>Reasoning:</strong> ${esc(s.note)}</div>` : ''}
       <div class="dsc-feedback ${fbClass}">${feedback}</div>
     </div>`;
 }
@@ -3283,6 +3441,12 @@ function buildRecommendations(scored, avgResponseMin, overallPct) {
 
   if (avgResponseMin > 5) {
     recs.push({ icon:'⏱', text:`Average response time was ${avgResponseMin} minutes. Target is under 3 minutes for HIGH alerts. Consider practising alert triage under time pressure.` });
+  }
+
+  const processMisses = scored.filter(s => s.responded && Array.isArray(s.missingChecks) && s.missingChecks.length);
+  if (processMisses.length) {
+    const totalMissed = processMisses.reduce((n,s) => n + s.missingChecks.length, 0);
+    recs.push({ icon:'🔎', text:`${totalMissed} expected operational check${totalMissed===1?' was':'s were'} missed across ${processMisses.length} scenario${processMisses.length===1?'':'s'}. Review the OSINT, asset, traveller and SOP workflow before repeating the exercise.` });
   }
 
   const wrongHighRisk = scored.filter(s => s.responded && (s.sc.risk||'').toLowerCase()==='high' && s.action !== 'escalated');
@@ -3471,6 +3635,11 @@ function listenForOperatorResponses() {
       const newest = entries.reduce((max, r) => { const t=r.responded_at||r.created_at||''; return t>max?t:max; }, lastResponsePoll);
       lastResponsePoll = newest;
       entries.forEach(entry => {
+        const rid = entry.id || `${entry.scenario_id||entry.scenarioId||''}:${entry.responded_at||entry.created_at||''}`;
+        if (!sessionResponseCache.some(r => (r.id || `${r.scenario_id||r.scenarioId||''}:${r.responded_at||r.created_at||''}`) === rid)) {
+          sessionResponseCache.push(entry);
+        }
+
         const sc = scenarios.find(s => s.id === (entry.scenario_id || entry.scenarioId));
         if (sc) {
           sc.operatorResponse = entry.action;
@@ -3527,10 +3696,15 @@ async function refreshScenariosFromApi() {
       stealth: r.source_type==='live' || r.stealth===true || r.stealth==='true',
       difficulty: r.difficulty||'intermediate',
       targetResponseMin: Number(r.target_response_min||0),
-      lat: r.lat !== undefined ? Number(r.lat) : null,
-      lng: r.lng !== undefined ? Number(r.lng) : null,
-      latitude:  r.lat !== undefined ? Number(r.lat) : null,
-      longitude: r.lng !== undefined ? Number(r.lng) : null,
+      lat: r.latitude !== undefined && r.latitude !== null ? Number(r.latitude) : (r.lat !== undefined && r.lat !== null ? Number(r.lat) : null),
+      lng: r.longitude !== undefined && r.longitude !== null ? Number(r.longitude) : (r.lng !== undefined && r.lng !== null ? Number(r.lng) : null),
+      latitude: r.latitude !== undefined && r.latitude !== null ? Number(r.latitude) : (r.lat !== undefined && r.lat !== null ? Number(r.lat) : null),
+      longitude:r.longitude !== undefined && r.longitude !== null ? Number(r.longitude) : (r.lng !== undefined && r.lng !== null ? Number(r.lng) : null),
+      nearestLocationName:r.nearest_location_name||'', nearest_location_name:r.nearest_location_name||'',
+      distanceM:r.distance_m !== undefined && r.distance_m !== null ? Number(r.distance_m) : null,
+      distance_m:r.distance_m !== undefined && r.distance_m !== null ? Number(r.distance_m) : null,
+      expectedChecks:(()=>{ try { return Array.isArray(r.expected_checks) ? r.expected_checks : JSON.parse(r.expected_checks||'[]'); } catch(_){ return []; } })(),
+      expected_checks:r.expected_checks||'[]',
     }));
     saveLocalScenarios(scenarios);
     return scenarios;
@@ -3668,6 +3842,8 @@ async function saveToLibrary(type) {
       title:s.title, city:s.city, country:s.country, risk:s.risk,
       category:s.category, categoryEmoji:s.categoryEmoji, categoryLabel:s.categoryLabel,
       summary:s.summary, expectedResponse:s.expectedResponse,
+      nearestLocationName:s.nearestLocationName||'', distanceM:s.distanceM??null,
+      lat:s.lat??null, lng:s.lng??null, expectedChecks:s.expectedChecks||[],
       trigger:s.trigger, delayMin:s.delayMin,
     }));
   } else {
@@ -3682,6 +3858,10 @@ async function saveToLibrary(type) {
       confidence: document.getElementById('scConfidence').value,
       summary: document.getElementById('scSummary').value.trim(),
       expectedResponse: document.getElementById('scExpectedResponse').value.trim(),
+      nearestLocationName: document.getElementById('scNearestLocation')?.value?.trim() || '',
+      distanceM: parseOptionalNumber('scDistanceM'),
+      lat: parseOptionalNumber('scLat'), lng: parseOptionalNumber('scLng'),
+      expectedChecks: getExpectedChecks('sc'),
     };
   }
 
@@ -3737,6 +3917,11 @@ async function loadFromLibrary(id) {
     document.getElementById('scLocation').value   = p.location || '';
     document.getElementById('scSummary').value    = p.summary || '';
     document.getElementById('scExpectedResponse').value = p.expectedResponse || '';
+    if (document.getElementById('scNearestLocation')) document.getElementById('scNearestLocation').value = p.nearestLocationName || '';
+    if (document.getElementById('scDistanceM')) document.getElementById('scDistanceM').value = p.distanceM ?? '';
+    if (document.getElementById('scLat')) document.getElementById('scLat').value = p.lat ?? '';
+    if (document.getElementById('scLng')) document.getElementById('scLng').value = p.lng ?? '';
+    setExpectedChecks('sc', p.expectedChecks || inferExpectedChecks(p.expectedResponse || ''));
     if (p.confidence) document.getElementById('scConfidence').value = p.confidence;
     setRisk(p.risk || 'med');
     if (p.category) setCategory(p.category);
@@ -3918,8 +4103,13 @@ async function saveSessionToHistory(scored, overallPct, grade) {
   const notes       = document.getElementById('sessionNotes')?.value || '';
   const trainees    = document.getElementById('sessionTrainees')?.value || '';
   const scoresPayload = scored.map(s => ({
-    title:s.sc?.title||'', pct:s.pct, tier:s.tier, action:s.action,
-    expectedAction:s.expectedAction, responseMs:s.responseMs,
+    title:s.sc?.title||'', risk:s.sc?.risk||'', category:s.sc?.category||'',
+    pct:s.pct, tier:s.tier, action:s.action, expectedAction:s.expectedAction, responseMs:s.responseMs,
+    responderName:s.responderName||'', note:s.note||'',
+    completedChecks:s.completedChecks||[], expectedChecks:s.expectedChecks||[],
+    missingChecks:s.missingChecks||[], processPct:s.processPct,
+    nearestLocationName:s.sc?.nearestLocationName||s.sc?.nearest_location_name||'',
+    distanceM:s.sc?.distanceM??s.sc?.distance_m??null,
   }));
 
   const sessionId = currentSessionId || `sess_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
@@ -3937,6 +4127,7 @@ async function saveSessionToHistory(scored, overallPct, grade) {
     scores_json:    scoresPayload,
     notes,
     trainees,
+    traineeEmail: document.getElementById('scTraineeSelect')?.value || '',
   };
 
   try {
