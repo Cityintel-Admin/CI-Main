@@ -1664,6 +1664,85 @@
     .exp-checks{grid-template-columns:1fr}
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     TRAINING PHASE 9B — SCENARIO ↔ THRESHOLD LINKING
+     Keeps the link visible to the exercise author without exposing the
+     expected decision to the operator. 9C will evaluate the stored snapshot.
+     ═══════════════════════════════════════════════════════════════ */
+  .threshold-link-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:8px;
+    align-items:center;
+  }
+  .threshold-link-row .btn{white-space:nowrap}
+  .threshold-link-preview{
+    margin-top:8px;
+    border:1px solid rgba(147,197,253,.22);
+    background:linear-gradient(180deg,rgba(147,197,253,.07),rgba(147,197,253,.025));
+    border-radius:12px;
+    padding:10px 12px;
+    color:#dbeafe;
+    font-size:12px;
+    line-height:1.45;
+  }
+  .threshold-link-preview.empty{
+    color:var(--muted);
+    border-color:rgba(255,255,255,.08);
+    background:rgba(255,255,255,.025);
+  }
+  .threshold-link-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    font-weight:850;
+    color:#eef6ff;
+    margin-bottom:5px;
+  }
+  .threshold-link-badges{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:6px;
+  }
+  .threshold-link-badge{
+    display:inline-flex;
+    align-items:center;
+    min-height:22px;
+    padding:2px 7px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.11);
+    background:rgba(255,255,255,.045);
+    color:#cbd5e1;
+    font-size:10px;
+    font-weight:800;
+  }
+  .threshold-link-badge.action{
+    border-color:rgba(251,191,36,.28);
+    color:#fde68a;
+    background:rgba(251,191,36,.07);
+  }
+  .threshold-link-badge.draft{
+    border-color:rgba(168,85,247,.35);
+    color:#e9d5ff;
+    background:rgba(168,85,247,.08);
+  }
+  .threshold-link-warning{
+    margin-top:6px;
+    color:#fde68a;
+    font-size:11px;
+  }
+  .seq-threshold-preview{
+    margin-top:6px;
+    font-size:11px;
+    color:#a9bfd8;
+  }
+  @media(max-width:900px){
+    .threshold-link-row{grid-template-columns:1fr}
+    .threshold-link-row .btn{width:100%;justify-content:center}
+  }
+
 </style>
 </head>
 <body>
@@ -1797,6 +1876,18 @@
                 </div>
               </div>
 
+              <div class="form-field full">
+                <label>Threshold being tested <span style="font-weight:400;color:var(--muted);">(optional — Phase 9B policy link)</span></label>
+                <div class="threshold-link-row">
+                  <select id="scThresholdRule">
+                    <option value="">Loading saved threshold rules…</option>
+                  </select>
+                  <button type="button" class="btn" id="scApplyThresholdBtn" disabled>Apply rule defaults</button>
+                </div>
+                <div id="scThresholdPreview" class="threshold-link-preview empty">No advanced threshold linked. This scenario will continue using its manually configured fields and the current fallback scoring path.</div>
+                <div class="form-hint">The selected rule ID, rule version and policy version are captured with the scenario. The Worker also stores a server-side snapshot so 9C can later score against the exact rule used for the exercise, even if the live policy is edited.</div>
+              </div>
+
               <div class="form-field">
                 <label>Location detail</label>
                 <input type="text" id="scLocation" placeholder="Street, venue, postcode, or area">
@@ -1907,7 +1998,7 @@
 
 
 
-        <!-- Escalation thresholds — Phase 9A -->
+        <!-- Escalation thresholds — Phase 9B link-ready policy -->
         <div class="card" id="thresholdCard" style="margin-top:16px">
           <div class="card-head">
             <div>
@@ -1949,7 +2040,7 @@
             </div>
 
             <div class="threshold-phase-note" id="thresholdPhaseNote">
-              <strong>Phase 9A compatibility:</strong> advanced rules are stored now, while exercise scoring continues to use the simple High / Medium / Low fallback until the 9C policy evaluator is enabled.
+              <strong>Phase 9B compatibility:</strong> advanced rules can now be linked to individual scenarios and versioned with the exercise. Decision scoring still uses the simple High / Medium / Low fallback until the 9C policy evaluator is enabled.
             </div>
 
             <div class="threshold-section" id="thresholdAdvancedPanel" style="display:none">
@@ -2255,8 +2346,17 @@
             <option value="medical">🏥 Medical</option>
             <option value="infrastructure">⚡ Infrastructure</option>
             <option value="cyber">💻 Cyber / Tech</option>
+            <option value="diplomatic">🏛 Diplomatic</option>
+            <option value="environmental">☢️ Environmental</option>
             <option value="other">📋 Other</option>
           </select>
+        </div>
+        <div class="form-field full">
+          <label>Threshold being tested <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <select id="seqStepThresholdRule">
+            <option value="">No advanced threshold link</option>
+          </select>
+          <div class="seq-threshold-preview" id="seqStepThresholdPreview">Sequence step will use the normal fallback scoring path until 9C unless a saved advanced rule is linked.</div>
         </div>
         <div class="form-field full">
           <label>Summary</label>
@@ -2315,7 +2415,7 @@
 </div>
 
 
-<!-- ===== ADVANCED THRESHOLD RULE MODAL — PHASE 9A ===== -->
+<!-- ===== ADVANCED THRESHOLD RULE MODAL — PHASE 9B ===== -->
 <div class="seq-modal-overlay" id="thresholdRuleModal">
   <div class="seq-modal threshold-rule-modal">
     <div class="seq-modal-head">
@@ -2635,6 +2735,15 @@ let libraryItems     = [];
 let sessionHistory   = [];
 let currentSessionId = null;        // D1 id of the session being recorded
 
+// Phase 9B — only SAVED advanced rules are linkable. Unsaved edits in the
+// policy card are intentionally excluded until "Save policy" succeeds.
+let thresholdLinkPolicy = {
+  configured:false, policy_name:'Escalation thresholds', policy_mode:'simple',
+  policy_status:'active', policy_version:1, advanced_rules:[]
+};
+let selectedThresholdRuleId = '';
+let seqThresholdRuleId = '';
+
 /* ════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════ */
@@ -2652,6 +2761,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateStatusBar();
   renderSequenceList();
   listenForOperatorResponses();
+  wireThresholdLinkControls();
+  loadScenarioThresholdPolicy();
 
   document.getElementById('btnAddStep').addEventListener('click', () => openSeqModal(-1));
   document.getElementById('btnRunSequence').addEventListener('click', runSequence);
@@ -2748,6 +2859,8 @@ function applyPreset(idx) {
   const p = PRESETS[idx];
   if (!p) return;
   selectedPreset = idx;
+  selectedThresholdRuleId = '';
+  refreshThresholdRuleSelectors();
   document.querySelectorAll('.scenario-item').forEach((el,i) => el.classList.toggle('selected', i === idx));
   document.getElementById('scTitle').value = p.title;
   document.getElementById('scCity').value = p.city;
@@ -2827,6 +2940,253 @@ document.addEventListener('change', function (e) {
 document.addEventListener('DOMContentLoaded', function () { renderExpectedChecks([]); });
 
 /* ════════════════════════════════════════════════
+   PHASE 9B — SCENARIO ↔ THRESHOLD LINKING
+════════════════════════════════════════════════ */
+function thresholdRuleById(id) {
+  const key = String(id || '');
+  return (thresholdLinkPolicy.advanced_rules || []).find(r => String(r.id || '') === key) || null;
+}
+
+function thresholdActionLabel(action) {
+  const map = { escalate:'Escalate', notify:'Notify', monitor:'Monitor', log_only:'Log only', no_action:'No action' };
+  return map[String(action || '')] || String(action || '—');
+}
+
+function thresholdExposureLabel(type) {
+  const map = {
+    global:'Global / anywhere', country:'Country presence', region:'Region / state presence',
+    city:'City presence', radius:'Within defined radius', asset:'Organisation asset affected',
+    traveller:'Traveller affected', transport_hub:'Transport hub affected',
+    traveller_service:'Traveller on affected service', route_corridor:'Route / corridor affected',
+    evacuation_zone:'Inside cordon / evacuation zone'
+  };
+  return map[String(type || '')] || String(type || '—').replace(/_/g,' ');
+}
+
+function thresholdRuleOptionLabel(rule) {
+  const bits = [
+    (rule.category_label || 'Other') + ' → ' + (rule.event_type || 'Unnamed rule'),
+    thresholdActionLabel(rule.primary_action)
+  ];
+  if (Number(rule.response_sla_min || 0) > 0) bits.push(Number(rule.response_sla_min) + 'm');
+  if (rule.proximity_km !== null && rule.proximity_km !== undefined && rule.proximity_km !== '') bits.push(Number(rule.proximity_km) + ' km');
+  return bits.join(' · ');
+}
+
+function populateThresholdRuleSelect(select, selectedId, emptyLabel) {
+  if (!select) return;
+  const rules = (thresholdLinkPolicy.advanced_rules || [])
+    .filter(r => r && r.enabled !== false)
+    .slice()
+    .sort((a,b) =>
+      String(a.category_label || '').localeCompare(String(b.category_label || '')) ||
+      String(a.event_type || '').localeCompare(String(b.event_type || ''))
+    );
+
+  select.innerHTML = '';
+  const none = document.createElement('option');
+  none.value = '';
+  none.textContent = emptyLabel || 'No advanced threshold link — use manual scenario settings';
+  select.appendChild(none);
+
+  const grouped = {};
+  rules.forEach(r => {
+    const key = r.category_label || 'Other';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(r);
+  });
+
+  Object.keys(grouped).sort().forEach(label => {
+    const group = document.createElement('optgroup');
+    group.label = label;
+    grouped[label].forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = thresholdRuleOptionLabel(r);
+      group.appendChild(opt);
+    });
+    select.appendChild(group);
+  });
+
+  const wanted = String(selectedId || '');
+  const exists = !!thresholdRuleById(wanted) && rules.some(r => String(r.id) === wanted);
+  if (wanted && !exists) {
+    const stale = document.createElement('option');
+    stale.value = wanted;
+    stale.textContent = '⚠ Linked rule unavailable — choose another or remove link';
+    stale.selected = true;
+    select.appendChild(stale);
+  } else {
+    select.value = wanted;
+  }
+
+  select.disabled = rules.length === 0 && !wanted;
+}
+
+function refreshThresholdRuleSelectors() {
+  populateThresholdRuleSelect(
+    document.getElementById('scThresholdRule'),
+    selectedThresholdRuleId,
+    (thresholdLinkPolicy.advanced_rules || []).some(r => r && r.enabled !== false)
+      ? 'No advanced threshold link — use manual scenario settings'
+      : 'No enabled advanced threshold rules saved'
+  );
+  renderScenarioThresholdPreview();
+
+  const seqModal = document.getElementById('seqStepModal');
+  if (seqModal && seqModal.classList.contains('open')) {
+    populateThresholdRuleSelect(
+      document.getElementById('seqStepThresholdRule'),
+      seqThresholdRuleId,
+      'No advanced threshold link'
+    );
+    renderSequenceThresholdPreview();
+  }
+}
+
+function renderScenarioThresholdPreview() {
+  const host = document.getElementById('scThresholdPreview');
+  const applyBtn = document.getElementById('scApplyThresholdBtn');
+  if (!host) return;
+
+  const rule = thresholdRuleById(selectedThresholdRuleId);
+  if (!selectedThresholdRuleId) {
+    host.className = 'threshold-link-preview empty';
+    host.innerHTML = 'No advanced threshold linked. This scenario will continue using its manually configured fields and the current fallback scoring path.';
+    if (applyBtn) applyBtn.disabled = true;
+    return;
+  }
+  if (!rule) {
+    host.className = 'threshold-link-preview';
+    host.innerHTML = '<div class="threshold-link-title">⚠ Linked threshold is no longer available</div>' +
+      '<div>Select another saved rule or remove the link before injecting. The Worker will refuse stale, disabled, deleted or cross-organisation threshold references.</div>';
+    if (applyBtn) applyBtn.disabled = true;
+    return;
+  }
+
+  const exposure = thresholdExposureLabel(rule.exposure_type) +
+    ((rule.proximity_km !== null && rule.proximity_km !== undefined) ? ' · ' + Number(rule.proximity_km) + ' km' : '');
+  const checks = Array.isArray(rule.required_checks) ? rule.required_checks.length : 0;
+  const draft = thresholdLinkPolicy.policy_status === 'draft';
+
+  host.className = 'threshold-link-preview';
+  host.innerHTML =
+    '<div class="threshold-link-title">🔗 ' + esc(rule.category_label || 'Other') + ' → ' + esc(rule.event_type || 'Unnamed rule') + '</div>' +
+    '<div>' + esc(rule.exposure_scope || exposure) + '</div>' +
+    '<div class="threshold-link-badges">' +
+      '<span class="threshold-link-badge action">' + esc(thresholdActionLabel(rule.primary_action)) + '</span>' +
+      '<span class="threshold-link-badge">' + esc(exposure) + '</span>' +
+      '<span class="threshold-link-badge">Rule v' + Number(rule.version_no || 1) + '</span>' +
+      '<span class="threshold-link-badge">Policy v' + Number(thresholdLinkPolicy.policy_version || 1) + '</span>' +
+      (Number(rule.response_sla_min || 0) > 0 ? '<span class="threshold-link-badge">SLA ' + Number(rule.response_sla_min) + ' min</span>' : '') +
+      (rule.notify ? '<span class="threshold-link-badge">Notify: ' + esc(rule.notify) + '</span>' : '') +
+      (checks ? '<span class="threshold-link-badge">' + checks + ' required check' + (checks === 1 ? '' : 's') + '</span>' : '') +
+      (draft ? '<span class="threshold-link-badge draft">Draft policy</span>' : '') +
+    '</div>' +
+    '<div class="threshold-link-warning">Phase 9B stores this rule reference and a server-side snapshot with the scenario. The advanced rule will become the decision authority in 9C; until then, existing fallback scoring remains unchanged.</div>';
+  if (applyBtn) applyBtn.disabled = false;
+}
+
+function renderSequenceThresholdPreview() {
+  const host = document.getElementById('seqStepThresholdPreview');
+  if (!host) return;
+  const rule = thresholdRuleById(seqThresholdRuleId);
+  if (!seqThresholdRuleId) {
+    host.textContent = 'Sequence step will use the normal fallback scoring path until 9C unless a saved advanced rule is linked.';
+    return;
+  }
+  if (!rule) {
+    host.textContent = '⚠ Linked threshold is unavailable. Choose another saved rule or remove the link.';
+    return;
+  }
+  host.textContent = '🔗 ' + (rule.category_label || 'Other') + ' → ' + (rule.event_type || 'Unnamed rule') +
+    ' · ' + thresholdActionLabel(rule.primary_action) +
+    (Number(rule.response_sla_min || 0) > 0 ? ' · SLA ' + Number(rule.response_sla_min) + ' min' : '') +
+    ' · Rule v' + Number(rule.version_no || 1) +
+    ' / Policy v' + Number(thresholdLinkPolicy.policy_version || 1);
+}
+
+function buildThresholdGuidance(rule) {
+  if (!rule) return '';
+  const parts = [thresholdActionLabel(rule.primary_action) + '.'];
+  if (rule.notify) parts.push('Notify ' + rule.notify + '.');
+  if (rule.communication_required) parts.push(rule.communication_required.replace(/[.]+$/,'') + '.');
+  if (rule.escalation_conditions) parts.push('Escalate / upgrade if: ' + rule.escalation_conditions + '.');
+  if (rule.exceptions) parts.push('Exceptions: ' + rule.exceptions + '.');
+  return parts.join(' ').replace(/\s+/g,' ').trim();
+}
+
+function applySelectedThresholdDefaults() {
+  const rule = thresholdRuleById(selectedThresholdRuleId);
+  if (!rule) return;
+
+  setRisk(String(rule.risk || 'med').replace('medium','med'));
+
+  // Only sync category where the policy and scenario taxonomies share the
+  // exact same key; ambiguous categories such as "security" and "environment"
+  // are left to the exercise author rather than guessed.
+  if (CATEGORIES.some(c => c.id === rule.category_id)) setCategory(rule.category_id);
+
+  const target = document.getElementById('scTargetResponse');
+  if (target && Number(rule.response_sla_min || 0) > 0) target.value = Number(rule.response_sla_min);
+
+  setExpectedChecks(Array.isArray(rule.required_checks) ? rule.required_checks : []);
+
+  const expected = document.getElementById('scExpectedResponse');
+  if (expected && !expected.value.trim()) expected.value = buildThresholdGuidance(rule);
+
+  toast('✅ Linked threshold defaults applied to risk, SLA and required checks' +
+    (expected && expected.value.trim() ? '.' : ''), 'success');
+}
+
+async function loadScenarioThresholdPolicy() {
+  try {
+    const data = await apiFetch('/api/org/escalation-policy');
+    const p = data && data.policy ? data.policy : {};
+    thresholdLinkPolicy = {
+      configured: !!data.configured,
+      policy_name: p.policy_name || 'Escalation thresholds',
+      policy_mode: p.policy_mode === 'advanced' ? 'advanced' : 'simple',
+      policy_status: p.policy_status === 'draft' ? 'draft' : 'active',
+      policy_version: Number(p.policy_version || 1) || 1,
+      advanced_rules: Array.isArray(p.advanced_rules) ? p.advanced_rules : []
+    };
+  } catch (e) {
+    thresholdLinkPolicy = {
+      configured:false, policy_name:'Escalation thresholds', policy_mode:'simple',
+      policy_status:'active', policy_version:1, advanced_rules:[]
+    };
+  }
+  refreshThresholdRuleSelectors();
+  return thresholdLinkPolicy;
+}
+window.loadScenarioThresholdPolicy = loadScenarioThresholdPolicy;
+
+function wireThresholdLinkControls() {
+  const scSel = document.getElementById('scThresholdRule');
+  if (scSel && !scSel.dataset.wired9b) {
+    scSel.dataset.wired9b = '1';
+    scSel.addEventListener('change', function(){
+      selectedThresholdRuleId = scSel.value || '';
+      renderScenarioThresholdPreview();
+    });
+  }
+  const apply = document.getElementById('scApplyThresholdBtn');
+  if (apply && !apply.dataset.wired9b) {
+    apply.dataset.wired9b = '1';
+    apply.addEventListener('click', applySelectedThresholdDefaults);
+  }
+  const seqSel = document.getElementById('seqStepThresholdRule');
+  if (seqSel && !seqSel.dataset.wired9b) {
+    seqSel.dataset.wired9b = '1';
+    seqSel.addEventListener('change', function(){
+      seqThresholdRuleId = seqSel.value || '';
+      renderSequenceThresholdPreview();
+    });
+  }
+}
+
+/* ════════════════════════════════════════════════
    SINGLE SCENARIO INJECT
 ════════════════════════════════════════════════ */
 function injectScenario() {
@@ -2871,6 +3231,7 @@ function injectScenario() {
     distanceM: isNaN(distRaw) ? null : distRaw,
     nearestLocationName: document.getElementById('scNearestRef')?.value?.trim() || '',
     expectedChecks: getExpectedChecks(),
+    thresholdRuleId: selectedThresholdRuleId,
   });
 
   if (delay > 0) {
@@ -2882,7 +3243,7 @@ function injectScenario() {
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, thresholdRuleId }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
   // Every scenario is labelled as training. Stealth mode was removed when
@@ -2921,6 +3282,17 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     nearest_location_name: nearestLocationName || '',
     expectedChecks: Array.isArray(expectedChecks) ? expectedChecks : [],
     expected_checks: Array.isArray(expectedChecks) ? expectedChecks : [],
+    // Phase 9B — client metadata improves local/offline continuity; the Worker
+    // validates the rule against the signed-in organisation and stores its own
+    // authoritative snapshot before the scenario is persisted.
+    thresholdRuleId: thresholdRuleId || '',
+    threshold_rule_id: thresholdRuleId || '',
+    thresholdRuleVersion: thresholdRuleById(thresholdRuleId)?.version_no || 0,
+    threshold_rule_version: thresholdRuleById(thresholdRuleId)?.version_no || 0,
+    thresholdPolicyVersion: thresholdRuleId ? Number(thresholdLinkPolicy.policy_version || 0) : 0,
+    threshold_policy_version: thresholdRuleId ? Number(thresholdLinkPolicy.policy_version || 0) : 0,
+    thresholdPolicyName: thresholdRuleId ? (thresholdLinkPolicy.policy_name || '') : '',
+    threshold_policy_name: thresholdRuleId ? (thresholdLinkPolicy.policy_name || '') : '',
     status: 'active', operatorResponse: null, description: summary || '', type: catInfo.id,
     // Map coordinates
     lat: (lat !== null && lat !== undefined && !isNaN(lat)) ? lat : null,
@@ -2935,6 +3307,22 @@ async function doInject(scenario, stepIdx) {
   try {
     const res = await apiFetch('/api/org/training-scenarios', { method: 'POST', body: JSON.stringify(scenario) });
     if (res.ids && res.ids[0]) scenario.id = res.ids[0];
+    const meta = Array.isArray(res.data) && res.data[0] ? res.data[0] : null;
+    if (meta) {
+      scenario.thresholdRuleId = meta.threshold_rule_id || '';
+      scenario.threshold_rule_id = meta.threshold_rule_id || '';
+      scenario.thresholdRuleVersion = Number(meta.threshold_rule_version || 0);
+      scenario.threshold_rule_version = Number(meta.threshold_rule_version || 0);
+      scenario.thresholdPolicyVersion = Number(meta.threshold_policy_version || 0);
+      scenario.threshold_policy_version = Number(meta.threshold_policy_version || 0);
+      scenario.thresholdPolicyName = meta.threshold_policy_name || '';
+      scenario.threshold_policy_name = meta.threshold_policy_name || '';
+      scenario.threshold_policy_mode = meta.threshold_policy_mode || '';
+      scenario.threshold_policy_status = meta.threshold_policy_status || '';
+    }
+    if (Array.isArray(res.warnings) && res.warnings.length) {
+      toast('⚠️ ' + (res.warnings[0].message || 'Threshold link could not be saved.'), 'warn');
+    }
   } catch(e) {
     saveFailed = true;
     console.warn('CityIntel training: API inject failed, falling back to localStorage', e);
@@ -3062,6 +3450,9 @@ function openSeqModal(idx) {
   document.getElementById('seqStepExpected').value = step ? step.expectedResponse : '';
   document.getElementById('seqStepCategory').value = step ? step.category : 'civil_unrest';
   document.getElementById('seqStepDelay').value    = step ? (step.delayMin || 5) : 5;
+  seqThresholdRuleId = step ? (step.thresholdRuleId || step.threshold_rule_id || '') : '';
+  populateThresholdRuleSelect(document.getElementById('seqStepThresholdRule'), seqThresholdRuleId, 'No advanced threshold link');
+  renderSequenceThresholdPreview();
   setSeqRisk(step ? step.risk : 'high');
   selectTrigger(step ? step.trigger : 'any_response');
   document.getElementById('seqStepModal').classList.add('open');
@@ -3091,6 +3482,8 @@ function saveSeqStep() {
     risk: seqRisk, category: catId, categoryEmoji: catInfo.emoji, categoryLabel: catInfo.label,
     summary: document.getElementById('seqStepSummary').value.trim(),
     expectedResponse: document.getElementById('seqStepExpected').value.trim(),
+    thresholdRuleId: seqThresholdRuleId || '',
+    threshold_rule_id: seqThresholdRuleId || '',
     trigger: seqTrigger,
     delayMin: seqTrigger === 'timed' ? (parseInt(document.getElementById('seqStepDelay').value,10) || 5) : 0,
     status: 'pending',
@@ -3155,6 +3548,12 @@ function renderSequenceList() {
       : '👆 Fires on: any response';
 
     const riskColor = step.risk === 'high' ? '#ff5a5f' : step.risk === 'med' ? '#f0b429' : '#33c48d';
+    const linkedRule = thresholdRuleById(step.thresholdRuleId || step.threshold_rule_id || '');
+    const thresholdLabel = (step.thresholdRuleId || step.threshold_rule_id)
+      ? (linkedRule
+          ? `🔗 ${esc(linkedRule.event_type || 'Linked threshold')}`
+          : '⚠ Linked threshold unavailable')
+      : '';
     const connector = i < sequenceSteps.length - 1 ? `<div class="seq-connector"><div class="seq-connector-line"></div><span>▼</span><div class="seq-connector-line"></div></div>` : '';
 
     return `
@@ -3169,6 +3568,7 @@ function renderSequenceList() {
           · ${esc(step.categoryEmoji || '📋')} ${esc(step.categoryLabel || step.category || '')}
           · ${esc(step.city || '')}
           ${step.expectedResponse ? `<br><span style="font-style:italic;opacity:.75;">Expected: ${esc(step.expectedResponse.slice(0,70))}…</span>` : ''}
+          ${thresholdLabel ? `<br><span class="seq-trigger-label">${thresholdLabel}</span>` : ''}
           <br><span class="seq-trigger-label">${triggerLabel}</span>
         </div>
         ${!sequenceRunning ? `
@@ -3230,6 +3630,7 @@ async function fireNextStep() {
     summary: step.summary, expectedResponse: step.expectedResponse,
     risk: step.risk, category: catInfo, autoEscalateMin: 0,
     when: new Date().toISOString(),
+    thresholdRuleId: step.thresholdRuleId || step.threshold_rule_id || '',
   });
 
   const injected = await doInject(scenario, currentStepIdx);
@@ -3358,6 +3759,7 @@ function renderFeedLog() {
           ${sc.stealth ? '<span class="stealth-pill">🕵️ STEALTH</span>' : ''}
           ${(sc.lat && sc.lng) ? `<span style="font-size:10px;color:var(--muted);margin-left:4px;">📍 ${sc.lat.toFixed(4)}, ${sc.lng.toFixed(4)}</span>` : ''}
           ${sc.difficulty && sc.difficulty !== 'intermediate' ? `<span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;margin-left:4px;">${sc.difficulty.toUpperCase()}</span>` : ''}
+          ${(sc.threshold_rule_id || sc.thresholdRuleId) ? `<span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(147,197,253,.08);border:1px solid rgba(147,197,253,.3);color:#bfdbfe;margin-left:4px;">🔗 THRESHOLD LINKED${Number(sc.threshold_policy_version||sc.thresholdPolicyVersion||0) ? ` · P${Number(sc.threshold_policy_version||sc.thresholdPolicyVersion||0)}` : ''}</span>` : ''}
         </div>
         ${expResp ? `<div class="log-meta" style="margin-top:4px;font-style:italic;opacity:.75;">Expected: ${esc(expResp.slice(0,80))}${expResp.length>80?'…':''}</div>` : ''}
         <div class="log-actions">
@@ -4061,6 +4463,7 @@ async function saveToLibrary(type) {
       title:s.title, city:s.city, country:s.country, risk:s.risk,
       category:s.category, categoryEmoji:s.categoryEmoji, categoryLabel:s.categoryLabel,
       summary:s.summary, expectedResponse:s.expectedResponse,
+      thresholdRuleId:s.thresholdRuleId || s.threshold_rule_id || '',
       trigger:s.trigger, delayMin:s.delayMin,
     }));
   } else {
@@ -4079,6 +4482,7 @@ async function saveToLibrary(type) {
       // checks already ticked — the checks are part of how the scenario is
       // marked, not a setting to remember separately each time.
       expectedChecks: getExpectedChecks(),
+      thresholdRuleId: selectedThresholdRuleId || '',
       targetResponseMin: parseInt(document.getElementById('scTargetResponse')?.value, 10) || 0,
       difficulty: selectedDifficulty,
       distanceM: parseInt(document.getElementById('scDistance')?.value, 10) || null,
@@ -4142,6 +4546,8 @@ async function loadFromLibrary(id) {
     document.getElementById('scExpectedResponse').value = p.expectedResponse || '';
     if (p.confidence) document.getElementById('scConfidence').value = p.confidence;
     setExpectedChecks(p.expectedChecks ?? p.expected_checks ?? []);
+    selectedThresholdRuleId = p.thresholdRuleId || p.threshold_rule_id || '';
+    refreshThresholdRuleSelectors();
     if (document.getElementById('scTargetResponse') && p.targetResponseMin) document.getElementById('scTargetResponse').value = p.targetResponseMin;
     if (document.getElementById('scDistance')) document.getElementById('scDistance').value = p.distanceM ?? p.distance_m ?? '';
     if (document.getElementById('scNearestRef')) document.getElementById('scNearestRef').value = p.nearestLocationName ?? p.nearest_location_name ?? '';
@@ -4828,7 +5234,7 @@ document.addEventListener('DOMContentLoaded',function(){
     var sub = document.getElementById('thresholdSimpleSub');
     if (title) title.textContent = mode === 'advanced' ? 'Simple fallback rules' : 'Simple risk rules';
     if (sub) sub.textContent = mode === 'advanced'
-      ? 'Retained for compatibility and used by the current Phase 9A scoring path until the advanced evaluator is connected in 9C.'
+      ? 'Retained for compatibility and used by the current Phase 9B fallback scoring path until the advanced evaluator is connected in 9C.'
       : 'A lightweight policy for organisations that do not need an event-by-event matrix.';
     if (dirty) markPolicyDirty();
   }
@@ -5121,6 +5527,7 @@ document.addEventListener('DOMContentLoaded',function(){
       updatePolicySummary();
       renderAdvancedRules();
       clearPolicyDirty('Saved just now');
+      if (window.loadScenarioThresholdPolicy) window.loadScenarioThresholdPolicy();
       if (window.toast) toast('✅ Escalation policy saved', 'success');
     } catch (e) {
       status.textContent = 'Save failed: ' + (e.message || e);
