@@ -7,6 +7,713 @@ window.alertsData =[
 
 
 
+
+
+{
+  title: "CSD Dortmund 2026 — Fight for Pride",
+  city: "Dortmund",
+  lat: 51.51789,
+  lng: 7.45928,
+  address: "Dortmund Hauptbahnhof Nordausgang, Steinstraße — demonstration to Friedensplatz",
+  postcode: "44147",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:00:00",
+  source: "https://www.csd-dortmund.de/demo",
+  summary: "SLADO and CSD Dortmund have confirmed the city's 28th Christopher Street Day demonstration for Saturday 5 September 2026 under the motto 'Fight for Pride — Kein Schritt zurück!'. Participants will assemble from approximately 12:00 at the north exit of Dortmund Hauptbahnhof before the demonstration departs at 13:00. The approximately three-kilometre procession will travel through central Dortmund and is expected to reach Friedensplatz around 15:00, where the CSD street festival continues. Risk assessed as Medium because the sizeable moving procession from the principal railway station through the city centre will require road restrictions, police liaison, stewarding and pedestrian and public-transport management. Organisers emphasise a peaceful and safe demonstration."
+},
+
+{
+  title: "CSD Cham 2026 — Pride Demonstration",
+  city: "Cham",
+  lat: 49.22260,
+  lng: 12.65532,
+  address: "Bahnhof Cham, Bahnhofstraße 11 — procession through the city centre to Marktplatz",
+  postcode: "93413",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T14:00:00",
+  source: "https://csd-deutschland.de/csd-saison/csd-termine/",
+  summary: "CSD Cham organisers have confirmed a Pride demonstration beginning at Cham railway station at 14:00 on Saturday 5 September 2026. Participants will proceed through central Cham towards Marktplatz, where the CSD finale begins at approximately 15:00 with information stands, an awareness pavilion and a public stage programme. The mobilisation will promote LGBTQIA+ visibility, equality and protection from discrimination. Risk assessed as Medium because the moving demonstration begins at an active transport hub and crosses the city centre, potentially requiring temporary traffic restrictions, police or municipal liaison and pedestrian management. No hostile counter-demonstration or violent action has been announced."
+},
+
+{
+  title: "CSD Goslar 2026 — Pride Demonstration",
+  city: "Goslar",
+  lat: 51.91019,
+  lng: 10.41989,
+  address: "Klubgartenstraße 10, beside Goslar railway station — demonstration to Jakobikirchhof",
+  postcode: "38640",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:00:00",
+  source: "https://csd-deutschland.de/csd-saison/csd-termine/",
+  summary: "CSD Goslar organisers have confirmed the city's 2026 Pride demonstration for 13:00 on Saturday 5 September. Participants will meet at Klubgartenstraße 10 beside Goslar railway station before marching through the historic city centre towards Jakobikirchhof, where a public stage programme and information stands will follow. The demonstration will advocate LGBTQIA+ visibility, equality, acceptance and protection from discrimination. Risk assessed as Medium because a moving procession from the station through Goslar's compact historic centre may require temporary traffic controls, stewarding and police or municipal liaison. No violent action has been announced."
+},
+
+{
+  title: "CSD Elmshorn 2026 — Gemeinsam für Vielfalt",
+  city: "Elmshorn",
+  lat: 53.75325,
+  lng: 9.65246,
+  address: "Alter Markt",
+  postcode: "25335",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T12:00:00",
+  source: "https://csd-schleswig-holstein.de/",
+  summary: "The Schleswig-Holstein CSD network has confirmed CSD Elmshorn at Alter Markt from 12:00 on Saturday 12 September 2026 under the theme 'Gemeinsam für Vielfalt auf die Straße!'. Participants will gather in support of LGBTQIA+ visibility, equality, diversity and opposition to discrimination. Detailed procession arrangements have not yet been published, so CityIntel records only the confirmed Alter Markt assembly point and does not infer a route. Risk assessed as Low because no blockade, hostile counter-demonstration or other deliberately disruptive activity has been announced, although increased pedestrian activity and temporary local traffic management are possible around Alter Markt."
+},
+
+{
+  title: "CSD Nordhausen 2026 — Pride Demonstration",
+  city: "Nordhausen",
+  lat: 51.49360,
+  lng: 10.78956,
+  address: "Bahnhofsvorplatz, Bahnhofsplatz 6",
+  postcode: "99734",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T13:30:00",
+  source: "https://csd-deutschland.de/csd-saison/csd-termine/",
+  summary: "CSD organisers have confirmed a Pride demonstration beginning at Bahnhofsvorplatz Nordhausen at 13:30 on Saturday 12 September 2026. The programme includes a public demonstration, political speeches and information and community stands, with an aftershow programme planned later. Participants will advocate LGBTQIA+ visibility, equal rights and opposition to discrimination. Risk assessed as Medium because the demonstration begins immediately outside Nordhausen's principal railway and bus interchange and may require police liaison, pedestrian controls and temporary changes to vehicle or public-transport access. No violent action has been announced."
+},
+
+{
+  title: "First CSD Öhringen — Pride and Equality Rally",
+  city: "Öhringen",
+  lat: 49.20041,
+  lng: 9.50277,
+  address: "Marktplatz",
+  postcode: "74613",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T16:00:00",
+  source: "https://csd-deutschland.de/csd-saison/csd-termine/",
+  summary: "Organisers have confirmed the first Christopher Street Day in Öhringen at Marktplatz from approximately 16:00 to 20:00 on Saturday 12 September 2026. Organisers explicitly state that no moving demonstration is planned; instead the event will operate as a stationary political rally with music and information stands promoting LGBTQIA+ visibility, equality and diversity. Risk assessed as Low because the programme is confined to a central pedestrian square and no march, blockade or confrontational activity has been announced. Localised crowding and municipal or police monitoring are possible."
+},
+
+{
+  title: "CSD Halle 2026 — Pride Mobilisation",
+  city: "Halle (Saale)",
+  lat: 51.48253,
+  lng: 11.96951,
+  address: "Marktplatz",
+  postcode: "06108",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://csd-sachsenanhalt.de/events",
+  summary: "Christopher-Street-Day Sachsen-Anhalt has confirmed CSD Halle at Marktplatz from 12:00 on Saturday 12 September 2026. The public mobilisation will promote LGBTQIA+ visibility, equality, democratic participation and opposition to discrimination. The organiser has not yet published the complete 2026 demonstration route or final operational programme, so CityIntel records the confirmed Marktplatz location without inferring additional movement. Risk assessed as Medium because the event occupies one of Halle's principal civic spaces and an important tram interchange for an extended period, making crowd management, public-transport coordination and police or municipal liaison likely."
+},
+
+{
+  title: "CSD Kaiserslautern 2026 — Lautre ist lauter als Hass",
+  city: "Kaiserslautern",
+  lat: 49.44490,
+  lng: 7.76991,
+  address: "Schillerplatz — pedestrian Pride demonstration through central Kaiserslautern returning to Schillerplatz",
+  postcode: "67655",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://csd-lautre.de/faqs/",
+  summary: "CSD Lautre organisers have confirmed the second Christopher Street Day in Kaiserslautern for Saturday 26 September 2026. The pedestrian Pride demonstration will depart Schillerplatz at 14:00, travel through central Kaiserslautern and return to Schillerplatz, where a stage and community programme will follow. The 2026 mobilisation is being held under the motto 'Lautre ist lauter als Hass: mutig, laut, selbstbestimmt' and will advocate LGBTQIA+ rights, visibility, safety and opposition to discrimination. Risk assessed as Medium because the moving city-centre demonstration will require police liaison, stewarding, temporary road management and dedicated security measures. The precise route remains subject to final coordination with authorities."
+},
+
+{
+  title: "CSD Stendal 2026 — Nie wieder still: Wir sind sichtbar!",
+  city: "Stendal",
+  lat: 52.60469,
+  lng: 11.85930,
+  address: "Marktplatz Stendal",
+  postcode: "39576",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T12:00:00",
+  source: "https://csd-sachsenanhalt.de/event?id=6043",
+  summary: "Christopher-Street-Day Sachsen-Anhalt has confirmed the sixth CSD Stendal at Marktplatz from 12:00 to 20:00 on Saturday 26 September 2026 under the theme 'Nie wieder still: Wir sind sichtbar!'. The public Pride mobilisation will promote LGBTQIA+ visibility, equal rights, diversity and community participation. The organiser has not yet published a detailed moving demonstration route, so CityIntel records only the confirmed Marktplatz event footprint and does not infer a procession. Risk assessed as Low because no blockade, confrontation or hostile counter-demonstration has been announced, although an extended public gathering in the principal civic square may require routine stewarding, police liaison and access management."
+},
+
+
+{
+  title: "Es reicht! Gesundheit statt Sparwahn — National Health Reform Protest",
+  city: "Berlin",
+  lat: 52.51860,
+  lng: 13.37611,
+  address: "Platz der Republik 1, outside the Reichstag",
+  postcode: "10557",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:00:00",
+  source: "https://esistpunkt12.de/ablauf-anreise/",
+  summary: "Organisers of 'Es ist Punkt 12!' have confirmed a national demonstration beginning outside the Reichstag at Platz der Republik at 13:00 on Saturday 5 September 2026. Participants will oppose planned healthcare reforms and spending reductions that organisers argue would weaken healthcare provision and support for patients, children, families, disabled people and healthcare workers. The organiser's programme runs through the afternoon, while Berlin Police records the registered gathering at the same location. Risk assessed as Medium because the demonstration is positioned directly beside the Bundestag and is attracting substantial advance participation interest, making security controls, police deployment and pedestrian and traffic management likely around the government district. Organisers describe the demonstration as peaceful."
+},
+
+{
+  title: "Berlin Mietenwahnsinn Demonstration — Runter mit der Miete!",
+  city: "Berlin",
+  lat: 52.5186,
+  lng: 13.4081,
+  address: "Rotes Rathaus, Rathausstraße 15 — city-centre march",
+  postcode: "10178",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:00:00",
+  source: "https://www.mietenwahnsinn.info/2026/demo-05-09-2026/",
+  summary: "A broad Berlin tenants' and housing coalition has confirmed a demonstration beginning outside the Rotes Rathaus at 13:00 on Saturday 5 September 2026 under the call 'Runter mit der Miete! Her mit den Wohnungen!'. Participants will demand lower rents, stronger tenant protections, affordable public housing, action against displacement and an end to homelessness. The mobilisation includes a moving procession through central Berlin, and the Berlin Police assembly register confirms the action and its city-centre route. Risk assessed as Medium because a significant moving housing demonstration through Berlin-Mitte is likely to require road restrictions, police liaison and crowd management. Route details have undergone revisions and should be rechecked closer to the event."
+},
+
+{
+  title: "Antikriegstag Demonstration — Mannheim",
+  city: "Mannheim",
+  lat: 49.48436,
+  lng: 8.47419,
+  address: "Plankenkopf, Planken / P7 — march via Paradeplatz to Marktplatz",
+  postcode: "68161",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T16:30:00",
+  source: "https://kommunalinfo-mannheim.de/2026/07/30/veranstaltungen-zum-antikriegstag-2026-in-mannheim/",
+  summary: "Friedensbündnis Mannheim has confirmed an Antikriegstag demonstration beginning at Plankenkopf at 16:30 on Tuesday 1 September 2026. Participants will proceed via Paradeplatz to a concluding rally at Marktplatz. The mobilisation will oppose war, militarisation, increased arms expenditure and compulsory military service while promoting peace, social justice and international cooperation. Risk assessed as Medium because the moving procession will cross Mannheim's principal pedestrian and civic centre and is likely to require police liaison, pedestrian management and temporary traffic or tram controls. No violent action has been announced."
+},
+
+{
+  title: "Antikriegstag Demonstration Against Militarisation — Aachen",
+  city: "Aachen",
+  lat: 50.774088,
+  lng: 6.086871,
+  address: "Elisenbrunnen, Friedrich-Wilhelm-Platz",
+  postcode: "52062",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T17:00:00",
+  source: "https://www.friedenskooperative.de/termine/antikriegstag-2026-in-aachen",
+  summary: "Antikriegsbündnis Aachen has confirmed an Antikriegstag rally and demonstration at Elisenbrunnen at 17:00 on Tuesday 1 September 2026 under the theme 'Gegen die Hochrüstungs- und Militarisierungspolitik'. Prof. em. Christoph Butterwegge is listed as a principal speaker. Participants will oppose military expansion and militarisation and advocate greater emphasis on peaceful and social policy. Risk assessed as Medium because the action includes a demonstration from one of Aachen's most prominent central public spaces and may require police liaison, pedestrian controls and temporary effects on surrounding roads or public transport. No violent action has been announced."
+},
+
+{
+  title: "Antikriegstag Against Militarisation and Conscription — Cologne",
+  city: "Cologne",
+  lat: 50.95275,
+  lng: 6.91099,
+  address: "Leo-Amann-Park / Bürgerzentrum Ehrenfeld, Venloer Straße 429",
+  postcode: "50825",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T17:00:00",
+  source: "https://www.allerweltshaus.de/veranstaltungen/2026/antikriegstag-1-september-2026",
+  summary: "A coalition including Aufruf 70+, the Kölner Friedensforum, Feministische Friedenskampagne and other peace and civil-society organisations has confirmed an Antikriegstag gathering in Leo-Amann-Park beside Bürgerzentrum Ehrenfeld from 17:00 on Tuesday 1 September 2026. A joint closing rally is scheduled from 19:00. Participants will oppose militarisation, compulsory military service and increased arms spending while advocating peace and greater investment in education, housing, culture and social needs. Risk assessed as Low because the published programme is centred on a park-based gathering and rally with no moving procession or blockade announced. Localised crowding and routine police observation are possible."
+},
+
+{
+  title: "Antikriegstag Demonstration — Marburg",
+  city: "Marburg",
+  lat: 50.80320,
+  lng: 8.76801,
+  address: "Deserteur-Denkmal, Frankfurter Straße, opposite the former Jägerkaserne",
+  postcode: "35037",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T17:00:00",
+  source: "https://hessen-thueringen.dgb.de/veranstaltungen/veranstaltung/antikriegstag-2026-in-mittelhessen-friedensfaehig-statt-kriegstuechtig/",
+  summary: "The Marburger Bündnis 'Nein zum Krieg!' and supporting organisations have confirmed a demonstration and rally at the Deserteur-Denkmal on Frankfurter Straße at 17:00 on Tuesday 1 September 2026. Christian Axnick of DFG-VK is listed as the principal speaker. The mobilisation forms part of Antikriegstag under the wider theme 'Friedensfähig statt kriegstüchtig' and will advocate diplomacy, peace and opposition to militarisation. Risk assessed as Medium because the event is explicitly advertised as a demonstration and rally on a significant urban corridor and may require police liaison and pedestrian or traffic management. No violent action has been announced."
+},
+
+{
+  title: "Antimilitaristischer Stadtrundgang — Gießen Antikriegstag",
+  city: "Gießen",
+  lat: 50.58530,
+  lng: 8.69189,
+  address: "Greif-Denkmal ('Trauernde Witwe'), Licher Gabel, Grünberger Straße / Licher Straße — four-stop walk to Kreuzplatz",
+  postcode: "35394",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T17:00:00",
+  source: "https://hessen-thueringen.dgb.de/veranstaltungen/veranstaltung/antikriegstag-2026-in-mittelhessen-friedensfaehig-statt-kriegstuechtig/",
+  summary: "Friedensnetz Gießen, supported by DGB-Kreisverband Gießen and Omas gegen Rechts among other organisations, has confirmed an antimilitarist city walk beginning at the Greif-Denkmal, known as the 'Trauernde Witwe', at the Licher Straße and Grünberger Straße junction at 17:00 on Tuesday 1 September 2026. The procession will use four thematic stations before finishing at Kreuzplatz. Risk assessed as Medium because this is a moving political demonstration through the city and may require temporary traffic controls, police liaison and pedestrian management. The coordinate uses a transparent map anchor at the published Licher Gabel start junction."
+},
+
+{
+  title: "Keine Macht der AfD — Democracy and Anti-Extremism Rally",
+  city: "Marburg",
+  lat: 50.810668,
+  lng: 8.775282,
+  address: "Outside Erwin-Piscator-Haus, Biegenstraße 15",
+  postcode: "35037",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T15:00:00",
+  source: "https://hessen-thueringen.dgb.de/veranstaltungen/veranstaltung/kundgebung-fuer-demokratie-und-gegen-rechtsextremismus-am-13-september-in-marburg/",
+  summary: "DGB Mittelhessen, DGB Marburg-Biedenkopf, Initiative Demokratische Zukunft Marburg and a broad coalition of civic, religious, cultural and democratic organisations have called a rally outside the Erwin-Piscator-Haus from 15:00 to 17:00 on Sunday 13 September 2026 under the slogan 'Keine Macht der AfD'. Participants will oppose right-wing extremism and promote democratic institutions, diversity and social solidarity. Risk assessed as Medium because the politically sensitive rally may draw significant attendance and require police liaison and access management around the central civic venue, although no specific counter-demonstration or violent action has been announced."
+},
+
+{
+  title: "CSD Offenbach 2026 — First Pride Demonstration",
+  city: "Offenbach am Main",
+  lat: 50.10584,
+  lng: 8.76118,
+  address: "Rathaus Offenbach, Berliner Straße 100 — demonstration through the city centre; programme continues at Büsingpark",
+  postcode: "63065",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://csd-offenbach.de/",
+  summary: "CSD Offenbach organisers have confirmed the city's first Christopher Street Day on Saturday 19 September 2026. Participants will gather outside the Rathaus from 12:00 for opening activity and speeches, with the moving Pride demonstration scheduled from approximately 13:00 through central Offenbach before the programme continues at Büsingpark with a street festival and stage. The mobilisation will promote LGBTQIA+ visibility, equal rights, safety and solidarity. Risk assessed as Medium because a moving Pride procession and subsequent public festival will require road controls, stewarding and police coordination, with organisers also reporting enhanced security planning for the inaugural event. No violent action has been announced."
+},
+
+{
+  title: "CSD Bad Belzig 2026 — Pride March",
+  city: "Bad Belzig",
+  lat: 52.13594,
+  lng: 12.59495,
+  address: "Bahnhof Bad Belzig, Am Bahnhof 11 — march to Marktplatz",
+  postcode: "14806",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:30:00",
+  source: "https://csd-belzig.de/",
+  summary: "CSD Bad Belzig has confirmed the town's third Pride mobilisation for Saturday 19 September 2026. Participants will meet at Bad Belzig railway station from 12:30 before the parade departs at 13:00 towards Marktplatz, where a diversity festival with music, speeches and information stands is scheduled from 14:00 to 17:00. The action will promote LGBTQIA+ rights, visibility, diversity and opposition to discrimination. Risk assessed as Medium because the moving procession from the railway station to the central market square will require temporary traffic management, stewarding and police or municipal liaison. No hostile counter-demonstration or violent threat has been announced."
+},
+
+{
+  title: "Antikriegstag Demonstration — Reutlingen",
+  city: "Reutlingen",
+  lat: 48.4919,
+  lng: 9.2114,
+  address: "Marktplatz — demonstration and subsequent rally/actions at Marktplatz and Spitalhof",
+  postcode: "72764",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T15:00:00",
+  source: "https://www.friedenskooperative.de/termine/friedensfaehig-statt-kriegstuechtig-antikriegstag-2026",
+  summary: "Peace and trade-union campaigners have confirmed an Antikriegstag demonstration beginning at Reutlingen Marktplatz at 15:00 on Tuesday 1 September 2026 under the slogan 'Friedensfähig statt kriegstüchtig'. A rally and additional public actions are scheduled from approximately 16:00 around Marktplatz and Spitalhof. The mobilisation forms part of the wider German Antikriegstag programme promoting peace and opposition to militarisation and war. Risk assessed as Medium because the demonstration and subsequent activities will occupy prominent central-city public spaces and may require temporary traffic controls, pedestrian management and police liaison. No violent action has been announced."
+},
+
+{
+  title: "Antikriegstag Demonstration and Peace March — Frankfurt (Oder)",
+  city: "Frankfurt (Oder)",
+  lat: 52.34309,
+  lng: 14.55423,
+  address: "St.-Marien-Kirche, Oberkirchplatz 1 — march through the city centre to the Friedensglocke at Holzmarkt",
+  postcode: "15230",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T17:00:00",
+  source: "https://www.friedenskooperative.de/termine/text/r",
+  summary: "Friedensnetz Frankfurt (Oder), SODI, DGB Frankfurt (Oder), VVN-BdA and supporting organisations have confirmed an Antikriegstag demonstration beginning outside St.-Marien-Kirche at 17:00 on Tuesday 1 September 2026. Participants will begin a procession through the city centre at approximately 17:30 before reaching the Friedensglocke at Holzmarkt at around 18:00 for an appeal and peace prayer. Risk assessed as Medium because the moving demonstration will cross central Frankfurt (Oder), potentially requiring temporary traffic controls, police liaison and pedestrian management along the route. No violent activity has been announced."
+},
+
+{
+  title: "Antikriegstag Peace Rally — Freudenstadt",
+  city: "Freudenstadt",
+  lat: 48.46458,
+  lng: 8.41174,
+  address: "Oberer Marktplatz",
+  postcode: "72250",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T17:30:00",
+  source: "https://www.friedenskooperative.de/termine/antikriegstag-2026-in-freudenstadt",
+  summary: "DGB Nordbaden, IG Metall and supporting peace and civil-society organisations have confirmed an Antikriegstag peace rally at Oberer Marktplatz in Freudenstadt from 17:30 to 18:30 on Tuesday 1 September 2026. Held under the theme 'Friedensfähig statt kriegstüchtig', the programme will include speeches from DGB youth and pax christi representatives together with cultural and musical contributions. Risk assessed as Low because this is a formally organised stationary rally in a pedestrianised central square with no march, blockade or confrontation announced. Localised pedestrian congestion and routine municipal or police monitoring are possible."
+},
+
+{
+  title: "Jugend gegen Krieg Antikriegstag Street Action",
+  city: "Frankfurt am Main",
+  lat: 50.11444,
+  lng: 8.68694,
+  address: "Konstablerwache",
+  postcode: "60313",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T18:00:00",
+  source: "https://www.friedenskooperative.de/termine/antikriegstag-2026-in-frankfurt",
+  summary: "IG Metall Jugend Frankfurt has confirmed a 'Jugend gegen Krieg' street action at Konstablerwache at 18:00 on Tuesday 1 September 2026 for Antikriegstag. The action will focus on civilian clauses in education and research, conversion of arms-related industrial production and opposition to Bundeswehr advertising in schools. Risk assessed as Low because the published programme describes a stationary public street action with no procession, blockade or civil-disobedience activity announced. The prominent central location may nevertheless produce localised pedestrian congestion and routine security or police observation."
+},
+
+{
+  title: "Nie wieder kriegstüchtig — Heidelberg Antikriegstag Rally",
+  city: "Heidelberg",
+  lat: 49.41072,
+  lng: 8.69802,
+  address: "Anatomiegarten, Hauptstraße 49",
+  postcode: "69117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T18:00:00",
+  source: "https://www.friedenskooperative.de/termine/text/bundesland/Baden-W%C3%BCrttemberg",
+  summary: "Friedensbündnis Heidelberg has confirmed an Antikriegstag rally at the Anatomiegarten on Hauptstraße at 18:00 on Tuesday 1 September 2026 under the slogan 'Nie wieder kriegstüchtig!'. Organisers will oppose military build-up, social-service reductions, militarisation and compulsory military service while calling for diplomacy and negotiated solutions to armed conflicts. Risk assessed as Low because the gathering is a stationary rally within Heidelberg's pedestrianised city centre and no march, blockade or confrontational activity has been announced. Localised pedestrian congestion is possible along Hauptstraße."
+},
+
+{
+  title: "Antikriegstag Peace Rally — Friedrichshafen",
+  city: "Friedrichshafen",
+  lat: 47.651176,
+  lng: 9.475269,
+  address: "Musikpavillon, Uferpromenade, Uferstraße 22",
+  postcode: "88045",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T18:00:00",
+  source: "https://www.friedensregion-bodensee.de/termine/",
+  summary: "DGB Ravensburg, VVN-BdA Ravensburg-Oberschwaben, pax christi, Friedensregion Bodensee and supporting organisations have confirmed an Antikriegstag gathering at the Musikpavillon on Friedrichshafen's Uferpromenade at 18:00 on Tuesday 1 September 2026. The programme is described as a public rally and discussion centred on peace and opposition to war and militarisation. Risk assessed as Low because the action will take place at a fixed waterfront public venue with no procession, blockade or confrontational activity announced. Increased pedestrian activity is possible along the promenade."
+},
+
+{
+  title: "Nie wieder Krieg — Mainz-Kastel Antikriegstag Demonstration",
+  city: "Wiesbaden",
+  lat: 50.00668,
+  lng: 8.2830,
+  address: "Bahnhof Mainz-Kastel — Friedenstraße — US garrison — Paulusplatz, Mainz-Kastel",
+  postcode: "55252",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T18:00:00",
+  source: "https://www.frankfurter-info.org/news/aufruf-zum-antikriegstag-1-september-2026",
+  summary: "DGB Region Frankfurt-Rhein-Main and the Friedens- und Zukunftswerkstatt have confirmed a regional Antikriegstag demonstration beginning at Bahnhof Mainz-Kastel at 18:00 on Tuesday 1 September 2026. Participants will march via Friedenstraße alongside the US military garrison before continuing to Paulusplatz. The mobilisation, held under the slogan 'Nie wieder Krieg! Nie wieder Faschismus!', will call for diplomacy, arms control and opposition to renewed intermediate-range missile deployments and compulsory military service. Risk assessed as Medium because the moving demonstration will pass a sensitive US military location and is likely to require police liaison, route management and temporary traffic controls. No violent action has been announced."
+},
+
+{
+  title: "Die Welt braucht Frieden — Schwäbisch Hall Antikriegstag Rally",
+  city: "Schwäbisch Hall",
+  lat: 49.11543,
+  lng: 9.73516,
+  address: "Dietrich-Bonhoeffer-Platz",
+  postcode: "74523",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T11:00:00",
+  source: "https://www.friedenskooperative.de/termine/antikriegstag-2026-in-schwaebisch-hall",
+  summary: "DGB Kreisverband Schwäbisch Hall and supporting organisations have confirmed an Antikriegstag rally at Dietrich-Bonhoeffer-Platz from 11:00 on Saturday 5 September 2026 under the theme 'Die Welt braucht Frieden! – Kanonen statt Butter?'. Scheduled speakers include an IG Metall trade-union representative and a representative of the Informationsstelle Militarisierung. Risk assessed as Low because the published event is a stationary and organised public rally with no march, blockade or violent activity announced. Localised pedestrian congestion and routine police or municipal monitoring may occur around the central square."
+},
+
+{
+  title: "DGB National Social-State Action Day — Hannover",
+  city: "Hannover",
+  lat: 52.36721,
+  lng: 9.72873,
+  address: "Waterlooplatz — march to Georgsplatz",
+  postcode: "30169",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:30:00",
+  source: "https://niedersachsen-bremen-sachsenanhalt.dgb.de/mitmachen/seid-dabei-gross-demos-fuer-einen-starken-sozialstaat/",
+  summary: "The German Trade Union Confederation and its member unions have confirmed a demonstration beginning at Waterlooplatz in Hannover at 11:30 on Saturday 26 September 2026 as part of the nationwide 'Hart verdient' action day. Participants will march towards Georgsplatz, where the principal rally is scheduled from 12:30 to 14:30. The mobilisation will oppose reductions affecting pensions, healthcare, care provision, employment rights and other elements of the social state while calling for secure jobs and stronger worker protections. Risk assessed as Medium because the moving demonstration through central Hannover and subsequent city-centre rally are likely to require road restrictions, police liaison and public-transport management. No violent action has been announced."
+},
+
+{
+  title: "DGB National Social-State Action Day — Magdeburg",
+  city: "Magdeburg",
+  lat: 52.13052,
+  lng: 11.62863,
+  address: "Willy-Brandt-Platz, outside Magdeburg Hauptbahnhof",
+  postcode: "39104",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:00:00",
+  source: "https://niedersachsen-bremen-sachsenanhalt.dgb.de/mitmachen/seid-dabei-gross-demos-fuer-einen-starken-sozialstaat/",
+  summary: "The German Trade Union Confederation and its member unions have confirmed a rally at Willy-Brandt-Platz outside Magdeburg Hauptbahnhof at 11:00 on Saturday 26 September 2026. The action forms part of the nationwide 'Hart verdient' campaign defending pensions, healthcare, care services, employment protections and secure working conditions while opposing reductions to the German social state. Oliver Heinrich of IGBCE is listed as the principal speaker. Risk assessed as Medium because the gathering will take place immediately outside the city's principal railway station and may create substantial pedestrian activity, access management requirements and public-transport disruption. No violent or deliberately obstructive action has been announced."
+},
+
+{
+  title: "DGB National Social-State Action Day — Leipzig",
+  city: "Leipzig",
+  lat: 51.32747,
+  lng: 12.37331,
+  address: "Volkshaus, Karl-Liebknecht-Straße 30–32 — feeder march to Simsonplatz",
+  postcode: "04107",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:00:00",
+  source: "https://sachsen.dgb.de/mitmachen/aktionstag-sozialstaat/",
+  summary: "DGB Sachsen has confirmed a feeder demonstration departing from the Volkshaus on Karl-Liebknecht-Straße at 11:00 on Saturday 26 September 2026 before joining the principal 'Hart verdient' rally at Simsonplatz from 12:00. A second coalition feeder demonstration will also depart Johannisplatz at 11:00. Participants will oppose reductions to pensions, healthcare, care provision and workers' rights while demanding a stronger social state, secure employment and investment. Risk assessed as Medium because two simultaneous feeder marches will converge on a major central rally, creating the potential for rolling road restrictions, public-transport disruption and significant police and stewarding requirements."
+},
+
+{
+  title: "Antikriegstag Demonstration — Munich",
+  city: "Munich",
+  lat: 48.13680,
+  lng: 11.55950,
+  address: "Karlsplatz (Stachus) — march to DGB-Haus, Schwanthalerstraße 64",
+  postcode: "80335",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T17:00:00",
+  source: "https://www.muenchner-friedensbuendnis.de/node/2927",
+  summary: "ver.di Munich and supporting peace activists have confirmed an Antikriegstag rally at Karlsplatz (Stachus) at 17:00 on Tuesday 1 September 2026. Following speeches including an address by Jürgen Wagner of the Informationsstelle Militarisierung, participants are scheduled to begin a demonstration at approximately 18:00 towards the new DGB-Haus at Schwanthalerstraße 64. The action forms part of Germany's traditional anti-war day and will focus on opposition to war, militarisation and military escalation. Risk assessed as Medium because the procession will begin at one of Munich's busiest central transport and shopping locations before travelling through the city centre, potentially requiring police liaison and temporary traffic or transit management."
+},
+
+{
+  title: "Antikriegstag Demonstration Against Militarisation — Nuremberg",
+  city: "Nuremberg",
+  lat: 49.44819,
+  lng: 11.07521,
+  address: "Kornmarkt — demonstration through central Nuremberg returning to Kornmarkt",
+  postcode: "90402",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T17:00:00",
+  source: "https://friedensforum-nuernberg.de/Veranstaltung/demo-zum-antikriegstag-2/?instance_id=1103",
+  summary: "The Nuremberg Peace Forum has confirmed an Antikriegstag demonstration beginning at Kornmarkt at 17:00 on Tuesday 1 September 2026. Participants will march through central Nuremberg before returning to Kornmarkt, with public speeches planned at three locations along the route. Organisers state that the demonstration will oppose militarisation and increased armament and advocate renewed efforts towards peaceful conflict resolution. A subsequent indoor event is scheduled at the Gewerkschaftshaus from 19:00. Risk assessed as Medium because the moving city-centre demonstration will require temporary road and pedestrian management and may affect access around Kornmarkt and adjoining streets. No violent activity has been announced."
+},
+
+{
+  title: "Antikriegstag Demonstration — Hamburg",
+  city: "Hamburg",
+  lat: 53.55891,
+  lng: 9.98926,
+  address: "Deserteursdenkmal, Dammtordamm / Stephansplatz — march to Gewerkschaftshaus, Besenbinderhof",
+  postcode: "20354",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T16:30:00",
+  source: "https://hamburg.verdi.de/service/veranstaltungen/++co++2f246dcc-7ea6-11f1-98cb-cd7767c28b40",
+  summary: "ver.di Hamburg's Peace Working Group has confirmed an Antikriegstag demonstration beginning with a rally at the Deserteursdenkmal near Stephansplatz and Dammtor at 16:30 on Tuesday 1 September 2026. Participants will subsequently march through central Hamburg before a closing rally outside the Gewerkschaftshaus at Besenbinderhof. The mobilisation will commemorate the outbreak of the Second World War while opposing contemporary war, militarisation and escalating military expenditure. Risk assessed as Medium because the moving demonstration crosses central Hamburg and may require temporary road restrictions, police liaison and public-transport management between Dammtor and the Gewerkschaftshaus."
+},
+
+{
+  title: "Antikriegstag Rally Against Militarisation and Conscription — Bremen",
+  city: "Bremen",
+  lat: 53.07578,
+  lng: 8.80716,
+  address: "Bremer Marktplatz, Am Markt 2",
+  postcode: "28195",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T16:30:00",
+  source: "https://bremerfriedensforum.de/events/event/antikriegstag-gegen-militarisierung-wehrpflicht-und-kriege-fuer-frieden-und-sicherheit/",
+  summary: "The Bremer Friedensforum and supporting organisations have confirmed an Antikriegstag rally at Bremer Marktplatz from 16:30 to 17:30 on Tuesday 1 September 2026 under the theme 'Against Militarisation, Conscription and Wars — for Peace and Security'. The gathering will commemorate the German invasion of Poland in 1939 and call for opposition to renewed militarisation and war. A related public discussion on the consequences of Germany's 'Zeitenwende' is scheduled later at the Gewerkschaftshaus. Risk assessed as Low because the published action is a one-hour stationary rally with no march or blockade announced. Localised pedestrian congestion and routine police observation are possible around the historic city centre."
+},
+
+{
+  title: "Wir vergessen Gaza nicht — Düsseldorf Palestine March",
+  city: "Düsseldorf",
+  lat: 51.22172,
+  lng: 6.78967,
+  address: "Friedrich-Ebert-Straße — exact assembly position on the street TBC",
+  postcode: "40210",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "https://palaestina-solidaritaet.de/mc-locations/duesseldorf/",
+  summary: "Palestine-solidarity organisers have confirmed a large public mobilisation in Düsseldorf on Saturday 26 September 2026 under the slogan 'Wir vergessen Gaza nicht — zurück zu den Wurzeln'. The foot march is scheduled to begin at 14:00 from Friedrich-Ebert-Straße in postcode 40210; organisers have not yet published a street number, so the coordinates use a transparent central Friedrich-Ebert-Straße map anchor pending refinement. A separately organised motorcycle convoy connected to the same mobilisation is scheduled from 13:45. Risk assessed as Medium because the combination of a moving pedestrian demonstration and motorcycle convoy is likely to require significant traffic management, police liaison and protected movement routes in central Düsseldorf. No specific hostile counter-demonstration or violent action has been announced."
+},
+
+
+{
+  title: "Berlin-Brandenburg Education Protest — Glienicke Bridge",
+  city: "Potsdam",
+  lat: 52.41349,
+  lng: 13.09023,
+  address: "Glienicker Brücke, Berliner Straße / Königstraße",
+  postcode: "14467",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T11:55:00",
+  source: "https://www.bildungswende-jetzt.de/bundeslaender/brandenburg/",
+  summary: "Bildungswende JETZT! and supporting Berlin and Brandenburg education campaigners have confirmed a joint protest action on the Glienicke Bridge at 11:55 on Saturday 19 September 2026 as part of Germany's nationwide education protest day. Teachers, students, childcare workers, parents and civil-society supporters will stage a large public performance under the message 'Bildung braucht Demokratie braucht Bildung', calling for improved schools and childcare, greater educational equality and stronger democratic education. Risk assessed as Medium because the gathering is planned directly on a strategically important road bridge linking Potsdam and Berlin and may require temporary traffic restrictions, police liaison and pedestrian controls. No violent action has been announced."
+},
+
+{
+  title: "National Education Protest Day — Munich",
+  city: "Munich",
+  lat: 48.13626,
+  lng: 11.57480,
+  address: "Rindermarkt",
+  postcode: "80331",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T10:30:00",
+  source: "https://www.bildungswende-jetzt.de/bundeslaender/bayern/",
+  summary: "Bildungswende JETZT!, the Bayerische Schüler:innen Bewegung and supporting education organisations have confirmed a protest action at Rindermarkt in central Munich at 10:30 on Saturday 19 September 2026. Under the theme 'Bildungsbunker machen krank', students will stage a public performance depicting pressures within the Bavarian education system before symbolically rebuilding the classroom. The action forms part of the nationwide Education Protest Day and will call for education reform, improved conditions for students and staff and stronger investment in schools. Risk assessed as Low because the advertised activity is a creative and organised public performance rather than a moving procession or blockade. Localised pedestrian congestion is nevertheless likely around Rindermarkt."
+},
+
+{
+  title: "National Education Protest Day — Nuremberg",
+  city: "Nuremberg",
+  lat: 49.44819,
+  lng: 11.07521,
+  address: "Kornmarkt / Straße der Menschenrechte",
+  postcode: "90402",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T14:30:00",
+  source: "https://www.bildungswende-jetzt.de/bundeslaender/bayern/",
+  summary: "Bildungswende JETZT! has confirmed a public education-protest action at Kornmarkt and the Straße der Menschenrechte in Nuremberg at 14:30 on Saturday 19 September 2026. The action forms part of Germany's nationwide Education Protest Day and will call for improved education funding, greater equality of opportunity, better conditions in schools and childcare and structural reform of the education system. Risk assessed as Low because organisers currently describe a protest action at a fixed central location rather than a march or deliberate obstruction. Increased pedestrian activity and routine police or municipal management are possible around Kornmarkt."
+},
+
+{
+  title: "DGB National Social-State Action Day — Erfurt",
+  city: "Erfurt",
+  lat: 50.97319,
+  lng: 11.03889,
+  address: "Erfurt Hauptbahnhof, Willy-Brandt-Platz 12 — march to Anger",
+  postcode: "99084",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T10:00:00",
+  source: "https://hessen-thueringen.dgb.de/mitmachen/bundesweit-gegen-sozialabbau/",
+  summary: "The German Trade Union Confederation and its member unions have confirmed an Erfurt demonstration beginning outside Hauptbahnhof at 10:00 on Saturday 26 September 2026 as part of the nationwide 'Hart verdient' action day. Participants will march from the railway station to Anger, where the principal rally is scheduled to begin at 11:00. The mobilisation will oppose reductions to pensions, healthcare, care provision and employee protections while demanding secure employment, fair working conditions and a strong welfare state. Risk assessed as Medium because the march will begin at a major regional transport hub and continue into central Erfurt, requiring traffic management, police liaison and possible changes to public-transport access."
+},
+
+{
+  title: "DGB National Social-State Action Day — Frankfurt",
+  city: "Frankfurt am Main",
+  lat: 50.10917,
+  lng: 8.67389,
+  address: "Willy-Brandt-Platz / Gallusanlage — march to Opernplatz",
+  postcode: "60311",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:00:00",
+  source: "https://hessen-thueringen.dgb.de/mitmachen/bundesweit-gegen-sozialabbau/",
+  summary: "The German Trade Union Confederation and its member unions have confirmed a major Frankfurt demonstration beginning at Willy-Brandt-Platz beside Gallusanlage at 11:00 on Saturday 26 September 2026. Participants will march through central Frankfurt to Opernplatz, where a principal rally is scheduled from 13:00. The action forms part of the nationwide 'Hart verdient' campaign defending pensions, healthcare, care services, employment rights and social protections. Risk assessed as Medium because the moving demonstration will affect the central business district and is likely to require road restrictions, police deployment and public-transport management between Willy-Brandt-Platz and Opernplatz."
+},
+
+{
+  title: "DGB National Social-State Action Day — Freiburg",
+  city: "Freiburg im Breisgau",
+  lat: 47.99661,
+  lng: 7.83827,
+  address: "Stühlinger Kirchplatz",
+  postcode: "79106",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://bw.dgb.de/mitmachen/termine-und-aktionen/termin/freiburg-hart-verdient-deine-arbeit-deine-gesundheit-deine-rente-demonstration-am-bundesweiten-aktionstag/",
+  summary: "DGB Baden-Württemberg and its member unions have confirmed a demonstration at Stühlinger Kirchplatz in Freiburg from 12:00 to 16:00 on Saturday 26 September 2026 as part of the nationwide 'Hart verdient' action day. Participants will oppose reductions affecting pensions, healthcare, care services, housing support, public services and workplace protections while demanding secure employment, collective agreements and sustainable funding for the welfare state. Risk assessed as Medium because organisers are arranging regional transport into Freiburg and the extended central gathering may generate substantial crowding and additional demand around the Hauptbahnhof and Stühlinger district. No violent action has been announced."
+},
+
+{
+  title: "DGB National Social-State Action Day — Saarbrücken",
+  city: "Saarbrücken",
+  lat: 49.23770,
+  lng: 6.98351,
+  address: "Bürgerpark Hafeninsel — march to Schlossplatz",
+  postcode: "66111",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:00:00",
+  source: "https://rheinland-pfalz-saarland.dgb.de/dgb-rps-fileadmin/dateien/Dokumente/Bezirk/Aufruf_Saarbr%C3%BCcken_2026-09-26-web-klein.pdf",
+  summary: "The German Trade Union Confederation and its member unions have confirmed a demonstration beginning at Bürgerpark in Saarbrücken at 11:00 on Saturday 26 September 2026. Participants will march towards Schlossplatz, where the principal rally is scheduled to begin at 12:00. The mobilisation will defend pensions, healthcare, collective employment rights, regulated working hours and secure jobs while opposing proposed reductions to Germany's social protections. Risk assessed as Medium because the moving city-centre demonstration will require traffic controls, police liaison and pedestrian management between Bürgerpark and Schlossplatz. The organisers have not announced violent or deliberately disruptive activity."
+},
+
+{
+  title: "DGB National Social-State Action Day — Stuttgart",
+  city: "Stuttgart",
+  lat: 48.7784,
+  lng: 9.1799,
+  address: "Schlossplatz",
+  postcode: "70173",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:55:00",
+  source: "https://bw.dgb.de/mitmachen/termine-und-aktionen/termin/demo-hart-verdient/",
+  summary: "DGB Baden-Württemberg and its member unions have confirmed a major rally at Schlossplatz in Stuttgart from 11:55 on Saturday 26 September 2026 under the nationwide 'Hart verdient' campaign. Participants will defend pensions, healthcare, secure employment, workers' rights and the social state while opposing proposed reductions to welfare provision and employee protections. Operational significance is increased because a separately organised Galgo animal-welfare march is also confirmed to assemble at Schlossplatz at 12:00 on the same date. Risk assessed as Medium because the overlapping independently organised gatherings may generate substantial crowding, competing use of the square, enhanced police or stewarding requirements and disruption around central Stuttgart. No violent activity has been announced by either organiser."
+},
+
+{
+  title: "Dresden Demonstration Against Public-Sector and Social Cuts",
+  city: "Dresden",
+  lat: 51.0571,
+  lng: 13.7459,
+  address: "Carolaplatz",
+  postcode: "01097",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T16:30:00",
+  source: "https://www.verdi.de/swos/termin/dresden-demonstration-gegen-sozialkuerzungen",
+  summary: "The Bündnis gegen Kürzungen Dresden has confirmed a demonstration at Carolaplatz from 16:30 on Thursday 3 September 2026 under the slogan 'Jetzt reicht's – Stadt. Land. Bund – Kürzungen? Nicht mit uns!'. Participants will oppose current and proposed spending cuts at municipal, state and federal level affecting areas including healthcare, education, public transport, climate measures, leisure provision and social services. The published programme is expected to continue until approximately 19:00. Risk assessed as Medium because a politically visible city-centre mobilisation may require police liaison, temporary traffic controls and public-transport management around Carolaplatz. No violent action has been announced."
+},
+{
+  title: "National Education Protest Day — Cologne",
+  city: "Cologne",
+  lat: 50.9437,
+  lng: 6.9335,
+  address: "DGB-Haus, Hans-Böckler-Platz 1 — march through the city centre to Heumarkt",
+  postcode: "50672",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T11:00:00",
+  source: "https://www.bildungswende-jetzt.de/bundeslaender/nordrhein-westfalen/",
+  summary: "Bildungswende JETZT! has confirmed the principal Cologne demonstration for Germany's nationwide Education Protest Day on Saturday 19 September 2026. Participants will assemble at the DGB-Haus on Hans-Böckler-Platz at 11:00 before marching through central Cologne to Heumarkt, where the main national rally will begin at approximately 13:00. Campaigners will call for substantial improvements to schools, childcare and the wider education system, greater educational equality and political action to address staffing, funding and infrastructure pressures. Risk assessed as Medium because the moving procession through central Cologne and subsequent major rally at Heumarkt are likely to require road restrictions, police liaison and public-transport management. No violent action has been announced."
+},
+{
+  title: "National Education Protest Day — Bielefeld",
+  city: "Bielefeld",
+  lat: 52.0232,
+  lng: 8.5334,
+  address: "Jahnplatz",
+  postcode: "33602",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T11:55:00",
+  source: "https://www.bildungswende-jetzt.de/bundeslaender/nordrhein-westfalen/",
+  summary: "Bildungswende JETZT! has confirmed a public rally at Jahnplatz in Bielefeld at 11:55 on Saturday 19 September 2026 as part of the nationwide Education Protest Day. Participants, including education workers, parents, students and supporters, will call for improved educational provision, greater equality of opportunity and political action addressing problems affecting schools and childcare. Speeches and public campaign activity are planned at Jahnplatz. Risk assessed as Low because the published action is a stationary and organised rally with no march, blockade or confrontation announced. Localised pedestrian congestion and temporary effects around the central transport interchange are possible."
+},
+{
+  title: "National Education Protest Day — Bochum",
+  city: "Bochum",
+  lat: 51.4787,
+  lng: 7.2228,
+  address: "Bochum Hauptbahnhof, Kurt-Schumacher-Platz 13–15 — march to Bochum Rathaus",
+  postcode: "44787",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://www.bildungswende-jetzt.de/bundeslaender/nordrhein-westfalen/",
+  summary: "Bildungswende JETZT! has confirmed a demonstration and rally beginning outside Bochum Hauptbahnhof at 12:00 on Saturday 19 September 2026 as part of the nationwide Education Protest Day. Participants will march from the central railway station to Bochum Rathaus while calling for better-resourced schools and childcare, educational equality and reforms intended to improve conditions for children, students and education workers. Risk assessed as Medium because the moving demonstration connects two prominent central locations and may require temporary traffic controls, police liaison and pedestrian or public-transport management around the Hauptbahnhof and Rathaus. No violent action has been announced."
+},
+
+
 {
   title: "Marche des Fiertés du Vignoble Nantais 2026",
   city: "Clisson",
@@ -4820,9 +5527,9 @@ window.alertsData =[
   country: "Germany",
   continent: "Europe",
   risk: "Medium",
-  time: "2026-09-26T11:33:00",
+  time: "2026-09-26T12:00:00",
   source: "https://bayern.dgb.de/veranstaltungen/veranstaltung/grosskundgebung-zur-sozialstaatskampagne/",
-  summary: "DGB Bavaria has confirmed a major rally at Kornmarkt in Nuremberg from 11:33 to 15:00 on Saturday 26 September 2026. The gathering is part of the nationwide 'Hart verdient' campaign opposing reductions to social security, pensions, healthcare, care provision and workplace protections. Trade union members and supporters will call for secure jobs, collective agreements, reasonable working hours and a welfare system capable of supporting employees during economic change. Risk assessed as Medium because a large regional trade-union gathering in central Nuremberg is likely to require road restrictions, police liaison and public-transport management around Kornmarkt. No violent action has been announced."
+  summary: "DGB Bavaria has confirmed a major rally at Kornmarkt in Nuremberg from 12:00 to 15:00 on Saturday 26 September 2026. The gathering is part of the nationwide 'Hart verdient' campaign opposing reductions to social security, pensions, healthcare, care provision and workplace protections. Trade union members and supporters will call for secure jobs, collective agreements, reasonable working hours and a welfare system capable of supporting employees during economic change. Risk assessed as Medium because a large regional trade-union gathering in central Nuremberg is likely to require road restrictions, police liaison and public-transport management around Kornmarkt. No violent action has been announced."
 },
 
 {
