@@ -1885,8 +1885,17 @@
                   </select>
                   <button type="button" class="btn" id="scApplyThresholdBtn" disabled>Apply rule defaults</button>
                 </div>
-                <div id="scThresholdPreview" class="threshold-link-preview empty">No advanced threshold linked. This scenario will continue using its manually configured fields and the current fallback scoring path.</div>
-                <div class="form-hint">The selected rule ID, rule version and policy version are captured with the scenario. The Worker also stores a server-side snapshot so 9C can later score against the exact rule used for the exercise, even if the live policy is edited.</div>
+                <div id="scThresholdPreview" class="threshold-link-preview empty">No advanced threshold linked. This scenario will use the simple fallback policy or its manual expected-response guidance.</div>
+                <div id="scThresholdConditionWrap" style="display:none;margin-top:10px">
+                  <label style="display:block;margin-bottom:6px">Condition in this scenario <span style="font-weight:400;color:var(--muted);">(Phase 9C evaluator)</span></label>
+                  <select id="scThresholdConditionState">
+                    <option value="baseline">Baseline rule — primary action applies</option>
+                    <option value="escalate">Escalation / upgrade condition is present</option>
+                    <option value="exception">Exception / do-not-escalate condition applies</option>
+                  </select>
+                  <div id="scThresholdOutcome" class="form-hint" style="margin-top:6px"></div>
+                </div>
+                <div class="form-hint">Linked scenarios are now scored against the immutable rule snapshot. For radius rules, the scenario distance is evaluated automatically; use the condition selector when the rule's escalation or exception wording is part of the exercise.</div>
               </div>
 
               <div class="form-field">
@@ -2361,7 +2370,12 @@
           <select id="seqStepThresholdRule">
             <option value="">No advanced threshold link</option>
           </select>
-          <div class="seq-threshold-preview" id="seqStepThresholdPreview">Sequence step will use the normal fallback scoring path until 9C unless a saved advanced rule is linked.</div>
+          <select id="seqStepThresholdCondition" style="margin-top:6px">
+            <option value="baseline">Baseline rule — primary action applies</option>
+            <option value="escalate">Escalation / upgrade condition is present</option>
+            <option value="exception">Exception / do-not-escalate condition applies</option>
+          </select>
+          <div class="seq-threshold-preview" id="seqStepThresholdPreview">Link an advanced threshold to make its saved snapshot the scoring authority for this step.</div>
         </div>
         <div class="form-field full">
           <label>Summary</label>
@@ -2747,7 +2761,9 @@ let thresholdLinkPolicy = {
   policy_status:'active', policy_version:1, advanced_rules:[]
 };
 let selectedThresholdRuleId = '';
+let selectedThresholdConditionState = 'baseline';
 let seqThresholdRuleId = '';
+let seqThresholdConditionState = 'baseline';
 
 /* ════════════════════════════════════════════════
    INIT
@@ -2865,6 +2881,8 @@ function applyPreset(idx) {
   if (!p) return;
   selectedPreset = idx;
   selectedThresholdRuleId = '';
+  selectedThresholdConditionState = 'baseline';
+  const conditionSel = document.getElementById('scThresholdConditionState'); if (conditionSel) conditionSel.value = 'baseline';
   refreshThresholdRuleSelectors();
   document.querySelectorAll('.scenario-item').forEach((el,i) => el.classList.toggle('selected', i === idx));
   document.getElementById('scTitle').value = p.title;
@@ -3049,6 +3067,37 @@ function refreshThresholdRuleSelectors() {
   }
 }
 
+function thresholdExpectedOutcome(rule, conditionState, distanceM) {
+  if (!rule) return { action:'', reason:'' };
+  const state = ['baseline','escalate','exception'].includes(String(conditionState||'')) ? String(conditionState) : 'baseline';
+  const km = rule.proximity_km === null || rule.proximity_km === undefined || rule.proximity_km === '' ? null : Number(rule.proximity_km);
+  const dist = distanceM === null || distanceM === undefined || distanceM === '' ? null : Number(distanceM);
+  if (rule.exposure_type === 'radius' && Number.isFinite(km) && Number.isFinite(dist) && dist > km * 1000) {
+    return { action:'no_action', reason:'Outside the linked ' + km + ' km radius' };
+  }
+  if (state === 'exception') return { action:'no_action', reason: rule.exceptions || 'Rule exception applies' };
+  if (state === 'escalate') return { action:'escalate', reason: rule.escalation_conditions || 'Escalation condition applies' };
+  return { action:rule.primary_action || 'monitor', reason:'Primary rule action' };
+}
+
+function renderThresholdOutcomePreview(){
+  const wrap = document.getElementById('scThresholdConditionWrap');
+  const out = document.getElementById('scThresholdOutcome');
+  const rule = thresholdRuleById(selectedThresholdRuleId);
+  if (!wrap || !out) return;
+  wrap.style.display = rule ? '' : 'none';
+  if (!rule) { out.textContent = ''; return; }
+  const dist = document.getElementById('scDistance')?.value;
+  const ev = thresholdExpectedOutcome(rule, selectedThresholdConditionState, dist);
+  const bits = ['9C expected decision: ' + thresholdActionLabel(ev.action)];
+  if (rule.exposure_type === 'radius' && rule.proximity_km !== null && rule.proximity_km !== undefined && dist !== '') {
+    const inside = Number(dist) <= Number(rule.proximity_km) * 1000;
+    bits.push((inside ? 'inside' : 'outside') + ' ' + Number(rule.proximity_km) + ' km rule radius');
+  }
+  if (ev.reason) bits.push(ev.reason);
+  out.textContent = bits.join(' · ');
+}
+
 function renderScenarioThresholdPreview() {
   const host = document.getElementById('scThresholdPreview');
   const applyBtn = document.getElementById('scApplyThresholdBtn');
@@ -3057,7 +3106,8 @@ function renderScenarioThresholdPreview() {
   const rule = thresholdRuleById(selectedThresholdRuleId);
   if (!selectedThresholdRuleId) {
     host.className = 'threshold-link-preview empty';
-    host.innerHTML = 'No advanced threshold linked. This scenario will continue using its manually configured fields and the current fallback scoring path.';
+    host.innerHTML = 'No advanced threshold linked. This scenario will use the simple fallback policy or its manual expected-response guidance.';
+    const cw = document.getElementById('scThresholdConditionWrap'); if (cw) cw.style.display = 'none';
     if (applyBtn) applyBtn.disabled = true;
     return;
   }
@@ -3088,8 +3138,9 @@ function renderScenarioThresholdPreview() {
       (checks ? '<span class="threshold-link-badge">' + checks + ' required check' + (checks === 1 ? '' : 's') + '</span>' : '') +
       (draft ? '<span class="threshold-link-badge draft">Draft policy</span>' : '') +
     '</div>' +
-    '<div class="threshold-link-warning">Phase 9B stores this rule reference and a server-side snapshot with the scenario. The advanced rule will become the decision authority in 9C; until then, existing fallback scoring remains unchanged.</div>';
+    '<div class="threshold-link-warning">Phase 9C: this saved snapshot is now the scoring authority for the exercise. Radius, required checks and rule SLA are evaluated from the snapshot rather than the live policy.</div>';
   if (applyBtn) applyBtn.disabled = false;
+  renderThresholdOutcomePreview();
 }
 
 function renderSequenceThresholdPreview() {
@@ -3097,7 +3148,7 @@ function renderSequenceThresholdPreview() {
   if (!host) return;
   const rule = thresholdRuleById(seqThresholdRuleId);
   if (!seqThresholdRuleId) {
-    host.textContent = 'Sequence step will use the normal fallback scoring path until 9C unless a saved advanced rule is linked.';
+    host.textContent = 'No advanced threshold linked — this step will use the simple fallback policy/manual guidance.';
     return;
   }
   if (!rule) {
@@ -3108,7 +3159,8 @@ function renderSequenceThresholdPreview() {
     ' · ' + thresholdActionLabel(rule.primary_action) +
     (Number(rule.response_sla_min || 0) > 0 ? ' · SLA ' + Number(rule.response_sla_min) + ' min' : '') +
     ' · Rule v' + Number(rule.version_no || 1) +
-    ' / Policy v' + Number(thresholdLinkPolicy.policy_version || 1);
+    ' / Policy v' + Number(thresholdLinkPolicy.policy_version || 1) +
+    ' · 9C: ' + thresholdActionLabel(thresholdExpectedOutcome(rule, seqThresholdConditionState, null).action);
 }
 
 function buildThresholdGuidance(rule) {
@@ -3245,8 +3297,24 @@ function wireThresholdLinkControls() {
     scSel.dataset.wired9b = '1';
     scSel.addEventListener('change', function(){
       selectedThresholdRuleId = scSel.value || '';
+      selectedThresholdConditionState = 'baseline';
+      const stateSel = document.getElementById('scThresholdConditionState');
+      if (stateSel) stateSel.value = 'baseline';
       renderScenarioThresholdPreview();
     });
+  }
+  const conditionSel = document.getElementById('scThresholdConditionState');
+  if (conditionSel && !conditionSel.dataset.wired9c) {
+    conditionSel.dataset.wired9c = '1';
+    conditionSel.addEventListener('change', function(){
+      selectedThresholdConditionState = conditionSel.value || 'baseline';
+      renderThresholdOutcomePreview();
+    });
+  }
+  const distanceEl = document.getElementById('scDistance');
+  if (distanceEl && !distanceEl.dataset.wired9c) {
+    distanceEl.dataset.wired9c = '1';
+    distanceEl.addEventListener('input', renderThresholdOutcomePreview);
   }
   const apply = document.getElementById('scApplyThresholdBtn');
   if (apply && !apply.dataset.wired9b) {
@@ -3258,6 +3326,16 @@ function wireThresholdLinkControls() {
     seqSel.dataset.wired9b = '1';
     seqSel.addEventListener('change', function(){
       seqThresholdRuleId = seqSel.value || '';
+      seqThresholdConditionState = 'baseline';
+      const c = document.getElementById('seqStepThresholdCondition'); if (c) c.value = 'baseline';
+      renderSequenceThresholdPreview();
+    });
+  }
+  const seqCond = document.getElementById('seqStepThresholdCondition');
+  if (seqCond && !seqCond.dataset.wired9c) {
+    seqCond.dataset.wired9c = '1';
+    seqCond.addEventListener('change', function(){
+      seqThresholdConditionState = seqCond.value || 'baseline';
       renderSequenceThresholdPreview();
     });
   }
@@ -3309,6 +3387,7 @@ function injectScenario() {
     nearestLocationName: document.getElementById('scNearestRef')?.value?.trim() || '',
     expectedChecks: getExpectedChecks(),
     thresholdRuleId: selectedThresholdRuleId,
+    thresholdConditionState: selectedThresholdConditionState,
   });
 
   if (delay > 0) {
@@ -3320,7 +3399,7 @@ function injectScenario() {
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, thresholdRuleId }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, thresholdRuleId, thresholdConditionState }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
   // Every scenario is labelled as training. Stealth mode was removed when
@@ -3370,6 +3449,8 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     threshold_policy_version: thresholdRuleId ? Number(thresholdLinkPolicy.policy_version || 0) : 0,
     thresholdPolicyName: thresholdRuleId ? (thresholdLinkPolicy.policy_name || '') : '',
     threshold_policy_name: thresholdRuleId ? (thresholdLinkPolicy.policy_name || '') : '',
+    thresholdConditionState: thresholdRuleId ? (thresholdConditionState || 'baseline') : 'baseline',
+    threshold_condition_state: thresholdRuleId ? (thresholdConditionState || 'baseline') : 'baseline',
     status: 'active', operatorResponse: null, description: summary || '', type: catInfo.id,
     // Map coordinates
     lat: (lat !== null && lat !== undefined && !isNaN(lat)) ? lat : null,
@@ -3528,6 +3609,8 @@ function openSeqModal(idx) {
   document.getElementById('seqStepCategory').value = step ? step.category : 'civil_unrest';
   document.getElementById('seqStepDelay').value    = step ? (step.delayMin || 5) : 5;
   seqThresholdRuleId = step ? (step.thresholdRuleId || step.threshold_rule_id || '') : '';
+  seqThresholdConditionState = step ? (step.thresholdConditionState || step.threshold_condition_state || 'baseline') : 'baseline';
+  const seqCond = document.getElementById('seqStepThresholdCondition'); if (seqCond) seqCond.value = seqThresholdConditionState;
   populateThresholdRuleSelect(document.getElementById('seqStepThresholdRule'), seqThresholdRuleId, 'No advanced threshold link');
   renderSequenceThresholdPreview();
   setSeqRisk(step ? step.risk : 'high');
@@ -3561,6 +3644,8 @@ function saveSeqStep() {
     expectedResponse: document.getElementById('seqStepExpected').value.trim(),
     thresholdRuleId: seqThresholdRuleId || '',
     threshold_rule_id: seqThresholdRuleId || '',
+    thresholdConditionState: seqThresholdConditionState || 'baseline',
+    threshold_condition_state: seqThresholdConditionState || 'baseline',
     trigger: seqTrigger,
     delayMin: seqTrigger === 'timed' ? (parseInt(document.getElementById('seqStepDelay').value,10) || 5) : 0,
     status: 'pending',
@@ -3708,6 +3793,7 @@ async function fireNextStep() {
     risk: step.risk, category: catInfo, autoEscalateMin: 0,
     when: new Date().toISOString(),
     thresholdRuleId: step.thresholdRuleId || step.threshold_rule_id || '',
+    thresholdConditionState: step.thresholdConditionState || step.threshold_condition_state || 'baseline',
   });
 
   const injected = await doInject(scenario, currentStepIdx);
@@ -4541,6 +4627,7 @@ async function saveToLibrary(type) {
       category:s.category, categoryEmoji:s.categoryEmoji, categoryLabel:s.categoryLabel,
       summary:s.summary, expectedResponse:s.expectedResponse,
       thresholdRuleId:s.thresholdRuleId || s.threshold_rule_id || '',
+      thresholdConditionState:s.thresholdConditionState || s.threshold_condition_state || 'baseline',
       trigger:s.trigger, delayMin:s.delayMin,
     }));
   } else {
@@ -4560,6 +4647,7 @@ async function saveToLibrary(type) {
       // marked, not a setting to remember separately each time.
       expectedChecks: getExpectedChecks(),
       thresholdRuleId: selectedThresholdRuleId || '',
+      thresholdConditionState: selectedThresholdConditionState || 'baseline',
       targetResponseMin: parseInt(document.getElementById('scTargetResponse')?.value, 10) || 0,
       difficulty: selectedDifficulty,
       distanceM: parseInt(document.getElementById('scDistance')?.value, 10) || null,
@@ -4624,6 +4712,8 @@ async function loadFromLibrary(id) {
     if (p.confidence) document.getElementById('scConfidence').value = p.confidence;
     setExpectedChecks(p.expectedChecks ?? p.expected_checks ?? []);
     selectedThresholdRuleId = p.thresholdRuleId || p.threshold_rule_id || '';
+    selectedThresholdConditionState = p.thresholdConditionState || p.threshold_condition_state || 'baseline';
+    const conditionSel = document.getElementById('scThresholdConditionState'); if (conditionSel) conditionSel.value = selectedThresholdConditionState;
     refreshThresholdRuleSelectors();
     if (document.getElementById('scTargetResponse') && p.targetResponseMin) document.getElementById('scTargetResponse').value = p.targetResponseMin;
     if (document.getElementById('scDistance')) document.getElementById('scDistance').value = p.distanceM ?? p.distance_m ?? '';
