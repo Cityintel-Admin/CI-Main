@@ -238,10 +238,10 @@
 
       <!-- KPI summary row -->
       <div class="kpi-row" id="kpiRow">
-        <div class="kpi-card"><div class="kpi-value" id="kpiSessions">—</div><div class="kpi-label">Sessions</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpiSessions">—</div><div class="kpi-label">Completed Exercises</div></div>
         <div class="kpi-card"><div class="kpi-value" id="kpiAvgScore">—</div><div class="kpi-label">Avg Score</div></div>
         <div class="kpi-card"><div class="kpi-value" id="kpiBestGrade">—</div><div class="kpi-label">Best Grade</div></div>
-        <div class="kpi-card"><div class="kpi-value" id="kpiResponseRate">—</div><div class="kpi-label">Response Rate</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpiResponseRate">—</div><div class="kpi-label">Decision Accuracy</div></div>
       </div>
 
       <!-- Score trend -->
@@ -252,7 +252,7 @@
 
       <!-- Session history -->
       <div class="card session-history-card">
-        <div class="section-title">Session History</div>
+        <div class="section-title">Saved Session History</div><div class="muted" style="font-size:12px;margin:-4px 0 10px">Closed multi-scenario sessions are listed here. Individual completed exercises are reflected in the KPIs and Response log below.</div>
         <div class="session-list" id="sessionList">
           <div class="loading">Loading your training sessions…</div>
         </div>
@@ -317,13 +317,19 @@ function gradeClass(g){
 }
 
 let allSessions = [];
+let responseOverview = null;
 
 async function load(){
   try {
-    const res = await apiFetch('/api/org/training-sessions');
-    allSessions = Array.isArray(res.data) ? res.data : [];
+    const [sessionsRes, summaryRes] = await Promise.all([
+      apiFetch('/api/org/training-sessions'),
+      apiFetch('/api/org/training-summary')
+    ]);
+    allSessions = Array.isArray(sessionsRes.data) ? sessionsRes.data : [];
+    responseOverview = summaryRes && summaryRes.overall ? summaryRes.overall : null;
   } catch(e) {
     allSessions = [];
+    responseOverview = null;
   }
 
   renderKPIs();
@@ -332,29 +338,21 @@ async function load(){
 }
 
 function renderKPIs(){
-  const count = allSessions.length;
-  document.getElementById('kpiSessions').textContent = count || '0';
+  const o = responseOverview || {};
+  const completed = Number(o.completedExercises ?? o.responses ?? 0) || 0;
+  document.getElementById('kpiSessions').textContent = completed;
 
-  if(!count){
-    document.getElementById('kpiAvgScore').textContent = '—';
-    document.getElementById('kpiBestGrade').textContent = '—';
-    document.getElementById('kpiResponseRate').textContent = '—';
-    return;
-  }
+  document.getElementById('kpiAvgScore').textContent =
+    o.averageScore !== null && o.averageScore !== undefined ? Number(o.averageScore) + '%' : '—';
 
-  const avgScore = Math.round(allSessions.reduce((s,x)=>s+(x.overall_pct||0),0)/count);
-  document.getElementById('kpiAvgScore').textContent = avgScore + '%';
-
-  const gradeOrder = ['A','B','C','D','F'];
-  const best = gradeOrder.find(g => allSessions.some(s => (s.grade||'F')===g)) || '—';
+  const best = o.bestGrade || '—';
   const bestEl = document.getElementById('kpiBestGrade');
   bestEl.textContent = best;
-  bestEl.className = 'kpi-value ' + gradeClass(best);
+  bestEl.className = 'kpi-value ' + (best === '—' ? '' : gradeClass(best));
 
-  const totalScenarios = allSessions.reduce((s,x)=>s+(x.scenario_count||0),0);
-  const totalResponded  = allSessions.reduce((s,x)=>s+(x.responded_count||0),0);
-  const rr = totalScenarios > 0 ? Math.round((totalResponded/totalScenarios)*100) : 0;
-  document.getElementById('kpiResponseRate').textContent = rr + '%';
+  document.getElementById('kpiResponseRate').textContent =
+    o.decisionAccuracyPct !== null && o.decisionAccuracyPct !== undefined
+      ? Number(o.decisionAccuracyPct) + '%' : '—';
 }
 
 function renderTrend(){
@@ -376,7 +374,7 @@ function renderTrend(){
 function renderList(){
   const list = document.getElementById('sessionList');
   if(!allSessions.length){
-    list.innerHTML = '<div class="empty">No training sessions recorded yet.<br><span style="font-size:12px">Your scores will appear here after you complete a training session in live alerts.</span></div>';
+    list.innerHTML = '<div class="empty">No training sessions recorded yet.<br><span style="font-size:12px">Closed multi-scenario sessions will appear here. Individual exercises remain available in the Response log.</span></div>';
     return;
   }
 
@@ -562,6 +560,7 @@ document.querySelectorAll('nav a').forEach(a=>{
 });
 
 // Init
+window.addEventListener('ci:training-review-changed', load);
 load();
 
 })();
@@ -698,11 +697,20 @@ document.addEventListener('DOMContentLoaded',function(){
   function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
   function headers(){ return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type':'application/json' }; }
+  function canDeleteTraining(){
+    var who = {}; try { who = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : {}; } catch (_) {}
+    var role = String(who.role || who.user_role || who.type || '').toLowerCase().replace(/_/g,'-');
+    return ['master-admin','org-admin','admin'].indexOf(role) !== -1;
+  }
+  function feedbackOf(r){
+    try { return r && r.feedback_json ? (typeof r.feedback_json === 'string' ? JSON.parse(r.feedback_json) : r.feedback_json) : {}; }
+    catch (_) { return {}; }
+  }
 
   var ACTION_LABEL = { monitoring:'Monitor', escalated:'Escalate', cleared:'No action', notified:'Notify' };
   var CHECK_LABEL = {
     osint:'OSINT', official:'Official source', assets:'Assets',
-    travellers:'Travellers', duplicate:'Duplicate check', contacted:'Contacted personnel'
+    travellers:'Travellers', duplicate:'Duplicate check', contacted:'Contacted personnel', sop:'SOP'
   };
 
   function stepsOf(r){
@@ -754,6 +762,15 @@ document.addEventListener('DOMContentLoaded',function(){
           '</div>' +
           (r.note ? '<div class="muted" style="font-size:12px;margin-top:4px">“' + esc(r.note) + '”</div>' : '') +
           (function(){
+            var fb = feedbackOf(r), th = fb.threshold || {}, rr = th.rule || {}, pp = th.policy || {};
+            if (!th.linked) return '';
+            return '<div style="font-size:11px;margin-top:5px;color:#cfe1ff">🔗 ' +
+              esc((rr.categoryLabel || '') + (rr.eventType ? ' → ' + rr.eventType : '')) +
+              ' · Policy v' + esc(pp.version || r.threshold_policy_version || 1) +
+              ' / Rule v' + esc(rr.version || r.threshold_rule_version || 1) +
+              (th.evaluation ? ' · ' + esc(String(th.evaluation).replace(/_/g,' ')) : '') + '</div>';
+          })() +
+          (function(){
             var steps = stepsOf(r);
             // An escalation with nothing checked is the pattern worth spotting
             // in a debrief, so absence is shown rather than left blank.
@@ -781,6 +798,7 @@ document.addEventListener('DOMContentLoaded',function(){
           '</div>' +
           '<div class="muted" style="font-size:11px;margin-top:3px">' + when(r.responded_at) +
             (mins !== null ? ' · ' + mins + ' min' : '') + '</div>' +
+          (canDeleteTraining() ? '<button type="button" data-delete-response="' + esc(r.id) + '" style="margin-top:7px;border:1px solid rgba(255,90,95,.45);background:rgba(255,90,95,.08);color:#fecaca;border-radius:8px;padding:5px 8px;font-size:11px;font-weight:800;cursor:pointer">Remove</button>' : '') +
         '</div>' +
       '</div>';
     }).join('');
@@ -832,6 +850,24 @@ document.addEventListener('DOMContentLoaded',function(){
       if (host) host.innerHTML = '<div class="muted">Could not load responses: ' + esc(e.message || e) + '</div>';
     }
   }
+
+  async function deleteResponse(id){
+    if (!id || !canDeleteTraining()) return;
+    if (!window.confirm('Remove this training response from the organisation record? This is intended for tests or invalid records and cannot be undone.')) return;
+    try {
+      var res = await fetch(API + '/api/org/training-responses?id=' + encodeURIComponent(id), { method:'DELETE', headers:headers() });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Could not remove response');
+      await load();
+      // Refresh the response-based KPI cards owned by the first review script.
+      try { window.dispatchEvent(new CustomEvent('ci:training-review-changed')); } catch (_) {}
+    } catch (e) { window.alert(e.message || String(e)); }
+  }
+
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('[data-delete-response]') : null;
+    if (b) deleteResponse(b.getAttribute('data-delete-response'));
+  });
 
   document.addEventListener('input', function(e){ if (e.target && e.target.id === 'respFilter') render(); });
 
