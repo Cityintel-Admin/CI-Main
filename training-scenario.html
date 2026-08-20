@@ -582,17 +582,33 @@ window.CIAccess = {
   // incident is invented, so there is nothing real to measure from. Showing it
   // against the organisation's own radius is what makes a distance-based rule
   // ("escalate anything within 300m of a site") trainable.
+  function thresholdSnapshot(sc){
+    var raw = sc && sc.threshold_rule_snapshot_json;
+    if (!raw) return null;
+    try { var p = typeof raw === 'string' ? JSON.parse(raw) : raw; return p && p.rule ? p : null; } catch (_) { return null; }
+  }
+
+  function targetForScenario(sc){
+    var snap = thresholdSnapshot(sc);
+    var linked = snap && snap.rule ? Number(snap.rule.response_sla_min || 0) : 0;
+    return linked > 0 ? linked : Number(sc && sc.target_response_min || 0);
+  }
+
   function distanceBlock(sc){
     var m = Number(sc.distance_m);
     if (!isFinite(m) || m <= 0) return '';
-    var radiusM = state.policy && state.policy.proximity_km ? Number(state.policy.proximity_km) * 1000 : 0;
+    var snap = thresholdSnapshot(sc);
+    var linkedKm = snap && snap.rule && snap.rule.proximity_km != null ? Number(snap.rule.proximity_km) : null;
+    var fallbackKm = state.policy && state.policy.proximity_km ? Number(state.policy.proximity_km) : null;
+    var km = Number.isFinite(linkedKm) ? linkedKm : fallbackKm;
+    var radiusM = Number.isFinite(km) ? km * 1000 : 0;
     var inside = radiusM > 0 && m <= radiusM;
     var pretty = m >= 1000 ? (m / 1000).toFixed(m % 1000 === 0 ? 0 : 1) + ' km' : m + ' m';
     return '<div class="tr-dist' + (inside ? ' inside' : '') + '">' +
       '<span class="val">' + pretty + '</span>' +
-      '<span class="lbl">from ' + esc(sc.nearest_ref || 'the nearest site') +
+      '<span class="lbl">from ' + esc(sc.nearest_ref || sc.nearest_location_name || 'the nearest site') +
         (radiusM > 0
-          ? ' · your policy radius is ' + (radiusM / 1000) + ' km' + (inside ? ' — this is inside it' : ' — this is outside it')
+          ? ' · ' + (snap ? 'linked rule' : 'policy') + ' radius is ' + km + ' km' + (inside ? ' — this is inside it' : ' — this is outside it')
           : '') +
       '</span></div>';
   }
@@ -629,7 +645,10 @@ window.CIAccess = {
         var map = L.map(host, { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false }).setView([lat, lng], 14);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
         L.circleMarker([lat, lng], { radius:8, color:'#D01616', fillColor:'#D01616', fillOpacity:.85, weight:2 }).addTo(map);
-        var radiusM = state.policy && state.policy.proximity_km ? Number(state.policy.proximity_km) * 1000 : 0;
+        var snap = thresholdSnapshot(sc);
+        var linkedKm = snap && snap.rule && snap.rule.proximity_km != null ? Number(snap.rule.proximity_km) : null;
+        var radiusKm = Number.isFinite(linkedKm) ? linkedKm : (state.policy && state.policy.proximity_km ? Number(state.policy.proximity_km) : 0);
+        var radiusM = radiusKm > 0 ? radiusKm * 1000 : 0;
         if (radiusM > 0) {
           L.circle([lat, lng], { radius: radiusM, color:'#93c5fd', weight:1, fillColor:'#93c5fd', fillOpacity:.06 }).addTo(map);
           map.fitBounds(L.circle([lat, lng], { radius: radiusM }).getBounds(), { padding:[12,12] });
@@ -666,9 +685,11 @@ window.CIAccess = {
     }
 
     if (fb.expected) {
-      var whose = fb.source === 'policy'
-        ? 'your organisation\u2019s escalation thresholds'
-        : 'this scenario\u2019s expected response';
+      var whose = fb.source === 'advanced_policy_snapshot'
+        ? 'the linked advanced threshold'
+        : (fb.source === 'simple_policy' || fb.source === 'policy')
+          ? 'your organisation\u2019s escalation thresholds'
+          : 'this scenario\u2019s expected response';
       out += fb.correct
         ? '<div class="tr-verdict ok"><b>Correct call.</b> ' + esc(ACTION_TEXT[fb.expected] || fb.expected) +
           ' is what ' + whose + ' required here.</div>'
@@ -687,6 +708,15 @@ window.CIAccess = {
       out += '<div class="small" style="margin-top:6px">Answered in ' + score.takenMin +
         ' min against a ' + score.targetMin + ' min target.</div>';
     }
+    if (fb.threshold && fb.threshold.linked) {
+      var th = fb.threshold, rr = th.rule || {}, pp = th.policy || {};
+      out += '<div style="margin-top:10px;padding:10px 12px;border:1px solid rgba(147,197,253,.28);border-radius:10px;background:rgba(147,197,253,.06)">' +
+        '<div style="font-size:11px;font-weight:900;color:#cfe1ff;text-transform:uppercase;letter-spacing:.05em">Threshold used for scoring</div>' +
+        '<div class="small" style="margin-top:5px;color:#dbe3ec">' + esc((rr.categoryLabel || '') + (rr.eventType ? ' → ' + rr.eventType : '')) +
+        ' · Policy v' + esc(pp.version || 1) + ' / Rule v' + esc(rr.version || 1) + '</div>' +
+        (th.reason ? '<div class="small" style="margin-top:4px">' + esc(th.reason) + '</div>' : '') +
+      '</div>';
+    }
     return out;
   }
 
@@ -699,7 +729,7 @@ window.CIAccess = {
 
   function scenarioCard(sc){
     var mins = elapsedMin(sc.injected_at);
-    var target = Number(sc.target_response_min || 0);
+    var target = targetForScenario(sc);
     var over = target > 0 && mins !== null && mins > target;
     var place = [sc.location, sc.city, sc.country].filter(Boolean).join(' · ');
     var done = state.responded[sc.id];
@@ -790,13 +820,32 @@ window.CIAccess = {
     wrap.innerHTML = state.scenarios.map(scenarioCard).join('');
     state.maps = {};
     drawMaps();
+    renderPolicy();
   }
 
   function renderPolicy(){
-    if (!state.policy || !state.policy.rules || !state.policy.rules.length) return;
+    var card = document.getElementById('trPolicyCard');
+    var host = document.getElementById('trPolicyRules');
+    if (!card || !host) return;
     var labels = { monitor:'Monitor', log_only:'Log only', notify:'Notify', escalate:'Escalate', no_action:'No action' };
-    document.getElementById('trPolicyCard').style.display = '';
-    document.getElementById('trPolicyRules').innerHTML = state.policy.rules.map(function(r){
+    var linkedSc = state.scenarios.filter(function(sc){ return !!thresholdSnapshot(sc); })[0];
+    var snap = linkedSc ? thresholdSnapshot(linkedSc) : null;
+    if (snap && snap.rule) {
+      var r = snap.rule, p = snap.policy || {};
+      var stateName = String(linkedSc.threshold_condition_state || 'baseline');
+      card.style.display = '';
+      host.innerHTML =
+        '<div style="font-size:11px;color:#93c5fd;margin-bottom:8px">Linked rule · ' + esc(p.policy_name || 'Escalation thresholds') + ' · Policy v' + esc(p.policy_version || 1) + ' / Rule v' + esc(r.version_no || 1) + '</div>' +
+        '<div class="tr-policy-rule"><span>' + esc((r.category_label || 'Other') + ' → ' + (r.event_type || 'Rule')) + '</span><span class="a">' + esc(labels[r.primary_action] || r.primary_action) + (r.response_sla_min ? ' · ' + r.response_sla_min + ' min' : '') + '</span></div>' +
+        (r.exposure_scope ? '<div class="small" style="margin-top:7px">Exposure: ' + esc(r.exposure_scope) + (r.proximity_km != null ? ' · ' + esc(r.proximity_km) + ' km' : '') + '</div>' : '') +
+        (r.escalation_conditions ? '<div class="small" style="margin-top:6px;color:#fde68a">Upgrade if: ' + esc(r.escalation_conditions) + '</div>' : '') +
+        (r.exceptions ? '<div class="small" style="margin-top:6px;color:#bbf7d0">Exception: ' + esc(r.exceptions) + '</div>' : '') +
+        (stateName !== 'baseline' ? '<div class="small" style="margin-top:6px;color:#cfe1ff">Exercise condition: ' + esc(stateName === 'escalate' ? 'upgrade condition present' : 'exception applies') + '</div>' : '');
+      return;
+    }
+    if (!state.policy || !state.policy.rules || !state.policy.rules.length) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    host.innerHTML = state.policy.rules.map(function(r){
       return '<div class="tr-policy-rule"><span>' + esc(String(r.risk || '').toUpperCase()) + ' risk</span>' +
         '<span class="a">' + esc(labels[r.action] || r.action) + (r.within_min ? ' · ' + r.within_min + ' min' : '') + '</span></div>';
     }).join('');
@@ -822,6 +871,14 @@ window.CIAccess = {
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || ('Could not load scenarios (' + res.status + ')'));
       next = Array.isArray(data.scenarios) ? data.scenarios : [];
+      // Phase 9C clears a scenario server-side as soon as a response is saved so
+      // the cross-page banner closes. Keep the just-completed card locally on
+      // this page so the operator can still read their score/debrief until they
+      // navigate away.
+      var locallyCompleted = state.scenarios.filter(function(oldSc){
+        return state.responded[oldSc.id] && !next.some(function(n){ return n.id === oldSc.id; });
+      });
+      if (locallyCompleted.length) next = next.concat(locallyCompleted);
     } catch (e) {
       var wrap = document.getElementById('trScenarios');
       if (wrap && !state.scenarios.length) {
@@ -849,7 +906,7 @@ window.CIAccess = {
       if (!el) return;
       var mins = elapsedMin(sc.injected_at);
       if (mins === null) return;
-      var target = Number(sc.target_response_min || 0);
+      var target = targetForScenario(sc);
       el.textContent = '⏱ ' + mins + ' min elapsed' + (target ? ' · target ' + target + ' min' : '');
       el.className = 'tr-chip clock' + (target > 0 && mins > target ? ' over' : '');
     });
@@ -930,6 +987,9 @@ window.CIAccess = {
       };
       delete state.drafts[scenarioId];
       render();
+      // Let shared-nav refresh its global training banner immediately. The
+      // local-completed merge in load() keeps this debrief visible here.
+      try { window.dispatchEvent(new CustomEvent('ci:training-ended', { detail:{ scenarioId:scenarioId } })); } catch (_) {}
     } catch (e) {
       show(e.message || String(e));
     } finally {
