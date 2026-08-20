@@ -293,7 +293,14 @@
   .tr-verdict.no{border:1px solid rgba(255,90,95,.4);background:rgba(255,90,95,.09);color:#fecaca}
   .tr-missing{margin-top:8px;font-size:12px;color:#fde68a}
 
-  .tr-map{height:190px;border-radius:12px;margin-top:12px;border:1px solid var(--gray-600);overflow:hidden;background:#0b0c0e}
+  .tr-map-wrap{margin-top:12px}
+  .tr-map{height:250px;border-radius:12px;border:1px solid var(--gray-600);overflow:hidden;background:#0b0c0e}
+  .tr-map-status{margin-top:6px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px;min-height:18px}
+  .ci-map-tools{display:flex!important;gap:4px;background:transparent!important;border:0!important;box-shadow:none!important}
+  .ci-map-tools button{height:30px;min-width:30px;padding:0 8px;border:1px solid #34404c;background:#10161c;color:#e7edf4;border-radius:7px;cursor:pointer;font:800 11px/1 system-ui,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+  .ci-map-tools button:hover,.ci-map-tools button.active{border-color:#93c5fd;background:#18232e;color:#dbeafe}
+  .tr-scenario-time{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:#9fb0c5}
+  .tr-scenario-time b{color:#dce6f2}
   .leaflet-container{background:#0b0c0e}
 </style>
 </head>
@@ -573,6 +580,23 @@ window.CIAccess = {
     return Math.max(0, Math.floor((Date.now() - started) / 60000));
   }
 
+  function fmtScenarioDateTime(value){
+    var d = new Date(value || '');
+    if (!isFinite(d.getTime())) return '';
+    return d.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function scenarioTimeBlock(sc){
+    var scenarioAt = sc && (sc.scenario_at || sc.scenarioAt || sc.when);
+    var incident = fmtScenarioDateTime(scenarioAt);
+    var injected = fmtScenarioDateTime(sc && sc.injected_at);
+    if (!incident && !injected) return '';
+    return '<div class="tr-scenario-time">' +
+      (incident ? '<span><b>Scenario time:</b> ' + esc(incident) + '</span>' : '') +
+      (injected ? '<span><b>Injected:</b> ' + esc(injected) + '</span>' : '') +
+    '</div>';
+  }
+
   function hasCoords(sc){
     return sc && sc.latitude != null && sc.longitude != null &&
       isFinite(Number(sc.latitude)) && isFinite(Number(sc.longitude));
@@ -641,18 +665,84 @@ window.CIAccess = {
         var host = document.getElementById('map-' + sc.id);
         if (!host || host.dataset.ready === '1') return;
         host.dataset.ready = '1';
+        var statusEl = document.getElementById('map-status-' + sc.id);
         var lat = Number(sc.latitude), lng = Number(sc.longitude);
-        var map = L.map(host, { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false }).setView([lat, lng], 14);
+        var map = L.map(host, {
+          zoomControl:true, attributionControl:false, dragging:true,
+          scrollWheelZoom:true, doubleClickZoom:true, keyboard:true, touchZoom:true
+        }).setView([lat, lng], 14);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
         L.circleMarker([lat, lng], { radius:8, color:'#D01616', fillColor:'#D01616', fillOpacity:.85, weight:2 }).addTo(map);
         var snap = thresholdSnapshot(sc);
         var linkedKm = snap && snap.rule && snap.rule.proximity_km != null ? Number(snap.rule.proximity_km) : null;
         var radiusKm = Number.isFinite(linkedKm) ? linkedKm : (state.policy && state.policy.proximity_km ? Number(state.policy.proximity_km) : 0);
         var radiusM = radiusKm > 0 ? radiusKm * 1000 : 0;
+        var initialBounds = null;
         if (radiusM > 0) {
-          L.circle([lat, lng], { radius: radiusM, color:'#93c5fd', weight:1, fillColor:'#93c5fd', fillOpacity:.06 }).addTo(map);
-          map.fitBounds(L.circle([lat, lng], { radius: radiusM }).getBounds(), { padding:[12,12] });
+          var thresholdCircle = L.circle([lat, lng], { radius: radiusM, color:'#93c5fd', weight:1, fillColor:'#93c5fd', fillOpacity:.06 }).addTo(map);
+          initialBounds = thresholdCircle.getBounds();
+          map.fitBounds(initialBounds, { padding:[18,18] });
         }
+        var initialZoom = map.getZoom();
+        var initialCenter = map.getCenter();
+
+        var measureLayer = L.layerGroup().addTo(map);
+        var measuring = false;
+        var measurePoints = [];
+        function setStatus(text){ if (statusEl) statusEl.textContent = text; }
+        function prettyDistance(m){ return m >= 1000 ? (m/1000).toFixed(m >= 10000 ? 0 : 2) + ' km' : Math.round(m) + ' m'; }
+        function clearMeasure(){ measureLayer.clearLayers(); measurePoints = []; }
+        function startMeasure(btn){
+          clearMeasure(); measuring = true;
+          if (btn) btn.classList.add('active');
+          host.style.cursor = 'crosshair';
+          setStatus('Ruler active — click two points on the map to measure distance.');
+        }
+        function stopMeasure(btn){
+          measuring = false;
+          if (btn) btn.classList.remove('active');
+          host.style.cursor = '';
+        }
+
+        var MeasureControl = L.Control.extend({
+          options:{ position:'topright' },
+          onAdd:function(){
+            var box = L.DomUtil.create('div','ci-map-tools');
+            box.innerHTML = '<button type="button" class="ci-measure-btn" title="Measure distance">📏 Measure</button><button type="button" class="ci-reset-btn" title="Reset map view">↺ Reset</button>';
+            L.DomEvent.disableClickPropagation(box);
+            L.DomEvent.disableScrollPropagation(box);
+            var measureBtn = box.querySelector('.ci-measure-btn');
+            var resetBtn = box.querySelector('.ci-reset-btn');
+            measureBtn.addEventListener('click', function(ev){
+              ev.preventDefault();
+              if (measuring) { stopMeasure(measureBtn); setStatus('Mouse wheel to zoom · drag to pan · Measure to check distance.'); }
+              else startMeasure(measureBtn);
+            });
+            resetBtn.addEventListener('click', function(ev){
+              ev.preventDefault(); clearMeasure(); stopMeasure(measureBtn);
+              if (initialBounds) map.fitBounds(initialBounds, { padding:[18,18] });
+              else map.setView(initialCenter, initialZoom);
+              setStatus('View reset · mouse wheel to zoom · drag to pan · Measure to check distance.');
+            });
+            map.on('click', function(e){
+              if (!measuring) return;
+              measurePoints.push(e.latlng);
+              L.circleMarker(e.latlng,{radius:4,color:'#facc15',fillColor:'#facc15',fillOpacity:.95,weight:1}).addTo(measureLayer);
+              if (measurePoints.length === 1) {
+                setStatus('First point set — click the second point.');
+                return;
+              }
+              var a=measurePoints[0], b=measurePoints[1];
+              L.polyline([a,b],{color:'#facc15',weight:2,dashArray:'6,5'}).addTo(measureLayer);
+              var distance = map.distance(a,b);
+              setStatus('Measured distance: ' + prettyDistance(distance) + ' · Select Measure again to take another measurement.');
+              stopMeasure(measureBtn);
+            });
+            return box;
+          }
+        });
+        map.addControl(new MeasureControl());
+        setStatus('Mouse wheel to zoom · drag to pan · Measure to check distance.');
         state.maps[sc.id] = map;
       });
     });
@@ -720,6 +810,21 @@ window.CIAccess = {
     return out;
   }
 
+  function evaluatedOutcomeBlock(fb, sc){
+    if (fb && fb.expected) {
+      var label = ACTION_TEXT[fb.expected] || fb.expected;
+      var reason = fb.threshold && fb.threshold.reason ? String(fb.threshold.reason) : '';
+      return '<div class="tr-expected"><div class="lbl">Evaluated outcome</div>' +
+        '<div class="small" style="color:#dbe3ec"><b>' + esc(label) + '</b>' +
+        (reason ? ' — ' + esc(reason) : '') + '</div></div>';
+    }
+    if (sc && sc.expected_response) {
+      return '<div class="tr-expected"><div class="lbl">Trainer guidance</div>' +
+        '<div class="small" style="color:#dbe3ec">' + esc(sc.expected_response) + '</div></div>';
+    }
+    return '';
+  }
+
   function riskClass(risk){
     var r = String(risk || '').toLowerCase();
     if (r === 'high') return 'high';
@@ -748,6 +853,7 @@ window.CIAccess = {
         '<h2 class="tr-sc-title">' + esc(sc.title || 'Training scenario') + '</h2>' +
         '<div class="tr-meta">' + chips + '</div>' +
         (place ? '<div class="small" style="margin-top:8px">' + esc(place) + '</div>' : '') +
+        scenarioTimeBlock(sc) +
         '<div class="tr-done" style="margin-top:14px">' +
           '<h3>Response recorded — nothing was sent</h3>' +
           '<div class="small">Logged as <b>' + esc(done.responder) + '</b> · action: <b>' + esc(done.actionLabel) + '</b>' +
@@ -757,10 +863,7 @@ window.CIAccess = {
             : '<div class="small" style="margin-top:6px">No verification steps were ticked.</div>') +
         '</div>' +
         feedbackBlock(done.feedback) +
-        (sc.expected_response
-          ? '<div class="tr-expected"><div class="lbl">Expected response</div>' +
-            '<div class="small" style="color:#dbe3ec">' + esc(sc.expected_response) + '</div></div>'
-          : '') +
+        evaluatedOutcomeBlock(done.feedback, sc) +
         '<div class="row" style="margin-top:12px"><a class="btn" href="training-review.html">See it in my record</a></div>' +
       '</section>';
     }
@@ -769,10 +872,11 @@ window.CIAccess = {
       '<h2 class="tr-sc-title">' + esc(sc.title || 'Training scenario') + '</h2>' +
       '<div class="tr-meta">' + chips + '</div>' +
       (place ? '<div class="small" style="margin-top:8px">' + esc(place) + '</div>' : '') +
+      scenarioTimeBlock(sc) +
       (sc.summary ? '<p class="tr-summary">' + esc(sc.summary) + '</p>' : '') +
       (sc.confidence ? '<div class="small" style="margin-top:8px">Source confidence: ' + esc(sc.confidence) + '</div>' : '') +
       distanceBlock(sc) +
-      (hasCoords(sc) ? '<div class="tr-map" id="map-' + esc(sc.id) + '"></div>' : '') +
+      (hasCoords(sc) ? '<div class="tr-map-wrap"><div class="tr-map" id="map-' + esc(sc.id) + '"></div><div class="tr-map-status" id="map-status-' + esc(sc.id) + '">Mouse wheel to zoom · drag to pan · Measure to check distance.</div></div>' : '') +
       '<div style="margin-top:16px">' +
         '<label style="display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">What would you do?</label>' +
         '<div class="tr-actions">' +
