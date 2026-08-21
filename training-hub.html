@@ -228,6 +228,19 @@
     .scenario-time-meta{color:#b5c4d6!important}
     @media(max-width:900px){.trainee-summary-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:560px){.trainee-summary-grid{grid-template-columns:1fr}}
+
+  /* Phase 9D.2 — readiness curriculum + context-aware debrief. */
+  .readiness-standard-summary{margin-top:10px;padding:10px 12px;border:1px solid rgba(147,197,253,.24);border-radius:11px;background:rgba(147,197,253,.045);color:#cfe1ff;font-size:11px;line-height:1.5}
+  .curriculum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+  .curriculum-item{border:1px solid #29333d;border-radius:11px;padding:10px 11px;background:#0b1015}
+  .curriculum-item.pass{border-color:rgba(51,196,141,.38);background:rgba(51,196,141,.055)}
+  .curriculum-item.pending{border-color:rgba(240,180,41,.30)}
+  .curriculum-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .curriculum-title{font-size:12px;font-weight:900;color:#eef3f7}.curriculum-meta{font-size:10px;color:#8fa0b5;margin-top:4px}
+  .curriculum-status{font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap}.curriculum-item.pass .curriculum-status{color:#86efac}.curriculum-item.pending .curriculum-status{color:#fde68a}
+  .process-issue{color:#fda4af;font-size:11px;margin-top:4px}
+  @media(max-width:850px){.curriculum-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -260,7 +273,7 @@
         <div class="kpi green"><div class="label">Readiness</div><div class="value" id="kpiReadiness">—</div><div class="note">Overall training posture</div></div>
         <div class="kpi blue"><div class="label">Completed Exercises</div><div class="value" id="kpiSessions">—</div><div class="note" id="kpiSessionsNote">Recorded operator responses</div></div>
         <div class="kpi orange"><div class="label">Average Score</div><div class="value" id="kpiAverage">—</div><div class="note">Recent exercise quality</div></div>
-        <div class="kpi red"><div class="label">Remediation</div><div class="value" id="kpiRemediation">—</div><div class="note">Scores below target</div></div>
+        <div class="kpi red"><div class="label">Below Target Exercises</div><div class="value" id="kpiRemediation">—</div><div class="note">Individual scores below 60%</div></div>
         <div class="kpi blue"><div class="label">Active Injects</div><div class="value" id="kpiActive">—</div><div class="note">Training scenarios in feed</div></div>
       </section>
 
@@ -287,11 +300,12 @@
         <div class="small">Current development population derived from recorded responder names and completed exercises.</div>
         <div class="trainee-summary-grid">
           <div class="trainee-stat"><div class="n" id="traineeTracked">—</div><div class="l">Operators tracked</div></div>
-          <div class="trainee-stat"><div class="n" id="traineeReady">—</div><div class="l">Ready</div></div>
-          <div class="trainee-stat"><div class="n" id="traineeCoaching">—</div><div class="l">Coaching</div></div>
-          <div class="trainee-stat"><div class="n" id="traineeRemediation">—</div><div class="l">Remediation</div></div>
+          <div class="trainee-stat"><div class="n" id="traineeReady">—</div><div class="l">Ready operators</div></div>
+          <div class="trainee-stat"><div class="n" id="traineeCoaching">—</div><div class="l">Operators in coaching</div></div>
+          <div class="trainee-stat"><div class="n" id="traineeRemediation">—</div><div class="l">Operators in remediation</div></div>
         </div>
         <div class="trainee-baseline-note" id="traineeBaselineNote"></div>
+        <div class="readiness-standard-summary" id="readinessStandardSummary">Loading readiness curriculum…</div>
       </section>
 
       <details class="card hub-accordion" id="exerciseQueueSection">
@@ -317,7 +331,7 @@
         <summary><span class="accordion-title"><span>Operator Performance Board</span><span class="section-count" id="operatorCountBadge">0</span></span></summary>
         <div class="accordion-body">
           <div class="accordion-intro">Completed exercises grouped by the responder name entered during training. Select a row to open the operator development profile. Ten operators are shown per page.</div>
-          <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Operator</th><th>Exercises</th><th>Average</th><th>Latest</th><th>Status</th></tr></thead><tbody id="operatorRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+          <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Operator</th><th>Exercises</th><th>Readiness subjects</th><th>Average</th><th>Latest</th><th>Status</th></tr></thead><tbody id="operatorRows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
           <div class="pager" id="operatorPager"></div>
         </div>
       </details>
@@ -348,7 +362,7 @@
   const fmtTime = v => { const d = new Date(v); return Number.isFinite(d.getTime()) ? d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '—'; };
 
   const PAGE_SIZE = 10;
-  const state = { scenarios:[], sessions:[], responses:[], admin:false, me:{}, pages:{ scenarios:1, exercises:1, operators:1 } };
+  const state = { scenarios:[], sessions:[], responses:[], policy:null, admin:false, me:{}, pages:{ scenarios:1, exercises:1, operators:1 } };
 
   function who(){ try { if (window.CIAuth && CIAuth.who) return CIAuth.who() || {}; } catch(_){} try { return JSON.parse(localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}'); } catch(_) { return {}; } }
   function isAdmin(){ try { return !!(window.CIAuth && (CIAuth.isMasterAdmin?.() || CIAuth.isOrgAdmin?.())); } catch(_) { return false; } }
@@ -386,6 +400,30 @@
     return {rows,scored,avg,assessed,correct,accuracy,avgProcess,avgTiming,remediation,categories};
   }
 
+  function readinessConfig(){
+    const p=state.policy||{};
+    const rules=(Array.isArray(p.advanced_rules)?p.advanced_rules:[]).filter(r=>r && r.enabled!==false && r.readiness_required!==false);
+    return { rules, passScore:Math.max(50,Math.min(100,Number(p.readiness_pass_score||80)||80)), minPasses:Math.max(1,Math.min(20,Number(p.readiness_min_passes||1)||1)) };
+  }
+  function thresholdRuleIdOf(r){ const fb=feedbackOf(r), rr=(fb.threshold||{}).rule||{}; return String(r.threshold_rule_id||rr.id||''); }
+  function curriculumForRows(personRows, avg){
+    const cfg=readinessConfig();
+    if(!cfg.rules.length) return {enabled:false,total:0,passed:0,coveragePct:null,overallGate:avg!==null&&avg>=80,ready:avg!==null&&avg>=80,subjects:[],passScore:80,minPasses:1,readinessPct:avg===null?0:pct(avg)};
+    const subjects=cfg.rules.map(rule=>{
+      const matches=(personRows||[]).filter(r=>thresholdRuleIdOf(r)===String(rule.id||''));
+      const scored=matches.filter(r=>r.score_pct!==null&&r.score_pct!==undefined&&Number.isFinite(Number(r.score_pct)));
+      const passes=scored.filter(r=>Number(r.score_pct)>=cfg.passScore);
+      const best=scored.length?Math.max.apply(null,scored.map(r=>Number(r.score_pct||0))):null;
+      return {id:String(rule.id||''),label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scored.length,passes:passes.length,best,passed:passes.length>=cfg.minPasses};
+    });
+    const passed=subjects.filter(x=>x.passed).length, total=subjects.length, coveragePct=total?Math.round(passed/total*100):0;
+    const overallGate=avg!==null&&avg>=cfg.passScore;
+    let readinessPct=Math.round((coveragePct*.75)+((avg===null?0:Math.min(100,(avg/cfg.passScore)*100))*.25));
+    const ready=passed===total&&overallGate;
+    if(!ready&&readinessPct>=100) readinessPct=99;
+    return {enabled:true,total,passed,coveragePct,overallGate,ready,subjects,passScore:cfg.passScore,minPasses:cfg.minPasses,readinessPct:pct(readinessPct)};
+  }
+
   function operatorGroups(){
     const map=new Map();
     (state.responses||[]).forEach(r=>{ const name=operatorName(r); if(!map.has(name))map.set(name,[]); map.get(name).push(r); });
@@ -393,8 +431,9 @@
       const scored=list.filter(r=>r.score_pct!==null&&r.score_pct!==undefined&&Number.isFinite(Number(r.score_pct)));
       const avg=scored.length?Math.round(scored.reduce((a,r)=>a+Number(r.score_pct||0),0)/scored.length):null;
       const latest=list.slice().sort((a,b)=>Date.parse(b.responded_at||b.created_at||0)-Date.parse(a.responded_at||a.created_at||0))[0];
-      const status=avg===null?'baseline':avg>=80?'ready':avg>=60?'coaching':'remediation';
-      return {name,list,avg,latest,scored:scored.length,status};
+      const curriculum=curriculumForRows(list,avg);
+      const status=avg===null?'baseline':curriculum.enabled?(curriculum.ready?'ready':avg<60?'remediation':'coaching'):(avg>=80?'ready':avg>=60?'coaching':'remediation');
+      return {name,list,avg,latest,scored:scored.length,status,curriculum,readinessPct:curriculum.readinessPct};
     }).sort((a,b)=>{
       const order={remediation:0,coaching:1,baseline:2,ready:3};
       return (order[a.status]??9)-(order[b.status]??9) || String(a.name).localeCompare(String(b.name));
@@ -452,12 +491,17 @@
     // Phase 9C.3: the Hub now uses the same completed-response dataset as Training Review.
     // This endpoint also honours non-admin account filtering server-side.
     try { responses = (await api('/api/org/training-responses')).data || []; } catch(e){ responses = localList(['ci_training_responses_v1']); }
+    try { const pd=await api('/api/org/escalation-policy'); state.policy=(pd&&pd.policy)||null; } catch(e){ state.policy=null; }
     state.scenarios = Array.isArray(scenarios) ? scenarios : [];
     state.sessions = Array.isArray(sessions) ? sessions : [];
     state.responses = Array.isArray(responses) ? responses : [];
   }
 
   function computeReadiness(){
+    const groups=operatorGroups();
+    if(!groups.length) return 0;
+    const cfg=readinessConfig();
+    if(cfg.rules.length) return pct(groups.reduce((n,g)=>n+Number(g.readinessPct||0),0)/groups.length);
     const st=responseStats();
     if(!st.scored.length) return 0;
     return pct((st.avg*.60)+(st.accuracy*.25)+(st.avgTiming*.15));
@@ -481,12 +525,18 @@
     if($('traineeCoaching')) $('traineeCoaching').textContent=coaching;
     if($('traineeRemediation')) $('traineeRemediation').textContent=remediation;
     if($('traineeBaselineNote')) $('traineeBaselineNote').textContent=baseline ? baseline+' operator'+(baseline===1?' is':'s are')+' awaiting a scored baseline.' : 'All tracked operators have at least one scored exercise.';
+    const cfg=readinessConfig();
+    if($('readinessStandardSummary')) $('readinessStandardSummary').innerHTML=cfg.rules.length
+      ? '<b>Readiness curriculum:</b> '+cfg.rules.length+' required subject'+(cfg.rules.length===1?'':'s')+' · pass score '+cfg.passScore+'% · '+cfg.minPasses+' passing exercise'+(cfg.minPasses===1?'':'s')+' per subject. An operator is Ready only after every required subject is passed and their overall average is at least '+cfg.passScore+'%.'
+      : '<b>Readiness curriculum:</b> no advanced threshold subjects are marked as required yet. Status currently falls back to the score-based readiness model.';
   }
 
   function renderCompetency(){
-    const st=responseStats();
-    const coverage=Math.min(100,st.categories.size*20);
-    const rows=[['Decision quality',st.accuracy],['Process discipline',st.avgProcess],['Response speed',st.avgTiming],['Scenario coverage',coverage],['Exercise quality',st.avg]];
+    const st=responseStats(), groups=operatorGroups(), cfg=readinessConfig();
+    const coverage=cfg.rules.length
+      ? (groups.length?Math.round(groups.reduce((n,g)=>n+Number(g.curriculum.coveragePct||0),0)/groups.length):0)
+      : Math.min(100,st.categories.size*20);
+    const rows=[['Decision quality',st.accuracy],['Process discipline',st.avgProcess],['Response speed',st.avgTiming],[cfg.rules.length?'Readiness coverage':'Scenario coverage',coverage],['Exercise quality',st.avg]];
     $('competencyMatrix').innerHTML=rows.map(([label,val])=>`<div class="matrix-row"><b>${esc(label)}</b><div class="bar-track"><div class="bar-fill" style="width:${pct(val)}%"></div></div><span class="small">${pct(val)}%</span></div>`).join('');
   }
 
@@ -531,10 +581,10 @@
     const rows=operatorGroups(); $('operatorCountBadge').textContent=rows.length;
     const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE)); state.pages.operators=Math.min(state.pages.operators,pages);
     const start=(state.pages.operators-1)*PAGE_SIZE, pageRows=rows.slice(start,start+PAGE_SIZE);
-    if(!pageRows.length){ body.innerHTML=`<tr><td colspan="5">No completed operator exercises available.</td></tr>`; $('operatorPager').innerHTML=paginationHtml('operators',1,0); return; }
+    if(!pageRows.length){ body.innerHTML=`<tr><td colspan="6">No completed operator exercises available.</td></tr>`; $('operatorPager').innerHTML=paginationHtml('operators',1,0); return; }
     const statusLabel={ready:'Ready',coaching:'Coaching',remediation:'Remediation',baseline:'Needs baseline'};
     const statusClass={ready:'good',coaching:'warn',remediation:'high',baseline:'info'};
-    body.innerHTML=pageRows.map(r=>`<tr class="operator-row-click" data-operator-profile="${esc(r.name)}"><td><b>${esc(r.name)}</b><div class="view-link">View development profile</div></td><td>${r.list.length}</td><td>${r.scored?r.avg+'%':'—'}</td><td>${esc(fmtDate(r.latest.responded_at||r.latest.created_at))}</td><td><span class="pill ${statusClass[r.status]}">${statusLabel[r.status]}</span></td></tr>`).join('');
+    body.innerHTML=pageRows.map(r=>`<tr class="operator-row-click" data-operator-profile="${esc(r.name)}"><td><b>${esc(r.name)}</b><div class="view-link">View development profile</div></td><td>${r.list.length}</td><td>${r.curriculum.enabled?r.curriculum.passed+'/'+r.curriculum.total:'—'}</td><td>${r.scored?r.avg+'%':'—'}</td><td>${esc(fmtDate(r.latest.responded_at||r.latest.created_at))}</td><td><span class="pill ${statusClass[r.status]}">${statusLabel[r.status]}</span></td></tr>`).join('');
     $('operatorPager').innerHTML=paginationHtml('operators',state.pages.operators,rows.length);
   }
 
@@ -551,14 +601,14 @@
     const missing=Array.isArray(proc.missing)?proc.missing:[];
     const completed=stepsOf(r);
     const cls=scorePct===null?'':scorePct>=80?'good':scorePct>=60?'mid':'poor';
-    return `<div class="op-exercise ${cls}"><div class="op-exercise-head"><div><div class="op-exercise-title">${esc(r.scenario_title||eventOf(r))}</div><div class="op-meta"><span class="op-chip">${esc(categoryOf(r))}</span>${r.risk?`<span class="op-chip">${esc(String(r.risk).toUpperCase())} risk</span>`:''}${r.difficulty?`<span class="op-chip">${esc(r.difficulty)}</span>`:''}${place?`<span class="op-chip">${esc(place)}</span>`:''}${r.scenario_at?`<span class="op-chip">Scenario ${esc(fmtDateTime(r.scenario_at))}</span>`:''}<span class="op-chip">${esc(fmtDate(r.responded_at))}</span></div></div><div class="op-exercise-score" style="color:${scoreColour(scorePct)}">${fmtPct(scorePct)} <span style="font-size:12px">${esc(gradeFor(scorePct))}</span></div></div><div class="op-detail-grid"><div class="op-detail-box"><b>Decision</b>${esc(actionLabel(r.action))}${String(r.expected_action||'')?' · expected '+esc(actionLabel(r.expected_action)):''}</div><div class="op-detail-box"><b>Timing</b>${taken!==null?taken+' min':'—'}${target?' · target '+target+' min':''}</div><div class="op-detail-box"><b>Scoring</b>${parts.length?parts.map(p=>esc(p.label)+' '+Math.round(Number(p.pct||0))+'%').join(' · '):'Legacy / unscored detail'}</div><div class="op-detail-box"><b>Verification</b>${completed.length?completed.map(k=>esc(CHECK_LABEL[k]||k)).join(', '):'No checks required/recorded'}${missing.length?`<br><span style="color:#fca5a5">Missed: ${missing.map(k=>esc(CHECK_LABEL[k]||k)).join(', ')}</span>`:''}</div></div>${th.linked?`<div class="op-detail-box" style="margin-top:8px"><b>Threshold tested</b>${esc((rr.categoryLabel||'')+(rr.eventType?' → '+rr.eventType:''))} · Policy v${esc(pp.version||r.threshold_policy_version||1)} / Rule v${esc(rr.version||r.threshold_rule_version||1)}${th.evaluation?' · '+esc(String(th.evaluation).replace(/_/g,' ')):''}</div>`:''}${r.summary?`<div class="op-summary"><b style="color:#eef3f7">Exercise context:</b> ${esc(r.summary)}</div>`:''}${r.note?`<div class="op-reasoning">“${esc(r.note)}”</div>`:''}</div>`;
+    return `<div class="op-exercise ${cls}"><div class="op-exercise-head"><div><div class="op-exercise-title">${esc(r.scenario_title||eventOf(r))}</div><div class="op-meta"><span class="op-chip">${esc(categoryOf(r))}</span>${r.risk?`<span class="op-chip">${esc(String(r.risk).toUpperCase())} risk</span>`:''}${r.difficulty?`<span class="op-chip">${esc(r.difficulty)}</span>`:''}${place?`<span class="op-chip">${esc(place)}</span>`:''}${r.scenario_at?`<span class="op-chip">Scenario ${esc(fmtDateTime(r.scenario_at))}</span>`:''}<span class="op-chip">${esc(fmtDate(r.responded_at))}</span></div></div><div class="op-exercise-score" style="color:${scoreColour(scorePct)}">${fmtPct(scorePct)} <span style="font-size:12px">${esc(gradeFor(scorePct))}</span></div></div><div class="op-detail-grid"><div class="op-detail-box"><b>Decision</b>${esc(actionLabel(r.action))}${String(r.expected_action||'')?' · expected '+esc(actionLabel(r.expected_action)):''}</div><div class="op-detail-box"><b>Timing</b>${taken!==null?taken+' min':'—'}${target?' · target '+target+' min':''}${score.slaMet===true?' · SLA met':score.slaMet===false?' · SLA missed':''}</div><div class="op-detail-box"><b>Scoring</b>${parts.length?parts.map(p=>esc(p.label)+' '+Math.round(Number(p.pct||0))+'%').join(' · '):'Legacy / unscored detail'}</div><div class="op-detail-box"><b>Verification</b>${completed.length?completed.map(k=>esc(CHECK_LABEL[k]||k)).join(', '):'No checks required/recorded'}${missing.length?`<br><span style="color:#fca5a5">Missed: ${missing.map(k=>esc(CHECK_LABEL[k]||k)).join(', ')}</span>`:''}${Array.isArray(proc.unnecessaryCompleted)&&proc.unnecessaryCompleted.length?`<br><span class="process-issue">Unnecessary: ${proc.unnecessaryCompleted.map(k=>esc(CHECK_LABEL[k]||k)).join(', ')}</span>`:''}</div></div>${th.linked?`<div class="op-detail-box" style="margin-top:8px"><b>Threshold tested</b>${esc((rr.categoryLabel||'')+(rr.eventType?' → '+rr.eventType:''))} · Policy v${esc(pp.version||r.threshold_policy_version||1)} / Rule v${esc(rr.version||r.threshold_rule_version||1)}${th.evaluation?' · '+esc(String(th.evaluation).replace(/_/g,' ')):''}</div>`:''}${r.summary?`<div class="op-summary"><b style="color:#eef3f7">Exercise context:</b> ${esc(r.summary)}</div>`:''}${r.note?`<div class="op-reasoning">“${esc(r.note)}”</div>`:''}</div>`;
   }
 
   function openExerciseDetail(id){
     const r=state.responses.find(x=>String(x.id||'')===String(id||'')); if(!r)return;
     const pctVal=r.score_pct!==null&&r.score_pct!==undefined?Number(r.score_pct):null;
     const fb=feedbackOf(r), proc=fb.process||{};
-    const html=`<div class="operator-score-row"><div class="score-card highlight"><div class="score-val" style="color:${scoreColour(pctVal)}">${fmtPct(pctVal)}</div><div class="score-lbl">Overall Score</div></div><div class="score-card"><div class="score-val" style="color:${scoreColour(pctVal)}">${gradeFor(pctVal)}</div><div class="score-lbl">Grade</div></div><div class="score-card"><div class="score-val">${String(r.action||'')===String(r.expected_action||'')?'✓':'—'}</div><div class="score-lbl">Decision Match</div></div><div class="score-card"><div class="score-val">${Array.isArray(proc.missing)?proc.missing.length:0}</div><div class="score-lbl">Missed Checks</div></div></div><div class="detail-section">Exercise Debrief</div>${exerciseCardHtml(r,true)}`;
+    const html=`<div class="operator-score-row"><div class="score-card highlight"><div class="score-val" style="color:${scoreColour(pctVal)}">${fmtPct(pctVal)}</div><div class="score-lbl">Overall Score</div></div><div class="score-card"><div class="score-val" style="color:${scoreColour(pctVal)}">${gradeFor(pctVal)}</div><div class="score-lbl">Grade</div></div><div class="score-card"><div class="score-val">${String(r.action||'')===String(r.expected_action||'')?'✓':'—'}</div><div class="score-lbl">Decision Match</div></div><div class="score-card"><div class="score-val">${(Array.isArray(proc.missing)?proc.missing.length:0)+(Array.isArray(proc.unnecessaryCompleted)?proc.unnecessaryCompleted.length:0)}</div><div class="score-lbl">Process Issues</div></div></div><div class="detail-section">Exercise Debrief</div>${exerciseCardHtml(r,true)}`;
     openOverlay('Exercise Debrief — '+(r.scenario_title||eventOf(r)),operatorName(r)+' · '+fmtDate(r.responded_at||r.created_at),html);
   }
 
@@ -569,12 +619,16 @@
     const avg=scored.length?Math.round(scored.reduce((a,r)=>a+Number(r.score_pct||0),0)/scored.length):null;
     const assessed=personRows.filter(r=>String(r.expected_action||'')); const correct=assessed.filter(r=>String(r.action||'')===String(r.expected_action||'')).length; const accuracy=assessed.length?Math.round(correct/assessed.length*100):null;
     const latest=personRows.slice().sort((a,b)=>Date.parse(b.responded_at||0)-Date.parse(a.responded_at||0))[0];
+    const curriculum=curriculumForRows(personRows,avg);
     const subjectMap={}; personRows.forEach(r=>{const cat=categoryOf(r); if(!subjectMap[cat])subjectMap[cat]={name:cat,responses:0,scored:0,total:0,assessed:0,correct:0}; const x=subjectMap[cat];x.responses++; if(r.score_pct!==null&&r.score_pct!==undefined){x.scored++;x.total+=Number(r.score_pct||0);} if(String(r.expected_action||'')){x.assessed++;if(String(r.action||'')===String(r.expected_action||''))x.correct++;}});
     const subjects=Object.values(subjectMap).map(x=>({...x,average:x.scored?Math.round(x.total/x.scored):null,accuracy:x.assessed?Math.round(x.correct/x.assessed*100):null})).sort((a,b)=>b.responses-a.responses||((b.average||0)-(a.average||0)));
     let html=`<div class="operator-score-row"><div class="score-card highlight"><div class="score-val" style="color:${scoreColour(avg)}">${fmtPct(avg)}</div><div class="score-lbl">Average Score</div></div><div class="score-card"><div class="score-val" style="color:${scoreColour(avg)}">${gradeFor(avg)}</div><div class="score-lbl">Overall Grade</div></div><div class="score-card"><div class="score-val">${fmtPct(accuracy)}</div><div class="score-lbl">Decision Accuracy</div></div><div class="score-card"><div class="score-val">${personRows.length}</div><div class="score-lbl">Exercises</div></div></div>`;
+    if(curriculum.enabled){
+      html+=`<div class="detail-section">Readiness Curriculum</div><div class="development-note"><strong>${curriculum.ready?'Ready':'Not yet ready'}</strong> · ${curriculum.passed}/${curriculum.total} required subjects passed · overall average ${fmtPct(avg)} / ${curriculum.passScore}% standard · ${curriculum.minPasses} pass${curriculum.minPasses===1?'':'es'} required per subject.</div><div class="curriculum-grid">${curriculum.subjects.map(x=>`<div class="curriculum-item ${x.passed?'pass':'pending'}"><div class="curriculum-head"><div><div class="curriculum-title">${esc(x.label)}</div><div class="curriculum-meta">${x.passes}/${curriculum.minPasses} passing exercise${curriculum.minPasses===1?'':'s'} · ${x.attempts} attempt${x.attempts===1?'':'s'}${x.best!==null?' · best '+x.best+'%':''}</div></div><div class="curriculum-status">${x.passed?'Passed':'Pending'}</div></div></div>`).join('')}</div>`;
+    }
     html+=`<div class="detail-section">Capability by Subject</div><div class="subject-grid">${subjects.map(x=>`<div class="subject-card"><div class="subject-head"><div><div class="subject-title">${esc(x.name)}</div><div class="subject-meta">${x.responses} exercise${x.responses===1?'':'s'} · Decision accuracy ${fmtPct(x.accuracy)}</div></div><div class="subject-grade" style="color:${scoreColour(x.average)}">${gradeFor(x.average)}</div></div><div class="subject-bar"><span style="width:${pct(x.average||0)}%"></span></div><div class="subject-meta" style="margin-top:6px">Average score ${fmtPct(x.average)}</div></div>`).join('')}</div>`;
     html+=`<div class="detail-section">Exercise Breakdown</div><div class="op-exercise-list">${personRows.slice().sort((a,b)=>Date.parse(b.responded_at||0)-Date.parse(a.responded_at||0)).map(r=>exerciseCardHtml(r)).join('')}</div>`;
-    const guidance=[]; const ranked=subjects.filter(x=>x.average!==null).slice().sort((a,b)=>(b.average||0)-(a.average||0)); if(ranked.length)guidance.push(`Strongest subject so far: <strong>${esc(ranked[0].name)}</strong> at ${fmtPct(ranked[0].average)} (${gradeFor(ranked[0].average)}).`); if(ranked.length>1){const low=ranked[ranked.length-1];if(low.average<90||low.average<ranked[0].average)guidance.push(`Development focus: <strong>${esc(low.name)}</strong> at ${fmtPct(low.average)} (${gradeFor(low.average)}).`);} const wrong=assessed.length-correct;if(wrong)guidance.push(`${wrong} exercise${wrong===1?'':'s'} had a decision that differed from the required threshold outcome.`); const miss={};personRows.forEach(r=>{const m=(feedbackOf(r).process||{}).missing||[];(Array.isArray(m)?m:[]).forEach(k=>miss[k]=(miss[k]||0)+1)});const mk=Object.keys(miss).sort((a,b)=>miss[b]-miss[a]);if(mk.length)guidance.push(`Most frequently missed verification step: <strong>${esc(CHECK_LABEL[mk[0]]||mk[0])}</strong> (${miss[mk[0]]} time${miss[mk[0]]===1?'':'s'}).`);if(!wrong&&!mk.length&&avg!==null&&avg>=90)guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
+    const guidance=[]; const ranked=subjects.filter(x=>x.average!==null).slice().sort((a,b)=>(b.average||0)-(a.average||0)); if(ranked.length)guidance.push(`Strongest subject so far: <strong>${esc(ranked[0].name)}</strong> at ${fmtPct(ranked[0].average)} (${gradeFor(ranked[0].average)}).`); if(ranked.length>1){const low=ranked[ranked.length-1];if(low.average<90||low.average<ranked[0].average)guidance.push(`Development focus: <strong>${esc(low.name)}</strong> at ${fmtPct(low.average)} (${gradeFor(low.average)}).`);} const wrong=assessed.length-correct;if(wrong)guidance.push(`${wrong} exercise${wrong===1?'':'s'} had a decision that differed from the required threshold outcome.`); const miss={};personRows.forEach(r=>{const m=(feedbackOf(r).process||{}).missing||[];(Array.isArray(m)?m:[]).forEach(k=>miss[k]=(miss[k]||0)+1)});const mk=Object.keys(miss).sort((a,b)=>miss[b]-miss[a]);if(mk.length)guidance.push(`Most frequently missed verification step: <strong>${esc(CHECK_LABEL[mk[0]]||mk[0])}</strong> (${miss[mk[0]]} time${miss[mk[0]]===1?'':'s'}).`); const extra={};personRows.forEach(r=>{const u=(feedbackOf(r).process||{}).unnecessaryCompleted||[];(Array.isArray(u)?u:[]).forEach(k=>extra[k]=(extra[k]||0)+1)});const ek=Object.keys(extra).sort((a,b)=>extra[b]-extra[a]);if(ek.length)guidance.push(`Most frequent unnecessary check: <strong>${esc(CHECK_LABEL[ek[0]]||ek[0])}</strong> (${extra[ek[0]]} time${extra[ek[0]]===1?'':'s'}).`);if(curriculum.enabled&&!curriculum.ready)guidance.push(`Readiness coverage is <strong>${curriculum.passed}/${curriculum.total} required subjects</strong>. Complete the remaining threshold subjects at ${curriculum.passScore}% or above.`);if(!wrong&&!mk.length&&!ek.length&&avg!==null&&avg>=90)guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
     if(guidance.length)html+=`<div class="detail-section">Development Guidance</div><div style="display:grid;gap:8px">${guidance.map(g=>`<div class="development-note">💡 ${g}</div>`).join('')}</div>`;
     openOverlay('Operator Development — '+name,personRows.length+' completed exercise'+(personRows.length===1?'':'s')+' · Last response '+fmtDate(latest.responded_at||latest.created_at),html);
   }
@@ -585,6 +639,8 @@
     if(!st.rows.length)actions.push(['Run baseline exercise','Create a short starter scenario to establish training readiness.','training-scenario-admin.html','Start']);
     if(st.remediation)actions.push(['Review remediation cases',`${st.remediation} exercise${st.remediation===1?'':'s'} scored below target. Re-run focused drills.`,'training-review.html','Review']);
     if(st.scored.length&&st.avg<70)actions.push(['Improve decision quality','Average exercise score is under 70%. Review threshold decisions and process checks.','training-review.html','Open Records']);
+    const groups=operatorGroups(), cfg=readinessConfig();
+    if(cfg.rules.length && groups.some(g=>g.status!=='baseline'&&!g.curriculum.ready)) actions.push(['Complete readiness curriculum','One or more operators have not yet passed every required threshold subject.','training-review.html','Review']);
     if(!active&&state.admin)actions.push(['Inject a training scenario','No active training exercises are currently visible in the training feed.','training-scenario-admin.html','Inject']);
     if(active>6)actions.push(['Clear stale injects','Several active scenarios are present. Clear older items to keep the training queue realistic.','training-scenario-admin.html','Manage']);
     if(readiness>=80)actions.push(['Maintain readiness','Training posture is healthy. Rotate threshold categories and use conditional scenarios.','training-scenario-admin.html','Rotate']);
