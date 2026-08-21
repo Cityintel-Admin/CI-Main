@@ -120,6 +120,7 @@
         // your note. Omitted.
         { href: 'training-review.html',         label: 'Training Review', module: 'training_review' },
         { href: 'training-scenario-admin.html', label: 'Scenario Admin',  module: 'training_scenario_admin' },
+        { href: 'training-scenario.html',       label: 'Training Scenario',  module: 'training_scenario' },
       ]
     },
   ];
