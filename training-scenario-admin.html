@@ -1960,7 +1960,7 @@
                   <div><label style="display:block;margin-bottom:5px">Organisation location relationship</label><select id="scSiteRelationship"><option value="unknown">Unknown / not stated</option><option value="at_site">Incident is at the operator's organisation site</option><option value="near_site">Incident is near an organisation site</option><option value="remote_site">No organisation site exposure</option></select></div>
                   <div><label style="display:block;margin-bottom:5px">Affected personnel</label><select id="scAffectedPersonnel"><option value="unknown">Unknown / not stated</option><option value="none">None known affected</option><option value="confirmed">Organisation personnel confirmed affected</option></select></div>
                   <div><label style="display:block;margin-bottom:5px">Travellers within relevant radius</label><select id="scTravellersWithin"><option value="unknown">Unknown / not stated</option><option value="0">0 travellers</option><option value="1">1 traveller</option><option value="2">2 travellers</option><option value="3plus">3+ travellers</option></select></div>
-                  <div><label style="display:block;margin-bottom:5px">Traveller radius (km)</label><input type="number" id="scTravellerRadius" min="0" step="0.1" placeholder="e.g. 0.5"></div>
+                  <div><label style="display:block;margin-bottom:5px">Traveller radius</label><div style="display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:7px"><input type="number" id="scTravellerRadius" min="0" step="any" placeholder="e.g. 500"><select id="scTravellerRadiusUnit"><option value="m" selected>metres</option><option value="km">kilometres</option></select></div><div class="form-hint" style="margin-top:5px">Choose the unit explicitly; CityIntel stores the value consistently for scoring and scenario summaries.</div></div>
                 </div>
                 <div class="form-hint">These facts can be included in the generated scenario summary. Context suggestions never become mandatory until the trainer accepts or edits the assessment states above.</div>
               </div>
@@ -3264,6 +3264,21 @@ function scenarioDraftPlace() {
   return location || geographic;
 }
 
+function getTravellerRadiusKm(){
+  const el=document.getElementById('scTravellerRadius');
+  if(!el || el.value==='') return null;
+  const n=Number(el.value); if(!Number.isFinite(n) || n<0) return null;
+  const unit=document.getElementById('scTravellerRadiusUnit')?.value || 'm';
+  return unit==='m' ? n/1000 : n;
+}
+function formatTravellerRadiusInput(){
+  const el=document.getElementById('scTravellerRadius');
+  if(!el || el.value==='') return '';
+  const n=Number(el.value); if(!Number.isFinite(n) || n<=0) return '';
+  const unit=document.getElementById('scTravellerRadiusUnit')?.value || 'm';
+  return unit==='m' ? (Math.round(n)+' m') : ((Math.round(n*100)/100)+' km');
+}
+
 function buildScenarioDraftSummary() {
   const title = document.getElementById('scTitle')?.value?.trim() || '';
   const place = scenarioDraftPlace();
@@ -3306,8 +3321,8 @@ function buildScenarioDraftSummary() {
   else if (siteRel === 'near_site') sentences.push('An organisation site is located within the relevant exposure area.');
   else if (siteRel === 'remote_site') sentences.push('No organisation site exposure is recorded within the relevant area.');
   const travellerState = document.getElementById('scTravellersWithin')?.value || 'unknown';
-  const travellerRadius = Number(document.getElementById('scTravellerRadius')?.value || 0);
-  const radiusText = travellerRadius > 0 ? ' within ' + travellerRadius + ' km' : ' within the relevant area';
+  const travellerRadiusText = formatTravellerRadiusInput();
+  const radiusText = travellerRadiusText ? ' within ' + travellerRadiusText : ' within the relevant area';
   if (travellerState === '0') sentences.push('No organisation travellers are recorded' + radiusText + '.');
   else if (travellerState === '1') sentences.push('One organisation traveller is recorded' + radiusText + '.');
   else if (travellerState === '2') sentences.push('Two organisation travellers are recorded' + radiusText + '.');
@@ -3489,7 +3504,7 @@ function injectScenario() {
     checkAssessmentConfigured: true,
     siteRelationship: document.getElementById('scSiteRelationship')?.value || 'unknown',
     travellersWithinRadius: document.getElementById('scTravellersWithin')?.value || 'unknown',
-    travellerRadiusKm: document.getElementById('scTravellerRadius')?.value === '' ? null : Number(document.getElementById('scTravellerRadius')?.value || 0),
+    travellerRadiusKm: getTravellerRadiusKm(),
     affectedPersonnelState: document.getElementById('scAffectedPersonnel')?.value || 'unknown',
     thresholdRuleId: selectedThresholdRuleId,
     thresholdConditionState: selectedThresholdConditionState,
@@ -4770,7 +4785,7 @@ async function saveToLibrary(type) {
       checkAssessmentConfigured: true,
       siteRelationship: document.getElementById('scSiteRelationship')?.value || 'unknown',
       travellersWithinRadius: document.getElementById('scTravellersWithin')?.value || 'unknown',
-      travellerRadiusKm: document.getElementById('scTravellerRadius')?.value === '' ? null : Number(document.getElementById('scTravellerRadius')?.value || 0),
+      travellerRadiusKm: getTravellerRadiusKm(),
       affectedPersonnelState: document.getElementById('scAffectedPersonnel')?.value || 'unknown',
       thresholdRuleId: selectedThresholdRuleId || '',
       thresholdConditionState: selectedThresholdConditionState || 'baseline',
@@ -4853,7 +4868,11 @@ async function loadFromLibrary(id) {
     if (document.getElementById('scNearestRef')) document.getElementById('scNearestRef').value = p.nearestLocationName ?? p.nearest_location_name ?? '';
     if (document.getElementById('scSiteRelationship')) document.getElementById('scSiteRelationship').value = p.siteRelationship ?? p.site_relationship ?? 'unknown';
     if (document.getElementById('scTravellersWithin')) document.getElementById('scTravellersWithin').value = String(p.travellersWithinRadius ?? p.travellers_within_radius ?? 'unknown');
-    if (document.getElementById('scTravellerRadius')) document.getElementById('scTravellerRadius').value = p.travellerRadiusKm ?? p.traveller_radius_km ?? '';
+    if (document.getElementById('scTravellerRadius')) {
+      const storedRadius = p.travellerRadiusKm ?? p.traveller_radius_km ?? '';
+      document.getElementById('scTravellerRadius').value = storedRadius;
+      const unitSel=document.getElementById('scTravellerRadiusUnit'); if(unitSel) unitSel.value = storedRadius === '' ? 'm' : 'km';
+    }
     if (document.getElementById('scAffectedPersonnel')) document.getElementById('scAffectedPersonnel').value = p.affectedPersonnelState ?? p.affected_personnel_state ?? 'unknown';
     if (document.getElementById('scLat') && p.lat != null) document.getElementById('scLat').value = p.lat;
     if (document.getElementById('scLng') && p.lng != null) document.getElementById('scLng').value = p.lng;
