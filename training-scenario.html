@@ -190,6 +190,13 @@
     ::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:#090d11}::-webkit-scrollbar-thumb{background:#303a45;border-radius:9px}::-webkit-scrollbar-thumb:hover{background:#46515d}
     @media(max-width:1200px){.kpi-row{grid-template-columns:repeat(3,1fr)}.hub-grid,.two-grid{grid-template-columns:1fr}.three-grid{grid-template-columns:1fr 1fr}.readiness{grid-template-columns:1fr}.score-ring{margin:auto}}
     @media(max-width:760px){.main{padding:12px}.training-hero{padding:16px}.training-hero-actions{justify-content:flex-start}.kpi-row,.three-grid{grid-template-columns:1fr}.matrix-row{grid-template-columns:1fr}.app{grid-template-columns:1fr}}
+
+  /* Phase 9D.2 — structured exposure facts + richer process/timing debrief. */
+  .tr-context{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .tr-context-chip{padding:4px 8px;border-radius:999px;border:1px solid rgba(147,197,253,.25);background:rgba(147,197,253,.06);color:#cfe1ff;font-size:11px;font-weight:750}
+  .tr-unnecessary{margin-top:7px;color:#fda4af;font-size:12px;line-height:1.45}
+  .tr-sla{margin-top:6px;font-size:12px;color:#9fb0c3}.tr-sla b.met{color:#86efac}.tr-sla b.missed{color:#fca5a5}
+
 </style>
 <style>
   /* ── Training exercise page ─────────────────────────────────────────── */
@@ -597,6 +604,26 @@ window.CIAccess = {
     '</div>';
   }
 
+  function exposureContextBlock(sc){
+    if (!sc) return '';
+    var chips=[];
+    var site=String(sc.site_relationship||'unknown');
+    if(site==='at_site') chips.push('At organisation site');
+    else if(site==='near_site') chips.push('Organisation site in exposure area');
+    else if(site==='remote_site') chips.push('No organisation site exposure');
+    var tr=String(sc.travellers_within_radius||'unknown');
+    var r=sc.traveller_radius_km===null||sc.traveller_radius_km===undefined?'':Number(sc.traveller_radius_km);
+    var radius=(r!==''&&isFinite(r)&&r>0)?' within '+r+' km':' in relevant area';
+    if(tr==='0') chips.push('0 travellers'+radius);
+    else if(tr==='1') chips.push('1 traveller'+radius);
+    else if(tr==='2') chips.push('2 travellers'+radius);
+    else if(tr==='3plus') chips.push('3+ travellers'+radius);
+    var ap=String(sc.affected_personnel_state||'unknown');
+    if(ap==='none') chips.push('No personnel confirmed affected');
+    else if(ap==='confirmed') chips.push('Personnel confirmed affected');
+    return chips.length?'<div class="tr-context">'+chips.map(function(x){return '<span class="tr-context-chip">'+esc(x)+'</span>';}).join('')+'</div>':'';
+  }
+
   function hasCoords(sc){
     return sc && sc.latitude != null && sc.longitude != null &&
       isFinite(Number(sc.latitude)) && isFinite(Number(sc.longitude));
@@ -793,10 +820,17 @@ window.CIAccess = {
       out += '<div class="tr-missing">Missed checks: ' +
         esc(proc.missing.map(function(k){ return CHECK_TEXT[k] || k; }).join(', ')) + '</div>';
     }
+    if (proc.unnecessaryCompleted && proc.unnecessaryCompleted.length) {
+      out += '<div class="tr-unnecessary">Unnecessary checks performed: ' +
+        esc(proc.unnecessaryCompleted.map(function(k){ return CHECK_TEXT[k] || k; }).join(', ')) +
+        ' · These steps were marked non-value for this exercise and reduced the Process score.</div>';
+    }
 
     if (score.targetMin && score.takenMin !== null && score.takenMin !== undefined) {
-      out += '<div class="small" style="margin-top:6px">Answered in ' + score.takenMin +
-        ' min against a ' + score.targetMin + ' min target.</div>';
+      var timingPart=(score.parts||[]).filter(function(p){return String(p.key||p.label||'').toLowerCase()==='timing';})[0];
+      var met=score.slaMet!==false;
+      out += '<div class="tr-sla">SLA: <b class="'+(met?'met':'missed')+'">'+(met?'Met':'Missed')+'</b> — ' + score.takenMin +
+        ' min / ' + score.targetMin + ' min' + (timingPart ? ' · Timing efficiency ' + timingPart.pct + '%' : '') + '</div>';
     }
     if (fb.threshold && fb.threshold.linked) {
       var th = fb.threshold, rr = th.rule || {}, pp = th.policy || {};
@@ -874,6 +908,7 @@ window.CIAccess = {
       (place ? '<div class="small" style="margin-top:8px">' + esc(place) + '</div>' : '') +
       scenarioTimeBlock(sc) +
       (sc.summary ? '<p class="tr-summary">' + esc(sc.summary) + '</p>' : '') +
+      exposureContextBlock(sc) +
       (sc.confidence ? '<div class="small" style="margin-top:8px">Source confidence: ' + esc(sc.confidence) + '</div>' : '') +
       distanceBlock(sc) +
       (hasCoords(sc) ? '<div class="tr-map-wrap"><div class="tr-map" id="map-' + esc(sc.id) + '"></div><div class="tr-map-status" id="map-status-' + esc(sc.id) + '">Mouse wheel to zoom · drag to pan · Measure to check distance.</div></div>' : '') +
