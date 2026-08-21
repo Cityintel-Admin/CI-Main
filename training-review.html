@@ -236,6 +236,18 @@
   .development-note{background:#0b1015;border:1px solid rgba(239,35,41,.24);border-left:2px solid #ef2329;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;color:#d9e2ec}
   @media(max-width:800px){.operator-score-row,.subject-grid,.op-detail-grid{grid-template-columns:1fr 1fr}}
   @media(max-width:560px){.operator-score-row,.subject-grid,.op-detail-grid{grid-template-columns:1fr}}
+
+  /* Phase 9D.2 — readiness curriculum + process discipline. */
+  .curriculum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
+  .curriculum-item{border:1px solid #29333d;border-radius:11px;padding:10px 11px;background:#0b1015}
+  .curriculum-item.pass{border-color:rgba(51,196,141,.38);background:rgba(51,196,141,.055)}
+  .curriculum-item.pending{border-color:rgba(240,180,41,.30)}
+  .curriculum-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .curriculum-title{font-size:12px;font-weight:900;color:#eef3f7}.curriculum-meta{font-size:10px;color:#8fa0b5;margin-top:4px}
+  .curriculum-status{font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap}.curriculum-item.pass .curriculum-status{color:#86efac}.curriculum-item.pending .curriculum-status{color:#fde68a}
+  .curriculum-summary{border:1px solid rgba(147,197,253,.28);background:rgba(147,197,253,.055);border-radius:11px;padding:10px 12px;color:#cfe1ff;font-size:12px;line-height:1.5;margin-bottom:9px}
+  @media(max-width:850px){.curriculum-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -729,6 +741,7 @@ document.addEventListener('DOMContentLoaded',function(){
   'use strict';
   var API = String(window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
   var rows = [];
+  var policy = null;
 
   function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
@@ -774,6 +787,25 @@ document.addEventListener('DOMContentLoaded',function(){
   function eventOf(r){
     var fb = feedbackOf(r), rr = (fb.threshold || {}).rule || {};
     return String(rr.eventType || r.scenario_title || 'Training scenario').trim();
+  }
+  function readinessConfig(){
+    var p=policy||{};
+    var rules=(Array.isArray(p.advanced_rules)?p.advanced_rules:[]).filter(function(r){return r && r.enabled!==false && r.readiness_required!==false;});
+    return {rules:rules,passScore:Math.max(50,Math.min(100,Number(p.readiness_pass_score||80)||80)),minPasses:Math.max(1,Math.min(20,Number(p.readiness_min_passes||1)||1))};
+  }
+  function thresholdRuleIdOf(r){ var fb=feedbackOf(r), rr=(fb.threshold||{}).rule||{}; return String(r.threshold_rule_id||rr.id||''); }
+  function curriculumForRows(personRows,avg){
+    var cfg=readinessConfig();
+    if(!cfg.rules.length)return {enabled:false,total:0,passed:0,ready:avg!==null&&avg>=80,subjects:[],passScore:80,minPasses:1};
+    var subjects=cfg.rules.map(function(rule){
+      var matches=(personRows||[]).filter(function(r){return thresholdRuleIdOf(r)===String(rule.id||'');});
+      var scored=matches.filter(function(r){return r.score_pct!==null&&r.score_pct!==undefined&&!isNaN(Number(r.score_pct));});
+      var passes=scored.filter(function(r){return Number(r.score_pct)>=cfg.passScore;});
+      var best=scored.length?Math.max.apply(null,scored.map(function(r){return Number(r.score_pct||0);})):null;
+      return {label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scored.length,passes:passes.length,best:best,passed:passes.length>=cfg.minPasses};
+    });
+    var passed=subjects.filter(function(x){return x.passed;}).length;
+    return {enabled:true,total:subjects.length,passed:passed,ready:passed===subjects.length&&avg!==null&&avg>=cfg.passScore,subjects:subjects,passScore:cfg.passScore,minPasses:cfg.minPasses};
   }
   function actionLabel(v){ return ACTION_LABEL[String(v||'')] || String(v||'—'); }
   function actionRank(v){ return ({cleared:0,monitoring:1,notified:2,escalated:3})[String(v||'')] ?? 0; }
@@ -912,6 +944,7 @@ document.addEventListener('DOMContentLoaded',function(){
     var correct = assessed.filter(function(r){ return String(r.action||'') === String(r.expected_action||''); }).length;
     var accuracy = assessed.length ? Math.round(correct / assessed.length * 100) : null;
     var last = personRows.slice().sort(function(a,b){ return String(b.responded_at||'').localeCompare(String(a.responded_at||'')); })[0];
+    var curriculum = curriculumForRows(personRows, avg);
 
     var subjectMap = {};
     personRows.forEach(function(r){
@@ -942,6 +975,11 @@ document.addEventListener('DOMContentLoaded',function(){
       '<div class="score-card"><div class="score-val">' + personRows.length + '</div><div class="score-lbl">Exercises</div></div>' +
     '</div>';
 
+    if (curriculum.enabled) {
+      html += '<div class="section-title" style="margin-bottom:8px">Readiness Curriculum</div>' +
+        '<div class="curriculum-summary"><strong>' + (curriculum.ready ? 'Ready' : 'Not yet ready') + '</strong> · ' + curriculum.passed + '/' + curriculum.total + ' required subjects passed · overall average ' + fmtPct(avg) + ' / ' + curriculum.passScore + '% standard · ' + curriculum.minPasses + ' pass' + (curriculum.minPasses===1?'':'es') + ' required per subject.</div>' +
+        '<div class="curriculum-grid">' + curriculum.subjects.map(function(x){ return '<div class="curriculum-item ' + (x.passed?'pass':'pending') + '"><div class="curriculum-head"><div><div class="curriculum-title">' + esc(x.label) + '</div><div class="curriculum-meta">' + x.passes + '/' + curriculum.minPasses + ' passing exercise' + (curriculum.minPasses===1?'':'s') + ' · ' + x.attempts + ' attempt' + (x.attempts===1?'':'s') + (x.best!==null?' · best '+x.best+'%':'') + '</div></div><div class="curriculum-status">' + (x.passed?'Passed':'Pending') + '</div></div></div>'; }).join('') + '</div>';
+    }
     html += '<div class="section-title" style="margin-bottom:8px">Capability by Subject</div>';
     if (subjects.length) {
       html += '<div class="subject-grid">' + subjects.map(function(s){
@@ -978,9 +1016,9 @@ document.addEventListener('DOMContentLoaded',function(){
           '<div class="op-exercise-score" style="color:' + scoreColour(pct==null?0:pct) + '">' + fmtPct(pct) + ' <span style="font-size:12px">' + esc(g) + '</span></div></div>' +
         '<div class="op-detail-grid">' +
           '<div class="op-detail-box"><b>Decision</b>' + esc(chosen) + (String(r.expected_action||'') ? ' · expected ' + esc(expected) : '') + '</div>' +
-          '<div class="op-detail-box"><b>Timing</b>' + (taken!==null ? taken + ' min' : '—') + (target ? ' · target ' + target + ' min' : '') + '</div>' +
+          '<div class="op-detail-box"><b>Timing</b>' + (taken!==null ? taken + ' min' : '—') + (target ? ' · target ' + target + ' min' : '') + (score.slaMet===true?' · SLA met':score.slaMet===false?' · SLA missed':'') + '</div>' +
           '<div class="op-detail-box"><b>Scoring</b>' + (parts.length ? parts.map(function(p){ return esc(p.label) + ' ' + Math.round(Number(p.pct||0)) + '%'; }).join(' · ') : 'Legacy / unscored detail') + '</div>' +
-          '<div class="op-detail-box"><b>Verification</b>' + (completed.length ? completed.map(function(k){ return esc(CHECK_LABEL[k]||k); }).join(', ') : 'No checks recorded') + (missing.length ? '<br><span style="color:#fca5a5">Missed: ' + missing.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ') + '</span>' : '') + '</div>' +
+          '<div class="op-detail-box"><b>Verification</b>' + (completed.length ? completed.map(function(k){ return esc(CHECK_LABEL[k]||k); }).join(', ') : 'No checks recorded') + (missing.length ? '<br><span style="color:#fca5a5">Missed: ' + missing.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ') + '</span>' : '') + (Array.isArray(proc.unnecessaryCompleted)&&proc.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+proc.unnecessaryCompleted.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ')+'</span>':'') + '</div>' +
         '</div>' +
         (th.linked ? '<div class="op-detail-box" style="margin-top:8px"><b>Threshold tested</b>' + esc((rr.categoryLabel||'') + (rr.eventType ? ' → ' + rr.eventType : '')) + ' · Policy v' + esc(pp.version||r.threshold_policy_version||1) + ' / Rule v' + esc(rr.version||r.threshold_rule_version||1) + (th.evaluation ? ' · ' + esc(String(th.evaluation).replace(/_/g,' ')) : '') + '</div>' : '') +
         (r.summary ? '<div class="op-summary"><b style="color:#eef3f7">Exercise context:</b> ' + esc(r.summary) + '</div>' : '') +
@@ -1001,9 +1039,13 @@ document.addEventListener('DOMContentLoaded',function(){
     personRows.forEach(function(r){ var m=(feedbackOf(r).process||{}).missing||[]; (Array.isArray(m)?m:[]).forEach(function(k){missCount[k]=(missCount[k]||0)+1;}); });
     var missKeys = Object.keys(missCount).sort(function(a,b){return missCount[b]-missCount[a];});
     if (missKeys.length) guidance.push('Most frequently missed verification step: <strong>' + esc(CHECK_LABEL[missKeys[0]]||missKeys[0]) + '</strong> (' + missCount[missKeys[0]] + ' time' + (missCount[missKeys[0]]===1?'':'s') + ').');
+    var extraCount={}; personRows.forEach(function(r){var u=(feedbackOf(r).process||{}).unnecessaryCompleted||[];(Array.isArray(u)?u:[]).forEach(function(k){extraCount[k]=(extraCount[k]||0)+1;});});
+    var extraKeys=Object.keys(extraCount).sort(function(a,b){return extraCount[b]-extraCount[a];});
+    if(extraKeys.length) guidance.push('Most frequent unnecessary check: <strong>'+esc(CHECK_LABEL[extraKeys[0]]||extraKeys[0])+'</strong> ('+extraCount[extraKeys[0]]+' time'+(extraCount[extraKeys[0]]===1?'':'s')+').');
+    if(curriculum.enabled && !curriculum.ready) guidance.push('Readiness coverage is <strong>'+curriculum.passed+'/'+curriculum.total+' required subjects</strong>. Complete the remaining threshold subjects at '+curriculum.passScore+'% or above.');
     var slow = personRows.filter(function(r){ var fb=feedbackOf(r), target=Number(fb.targetResponseMin||r.target_response_min||0)||0; return target>0 && Number(r.response_ms||0)>target*60000; }).length;
     if (slow) guidance.push(slow + ' response' + (slow===1?'':'s') + ' exceeded the exercise SLA.');
-    if (!wrong && !slow && !missKeys.length && avg !== null && avg >= 90) guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
+    if (!wrong && !slow && !missKeys.length && !extraKeys.length && avg !== null && avg >= 90) guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
 
     html += '<div class="section-title" style="margin-bottom:8px">Development Guidance</div><div style="display:grid;gap:8px">' +
       guidance.map(function(g){ return '<div class="development-note">💡 ' + g + '</div>'; }).join('') + '</div>';
@@ -1016,6 +1058,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   async function load(){
     loadSummary();
+    try { var pr=await fetch(API + '/api/org/escalation-policy',{headers:headers()}); var pd=await pr.json().catch(function(){return{};}); policy=(pr.ok&&pd.ok)?(pd.policy||null):null; } catch(_){ policy=null; }
     try {
       var res = await fetch(API + '/api/org/training-responses', { headers: headers() });
       var data = await res.json().catch(function(){ return {}; });
