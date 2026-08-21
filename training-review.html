@@ -248,6 +248,13 @@
   .curriculum-summary{border:1px solid rgba(147,197,253,.28);background:rgba(147,197,253,.055);border-radius:11px;padding:10px 12px;color:#cfe1ff;font-size:12px;line-height:1.5;margin-bottom:9px}
   @media(max-width:850px){.curriculum-grid{grid-template-columns:1fr}}
 
+  /* Phase 9D.3 — coaching & development intelligence. */
+  .curriculum-item.not-tested{border-color:#2c3742;background:#0a0f14}.curriculum-item.developing{border-color:rgba(255,90,95,.38);background:rgba(255,90,95,.045)}.curriculum-item.competent{border-color:rgba(240,180,41,.40);background:rgba(240,180,41,.045)}.curriculum-item.ready{border-color:rgba(51,196,141,.40);background:rgba(51,196,141,.055)}
+  .curriculum-item.not-tested .curriculum-status{color:#94a3b8}.curriculum-item.developing .curriculum-status{color:#fca5a5}.curriculum-item.competent .curriculum-status{color:#fde68a}.curriculum-item.ready .curriculum-status{color:#86efac}
+  .dev-intel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:18px}.dev-intel-card{background:#0b1015;border:1px solid #29333d;border-radius:12px;padding:12px 13px}.dev-intel-card.priority{border-color:rgba(239,35,41,.42);background:rgba(208,22,22,.055)}.dev-intel-card.recommend{border-color:rgba(147,197,253,.38);background:rgba(147,197,253,.05)}.dev-intel-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#8fa3bd;font-weight:900}.dev-intel-title{font-size:14px;font-weight:950;color:#f2f6fa;margin-top:5px}.dev-intel-meta{font-size:11px;line-height:1.5;color:#b5c3d2;margin-top:5px}.dev-intel-metric{font-size:19px;font-weight:950;margin-top:4px}.dev-intel-actions{margin-top:9px}.dev-intel-actions a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border:1px solid #354351;background:#151c24;color:#e8eef5;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:900}.dev-intel-actions a:hover{border-color:#ef2329;background:rgba(208,22,22,.10)}
+  .dimension-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:18px}.dimension-card{background:#0c1218;border:1px solid #27313b;border-radius:10px;padding:10px 11px}.dimension-name{font-size:10px;color:#91a4ba;text-transform:uppercase;letter-spacing:.07em;font-weight:900}.dimension-value{font-size:17px;font-weight:950;color:#eef3f7;margin-top:4px}.dimension-state{font-size:10px;margin-top:3px;font-weight:800}.state-strong{color:#86efac}.state-sound{color:#cfe1ff}.state-developing{color:#fde68a}.state-priority{color:#fca5a5}
+  @media(max-width:800px){.dev-intel-grid,.dimension-list{grid-template-columns:1fr 1fr}}@media(max-width:560px){.dev-intel-grid,.dimension-list{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -802,11 +809,71 @@ document.addEventListener('DOMContentLoaded',function(){
       var scored=matches.filter(function(r){return r.score_pct!==null&&r.score_pct!==undefined&&!isNaN(Number(r.score_pct));});
       var passes=scored.filter(function(r){return Number(r.score_pct)>=cfg.passScore;});
       var best=scored.length?Math.max.apply(null,scored.map(function(r){return Number(r.score_pct||0);})):null;
-      return {label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scored.length,passes:passes.length,best:best,passed:passes.length>=cfg.minPasses};
+      var passed=passes.length>=cfg.minPasses;
+      var stage=scored.length===0?'not-tested':passed?'ready':passes.length>0?'competent':'developing';
+      return {id:String(rule.id||''),label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scored.length,passes:passes.length,best:best,passed:passed,stage:stage};
     });
     var passed=subjects.filter(function(x){return x.passed;}).length;
     return {enabled:true,total:subjects.length,passed:passed,ready:passed===subjects.length&&avg!==null&&avg>=cfg.passScore,subjects:subjects,passScore:cfg.passScore,minPasses:cfg.minPasses};
   }
+  function averageScorePart(personRows,key){
+    var vals=[];
+    (personRows||[]).forEach(function(r){
+      var parts=((feedbackOf(r).score||{}).parts)||[];
+      (Array.isArray(parts)?parts:[]).forEach(function(p){
+        if(String(p.key||p.label||'').toLowerCase()===String(key).toLowerCase()){
+          var n=Number(p.pct); if(Number.isFinite(n)) vals.push(n);
+        }
+      });
+    });
+    return vals.length?Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length):null;
+  }
+  function dimensionState(v){
+    if(v===null||v===undefined||isNaN(Number(v))) return {label:'Not enough data',cls:'sound'};
+    v=Number(v); if(v>=90)return {label:'Strong',cls:'strong'}; if(v>=80)return {label:'Sound',cls:'sound'}; if(v>=70)return {label:'Developing',cls:'developing'}; return {label:'Priority',cls:'priority'};
+  }
+  function developmentModel(personRows,subjects,curriculum,avg,accuracy){
+    var process=averageScorePart(personRows,'process');
+    var timing=averageScorePart(personRows,'timing');
+    var decision=accuracy;
+    var missing={}, extra={}, slaMiss=0;
+    (personRows||[]).forEach(function(r){
+      var fb=feedbackOf(r), proc=fb.process||{}, score=fb.score||{};
+      (Array.isArray(proc.missing)?proc.missing:[]).forEach(function(k){missing[k]=(missing[k]||0)+1;});
+      (Array.isArray(proc.unnecessaryCompleted)?proc.unnecessaryCompleted:[]).forEach(function(k){extra[k]=(extra[k]||0)+1;});
+      if(score.slaMet===false) slaMiss++;
+    });
+    var missKeys=Object.keys(missing).sort(function(a,b){return missing[b]-missing[a];});
+    var extraKeys=Object.keys(extra).sort(function(a,b){return extra[b]-extra[a];});
+    var dims=[{name:'Decision judgement',value:decision},{name:'Process discipline',value:process},{name:'Response efficiency',value:timing}];
+    dims.forEach(function(d){d.state=dimensionState(d.value);});
+    var available=dims.filter(function(d){return d.value!==null&&d.value!==undefined&&!isNaN(Number(d.value));});
+    var strongest=available.length?available.slice().sort(function(a,b){return b.value-a.value;})[0]:null;
+    var weakest=available.length?available.slice().sort(function(a,b){return a.value-b.value;})[0]:null;
+    var next={title:'Build another scenario',reason:'More evidence is needed before CityIntel can recommend a focused progression.',difficulty:'Intermediate',subject:'General threshold practice'};
+    if(curriculum && curriculum.enabled){
+      var untested=curriculum.subjects.filter(function(x){return x.stage==='not-tested';});
+      var developing=curriculum.subjects.filter(function(x){return x.stage==='developing';}).sort(function(a,b){return (a.best||0)-(b.best||0);});
+      var competent=curriculum.subjects.filter(function(x){return x.stage==='competent';});
+      if(untested.length) next={title:'Complete an untested readiness subject',subject:untested[0].label,difficulty:'Beginner / Intermediate',reason:'This required policy subject has no scored evidence yet and is the clearest readiness gap.'};
+      else if(developing.length) next={title:'Reinforce a developing subject',subject:developing[0].label,difficulty:'Intermediate',reason:'Attempts exist, but the required pass standard has not yet been achieved.'};
+      else if(competent.length) next={title:'Convert competence into readiness',subject:competent[0].label,difficulty:'Intermediate',reason:'A passing result exists, but the organisation requires more passing evidence for this subject.'};
+      else if(curriculum.ready) next={title:'Increase scenario difficulty',subject:(subjects&&subjects[0]?subjects[0].name:'Readiness maintenance'),difficulty:'Advanced / Conditional',reason:'All required subjects are currently passed. Use escalation conditions or multi-step exercises to maintain and stretch competence.'};
+    }
+    if(!curriculum || !curriculum.enabled){
+      if(weakest && weakest.value<80) next={title:'Reinforce the weakest performance dimension',subject:weakest.name,difficulty:'Intermediate',reason:'Current evidence places this dimension below the preferred 80% standard.'};
+      else if(avg!==null&&avg>=90) next={title:'Increase scenario difficulty',subject:(subjects&&subjects[0]?subjects[0].name:'Operational judgement'),difficulty:'Advanced / Conditional',reason:'Overall performance is strong; a more complex scenario will provide better development evidence.'};
+    }
+    var priority='No material weakness identified yet';
+    var priorityMeta='Continue collecting evidence across the readiness curriculum.';
+    if(extraKeys.length){priority='Process discipline';priorityMeta='Unnecessary '+(CHECK_LABEL[extraKeys[0]]||extraKeys[0])+' check recorded '+extra[extraKeys[0]]+' time'+(extra[extraKeys[0]]===1?'':'s')+'.';}
+    else if(missKeys.length){priority='Verification completeness';priorityMeta=(CHECK_LABEL[missKeys[0]]||missKeys[0])+' was missed '+missing[missKeys[0]]+' time'+(missing[missKeys[0]]===1?'':'s')+'.';}
+    else if(weakest && weakest.value<80){priority=weakest.name;priorityMeta='Current average '+Math.round(weakest.value)+'% — below the preferred 80% coaching threshold.';}
+    else if(slaMiss){priority='Response efficiency';priorityMeta=slaMiss+' response'+(slaMiss===1?'':'s')+' exceeded the exercise SLA.';}
+    var gap=curriculum&&curriculum.enabled?(curriculum.total-curriculum.passed):null;
+    return {process:process,timing:timing,decision:decision,dims:dims,strongest:strongest,weakest:weakest,priority:priority,priorityMeta:priorityMeta,next:next,gap:gap,missing:missing,extra:extra,slaMiss:slaMiss};
+  }
+
   function actionLabel(v){ return ACTION_LABEL[String(v||'')] || String(v||'—'); }
   function actionRank(v){ return ({cleared:0,monitoring:1,notified:2,escalated:3})[String(v||'')] ?? 0; }
   function fmtPct(v){ return v === null || v === undefined || isNaN(Number(v)) ? '—' : Math.round(Number(v)) + '%'; }
@@ -978,8 +1045,22 @@ document.addEventListener('DOMContentLoaded',function(){
     if (curriculum.enabled) {
       html += '<div class="section-title" style="margin-bottom:8px">Readiness Curriculum</div>' +
         '<div class="curriculum-summary"><strong>' + (curriculum.ready ? 'Ready' : 'Not yet ready') + '</strong> · ' + curriculum.passed + '/' + curriculum.total + ' required subjects passed · overall average ' + fmtPct(avg) + ' / ' + curriculum.passScore + '% standard · ' + curriculum.minPasses + ' pass' + (curriculum.minPasses===1?'':'es') + ' required per subject.</div>' +
-        '<div class="curriculum-grid">' + curriculum.subjects.map(function(x){ return '<div class="curriculum-item ' + (x.passed?'pass':'pending') + '"><div class="curriculum-head"><div><div class="curriculum-title">' + esc(x.label) + '</div><div class="curriculum-meta">' + x.passes + '/' + curriculum.minPasses + ' passing exercise' + (curriculum.minPasses===1?'':'s') + ' · ' + x.attempts + ' attempt' + (x.attempts===1?'':'s') + (x.best!==null?' · best '+x.best+'%':'') + '</div></div><div class="curriculum-status">' + (x.passed?'Passed':'Pending') + '</div></div></div>'; }).join('') + '</div>';
+        '<div class="curriculum-grid">' + curriculum.subjects.map(function(x){ var stageLabel={'not-tested':'Not tested','developing':'Developing','competent':'Competent','ready':'Ready'}[x.stage]||'Developing'; return '<div class="curriculum-item ' + esc(x.stage) + '"><div class="curriculum-head"><div><div class="curriculum-title">' + esc(x.label) + '</div><div class="curriculum-meta">' + x.passes + '/' + curriculum.minPasses + ' passing exercise' + (curriculum.minPasses===1?'':'s') + ' · ' + x.attempts + ' attempt' + (x.attempts===1?'':'s') + (x.best!==null?' · best '+x.best+'%':'') + '</div></div><div class="curriculum-status">' + stageLabel + '</div></div></div>'; }).join('') + '</div>';
     }
+    var intelligence = developmentModel(personRows, subjects, curriculum, avg, accuracy);
+    var strengthTitle=intelligence.strongest ? intelligence.strongest.name : 'Evidence building';
+    var strengthMeta=intelligence.strongest ? ('Average '+fmtPct(intelligence.strongest.value)+' · '+intelligence.strongest.state.label) : 'Complete more scored exercises to establish a reliable strength profile.';
+    var gapTitle=curriculum.enabled ? (curriculum.passed+'/'+curriculum.total+' subjects passed') : 'Curriculum not configured';
+    var gapMeta=curriculum.enabled ? (intelligence.gap+' required subject'+(intelligence.gap===1?'':'s')+' remain before curriculum completion.') : 'Mark advanced threshold rules as readiness subjects to activate coverage-based readiness.';
+    html += '<div class="section-title" style="margin-bottom:8px">Development Intelligence</div>' +
+      '<div class="dev-intel-grid">' +
+        '<div class="dev-intel-card"><div class="dev-intel-label">Current strength</div><div class="dev-intel-title">'+esc(strengthTitle)+'</div><div class="dev-intel-meta">'+esc(strengthMeta)+'</div></div>' +
+        '<div class="dev-intel-card priority"><div class="dev-intel-label">Development priority</div><div class="dev-intel-title">'+esc(intelligence.priority)+'</div><div class="dev-intel-meta">'+esc(intelligence.priorityMeta)+'</div></div>' +
+        '<div class="dev-intel-card"><div class="dev-intel-label">Readiness gap</div><div class="dev-intel-title">'+esc(gapTitle)+'</div><div class="dev-intel-meta">'+esc(gapMeta)+'</div></div>' +
+        '<div class="dev-intel-card recommend"><div class="dev-intel-label">Recommended next exercise</div><div class="dev-intel-title">'+esc(intelligence.next.subject)+'</div><div class="dev-intel-meta"><strong>'+esc(intelligence.next.title)+'</strong> · '+esc(intelligence.next.difficulty)+'<br>'+esc(intelligence.next.reason)+'</div><div class="dev-intel-actions"><a href="training-scenario-admin.html">Build recommended exercise →</a></div></div>' +
+      '</div>' +
+      '<div class="dimension-list">' + intelligence.dims.map(function(d){ return '<div class="dimension-card"><div class="dimension-name">'+esc(d.name)+'</div><div class="dimension-value">'+fmtPct(d.value)+'</div><div class="dimension-state state-'+esc(d.state.cls)+'">'+esc(d.state.label)+'</div></div>'; }).join('') + '</div>';
+
     html += '<div class="section-title" style="margin-bottom:8px">Capability by Subject</div>';
     if (subjects.length) {
       html += '<div class="subject-grid">' + subjects.map(function(s){
