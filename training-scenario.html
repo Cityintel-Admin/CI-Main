@@ -197,6 +197,19 @@
   .tr-unnecessary{margin-top:7px;color:#fda4af;font-size:12px;line-height:1.45}
   .tr-sla{margin-top:6px;font-size:12px;color:#9fb0c3}.tr-sla b.met{color:#86efac}.tr-sla b.missed{color:#fca5a5}
 
+
+  /* Phase 9E.1 — evolving multi-stage exercise continuity */
+  .tr-sequence{margin:10px 0 14px;padding:11px 12px;border:1px solid rgba(147,197,253,.25);border-radius:12px;background:rgba(147,197,253,.045)}
+  .tr-sequence-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .tr-sequence-title{font-size:12px;font-weight:900;color:#dbeafe}.tr-sequence-count{font-size:10px;font-weight:900;color:#93c5fd;text-transform:uppercase}
+  .tr-stage-track{display:flex;gap:6px;align-items:stretch;margin-top:9px;overflow-x:auto;padding-bottom:3px}
+  .tr-stage{min-width:132px;flex:1;border:1px solid #2b3641;border-radius:9px;padding:8px;background:#0b1015}
+  .tr-stage.done{border-color:rgba(51,196,141,.35);background:rgba(51,196,141,.045)}
+  .tr-stage.current{border-color:rgba(240,180,41,.55);background:rgba(240,180,41,.07)}
+  .tr-stage.pending{opacity:.62}.tr-stage-num{font-size:9px;font-weight:900;text-transform:uppercase;color:#8fa0b5}.tr-stage-name{font-size:11px;font-weight:900;margin-top:2px;color:#eef3f7}
+  .tr-stage-result{font-size:10px;color:#9fb2c9;margin-top:4px}.tr-seq-final{margin-top:10px;padding:10px 12px;border:1px solid rgba(51,196,141,.32);border-radius:10px;background:rgba(51,196,141,.05)}
+  .tr-seq-final strong{color:#86efac}.tr-seq-final-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:7px}.tr-seq-final-grid div{border:1px solid #29343e;border-radius:8px;padding:7px 8px;font-size:10px;color:#b8c7d9}
+  @media(max-width:760px){.tr-seq-final-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tr-stage{min-width:120px}}
 </style>
 <style>
   /* ── Training exercise page ─────────────────────────────────────────── */
@@ -535,7 +548,8 @@ window.CIAccess = {
   // re-render only happens when the set of live scenarios actually changes.
   var state = {
     scenarios: [], responded: {}, selected: {}, drafts: {}, checks: {}, followup: {}, followupIntervals: {},
-    policy: null, busy: false, signature: '', maps: {}
+    policy: null, busy: false, signature: '', maps: {},
+    sequenceGroups: {}, sequenceResponses: []
   };
 
   // Verification steps. The action alone says what an operator did; these say
@@ -889,6 +903,45 @@ window.CIAccess = {
     return 'med';
   }
 
+
+  function sequenceIdOf(sc){ return String(sc && (sc.sequence_id || sc.sequenceId) || ''); }
+  function sequenceStepOf(sc){ return Math.max(0,Number(sc && (sc.sequence_step_index || sc.sequenceStepIndex) || 0)); }
+  function sequenceTotalOf(sc){ return Math.max(0,Number(sc && (sc.sequence_total_steps || sc.sequenceTotalSteps) || 0)); }
+  function responseActionLabel(v){ return ACTION_TEXT[String(v||'')] || String(v||'').replace(/_/g,' ') || 'Responded'; }
+  function responseFeedback(row){ try{return typeof row.feedback_json==='string'?JSON.parse(row.feedback_json||'{}'):(row.feedback_json||{});}catch(_){return{};} }
+  function sequenceRows(seqId){ return (state.sequenceResponses||[]).filter(function(r){return String(r.sequence_id||((responseFeedback(r).sequence||{}).id)||'')===seqId;}); }
+  function sequenceTimeline(sc){
+    var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc), current=sequenceStepOf(sc);
+    if(!seqId || total<2) return '';
+    var group=(state.sequenceGroups&&state.sequenceGroups[seqId])||[];
+    var responses=sequenceRows(seqId);
+    var title=String(sc.sequence_title||sc.sequenceTitle||'Multi-stage exercise');
+    var stages=[];
+    for(var i=1;i<=total;i++){
+      var stage=group.filter(function(x){return sequenceStepOf(x)===i;})[0]||null;
+      var row=responses.filter(function(r){return Number(r.sequence_step_index||((responseFeedback(r).sequence||{}).stepIndex)||0)===i;})[0]||null;
+      var cls=row?'done':(i===current?'current':'pending');
+      var label=String((stage&&(stage.sequence_stage_label||stage.sequenceStageLabel||stage.title))||('Stage '+i));
+      var detail=row?(responseActionLabel(row.action)+(row.score_pct!==null&&row.score_pct!==undefined?' · '+Math.round(Number(row.score_pct))+'%':'')):(i===current?'Active':'Pending');
+      stages.push('<div class="tr-stage '+cls+'"><div class="tr-stage-num">Stage '+i+' of '+total+'</div><div class="tr-stage-name">'+esc(label)+'</div><div class="tr-stage-result">'+esc(detail)+'</div></div>');
+    }
+    return '<div class="tr-sequence"><div class="tr-sequence-head"><div class="tr-sequence-title">'+esc(title)+'</div><div class="tr-sequence-count">Stage '+current+' of '+total+'</div></div><div class="tr-stage-track">'+stages.join('')+'</div></div>';
+  }
+  function sequenceFinalBlock(sc){
+    var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc);
+    if(!seqId||total<2)return '';
+    var rows=sequenceRows(seqId).filter(function(r){return r.score_pct!==null&&r.score_pct!==undefined&&Number.isFinite(Number(r.score_pct));});
+    var stepSet={}; rows.forEach(function(r){var s=Number(r.sequence_step_index||((responseFeedback(r).sequence||{}).stepIndex)||0);if(s)stepSet[s]=1;});
+    if(Object.keys(stepSet).length<total)return '';
+    var avg=Math.round(rows.reduce(function(sum,r){return sum+Number(r.score_pct||0);},0)/Math.max(1,rows.length));
+    var grade=avg>=90?'A':avg>=80?'B':avg>=70?'C':avg>=60?'D':'F';
+    var parts={decision:[],process:[],followup:[],timing:[]};
+    rows.forEach(function(r){var fb=responseFeedback(r);((fb.score||{}).parts||[]).forEach(function(p){var k=String(p.key||p.label||'').toLowerCase();if(parts[k]&&Number.isFinite(Number(p.pct)))parts[k].push(Number(p.pct));});});
+    function av(k){var x=parts[k];return x.length?Math.round(x.reduce(function(a,b){return a+b;},0)/x.length):null;}
+    var boxes=['decision','process','followup','timing'].map(function(k){var v=av(k);return v===null?'':'<div><b>'+k.charAt(0).toUpperCase()+k.slice(1)+'</b><br>'+v+'%</div>';}).join('');
+    return '<div class="tr-seq-final"><strong>Multi-stage exercise complete — '+avg+'% ('+grade+')</strong><div class="small" style="margin-top:3px">Final score is the average of '+total+' completed stages. For readiness, repeated stages of the same threshold subject count as one exercise evidence item.</div><div class="tr-seq-final-grid">'+boxes+'</div></div>';
+  }
+
   function scenarioCard(sc){
     var mins = elapsedMin(sc.injected_at);
     var target = targetForScenario(sc);
@@ -902,7 +955,8 @@ window.CIAccess = {
       sc.category ? '<span class="tr-chip">' + esc(sc.category_emoji || '') + ' ' + esc(sc.category) + '</span>' : '',
       mins !== null ? '<span class="tr-chip clock' + (over ? ' over' : '') + '" id="clock-' + esc(sc.id) + '">⏱ ' + mins + ' min elapsed' + (target ? ' · target ' + target + ' min' : '') + '</span>' : '',
       sc.trainee_name ? '<span class="tr-chip">Assigned: ' + esc(sc.trainee_name) + '</span>' : '',
-      (sc.difficulty && sc.difficulty !== 'intermediate') ? '<span class="tr-chip">' + esc(String(sc.difficulty).toUpperCase()) + '</span>' : ''
+      (sc.difficulty && sc.difficulty !== 'intermediate') ? '<span class="tr-chip">' + esc(String(sc.difficulty).toUpperCase()) + '</span>' : '',
+      sequenceIdOf(sc) && sequenceTotalOf(sc)>1 ? '<span class="tr-chip">Stage ' + sequenceStepOf(sc) + ' / ' + sequenceTotalOf(sc) + '</span>' : ''
     ].filter(Boolean).join('');
 
     if (done) {
@@ -911,6 +965,7 @@ window.CIAccess = {
         '<div class="tr-meta">' + chips + '</div>' +
         (place ? '<div class="small" style="margin-top:8px">' + esc(place) + '</div>' : '') +
         scenarioTimeBlock(sc) +
+        sequenceTimeline(sc) +
         '<div class="tr-done" style="margin-top:14px">' +
           '<h3>Response recorded — nothing was sent</h3>' +
           '<div class="small">Logged as <b>' + esc(done.responder) + '</b> · action: <b>' + esc(done.actionLabel) + '</b>' +
@@ -924,6 +979,7 @@ window.CIAccess = {
         '</div>' +
         feedbackBlock(done.feedback) +
         evaluatedOutcomeBlock(done.feedback, sc) +
+        sequenceFinalBlock(sc) +
         '<div class="row" style="margin-top:12px"><a class="btn" href="training-review.html">See it in my record</a></div>' +
       '</section>';
     }
@@ -933,6 +989,7 @@ window.CIAccess = {
       '<div class="tr-meta">' + chips + '</div>' +
       (place ? '<div class="small" style="margin-top:8px">' + esc(place) + '</div>' : '') +
       scenarioTimeBlock(sc) +
+      sequenceTimeline(sc) +
       (sc.summary ? '<p class="tr-summary">' + esc(sc.summary) + '</p>' : '') +
       exposureContextBlock(sc) +
       (sc.confidence ? '<div class="small" style="margin-top:8px">Source confidence: ' + esc(sc.confidence) + '</div>' : '') +
@@ -1042,6 +1099,26 @@ window.CIAccess = {
     });
   }
 
+
+  async function loadSequenceContext(list){
+    var ids=[];
+    (list||[]).forEach(function(sc){var id=sequenceIdOf(sc);if(id&&ids.indexOf(id)<0)ids.push(id);});
+    if(!ids.length){state.sequenceGroups={};return;}
+    var groups={};
+    await Promise.all(ids.map(async function(id){
+      try{
+        var r=await fetch(API+'/api/org/training-scenarios?sequence_id='+encodeURIComponent(id)+'&ts='+Date.now(),{headers:headers(),cache:'no-store'});
+        var d=await r.json().catch(function(){return{};}); groups[id]=r.ok&&d.ok!==false&&Array.isArray(d.data)?d.data:[];
+      }catch(_){groups[id]=[];}
+    }));
+    state.sequenceGroups=groups;
+    try{
+      var rr=await fetch(API+'/api/org/training-responses?ts='+Date.now(),{headers:headers(),cache:'no-store'});
+      var dd=await rr.json().catch(function(){return{};});
+      if(rr.ok&&dd.ok!==false&&Array.isArray(dd.data))state.sequenceResponses=dd.data;
+    }catch(_){}
+  }
+
   async function load(force){
     var next;
     try {
@@ -1062,6 +1139,7 @@ window.CIAccess = {
         return state.responded[oldSc.id] && !next.some(function(n){ return n.id === oldSc.id; });
       });
       if (locallyCompleted.length) next = next.concat(locallyCompleted);
+      await loadSequenceContext(next);
     } catch (e) {
       var wrap = document.getElementById('trScenarios');
       if (wrap && !state.scenarios.length) {
@@ -1108,6 +1186,21 @@ window.CIAccess = {
         if (!typing) render();
       }
     } catch (_) {}
+  }
+
+  async function waitForNextSequenceStage(sc){
+    var seqId=sequenceIdOf(sc), current=sequenceStepOf(sc), total=sequenceTotalOf(sc);
+    if(!seqId || !total || current>=total) return;
+    for(var attempt=0;attempt<10;attempt++){
+      await new Promise(function(resolve){setTimeout(resolve,1500);});
+      try{
+        var res=await fetch(API + '/api/org/training-scenarios?status=active&ts=' + Date.now(), {headers:headers(),cache:'no-store'});
+        var data=await res.json().catch(function(){return{};});
+        var list=res.ok&&data.ok!==false&&Array.isArray(data.data)?data.data:[];
+        var next=list.filter(function(x){return sequenceIdOf(x)===seqId && sequenceStepOf(x)>current;})[0];
+        if(next){ await load(true); return; }
+      }catch(_){}
+    }
   }
 
   async function submit(scenarioId){
@@ -1174,11 +1267,25 @@ window.CIAccess = {
         }),
         followup: followDone.map(followupLabel)
       };
+      if(sequenceIdOf(sc)){
+        state.sequenceResponses = (state.sequenceResponses||[]).filter(function(r){return String(r.scenario_id||'')!==scenarioId;});
+        state.sequenceResponses.unshift({
+          id:data.id||('local_'+Date.now()), scenario_id:scenarioId, scenario_title:sc.title||'', action:action,
+          score_pct:data.feedback&&data.feedback.score?data.feedback.score.pct:null,
+          feedback_json:data.feedback||{}, responded_at:new Date().toISOString(),
+          sequence_id:sequenceIdOf(sc), sequence_title:sc.sequence_title||'', sequence_step_index:sequenceStepOf(sc),
+          sequence_total_steps:sequenceTotalOf(sc), sequence_stage_label:sc.sequence_stage_label||''
+        });
+      }
       delete state.drafts[scenarioId];
       render();
       // Let shared-nav refresh its global training banner immediately. The
       // local-completed merge in load() keeps this debrief visible here.
       try { window.dispatchEvent(new CustomEvent('ci:training-ended', { detail:{ scenarioId:scenarioId } })); } catch (_) {}
+      // Phase 9E.1 — sequence stages are injected by Scenario Admin after it
+      // observes this response. Poll briefly so the next stage appears as part
+      // of one continuous exercise instead of waiting for the normal 20s refresh.
+      if(sequenceIdOf(sc) && sequenceStepOf(sc)<sequenceTotalOf(sc)) waitForNextSequenceStage(sc);
     } catch (e) {
       show(e.message || String(e));
     } finally {
