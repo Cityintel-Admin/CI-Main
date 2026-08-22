@@ -1945,6 +1945,20 @@
                 </div>
               </div>
 
+              <div class="form-field full">
+                <label>Scenario follow-up assessment <span style="font-weight:400;color:var(--muted);">(Phase 9D.4 — actions after the initial decision)</span></label>
+                <div id="scFollowupActions" class="assessment-checks"></div>
+                <div class="assessment-toolbar">
+                  <div class="assessment-note">Follow-up actions are assessed separately from verification. Mark actions <b>Required</b>, <b>Neutral</b>, or <b>Unnecessary</b> for this exact exercise. Examples include continued monitoring, re-checking sources, updating the Duty Manager, reassessing traveller exposure, and issuing a situation update.</div>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap"><button type="button" class="btn" id="scResetFollowupBtn">Reset to threshold follow-up defaults</button></div>
+                </div>
+                <div style="margin-top:10px;max-width:360px">
+                  <label style="display:block;margin-bottom:5px">Planned follow-up / update target (minutes) <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+                  <input type="number" id="scFollowupTarget" min="0" max="10080" step="1" value="0" placeholder="e.g. 30">
+                  <div class="form-hint" style="margin-top:5px">If set, the trainee must choose when the next review/update should occur. The planned interval is scored against this target.</div>
+                </div>
+              </div>
+
               <div class="form-field">
                 <label>Distance from nearest site <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
                 <div style="display:flex;gap:6px;">
@@ -2547,6 +2561,20 @@
         </div>
 
         <div class="form-field full">
+          <label>Required follow-up actions</label>
+          <div class="threshold-check-grid" id="thresholdRuleFollowup"></div>
+          <div class="form-hint">Actions expected after the initial decision. These become scenario defaults and can still be overridden for a specific training exercise.</div>
+        </div>
+        <div class="form-field">
+          <label>Follow-up / update target (minutes)</label>
+          <input type="number" id="thresholdRuleFollowupTarget" min="0" max="10080" value="0" placeholder="e.g. 30">
+        </div>
+        <div class="form-field">
+          <label>Update cadence</label>
+          <input type="text" id="thresholdRuleCadence" placeholder="e.g. Every 30 minutes or on material change">
+        </div>
+
+        <div class="form-field full">
           <label>Qualifying conditions</label>
           <textarea class="threshold-long-text" id="thresholdRuleConditions" placeholder="What conditions make this rule applicable? e.g. event is ongoing, several thousand participants, warning issued within 48 hours"></textarea>
         </div>
@@ -2561,13 +2589,9 @@
           <textarea class="threshold-long-text" id="thresholdRuleExceptions" placeholder="e.g. incident is under authority control and no organisation asset falls within the cordon"></textarea>
         </div>
 
-        <div class="form-field">
+        <div class="form-field full">
           <label>Communication required</label>
           <input type="text" id="thresholdRuleCommunication" placeholder="e.g. Urgent incident email within 15 min">
-        </div>
-        <div class="form-field">
-          <label>Update cadence</label>
-          <input type="text" id="thresholdRuleCadence" placeholder="e.g. Every 12 hours or on material change">
         </div>
 
         <div class="form-field full">
@@ -2943,6 +2967,8 @@ function applyPreset(idx) {
   if (document.getElementById('scDistance')) document.getElementById('scDistance').value = p.distanceM ?? p.distance_m ?? '';
   if (document.getElementById('scNearestRef')) document.getElementById('scNearestRef').value = p.nearestLocationName ?? p.nearest_location_name ?? p.nearestRef ?? p.nearest_ref ?? '';
   setExpectedChecks(p.expectedChecks ?? p.expected_checks ?? []);
+  setFollowupAssessment(p.expectedFollowupActions ?? p.expected_followup_actions ?? [], p.unnecessaryFollowupActions ?? p.unnecessary_followup_actions ?? []);
+  if(document.getElementById('scFollowupTarget')) document.getElementById('scFollowupTarget').value = p.followupTargetMin ?? p.followup_target_min ?? 0;
   if (document.getElementById('scLat'))  document.getElementById('scLat').value  = p.lat  !== undefined && p.lat  !== null ? p.lat  : '';
   if (document.getElementById('scLng'))  document.getElementById('scLng').value  = p.lng  !== undefined && p.lng  !== null ? p.lng  : '';
   document.getElementById('scConfidence').value = p.confidence || 'Open source report';
@@ -3042,6 +3068,44 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('scContextSuggestBtn')?.addEventListener('click',applyContextSuggestions);
   document.getElementById('scResetChecksBtn')?.addEventListener('click',resetChecksToThreshold);
 });
+
+/* ════════════════════════════════════════════════
+   PHASE 9D.4 — FOLLOW-UP ACTION ASSESSMENT
+   Post-decision actions are kept separate from verification so training can
+   distinguish a correct initial call from weak ongoing incident management.
+════════════════════════════════════════════════ */
+const FOLLOWUP_ACTIONS = [
+  { key:'monitor_further',      label:'Continue monitoring' },
+  { key:'recheck_sources',      label:'Re-check official / open sources' },
+  { key:'update_manager',       label:'Update Duty Manager / client contact' },
+  { key:'reassess_travellers',  label:'Reassess traveller exposure' },
+  { key:'situation_update',     label:'Issue / log a situation update' }
+];
+function renderFollowupAssessment(required, unnecessary){
+  const host=document.getElementById('scFollowupActions'); if(!host)return;
+  const req=new Set((required||[]).map(v=>String(v).toLowerCase()));
+  const un=new Set((unnecessary||[]).map(v=>String(v).toLowerCase()));
+  host.innerHTML=FOLLOWUP_ACTIONS.map(a=>{
+    const state=req.has(a.key)?'required':un.has(a.key)?'unnecessary':'neutral';
+    return `<div class="assessment-check ${state}" data-followup-check="${a.key}"><div class="assessment-label">${a.label}</div><select data-followup-state="${a.key}" aria-label="Assessment state for ${a.label}"><option value="required"${state==='required'?' selected':''}>Required</option><option value="neutral"${state==='neutral'?' selected':''}>Neutral</option><option value="unnecessary"${state==='unnecessary'?' selected':''}>Unnecessary</option></select></div>`;
+  }).join('');
+}
+function getFollowupAssessment(){
+  const required=[],unnecessary=[];
+  document.querySelectorAll('#scFollowupActions [data-followup-state]').forEach(el=>{if(el.value==='required')required.push(el.dataset.followupState);if(el.value==='unnecessary')unnecessary.push(el.dataset.followupState);});
+  return {required,unnecessary};
+}
+function getExpectedFollowupActions(){return getFollowupAssessment().required;}
+function getUnnecessaryFollowupActions(){return getFollowupAssessment().unnecessary;}
+function setFollowupAssessment(required,unnecessary){renderFollowupAssessment(Array.isArray(required)?required:[],Array.isArray(unnecessary)?unnecessary:[]);}
+function resetFollowupToThreshold(){
+  const rule=thresholdRuleById(selectedThresholdRuleId);
+  setFollowupAssessment(rule&&Array.isArray(rule.followup_actions)?rule.followup_actions:[],[]);
+  const target=document.getElementById('scFollowupTarget'); if(target)target.value=rule?Number(rule.followup_target_min||0):0;
+  toast(rule?'↺ Follow-up assessment reset to linked threshold defaults':'↺ Follow-up assessment cleared to neutral','success');
+}
+document.addEventListener('change',function(e){const el=e.target&&e.target.closest?e.target.closest('#scFollowupActions [data-followup-state]'):null;if(!el)return;const card=el.closest('.assessment-check');if(card){card.classList.remove('required','neutral','unnecessary');card.classList.add(el.value);}});
+document.addEventListener('DOMContentLoaded',function(){renderFollowupAssessment([],[]);document.getElementById('scResetFollowupBtn')?.addEventListener('click',resetFollowupToThreshold);});
 
 /* ════════════════════════════════════════════════
    PHASE 9B — SCENARIO ↔ THRESHOLD LINKING
@@ -3203,6 +3267,7 @@ function renderScenarioThresholdPreview() {
   const exposure = thresholdExposureLabel(rule.exposure_type) +
     ((rule.proximity_km !== null && rule.proximity_km !== undefined) ? ' · ' + Number(rule.proximity_km) + ' km' : '');
   const checks = Array.isArray(rule.required_checks) ? rule.required_checks.length : 0;
+  const followups = Array.isArray(rule.followup_actions) ? rule.followup_actions.length : 0;
   const draft = thresholdLinkPolicy.policy_status === 'draft';
 
   host.className = 'threshold-link-preview';
@@ -3217,6 +3282,8 @@ function renderScenarioThresholdPreview() {
       (Number(rule.response_sla_min || 0) > 0 ? '<span class="threshold-link-badge">SLA ' + Number(rule.response_sla_min) + ' min</span>' : '') +
       (rule.notify ? '<span class="threshold-link-badge">Notify: ' + esc(rule.notify) + '</span>' : '') +
       (checks ? '<span class="threshold-link-badge">' + checks + ' required check' + (checks === 1 ? '' : 's') + '</span>' : '') +
+      (followups ? '<span class="threshold-link-badge">' + followups + ' follow-up action' + (followups === 1 ? '' : 's') + '</span>' : '') +
+      (Number(rule.followup_target_min||0)>0 ? '<span class="threshold-link-badge">Follow-up ' + Number(rule.followup_target_min) + ' min</span>' : '') +
       (rule.readiness_required !== false ? '<span class="threshold-link-badge">Readiness subject</span>' : '') +
       (draft ? '<span class="threshold-link-badge draft">Draft policy</span>' : '') +
     '</div>' +
@@ -3250,6 +3317,8 @@ function buildThresholdGuidance(rule) {
   const parts = [thresholdActionLabel(rule.primary_action) + '.'];
   if (rule.notify) parts.push('Notify ' + rule.notify + '.');
   if (rule.communication_required) parts.push(rule.communication_required.replace(/[.]+$/,'') + '.');
+  if (Array.isArray(rule.followup_actions) && rule.followup_actions.length) parts.push('Follow-up actions: ' + rule.followup_actions.map(function(k){var x=FOLLOWUP_ACTIONS.find(function(a){return a.key===k;});return x?x.label:k;}).join(', ') + '.');
+  if (Number(rule.followup_target_min||0)>0) parts.push('Next follow-up within ' + Number(rule.followup_target_min) + ' minutes.');
   if (rule.escalation_conditions) parts.push('Escalate / upgrade if: ' + rule.escalation_conditions + '.');
   if (rule.exceptions) parts.push('Exceptions: ' + rule.exceptions + '.');
   return parts.join(' ').replace(/\s+/g,' ').trim();
@@ -3372,11 +3441,13 @@ function applySelectedThresholdDefaults() {
   if (target && Number(rule.response_sla_min || 0) > 0) target.value = Number(rule.response_sla_min);
 
   setExpectedChecks(Array.isArray(rule.required_checks) ? rule.required_checks : [], []);
+  setFollowupAssessment(Array.isArray(rule.followup_actions) ? rule.followup_actions : [], []);
+  const followTarget=document.getElementById('scFollowupTarget'); if(followTarget) followTarget.value=Number(rule.followup_target_min||0);
 
   const expected = document.getElementById('scExpectedResponse');
   if (expected && !expected.value.trim()) expected.value = buildThresholdGuidance(rule);
 
-  toast('✅ Linked threshold defaults applied to risk, SLA and required checks' +
+  toast('✅ Linked threshold defaults applied to risk, SLA, verification and follow-up actions' +
     (expected && expected.value.trim() ? '.' : ''), 'success');
 }
 
@@ -3502,6 +3573,10 @@ function injectScenario() {
     expectedChecks: getExpectedChecks(),
     unnecessaryChecks: getUnnecessaryChecks(),
     checkAssessmentConfigured: true,
+    expectedFollowupActions: getExpectedFollowupActions(),
+    unnecessaryFollowupActions: getUnnecessaryFollowupActions(),
+    followupAssessmentConfigured: true,
+    followupTargetMin: parseInt(document.getElementById('scFollowupTarget')?.value, 10) || 0,
     siteRelationship: document.getElementById('scSiteRelationship')?.value || 'unknown',
     travellersWithinRadius: document.getElementById('scTravellersWithin')?.value || 'unknown',
     travellerRadiusKm: getTravellerRadiusKm(),
@@ -3519,7 +3594,7 @@ function injectScenario() {
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, expectedFollowupActions, unnecessaryFollowupActions, followupAssessmentConfigured, followupTargetMin, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
   // Every scenario is labelled as training. Stealth mode was removed when
@@ -3563,6 +3638,14 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     unnecessary_checks: Array.isArray(unnecessaryChecks) ? unnecessaryChecks : [],
     checkAssessmentConfigured: checkAssessmentConfigured !== false,
     check_assessment_configured: checkAssessmentConfigured !== false ? 1 : 0,
+    expectedFollowupActions: Array.isArray(expectedFollowupActions) ? expectedFollowupActions : [],
+    expected_followup_actions: Array.isArray(expectedFollowupActions) ? expectedFollowupActions : [],
+    unnecessaryFollowupActions: Array.isArray(unnecessaryFollowupActions) ? unnecessaryFollowupActions : [],
+    unnecessary_followup_actions: Array.isArray(unnecessaryFollowupActions) ? unnecessaryFollowupActions : [],
+    followupAssessmentConfigured: followupAssessmentConfigured === true,
+    followup_assessment_configured: followupAssessmentConfigured === true ? 1 : 0,
+    followupTargetMin: Number(followupTargetMin || 0) || 0,
+    followup_target_min: Number(followupTargetMin || 0) || 0,
     siteRelationship: siteRelationship || 'unknown', site_relationship: siteRelationship || 'unknown',
     travellersWithinRadius: travellersWithinRadius || 'unknown', travellers_within_radius: travellersWithinRadius || 'unknown',
     travellerRadiusKm: travellerRadiusKm == null ? null : Number(travellerRadiusKm), traveller_radius_km: travellerRadiusKm == null ? null : Number(travellerRadiusKm),
@@ -3925,6 +4008,9 @@ async function fireNextStep() {
     when: new Date().toISOString(),
     expectedChecks: stepRule && Array.isArray(stepRule.required_checks) ? stepRule.required_checks : [],
     unnecessaryChecks: [], checkAssessmentConfigured: true,
+    expectedFollowupActions: stepRule && Array.isArray(stepRule.followup_actions) ? stepRule.followup_actions : [],
+    unnecessaryFollowupActions: [], followupAssessmentConfigured: true,
+    followupTargetMin: stepRule ? Number(stepRule.followup_target_min || 0) : 0,
     siteRelationship:'unknown', travellersWithinRadius:'unknown', travellerRadiusKm:null, affectedPersonnelState:'unknown',
     thresholdRuleId: stepRuleId,
     thresholdConditionState: step.thresholdConditionState || step.threshold_condition_state || 'baseline',
@@ -4783,6 +4869,10 @@ async function saveToLibrary(type) {
       expectedChecks: getExpectedChecks(),
       unnecessaryChecks: getUnnecessaryChecks(),
       checkAssessmentConfigured: true,
+      expectedFollowupActions: getExpectedFollowupActions(),
+      unnecessaryFollowupActions: getUnnecessaryFollowupActions(),
+      followupAssessmentConfigured: true,
+      followupTargetMin: parseInt(document.getElementById('scFollowupTarget')?.value,10) || 0,
       siteRelationship: document.getElementById('scSiteRelationship')?.value || 'unknown',
       travellersWithinRadius: document.getElementById('scTravellersWithin')?.value || 'unknown',
       travellerRadiusKm: getTravellerRadiusKm(),
@@ -4859,6 +4949,8 @@ async function loadFromLibrary(id) {
     }
     if (p.confidence) document.getElementById('scConfidence').value = p.confidence;
     setExpectedChecks(p.expectedChecks ?? p.expected_checks ?? [], p.unnecessaryChecks ?? p.unnecessary_checks ?? []);
+    setFollowupAssessment(p.expectedFollowupActions ?? p.expected_followup_actions ?? [], p.unnecessaryFollowupActions ?? p.unnecessary_followup_actions ?? []);
+    if(document.getElementById('scFollowupTarget')) document.getElementById('scFollowupTarget').value = p.followupTargetMin ?? p.followup_target_min ?? 0;
     selectedThresholdRuleId = p.thresholdRuleId || p.threshold_rule_id || '';
     selectedThresholdConditionState = p.thresholdConditionState || p.threshold_condition_state || 'baseline';
     const conditionSel = document.getElementById('scThresholdConditionState'); if (conditionSel) conditionSel.value = selectedThresholdConditionState;
@@ -5349,6 +5441,7 @@ document.addEventListener('DOMContentLoaded',function(){
   function cleanRuleForClient(r, idx){
     r = r || {};
     var checks = Array.isArray(r.required_checks) ? r.required_checks : [];
+    var followups = Array.isArray(r.followup_actions) ? r.followup_actions : [];
     return {
       id: text(r.id) || newRuleId(),
       category_id: text(r.category_id || 'other') || 'other',
@@ -5362,6 +5455,8 @@ document.addEventListener('DOMContentLoaded',function(){
       response_sla_min: Number(r.response_sla_min || 0) || 0,
       notify: text(r.notify),
       required_checks: checks.map(function(x){return text(x).toLowerCase();}).filter(Boolean),
+      followup_actions: followups.map(function(x){return text(x).toLowerCase();}).filter(Boolean),
+      followup_target_min: Number(r.followup_target_min || 0) || 0,
       communication_required: text(r.communication_required),
       update_cadence: text(r.update_cadence),
       conditions: text(r.conditions),
@@ -5449,6 +5544,13 @@ document.addEventListener('DOMContentLoaded',function(){
     { key:'contacted',  label:'Contact affected personnel' },
     { key:'sop',        label:'Follow escalation matrix / SOP' }
   ];
+  var FOLLOWUPS = [
+    { key:'monitor_further', label:'Continue monitoring' },
+    { key:'recheck_sources', label:'Re-check official / open sources' },
+    { key:'update_manager', label:'Update Duty Manager / client contact' },
+    { key:'reassess_travellers', label:'Reassess traveller exposure' },
+    { key:'situation_update', label:'Issue / log a situation update' }
+  ];
 
   var policyState = {
     policy_name:'Escalation thresholds',
@@ -5503,6 +5605,12 @@ document.addEventListener('DOMContentLoaded',function(){
     var host = document.getElementById('thresholdRuleChecks');
     if (host && !host.innerHTML.trim()) {
       host.innerHTML = CHECKS.map(function(c){
+        return '<label class="threshold-check"><input type="checkbox" value="' + esc(c.key) + '"><span>' + esc(c.label) + '</span></label>';
+      }).join('');
+    }
+    var followHost = document.getElementById('thresholdRuleFollowup');
+    if (followHost && !followHost.innerHTML.trim()) {
+      followHost.innerHTML = FOLLOWUPS.map(function(c){
         return '<label class="threshold-check"><input type="checkbox" value="' + esc(c.key) + '"><span>' + esc(c.label) + '</span></label>';
       }).join('');
     }
@@ -5641,6 +5749,8 @@ document.addEventListener('DOMContentLoaded',function(){
           (r.response_sla_min ? '<span class="threshold-rule-tag">SLA ' + esc(r.response_sla_min) + ' min</span>' : '') +
           (r.notify ? '<span class="threshold-rule-tag">Notify: ' + esc(r.notify) + '</span>' : '') +
           (checks ? '<span class="threshold-rule-tag">' + checks + ' required check' + (checks===1?'':'s') + '</span>' : '') +
+          (Array.isArray(r.followup_actions) && r.followup_actions.length ? '<span class="threshold-rule-tag">' + r.followup_actions.length + ' follow-up action' + (r.followup_actions.length===1?'':'s') + '</span>' : '') +
+          (Number(r.followup_target_min||0)>0 ? '<span class="threshold-rule-tag">Follow-up ' + Number(r.followup_target_min) + ' min</span>' : '') +
           '<span class="threshold-rule-tag ' + (r.readiness_required !== false ? 'readiness' : 'optional-subject') + '">' + (r.readiness_required !== false ? 'Readiness subject' : 'Optional subject') + '</span>' +
         '</div>' +
         (details.length ? '<div class="threshold-rule-details">' + details.join('') + '</div>' : '') +
@@ -5679,6 +5789,7 @@ document.addEventListener('DOMContentLoaded',function(){
     document.getElementById('thresholdRuleExceptions').value = r ? r.exceptions : '';
     document.getElementById('thresholdRuleCommunication').value = r ? r.communication_required : '';
     document.getElementById('thresholdRuleCadence').value = r ? r.update_cadence : '';
+    document.getElementById('thresholdRuleFollowupTarget').value = r ? Number(r.followup_target_min || 0) : 0;
     document.getElementById('thresholdRuleConsiderations').value = r ? r.considerations : '';
     document.getElementById('thresholdRuleReadinessRequired').checked = r ? r.readiness_required !== false : true;
     document.getElementById('thresholdRuleEnabled').checked = r ? !!r.enabled : true;
@@ -5686,6 +5797,10 @@ document.addEventListener('DOMContentLoaded',function(){
     var selectedChecks = new Set(r && Array.isArray(r.required_checks) ? r.required_checks : []);
     document.querySelectorAll('#thresholdRuleChecks input[type="checkbox"]').forEach(function(c){
       c.checked = selectedChecks.has(c.value);
+    });
+    var selectedFollowups = new Set(r && Array.isArray(r.followup_actions) ? r.followup_actions : []);
+    document.querySelectorAll('#thresholdRuleFollowup input[type="checkbox"]').forEach(function(c){
+      c.checked = selectedFollowups.has(c.value);
     });
 
     document.getElementById('thresholdRuleModal').classList.add('open');
@@ -5710,6 +5825,9 @@ document.addEventListener('DOMContentLoaded',function(){
     var checks = Array.prototype.slice.call(
       document.querySelectorAll('#thresholdRuleChecks input[type="checkbox"]:checked')
     ).map(function(c){ return c.value; });
+    var followups = Array.prototype.slice.call(
+      document.querySelectorAll('#thresholdRuleFollowup input[type="checkbox"]:checked')
+    ).map(function(c){ return c.value; });
 
     var existingIdx = (policyState.advanced_rules || []).findIndex(function(r){return r.id===id;});
     var previous = existingIdx >= 0 ? policyState.advanced_rules[existingIdx] : null;
@@ -5726,6 +5844,8 @@ document.addEventListener('DOMContentLoaded',function(){
       response_sla_min:Number(document.getElementById('thresholdRuleSla').value || 0) || 0,
       notify:document.getElementById('thresholdRuleNotify').value,
       required_checks:checks,
+      followup_actions:followups,
+      followup_target_min:Number(document.getElementById('thresholdRuleFollowupTarget').value || 0) || 0,
       communication_required:document.getElementById('thresholdRuleCommunication').value,
       update_cadence:document.getElementById('thresholdRuleCadence').value,
       conditions:document.getElementById('thresholdRuleConditions').value,
