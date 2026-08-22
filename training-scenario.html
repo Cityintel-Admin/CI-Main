@@ -534,7 +534,7 @@ window.CIAccess = {
   // through writing — so drafts are kept outside the DOM and restored, and a
   // re-render only happens when the set of live scenarios actually changes.
   var state = {
-    scenarios: [], responded: {}, selected: {}, drafts: {}, checks: {},
+    scenarios: [], responded: {}, selected: {}, drafts: {}, checks: {}, followup: {}, followupIntervals: {},
     policy: null, busy: false, signature: '', maps: {}
   };
 
@@ -552,6 +552,14 @@ window.CIAccess = {
     { key:'sop',        label:'Followed the escalation matrix / SOP' }
   ];
 
+  var FOLLOWUPS = [
+    { key:'monitor_further',     label:'Continue monitoring' },
+    { key:'recheck_sources',     label:'Re-check official / open sources' },
+    { key:'update_manager',      label:'Update Duty Manager / client contact' },
+    { key:'reassess_travellers', label:'Reassess traveller exposure' },
+    { key:'situation_update',    label:'Issue / log a situation update' }
+  ];
+
   function esc(v){
     return String(v == null ? '' : v).replace(/[&<>"]/g, function(c){
       return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c];
@@ -560,6 +568,11 @@ window.CIAccess = {
 
   function checkLabel(key){
     var c = CHECKS.filter(function(x){ return x.key === key; })[0];
+    return c ? c.label : key;
+  }
+
+  function followupLabel(key){
+    var c = FOLLOWUPS.filter(function(x){ return x.key === key; })[0];
     return c ? c.label : key;
   }
 
@@ -825,6 +838,16 @@ window.CIAccess = {
         esc(proc.unnecessaryCompleted.map(function(k){ return CHECK_TEXT[k] || k; }).join(', ')) +
         ' · These steps were marked non-value for this exercise and reduced the Process score.</div>';
     }
+    var follow = fb.followup || {};
+    if (follow.missing && follow.missing.length) {
+      out += '<div class="tr-missing">Missed follow-up actions: ' + esc(follow.missing.map(followupLabel).join(', ')) + '</div>';
+    }
+    if (follow.unnecessaryCompleted && follow.unnecessaryCompleted.length) {
+      out += '<div class="tr-unnecessary">Unnecessary follow-up actions: ' + esc(follow.unnecessaryCompleted.map(followupLabel).join(', ')) + ' · These actions reduced the Follow-up score.</div>';
+    }
+    if (follow.targetMin) {
+      out += '<div class="tr-sla">Follow-up plan: ' + (follow.plannedMin ? '<b>' + esc(follow.plannedMin) + ' min</b>' : '<b class="missed">not set</b>') + ' · target ' + esc(follow.targetMin) + ' min' + (follow.cadencePct !== null && follow.cadencePct !== undefined ? ' · cadence ' + esc(follow.cadencePct) + '%' : '') + '</div>';
+    }
 
     if (score.targetMin && score.takenMin !== null && score.takenMin !== undefined) {
       var timingPart=(score.parts||[]).filter(function(p){return String(p.key||p.label||'').toLowerCase()==='timing';})[0];
@@ -895,6 +918,9 @@ window.CIAccess = {
           ((done.checks && done.checks.length)
             ? '<div class="small" style="margin-top:6px">Checks: ' + esc(done.checks.join(' · ')) + '</div>'
             : '<div class="small" style="margin-top:6px">No verification steps were ticked.</div>') +
+          ((done.followup && done.followup.length)
+            ? '<div class="small" style="margin-top:6px">Follow-up: ' + esc(done.followup.join(' · ')) + '</div>'
+            : '') +
         '</div>' +
         feedbackBlock(done.feedback) +
         evaluatedOutcomeBlock(done.feedback, sc) +
@@ -931,6 +957,18 @@ window.CIAccess = {
               '<span>' + c.label + '</span></label>';
           }).join('') +
         '</div>' +
+      '</div>' +
+      '<div style="margin-top:16px">' +
+        '<label style="display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">What would you do next?</label>' +
+        '<div class="tr-checks">' +
+          FOLLOWUPS.map(function(c){
+            var on = (state.followup[sc.id] || {})[c.key];
+            return '<label class="tr-check' + (on ? ' checked' : '') + '">' +
+              '<input type="checkbox" data-followup="' + c.key + '" data-followup-for="' + esc(sc.id) + '"' + (on ? ' checked' : '') + '>' +
+              '<span>' + c.label + '</span></label>';
+          }).join('') +
+        '</div>' +
+        (Number(sc.followup_target_min||0)>0 ? '<div class="tr-field" style="margin-top:10px"><label for="followup-min-' + esc(sc.id) + '">Planned next review / update (minutes)</label><input id="followup-min-' + esc(sc.id) + '" type="number" min="1" max="10080" step="1" value="' + esc(state.followupIntervals[sc.id] || '') + '" placeholder="Target ' + esc(sc.followup_target_min) + ' min"><div class="small" style="margin-top:5px">Choose when you would next review or update this incident.</div></div>' : '') +
       '</div>' +
       '<div class="tr-field">' +
         '<label for="note-' + esc(sc.id) + '">Reasoning (optional but recommended)</label>' +
@@ -979,6 +1017,7 @@ window.CIAccess = {
         (r.exposure_scope ? '<div class="small" style="margin-top:7px">Exposure: ' + esc(r.exposure_scope) + (r.proximity_km != null ? ' · ' + esc(r.proximity_km) + ' km' : '') + '</div>' : '') +
         (r.escalation_conditions ? '<div class="small" style="margin-top:6px;color:#fde68a">Upgrade if: ' + esc(r.escalation_conditions) + '</div>' : '') +
         (r.exceptions ? '<div class="small" style="margin-top:6px;color:#bbf7d0">Exception: ' + esc(r.exceptions) + '</div>' : '') +
+        (Array.isArray(r.followup_actions) && r.followup_actions.length ? '<div class="small" style="margin-top:6px;color:#cfe1ff">Follow-up: ' + esc(r.followup_actions.map(followupLabel).join(', ')) + (Number(r.followup_target_min||0)>0 ? ' · target ' + Number(r.followup_target_min) + ' min' : '') + '</div>' : '') +
         (stateName !== 'baseline' ? '<div class="small" style="margin-top:6px;color:#cfe1ff">Exercise condition: ' + esc(stateName === 'escalate' ? 'upgrade condition present' : 'exception applies') + '</div>' : '');
       return;
     }
@@ -1096,6 +1135,8 @@ window.CIAccess = {
 
     var noteEl = document.getElementById('note-' + scenarioId);
     var note = String((noteEl && noteEl.value) || '').trim();
+    var followupIntervalEl = document.getElementById('followup-min-' + scenarioId);
+    var followupIntervalMin = Math.max(0, Number((followupIntervalEl && followupIntervalEl.value) || state.followupIntervals[scenarioId] || 0) || 0);
     var started = Date.parse(sc.injected_at || '');
     var responseMs = isFinite(started) ? Math.max(0, Date.now() - started) : 0;
 
@@ -1112,7 +1153,9 @@ window.CIAccess = {
           responderName: responder,
           responseMs: responseMs,
           sessionId: sc.session_id || '',
-          steps: Object.keys(state.checks[scenarioId] || {}).filter(function(k){ return state.checks[scenarioId][k]; })
+          steps: Object.keys(state.checks[scenarioId] || {}).filter(function(k){ return state.checks[scenarioId][k]; }),
+          followupActions: Object.keys(state.followup[scenarioId] || {}).filter(function(k){ return state.followup[scenarioId][k]; }),
+          followupIntervalMin: followupIntervalMin
         })
       });
       var data = await res.json().catch(function(){ return {}; });
@@ -1121,13 +1164,15 @@ window.CIAccess = {
       CHECKS.forEach(function(c){ CHECK_TEXT[c.key] = c.label; });
       var picked = ACTIONS.filter(function(a){ return a.key === action; })[0] || {};
       var done = Object.keys(state.checks[scenarioId] || {}).filter(function(k){ return state.checks[scenarioId][k]; });
+      var followDone = Object.keys(state.followup[scenarioId] || {}).filter(function(k){ return state.followup[scenarioId][k]; });
       state.responded[scenarioId] = {
         responder: responder, note: note, actionLabel: picked.title || action,
         feedback: data.feedback || null,
         checks: done.map(function(k){
           var c = CHECKS.filter(function(x){ return x.key === k; })[0];
           return c ? c.label : k;
-        })
+        }),
+        followup: followDone.map(followupLabel)
       };
       delete state.drafts[scenarioId];
       render();
@@ -1146,16 +1191,27 @@ window.CIAccess = {
     var t = e.target;
     if (!t || !t.id) return;
     if (t.id.indexOf('note-') === 0) state.drafts[t.id.slice(5)] = t.value;
+    if (t.id.indexOf('followup-min-') === 0) state.followupIntervals[t.id.slice(13)] = t.value;
   });
 
   document.addEventListener('change', function(e){
     var t = e.target;
-    if (!t || !t.dataset || !t.dataset.checkFor) return;
-    var id = t.dataset.checkFor;
-    state.checks[id] = state.checks[id] || {};
-    state.checks[id][t.dataset.check] = t.checked;
-    var label = t.closest('.tr-check');
-    if (label) label.classList.toggle('checked', t.checked);
+    if (!t || !t.dataset) return;
+    if (t.dataset.checkFor) {
+      var id = t.dataset.checkFor;
+      state.checks[id] = state.checks[id] || {};
+      state.checks[id][t.dataset.check] = t.checked;
+      var label = t.closest('.tr-check');
+      if (label) label.classList.toggle('checked', t.checked);
+      return;
+    }
+    if (t.dataset.followupFor) {
+      var fid = t.dataset.followupFor;
+      state.followup[fid] = state.followup[fid] || {};
+      state.followup[fid][t.dataset.followup] = t.checked;
+      var flabel = t.closest('.tr-check');
+      if (flabel) flabel.classList.toggle('checked', t.checked);
+    }
   });
 
   document.addEventListener('click', function(e){
