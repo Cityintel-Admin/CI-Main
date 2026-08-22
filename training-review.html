@@ -741,6 +741,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <script src="shared-nav.js"></script>
 
 <script>
+/* Phase 9E.1 — multi-stage exercise grouping + readiness evidence */
 /* ── Response log ─────────────────────────────────────────────────────
    Reads individual responses rather than saved sessions, so a response is
    visible in the record even when no session was formally closed. */
@@ -806,6 +807,37 @@ document.addEventListener('DOMContentLoaded',function(){
     var fb = feedbackOf(r), rr = (fb.threshold || {}).rule || {};
     return String(rr.eventType || r.scenario_title || 'Training scenario').trim();
   }
+  function sequenceIdOfRow(r){
+    var fb=feedbackOf(r), sq=fb.sequence||{};
+    return String(r.sequence_id||sq.id||'');
+  }
+  function sequenceStepOfRow(r){
+    var fb=feedbackOf(r), sq=fb.sequence||{};
+    return Math.max(0,Number(r.sequence_step_index||sq.stepIndex||0)||0);
+  }
+  function sequenceTitleOfRow(r){
+    var fb=feedbackOf(r), sq=fb.sequence||{};
+    return String(r.sequence_title||sq.title||'Multi-stage exercise');
+  }
+  function exerciseUnits(sourceRows){
+    var grouped={}, out=[];
+    (sourceRows||[]).forEach(function(r){
+      var seq=sequenceIdOfRow(r);
+      if(!seq){
+        out.push({id:String(r.id||''),isSequence:false,rows:[r],score:(r.score_pct===null||r.score_pct===undefined?null:Number(r.score_pct)),title:r.scenario_title||eventOf(r),latest:r});
+        return;
+      }
+      (grouped[seq]||(grouped[seq]=[])).push(r);
+    });
+    Object.keys(grouped).forEach(function(seq){
+      var list=grouped[seq].slice().sort(function(a,b){return sequenceStepOfRow(a)-sequenceStepOfRow(b);});
+      var scored=list.filter(function(r){return r.score_pct!==null&&r.score_pct!==undefined&&!isNaN(Number(r.score_pct));});
+      var score=scored.length?Math.round(scored.reduce(function(n,r){return n+Number(r.score_pct||0);},0)/scored.length):null;
+      var latest=list.slice().sort(function(a,b){return String(b.responded_at||b.created_at||'').localeCompare(String(a.responded_at||a.created_at||''));})[0]||list[list.length-1];
+      out.push({id:'seq:'+seq,sequenceId:seq,isSequence:true,rows:list,score:score,title:sequenceTitleOfRow(latest),latest:latest});
+    });
+    return out;
+  }
   function readinessConfig(){
     var p=policy||{};
     var rules=(Array.isArray(p.advanced_rules)?p.advanced_rules:[]).filter(function(r){return r && r.enabled!==false && r.readiness_required!==false;});
@@ -817,12 +849,19 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!cfg.rules.length)return {enabled:false,total:0,passed:0,ready:avg!==null&&avg>=80,subjects:[],passScore:80,minPasses:1};
     var subjects=cfg.rules.map(function(rule){
       var matches=(personRows||[]).filter(function(r){return thresholdRuleIdOf(r)===String(rule.id||'');});
-      var scored=matches.filter(function(r){return r.score_pct!==null&&r.score_pct!==undefined&&!isNaN(Number(r.score_pct));});
-      var passes=scored.filter(function(r){return Number(r.score_pct)>=cfg.passScore;});
-      var best=scored.length?Math.max.apply(null,scored.map(function(r){return Number(r.score_pct||0);})):null;
+      var evidence={};
+      matches.forEach(function(r){
+        if(r.score_pct===null||r.score_pct===undefined||isNaN(Number(r.score_pct)))return;
+        var seq=sequenceIdOfRow(r);
+        var key=seq?('seq:'+seq):('resp:'+String(r.id||('anon-'+Math.random())));
+        (evidence[key]||(evidence[key]=[])).push(Number(r.score_pct));
+      });
+      var scores=Object.keys(evidence).map(function(key){var vals=evidence[key];return Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);});
+      var passes=scores.filter(function(v){return v>=cfg.passScore;});
+      var best=scores.length?Math.max.apply(null,scores):null;
       var passed=passes.length>=cfg.minPasses;
-      var stage=scored.length===0?'not-tested':passed?'ready':passes.length>0?'competent':'developing';
-      return {id:String(rule.id||''),label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scored.length,passes:passes.length,best:best,passed:passed,stage:stage};
+      var stage=scores.length===0?'not-tested':passed?'ready':passes.length>0?'competent':'developing';
+      return {id:String(rule.id||''),label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scores.length,passes:passes.length,best:best,passed:passed,stage:stage};
     });
     var passed=subjects.filter(function(x){return x.passed;}).length;
     return {enabled:true,total:subjects.length,passed:passed,ready:passed===subjects.length&&avg!==null&&avg>=cfg.passScore,subjects:subjects,passScore:cfg.passScore,minPasses:cfg.minPasses};
@@ -1014,6 +1053,54 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 
 
+  function reviewExerciseCardHtml(r){
+    var fb = feedbackOf(r), score = fb.score || {}, proc = fb.process || {}, th = fb.threshold || {}, rr = th.rule || {}, pp = th.policy || {};
+    var pct = r.score_pct !== null && r.score_pct !== undefined ? Number(r.score_pct) : null;
+    var cls = pct == null ? '' : pct >= 80 ? 'good' : pct >= 60 ? 'mid' : 'poor';
+    var g = gradeFor(pct);
+    var target = Number(fb.targetResponseMin || r.target_response_min || 0) || 0;
+    var taken = Number(r.response_ms || 0) > 0 ? Math.round(Number(r.response_ms)/60000) : null;
+    var place = [r.location, r.city, r.country].filter(Boolean).join(' · ');
+    var expected = actionLabel(r.expected_action);
+    var chosen = actionLabel(r.action);
+    var parts = Array.isArray(score.parts) ? score.parts : [];
+    var missing = Array.isArray(proc.missing) ? proc.missing : [];
+    var completed = stepsOf(r);
+    var fol = fb.followup || {};
+    var followDone = followupOf(r);
+    var followMissing = Array.isArray(fol.missing) ? fol.missing : [];
+    var seq=sequenceIdOfRow(r), step=sequenceStepOfRow(r), total=Number(r.sequence_total_steps||((fb.sequence||{}).totalSteps)||0)||0;
+    return '<div class="op-exercise ' + cls + '">' +
+      '<div class="op-exercise-head"><div><div class="op-exercise-title">' + esc(r.scenario_title || eventOf(r)) + '</div>' +
+        '<div class="op-meta">' + (seq?'<span class="op-chip">Stage '+esc(step||'—')+(total?' / '+esc(total):'')+'</span>':'') + '<span class="op-chip">' + esc(categoryOf(r)) + '</span>' +
+        (r.risk ? '<span class="op-chip">' + esc(String(r.risk).toUpperCase()) + ' risk</span>' : '') +
+        (r.difficulty ? '<span class="op-chip">' + esc(r.difficulty) + '</span>' : '') +
+        (place ? '<span class="op-chip">' + esc(place) + '</span>' : '') +
+        '<span class="op-chip">' + esc(shortDate(r.responded_at)) + '</span></div></div>' +
+        '<div class="op-exercise-score" style="color:' + scoreColour(pct==null?0:pct) + '">' + fmtPct(pct) + ' <span style="font-size:12px">' + esc(g) + '</span></div></div>' +
+      '<div class="op-detail-grid">' +
+        '<div class="op-detail-box"><b>Decision</b>' + esc(chosen) + (String(r.expected_action||'') ? ' · expected ' + esc(expected) : '') + '</div>' +
+        '<div class="op-detail-box"><b>Timing</b>' + (taken!==null ? taken + ' min' : '—') + (target ? ' · target ' + target + ' min' : '') + (score.slaMet===true?' · SLA met':score.slaMet===false?' · SLA missed':'') + '</div>' +
+        '<div class="op-detail-box"><b>Scoring</b>' + (parts.length ? parts.map(function(p){ return esc(p.label) + ' ' + Math.round(Number(p.pct||0)) + '%'; }).join(' · ') : 'Legacy / unscored detail') + '</div>' +
+        '<div class="op-detail-box"><b>Verification</b>' + (completed.length ? completed.map(function(k){ return esc(CHECK_LABEL[k]||k); }).join(', ') : 'No checks recorded') + (missing.length ? '<br><span style="color:#fca5a5">Missed: ' + missing.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ') + '</span>' : '') + (Array.isArray(proc.unnecessaryCompleted)&&proc.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+proc.unnecessaryCompleted.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ')+'</span>':'') + '</div>' +
+        '<div class="op-detail-box"><b>Follow-up</b>' + (followDone.length ? followDone.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ') : (fol.pct!==null&&fol.pct!==undefined?'No actions selected':'Not assessed')) + (followMissing.length?'<br><span style="color:#fca5a5">Missed: '+followMissing.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ')+'</span>':'') + (Array.isArray(fol.unnecessaryCompleted)&&fol.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+fol.unnecessaryCompleted.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ')+'</span>':'') + (fol.targetMin?'<br>Planned '+(fol.plannedMin||'—')+' min · target '+fol.targetMin+' min':'') + '</div>' +
+      '</div>' +
+      (th.linked ? '<div class="op-detail-box" style="margin-top:8px"><b>Threshold tested</b>' + esc((rr.categoryLabel||'') + (rr.eventType ? ' → ' + rr.eventType : '')) + ' · Policy v' + esc(pp.version||r.threshold_policy_version||1) + ' / Rule v' + esc(rr.version||r.threshold_rule_version||1) + (th.evaluation ? ' · ' + esc(String(th.evaluation).replace(/_/g,' ')) : '') + '</div>' : '') +
+      (r.summary ? '<div class="op-summary"><b style="color:#eef3f7">Exercise context:</b> ' + esc(r.summary) + '</div>' : '') +
+      (r.note ? '<div class="op-reasoning">“' + esc(r.note) + '”</div>' : '') +
+    '</div>';
+  }
+
+  function sequenceReviewBlock(unit){
+    var parts={decision:[],process:[],followup:[],timing:[]};
+    unit.rows.forEach(function(r){((feedbackOf(r).score||{}).parts||[]).forEach(function(p){var k=String(p.key||p.label||'').toLowerCase();var n=Number(p.pct);if(parts[k]&&isFinite(n))parts[k].push(n);});});
+    function av(k){var a=parts[k];return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;}
+    return '<div class="development-note" style="margin-bottom:8px"><strong>🔗 '+esc(unit.title)+'</strong> · '+unit.rows.length+' stages · final '+fmtPct(unit.score)+' ('+esc(gradeFor(unit.score))+')' +
+      '<br><span class="muted">Decision '+fmtPct(av('decision'))+' · Process '+fmtPct(av('process'))+' · Follow-up '+fmtPct(av('followup'))+' · Timing '+fmtPct(av('timing'))+'</span></div>' +
+      unit.rows.slice().sort(function(a,b){return sequenceStepOfRow(a)-sequenceStepOfRow(b);}).map(reviewExerciseCardHtml).join('');
+  }
+
+
   function openOperatorDetail(name){
     name = String(name || '').trim();
     if (!name) return;
@@ -1023,8 +1110,9 @@ document.addEventListener('DOMContentLoaded',function(){
       return;
     }
 
-    var scored = personRows.filter(function(r){ return r.score_pct !== null && r.score_pct !== undefined; });
-    var avg = scored.length ? Math.round(scored.reduce(function(n,r){ return n + Number(r.score_pct||0); },0) / scored.length) : null;
+    var units = exerciseUnits(personRows);
+    var scored = units.filter(function(u){ return u.score !== null && u.score !== undefined && !isNaN(Number(u.score)); });
+    var avg = scored.length ? Math.round(scored.reduce(function(n,u){ return n + Number(u.score||0); },0) / scored.length) : null;
     var grade = gradeFor(avg);
     var assessed = personRows.filter(function(r){ return !!String(r.expected_action || ''); });
     var correct = assessed.filter(function(r){ return String(r.action||'') === String(r.expected_action||''); }).length;
@@ -1033,32 +1121,40 @@ document.addEventListener('DOMContentLoaded',function(){
     var curriculum = curriculumForRows(personRows, avg);
 
     var subjectMap = {};
-    personRows.forEach(function(r){
-      var cat = categoryOf(r);
-      if (!subjectMap[cat]) subjectMap[cat] = { name:cat, responses:0, scored:0, total:0, assessed:0, correct:0 };
-      var s = subjectMap[cat];
-      s.responses++;
-      if (r.score_pct !== null && r.score_pct !== undefined) { s.scored++; s.total += Number(r.score_pct||0); }
-      if (String(r.expected_action||'')) { s.assessed++; if (String(r.action||'') === String(r.expected_action||'')) s.correct++; }
+    units.forEach(function(unit){
+      var byCat={};
+      unit.rows.forEach(function(r){
+        var cat=categoryOf(r);
+        if(!byCat[cat])byCat[cat]=[];
+        byCat[cat].push(r);
+      });
+      Object.keys(byCat).forEach(function(cat){
+        var rs=byCat[cat];
+        if (!subjectMap[cat]) subjectMap[cat] = { name:cat, responses:0, scored:0, total:0, assessed:0, correct:0 };
+        var s2=subjectMap[cat]; s2.responses++;
+        var vals=rs.filter(function(r){return r.score_pct!==null&&r.score_pct!==undefined&&!isNaN(Number(r.score_pct));}).map(function(r){return Number(r.score_pct);});
+        if(vals.length){s2.scored++;s2.total+=Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);}
+        rs.forEach(function(r){if(String(r.expected_action||'')){s2.assessed++;if(String(r.action||'')===String(r.expected_action||''))s2.correct++;}});
+      });
     });
     var subjects = Object.keys(subjectMap).map(function(k){
-      var s=subjectMap[k];
-      s.average = s.scored ? Math.round(s.total/s.scored) : null;
-      s.accuracy = s.assessed ? Math.round(s.correct/s.assessed*100) : null;
-      s.grade = gradeFor(s.average);
-      return s;
+      var s2=subjectMap[k];
+      s2.average = s2.scored ? Math.round(s2.total/s2.scored) : null;
+      s2.accuracy = s2.assessed ? Math.round(s2.correct/s2.assessed*100) : null;
+      s2.grade = gradeFor(s2.average);
+      return s2;
     }).sort(function(a,b){ return (b.responses-a.responses) || ((b.average||0)-(a.average||0)); });
 
     var modal = document.querySelector('.detail-modal');
     if (modal) modal.classList.add('operator-mode');
     document.getElementById('detailTitle').textContent = 'Operator Development — ' + name;
-    document.getElementById('detailSubtitle').textContent = personRows.length + ' completed exercise' + (personRows.length===1?'':'s') + ' · Last response ' + shortDate(last && last.responded_at);
+    document.getElementById('detailSubtitle').textContent = units.length + ' completed exercise' + (units.length===1?'':'s') + ' · ' + personRows.length + ' stage response' + (personRows.length===1?'':'s') + ' · Last response ' + shortDate(last && last.responded_at);
 
     var html = '<div class="operator-score-row">' +
       '<div class="score-card highlight"><div class="score-val" style="color:' + scoreColour(avg==null?0:avg) + '">' + fmtPct(avg) + '</div><div class="score-lbl">Average Score</div></div>' +
       '<div class="score-card"><div class="score-val" style="color:' + scoreColour(avg==null?0:avg) + '">' + esc(grade) + '</div><div class="score-lbl">Overall Grade</div></div>' +
       '<div class="score-card"><div class="score-val">' + fmtPct(accuracy) + '</div><div class="score-lbl">Decision Accuracy</div></div>' +
-      '<div class="score-card"><div class="score-val">' + personRows.length + '</div><div class="score-lbl">Exercises</div></div>' +
+      '<div class="score-card"><div class="score-val">' + units.length + '</div><div class="score-lbl">Exercises</div></div>' +
     '</div>';
 
     if (curriculum.enabled) {
@@ -1093,41 +1189,8 @@ document.addEventListener('DOMContentLoaded',function(){
     }
 
     html += '<div class="section-title" style="margin-bottom:8px">Exercise Breakdown</div><div class="op-exercise-list">';
-    html += personRows.slice().sort(function(a,b){ return String(b.responded_at||'').localeCompare(String(a.responded_at||'')); }).map(function(r){
-      var fb = feedbackOf(r), score = fb.score || {}, proc = fb.process || {}, th = fb.threshold || {}, rr = th.rule || {}, pp = th.policy || {};
-      var pct = r.score_pct !== null && r.score_pct !== undefined ? Number(r.score_pct) : null;
-      var cls = pct == null ? '' : pct >= 80 ? 'good' : pct >= 60 ? 'mid' : 'poor';
-      var g = gradeFor(pct);
-      var target = Number(fb.targetResponseMin || r.target_response_min || 0) || 0;
-      var taken = Number(r.response_ms || 0) > 0 ? Math.round(Number(r.response_ms)/60000) : null;
-      var place = [r.location, r.city, r.country].filter(Boolean).join(' · ');
-      var expected = actionLabel(r.expected_action);
-      var chosen = actionLabel(r.action);
-      var parts = Array.isArray(score.parts) ? score.parts : [];
-      var missing = Array.isArray(proc.missing) ? proc.missing : [];
-      var completed = stepsOf(r);
-      var fol = fb.followup || {};
-      var followDone = followupOf(r);
-      var followMissing = Array.isArray(fol.missing) ? fol.missing : [];
-      return '<div class="op-exercise ' + cls + '">' +
-        '<div class="op-exercise-head"><div><div class="op-exercise-title">' + esc(r.scenario_title || eventOf(r)) + '</div>' +
-          '<div class="op-meta"><span class="op-chip">' + esc(categoryOf(r)) + '</span>' +
-          (r.risk ? '<span class="op-chip">' + esc(String(r.risk).toUpperCase()) + ' risk</span>' : '') +
-          (r.difficulty ? '<span class="op-chip">' + esc(r.difficulty) + '</span>' : '') +
-          (place ? '<span class="op-chip">' + esc(place) + '</span>' : '') +
-          '<span class="op-chip">' + esc(shortDate(r.responded_at)) + '</span></div></div>' +
-          '<div class="op-exercise-score" style="color:' + scoreColour(pct==null?0:pct) + '">' + fmtPct(pct) + ' <span style="font-size:12px">' + esc(g) + '</span></div></div>' +
-        '<div class="op-detail-grid">' +
-          '<div class="op-detail-box"><b>Decision</b>' + esc(chosen) + (String(r.expected_action||'') ? ' · expected ' + esc(expected) : '') + '</div>' +
-          '<div class="op-detail-box"><b>Timing</b>' + (taken!==null ? taken + ' min' : '—') + (target ? ' · target ' + target + ' min' : '') + (score.slaMet===true?' · SLA met':score.slaMet===false?' · SLA missed':'') + '</div>' +
-          '<div class="op-detail-box"><b>Scoring</b>' + (parts.length ? parts.map(function(p){ return esc(p.label) + ' ' + Math.round(Number(p.pct||0)) + '%'; }).join(' · ') : 'Legacy / unscored detail') + '</div>' +
-          '<div class="op-detail-box"><b>Verification</b>' + (completed.length ? completed.map(function(k){ return esc(CHECK_LABEL[k]||k); }).join(', ') : 'No checks recorded') + (missing.length ? '<br><span style="color:#fca5a5">Missed: ' + missing.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ') + '</span>' : '') + (Array.isArray(proc.unnecessaryCompleted)&&proc.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+proc.unnecessaryCompleted.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ')+'</span>':'') + '</div>' +
-          '<div class="op-detail-box"><b>Follow-up</b>' + (followDone.length ? followDone.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ') : (fol.pct!==null&&fol.pct!==undefined?'No actions selected':'Not assessed')) + (followMissing.length?'<br><span style="color:#fca5a5">Missed: '+followMissing.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ')+'</span>':'') + (Array.isArray(fol.unnecessaryCompleted)&&fol.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+fol.unnecessaryCompleted.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ')+'</span>':'') + (fol.targetMin?'<br>Planned '+(fol.plannedMin||'—')+' min · target '+fol.targetMin+' min':'') + '</div>' +
-        '</div>' +
-        (th.linked ? '<div class="op-detail-box" style="margin-top:8px"><b>Threshold tested</b>' + esc((rr.categoryLabel||'') + (rr.eventType ? ' → ' + rr.eventType : '')) + ' · Policy v' + esc(pp.version||r.threshold_policy_version||1) + ' / Rule v' + esc(rr.version||r.threshold_rule_version||1) + (th.evaluation ? ' · ' + esc(String(th.evaluation).replace(/_/g,' ')) : '') + '</div>' : '') +
-        (r.summary ? '<div class="op-summary"><b style="color:#eef3f7">Exercise context:</b> ' + esc(r.summary) + '</div>' : '') +
-        (r.note ? '<div class="op-reasoning">“' + esc(r.note) + '”</div>' : '') +
-      '</div>';
+    html += units.slice().sort(function(a,b){return String((b.latest||{}).responded_at||'').localeCompare(String((a.latest||{}).responded_at||''));}).map(function(unit){
+      return unit.isSequence ? sequenceReviewBlock(unit) : reviewExerciseCardHtml(unit.rows[0]);
     }).join('') + '</div>';
 
     var guidance = [];
