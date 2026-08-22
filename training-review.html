@@ -252,7 +252,7 @@
   .curriculum-item.not-tested{border-color:#2c3742;background:#0a0f14}.curriculum-item.developing{border-color:rgba(255,90,95,.38);background:rgba(255,90,95,.045)}.curriculum-item.competent{border-color:rgba(240,180,41,.40);background:rgba(240,180,41,.045)}.curriculum-item.ready{border-color:rgba(51,196,141,.40);background:rgba(51,196,141,.055)}
   .curriculum-item.not-tested .curriculum-status{color:#94a3b8}.curriculum-item.developing .curriculum-status{color:#fca5a5}.curriculum-item.competent .curriculum-status{color:#fde68a}.curriculum-item.ready .curriculum-status{color:#86efac}
   .dev-intel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:18px}.dev-intel-card{background:#0b1015;border:1px solid #29333d;border-radius:12px;padding:12px 13px}.dev-intel-card.priority{border-color:rgba(239,35,41,.42);background:rgba(208,22,22,.055)}.dev-intel-card.recommend{border-color:rgba(147,197,253,.38);background:rgba(147,197,253,.05)}.dev-intel-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#8fa3bd;font-weight:900}.dev-intel-title{font-size:14px;font-weight:950;color:#f2f6fa;margin-top:5px}.dev-intel-meta{font-size:11px;line-height:1.5;color:#b5c3d2;margin-top:5px}.dev-intel-metric{font-size:19px;font-weight:950;margin-top:4px}.dev-intel-actions{margin-top:9px}.dev-intel-actions a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border:1px solid #354351;background:#151c24;color:#e8eef5;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:900}.dev-intel-actions a:hover{border-color:#ef2329;background:rgba(208,22,22,.10)}
-  .dimension-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:18px}.dimension-card{background:#0c1218;border:1px solid #27313b;border-radius:10px;padding:10px 11px}.dimension-name{font-size:10px;color:#91a4ba;text-transform:uppercase;letter-spacing:.07em;font-weight:900}.dimension-value{font-size:17px;font-weight:950;color:#eef3f7;margin-top:4px}.dimension-state{font-size:10px;margin-top:3px;font-weight:800}.state-strong{color:#86efac}.state-sound{color:#cfe1ff}.state-developing{color:#fde68a}.state-priority{color:#fca5a5}
+  .dimension-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:18px}.dimension-card{background:#0c1218;border:1px solid #27313b;border-radius:10px;padding:10px 11px}.dimension-name{font-size:10px;color:#91a4ba;text-transform:uppercase;letter-spacing:.07em;font-weight:900}.dimension-value{font-size:17px;font-weight:950;color:#eef3f7;margin-top:4px}.dimension-state{font-size:10px;margin-top:3px;font-weight:800}.state-strong{color:#86efac}.state-sound{color:#cfe1ff}.state-developing{color:#fde68a}.state-priority{color:#fca5a5}
   @media(max-width:800px){.dev-intel-grid,.dimension-list{grid-template-columns:1fr 1fr}}@media(max-width:560px){.dev-intel-grid,.dimension-list{grid-template-columns:1fr}}
 
 </style>
@@ -768,6 +768,11 @@ document.addEventListener('DOMContentLoaded',function(){
     osint:'OSINT', official:'Official source', assets:'Assets',
     travellers:'Travellers', duplicate:'Duplicate check', contacted:'Contacted personnel', sop:'SOP'
   };
+  var FOLLOWUP_LABEL = {
+    monitor_further:'Continue monitoring', recheck_sources:'Re-check sources',
+    update_manager:'Update Duty Manager / client', reassess_travellers:'Reassess travellers',
+    situation_update:'Situation update'
+  };
 
   function stepsOf(r){
     var raw = r.steps_taken || r.checks_json || '';
@@ -778,6 +783,12 @@ document.addEventListener('DOMContentLoaded',function(){
     } catch (_) {
       return String(raw).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
     }
+  }
+  function followupOf(r){
+    var raw = r.followup_json || '';
+    if (!raw) return [];
+    try { var arr = typeof raw === 'string' ? JSON.parse(raw) : raw; return Array.isArray(arr) ? arr : []; }
+    catch (_) { return []; }
   }
   var ACTION_COLOR = { monitoring:'#fde68a', escalated:'#fecaca', cleared:'#bbf7d0', notified:'#cfe1ff' };
   function scoreColour(pct){ return pct >= 80 ? '#bbf7d0' : pct >= 60 ? '#fde68a' : '#fecaca'; }
@@ -834,18 +845,24 @@ document.addEventListener('DOMContentLoaded',function(){
   }
   function developmentModel(personRows,subjects,curriculum,avg,accuracy){
     var process=averageScorePart(personRows,'process');
+    var followup=averageScorePart(personRows,'followup');
     var timing=averageScorePart(personRows,'timing');
     var decision=accuracy;
-    var missing={}, extra={}, slaMiss=0;
+    var missing={}, extra={}, followMissing={}, followExtra={}, slaMiss=0;
     (personRows||[]).forEach(function(r){
       var fb=feedbackOf(r), proc=fb.process||{}, score=fb.score||{};
       (Array.isArray(proc.missing)?proc.missing:[]).forEach(function(k){missing[k]=(missing[k]||0)+1;});
       (Array.isArray(proc.unnecessaryCompleted)?proc.unnecessaryCompleted:[]).forEach(function(k){extra[k]=(extra[k]||0)+1;});
+      var fol=fb.followup||{};
+      (Array.isArray(fol.missing)?fol.missing:[]).forEach(function(k){followMissing[k]=(followMissing[k]||0)+1;});
+      (Array.isArray(fol.unnecessaryCompleted)?fol.unnecessaryCompleted:[]).forEach(function(k){followExtra[k]=(followExtra[k]||0)+1;});
       if(score.slaMet===false) slaMiss++;
     });
     var missKeys=Object.keys(missing).sort(function(a,b){return missing[b]-missing[a];});
     var extraKeys=Object.keys(extra).sort(function(a,b){return extra[b]-extra[a];});
-    var dims=[{name:'Decision judgement',value:decision},{name:'Process discipline',value:process},{name:'Response efficiency',value:timing}];
+    var followMissKeys=Object.keys(followMissing).sort(function(a,b){return followMissing[b]-followMissing[a];});
+    var followExtraKeys=Object.keys(followExtra).sort(function(a,b){return followExtra[b]-followExtra[a];});
+    var dims=[{name:'Decision judgement',value:decision},{name:'Process discipline',value:process},{name:'Follow-up discipline',value:followup},{name:'Response efficiency',value:timing}];
     dims.forEach(function(d){d.state=dimensionState(d.value);});
     var available=dims.filter(function(d){return d.value!==null&&d.value!==undefined&&!isNaN(Number(d.value));});
     var strongest=available.length?available.slice().sort(function(a,b){return b.value-a.value;})[0]:null;
@@ -866,7 +883,9 @@ document.addEventListener('DOMContentLoaded',function(){
     }
     var priority='No material weakness identified yet';
     var priorityMeta='Continue collecting evidence across the readiness curriculum.';
-    if(extraKeys.length){priority='Process discipline';priorityMeta='Unnecessary '+(CHECK_LABEL[extraKeys[0]]||extraKeys[0])+' check recorded '+extra[extraKeys[0]]+' time'+(extra[extraKeys[0]]===1?'':'s')+'.';}
+    if(followExtraKeys.length){priority='Follow-up discipline';priorityMeta='Unnecessary '+(FOLLOWUP_LABEL[followExtraKeys[0]]||followExtraKeys[0])+' action recorded '+followExtra[followExtraKeys[0]]+' time'+(followExtra[followExtraKeys[0]]===1?'':'s')+'.';}
+    else if(followMissKeys.length){priority='Follow-up completeness';priorityMeta=(FOLLOWUP_LABEL[followMissKeys[0]]||followMissKeys[0])+' was missed '+followMissing[followMissKeys[0]]+' time'+(followMissing[followMissKeys[0]]===1?'':'s')+'.';}
+    else if(extraKeys.length){priority='Process discipline';priorityMeta='Unnecessary '+(CHECK_LABEL[extraKeys[0]]||extraKeys[0])+' check recorded '+extra[extraKeys[0]]+' time'+(extra[extraKeys[0]]===1?'':'s')+'.';}
     else if(missKeys.length){priority='Verification completeness';priorityMeta=(CHECK_LABEL[missKeys[0]]||missKeys[0])+' was missed '+missing[missKeys[0]]+' time'+(missing[missKeys[0]]===1?'':'s')+'.';}
     else if(weakest && weakest.value<80){priority=weakest.name;priorityMeta='Current average '+Math.round(weakest.value)+'% — below the preferred 80% coaching threshold.';}
     else if(slaMiss){priority='Response efficiency';priorityMeta=slaMiss+' response'+(slaMiss===1?'':'s')+' exceeded the exercise SLA.';}
@@ -1087,6 +1106,9 @@ document.addEventListener('DOMContentLoaded',function(){
       var parts = Array.isArray(score.parts) ? score.parts : [];
       var missing = Array.isArray(proc.missing) ? proc.missing : [];
       var completed = stepsOf(r);
+      var fol = fb.followup || {};
+      var followDone = followupOf(r);
+      var followMissing = Array.isArray(fol.missing) ? fol.missing : [];
       return '<div class="op-exercise ' + cls + '">' +
         '<div class="op-exercise-head"><div><div class="op-exercise-title">' + esc(r.scenario_title || eventOf(r)) + '</div>' +
           '<div class="op-meta"><span class="op-chip">' + esc(categoryOf(r)) + '</span>' +
@@ -1100,6 +1122,7 @@ document.addEventListener('DOMContentLoaded',function(){
           '<div class="op-detail-box"><b>Timing</b>' + (taken!==null ? taken + ' min' : '—') + (target ? ' · target ' + target + ' min' : '') + (score.slaMet===true?' · SLA met':score.slaMet===false?' · SLA missed':'') + '</div>' +
           '<div class="op-detail-box"><b>Scoring</b>' + (parts.length ? parts.map(function(p){ return esc(p.label) + ' ' + Math.round(Number(p.pct||0)) + '%'; }).join(' · ') : 'Legacy / unscored detail') + '</div>' +
           '<div class="op-detail-box"><b>Verification</b>' + (completed.length ? completed.map(function(k){ return esc(CHECK_LABEL[k]||k); }).join(', ') : 'No checks recorded') + (missing.length ? '<br><span style="color:#fca5a5">Missed: ' + missing.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ') + '</span>' : '') + (Array.isArray(proc.unnecessaryCompleted)&&proc.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+proc.unnecessaryCompleted.map(function(k){return esc(CHECK_LABEL[k]||k);}).join(', ')+'</span>':'') + '</div>' +
+          '<div class="op-detail-box"><b>Follow-up</b>' + (followDone.length ? followDone.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ') : (fol.pct!==null&&fol.pct!==undefined?'No actions selected':'Not assessed')) + (followMissing.length?'<br><span style="color:#fca5a5">Missed: '+followMissing.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ')+'</span>':'') + (Array.isArray(fol.unnecessaryCompleted)&&fol.unnecessaryCompleted.length?'<br><span style="color:#fda4af">Unnecessary: '+fol.unnecessaryCompleted.map(function(k){return esc(FOLLOWUP_LABEL[k]||k);}).join(', ')+'</span>':'') + (fol.targetMin?'<br>Planned '+(fol.plannedMin||'—')+' min · target '+fol.targetMin+' min':'') + '</div>' +
         '</div>' +
         (th.linked ? '<div class="op-detail-box" style="margin-top:8px"><b>Threshold tested</b>' + esc((rr.categoryLabel||'') + (rr.eventType ? ' → ' + rr.eventType : '')) + ' · Policy v' + esc(pp.version||r.threshold_policy_version||1) + ' / Rule v' + esc(rr.version||r.threshold_rule_version||1) + (th.evaluation ? ' · ' + esc(String(th.evaluation).replace(/_/g,' ')) : '') + '</div>' : '') +
         (r.summary ? '<div class="op-summary"><b style="color:#eef3f7">Exercise context:</b> ' + esc(r.summary) + '</div>' : '') +
@@ -1123,10 +1146,15 @@ document.addEventListener('DOMContentLoaded',function(){
     var extraCount={}; personRows.forEach(function(r){var u=(feedbackOf(r).process||{}).unnecessaryCompleted||[];(Array.isArray(u)?u:[]).forEach(function(k){extraCount[k]=(extraCount[k]||0)+1;});});
     var extraKeys=Object.keys(extraCount).sort(function(a,b){return extraCount[b]-extraCount[a];});
     if(extraKeys.length) guidance.push('Most frequent unnecessary check: <strong>'+esc(CHECK_LABEL[extraKeys[0]]||extraKeys[0])+'</strong> ('+extraCount[extraKeys[0]]+' time'+(extraCount[extraKeys[0]]===1?'':'s')+').');
+    var fmissCount={}, fextraCount={}; personRows.forEach(function(r){var fol=feedbackOf(r).followup||{};(Array.isArray(fol.missing)?fol.missing:[]).forEach(function(k){fmissCount[k]=(fmissCount[k]||0)+1;});(Array.isArray(fol.unnecessaryCompleted)?fol.unnecessaryCompleted:[]).forEach(function(k){fextraCount[k]=(fextraCount[k]||0)+1;});});
+    var fmissKeys=Object.keys(fmissCount).sort(function(a,b){return fmissCount[b]-fmissCount[a];});
+    var fextraKeys=Object.keys(fextraCount).sort(function(a,b){return fextraCount[b]-fextraCount[a];});
+    if(fmissKeys.length) guidance.push('Most frequently missed follow-up action: <strong>'+esc(FOLLOWUP_LABEL[fmissKeys[0]]||fmissKeys[0])+'</strong> ('+fmissCount[fmissKeys[0]]+' time'+(fmissCount[fmissKeys[0]]===1?'':'s')+').');
+    if(fextraKeys.length) guidance.push('Most frequent unnecessary follow-up action: <strong>'+esc(FOLLOWUP_LABEL[fextraKeys[0]]||fextraKeys[0])+'</strong> ('+fextraCount[fextraKeys[0]]+' time'+(fextraCount[fextraKeys[0]]===1?'':'s')+').');
     if(curriculum.enabled && !curriculum.ready) guidance.push('Readiness coverage is <strong>'+curriculum.passed+'/'+curriculum.total+' required subjects</strong>. Complete the remaining threshold subjects at '+curriculum.passScore+'% or above.');
     var slow = personRows.filter(function(r){ var fb=feedbackOf(r), target=Number(fb.targetResponseMin||r.target_response_min||0)||0; return target>0 && Number(r.response_ms||0)>target*60000; }).length;
     if (slow) guidance.push(slow + ' response' + (slow===1?'':'s') + ' exceeded the exercise SLA.');
-    if (!wrong && !slow && !missKeys.length && !extraKeys.length && avg !== null && avg >= 90) guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
+    if (!wrong && !slow && !missKeys.length && !extraKeys.length && !fmissKeys.length && !fextraKeys.length && avg !== null && avg >= 90) guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
 
     html += '<div class="section-title" style="margin-bottom:8px">Development Guidance</div><div style="display:grid;gap:8px">' +
       guidance.map(function(g){ return '<div class="development-note">💡 ' + g + '</div>'; }).join('') + '</div>';
