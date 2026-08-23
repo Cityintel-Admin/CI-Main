@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- CityIntel Training Review v15 — Phase 9E.2 Persistent Sequence Runs & Resume -->
 <html lang="en">
 <head>
   
@@ -302,6 +303,20 @@
         <div class="section-title">Score Trend — Last 10 Sessions</div>
         <div class="trend-bar" id="trendBar"></div>
       </div>
+
+      <!-- Phase 9E.2: persistent sequence runs currently in progress -->
+      <details class="card session-history-card" id="reviewActiveSequences" style="margin-top:16px">
+        <summary style="cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:900;list-style:none">
+          <span style="color:#ff3138">●</span>
+          <span>Active Training Sequences</span>
+          <span id="reviewActiveSequenceCount" style="margin-left:4px;padding:2px 8px;border:1px solid #303843;border-radius:999px;color:#cfe1ff;font-size:11px">0</span>
+          <span style="margin-left:auto;color:#8e97a3;font-size:12px">Resume / in progress</span>
+        </summary>
+        <div class="muted" style="font-size:12px;margin:10px 0">
+          Multi-stage exercises remain here until every stage is complete. A hidden release time is not shown to the trainee; the training banner returns when the Worker releases the next stage.
+        </div>
+        <div id="reviewActiveSequenceList"><div class="muted">Loading active sequences…</div></div>
+      </details>
 
       <!-- Session history -->
       <div class="card session-history-card">
@@ -741,7 +756,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <script src="shared-nav.js"></script>
 
 <script>
-/* Phase 9E.1 — multi-stage exercise grouping + readiness evidence */
+/* Phase 9E.2 — persistent multi-stage runs, resume state + completed-only readiness evidence */
 /* ── Response log ─────────────────────────────────────────────────────
    Reads individual responses rather than saved sessions, so a response is
    visible in the record even when no session was formally closed. */
@@ -749,6 +764,7 @@ document.addEventListener('DOMContentLoaded',function(){
   'use strict';
   var API = String(window.CI_API_BASE || 'https://api.cityintelapi.com').replace(/\/+$/, '');
   var rows = [];
+  var sequenceRuns = [];
   var policy = null;
 
   function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){
@@ -819,7 +835,49 @@ document.addEventListener('DOMContentLoaded',function(){
     var fb=feedbackOf(r), sq=fb.sequence||{};
     return String(r.sequence_title||sq.title||'Multi-stage exercise');
   }
+  function sequenceRunStatusOfRow(r){
+    var fb=feedbackOf(r), sq=fb.sequence||{};
+    return String(r.sequence_run_status||sq.runStatus||sq.status||'').toLowerCase();
+  }
+  function sequenceTotalOfRow(r){
+    var fb=feedbackOf(r), sq=fb.sequence||{};
+    return Math.max(0,Number(r.sequence_total_steps||sq.totalSteps||0)||0);
+  }
+  function completedEvidenceRows(sourceRows){
+    var standalone=[], grouped={};
+    (sourceRows||[]).forEach(function(r){
+      var seq=sequenceIdOfRow(r);
+      if(!seq){ standalone.push(r); return; }
+      (grouped[seq]||(grouped[seq]=[])).push(r);
+    });
+    Object.keys(grouped).forEach(function(seq){
+      var list=grouped[seq];
+      var complete=list.some(function(r){ return sequenceRunStatusOfRow(r)==='complete'; });
+      if(!complete){
+        var total=0, seen={};
+        list.forEach(function(r){
+          total=Math.max(total,sequenceTotalOfRow(r));
+          var step=sequenceStepOfRow(r); if(step>0)seen[step]=1;
+        });
+        // Compatibility for a fully completed 9E.1 sequence written before
+        // the persistent run table existed.
+        complete=total>0 && Object.keys(seen).length>=total;
+      }
+      if(complete) Array.prototype.push.apply(standalone,list);
+    });
+    return standalone;
+  }
+  function inProgressSequenceIds(sourceRows){
+    var all={}, complete={};
+    (sourceRows||[]).forEach(function(r){
+      var seq=sequenceIdOfRow(r); if(!seq)return;
+      all[seq]=1;
+      if(sequenceRunStatusOfRow(r)==='complete')complete[seq]=1;
+    });
+    return Object.keys(all).filter(function(id){return !complete[id];});
+  }
   function exerciseUnits(sourceRows){
+    sourceRows=completedEvidenceRows(sourceRows);
     var grouped={}, out=[];
     (sourceRows||[]).forEach(function(r){
       var seq=sequenceIdOfRow(r);
@@ -945,6 +1003,48 @@ document.addEventListener('DOMContentLoaded',function(){
     return isNaN(d.getTime()) ? '—' : d.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
   }
 
+  function renderActiveSequences(){
+    var host=document.getElementById('reviewActiveSequenceList');
+    var badge=document.getElementById('reviewActiveSequenceCount');
+    if(badge)badge.textContent=String(sequenceRuns.length||0);
+    if(!host)return;
+    if(!sequenceRuns.length){
+      host.innerHTML='<div class="muted" style="padding:8px 0">No multi-stage exercises are currently in progress.</div>';
+      return;
+    }
+    host.innerHTML=sequenceRuns.map(function(run){
+      var completed=Math.max(0,Number(run.completed_steps||0)||0);
+      var total=Math.max(1,Number(run.total_steps||0)||1);
+      var status=String(run.status||'active').toLowerCase();
+      var who=String(run.responder_name||run.trainee_name||'Awaiting first responder');
+      var release='';
+      if(status==='waiting'){
+        if(run.next_release_at){
+          release=' · next stage '+esc(when(run.next_release_at));
+        }else{
+          release=' · next stage time hidden from trainee';
+        }
+      }else if(status==='active'){
+        release=' · stage available now';
+      }
+      return '<div style="border:1px solid #2b323c;border-radius:12px;padding:11px 12px;margin-top:8px;background:#0d1319">' +
+        '<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">' +
+          '<div><div style="font-weight:900;color:#f3f6fa">'+esc(run.title||'Multi-stage exercise')+'</div>' +
+          '<div class="muted" style="font-size:12px;margin-top:4px">'+esc(who)+' · '+completed+'/'+total+' stages complete'+release+'</div></div>' +
+          '<a href="training-scenario.html" style="text-decoration:none;border:1px solid #344252;border-radius:9px;padding:7px 10px;color:#cfe1ff;font-weight:800;font-size:12px">Resume exercise</a>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  async function loadSequenceRuns(){
+    try{
+      var res=await fetch(API+'/api/org/training-sequence-runs?status=in_progress',{headers:headers()});
+      var data=await res.json().catch(function(){return{};});
+      sequenceRuns=(res.ok&&data.ok&&Array.isArray(data.data))?data.data:[];
+    }catch(_){sequenceRuns=[];}
+    renderActiveSequences();
+  }
+
   function render(){
     var filter = String((document.getElementById('respFilter')||{}).value || '').trim().toLowerCase();
     var list = rows.filter(function(r){
@@ -966,9 +1066,14 @@ document.addEventListener('DOMContentLoaded',function(){
       var viaShared = r.responder_name && r.operator_email &&
         String(r.responder_name).toLowerCase() !== String(r.operator_name || '').toLowerCase();
       var mins = Number(r.response_ms || 0) > 0 ? Math.round(Number(r.response_ms) / 60000) : null;
+      var seqId = sequenceIdOfRow(r);
+      var seqIncomplete = !!seqId && sequenceRunStatusOfRow(r) !== 'complete';
+      var seqStep = sequenceStepOfRow(r), seqTotal = sequenceTotalOfRow(r);
       return '<div style="border-bottom:1px solid #24272c;padding:10px 0;display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap">' +
         '<div style="min-width:0;flex:1 1 320px">' +
-          '<div style="font-weight:700;font-size:13px">' + esc(r.scenario_title || 'Training scenario') + '</div>' +
+          '<div style="font-weight:700;font-size:13px">' + esc(r.scenario_title || 'Training scenario') +
+            (seqIncomplete ? ' <span style="margin-left:6px;padding:2px 7px;border:1px solid #7c671d;border-radius:999px;color:#fde68a;font-size:10px">Stage '+esc(seqStep||'—')+(seqTotal?' / '+esc(seqTotal):'')+' · In progress</span>' : '') +
+          '</div>' +
           '<div class="muted" style="font-size:12px;margin-top:3px">' +
             'Responded by <button type="button" class="operator-name-button" data-person-profile="' + esc(who) + '">' + esc(who) + '</button>' +
             (viaShared ? ' <span style="opacity:.75">(account: ' + esc(r.operator_email) + ')</span>' : '') +
@@ -999,14 +1104,14 @@ document.addEventListener('DOMContentLoaded',function(){
           })() +
         '</div>' +
         '<div style="text-align:right;white-space:nowrap">' +
-          (r.score_pct !== null && r.score_pct !== undefined
+          (!seqIncomplete && r.score_pct !== null && r.score_pct !== undefined
             ? '<div style="font-weight:950;font-size:17px;color:' + scoreColour(r.score_pct) + '">' + Number(r.score_pct) + '%</div>'
-            : '') +
+            : (seqIncomplete ? '<div style="font-weight:850;font-size:12px;color:#fde68a">IN PROGRESS</div>' : '')) +
           '<div style="font-weight:800;font-size:12px;color:' + (ACTION_COLOR[r.action] || '#cfe1ff') + '">' +
             esc(ACTION_LABEL[r.action] || r.action || '—') +
             // Showing the expected action next to the chosen one turns the log
             // into something a supervisor can coach from at a glance.
-            (r.expected_action && r.expected_action !== r.action
+            (!seqIncomplete && r.expected_action && r.expected_action !== r.action
               ? ' <span style="color:#fca5a5;font-weight:700">(expected ' + esc(ACTION_LABEL[r.expected_action] || r.expected_action) + ')</span>'
               : '') +
           '</div>' +
@@ -1104,12 +1209,17 @@ document.addEventListener('DOMContentLoaded',function(){
   function openOperatorDetail(name){
     name = String(name || '').trim();
     if (!name) return;
-    var personRows = rows.filter(function(r){ return personOf(r).toLowerCase() === name.toLowerCase(); });
-    if (!personRows.length) {
+    var allPersonRows = rows.filter(function(r){ return personOf(r).toLowerCase() === name.toLowerCase(); });
+    if (!allPersonRows.length) {
       window.alert('No response records are available for ' + name + '.');
       return;
     }
 
+    // A partially completed sequence is evidence-in-progress, not a completed
+    // exercise. It must not alter grades, curriculum readiness or capability
+    // metrics until its final stage has been submitted.
+    var personRows = completedEvidenceRows(allPersonRows);
+    var activeSequenceIds = inProgressSequenceIds(allPersonRows);
     var units = exerciseUnits(personRows);
     var scored = units.filter(function(u){ return u.score !== null && u.score !== undefined && !isNaN(Number(u.score)); });
     var avg = scored.length ? Math.round(scored.reduce(function(n,u){ return n + Number(u.score||0); },0) / scored.length) : null;
@@ -1117,7 +1227,7 @@ document.addEventListener('DOMContentLoaded',function(){
     var assessed = personRows.filter(function(r){ return !!String(r.expected_action || ''); });
     var correct = assessed.filter(function(r){ return String(r.action||'') === String(r.expected_action||''); }).length;
     var accuracy = assessed.length ? Math.round(correct / assessed.length * 100) : null;
-    var last = personRows.slice().sort(function(a,b){ return String(b.responded_at||'').localeCompare(String(a.responded_at||'')); })[0];
+    var last = allPersonRows.slice().sort(function(a,b){ return String(b.responded_at||'').localeCompare(String(a.responded_at||'')); })[0];
     var curriculum = curriculumForRows(personRows, avg);
 
     var subjectMap = {};
@@ -1148,9 +1258,18 @@ document.addEventListener('DOMContentLoaded',function(){
     var modal = document.querySelector('.detail-modal');
     if (modal) modal.classList.add('operator-mode');
     document.getElementById('detailTitle').textContent = 'Operator Development — ' + name;
-    document.getElementById('detailSubtitle').textContent = units.length + ' completed exercise' + (units.length===1?'':'s') + ' · ' + personRows.length + ' stage response' + (personRows.length===1?'':'s') + ' · Last response ' + shortDate(last && last.responded_at);
+    document.getElementById('detailSubtitle').textContent = units.length + ' completed exercise' + (units.length===1?'':'s') +
+      ' · ' + allPersonRows.length + ' stage response' + (allPersonRows.length===1?'':'s') +
+      (activeSequenceIds.length ? ' · ' + activeSequenceIds.length + ' sequence in progress' + (activeSequenceIds.length===1?'':'es') : '') +
+      ' · Last response ' + shortDate(last && last.responded_at);
 
-    var html = '<div class="operator-score-row">' +
+    var html = '';
+    if(activeSequenceIds.length){
+      html += '<div style="margin-bottom:14px;border:1px solid #7c671d;background:#17150d;border-radius:12px;padding:11px 13px;color:#fde68a;font-size:12px">' +
+        '<strong>Training sequence in progress.</strong> ' + activeSequenceIds.length + ' multi-stage exercise' + (activeSequenceIds.length===1?' remains':'s remain') +
+        ' incomplete. Its partial stage results are excluded from this development score and readiness curriculum until the final stage is completed.</div>';
+    }
+    html += '<div class="operator-score-row">' +
       '<div class="score-card highlight"><div class="score-val" style="color:' + scoreColour(avg==null?0:avg) + '">' + fmtPct(avg) + '</div><div class="score-lbl">Average Score</div></div>' +
       '<div class="score-card"><div class="score-val" style="color:' + scoreColour(avg==null?0:avg) + '">' + esc(grade) + '</div><div class="score-lbl">Overall Grade</div></div>' +
       '<div class="score-card"><div class="score-val">' + fmtPct(accuracy) + '</div><div class="score-lbl">Decision Accuracy</div></div>' +
@@ -1230,6 +1349,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   async function load(){
     loadSummary();
+    loadSequenceRuns();
     try { var pr=await fetch(API + '/api/org/escalation-policy',{headers:headers()}); var pd=await pr.json().catch(function(){return{};}); policy=(pr.ok&&pd.ok)?(pd.policy||null):null; } catch(_){ policy=null; }
     try {
       var res = await fetch(API + '/api/org/training-responses', { headers: headers() });
