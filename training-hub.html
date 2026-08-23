@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Hub v16 — Phase 9E.3 Sequence Run Status -->
+<!-- CityIntel Training Hub v17 — Phase 9F.1 Organisation Readiness Matrix -->
 <html lang="en">
 <head>
   
@@ -241,6 +241,27 @@
   .curriculum-status{font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap}.curriculum-item.pass .curriculum-status{color:#86efac}.curriculum-item.pending .curriculum-status{color:#fde68a}
   .process-issue{color:#fda4af;font-size:11px;margin-top:4px}
   @media(max-width:850px){.curriculum-grid{grid-template-columns:1fr}}
+  /* Phase 9F.1 — organisation-wide readiness curriculum. */
+  .team-curriculum-card{background:linear-gradient(160deg,#111820,#0a0f14 82%)}
+  .team-curriculum-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .team-curriculum-summary{margin-top:9px;color:#b9c7d8;font-size:12px;line-height:1.55}
+  .team-curriculum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+  .team-subject{border:1px solid #2a3540;border-radius:12px;padding:12px;background:#0a1016}
+  .team-subject.good{border-color:rgba(51,196,141,.38);background:rgba(51,196,141,.045)}
+  .team-subject.warn{border-color:rgba(240,180,41,.34);background:rgba(240,180,41,.035)}
+  .team-subject.poor{border-color:rgba(255,90,95,.36);background:rgba(255,90,95,.035)}
+  .team-subject-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .team-subject-title{font-size:13px;font-weight:950;color:#eef3f7}
+  .team-subject-meta{font-size:10px;color:#8fa0b5;margin-top:4px;line-height:1.45}
+  .team-subject-ready{font-size:18px;font-weight:950;white-space:nowrap;color:#dbe7f3}
+  .team-subject-meter{height:8px;border:1px solid #2b3540;background:#080d12;border-radius:999px;overflow:hidden;margin-top:10px}
+  .team-subject-meter span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand-red),#f59e0b,#22c55e)}
+  .team-subject-states{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+  .team-state{border:1px solid #26303a;border-radius:9px;padding:7px 6px;text-align:center;background:#0d1319}
+  .team-state b{display:block;font-size:14px;color:#eef3f7}.team-state span{display:block;font-size:9px;color:#8fa0b5;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+  .team-subject-actions{display:flex;justify-content:flex-end;margin-top:10px}
+  .subject-coverage-table td,.subject-coverage-table th{vertical-align:top}
+  @media(max-width:980px){.team-curriculum-grid{grid-template-columns:1fr}.team-subject-states{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   /* Phase 9D.3 — coaching & development intelligence. */
   .curriculum-item.not-tested{border-color:#2c3742;background:#0a0f14}.curriculum-item.developing{border-color:rgba(255,90,95,.38);background:rgba(255,90,95,.045)}.curriculum-item.competent{border-color:rgba(240,180,41,.40);background:rgba(240,180,41,.045)}.curriculum-item.ready{border-color:rgba(51,196,141,.40);background:rgba(51,196,141,.055)}
@@ -314,6 +335,15 @@
         </div>
         <div class="trainee-baseline-note" id="traineeBaselineNote"></div>
         <div class="readiness-standard-summary" id="readinessStandardSummary">Loading readiness curriculum…</div>
+      </section>
+
+      <section class="card team-curriculum-card admin-only" id="teamCurriculumSection">
+        <div class="team-curriculum-head">
+          <div><h2>Organisation Readiness Curriculum</h2><div class="small">Team-level coverage of every advanced threshold subject marked as required for readiness.</div></div>
+          <a class="btn" href="training-review.html">Open Training Review</a>
+        </div>
+        <div class="team-curriculum-summary" id="teamCurriculumSummary">Loading organisation curriculum…</div>
+        <div class="team-curriculum-grid" id="teamCurriculumGrid"></div>
       </section>
 
       <details class="card hub-accordion" id="activeSequenceSection">
@@ -528,6 +558,52 @@
       const order={remediation:0,coaching:1,baseline:2,ready:3};
       return (order[a.status]??9)-(order[b.status]??9) || String(a.name).localeCompare(String(b.name));
     });
+  }
+
+  function teamCurriculumModel(){
+    const cfg=readinessConfig(), groups=operatorGroups();
+    if(!cfg.rules.length) return {enabled:false,cfg,groups,subjects:[]};
+    const subjects=cfg.rules.map(rule=>{
+      const id=String(rule.id||'');
+      const rows=groups.map(g=>{
+        const sub=(g.curriculum.subjects||[]).find(x=>String(x.id||'')===id) || {id,label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:0,passes:0,best:null,stage:'not-tested',passed:false};
+        return {operator:g.name,status:sub.stage||'not-tested',attempts:Number(sub.attempts||0),passes:Number(sub.passes||0),best:sub.best===null||sub.best===undefined?null:Number(sub.best),overall:g.avg,readinessPct:g.readinessPct};
+      });
+      const counts={'ready':0,'competent':0,'developing':0,'not-tested':0};
+      rows.forEach(r=>{counts[r.status]=(counts[r.status]||0)+1;});
+      const tracked=groups.length, ready=counts.ready||0, pctReady=tracked?Math.round(ready/tracked*100):0;
+      const evidence=rows.reduce((n,r)=>n+r.attempts,0);
+      return {id,label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),rows,counts,tracked,ready,pctReady,evidence};
+    });
+    return {enabled:true,cfg,groups,subjects};
+  }
+
+  function renderTeamCurriculum(){
+    const host=$('teamCurriculumGrid'), summary=$('teamCurriculumSummary'); if(!host||!summary)return;
+    const model=teamCurriculumModel(), cfg=model.cfg, groups=model.groups;
+    if(!model.enabled){
+      summary.innerHTML='<b>Curriculum not configured.</b> Mark advanced threshold rules as required for readiness to build the organisation coverage matrix.';
+      host.innerHTML='<div class="item"><div class="item-meta">No required readiness subjects are currently configured.</div></div>';
+      return;
+    }
+    const readyOperators=groups.filter(g=>g.curriculum&&g.curriculum.ready).length;
+    summary.innerHTML='<b>'+model.subjects.length+' required subject'+(model.subjects.length===1?'':'s')+'</b> · '+groups.length+' tracked operator'+(groups.length===1?'':'s')+' · '+readyOperators+' fully ready · pass standard '+cfg.passScore+'% · '+cfg.minPasses+' passing exercise'+(cfg.minPasses===1?'':'s')+' per subject.';
+    if(!groups.length){host.innerHTML='<div class="item"><div class="item-meta">No operator evidence is available yet. Completed scored exercises will populate this matrix.</div></div>';return;}
+    host.innerHTML=model.subjects.map(s=>{
+      const cls=s.pctReady>=80?'good':s.pctReady>=50?'warn':'poor';
+      return `<div class="team-subject ${cls}"><div class="team-subject-head"><div><div class="team-subject-title">${esc(s.label)}</div><div class="team-subject-meta">${s.evidence} readiness evidence item${s.evidence===1?'':'s'} · ${s.tracked-s.ready} operator${s.tracked-s.ready===1?'':'s'} still short of Ready</div></div><div class="team-subject-ready">${s.ready}/${s.tracked}</div></div><div class="team-subject-meter"><span style="width:${pct(s.pctReady)}%"></span></div><div class="team-subject-states"><div class="team-state"><b>${s.counts.ready||0}</b><span>Ready</span></div><div class="team-state"><b>${s.counts.competent||0}</b><span>Competent</span></div><div class="team-state"><b>${s.counts.developing||0}</b><span>Developing</span></div><div class="team-state"><b>${s.counts['not-tested']||0}</b><span>Not tested</span></div></div><div class="team-subject-actions"><button class="btn" type="button" data-subject-coverage="${esc(s.id)}">View operator coverage</button></div></div>`;
+    }).join('');
+  }
+
+  function openSubjectCoverage(ruleId){
+    const model=teamCurriculumModel(); if(!model.enabled)return;
+    const subject=model.subjects.find(s=>String(s.id)===String(ruleId||'')); if(!subject)return;
+    const cfg=model.cfg, order={'developing':0,'not-tested':1,'competent':2,'ready':3};
+    const rows=subject.rows.slice().sort((a,b)=>(order[a.status]??9)-(order[b.status]??9)||String(a.operator).localeCompare(String(b.operator)));
+    const stateLabel={'ready':'Ready','competent':'Competent','developing':'Developing','not-tested':'Not tested'};
+    const stateClass={'ready':'good','competent':'warn','developing':'high','not-tested':'info'};
+    const body=`<div class="operator-score-row"><div class="score-card highlight"><div class="score-val" style="color:${scoreColour(subject.pctReady)}">${subject.pctReady}%</div><div class="score-lbl">Team Ready</div></div><div class="score-card"><div class="score-val">${subject.ready}/${subject.tracked}</div><div class="score-lbl">Ready Operators</div></div><div class="score-card"><div class="score-val">${cfg.passScore}%</div><div class="score-lbl">Pass Standard</div></div><div class="score-card"><div class="score-val">${cfg.minPasses}</div><div class="score-lbl">Passes Required</div></div></div><div class="development-note"><strong>Readiness subject.</strong> An operator reaches Ready for this subject only after ${cfg.minPasses} passing exercise${cfg.minPasses===1?'':'s'} at ${cfg.passScore}% or above. Multi-stage runs on the same threshold subject count as one readiness evidence item.</div><div class="detail-section">Operator Coverage</div><div class="table-wrap"><table class="subject-coverage-table"><thead><tr><th>Operator</th><th>Status</th><th>Passing evidence</th><th>Attempts</th><th>Best</th><th>Overall</th></tr></thead><tbody>${rows.map(r=>`<tr class="operator-row-click" data-operator-profile="${esc(r.operator)}"><td><b>${esc(r.operator)}</b><div class="view-link">Open development profile</div></td><td><span class="pill ${stateClass[r.status]||'info'}">${esc(stateLabel[r.status]||r.status)}</span></td><td>${r.passes}/${cfg.minPasses}</td><td>${r.attempts}</td><td>${r.best===null?'—':r.best+'%'}</td><td>${r.overall===null||r.overall===undefined?'—':r.overall+'%'}</td></tr>`).join('')}</tbody></table></div>`;
+    openOverlay('Readiness Subject — '+subject.label,subject.ready+' of '+subject.tracked+' tracked operators currently Ready',body);
   }
 
   function paginationHtml(key,page,total){
@@ -799,7 +875,7 @@
     $('priorityActions').innerHTML=actions.slice(0,5).map(a=>`<div class="item"><div class="item-head"><div><div class="item-title">${esc(a[0])}</div><div class="item-meta">${esc(a[1])}</div></div><a class="btn" href="${esc(a[2])}">${esc(a[3])}</a></div></div>`).join('');
   }
 
-  function renderAll(){ renderKpis(); renderCompetency(); renderActiveSequences(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
+  function renderAll(){ renderKpis(); renderCompetency(); renderTeamCurriculum(); renderActiveSequences(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
   document.addEventListener('click',e=>{
     const pageBtn=e.target.closest('[data-page-key]');
     if(pageBtn && !pageBtn.disabled){
@@ -810,6 +886,7 @@
       return;
     }
     const ex=e.target.closest('[data-exercise-detail]'); if(ex){ openExerciseDetail(ex.getAttribute('data-exercise-detail')); return; }
+    const subject=e.target.closest('[data-subject-coverage]'); if(subject){ openSubjectCoverage(subject.getAttribute('data-subject-coverage')); return; }
     const op=e.target.closest('[data-operator-profile]'); if(op){ openOperatorDetail(op.getAttribute('data-operator-profile')); return; }
   });
   $('hubDetailClose')?.addEventListener('click',closeOverlay);
