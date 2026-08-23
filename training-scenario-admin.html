@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Scenario Admin v28 — Phase 9E.2 Persistent Sequence Runs & Resume -->
+<!-- CityIntel Training Scenario Admin v29 — Phase 9E.3 Sequence Control, Templates & Draft Summaries -->
 <!-- CityIntel Training Phase 9B.1 — editable factual scenario draft summaries -->
 <html lang="en">
 <head>
@@ -994,6 +994,19 @@
     .seq-assessment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
     .seq-assessment-grid .assessment-check{min-height:48px}
     .seq-stage-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;border:1px solid rgba(147,197,253,.25);color:#cfe1ff;background:rgba(147,197,253,.06);font-size:10px;font-weight:800;margin:3px 4px 0 0}
+    .seq-run-admin{border:1px solid var(--line);border-radius:12px;background:rgba(8,14,22,.68);padding:12px;margin-top:9px}
+    .seq-run-admin-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+    .seq-run-admin-title{font-size:13px;font-weight:900;color:#f8fafc}
+    .seq-run-admin-meta{font-size:11px;color:#9fb1c8;margin-top:3px;line-height:1.45}
+    .seq-run-admin-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+    .seq-run-admin-actions input{width:78px;padding:6px 7px;font-size:11px}
+    .seq-run-status{display:inline-flex;padding:3px 7px;border-radius:999px;border:1px solid rgba(147,197,253,.25);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+    .seq-run-status.waiting{color:#fde68a;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)}
+    .seq-run-status.paused{color:#c4b5fd;border-color:rgba(139,92,246,.4);background:rgba(139,92,246,.1)}
+    .seq-run-status.active{color:#86efac;border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.08)}
+    .seq-template-bar{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+    .expected-stage-box{margin-top:7px;padding:9px 10px;border:1px solid rgba(239,68,68,.35);border-radius:9px;background:rgba(239,68,68,.06);font-size:11px;line-height:1.5}
+    .expected-stage-box strong{color:#fff}
     @media(max-width:760px){.seq-modern-grid,.seq-assessment-grid{grid-template-columns:1fr}.seq-modern-grid .full{grid-column:auto}}
 
     .seq-modal-head {
@@ -2202,9 +2215,23 @@
                 <div class="form-hint">Assessment mode avoids coaching the trainee through later stages. Coached mode keeps immediate stage feedback.</div>
               </div>
             </div>
+            <div class="seq-template-bar">
+              <button class="btn-outline-pill" type="button" onclick="saveCurrentSequenceTemplate()">💾 Save current sequence as template</button>
+              <button class="btn-outline-pill" type="button" onclick="openSequenceTemplateLibrary()">📚 Load saved sequence</button>
+              <span class="form-hint" style="align-self:center">Templates keep all stage fields, threshold links, assessments, timing and release settings for reuse.</span>
+            </div>
             <div class="sequence-list" id="sequenceList">
               <div class="log-empty" id="seqEmpty">No sequence built yet. Add steps above, then run the sequence.</div>
             </div>
+            <div class="section-sep"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#cbd5e1">Active / waiting sequence runs</div>
+                <div class="form-hint">Trainer controls for long-running exercises. Release times remain admin-only when hidden from trainees.</div>
+              </div>
+              <button class="btn-outline-pill" type="button" onclick="loadAdminSequenceRuns()">↻ Refresh runs</button>
+            </div>
+            <div id="activeSequenceRuns" style="margin-top:8px"><div class="log-empty">No active sequence data loaded yet.</div></div>
             <div id="seqProgressWrap" style="display:none;">
               <div class="seq-progress-bar"><div class="seq-progress-fill" id="seqProgressFill" style="width:0%"></div></div>
               <div class="countdown-text" id="seqProgressLabel">Step 0 of 0</div>
@@ -2516,8 +2543,12 @@
         </div>
 
         <div class="form-field full">
-          <label>Summary</label>
-          <textarea id="seqStepSummary" rows="2" placeholder="Describe this update to the evolving incident…"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <label style="margin:0">Summary</label>
+            <button type="button" class="btn" onclick="generateSequenceStageDraftSummary()">✨ Generate draft summary</button>
+          </div>
+          <textarea id="seqStepSummary" rows="3" placeholder="Describe this update to the evolving incident…"></textarea>
+          <div class="form-hint">Creates an editable factual draft from this stage's title, location, risk, source, distance and exposure context. It does not insert the expected answer.</div>
         </div>
         <div class="form-field full">
           <label>Expected operator response</label>
@@ -2913,6 +2944,8 @@ let sequenceSteps    = [];          // Phase 9E.2: persistent stage snapshots; W
 let sequenceRunning  = false;
 let sequenceRunId    = '';
 let sequenceStartedAt= '';
+let adminSequenceRuns = [];
+let adminSequenceStages = {};
 let currentStepIdx   = -1;
 let seqEditIdx       = -1;          // which step we're editing (-1 = new)
 let seqRisk          = 'high';
@@ -2954,6 +2987,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderStats();
   updateStatusBar();
   renderSequenceList();
+  loadAdminSequenceRuns();
   listenForOperatorResponses();
   wireThresholdLinkControls();
   loadScenarioThresholdPolicy();
@@ -3405,12 +3439,17 @@ function renderSequenceThresholdPreview() {
     host.textContent = '⚠ Linked threshold is unavailable. Choose another saved rule or remove the link.';
     return;
   }
-  host.textContent = '🔗 ' + (rule.category_label || 'Other') + ' → ' + (rule.event_type || 'Unnamed rule') +
-    ' · ' + thresholdActionLabel(rule.primary_action) +
-    (Number(rule.response_sla_min || 0) > 0 ? ' · SLA ' + Number(rule.response_sla_min) + ' min' : '') +
-    ' · Rule v' + Number(rule.version_no || 1) +
-    ' / Policy v' + Number(thresholdLinkPolicy.policy_version || 1) +
-    ' · 9C: ' + thresholdActionLabel(thresholdExpectedOutcome(rule, seqThresholdConditionState, null).action);
+  const evaluated = thresholdExpectedOutcome(rule, seqThresholdConditionState, null);
+  const baseline = thresholdActionLabel(rule.primary_action);
+  const expected = thresholdActionLabel(evaluated.action);
+  const conditionLabel = seqThresholdConditionState === 'escalate' ? 'Escalation / upgrade present' :
+    (seqThresholdConditionState === 'exception' ? 'Exception / do-not-escalate applies' : 'Baseline rule');
+  host.innerHTML = '<div><strong>🔗 ' + esc(rule.category_label || 'Other') + ' → ' + esc(rule.event_type || 'Unnamed rule') + '</strong></div>' +
+    '<div>Baseline rule: <strong>' + esc(baseline) + '</strong>' +
+      (Number(rule.response_sla_min || 0) > 0 ? ' · SLA ' + Number(rule.response_sla_min) + ' min' : '') +
+      ' · Policy v' + Number(thresholdLinkPolicy.policy_version || 1) + ' / Rule v' + Number(rule.version_no || 1) + '</div>' +
+    '<div>Stage condition: <strong>' + esc(conditionLabel) + '</strong></div>' +
+    '<div class="expected-stage-box">Expected decision for this stage: <strong>' + esc(expected.toUpperCase()) + '</strong></div>';
 }
 
 function buildThresholdGuidance(rule) {
@@ -3694,6 +3733,115 @@ function injectScenario() {
   }
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
+
+
+function seqStagePlaceText(){
+  const location=document.getElementById('seqStepLocation')?.value?.trim()||'';
+  const city=document.getElementById('seqStepCity')?.value?.trim()||'';
+  const country=document.getElementById('seqStepCountry')?.value?.trim()||'';
+  return [location,city,country].filter(Boolean).join(', ');
+}
+function seqTravellerRadiusText(){
+  const raw=Number(document.getElementById('seqStepTravellerRadius')?.value||0);
+  if(!Number.isFinite(raw)||raw<=0)return '';
+  const unit=document.getElementById('seqStepTravellerRadiusUnit')?.value||'m';
+  return unit==='km' ? `${raw} km` : `${Math.round(raw)} m`;
+}
+function buildSequenceStageDraftSummary(){
+  const title=document.getElementById('seqStepTitle')?.value?.trim()||'';
+  const place=seqStagePlaceText();
+  const risk=String(seqRisk||'med').toLowerCase();
+  const riskLabel=risk==='high'?'High':risk==='low'?'Low':'Medium';
+  const catId=document.getElementById('seqStepCategory')?.value||'';
+  const cat=CATEGORIES.find(c=>c.id===catId); const categoryLabel=cat?.label||'';
+  const confidence='Training scenario';
+  const distance=Number(document.getElementById('seqStepDistance')?.value||0);
+  const nearest=document.getElementById('seqStepNearestRef')?.value?.trim()||'';
+  const sentences=[];
+  const clean=title.replace(/[.!?]+$/g,'').trim();
+  if(clean&&place) sentences.push(`${clean} has been reported at ${place}.`);
+  else if(clean) sentences.push(`${clean} has been reported.`);
+  else if(place) sentences.push(`A training incident has been reported at ${place}.`);
+  else sentences.push('A training incident update has been reported.');
+  sentences.push(`The event is currently assessed as ${riskLabel} risk${categoryLabel?' under '+categoryLabel:''}.`);
+  if(Number.isFinite(distance)&&distance>0) sentences.push(`The incident is approximately ${Math.round(distance)} m from ${nearest||'the nearest recorded organisation location'}.`);
+  if(confidence&&confidence!=='Training scenario'){
+    const map={'Operator observed':'operator observation','Trusted source':'a trusted source','Open source report':'an open source report','Unverified report':'an unverified report'};
+    sentences.push(`Initial information is based on ${map[confidence]||confidence.toLowerCase()}.`);
+  }
+  const site=document.getElementById('seqStepSiteRelationship')?.value||'unknown';
+  if(site==='at_site')sentences.push('The incident is taking place at an organisation site used by the trainee.');
+  else if(site==='near_site')sentences.push('An organisation site is located within the relevant exposure area.');
+  else if(site==='remote_site')sentences.push('No organisation site exposure is recorded within the relevant area.');
+  const tr=document.getElementById('seqStepTravellersWithin')?.value||'unknown'; const rr=seqTravellerRadiusText(); const within=rr?` within ${rr}`:' within the relevant area';
+  if(tr==='0')sentences.push(`No organisation travellers are recorded${within}.`);
+  else if(tr==='1')sentences.push(`One organisation traveller is recorded${within}.`);
+  else if(tr==='2')sentences.push(`Two organisation travellers are recorded${within}.`);
+  else if(tr==='3plus')sentences.push(`Three or more organisation travellers are recorded${within}.`);
+  const ap=document.getElementById('seqStepAffectedPersonnel')?.value||'unknown';
+  if(ap==='none')sentences.push('No organisation personnel are currently confirmed affected.');
+  else if(ap==='confirmed')sentences.push('Organisation personnel are confirmed affected by the incident.');
+  sentences.push('Details should be verified and updated as the situation develops, including any confirmed impact on personnel, assets or travel.');
+  return sentences.join(' ').replace(/\s+/g,' ').trim();
+}
+function generateSequenceStageDraftSummary(){
+  const field=document.getElementById('seqStepSummary'); if(!field)return;
+  const apply=()=>{field.value=buildSequenceStageDraftSummary();field.dispatchEvent(new Event('input',{bubbles:true}));field.focus();toast('✨ Stage draft summary generated — edit any wording before saving','success');};
+  if(field.value.trim()) showConfirm('Replace current stage summary?','Generate a new factual draft from the current stage fields? Existing summary text will be replaced.',apply); else apply();
+}
+window.generateSequenceStageDraftSummary=generateSequenceStageDraftSummary;
+
+async function saveCurrentSequenceTemplate(){
+  if(!sequenceSteps.length){toast('⚠️ Add at least one sequence stage before saving a template','warn');return;}
+  const title=document.getElementById('sequenceTitle')?.value.trim()||sequenceSteps[0]?.title||'Multi-stage training template';
+  const feedback=document.getElementById('sequenceFeedbackMode')?.value||'assessment';
+  const payload=sequenceSteps.map(s=>({...s, status:'pending', scenarioId:null}));
+  try{
+    await apiFetch('/api/org/training-library',{method:'POST',body:JSON.stringify({name:title,description:`Reusable ${payload.length}-stage sequence template · ${feedback} feedback mode`,type:'sequence',payload,tags:'sequence,multi-stage'})});
+    toast(`✅ Sequence template saved: "${title}"`,'success');
+    loadLibrary();
+  }catch(e){toast(e.message||'Could not save sequence template','error');}
+}
+window.saveCurrentSequenceTemplate=saveCurrentSequenceTemplate;
+function openSequenceTemplateLibrary(){
+  const filter=document.getElementById('libTypeFilter'); if(filter)filter.value='sequence';
+  switchTab('library'); renderLibrary();
+}
+window.openSequenceTemplateLibrary=openSequenceTemplateLibrary;
+
+function fmtAdminRunDate(v){try{return v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''}catch(_){return v||''}}
+async function loadAdminSequenceRuns(){
+  const host=document.getElementById('activeSequenceRuns'); if(!host)return;
+  host.innerHTML='<div class="log-empty">Loading active sequence runs…</div>';
+  try{
+    const res=await apiFetch('/api/org/training-sequence-runs?status=in_progress');
+    adminSequenceRuns=Array.isArray(res.data)?res.data:[];
+    adminSequenceStages={};
+    await Promise.all(adminSequenceRuns.map(async r=>{try{const x=await apiFetch('/api/org/training-scenarios?sequence_id='+encodeURIComponent(r.id));adminSequenceStages[r.id]=Array.isArray(x.data)?x.data:[];}catch(_){adminSequenceStages[r.id]=[];}}));
+    renderAdminSequenceRuns();
+  }catch(e){host.innerHTML=`<div class="log-empty">Could not load active runs: ${esc(e.message||e)}</div>`;}
+}
+window.loadAdminSequenceRuns=loadAdminSequenceRuns;
+function renderAdminSequenceRuns(){
+  const host=document.getElementById('activeSequenceRuns'); if(!host)return;
+  if(!adminSequenceRuns.length){host.innerHTML='<div class="log-empty">No active, waiting or paused multi-stage exercises.</div>';return;}
+  host.innerHTML=adminSequenceRuns.map(r=>{
+    const total=Math.max(1,Number(r.total_steps||1)), done=Math.max(0,Number(r.completed_steps||0));
+    const who=r.responder_name||r.trainee_name||'Awaiting first responder'; const status=String(r.status||'active').toLowerCase();
+    const stages=(adminSequenceStages[r.id]||[]).sort((a,b)=>Number(a.sequence_step_index||0)-Number(b.sequence_step_index||0));
+    const timeline=stages.map(st=>`<span class="seq-stage-chip">${esc(st.sequence_stage_label||('Stage '+st.sequence_step_index))}: ${esc(st.status||'pending')}</span>`).join('');
+    const next=r.next_release_at?` · Next release ${esc(fmtAdminRunDate(r.next_release_at))}`:'';
+    return `<div class="seq-run-admin"><div class="seq-run-admin-head"><div><div class="seq-run-admin-title">${esc(r.title||'Multi-stage exercise')}</div><div class="seq-run-admin-meta">${esc(who)} · ${done}/${total} stages complete · started ${esc(fmtAdminRunDate(r.started_at))}${next}</div></div><span class="seq-run-status ${esc(status)}">${esc(status)}</span></div><div style="margin-top:7px">${timeline}</div><div class="seq-run-admin-actions">${status==='paused'?`<button class="btn-outline-pill" onclick="controlSequenceRun('${esc(r.id)}','resume')">▶ Resume</button>`:`<button class="btn-outline-pill" onclick="controlSequenceRun('${esc(r.id)}','pause')">⏸ Pause</button>`}${status==='waiting'?`<button class="btn-outline-pill" onclick="controlSequenceRun('${esc(r.id)}','release_next')">⚡ Release next stage now</button><input type="number" min="1" max="10080" value="15" id="seqDelay_${esc(r.id)}" title="Delay minutes"><button class="btn-outline-pill" onclick="delaySequenceRun('${esc(r.id)}')">＋ Delay next stage</button>`:''}<button class="btn-danger-pill" onclick="controlSequenceRun('${esc(r.id)}','cancel')">End / cancel</button></div></div>`;
+  }).join('');
+}
+async function controlSequenceRun(id,action,extra={}){
+  const labels={pause:'Pause this sequence?',resume:'Resume this sequence?',release_next:'Release the next stage now?',cancel:'End / cancel this sequence?'};
+  const run=async()=>{try{await apiFetch('/api/org/training-sequence-runs/control',{method:'POST',body:JSON.stringify({id,action,...extra})});toast('✅ Sequence run updated','success');await loadAdminSequenceRuns();}catch(e){toast(e.message||'Could not update sequence','error');}};
+  if(action==='cancel')showConfirm(labels[action],'The unfinished sequence will be cancelled and removed from the trainee feed. Completed stage evidence remains in history.',run);else run();
+}
+window.controlSequenceRun=controlSequenceRun;
+function delaySequenceRun(id){const el=document.getElementById('seqDelay_'+id);const n=Math.max(1,Math.min(10080,Number(el?.value||15)||15));controlSequenceRun(id,'delay',{delay_min:n});}
+window.delaySequenceRun=delaySequenceRun;
 
 function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, expectedFollowupActions, unnecessaryFollowupActions, followupAssessmentConfigured, followupTargetMin, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState, sequenceId, sequenceTitle, sequenceStepIndex, sequenceTotalSteps, sequenceStageLabel, sequenceStartedAt, sequenceNextTrigger, sequenceNextDelayMin, sequenceNextScheduledAt, sequenceDisplayNextReleaseTime, sequenceFeedbackMode, status }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
