@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- CityIntel Training Exercise v8 — Phase 9E.2 Persistent Sequence Runs & Resume -->
 <html lang="en">
 <head>
   
@@ -198,7 +199,7 @@
   .tr-sla{margin-top:6px;font-size:12px;color:#9fb0c3}.tr-sla b.met{color:#86efac}.tr-sla b.missed{color:#fca5a5}
 
 
-  /* Phase 9E.1 — evolving multi-stage exercise continuity */
+  /* Phase 9E.2 — persistent multi-stage exercise continuity */
   .tr-sequence{margin:10px 0 14px;padding:11px 12px;border:1px solid rgba(147,197,253,.25);border-radius:12px;background:rgba(147,197,253,.045)}
   .tr-sequence-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .tr-sequence-title{font-size:12px;font-weight:900;color:#dbeafe}.tr-sequence-count{font-size:10px;font-weight:900;color:#93c5fd;text-transform:uppercase}
@@ -209,6 +210,10 @@
   .tr-stage.pending{opacity:.62}.tr-stage-num{font-size:9px;font-weight:900;text-transform:uppercase;color:#8fa0b5}.tr-stage-name{font-size:11px;font-weight:900;margin-top:2px;color:#eef3f7}
   .tr-stage-result{font-size:10px;color:#9fb2c9;margin-top:4px}.tr-seq-final{margin-top:10px;padding:10px 12px;border:1px solid rgba(51,196,141,.32);border-radius:10px;background:rgba(51,196,141,.05)}
   .tr-seq-final strong{color:#86efac}.tr-seq-final-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:7px}.tr-seq-final-grid div{border:1px solid #29343e;border-radius:8px;padding:7px 8px;font-size:10px;color:#b8c7d9}
+  .tr-resume-wrap{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}.tr-resume{border:1px solid rgba(147,197,253,.26);border-radius:12px;background:rgba(147,197,253,.045);overflow:hidden}
+  .tr-resume summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}.tr-resume summary::-webkit-details-marker{display:none}
+  .tr-resume-title{font-weight:900;color:#eef3f7}.tr-resume-meta{font-size:11px;color:#9fb2c9;margin-top:3px}.tr-resume-pill{font-size:10px;font-weight:900;text-transform:uppercase;border:1px solid rgba(251,191,36,.35);color:#fbbf24;background:rgba(251,191,36,.08);border-radius:999px;padding:4px 8px;white-space:nowrap}
+  .tr-resume-body{border-top:1px solid #26313c;padding:11px 14px;font-size:12px;color:#b8c7d8;line-height:1.55}.tr-stage-hold{margin-top:10px;padding:11px 12px;border:1px solid rgba(147,197,253,.28);border-radius:10px;background:rgba(147,197,253,.055);color:#dbeafe}
   @media(max-width:760px){.tr-seq-final-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tr-stage{min-width:120px}}
 </style>
 <style>
@@ -549,7 +554,7 @@ window.CIAccess = {
   var state = {
     scenarios: [], responded: {}, selected: {}, drafts: {}, checks: {}, followup: {}, followupIntervals: {},
     policy: null, busy: false, signature: '', maps: {},
-    sequenceGroups: {}, sequenceResponses: []
+    sequenceGroups: {}, sequenceResponses: [], sequenceRuns: []
   };
 
   // Verification steps. The action alone says what an operator did; these say
@@ -910,6 +915,22 @@ window.CIAccess = {
   function responseActionLabel(v){ return ACTION_TEXT[String(v||'')] || String(v||'').replace(/_/g,' ') || 'Responded'; }
   function responseFeedback(row){ try{return typeof row.feedback_json==='string'?JSON.parse(row.feedback_json||'{}'):(row.feedback_json||{});}catch(_){return{};} }
   function sequenceRows(seqId){ return (state.sequenceResponses||[]).filter(function(r){return String(r.sequence_id||((responseFeedback(r).sequence||{}).id)||'')===seqId;}); }
+  function sequenceRun(seqId){ return (state.sequenceRuns||[]).filter(function(r){return String(r.id||'')===String(seqId||'');})[0]||null; }
+  function fmtReleaseTime(v){ var d=new Date(v||''); return Number.isFinite(d.getTime()) ? d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''; }
+  function sequenceProgressBlock(sc,done){
+    var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc); if(!seqId||total<2)return '';
+    var p=(done&&done.sequenceProgress)||sequenceRun(seqId)||null;
+    if(!p || p.sequence_complete || p.status==='complete')return '';
+    var completed=Math.max(sequenceStepOf(sc),Number(p.completed_steps||0));
+    var next=Math.max(completed+1,Number(p.current_step_index||completed+1));
+    var detail='';
+    if(p.next_stage_active || p.status==='active') detail='Stage '+next+' is now available. Refreshing the exercise will open the new inject.';
+    else if(p.display_next_release_time && p.next_release_at) detail='Next stage scheduled for '+fmtReleaseTime(p.next_release_at)+'.';
+    else detail='Return to normal work. The training banner will reappear when the next stage is released.';
+    var held = String(p.feedback_mode||sc.sequence_feedback_mode||'assessment')==='assessment'
+      ? '<div class="small" style="margin-top:5px">Assessment mode: stage scores and expected answers are held until the full sequence is complete.</div>' : '';
+    return '<div class="tr-stage-hold"><b>Stage '+completed+' of '+total+' recorded — exercise remains in progress.</b><div class="small" style="margin-top:5px">'+esc(detail)+'</div>'+held+'</div>';
+  }
   function sequenceTimeline(sc){
     var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc), current=sequenceStepOf(sc);
     if(!seqId || total<2) return '';
@@ -977,6 +998,7 @@ window.CIAccess = {
             ? '<div class="small" style="margin-top:6px">Follow-up: ' + esc(done.followup.join(' · ')) + '</div>'
             : '') +
         '</div>' +
+        sequenceProgressBlock(sc, done) +
         feedbackBlock(done.feedback) +
         evaluatedOutcomeBlock(done.feedback, sc) +
         sequenceFinalBlock(sc) +
@@ -1039,19 +1061,39 @@ window.CIAccess = {
     '</section>';
   }
 
+  function resumeRunsHtml(){
+    var runs=(state.sequenceRuns||[]).filter(function(r){return ['active','waiting','scheduled'].includes(String(r.status||''));});
+    if(!runs.length)return '';
+    return '<div class="tr-resume-wrap">'+runs.map(function(r){
+      var completed=Math.max(0,Number(r.completed_steps||0)), total=Math.max(1,Number(r.total_steps||1));
+      var status=String(r.status||'waiting');
+      var who=String(r.responder_name||r.trainee_name||'Awaiting trainee');
+      var timing=(r.display_next_release_time&&r.next_release_at)
+        ? ' · next release '+fmtReleaseTime(r.next_release_at)
+        : (status==='waiting'?' · next release time hidden':'');
+      var body=status==='waiting'
+        ? (r.display_next_release_time&&r.next_release_at
+            ? 'The next training inject will become available at '+fmtReleaseTime(r.next_release_at)+'.'
+            : 'The sequence is waiting for its next server-side inject. Continue normal work; the training banner will reappear when the next stage is released.')
+        : 'A stage from this sequence is currently available.';
+      return '<details class="tr-resume"><summary><div><div class="tr-resume-title">'+esc(r.title||'Multi-stage exercise')+'</div><div class="tr-resume-meta">'+esc(who)+' · '+completed+'/'+total+' stages complete'+esc(timing)+'</div></div><span class="tr-resume-pill">'+esc(status==='waiting'?'In progress — waiting':'In progress')+'</span></summary><div class="tr-resume-body">'+esc(body)+'</div></details>';
+    }).join('')+'</div>';
+  }
+
   function render(){
     var wrap = document.getElementById('trScenarios');
     if (!wrap) return;
+    var resumes=resumeRunsHtml();
     if (!state.scenarios.length) {
-      wrap.innerHTML = '<div class="card"><div class="tr-empty">' +
+      wrap.innerHTML = resumes + '<div class="card"><div class="tr-empty">' +
         '<div class="big">🎓</div>' +
-        '<div><b>No training scenario is running.</b></div>' +
-        '<div class="small">When an exercise is injected, a banner appears on every page and the scenario shows up here.</div>' +
+        '<div><b>No training stage is currently available.</b></div>' +
+        '<div class="small">For a paused multi-stage exercise, return to normal work. The training banner will appear again when the next inject is released.</div>' +
         '<a class="btn" href="training-hub.html" style="margin-top:6px">Back to Training Hub</a>' +
         '</div></div>';
       return;
     }
-    wrap.innerHTML = state.scenarios.map(scenarioCard).join('');
+    wrap.innerHTML = resumes + state.scenarios.map(scenarioCard).join('');
     state.maps = {};
     drawMaps();
     renderPolicy();
@@ -1091,6 +1133,11 @@ window.CIAccess = {
   function signatureOf(list){
     return (list || []).map(function(s){ return s.id + ':' + (s.injected_at || ''); }).join('|');
   }
+  function sequenceRunSignature(){
+    return (state.sequenceRuns||[]).map(function(r){
+      return [r.id,r.status,r.completed_steps,r.current_step_index,r.next_release_at,r.display_next_release_time,r.responder_name].join(':');
+    }).join('|');
+  }
 
   function captureDrafts(){
     state.scenarios.forEach(function(sc){
@@ -1100,14 +1147,44 @@ window.CIAccess = {
   }
 
 
+  async function loadSequenceRuns(){
+    var typed='';
+    try {
+      var nameEl=document.getElementById('trResponderName');
+      typed=String((nameEl&&nameEl.value)||localStorage.getItem(NAME_KEY)||'').trim();
+    } catch(_){}
+    try{
+      var url=API+'/api/org/training-sequence-runs?status=in_progress&trainee_view=1&ts='+Date.now();
+      if(typed)url+='&responder_name='+encodeURIComponent(typed);
+      var r=await fetch(url,{headers:headers(),cache:'no-store'});
+      var d=await r.json().catch(function(){return{};});
+      state.sequenceRuns=r.ok&&d.ok!==false&&Array.isArray(d.data)?d.data:[];
+    }catch(_){state.sequenceRuns=[];}
+
+    // Once Stage 1 has established the "Responding as" identity, keep that
+    // identity across every later stage even on a shared/admin login.
+    var activeSeqIds=(state.scenarios||[]).map(sequenceIdOf).filter(Boolean);
+    var locked=(state.sequenceRuns||[]).filter(function(run){
+      return run.responder_name && activeSeqIds.indexOf(String(run.id||''))>=0;
+    })[0] || (state.sequenceRuns||[]).filter(function(run){return !!run.responder_name;})[0];
+    if(locked){
+      var input=document.getElementById('trResponderName');
+      if(input && String(input.value||'').trim()!==String(locked.responder_name||'')){
+        input.value=String(locked.responder_name||'');
+        try{localStorage.setItem(NAME_KEY,input.value);}catch(_){}
+      }
+    }
+  }
+
   async function loadSequenceContext(list){
     var ids=[];
     (list||[]).forEach(function(sc){var id=sequenceIdOf(sc);if(id&&ids.indexOf(id)<0)ids.push(id);});
+    (state.sequenceRuns||[]).forEach(function(run){var id=String(run.id||'');if(id&&ids.indexOf(id)<0)ids.push(id);});
     if(!ids.length){state.sequenceGroups={};return;}
     var groups={};
     await Promise.all(ids.map(async function(id){
       try{
-        var r=await fetch(API+'/api/org/training-scenarios?sequence_id='+encodeURIComponent(id)+'&ts='+Date.now(),{headers:headers(),cache:'no-store'});
+        var r=await fetch(API+'/api/org/training-scenarios?sequence_id='+encodeURIComponent(id)+'&trainee_view=1&ts='+Date.now(),{headers:headers(),cache:'no-store'});
         var d=await r.json().catch(function(){return{};}); groups[id]=r.ok&&d.ok!==false&&Array.isArray(d.data)?d.data:[];
       }catch(_){groups[id]=[];}
     }));
@@ -1127,7 +1204,7 @@ window.CIAccess = {
       // This exercise page needs the complete active scenario record so it can
       // show the linked rule radius/policy and render the same rule used by the
       // scoring engine.
-      var res = await fetch(API + '/api/org/training-scenarios?status=active&ts=' + Date.now(), { headers: headers(), cache:'no-store' });
+      var res = await fetch(API + '/api/org/training-scenarios?status=active&trainee_view=1&ts=' + Date.now(), { headers: headers(), cache:'no-store' });
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || ('Could not load scenarios (' + res.status + ')'));
       next = Array.isArray(data.data) ? data.data : [];
@@ -1139,6 +1216,8 @@ window.CIAccess = {
         return state.responded[oldSc.id] && !next.some(function(n){ return n.id === oldSc.id; });
       });
       if (locallyCompleted.length) next = next.concat(locallyCompleted);
+      state.scenarios = next;
+      await loadSequenceRuns();
       await loadSequenceContext(next);
     } catch (e) {
       var wrap = document.getElementById('trScenarios');
@@ -1148,7 +1227,7 @@ window.CIAccess = {
       return;
     }
 
-    var sig = signatureOf(next);
+    var sig = signatureOf(next) + '||' + sequenceRunSignature();
     if (!force && sig === state.signature) {
       state.scenarios = next;   // keep data fresh without touching the DOM
       updateClocks();
@@ -1261,6 +1340,7 @@ window.CIAccess = {
       state.responded[scenarioId] = {
         responder: responder, note: note, actionLabel: picked.title || action,
         feedback: data.feedback || null,
+        sequenceProgress: data.sequence || null,
         checks: done.map(function(k){
           var c = CHECKS.filter(function(x){ return x.key === k; })[0];
           return c ? c.label : k;
@@ -1278,14 +1358,23 @@ window.CIAccess = {
         });
       }
       delete state.drafts[scenarioId];
+      await loadSequenceRuns();
       render();
-      // Let shared-nav refresh its global training banner immediately. The
-      // local-completed merge in load() keeps this debrief visible here.
+      // The current stage banner closes immediately. If the next stage is
+      // released now, the normal training-active poll opens a fresh banner;
+      // if it is scheduled, no countdown/banner is shown unless the trainer
+      // explicitly chose to disclose the release time.
       try { window.dispatchEvent(new CustomEvent('ci:training-ended', { detail:{ scenarioId:scenarioId } })); } catch (_) {}
-      // Phase 9E.1 — sequence stages are injected by Scenario Admin after it
-      // observes this response. Poll briefly so the next stage appears as part
-      // of one continuous exercise instead of waiting for the normal 20s refresh.
-      if(sequenceIdOf(sc) && sequenceStepOf(sc)<sequenceTotalOf(sc)) waitForNextSequenceStage(sc);
+      if(sequenceIdOf(sc)){
+        if(data.sequence && data.sequence.sequence_complete){
+          await loadSequenceContext(state.scenarios);
+          render();
+        } else if(data.sequence && data.sequence.next_stage_active){
+          setTimeout(function(){ load(true); },700);
+        } else {
+          setTimeout(function(){ load(true); },1200);
+        }
+      }
     } catch (e) {
       show(e.message || String(e));
     } finally {
@@ -1366,7 +1455,10 @@ window.CIAccess = {
     loadPolicy();
     // Poll for new injects; the signature check means this only redraws when
     // something has actually changed.
-    setInterval(load, 20000);
+    setInterval(function(){
+      var waiting=(state.sequenceRuns||[]).some(function(r){return String(r.status||'')==='waiting';});
+      load(waiting);
+    }, 5000);
     setInterval(updateClocks, 30000);
     window.addEventListener('ci:training-started', function(){ load(true); });
     window.addEventListener('ci:training-ended', function(){ load(true); });
