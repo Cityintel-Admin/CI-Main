@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Exercise v8 — Phase 9E.2 Persistent Sequence Runs & Resume -->
+<!-- CityIntel Training Exercise v9 — Phase 9E.3.1 Sequence Completion State Polish -->
 <html lang="en">
 <head>
   
@@ -916,12 +916,26 @@ window.CIAccess = {
   function responseFeedback(row){ try{return typeof row.feedback_json==='string'?JSON.parse(row.feedback_json||'{}'):(row.feedback_json||{});}catch(_){return{};} }
   function sequenceRows(seqId){ return (state.sequenceResponses||[]).filter(function(r){return String(r.sequence_id||((responseFeedback(r).sequence||{}).id)||'')===seqId;}); }
   function sequenceRun(seqId){ return (state.sequenceRuns||[]).filter(function(r){return String(r.id||'')===String(seqId||'');})[0]||null; }
+  function sequenceCompletedSteps(seqId){
+    var steps={};
+    sequenceRows(seqId).forEach(function(r){
+      var n=Number(r.sequence_step_index||((responseFeedback(r).sequence||{}).stepIndex)||0);
+      if(n>0)steps[n]=1;
+    });
+    return Object.keys(steps).length;
+  }
+  function sequenceIsComplete(sc){
+    var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc); if(!seqId||total<2)return false;
+    var run=sequenceRun(seqId);
+    if(run && (run.sequence_complete || String(run.status||'')==='complete'))return true;
+    return sequenceCompletedSteps(seqId)>=total;
+  }
   function fmtReleaseTime(v){ var d=new Date(v||''); return Number.isFinite(d.getTime()) ? d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''; }
   function sequenceProgressBlock(sc,done){
     var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc); if(!seqId||total<2)return '';
     var p=(done&&done.sequenceProgress)||sequenceRun(seqId)||null;
-    if(!p || p.sequence_complete || p.status==='complete')return '';
-    var completed=Math.max(sequenceStepOf(sc),Number(p.completed_steps||0));
+    if(sequenceIsComplete(sc) || !p || p.sequence_complete || p.status==='complete')return '';
+    var completed=Math.max(sequenceStepOf(sc),Number(p.completed_steps||0),sequenceCompletedSteps(seqId));
     var next=Math.max(completed+1,Number(p.current_step_index||completed+1));
     var detail='';
     if(p.next_stage_active || p.status==='active') detail='Stage '+next+' is now available. Refreshing the exercise will open the new inject.';
@@ -936,17 +950,19 @@ window.CIAccess = {
     if(!seqId || total<2) return '';
     var group=(state.sequenceGroups&&state.sequenceGroups[seqId])||[];
     var responses=sequenceRows(seqId);
+    var complete=sequenceIsComplete(sc), completedCount=sequenceCompletedSteps(seqId);
     var title=String(sc.sequence_title||sc.sequenceTitle||'Multi-stage exercise');
     var stages=[];
     for(var i=1;i<=total;i++){
       var stage=group.filter(function(x){return sequenceStepOf(x)===i;})[0]||null;
       var row=responses.filter(function(r){return Number(r.sequence_step_index||((responseFeedback(r).sequence||{}).stepIndex)||0)===i;})[0]||null;
-      var cls=row?'done':(i===current?'current':'pending');
+      var cls=row?'done':(!complete&&i===current?'current':'pending');
       var label=String((stage&&(stage.sequence_stage_label||stage.sequenceStageLabel||stage.title))||('Stage '+i));
       var detail=row?(responseActionLabel(row.action)+(row.score_pct!==null&&row.score_pct!==undefined?' · '+Math.round(Number(row.score_pct))+'%':'')):(i===current?'Active':'Pending');
       stages.push('<div class="tr-stage '+cls+'"><div class="tr-stage-num">Stage '+i+' of '+total+'</div><div class="tr-stage-name">'+esc(label)+'</div><div class="tr-stage-result">'+esc(detail)+'</div></div>');
     }
-    return '<div class="tr-sequence"><div class="tr-sequence-head"><div class="tr-sequence-title">'+esc(title)+'</div><div class="tr-sequence-count">Stage '+current+' of '+total+'</div></div><div class="tr-stage-track">'+stages.join('')+'</div></div>';
+    var countLabel=complete ? ('Sequence complete · '+Math.max(completedCount,total)+'/'+total+' stages') : ('Stage '+current+' of '+total);
+    return '<div class="tr-sequence"><div class="tr-sequence-head"><div class="tr-sequence-title">'+esc(title)+'</div><div class="tr-sequence-count">'+esc(countLabel)+'</div></div><div class="tr-stage-track">'+stages.join('')+'</div></div>';
   }
   function sequenceFinalBlock(sc){
     var seqId=sequenceIdOf(sc), total=sequenceTotalOf(sc);
@@ -977,7 +993,7 @@ window.CIAccess = {
       mins !== null ? '<span class="tr-chip clock' + (over ? ' over' : '') + '" id="clock-' + esc(sc.id) + '">⏱ ' + mins + ' min elapsed' + (target ? ' · target ' + target + ' min' : '') + '</span>' : '',
       sc.trainee_name ? '<span class="tr-chip">Assigned: ' + esc(sc.trainee_name) + '</span>' : '',
       (sc.difficulty && sc.difficulty !== 'intermediate') ? '<span class="tr-chip">' + esc(String(sc.difficulty).toUpperCase()) + '</span>' : '',
-      sequenceIdOf(sc) && sequenceTotalOf(sc)>1 ? '<span class="tr-chip">Stage ' + sequenceStepOf(sc) + ' / ' + sequenceTotalOf(sc) + '</span>' : ''
+      sequenceIdOf(sc) && sequenceTotalOf(sc)>1 ? '<span class="tr-chip">' + (sequenceIsComplete(sc) ? ('Sequence complete · '+sequenceTotalOf(sc)+'/'+sequenceTotalOf(sc)) : ('Stage ' + sequenceStepOf(sc) + ' / ' + sequenceTotalOf(sc))) + '</span>' : ''
     ].filter(Boolean).join('');
 
     if (done) {
