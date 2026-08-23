@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- CityIntel Training Hub v15 — Phase 9E.2 Persistent Sequence Runs & Resume -->
 <html lang="en">
 <head>
   
@@ -315,6 +316,14 @@
         <div class="readiness-standard-summary" id="readinessStandardSummary">Loading readiness curriculum…</div>
       </section>
 
+      <details class="card hub-accordion" id="activeSequenceSection">
+        <summary><span class="accordion-title"><span>Active Training Sequences</span><span class="section-count" id="activeSequenceCountBadge">0</span></span></summary>
+        <div class="accordion-body">
+          <div class="accordion-intro">Persistent multi-stage drills stay here between injects. A hidden release time remains hidden from trainees; the next banner appears when the Worker releases the stage.</div>
+          <div class="list" id="activeSequenceList" style="margin-top:12px"><div class="item"><div class="item-meta">No active sequences.</div></div></div>
+        </div>
+      </details>
+
       <details class="card hub-accordion" id="exerciseQueueSection">
         <summary><span class="accordion-title"><span id="exerciseTitle">Exercise Queue</span><span class="section-count" id="exerciseCountBadge">0</span></span></summary>
         <div class="accordion-body">
@@ -369,7 +378,7 @@
   const fmtTime = v => { const d = new Date(v); return Number.isFinite(d.getTime()) ? d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '—'; };
 
   const PAGE_SIZE = 10;
-  const state = { scenarios:[], sessions:[], responses:[], policy:null, admin:false, me:{}, pages:{ scenarios:1, exercises:1, operators:1 } };
+  const state = { scenarios:[], sessions:[], responses:[], sequenceRuns:[], policy:null, admin:false, me:{}, pages:{ scenarios:1, exercises:1, operators:1 } };
 
   function who(){ try { if (window.CIAuth && CIAuth.who) return CIAuth.who() || {}; } catch(_){} try { return JSON.parse(localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}'); } catch(_) { return {}; } }
   function isAdmin(){ try { return !!(window.CIAuth && (CIAuth.isMasterAdmin?.() || CIAuth.isOrgAdmin?.())); } catch(_) { return false; } }
@@ -398,6 +407,17 @@
   function eventOf(r){ const rr=(feedbackOf(r).threshold||{}).rule||{}; return String(rr.eventType||r.scenario_title||r.title||'Training scenario').trim(); }
   function sequenceIdOfRow(r){const fb=feedbackOf(r),sq=fb.sequence||{};return String(r.sequence_id||sq.id||'');}
   function sequenceStepOfRow(r){const fb=feedbackOf(r),sq=fb.sequence||{};return Math.max(0,Number(r.sequence_step_index||sq.stepIndex||0)||0);}
+  function completedEvidenceRows(rows){
+    return (rows||[]).filter(r=>{
+      const seq=sequenceIdOfRow(r); if(!seq)return true;
+      const status=String(r.sequence_run_status||'');
+      if(status)return status==='complete';
+      const total=Math.max(0,Number(r.sequence_run_total_steps||r.sequence_total_steps||0)||0);
+      if(!total)return true; // legacy record without parent-run state
+      const same=(rows||[]).filter(x=>sequenceIdOfRow(x)===seq);
+      return new Set(same.map(sequenceStepOfRow).filter(Boolean)).size>=total;
+    });
+  }
   function exerciseUnits(rows){
     const map=new Map(),out=[];
     (rows||[]).forEach(r=>{
@@ -416,7 +436,7 @@
     return out;
   }
   function responseStats(){
-    const rows=state.responses||[];
+    const rows=completedEvidenceRows(state.responses||[]);
     const units=exerciseUnits(rows);
     const scored=units.filter(u=>u.score!==null&&u.score!==undefined&&Number.isFinite(Number(u.score)));
     const avg=scored.length?Math.round(scored.reduce((a,u)=>a+Number(u.score||0),0)/scored.length):0;
@@ -495,7 +515,7 @@
 
   function operatorGroups(){
     const map=new Map();
-    (state.responses||[]).forEach(r=>{ const name=operatorName(r); if(!map.has(name))map.set(name,[]); map.get(name).push(r); });
+    completedEvidenceRows(state.responses||[]).forEach(r=>{ const name=operatorName(r); if(!map.has(name))map.set(name,[]); map.get(name).push(r); });
     return [...map.entries()].map(([name,list])=>{
       const units=exerciseUnits(list);
       const scoredUnits=units.filter(u=>u.score!==null&&u.score!==undefined&&Number.isFinite(Number(u.score)));
@@ -551,8 +571,9 @@
   }
 
   async function loadData(){
-    let scenarios=[], sessions=[], responses=[];
+    let scenarios=[], sessions=[], responses=[], sequenceRuns=[];
     try { scenarios = (await api('/api/org/training-scenarios')).data || []; } catch(e){ scenarios = localList(['ci_admin_training_feed','ci_training_feed_v1','ci_training_scenarios_v1']); }
+    try { sequenceRuns = (await api('/api/org/training-sequence-runs?status=in_progress')).data || []; } catch(e){ sequenceRuns = []; }
     if (state.admin) {
       try { sessions = (await api('/api/org/training-sessions')).data || []; } catch(e){ sessions = localList(['ci_training_sessions_v1','ci_training_results_v1']); }
     } else {
@@ -565,6 +586,7 @@
     state.scenarios = Array.isArray(scenarios) ? scenarios : [];
     state.sessions = Array.isArray(sessions) ? sessions : [];
     state.responses = Array.isArray(responses) ? responses : [];
+    state.sequenceRuns = Array.isArray(sequenceRuns) ? sequenceRuns : [];
   }
 
   function computeReadiness(){
@@ -588,7 +610,7 @@
     $('kpiActive').textContent=active;
     $('readinessScore').textContent=readiness+'%';
     $('readinessRing').style.setProperty('--score',readiness);
-    if($('readinessContext')) $('readinessContext').textContent=readiness+'% readiness · '+groups.length+' operator'+(groups.length===1?'':'s')+' · '+st.rows.length+' completed exercise'+(st.rows.length===1?'':'s');
+    if($('readinessContext')) $('readinessContext').textContent=readiness+'% readiness · '+groups.length+' operator'+(groups.length===1?'':'s')+' · '+st.units.length+' completed exercise'+(st.units.length===1?'':'s');
     const ready=groups.filter(g=>g.status==='ready').length, coaching=groups.filter(g=>g.status==='coaching').length, remediation=groups.filter(g=>g.status==='remediation').length, baseline=groups.filter(g=>g.status==='baseline').length;
     if($('traineeTracked')) $('traineeTracked').textContent=groups.length;
     if($('traineeReady')) $('traineeReady').textContent=ready;
@@ -610,6 +632,24 @@
     $('competencyMatrix').innerHTML=rows.map(([label,val])=>`<div class="matrix-row"><b>${esc(label)}</b><div class="bar-track"><div class="bar-fill" style="width:${pct(val)}%"></div></div><span class="small">${pct(val)}%</span></div>`).join('');
   }
 
+  function renderActiveSequences(){
+    const runs=state.sequenceRuns||[];
+    if($('activeSequenceCountBadge')) $('activeSequenceCountBadge').textContent=runs.length;
+    const host=$('activeSequenceList'); if(!host)return;
+    if(!runs.length){host.innerHTML='<div class="item"><div class="item-meta">No multi-stage exercises are currently in progress.</div></div>';return;}
+    host.innerHTML=runs.map(r=>{
+      const done=Math.max(0,Number(r.completed_steps||0)), total=Math.max(1,Number(r.total_steps||1));
+      const who=r.responder_name||r.trainee_name||'Awaiting trainee';
+      const timing=r.display_next_release_time&&r.next_release_at
+        ? ' · next release '+fmtDateTime(r.next_release_at)
+        : (String(r.status||'')==='waiting'?' · next release hidden':'');
+      const msg=String(r.status||'')==='waiting'
+        ? (r.display_next_release_time&&r.next_release_at?'Waiting for scheduled release.':'Waiting for the next inject; trainee release time is intentionally hidden.')
+        : 'A stage is currently available in Training Exercise.';
+      return `<div class="item"><div class="item-head"><div><div class="item-title">${esc(r.title||'Multi-stage exercise')}</div><div class="item-meta">${esc(who)} · ${done}/${total} stages complete${esc(timing)}</div></div><span class="pill ${String(r.status||'')==='waiting'?'med':'low'}">${esc(r.status||'active')}</span></div><div class="item-meta" style="margin-top:7px">${esc(msg)}</div><div style="margin-top:9px"><a class="btn" href="training-scenario.html">Continue exercise</a></div></div>`;
+    }).join('');
+  }
+
   function scenarioHtml(s){
     const risk=norm(s.risk||s.severity||'medium'), status=norm(s.status||'active');
     const cls=risk.includes('critical')||risk.includes('high')?'high':risk.includes('low')?'low':'med';
@@ -621,7 +661,10 @@
   }
   function renderScenarios(){
     const search=norm($('scenarioSearch')?.value||''), filter=norm($('scenarioFilter')?.value||'all');
-    let rows=state.scenarios.slice();
+    // Waiting stages belong to the persistent sequence panel, not the normal
+    // exercise queue. Keeping them out of this list also prevents future
+    // scenario titles/context from being exposed before release.
+    let rows=state.scenarios.slice().filter(s=>norm(s.status||'active')!=='waiting');
     if(filter!=='all') rows=rows.filter(s=>norm(s.status||'active')===filter);
     if(search) rows=rows.filter(s=>norm([s.title,s.scenario_title,s.name,s.city,s.country,s.category,s.type,s.summary,s.description].join(' ')).includes(search));
     rows.sort((a,b)=>(norm(b.status||'active')==='active')-(norm(a.status||'active')==='active')||(Date.parse(b.injected_at||b.created_at||0)-Date.parse(a.injected_at||a.created_at||0)));
@@ -756,7 +799,7 @@
     $('priorityActions').innerHTML=actions.slice(0,5).map(a=>`<div class="item"><div class="item-head"><div><div class="item-title">${esc(a[0])}</div><div class="item-meta">${esc(a[1])}</div></div><a class="btn" href="${esc(a[2])}">${esc(a[3])}</a></div></div>`).join('');
   }
 
-  function renderAll(){ renderKpis(); renderCompetency(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
+  function renderAll(){ renderKpis(); renderCompetency(); renderActiveSequences(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
   document.addEventListener('click',e=>{
     const pageBtn=e.target.closest('[data-page-key]');
     if(pageBtn && !pageBtn.disabled){
