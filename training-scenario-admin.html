@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- CityIntel Training Scenario Admin v28 — Phase 9E.2 Persistent Sequence Runs & Resume -->
 <!-- CityIntel Training Phase 9B.1 — editable factual scenario draft summaries -->
 <html lang="en">
 <head>
@@ -2181,15 +2182,25 @@
           <div class="card-head">
             <div class="card-head-left">
               <div class="card-title">📋 Scenario Sequence</div>
-              <div class="card-sub">Chain scenarios — each step auto-fires when the operator responds to the previous one.</div>
+              <div class="card-sub">Build a persistent evolving exercise. The Worker releases later stages even if Scenario Admin is closed.</div>
             </div>
             <button class="btn-outline-pill" id="btnAddStep" style="font-size:11px;">+ Add step</button>
           </div>
           <div class="card-body">
-            <div class="form-field" style="margin-bottom:12px">
-              <label>Multi-stage exercise title</label>
-              <input type="text" id="sequenceTitle" placeholder="e.g. Parliament Square protest escalation">
-              <div class="form-hint">All stages share this exercise identity. Training Review scores the sequence as one multi-stage exercise while preserving each stage as evidence.</div>
+            <div class="form-grid" style="margin-bottom:12px">
+              <div class="form-field">
+                <label>Multi-stage exercise title</label>
+                <input type="text" id="sequenceTitle" placeholder="e.g. Parliament Square protest escalation">
+                <div class="form-hint">All stages share one persistent exercise identity and count as one readiness exercise per subject.</div>
+              </div>
+              <div class="form-field">
+                <label>Stage feedback mode</label>
+                <select id="sequenceFeedbackMode">
+                  <option value="assessment" selected>Assessment — hold scores until final stage</option>
+                  <option value="coached">Coached — show feedback after each stage</option>
+                </select>
+                <div class="form-hint">Assessment mode avoids coaching the trainee through later stages. Coached mode keeps immediate stage feedback.</div>
+              </div>
             </div>
             <div class="sequence-list" id="sequenceList">
               <div class="log-empty" id="seqEmpty">No sequence built yet. Add steps above, then run the sequence.</div>
@@ -2388,7 +2399,7 @@
   </div>
 </div>
 
-<!-- ===== SEQUENCE STEP EDITOR MODAL — PHASE 9E.1 MODERNISED ===== -->
+<!-- ===== SEQUENCE STEP EDITOR MODAL — PHASE 9E.2 PERSISTENT ===== -->
 <div class="seq-modal-overlay" id="seqStepModal">
   <div class="seq-modal seq-modern-modal">
     <div class="seq-modal-head">
@@ -2522,33 +2533,50 @@
         <div class="trigger-select-grid">
           <div class="trigger-option selected" data-trigger="any_response" onclick="selectTrigger('any_response')">
             <div class="trigger-option-label">Any response</div>
-            <div class="trigger-option-desc">Fires when operator acts on previous step (escalate, monitor, or clear)</div>
+            <div class="trigger-option-desc">Release the next stage immediately after this stage is submitted</div>
           </div>
           <div class="trigger-option" data-trigger="escalated" onclick="selectTrigger('escalated')">
             <div class="trigger-option-label">Escalated</div>
-            <div class="trigger-option-desc">Only fires if operator escalated the previous step</div>
+            <div class="trigger-option-desc">Advance after response; records whether the operator escalated</div>
           </div>
           <div class="trigger-option" data-trigger="cleared" onclick="selectTrigger('cleared')">
             <div class="trigger-option-label">Cleared</div>
-            <div class="trigger-option-desc">Only fires if operator cleared the previous step</div>
+            <div class="trigger-option-desc">Advance after response; records whether the operator cleared</div>
           </div>
           <div class="trigger-option" data-trigger="monitored" onclick="selectTrigger('monitored')">
             <div class="trigger-option-label">Monitored</div>
-            <div class="trigger-option-desc">Only fires if operator chose to monitor the previous step</div>
+            <div class="trigger-option-desc">Advance after response; records whether the operator monitored</div>
           </div>
           <div class="trigger-option" data-trigger="timed" onclick="selectTrigger('timed')">
-            <div class="trigger-option-label">Timed delay</div>
-            <div class="trigger-option-desc">Fires automatically after N minutes, regardless of response</div>
+            <div class="trigger-option-label">Timed delay after response</div>
+            <div class="trigger-option-desc">Release the next stage N minutes after this stage is submitted</div>
+          </div>
+          <div class="trigger-option" data-trigger="scheduled" onclick="selectTrigger('scheduled')">
+            <div class="trigger-option-label">Scheduled release</div>
+            <div class="trigger-option-desc">Release the next stage at a pre-programmed real-world date / time after this stage is complete</div>
           </div>
         </div>
         <div id="timedDelayRow" style="display:none;margin-top:10px;">
           <div class="form-field">
-            <label>Delay (minutes)</label>
+            <label>Delay after response (minutes)</label>
             <div class="timing-row">
-              <input type="number" class="timing-input" id="seqStepDelay" min="1" max="120" value="5">
-              <span class="timing-label">minutes after previous step fires</span>
+              <input type="number" class="timing-input" id="seqStepDelay" min="1" max="10080" value="5">
+              <span class="timing-label">minutes after this stage is submitted</span>
             </div>
           </div>
+        </div>
+        <div id="scheduledReleaseRow" style="display:none;margin-top:10px;">
+          <div class="form-field">
+            <label>Next-stage release date / time</label>
+            <input type="datetime-local" id="seqStepReleaseAt">
+            <div class="form-hint">This is the real release time for the next training inject, not the fictional scenario time above.</div>
+          </div>
+        </div>
+        <div id="releaseDisclosureRow" style="display:none;margin-top:10px;">
+          <label class="assessment-check neutral" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="seqStepDisplayReleaseTime" style="width:auto">
+            <span><strong>Show the next-stage time to the trainee</strong><br><span class="form-hint">Leave off to preserve surprise. The training banner will reappear when the Worker releases the next stage.</span></span>
+          </label>
         </div>
       </div>
 
@@ -2881,7 +2909,7 @@ let confirmCallback  = null;
 let lastResponsePoll = '';
 
 // Sequencer state
-let sequenceSteps    = [];          // Phase 9E.1: full stage assessment snapshots plus runtime status
+let sequenceSteps    = [];          // Phase 9E.2: persistent stage snapshots; Worker owns progression
 let sequenceRunning  = false;
 let sequenceRunId    = '';
 let sequenceStartedAt= '';
@@ -3667,7 +3695,7 @@ function injectScenario() {
   if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
 }
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, expectedFollowupActions, unnecessaryFollowupActions, followupAssessmentConfigured, followupTargetMin, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState, sequenceId, sequenceTitle, sequenceStepIndex, sequenceTotalSteps, sequenceStageLabel, sequenceStartedAt }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, expectedFollowupActions, unnecessaryFollowupActions, followupAssessmentConfigured, followupTargetMin, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState, sequenceId, sequenceTitle, sequenceStepIndex, sequenceTotalSteps, sequenceStageLabel, sequenceStartedAt, sequenceNextTrigger, sequenceNextDelayMin, sequenceNextScheduledAt, sequenceDisplayNextReleaseTime, sequenceFeedbackMode, status }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
   // Every scenario is labelled as training. Stealth mode was removed when
@@ -3707,6 +3735,12 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     sequenceTotalSteps: Number(sequenceTotalSteps || 0) || 0, sequence_total_steps: Number(sequenceTotalSteps || 0) || 0,
     sequenceStageLabel: sequenceStageLabel || '', sequence_stage_label: sequenceStageLabel || '',
     sequenceStartedAt: sequenceStartedAt || '', sequence_started_at: sequenceStartedAt || '',
+    sequenceNextTrigger: sequenceNextTrigger || 'any_response', sequence_next_trigger: sequenceNextTrigger || 'any_response',
+    sequenceNextDelayMin: Number(sequenceNextDelayMin || 0) || 0, sequence_next_delay_min: Number(sequenceNextDelayMin || 0) || 0,
+    sequenceNextScheduledAt: sequenceNextScheduledAt || '', sequence_next_scheduled_at: sequenceNextScheduledAt || '',
+    sequenceDisplayNextReleaseTime: !!sequenceDisplayNextReleaseTime, sequence_display_next_release_time: sequenceDisplayNextReleaseTime ? 1 : 0,
+    sequenceFeedbackMode: sequenceFeedbackMode || 'assessment', sequence_feedback_mode: sequenceFeedbackMode || 'assessment',
+    status: status || 'active',
     distanceM: (distanceM !== null && distanceM !== undefined && !isNaN(distanceM)) ? distanceM : null,
     distance_m: (distanceM !== null && distanceM !== undefined && !isNaN(distanceM)) ? distanceM : null,
     nearestLocationName: nearestLocationName || '',
@@ -3887,7 +3921,7 @@ function removeFromLocalFeed(id) {
    SCENARIO SEQUENCER
 ════════════════════════════════════════════════ */
 
-// ── Phase 9E.1 stage assessment helpers ───────────────────────────────
+// ── Phase 9E.2 stage assessment helpers ───────────────────────────────
 function seqRenderAssessment(hostId, items, required, unnecessary, dataAttr){
   const host=document.getElementById(hostId); if(!host)return;
   const req=new Set((required||[]).map(v=>String(v).toLowerCase()));
@@ -3946,6 +3980,8 @@ function openSeqModal(idx) {
   val('seqStepTitle',step?.title||''); val('seqStepCity',step?.city||''); val('seqStepCountry',step?.country||'');
   val('seqStepSummary',step?.summary||''); val('seqStepExpected',step?.expectedResponse||''); val('seqStepCategory',step?.category||'civil_unrest');
   val('seqStepDelay',step?.delayMin||5); val('seqStepStageLabel',step?.stageLabel||step?.sequenceStageLabel||'');
+  if(step?.releaseAt){const rd=new Date(step.releaseAt);if(Number.isFinite(rd.getTime()))val('seqStepReleaseAt',new Date(rd.getTime()-rd.getTimezoneOffset()*60000).toISOString().slice(0,16));else val('seqStepReleaseAt','');}else val('seqStepReleaseAt','');
+  const displayRelease=document.getElementById('seqStepDisplayReleaseTime'); if(displayRelease) displayRelease.checked=!!step?.displayReleaseTime;
   val('seqStepDifficulty',step?.difficulty||'intermediate'); val('seqStepTargetResponse',Number(step?.targetResponseMin||0));
   val('seqStepLocation',step?.location||''); val('seqStepLat',step?.lat??''); val('seqStepLng',step?.lng??'');
   val('seqStepDistance',step?.distanceM??''); val('seqStepNearestRef',step?.nearestLocationName||'');
@@ -3972,7 +4008,12 @@ function closeSeqModal() {
 function selectTrigger(val) {
   seqTrigger = val;
   document.querySelectorAll('.trigger-option').forEach(el => el.classList.toggle('selected', el.dataset.trigger === val));
-  document.getElementById('timedDelayRow').style.display = val === 'timed' ? '' : 'none';
+  const timed = document.getElementById('timedDelayRow');
+  const scheduled = document.getElementById('scheduledReleaseRow');
+  const disclosure = document.getElementById('releaseDisclosureRow');
+  if (timed) timed.style.display = val === 'timed' ? '' : 'none';
+  if (scheduled) scheduled.style.display = val === 'scheduled' ? '' : 'none';
+  if (disclosure) disclosure.style.display = (val === 'timed' || val === 'scheduled') ? '' : 'none';
 }
 
 function saveSeqStep() {
@@ -4005,7 +4046,11 @@ function saveSeqStep() {
     affectedPersonnelState:document.getElementById('seqStepAffectedPersonnel')?.value||'unknown',
     thresholdRuleId:seqThresholdRuleId||'', threshold_rule_id:seqThresholdRuleId||'',
     thresholdConditionState:seqThresholdConditionState||'baseline', threshold_condition_state:seqThresholdConditionState||'baseline',
-    trigger:seqTrigger, delayMin:seqTrigger==='timed'?(parseInt(document.getElementById('seqStepDelay').value,10)||5):0,
+    trigger:seqTrigger,
+    delayMin:seqTrigger==='timed'?(parseInt(document.getElementById('seqStepDelay').value,10)||5):0,
+    releaseAt:seqTrigger==='scheduled' && document.getElementById('seqStepReleaseAt')?.value
+      ? new Date(document.getElementById('seqStepReleaseAt').value).toISOString() : '',
+    displayReleaseTime:(seqTrigger==='timed'||seqTrigger==='scheduled') && !!document.getElementById('seqStepDisplayReleaseTime')?.checked,
     status:'pending', scenarioId:null
   };
   if (seqEditIdx >= 0) sequenceSteps[seqEditIdx] = { ...sequenceSteps[seqEditIdx], ...step };
@@ -4053,11 +4098,13 @@ function renderSequenceList() {
           : `<span class="seq-step-status" style="background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid rgba(255,255,255,0.1);">Pending</span>`;
 
     const triggerLabel = step.trigger === 'timed'
-      ? `⏱ Auto-fires after ${step.delayMin}min`
-      : step.trigger === 'escalated' ? '🔴 Fires on: escalated'
-      : step.trigger === 'cleared'   ? '✅ Fires on: cleared'
-      : step.trigger === 'monitored' ? '🟡 Fires on: monitored'
-      : '👆 Fires on: any response';
+      ? `⏱ Next stage ${step.delayMin}min after response${step.displayReleaseTime?' · time shown':' · time hidden'}`
+      : step.trigger === 'scheduled'
+        ? `🗓 Next stage scheduled ${step.releaseAt ? new Date(step.releaseAt).toLocaleString('en-GB') : 'time not set'}${step.displayReleaseTime?' · shown':' · hidden'}`
+      : step.trigger === 'escalated' ? '🔴 Advance after response · escalation branch'
+      : step.trigger === 'cleared'   ? '✅ Advance after response · clear branch'
+      : step.trigger === 'monitored' ? '🟡 Advance after response · monitoring branch'
+      : '👆 Next stage immediately after response';
 
     const riskColor = step.risk === 'high' ? '#ff5a5f' : step.risk === 'med' ? '#f0b429' : '#33c48d';
     const linkedRule = thresholdRuleById(step.thresholdRuleId || step.threshold_rule_id || '');
@@ -4110,169 +4157,160 @@ function renderSequenceList() {
   document.getElementById('seqProgressLabel').textContent = `Step ${done} of ${sequenceSteps.length} complete`;
 }
 
-// ── Run sequence ─────────────────────────────────
+// ── Run sequence — Phase 9E.2 persistent Worker-owned progression ─────
 async function runSequence() {
   if (!sequenceSteps.length) { toast('⚠️ No steps in sequence', 'warn'); return; }
   if (sequenceRunning) return;
 
+  const missingScheduled = sequenceSteps.find((s,i) => i < sequenceSteps.length-1 && s.trigger === 'scheduled' && !s.releaseAt);
+  if (missingScheduled) {
+    toast(`⚠️ ${missingScheduled.stageLabel || missingScheduled.title}: scheduled release time is required`, 'warn');
+    return;
+  }
+
   sequenceRunning = true;
   sequenceRunId = `seqrun_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
   sequenceStartedAt = new Date().toISOString();
-  currentStepIdx = -1;
-  sequenceSteps.forEach(s => { s.status = 'pending'; s.scenarioId = null; });
-  renderSequenceList();
+  currentStepIdx = 0;
+  const sequenceTitle = document.getElementById('sequenceTitle')?.value.trim() || sequenceSteps[0]?.title || 'Multi-stage training exercise';
+  const feedbackMode = document.getElementById('sequenceFeedbackMode')?.value || 'assessment';
+  const traineeName = document.getElementById('sessionTrainees')?.value.trim() || '';
 
-  if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
-  toast(`▶ Sequence started — ${sequenceSteps.length} steps`, 'success');
-
-  await fireNextStep();
-}
-
-async function fireNextStep() {
-  if (!sequenceRunning) return;
-
-  currentStepIdx++;
-  if (currentStepIdx >= sequenceSteps.length) {
-    // Sequence complete
-    sequenceRunning = false;
-    renderSequenceList();
-    toast('✅ Sequence complete!', 'success');
-    return;
-  }
-
-  const step = sequenceSteps[currentStepIdx];
-  step.status = 'active';
-  renderSequenceList();
-
-  const catInfo = CATEGORIES.find(c => c.id === step.category) || { id: step.category, emoji: '📋', label: step.category };
-  const stepRuleId = step.thresholdRuleId || step.threshold_rule_id || '';
-  const stepRule = thresholdRuleById(stepRuleId);
-  const scenario = buildScenarioObj({
-    title: step.title, city: step.city, country: step.country,
-    location: step.location || '', confidence: 'Training scenario',
-    summary: step.summary, expectedResponse: step.expectedResponse,
-    risk: step.risk, category: catInfo, autoEscalateMin: 0,
-    when: step.scenarioAt || new Date().toISOString(),
-    targetResponseMin: Number(step.targetResponseMin || 0),
-    difficulty: step.difficulty || 'intermediate',
-    lat: step.lat, lng: step.lng,
-    distanceM: step.distanceM, nearestLocationName: step.nearestLocationName || '',
-    expectedChecks: Array.isArray(step.expectedChecks) ? step.expectedChecks : (stepRule && Array.isArray(stepRule.required_checks) ? stepRule.required_checks : []),
-    unnecessaryChecks: Array.isArray(step.unnecessaryChecks) ? step.unnecessaryChecks : [], checkAssessmentConfigured: true,
-    expectedFollowupActions: Array.isArray(step.expectedFollowupActions) ? step.expectedFollowupActions : (stepRule && Array.isArray(stepRule.followup_actions) ? stepRule.followup_actions : []),
-    unnecessaryFollowupActions: Array.isArray(step.unnecessaryFollowupActions) ? step.unnecessaryFollowupActions : [], followupAssessmentConfigured: true,
-    followupTargetMin: Number(step.followupTargetMin || (stepRule ? stepRule.followup_target_min : 0) || 0),
-    siteRelationship:step.siteRelationship||'unknown', travellersWithinRadius:step.travellersWithinRadius||'unknown',
-    travellerRadiusKm:step.travellerRadiusKm==null?null:Number(step.travellerRadiusKm), affectedPersonnelState:step.affectedPersonnelState||'unknown',
-    thresholdRuleId: stepRuleId,
-    thresholdConditionState: step.thresholdConditionState || step.threshold_condition_state || 'baseline',
-    sequenceId: sequenceRunId,
-    sequenceTitle: document.getElementById('sequenceTitle')?.value.trim() || sequenceSteps[0]?.title || 'Multi-stage training exercise',
-    sequenceStepIndex: currentStepIdx + 1,
-    sequenceTotalSteps: sequenceSteps.length,
-    sequenceStageLabel: step.stageLabel || `Stage ${currentStepIdx+1}`,
-    sequenceStartedAt: sequenceStartedAt
+  const payload = sequenceSteps.map((step, i) => {
+    const catInfo = CATEGORIES.find(c => c.id === step.category) || { id: step.category, emoji: '📋', label: step.category };
+    const stepRuleId = step.thresholdRuleId || step.threshold_rule_id || '';
+    const stepRule = thresholdRuleById(stepRuleId);
+    const scenario = buildScenarioObj({
+      title: step.title, city: step.city, country: step.country,
+      location: step.location || '', confidence: 'Training scenario',
+      summary: step.summary, expectedResponse: step.expectedResponse,
+      risk: step.risk, category: catInfo, autoEscalateMin: 0,
+      when: step.scenarioAt || new Date().toISOString(),
+      targetResponseMin: Number(step.targetResponseMin || 0),
+      difficulty: step.difficulty || 'intermediate',
+      traineeName,
+      lat: step.lat, lng: step.lng,
+      distanceM: step.distanceM, nearestLocationName: step.nearestLocationName || '',
+      expectedChecks: Array.isArray(step.expectedChecks) ? step.expectedChecks : (stepRule && Array.isArray(stepRule.required_checks) ? stepRule.required_checks : []),
+      unnecessaryChecks: Array.isArray(step.unnecessaryChecks) ? step.unnecessaryChecks : [], checkAssessmentConfigured: true,
+      expectedFollowupActions: Array.isArray(step.expectedFollowupActions) ? step.expectedFollowupActions : (stepRule && Array.isArray(stepRule.followup_actions) ? stepRule.followup_actions : []),
+      unnecessaryFollowupActions: Array.isArray(step.unnecessaryFollowupActions) ? step.unnecessaryFollowupActions : [], followupAssessmentConfigured: true,
+      followupTargetMin: Number(step.followupTargetMin || (stepRule ? stepRule.followup_target_min : 0) || 0),
+      siteRelationship:step.siteRelationship||'unknown', travellersWithinRadius:step.travellersWithinRadius||'unknown',
+      travellerRadiusKm:step.travellerRadiusKm==null?null:Number(step.travellerRadiusKm), affectedPersonnelState:step.affectedPersonnelState||'unknown',
+      thresholdRuleId: stepRuleId,
+      thresholdConditionState: step.thresholdConditionState || step.threshold_condition_state || 'baseline',
+      sequenceId: sequenceRunId,
+      sequenceTitle,
+      sequenceStepIndex: i + 1,
+      sequenceTotalSteps: sequenceSteps.length,
+      sequenceStageLabel: step.stageLabel || `Stage ${i+1}`,
+      sequenceStartedAt: sequenceStartedAt,
+      // The current stage owns the rule that releases the NEXT stage.
+      sequenceNextTrigger: i < sequenceSteps.length-1 ? (step.trigger || 'any_response') : 'any_response',
+      sequenceNextDelayMin: i < sequenceSteps.length-1 ? Number(step.delayMin || 0) : 0,
+      sequenceNextScheduledAt: i < sequenceSteps.length-1 ? String(step.releaseAt || '') : '',
+      sequenceDisplayNextReleaseTime: i < sequenceSteps.length-1 ? !!step.displayReleaseTime : false,
+      sequenceFeedbackMode: feedbackMode,
+      status: i === 0 ? 'active' : 'waiting'
+    });
+    // Persist a stable stage id so the local sequencer can reconcile with D1.
+    scenario.id = `training_${sequenceRunId}_${i+1}`;
+    scenario.status = i === 0 ? 'active' : 'waiting';
+    return scenario;
   });
 
-  const injected = await doInject(scenario, currentStepIdx);
-  step.scenarioId = injected.id;
-
-  // Mark remaining steps as waiting
-  if (currentStepIdx + 1 < sequenceSteps.length) {
-    sequenceSteps[currentStepIdx + 1].status = 'waiting';
-  }
+  sequenceSteps.forEach((s,i) => {
+    s.status = i===0 ? 'active' : 'waiting';
+    s.scenarioId = payload[i].id;
+  });
   renderSequenceList();
 
-  // Set up trigger for next step
-  setupStepTrigger(step, currentStepIdx);
-}
-
-function finishSequenceRun(message) {
-  sequenceRunning = false;
-  if (seqResponseWatcher) { clearInterval(seqResponseWatcher); seqResponseWatcher = null; }
-  renderSequenceList();
-  toast(message || '✅ Sequence complete!', 'success');
-}
-
-function setupStepTrigger(step, idx) {
-  const nextStep = sequenceSteps[idx + 1] || null;
-
-  if (step.trigger === 'timed') {
-    // Auto-fire after delayMin minutes
-    toast(`⏱ Next step in ${step.delayMin}min…`, 'warn');
-    setTimeout(async () => {
-      if (!sequenceRunning) return;
-      sequenceSteps[idx].status = 'done';
-      if (nextStep) await fireNextStep();
-      else finishSequenceRun('✅ Final stage complete — sequence finished');
-    }, step.delayMin * 60 * 1000);
-    return;
-  }
-
-  // Watch for operator response on this step's scenario
-  if (seqResponseWatcher) clearInterval(seqResponseWatcher);
-  seqResponseWatcher = setInterval(async () => {
-    if (!sequenceRunning) { clearInterval(seqResponseWatcher); return; }
-    if (!step.scenarioId) return;
-
-    // Check if operator has responded to this scenario
-    const responded = await checkScenarioResponded(step.scenarioId);
-    if (responded === null) return; // not yet
-
-    const triggerMet =
-      step.trigger === 'any_response' ||
-      (step.trigger === 'escalated' && responded === 'escalated') ||
-      (step.trigger === 'cleared'   && responded === 'cleared')   ||
-      (step.trigger === 'monitored' && responded === 'monitoring');
-
-    if (triggerMet) {
-      clearInterval(seqResponseWatcher);
-      sequenceSteps[idx].status = 'done';
-      renderSequenceList();
-      if (nextStep) {
-        toast(`✓ Step ${idx+1} response detected → firing step ${idx+2}`, 'success');
-        await new Promise(r => setTimeout(r, 1500)); // brief pause for readability
-        await fireNextStep();
-      } else {
-        finishSequenceRun('✅ Final stage response recorded — sequence complete');
-      }
-    } else if (responded && step.trigger !== 'any_response') {
-      // Wrong response — still advance after a warning
-      clearInterval(seqResponseWatcher);
-      sequenceSteps[idx].status = 'done';
-      renderSequenceList();
-      if (nextStep) {
-        toast(`⚠️ Step ${idx+1}: operator responded with "${responded}" (trigger was "${step.trigger}") — advancing anyway`, 'warn');
-        await new Promise(r => setTimeout(r, 2000));
-        await fireNextStep();
-      } else {
-        finishSequenceRun(`✅ Final stage response recorded — sequence complete`);
-      }
+  try {
+    const res = await apiFetch('/api/org/training-scenarios', {
+      method:'POST',
+      body:JSON.stringify(payload)
+    });
+    if (!res || res.ok === false || Number(res.count || 0) !== payload.length) {
+      throw new Error(res?.error || `Only ${Number(res?.count||0)} of ${payload.length} stages were saved`);
     }
-  }, 4000);
+
+    if (!sessionStartTime) { sessionStartTime = Date.now(); startSessionTimer(); }
+    await refreshScenariosFromApi();
+    renderFeedLog(); renderStats(); updateStatusBar();
+    toast(`▶ Persistent sequence started — Stage 1 of ${sequenceSteps.length} is live`, 'success');
+
+    if (seqResponseWatcher) clearInterval(seqResponseWatcher);
+    seqResponseWatcher = setInterval(refreshSequenceRunState, 5000);
+    await refreshSequenceRunState();
+  } catch (e) {
+    sequenceRunning = false;
+    sequenceSteps.forEach(s => { s.status='pending'; s.scenarioId=null; });
+    renderSequenceList();
+    toast(e.message || 'Could not start persistent sequence', 'error');
+  }
 }
+
+async function refreshSequenceRunState() {
+  if (!sequenceRunId) return;
+  try {
+    const [runsRes, stagesRes] = await Promise.all([
+      apiFetch('/api/org/training-sequence-runs?status=in_progress'),
+      apiFetch('/api/org/training-scenarios?sequence_id='+encodeURIComponent(sequenceRunId))
+    ]);
+    const run = (runsRes.data || []).find(r => String(r.id||'') === sequenceRunId) || null;
+    const stages = Array.isArray(stagesRes.data) ? stagesRes.data : [];
+
+    stages.forEach(row => {
+      const idx = Math.max(0, Number(row.sequence_step_index||0)-1);
+      if (!sequenceSteps[idx]) return;
+      sequenceSteps[idx].scenarioId = row.id;
+      sequenceSteps[idx].status =
+        row.status === 'active' ? 'active' :
+        row.status === 'cleared' || row.status === 'ended' ? 'done' :
+        row.status === 'waiting' ? 'waiting' : (row.status || 'pending');
+    });
+    renderSequenceList();
+    await refreshScenariosFromApi();
+    renderFeedLog(); renderStats(); updateStatusBar();
+
+    if (!run) {
+      // Completed runs are omitted by status=in_progress. Confirm once so the
+      // local controls stop calling the server without affecting the run itself.
+      const allRuns = await apiFetch('/api/org/training-sequence-runs');
+      const finalRun = (allRuns.data || []).find(r => String(r.id||'') === sequenceRunId);
+      if (finalRun && finalRun.status === 'complete') {
+        sequenceSteps.forEach((s,i) => { if(i < Number(finalRun.completed_steps||0)) s.status='done'; });
+        sequenceRunning = false;
+        if (seqResponseWatcher) { clearInterval(seqResponseWatcher); seqResponseWatcher=null; }
+        renderSequenceList();
+        toast('✅ Multi-stage sequence complete', 'success');
+      }
+      return;
+    }
+
+    sequenceRunning = ['active','waiting','scheduled'].includes(String(run.status||''));
+    currentStepIdx = Math.max(0, Number(run.current_step_index||1)-1);
+    if (String(run.status||'') === 'waiting') {
+      const releaseText = run.display_next_release_time && run.next_release_at
+        ? ` Next stage: ${new Date(run.next_release_at).toLocaleString('en-GB')}.`
+        : ' The next stage is waiting for its server-side release.';
+      const label = document.getElementById('seqProgressLabel');
+      if (label) label.textContent = `Stage ${run.completed_steps} of ${run.total_steps} complete.${releaseText}`;
+    }
+  } catch (_) {}
+}
+
+// Legacy client-side trigger helpers are intentionally retired in 9E.2.
+// The Worker now owns stage release, so closing this page cannot stop a drill.
 
 async function checkScenarioResponded(scenarioId) {
-  // Check API response log first
   try {
     const res = await apiFetch('/api/org/training-scenarios/responses?since=');
     const entries = Array.isArray(res.data) ? res.data : [];
     const match = entries.find(e => e.scenario_id === scenarioId || e.scenarioId === scenarioId);
-    if (match) return match.action;
-  } catch(_) {}
-
-  // Fallback: check localStorage
-  try {
-    const all = JSON.parse(localStorage.getItem('ci_training_responses_v1') || '[]');
-    const match = all.find(e => e.scenarioId === scenarioId);
-    if (match) return match.action;
-  } catch(_) {}
-
-  // Check if scenario status changed
-  const sc = scenarios.find(s => s.id === scenarioId);
-  if (sc && sc.status !== 'active') return sc.status;
-
-  return null;
+    return match ? match.action : null;
+  } catch(_) { return null; }
 }
 
 /* ════════════════════════════════════════════════
