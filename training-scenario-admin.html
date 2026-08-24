@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Scenario Admin v31 — Phase 9F.4 Curriculum Coverage & Qualification -->
+<!-- CityIntel Training Scenario Admin v32 — Phase 9G.3 Assignment Launch & Plan Handoff -->
 <!-- CityIntel Training Phase 9B.1 — editable factual scenario draft summaries -->
 <html lang="en">
 <head>
@@ -2985,6 +2985,8 @@ let sequenceSteps    = [];          // Phase 9E.2: persistent stage snapshots; W
 let sequenceRunning  = false;
 let sequenceRunId    = '';
 let loadedSequenceTemplateId = ''; // Phase 9G.2 — stable library identity for assignment reconciliation
+let assignmentLaunchContext = null; // Phase 9G.3 — assignment target / trainee carried from Training Hub
+let assignmentLaunchEmail = '';
 let sequenceStartedAt= '';
 let adminSequenceRuns = [];
 let adminSequenceStages = {};
@@ -3013,6 +3015,64 @@ let selectedThresholdConditionState = 'baseline';
 let seqThresholdRuleId = '';
 let seqThresholdConditionState = 'baseline';
 
+// Phase 9G.3 — launch Scenario Admin from an assignment without making the
+// trainer re-select the trainee or target. This does not mark anything complete;
+// the normal response/sequence reconciliation remains authoritative.
+async function loadAssignmentLaunchContext() {
+  const params = new URLSearchParams(location.search || '');
+  const assignmentId = String(params.get('assignment') || '').trim();
+  if (!assignmentId) return null;
+  try {
+    const data = await apiFetch('/api/org/training-assignments?id=' + encodeURIComponent(assignmentId));
+    const a = data && Array.isArray(data.data) ? data.data[0] : null;
+    if (!a) return null;
+    assignmentLaunchContext = a;
+    assignmentLaunchEmail = String(a.trainee_email || '').trim();
+    const traineeName = String(a.trainee_name || a.trainee_email || '').trim();
+    const singleName = document.getElementById('scTrainees');
+    const sequenceName = document.getElementById('sessionTrainees');
+    if (singleName && traineeName) singleName.value = traineeName;
+    if (sequenceName && traineeName) sequenceName.value = traineeName;
+
+    const type = String(a.assignment_type || '').toLowerCase();
+    const target = String(a.target_id || '');
+    if (type === 'sequence' && target) {
+      const item = (libraryItems || []).find(i => String(i.id || '') === target && String(i.type || '').toLowerCase() === 'sequence');
+      if (item) {
+        let payload = null;
+        try { payload = typeof item.payload === 'string' ? JSON.parse(item.payload) : item.payload; } catch (_) {}
+        if (Array.isArray(payload)) {
+          loadedSequenceTemplateId = String(item.id || '');
+          sequenceSteps = payload.map((step,i) => ({ ...step, id:`seq_${Date.now()}_${i}`, status:'pending', scenarioId:null }));
+          const titleEl = document.getElementById('sequenceTitle');
+          if (titleEl) titleEl.value = item.name || a.target_label || '';
+          renderSequenceList();
+          switchTab('session');
+          toast(`📋 Assigned sequence loaded for ${traineeName || 'trainee'}`, 'success');
+        }
+      } else {
+        toast('⚠️ Assigned sequence template could not be found in the current library', 'warn');
+      }
+    } else if (type === 'subject' && target) {
+      selectedThresholdRuleId = String(a.threshold_rule_id || target);
+      selectedThresholdConditionState = 'baseline';
+      const conditionEl = document.getElementById('scThresholdConditionState');
+      if (conditionEl) conditionEl.value = 'baseline';
+      refreshThresholdRuleSelectors();
+      const rule = thresholdRuleById(selectedThresholdRuleId);
+      if (rule) toast(`🎯 Readiness subject selected for ${traineeName || 'trainee'} — build the qualifying exercise`, 'success');
+      else toast('⚠️ Assigned readiness rule is no longer available in the current policy', 'warn');
+      switchTab('session');
+    } else if (type === 'scenario') {
+      toast(`🎯 Exercise assignment loaded for ${traineeName || 'trainee'}`, 'success');
+    }
+    return a;
+  } catch (e) {
+    toast('Could not load the training assignment: ' + (e.message || e), 'warn');
+    return null;
+  }
+}
+
 /* ════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════ */
@@ -3032,13 +3092,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadAdminSequenceRuns();
   listenForOperatorResponses();
   wireThresholdLinkControls();
-  loadScenarioThresholdPolicy();
+  await loadScenarioThresholdPolicy();
 
   document.getElementById('btnAddStep').addEventListener('click', () => openSeqModal(-1));
   document.getElementById('btnRunSequence').addEventListener('click', runSequence);
   document.getElementById('seqApplyRuleDefaultsBtn')?.addEventListener('click', applySeqThresholdDefaults);
   document.getElementById('seqCopyBuilderBtn')?.addEventListener('click', copyBuilderToSeqStep);
-  loadLibrary();
+  await loadLibrary();
+  await loadAssignmentLaunchContext();
   loadHistory();
 });
 
@@ -3736,7 +3797,7 @@ function injectScenario() {
 
   const scenario = buildScenarioObj({
     traineeName: resolvedTrainee(),
-    traineeEmail: (document.getElementById('scTraineeSelect')?.value || ''),
+    traineeEmail: (document.getElementById('scTraineeSelect')?.value || assignmentLaunchEmail || ''),
     title, city,
     country:  document.getElementById('scCountry').value.trim(),
     location: document.getElementById('scLocation').value.trim(),
@@ -3886,7 +3947,7 @@ window.controlSequenceRun=controlSequenceRun;
 function delaySequenceRun(id){const el=document.getElementById('seqDelay_'+id);const n=Math.max(1,Math.min(10080,Number(el?.value||15)||15));controlSequenceRun(id,'delay',{delay_min:n});}
 window.delaySequenceRun=delaySequenceRun;
 
-function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, expectedFollowupActions, unnecessaryFollowupActions, followupAssessmentConfigured, followupTargetMin, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState, sequenceId, sequenceTitle, sequenceStepIndex, sequenceTotalSteps, sequenceStageLabel, sequenceStartedAt, sequenceNextTrigger, sequenceNextDelayMin, sequenceNextScheduledAt, sequenceDisplayNextReleaseTime, sequenceFeedbackMode, status }) {
+function buildScenarioObj({ title, city, country, location, confidence, summary, expectedResponse, risk, category, autoEscalateMin, when, targetResponseMin, difficulty, stealth, lat, lng, traineeName, traineeEmail, distanceM, nearestLocationName, expectedChecks, unnecessaryChecks, checkAssessmentConfigured, expectedFollowupActions, unnecessaryFollowupActions, followupAssessmentConfigured, followupTargetMin, siteRelationship, travellersWithinRadius, travellerRadiusKm, affectedPersonnelState, thresholdRuleId, thresholdConditionState, sequenceId, sequenceTemplateId, sequenceTitle, sequenceStepIndex, sequenceTotalSteps, sequenceStageLabel, sequenceStartedAt, sequenceNextTrigger, sequenceNextDelayMin, sequenceNextScheduledAt, sequenceDisplayNextReleaseTime, sequenceFeedbackMode, status }) {
   const catInfo = typeof category === 'object' ? category : (CATEGORIES.find(c => c.id === category) || { id: category, emoji: '📋', label: category });
 
   // Every scenario is labelled as training. Stealth mode was removed when
@@ -3921,6 +3982,7 @@ function buildScenarioObj({ title, city, country, location, confidence, summary,
     traineeEmail: traineeEmail || '',
     trainee_email: traineeEmail || '',
     sequenceId: sequenceId || '', sequence_id: sequenceId || '',
+    sequenceTemplateId: sequenceTemplateId || '', sequence_template_id: sequenceTemplateId || '',
     sequenceTitle: sequenceTitle || '', sequence_title: sequenceTitle || '',
     sequenceStepIndex: Number(sequenceStepIndex || 0) || 0, sequence_step_index: Number(sequenceStepIndex || 0) || 0,
     sequenceTotalSteps: Number(sequenceTotalSteps || 0) || 0, sequence_total_steps: Number(sequenceTotalSteps || 0) || 0,
@@ -4380,6 +4442,7 @@ async function runSequence() {
       targetResponseMin: Number(step.targetResponseMin || 0),
       difficulty: step.difficulty || 'intermediate',
       traineeName,
+      traineeEmail: assignmentLaunchEmail || '',
       lat: step.lat, lng: step.lng,
       distanceM: step.distanceM, nearestLocationName: step.nearestLocationName || '',
       expectedChecks: Array.isArray(step.expectedChecks) ? step.expectedChecks : (stepRule && Array.isArray(stepRule.required_checks) ? stepRule.required_checks : []),
@@ -5893,6 +5956,12 @@ document.addEventListener('DOMContentLoaded',function(){
         opt.dataset.name = r.name || r.email || '';
         sel.appendChild(opt);
       });
+      if (assignmentLaunchEmail) {
+        var wanted = String(assignmentLaunchEmail).toLowerCase();
+        for (var i=0;i<sel.options.length;i++) {
+          if (String(sel.options[i].value || '').toLowerCase() === wanted) { sel.selectedIndex = i; break; }
+        }
+      }
     } catch (_) {}
   }
 
