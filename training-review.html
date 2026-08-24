@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Review v16 — Phase 9E.3 Sequence Run Status -->
+<!-- CityIntel Training Review v17 — Phase 9F.4 Curriculum Coverage & Qualification -->
 <html lang="en">
 <head>
   
@@ -901,25 +901,41 @@ document.addEventListener('DOMContentLoaded',function(){
     var rules=(Array.isArray(p.advanced_rules)?p.advanced_rules:[]).filter(function(r){return r && r.enabled!==false && r.readiness_required!==false;});
     return {rules:rules,passScore:Math.max(50,Math.min(100,Number(p.readiness_pass_score||80)||80)),minPasses:Math.max(1,Math.min(20,Number(p.readiness_min_passes||1)||1))};
   }
+  function readinessRuleCriteria(rule,cfg){
+    var scoreOverride=Math.max(0,Math.min(100,Number((rule||{}).readiness_pass_score_override||0)||0));
+    var passesOverride=Math.max(0,Math.min(20,Number((rule||{}).readiness_min_passes_override||0)||0));
+    var diffRaw=String((rule||{}).readiness_min_difficulty||'any').toLowerCase();
+    return {passScore:scoreOverride>=50?scoreOverride:cfg.passScore,minPasses:passesOverride>=1?passesOverride:cfg.minPasses,minDifficulty:['any','intermediate','advanced'].indexOf(diffRaw)>=0?diffRaw:'any',requireConditional:!!(rule||{}).readiness_require_conditional};
+  }
+  function difficultyRank(v){return ({beginner:1,intermediate:2,advanced:3})[String(v||'').toLowerCase()]||0;}
   function thresholdRuleIdOf(r){ var fb=feedbackOf(r), rr=(fb.threshold||{}).rule||{}; return String(r.threshold_rule_id||rr.id||''); }
   function curriculumForRows(personRows,avg){
     var cfg=readinessConfig();
     if(!cfg.rules.length)return {enabled:false,total:0,passed:0,ready:avg!==null&&avg>=80,subjects:[],passScore:80,minPasses:1};
     var subjects=cfg.rules.map(function(rule){
+      var criteria=readinessRuleCriteria(rule,cfg);
       var matches=(personRows||[]).filter(function(r){return thresholdRuleIdOf(r)===String(rule.id||'');});
       var evidence={};
       matches.forEach(function(r){
         if(r.score_pct===null||r.score_pct===undefined||isNaN(Number(r.score_pct)))return;
-        var seq=sequenceIdOfRow(r);
-        var key=seq?('seq:'+seq):('resp:'+String(r.id||('anon-'+Math.random())));
-        (evidence[key]||(evidence[key]=[])).push(Number(r.score_pct));
+        var seq=sequenceIdOfRow(r); var key=seq?('seq:'+seq):('resp:'+String(r.id||('anon-'+Math.random())));
+        if(!evidence[key])evidence[key]={scores:[],difficulty:0,conditional:false};
+        evidence[key].scores.push(Number(r.score_pct)); evidence[key].difficulty=Math.max(evidence[key].difficulty,difficultyRank(r.difficulty)); evidence[key].conditional=evidence[key].conditional||['escalate','exception'].indexOf(String(r.threshold_condition_state||'baseline').toLowerCase())>=0;
       });
-      var scores=Object.keys(evidence).map(function(key){var vals=evidence[key];return Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);});
-      var passes=scores.filter(function(v){return v>=cfg.passScore;});
-      var best=scores.length?Math.max.apply(null,scores):null;
-      var passed=passes.length>=cfg.minPasses;
-      var stage=scores.length===0?'not-tested':passed?'ready':passes.length>0?'competent':'developing';
-      return {id:String(rule.id||''),label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:scores.length,passes:passes.length,best:best,passed:passed,stage:stage};
+      var units=Object.keys(evidence).map(function(key){var u=evidence[key];return {score:Math.round(u.scores.reduce(function(a,b){return a+b;},0)/u.scores.length),difficulty:u.difficulty,conditional:u.conditional};});
+      var qualifying=units.filter(function(u){return u.score>=criteria.passScore;});
+      var best=units.length?Math.max.apply(null,units.map(function(u){return u.score;})):null;
+      var enoughPasses=qualifying.length>=criteria.minPasses;
+      var diffNeed=criteria.minDifficulty==='advanced'?3:criteria.minDifficulty==='intermediate'?2:0;
+      var difficultyMet=diffNeed===0||qualifying.some(function(u){return u.difficulty>=diffNeed;});
+      var conditionalMet=!criteria.requireConditional||qualifying.some(function(u){return u.conditional;});
+      var passed=enoughPasses&&difficultyMet&&conditionalMet;
+      var stage=units.length===0?'not-tested':passed?'ready':qualifying.length>0?'competent':'developing';
+      var gaps=[]; var missingPasses=Math.max(0,criteria.minPasses-qualifying.length);
+      if(!enoughPasses)gaps.push(missingPasses+' more passing exercise'+(missingPasses===1?'':'s'));
+      if(!difficultyMet)gaps.push(criteria.minDifficulty+' evidence');
+      if(!conditionalMet)gaps.push('conditional / upgrade evidence');
+      return {id:String(rule.id||''),label:String((rule.category_label||'Other')+' → '+(rule.event_type||'Unnamed subject')),attempts:units.length,passes:qualifying.length,best:best,passed:passed,stage:stage,criteria:criteria,difficultyMet:difficultyMet,conditionalMet:conditionalMet,gaps:gaps};
     });
     var passed=subjects.filter(function(x){return x.passed;}).length;
     return {enabled:true,total:subjects.length,passed:passed,ready:passed===subjects.length&&avg!==null&&avg>=cfg.passScore,subjects:subjects,passScore:cfg.passScore,minPasses:cfg.minPasses};
@@ -971,7 +987,7 @@ document.addEventListener('DOMContentLoaded',function(){
       var competent=curriculum.subjects.filter(function(x){return x.stage==='competent';});
       if(untested.length) next={title:'Complete an untested readiness subject',subject:untested[0].label,difficulty:'Beginner / Intermediate',reason:'This required policy subject has no scored evidence yet and is the clearest readiness gap.'};
       else if(developing.length) next={title:'Reinforce a developing subject',subject:developing[0].label,difficulty:'Intermediate',reason:'Attempts exist, but the required pass standard has not yet been achieved.'};
-      else if(competent.length) next={title:'Convert competence into readiness',subject:competent[0].label,difficulty:'Intermediate',reason:'A passing result exists, but the organisation requires more passing evidence for this subject.'};
+      else if(competent.length){var c=competent[0],gap=(c.gaps||[])[0]||'additional qualification evidence';next={title:'Convert competence into readiness',subject:c.label,difficulty:c.criteria&&c.criteria.minDifficulty==='advanced'?'Advanced':c.criteria&&c.criteria.requireConditional?'Conditional / Advanced':'Intermediate',reason:'Passing evidence exists, but this subject still requires '+gap+'.'};}
       else if(curriculum.ready) next={title:'Increase scenario difficulty',subject:(subjects&&subjects[0]?subjects[0].name:'Readiness maintenance'),difficulty:'Advanced / Conditional',reason:'All required subjects are currently passed. Use escalation conditions or multi-step exercises to maintain and stretch competence.'};
     }
     if(!curriculum || !curriculum.enabled){
@@ -1281,7 +1297,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if (curriculum.enabled) {
       html += '<div class="section-title" style="margin-bottom:8px">Readiness Curriculum</div>' +
         '<div class="curriculum-summary"><strong>' + (curriculum.ready ? 'Ready' : 'Not yet ready') + '</strong> · ' + curriculum.passed + '/' + curriculum.total + ' required subjects passed · overall average ' + fmtPct(avg) + ' / ' + curriculum.passScore + '% standard · ' + curriculum.minPasses + ' pass' + (curriculum.minPasses===1?'':'es') + ' required per subject.</div>' +
-        '<div class="curriculum-grid">' + curriculum.subjects.map(function(x){ var stageLabel={'not-tested':'Not tested','developing':'Developing','competent':'Competent','ready':'Ready'}[x.stage]||'Developing'; return '<div class="curriculum-item ' + esc(x.stage) + '"><div class="curriculum-head"><div><div class="curriculum-title">' + esc(x.label) + '</div><div class="curriculum-meta">' + x.passes + '/' + curriculum.minPasses + ' passing exercise' + (curriculum.minPasses===1?'':'s') + ' · ' + x.attempts + ' attempt' + (x.attempts===1?'':'s') + (x.best!==null?' · best '+x.best+'%':'') + '</div></div><div class="curriculum-status">' + stageLabel + '</div></div></div>'; }).join('') + '</div>';
+        '<div class="curriculum-grid">' + curriculum.subjects.map(function(x){ var stageLabel={'not-tested':'Not tested','developing':'Developing','competent':'Competent','ready':'Ready'}[x.stage]||'Developing',c=x.criteria||{passScore:curriculum.passScore,minPasses:curriculum.minPasses,minDifficulty:'any',requireConditional:false}; return '<div class="curriculum-item ' + esc(x.stage) + '"><div class="curriculum-head"><div><div class="curriculum-title">' + esc(x.label) + '</div><div class="curriculum-meta">' + x.passes + '/' + c.minPasses + ' passing exercise' + (c.minPasses===1?'':'s') + ' at ≥'+c.passScore+'% · ' + x.attempts + ' attempt' + (x.attempts===1?'':'s') + (x.best!==null?' · best '+x.best+'%':'') + (c.minDifficulty!=='any'?' · '+esc(c.minDifficulty)+'+ evidence':'') + (c.requireConditional?' · conditional required':'') + ((x.gaps||[]).length?' · gap: '+esc(x.gaps.join(', ')):'') + '</div></div><div class="curriculum-status">' + stageLabel + '</div></div></div>'; }).join('') + '</div>';
     }
     var intelligence = developmentModel(personRows, subjects, curriculum, avg, accuracy);
     var strengthTitle=intelligence.strongest ? intelligence.strongest.name : 'Evidence building';
