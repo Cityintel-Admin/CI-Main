@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Scenario Admin v29 — Phase 9E.3 Sequence Control, Templates & Draft Summaries -->
+<!-- CityIntel Training Scenario Admin v31 — Phase 9F.4 Curriculum Coverage & Qualification -->
 <!-- CityIntel Training Phase 9B.1 — editable factual scenario draft summaries -->
 <html lang="en">
 <head>
@@ -2145,7 +2145,7 @@
             </div>
 
             <div class="threshold-phase-note" id="thresholdPhaseNote">
-              <strong>Phase 9F.3:</strong> the readiness curriculum can now be expanded to the full 10-subject security baseline. Existing organisation rules are preserved; missing curriculum subjects can be merged in and then used to build a linked baseline scenario bank.
+              <strong>Phase 9F.4:</strong> the 10-subject curriculum now supports per-subject qualification gates. A subject can inherit the organisation standard or require its own pass score, evidence count, minimum difficulty and conditional exercise before the operator is marked Ready.
             </div>
 
             <div class="threshold-section" id="thresholdAdvancedPanel" style="display:none">
@@ -2760,6 +2760,18 @@
           <label class="readiness-rule-toggle">
             <input type="checkbox" id="thresholdRuleReadinessRequired" checked>
             <span>Required for operator readiness<br><span style="font-weight:500;color:#9fb0c3">This event / incident becomes one subject on the organisation's readiness checklist.</span></span>
+          </label>
+        </div>
+        <div class="form-field full" style="border:1px solid rgba(147,197,253,.2);border-radius:11px;padding:12px;background:rgba(147,197,253,.035)">
+          <label style="margin-bottom:8px">Readiness qualification evidence <span style="font-weight:500;color:#9fb0c3">(optional per-subject overrides)</span></label>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px">
+            <div><label style="font-size:10px">Subject pass score (%)</label><input type="number" id="thresholdRuleReadinessPassScore" min="0" max="100" value="0" placeholder="0 = org default"><div class="form-hint">0 inherits the organisation pass score.</div></div>
+            <div><label style="font-size:10px">Passing exercises required</label><input type="number" id="thresholdRuleReadinessMinPasses" min="0" max="20" value="0" placeholder="0 = org default"><div class="form-hint">0 inherits the organisation evidence count.</div></div>
+            <div><label style="font-size:10px">Minimum evidence difficulty</label><select id="thresholdRuleReadinessDifficulty"><option value="any">Any difficulty</option><option value="intermediate">Intermediate or Advanced</option><option value="advanced">Advanced</option></select><div class="form-hint">Requires at least one passing exercise at this level.</div></div>
+          </div>
+          <label class="readiness-rule-toggle" style="margin-top:10px">
+            <input type="checkbox" id="thresholdRuleReadinessConditional">
+            <span>Require conditional / upgrade evidence<br><span style="font-weight:500;color:#9fb0c3">At least one passing scenario must use an escalation/upgrade or exception condition rather than the baseline state.</span></span>
           </label>
         </div>
         <div class="form-field full">
@@ -5851,6 +5863,10 @@ document.addEventListener('DOMContentLoaded',function(){
       exceptions: text(r.exceptions),
       considerations: text(r.considerations),
       readiness_required: r.readiness_required !== false && r.readiness_required !== 0 && r.readiness_required !== '0',
+      readiness_pass_score_override: Math.max(0, Math.min(100, Number(r.readiness_pass_score_override || r.readinessPassScoreOverride || 0) || 0)),
+      readiness_min_passes_override: Math.max(0, Math.min(20, Number(r.readiness_min_passes_override || r.readinessMinPassesOverride || 0) || 0)),
+      readiness_min_difficulty: ['any','intermediate','advanced'].indexOf(text(r.readiness_min_difficulty || r.readinessMinDifficulty || 'any').toLowerCase()) >= 0 ? text(r.readiness_min_difficulty || r.readinessMinDifficulty || 'any').toLowerCase() : 'any',
+      readiness_require_conditional: r.readiness_require_conditional === true || r.readinessRequireConditional === true || r.readiness_require_conditional === 1 || r.readinessRequireConditional === 1 || r.readiness_require_conditional === '1' || r.readinessRequireConditional === '1',
       enabled: r.enabled !== false && r.enabled !== 0 && r.enabled !== '0',
       sort_order: Number(r.sort_order != null ? r.sort_order : idx) || 0,
       version_no: Number(r.version_no || 1) || 1
@@ -6052,7 +6068,8 @@ document.addEventListener('DOMContentLoaded',function(){
       var sla=present?Number(r.response_sla_min||0):Number(t.response_sla_min||0);
       var category=present?(r.category_label||categoryLabel(r.category_id)):categoryLabel(t.category_id);
       return '<div class="curriculum-template-row '+(present?'present':'missing')+'">'+
-        '<div><div class="curriculum-template-title">'+esc(t.event_type)+'</div><div class="curriculum-template-meta">'+esc(category)+(present&&r.readiness_required===false?' · currently optional':'')+'</div></div>'+
+        '<div><div class="curriculum-template-title">'+esc(t.event_type)+'</div><div class="curriculum-template-meta">'+esc(category)+(present&&r.readiness_required===false?' · currently optional':'')+'</div>' +
+          (present&&r.readiness_required!==false?'<div class="curriculum-template-meta">Qualify: ≥'+esc(Number(r.readiness_pass_score_override||policyState.readiness_pass_score||80))+'% · '+esc(Number(r.readiness_min_passes_override||policyState.readiness_min_passes||1))+' pass'+(Number(r.readiness_min_passes_override||policyState.readiness_min_passes||1)===1?'':'es')+(String(r.readiness_min_difficulty||'any')!=='any'?' · '+esc(String(r.readiness_min_difficulty))+'+':'')+(r.readiness_require_conditional?' · conditional':'')+'</div>':'')+'</div>'+
         '<div class="curriculum-template-meta">'+esc(t.exposure_scope)+'</div>'+
         '<div><span class="threshold-rule-tag action-'+esc((present?r.primary_action:t.primary_action))+'">'+esc(action)+'</span></div>'+
         '<div class="curriculum-template-meta">'+(sla?'SLA '+sla+' min':'No SLA')+'</div>'+
@@ -6338,6 +6355,10 @@ document.addEventListener('DOMContentLoaded',function(){
           (Array.isArray(r.followup_actions) && r.followup_actions.length ? '<span class="threshold-rule-tag">' + r.followup_actions.length + ' follow-up action' + (r.followup_actions.length===1?'':'s') + '</span>' : '') +
           (Number(r.followup_target_min||0)>0 ? '<span class="threshold-rule-tag">Follow-up ' + Number(r.followup_target_min) + ' min</span>' : '') +
           '<span class="threshold-rule-tag ' + (r.readiness_required !== false ? 'readiness' : 'optional-subject') + '">' + (r.readiness_required !== false ? 'Readiness subject' : 'Optional subject') + '</span>' +
+          (r.readiness_required !== false ? '<span class="threshold-rule-tag readiness">Qualify ≥' + esc(Number(r.readiness_pass_score_override||policyState.readiness_pass_score||80)) + '%</span>' : '') +
+          (r.readiness_required !== false ? '<span class="threshold-rule-tag readiness">' + esc(Number(r.readiness_min_passes_override||policyState.readiness_min_passes||1)) + ' pass' + (Number(r.readiness_min_passes_override||policyState.readiness_min_passes||1)===1?'':'es') + '</span>' : '') +
+          (r.readiness_required !== false && String(r.readiness_min_difficulty||'any')!=='any' ? '<span class="threshold-rule-tag readiness">' + esc(String(r.readiness_min_difficulty).replace(/^./,function(c){return c.toUpperCase();})) + '+ evidence</span>' : '') +
+          (r.readiness_required !== false && r.readiness_require_conditional ? '<span class="threshold-rule-tag readiness">Conditional pass required</span>' : '') +
           (r.curriculum_key ? '<span class="threshold-rule-tag readiness">10-subject curriculum</span>' : '') +
         '</div>' +
         (details.length ? '<div class="threshold-rule-details">' + details.join('') + '</div>' : '') +
@@ -6379,6 +6400,10 @@ document.addEventListener('DOMContentLoaded',function(){
     document.getElementById('thresholdRuleFollowupTarget').value = r ? Number(r.followup_target_min || 0) : 0;
     document.getElementById('thresholdRuleConsiderations').value = r ? r.considerations : '';
     document.getElementById('thresholdRuleReadinessRequired').checked = r ? r.readiness_required !== false : true;
+    document.getElementById('thresholdRuleReadinessPassScore').value = r ? Number(r.readiness_pass_score_override || 0) : 0;
+    document.getElementById('thresholdRuleReadinessMinPasses').value = r ? Number(r.readiness_min_passes_override || 0) : 0;
+    document.getElementById('thresholdRuleReadinessDifficulty').value = r && ['any','intermediate','advanced'].indexOf(String(r.readiness_min_difficulty||'').toLowerCase()) >= 0 ? String(r.readiness_min_difficulty).toLowerCase() : 'any';
+    document.getElementById('thresholdRuleReadinessConditional').checked = r ? !!r.readiness_require_conditional : false;
     document.getElementById('thresholdRuleEnabled').checked = r ? !!r.enabled : true;
 
     var selectedChecks = new Set(r && Array.isArray(r.required_checks) ? r.required_checks : []);
@@ -6441,6 +6466,10 @@ document.addEventListener('DOMContentLoaded',function(){
       exceptions:document.getElementById('thresholdRuleExceptions').value,
       considerations:document.getElementById('thresholdRuleConsiderations').value,
       readiness_required:document.getElementById('thresholdRuleReadinessRequired').checked,
+      readiness_pass_score_override:Number(document.getElementById('thresholdRuleReadinessPassScore').value || 0) || 0,
+      readiness_min_passes_override:Number(document.getElementById('thresholdRuleReadinessMinPasses').value || 0) || 0,
+      readiness_min_difficulty:document.getElementById('thresholdRuleReadinessDifficulty').value || 'any',
+      readiness_require_conditional:document.getElementById('thresholdRuleReadinessConditional').checked,
       enabled:document.getElementById('thresholdRuleEnabled').checked,
       sort_order: previous ? previous.sort_order : policyState.advanced_rules.length,
       version_no: previous ? Number(previous.version_no || 1) + 1 : 1
