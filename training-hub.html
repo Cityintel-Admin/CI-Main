@@ -269,6 +269,7 @@
   .assignment-list{display:grid;gap:8px}
   .assignment-card{border:1px solid #26313b;border-left:3px solid #64748b;border-radius:12px;padding:12px;background:#0a1016}
   .assignment-card.complete{border-left-color:#33c48d;background:rgba(51,196,141,.035)}
+  .assignment-card.in-progress{border-left-color:#60a5fa;background:rgba(96,165,250,.04)}
   .assignment-card.overdue{border-left-color:#ef2329;background:rgba(208,22,22,.045)}
   .assignment-card.due{border-left-color:#f0b429;background:rgba(240,180,41,.04)}
   .assignment-card.cancelled{opacity:.68;border-left-color:#64748b}
@@ -277,11 +278,14 @@
   .assignment-target{margin-top:8px;padding:8px 9px;border-radius:9px;border:1px solid #25303a;background:#0d1319;color:#dbe7f3;font-size:11px}
   .assignment-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:9px}
   .assignment-status{white-space:nowrap}
+  .assignment-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 12px}
+  .assignment-stat{border:1px solid #28333d;border-radius:10px;background:#0b1015;padding:9px 10px}.assignment-stat b{display:block;font-size:17px;color:#eef3f7}.assignment-stat span{display:block;margin-top:2px;font-size:9px;color:#91a4ba;text-transform:uppercase;letter-spacing:.06em;font-weight:900}
+  .assignment-progress{margin-top:8px;padding:7px 9px;border-radius:8px;border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.04);font-size:10px;color:#c7dcff}
   .scenario-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
   .scenario-detail-box{border:1px solid #28333d;border-radius:10px;background:#0b1015;padding:10px;font-size:11px;color:#c7d2df;line-height:1.5}
   .scenario-detail-box b{display:block;color:#91a4ba;text-transform:uppercase;letter-spacing:.06em;font-size:9px;margin-bottom:4px}
   .page-number{min-width:34px;justify-content:center;padding-left:8px;padding-right:8px}.page-number.active{border-color:rgba(239,35,41,.72);background:rgba(208,22,22,.14);color:#fff}
-  @media(max-width:760px){.scenario-detail-grid{grid-template-columns:1fr}.assignment-head{display:block}.assignment-status{margin-top:8px;display:inline-flex}}
+  @media(max-width:760px){.scenario-detail-grid{grid-template-columns:1fr}.assignment-head{display:block}.assignment-status{margin-top:8px;display:inline-flex}.assignment-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   /* Phase 9D.3 — coaching & development intelligence. */
   .curriculum-item.not-tested{border-color:#2c3742;background:#0a0f14}.curriculum-item.developing{border-color:rgba(255,90,95,.38);background:rgba(255,90,95,.045)}.curriculum-item.competent{border-color:rgba(240,180,41,.40);background:rgba(240,180,41,.045)}.curriculum-item.ready{border-color:rgba(51,196,141,.40);background:rgba(51,196,141,.055)}
@@ -372,11 +376,12 @@
       <details class="card hub-accordion" id="trainingAssignmentSection">
         <summary><span class="accordion-title"><span id="assignmentSectionTitle">Training Assignments &amp; Readiness Plans</span><span class="section-count" id="assignmentCountBadge">0</span></span></summary>
         <div class="accordion-body">
-          <div class="accordion-intro" id="assignmentIntro">Assign readiness subjects, current exercises or saved sequences to named trainees and track outstanding, due, overdue and completed work.</div>
+          <div class="accordion-intro" id="assignmentIntro">Assign readiness subjects, current exercises or saved sequences to named trainees and track outstanding, in-progress, due, overdue and completed work. Saved sequences now reconcile against the actual persistent sequence run.</div>
+          <div class="assignment-summary" id="assignmentSummary"></div>
           <div class="assignment-toolbar">
             <button class="btn primary admin-only" type="button" id="createAssignmentBtn">+ Create assignment</button>
             <input class="input" id="assignmentSearch" placeholder="Search trainee or assignment…">
-            <select class="select" id="assignmentFilter"><option value="active">Outstanding / due</option><option value="all">All assignments</option><option value="outstanding">Outstanding</option><option value="due">Due soon</option><option value="overdue">Overdue</option><option value="complete">Completed</option><option value="cancelled">Cancelled</option></select>
+            <select class="select" id="assignmentFilter"><option value="active">Outstanding / in progress / due</option><option value="all">All assignments</option><option value="outstanding">Outstanding</option><option value="in-progress">In progress</option><option value="due">Due soon</option><option value="overdue">Overdue</option><option value="complete">Completed</option><option value="cancelled">Cancelled</option></select>
           </div>
           <div class="assignment-list" id="assignmentList"><div class="item"><div class="item-meta">Loading training assignments…</div></div></div>
           <div class="pager" id="assignmentPager"></div>
@@ -833,22 +838,46 @@
 
   function assignmentDerivedStatus(a){
     const st=norm(a.status||'assigned'); if(st==='complete'||st==='cancelled')return st;
-    const due=Date.parse(a.due_at||''); if(Number.isFinite(due)){const left=due-Date.now();if(left<0)return'overdue';if(left<=72*3600*1000)return'due';}
+    const due=Date.parse(a.due_at||'');
+    if(Number.isFinite(due) && due-Date.now()<0) return 'overdue';
+    const progress=norm(a.progress_status||'');
+    if(['active','waiting','paused','scheduled','in_progress','in-progress'].includes(progress)) return 'in-progress';
+    if(Number.isFinite(due) && due-Date.now()<=72*3600*1000) return 'due';
     return'outstanding';
   }
   function assignmentLabel(a){return a.assignment_type==='subject'?'Readiness subject':a.assignment_type==='sequence'?'Saved sequence':'Exercise';}
-  function assignmentPill(st){return st==='complete'?'good':st==='overdue'?'high':st==='due'?'warn':st==='cancelled'?'info':'med';}
+  function assignmentPill(st){return st==='complete'?'good':st==='in-progress'?'info':st==='overdue'?'high':st==='due'?'warn':st==='cancelled'?'info':'med';}
+  function assignmentProgressHtml(a){
+    if(a.assignment_type!=='sequence' || !a.progress_status || ['outstanding','complete','cancelled'].includes(norm(a.progress_status))) return '';
+    const current=Math.max(0,Number(a.progress_current||0)), total=Math.max(0,Number(a.progress_total||0));
+    const stage=total?` · ${current}/${total} stages complete`:'';
+    const next=(a.progress_next_release_at&&norm(a.progress_status)==='waiting')?` · next release ${fmtDateTime(a.progress_next_release_at)}`:'';
+    return `<div class="assignment-progress">${esc(a.progress_label||'Sequence in progress')}${stage}${next}</div>`;
+  }
+  function assignmentOpenAction(a,st){
+    if(a.assignment_type==='scenario' && !['complete','cancelled'].includes(st)) return `<a class="btn" href="training-scenario.html">Open exercise</a>`;
+    if(a.assignment_type==='sequence' && !['complete','cancelled'].includes(st)) return state.admin?`<a class="btn" href="training-scenario-admin.html">Open Scenario Admin</a>`:`<a class="btn" href="training-scenario.html">Open exercise</a>`;
+    return '';
+  }
+  function renderAssignmentSummary(){
+    const all=(state.assignments||[]).map(a=>assignmentDerivedStatus(a));
+    const count=k=>all.filter(x=>x===k).length;
+    const active=count('outstanding')+count('in-progress')+count('due')+count('overdue');
+    const host=$('assignmentSummary'); if(!host)return;
+    host.innerHTML=[['Active',active],['In progress',count('in-progress')],['Overdue',count('overdue')],['Completed',count('complete')]].map(x=>`<div class="assignment-stat"><b>${x[1]}</b><span>${x[0]}</span></div>`).join('');
+  }
   function renderAssignments(){
     const host=$('assignmentList'); if(!host)return;
+    renderAssignmentSummary();
     const search=norm($('assignmentSearch')?.value||''), filter=norm($('assignmentFilter')?.value||'active');
     let rows=(state.assignments||[]).slice().map(a=>({...a,_derived:assignmentDerivedStatus(a)}));
-    if(search)rows=rows.filter(a=>norm([a.trainee_name,a.trainee_email,a.target_label,a.notes,a.assignment_type].join(' ')).includes(search));
-    if(filter==='active')rows=rows.filter(a=>['outstanding','due','overdue'].includes(a._derived)); else if(filter!=='all')rows=rows.filter(a=>a._derived===filter);
-    const order={overdue:0,due:1,outstanding:2,complete:3,cancelled:4}; rows.sort((a,b)=>(order[a._derived]??9)-(order[b._derived]??9)||(Date.parse(a.due_at||'9999-12-31')-Date.parse(b.due_at||'9999-12-31')));
-    if($('assignmentCountBadge')) $('assignmentCountBadge').textContent=(state.assignments||[]).filter(a=>['outstanding','due','overdue'].includes(assignmentDerivedStatus(a))).length;
+    if(search)rows=rows.filter(a=>norm([a.trainee_name,a.trainee_email,a.target_label,a.notes,a.assignment_type,a.progress_label].join(' ')).includes(search));
+    if(filter==='active')rows=rows.filter(a=>['outstanding','in-progress','due','overdue'].includes(a._derived)); else if(filter!=='all')rows=rows.filter(a=>a._derived===filter);
+    const order={overdue:0,due:1,'in-progress':2,outstanding:3,complete:4,cancelled:5}; rows.sort((a,b)=>(order[a._derived]??9)-(order[b._derived]??9)||(Date.parse(a.due_at||'9999-12-31')-Date.parse(b.due_at||'9999-12-31')));
+    if($('assignmentCountBadge')) $('assignmentCountBadge').textContent=(state.assignments||[]).filter(a=>['outstanding','in-progress','due','overdue'].includes(assignmentDerivedStatus(a))).length;
     const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE)); state.pages.assignments=Math.min(state.pages.assignments,pages); const start=(state.pages.assignments-1)*PAGE_SIZE, pageRows=rows.slice(start,start+PAGE_SIZE);
     if(!pageRows.length){host.innerHTML='<div class="item"><div class="item-title">No matching assignments</div><div class="item-meta">Create a readiness plan or change the filter to review completed work.</div></div>'; $('assignmentPager').innerHTML=paginationHtml('assignments',1,0);return;}
-    host.innerHTML=pageRows.map(a=>{const st=a._derived,due=a.due_at?fmtDateTime(a.due_at):'No due date', completion=a.completed_at?' · completed '+fmtDateTime(a.completed_at):'';return `<div class="assignment-card ${st}"><div class="assignment-head"><div><div class="assignment-title">${esc(a.trainee_name||a.trainee_email||'Trainee')} · ${esc(assignmentLabel(a))}</div><div class="assignment-meta">Assigned ${esc(fmtDateTime(a.assigned_at))} · ${esc(due)}${esc(completion)}</div></div><span class="pill assignment-status ${assignmentPill(st)}">${esc(st.replace('-',' '))}</span></div><div class="assignment-target"><b>${esc(a.target_label||'Training assignment')}</b>${a.required_score?` · pass ${Number(a.required_score)}%`:''}${Number(a.required_passes||0)>1?` · ${Number(a.required_passes)} passes required`:''}</div>${a.notes?`<div class="assignment-meta" style="margin-top:7px">${esc(a.notes)}</div>`:''}${a.completion_score!==null&&a.completion_score!==undefined&&String(a.completion_score)!==''?`<div class="assignment-meta" style="margin-top:5px">Completion evidence: ${Math.round(Number(a.completion_score))}%${a.completion_ref?' · '+esc(a.completion_ref):''}</div>`:''}${state.admin?`<div class="assignment-actions">${st==='complete'||st==='cancelled'?`<button class="btn" data-assignment-action="reopen" data-assignment-id="${esc(a.id)}">Re-open</button>`:`<button class="btn" data-assignment-action="complete" data-assignment-id="${esc(a.id)}">Mark complete</button><button class="btn" data-assignment-action="cancel" data-assignment-id="${esc(a.id)}">Cancel</button>`}<button class="btn" data-assignment-action="remove" data-assignment-id="${esc(a.id)}">Remove</button></div>`:''}</div>`;}).join('');
+    host.innerHTML=pageRows.map(a=>{const st=a._derived,due=a.due_at?fmtDateTime(a.due_at):'No due date', completion=a.completed_at?' · completed '+fmtDateTime(a.completed_at):'';const openAction=assignmentOpenAction(a,st);return `<div class="assignment-card ${st}"><div class="assignment-head"><div><div class="assignment-title">${esc(a.trainee_name||a.trainee_email||'Trainee')} · ${esc(assignmentLabel(a))}</div><div class="assignment-meta">Assigned ${esc(fmtDateTime(a.assigned_at))} · ${esc(due)}${esc(completion)}</div></div><span class="pill assignment-status ${assignmentPill(st)}">${esc(st.replace('-',' '))}</span></div><div class="assignment-target"><b>${esc(a.target_label||'Training assignment')}</b>${a.required_score?` · pass ${Number(a.required_score)}%`:''}${Number(a.required_passes||0)>1?` · ${Number(a.required_passes)} passes required`:''}</div>${assignmentProgressHtml(a)}${a.notes?`<div class="assignment-meta" style="margin-top:7px">${esc(a.notes)}</div>`:''}${a.completion_score!==null&&a.completion_score!==undefined&&String(a.completion_score)!==''?`<div class="assignment-meta" style="margin-top:5px">Completion evidence: ${Math.round(Number(a.completion_score))}%${a.completion_ref?' · '+esc(a.completion_ref):''}</div>`:''}<div class="assignment-actions">${openAction}${state.admin?(st==='complete'||st==='cancelled'?`<button class="btn" data-assignment-action="reopen" data-assignment-id="${esc(a.id)}">Re-open</button>`:`<button class="btn" data-assignment-action="complete" data-assignment-id="${esc(a.id)}">Mark complete</button><button class="btn" data-assignment-action="cancel" data-assignment-id="${esc(a.id)}">Cancel</button>`)+`<button class="btn" data-assignment-action="remove" data-assignment-id="${esc(a.id)}">Remove</button>`:''}</div></div>`;}).join('');
     $('assignmentPager').innerHTML=paginationHtml('assignments',state.pages.assignments,rows.length);
   }
 
@@ -863,10 +892,10 @@
   function openAssignmentBuilder(prefType='',prefId=''){
     if(!state.admin)return;
     const people=traineeOptions(), cfg=readinessConfig();
-    const body=`<div class="development-note"><strong>Training assignment.</strong> Assign a readiness subject, a current exercise or a saved sequence. Subject assignments complete automatically when the trainee records the required passing evidence; exercise and sequence assignments reconcile from completed responses, and admins can close an item manually when needed.</div><div class="scenario-detail-grid"><div class="scenario-detail-box"><b>Tracked trainee</b><select class="select" id="assignPersonSelect" style="width:100%"><option value="">Choose tracked operator…</option>${people.map((p,i)=>`<option value="${i}">${esc(p.name)}${p.email?' · '+esc(p.email):''}</option>`).join('')}</select></div><div class="scenario-detail-box"><b>Assignment type</b><select class="select" id="assignType" style="width:100%"><option value="subject">Required readiness subject</option><option value="scenario">Exercise in queue</option><option value="sequence">Saved sequence</option></select></div><div class="scenario-detail-box"><b>Trainee name</b><input class="input" id="assignName" style="width:100%" placeholder="Operator name"></div><div class="scenario-detail-box"><b>Trainee email</b><input class="input" id="assignEmail" style="width:100%" placeholder="operator@example.com"></div><div class="scenario-detail-box" style="grid-column:1/-1"><b>Training target</b><select class="select" id="assignTarget" style="width:100%"></select></div><div class="scenario-detail-box"><b>Due date / time</b><input class="input" id="assignDue" type="datetime-local" style="width:100%"></div><div class="scenario-detail-box"><b>Readiness standard</b><span id="assignStandard">${cfg.passScore}% · ${cfg.minPasses} pass${cfg.minPasses===1?'':'es'} per subject</span></div><div class="scenario-detail-box" style="grid-column:1/-1"><b>Plan / notes</b><textarea class="input" id="assignNotes" style="width:100%;min-height:82px;resize:vertical" placeholder="Optional trainer guidance or objective"></textarea></div></div><div class="assignment-actions"><button class="btn primary" type="button" id="saveAssignmentBtn">Create assignment</button></div>`;
+    const body=`<div class="development-note"><strong>Training assignment.</strong> Assign a readiness subject, a current exercise or a saved sequence. Subject assignments complete automatically when the trainee records the required passing evidence. Exercise assignments complete from a post-assignment response to that exercise. Saved-sequence assignments now follow the persistent run created from that exact library template and complete automatically when the assigned trainee finishes the run.</div><div class="scenario-detail-grid"><div class="scenario-detail-box"><b>Tracked trainee</b><select class="select" id="assignPersonSelect" style="width:100%"><option value="">Choose tracked operator…</option>${people.map((p,i)=>`<option value="${i}">${esc(p.name)}${p.email?' · '+esc(p.email):''}</option>`).join('')}</select></div><div class="scenario-detail-box"><b>Assignment type</b><select class="select" id="assignType" style="width:100%"><option value="subject">Required readiness subject</option><option value="scenario">Exercise in queue</option><option value="sequence">Saved sequence</option></select></div><div class="scenario-detail-box"><b>Trainee name</b><input class="input" id="assignName" style="width:100%" placeholder="Operator name"></div><div class="scenario-detail-box"><b>Trainee email</b><input class="input" id="assignEmail" style="width:100%" placeholder="operator@example.com"></div><div class="scenario-detail-box" style="grid-column:1/-1"><b>Training target</b><select class="select" id="assignTarget" style="width:100%"></select></div><div class="scenario-detail-box"><b>Due date / time</b><input class="input" id="assignDue" type="datetime-local" style="width:100%"></div><div class="scenario-detail-box"><b>Readiness standard</b><span id="assignStandard">${cfg.passScore}% · ${cfg.minPasses} pass${cfg.minPasses===1?'':'es'} per subject</span></div><div class="scenario-detail-box" style="grid-column:1/-1"><b>Plan / notes</b><textarea class="input" id="assignNotes" style="width:100%;min-height:82px;resize:vertical" placeholder="Optional trainer guidance or objective"></textarea></div></div><div class="assignment-actions"><button class="btn primary" type="button" id="saveAssignmentBtn">Create assignment</button></div>`;
     openOverlay('Create Training Assignment','Outstanding, due and overdue items appear in the Training Hub until completed.',body);
     const typeEl=$('assignType'), targetEl=$('assignTarget'), personEl=$('assignPersonSelect');
-    function updateAssignmentStandard(){const el=$('assignStandard');if(!el)return;if(typeEl.value!=='subject'){el.textContent='Scored from the selected exercise / sequence';return;}const r=cfg.rules.find(x=>String(x.id||'')===String(targetEl.value||'')),c=r?readinessRuleCriteria(r,cfg):{passScore:cfg.passScore,minPasses:cfg.minPasses,minDifficulty:'any',requireConditional:false};el.textContent=c.passScore+'% · '+c.minPasses+' pass'+(c.minPasses===1?'':'es')+(c.minDifficulty!=='any'?' · '+c.minDifficulty+'+':'')+(c.requireConditional?' · conditional pass':'');}
+    function updateAssignmentStandard(){const el=$('assignStandard');if(!el)return;if(typeEl.value!=='subject'){el.textContent=typeEl.value==='sequence'?'Completes when the assigned saved-sequence run finishes':'Completes after the assigned trainee responds to this exercise';return;}const r=cfg.rules.find(x=>String(x.id||'')===String(targetEl.value||'')),c=r?readinessRuleCriteria(r,cfg):{passScore:cfg.passScore,minPasses:cfg.minPasses,minDifficulty:'any',requireConditional:false};el.textContent=c.passScore+'% · '+c.minPasses+' pass'+(c.minPasses===1?'':'es')+(c.minDifficulty!=='any'?' · '+c.minDifficulty+'+':'')+(c.requireConditional?' · conditional pass':'');}
     function fillTargets(){const opts=assignmentTargetOptions(typeEl.value);targetEl.innerHTML=opts.length?opts.map(o=>`<option value="${esc(o.id)}">${esc(o.label)}</option>`).join(''):'<option value="">No matching targets available</option>';if(prefId&&typeEl.value===prefType&&opts.some(o=>o.id===prefId))targetEl.value=prefId;updateAssignmentStandard();}
     if(prefType&&['subject','scenario','sequence'].includes(prefType))typeEl.value=prefType;fillTargets();typeEl.addEventListener('change',()=>{prefId='';fillTargets();});targetEl.addEventListener('change',updateAssignmentStandard);
     personEl.addEventListener('change',()=>{const q=people[Number(personEl.value)];if(q){$('assignName').value=q.name||'';$('assignEmail').value=q.email||'';}});
