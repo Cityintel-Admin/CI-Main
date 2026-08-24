@@ -9,6 +9,1443 @@ window.alertsData =[
 
 
 
+
+
+{
+  title: "Amazon Group National Logistics Strike — September Continuation",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Amazon logistics, fulfilment and delivery operations across Italy — no single assembly point confirmed",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.associazioneliberaassociates.it/index.php/2026/05/25/quarta_fase_sciopero_ala/",
+  summary: "The fourth phase of A.L.A.'s nationwide industrial action involving workers across Amazon Group logistics operations remains scheduled through Saturday 12 September 2026. Employees may participate through a two-hour delayed start, two-hour early finish or abstention for an entire shift, according to coordinated union instructions. The dispute concerns working conditions, workplace safety, organisation of work, disciplinary practices, breaks, contractual entitlements and recognition of specialist roles. This record uses 1 September and CityIntel's standard 12:00 timestamp as a transparent continuation marker rather than implying that a new strike begins on that date. Risk assessed as Medium because rolling participation across fulfilment, logistics and delivery sites may affect processing and distribution capacity nationally, although no coordinated street demonstration or blockade has been announced."
+},
+
+{
+  title: "ASReM Molise Public Healthcare Strike",
+  city: "Campobasso",
+  lat: 41.54781,
+  lng: 14.62249,
+  address: "ASReM healthcare facilities across Molise — map anchor: Ospedale Antonio Cardarelli, Contrada Tappino",
+  postcode: "86100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-07T00:00:00",
+  source: "https://www.rainews.it/amp/tgr/molise/articoli/2026/08/rischio-stress-e-burnout-i-sindacati-annunciano-lo-sciopero-1d6c45e5-415c-41c0-ac5e-7f0793c0ff37.html",
+  summary: "CISL Funzione Pubblica, FIALS and Nursind have proclaimed a 24-hour strike by personnel of the ASReM public-health sector throughout Molise on Monday 7 September 2026. The unions cite severe and persistent staffing shortages, excessive workloads, restrictions on leave and rest periods and increasing risks of work-related stress and burnout. Essential healthcare services required by law will remain guaranteed. Risk assessed as High because the industrial action covers the regional public-health workforce for a complete day and may cause appointment postponements, reduced non-emergency activity and pressure on hospital and community services, despite statutory protection of essential care."
+},
+
+{
+  title: "SVT Vicenza Public Transport Strike",
+  city: "Vicenza",
+  lat: 45.5455,
+  lng: 11.5354,
+  address: "Società Vicentina Trasporti network — map anchor: Vicenza Autostazione, Viale Milano",
+  postcode: "36100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "CUB Trasporti has scheduled a full-day strike affecting public-transport services in Vicenza on Monday 7 September 2026, subject to statutory guaranteed-service windows. Urban and provincial bus routes may experience cancellations, reduced frequencies and longer waiting times. Risk assessed as Medium because the action covers an entire weekday and may affect commuter, school and regional passenger movements across Vicenza province while increasing pressure on private vehicles and alternative transport. No associated public demonstration has currently been confirmed."
+},
+
+{
+  title: "Captrain Italia Nationwide Freight-Rail Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Captrain Italia freight-rail operations nationwide — no single physical assembly point confirmed",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T16:01:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL and UILTrasporti have registered a nationwide 24-hour strike involving Captrain Italia personnel from 16:01 on Thursday 10 September until 16:00 on Friday 11 September 2026. Freight trains, industrial rail movements, intermodal flows and supply-chain connections may experience cancellations or delays. Risk assessed as Medium because Captrain operates freight services serving industrial and logistics customers and a prolonged nationwide stoppage may create knock-on effects at terminals and customer facilities, although direct passenger-rail disruption and public-order problems are not anticipated."
+},
+
+{
+  title: "Poste Air Cargo Technical Flight Crew Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Poste Air Cargo flight operations across Italy — no single affected airport",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILTrasporti, ANPAC and ANP have registered a four-hour nationwide strike involving Poste Air Cargo technical flight crew from 00:00 to 04:00 on Friday 11 September 2026. Postal air-freight movements and overnight logistics connections may experience delays, rescheduling or reduced capacity. Risk assessed as Medium because the action affects a national air-cargo operation during an important overnight logistics window and may create downstream postal or freight delays, although passenger flights are not directly targeted and no public demonstration has been announced."
+},
+
+{
+  title: "National Firefighters Strike",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "National Fire Brigade facilities and airport fire services across Italy",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-12T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "UIL FP has proclaimed nationwide industrial action involving personnel of Italy's National Fire Brigade on Saturday 12 September 2026. Operational shift personnel are scheduled to abstain for their complete working shift, while daily operational and technical-administrative staff are scheduled for the full working day. Firefighters assigned to airport facilities have a separate strike window from 15:00 to 18:00. Legally required emergency and essential services will remain protected. Risk assessed as High because the mobilisation has national reach and involves emergency-response and airport fire-service personnel, creating potential operational consequences despite statutory minimum-service safeguards. One separate 12 September firefighter strike notice has been revoked, but the UIL FP action remains listed as confirmed."
+},
+
+{
+  title: "ATVO Venice 24-Hour Public Transport Strike",
+  city: "Venice",
+  lat: 45.4380,
+  lng: 12.3184,
+  address: "ATVO network across Venice province — map anchor: Piazzale Roma bus terminal",
+  postcode: "30135",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "ATVO public-transport personnel in Venice province are scheduled to undertake a 24-hour strike on Monday 14 September 2026, subject to statutory guaranteed operating periods. Bus services serving Venice, Mestre, Marco Polo Airport, Jesolo and communities across eastern Veneto may experience cancellations and reduced frequencies. Risk assessed as Medium because a full-day stoppage may disrupt commuting, airport transfers and visitor movements across one of Italy's busiest tourism transport networks. This action is separate from the four-hour ATVO strike already recorded for 5 September and from another independently scheduled ATVO action on 15 September."
+},
+
+{
+  title: "Bologna Airport ENAV Air-Traffic Control Strike",
+  city: "Bologna",
+  lat: 44.5354,
+  lng: 11.2887,
+  address: "Bologna Guglielmo Marconi Airport, Via del Triumvirato 84",
+  postcode: "40132",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-15T13:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "RSA UILT-UIL has registered a four-hour strike involving ENAV personnel responsible for air-navigation operations associated with Bologna Airport from 13:00 to 17:00 on Tuesday 15 September 2026. Flight movements may be regulated, delayed, rescheduled or cancelled during the stoppage, subject to statutory aviation guarantees and protected flights. Risk assessed as High because the action directly affects air-traffic-management personnel at a major northern Italian airport during the afternoon operating period and may generate knock-on disruption for domestic and international passengers. This is operationally separate from the nationwide ENAV and Techno Sky strike already recorded for 30 September."
+},
+
+{
+  title: "Start Romagna Ravenna Public Transport Strike",
+  city: "Ravenna",
+  lat: 44.4184,
+  lng: 12.2035,
+  address: "Start Romagna Ravenna operating network — map anchor: Ravenna railway and bus interchange, Piazza Luigi Carlo Farini",
+  postcode: "48121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T08:30:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL, UGL, FAISA-CISAL and USB Lavoro Privato have registered a three-and-a-half-hour strike involving Start Romagna personnel in the Ravenna operating basin from 08:30 to 12:00 on Tuesday 15 September 2026. A parallel action covering the company's ferry department is scheduled during the same period. Urban and regional bus services and relevant ferry operations may experience cancellations or reduced availability. Risk assessed as Medium because the action overlaps with the weekday morning travel period and may affect commuters, students and regional connections. No street demonstration has been announced."
+},
+
+{
+  title: "ATVO Venice 24-Hour Public Transport Strike",
+  city: "Venice",
+  lat: 45.4380,
+  lng: 12.3184,
+  address: "ATVO network across Venice province — map anchor: Piazzale Roma bus terminal",
+  postcode: "30135",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T00:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "SGB and FAST-Mobilità have registered a separate 24-hour strike affecting ATVO personnel across Venice province on Tuesday 15 September 2026. Services connecting Venice, Mestre, Marco Polo Airport and municipalities throughout eastern Veneto may operate at reduced frequency or be cancelled outside guaranteed periods. Risk assessed as Medium because this is the second consecutive day of scheduled ATVO industrial action and may prolong disruption for commuters, airport passengers and visitors. It is recorded separately in accordance with CityIntel's recurring-action methodology because the 14 and 15 September stoppages represent distinct scheduled strike dates."
+},
+
+{
+  title: "Autolinee Toscane Pisa Public Transport Strike",
+  city: "Pisa",
+  lat: 43.7085,
+  lng: 10.3987,
+  address: "Autolinee Toscane urban and extraurban network — map anchor: Pisa Centrale, Piazza della Stazione",
+  postcode: "56125",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T17:30:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FAST-Confsal has registered a four-hour strike involving Autolinee Toscane personnel operating Pisa's urban and extraurban bus services from 17:30 to 21:30 on Tuesday 15 September 2026. Bus cancellations, longer waiting periods and reduced evening connections may affect Pisa and neighbouring municipalities. Risk assessed as Medium because the action covers the evening commuter and travel period and may increase pressure around Pisa Centrale and other transport interchanges, although no public demonstration or deliberate road obstruction is announced."
+},
+
+{
+  title: "Trenitalia Emilia-Romagna Customer Operations Strike",
+  city: "Bologna",
+  lat: 44.5055,
+  lng: 11.3410,
+  address: "Trenitalia Customer Operations across Bologna, Reggio Emilia, AV Mediopadana and Rimini — map anchor: Bologna Centrale",
+  postcode: "40121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-21T09:01:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL and ORSA Ferrovie have registered an eight-hour strike involving Trenitalia Customer Operations personnel based in Bologna, Reggio Emilia Centrale, Reggio Emilia AV Mediopadana and Rimini from 09:01 to 17:00 on Monday 21 September 2026. Customer assistance, station operations and associated regional rail activity may experience reduced staffing or delays. Risk assessed as Medium because the action covers several major Emilia-Romagna railway hubs during an active weekday period. This is operationally distinct from the separate RFI ONAE-ONI Bologna strike already recorded for the same day."
+},
+
+{
+  title: "UCPI Nationwide Criminal Lawyers' Court Abstention",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "Criminal courts and judicial activity across Italy — no single assembly point",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-23T00:00:00",
+  source: "https://ordineavvocatidellaspezia.it/astensione-dalle-udienze-penali-dal-23-al-29-settembre-2026/",
+  summary: "The Unione delle Camere Penali Italiane has proclaimed a nationwide abstention from criminal hearings and other judicial activity for seven consecutive days from Wednesday 23 through Tuesday 29 September 2026. The action follows concerns over alleged interception of confidential lawyer-client conversations at Perugia prison and broader issues involving defence rights, surveillance, prison conditions and criminal-justice policy. Criminal hearings and other non-exempt proceedings may therefore be postponed or rescheduled in courts across Italy, subject to statutory and professional safeguards for urgent matters. Risk assessed as Medium because the prolonged nationwide action may materially affect criminal-court operations and case scheduling but does not itself constitute a public-order threat or nationwide street demonstration."
+},
+
+{
+  title: "AIR Campania Naples Public Transport Strike",
+  city: "Naples",
+  lat: 40.8529,
+  lng: 14.2726,
+  address: "AIR Campania services in the Naples operating area — map anchor: Napoli Centrale / Piazza Garibaldi transport hub",
+  postcode: "80142",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-28T08:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL, UGL and FAISA-CISAL have registered a four-hour strike involving AIR Campania personnel in the Naples operating area from 08:00 to 12:00 on Monday 28 September 2026. Bus services may experience cancellations, reduced frequencies and longer waiting periods during the morning travel period. Risk assessed as Medium because the action may affect weekday commuting and regional passenger movements into and around Naples and increase demand on alternative public transport. No associated demonstration or deliberate road obstruction has been announced."
+},
+
+
+{
+  title: "Vesuvio Pride 2026 — Portici",
+  city: "Portici",
+  lat: 40.8145,
+  lng: 14.3347,
+  address: "Spiaggia Cirotto, Parco a Mare, Via Bagnara — Pride march through Portici",
+  postcode: "80055",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T16:00:00",
+  source: "https://www.lgbtworld.it/vesuvio-pride-2026-appuntamento-a-portici-il-5-settembre/",
+  summary: "The seventh Vesuvio Pride is scheduled in Portici on Saturday 5 September 2026 after being postponed from July because of extreme heat. Organisers have confirmed assembly from 16:00 at Spiaggia Cirotto in the Parco a Mare, with the procession scheduled to depart at 17:00. The event is intended to promote LGBTQIA+ visibility, equality and civil rights across the Vesuvian area and has been organised in cooperation with the municipality. Risk assessed as Medium because a moving public procession through Portici is likely to require stewarding, police liaison, rolling traffic restrictions and temporary changes to local road access. No specific counter-demonstration or disorder threat has been announced."
+},
+
+{
+  title: "Savona Pride 2026 — Ancoratə ai diritti",
+  city: "Savona",
+  lat: 44.3075,
+  lng: 8.4810,
+  address: "Savona city centre — operational map anchor: Piazza Sisto IV; final assembly point and procession route subject to organiser programme",
+  postcode: "17100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T12:00:00",
+  source: "https://www.gay.it/savona-pride-2026-5-settembre",
+  summary: "Savona Pride will return to the city's streets on Saturday 5 September 2026 for its third edition under the slogan \"Ancoratə ai diritti\". The Arcigay Savona-supported mobilisation addresses LGBTQIA+ rights alongside family recognition, healthcare, bodily autonomy, social justice, discrimination and access to public space. Organisers have subsequently advertised a detailed event programme, but a dependable procession start time and staging point could not be independently retrieved during this verification pass, so CityIntel's standard 12:00 timestamp is retained pending a direct organiser update. Risk assessed as Medium because the event is explicitly organised as a street procession and is likely to require road management, stewarding and police liaison. No counter-demonstration has been confirmed."
+},
+
+{
+  title: "Stretto Pride 2026 — Sulla rotta dei diritti",
+  city: "Messina",
+  lat: 38.1858,
+  lng: 15.5561,
+  address: "Messina city centre — Piazza Cairoli used as operational map anchor; official 2026 assembly point and route TBC",
+  postcode: "98122",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://www.ilcittadinodimessina.it/attualita/stretto-pride-2026-appuntamento-il-12-settembre-a-messina-con-lo-slogan-sulla-rotta-dei-diritti/",
+  summary: "Stretto Pride 2026 is confirmed for Messina on Saturday 12 September under the slogan \"Sulla rotta dei diritti\". Organisers state that the parade will cross the streets of Messina and aim to attract thousands of participants from Sicily and neighbouring Calabria, with meetings, debates and cultural activity preceding the main mobilisation. The published announcement confirms that the detailed start time and procession route will be released separately; as no dependable updated time was retrieved during this pass, CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because a potentially sizeable moving city-centre demonstration will likely require road closures, crowd management, stewarding and police liaison. No specific counter-demonstration has been announced."
+},
+
+{
+  title: "Pride dei Campi Flegrei 2026 — Bacoli",
+  city: "Bacoli",
+  lat: 40.7968,
+  lng: 14.0790,
+  address: "Bacoli town centre — operational map anchor: Piazza Marconi; final assembly point and procession route TBC",
+  postcode: "80070",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://www.lgbtworld.it/pride-dei-campi-flegrei-2026-a-bacoli-lorgoglio-incontra-territorio-bradisismo-e-giustizia-sociale/",
+  summary: "Bacoli will host the first Pride dei Campi Flegrei on Saturday 19 September 2026, developed through a joint territorial process involving Bacoli, Monte di Procida, Pozzuoli and Quarto. Organisers describe the mobilisation as antifascist and intersectional and link LGBTQIA+ rights with local concerns including bradyseism, housing, health and social justice. As of 19 August, the final assembly time, starting point and procession route had not been published, so CityIntel's standard 12:00 timestamp is used pending further organiser information. Risk assessed as Medium because the first regional Pride will involve a public procession and may generate temporary road restrictions, concentrated pedestrian activity and police or stewarding requirements. No disorder or counter-demonstration has been announced."
+},
+
+{
+  title: "Vercelli Pride 2026",
+  city: "Vercelli",
+  lat: 45.3237,
+  lng: 8.4230,
+  address: "Vercelli historic centre — Piazza Cavour used as operational map anchor; exact assembly point and route TBC",
+  postcode: "13100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://www.vercellipride.it/info-utili.html",
+  summary: "Arcigay Rainbow Vercelli-Valsesia has confirmed Vercelli Pride for Saturday 19 September 2026 in the city's historic centre. The organiser states that the procession will take place during the afternoon, while the precise meeting point, route and detailed schedule will be communicated separately. Because an exact clock time has not yet been published, CityIntel's standard 12:00 timestamp is retained transparently pending an organiser update. Risk assessed as Medium because the Pride will be a moving demonstration through Vercelli's central historic area and may require temporary traffic restrictions, stewarding, crowd management and police liaison. The organiser promotes non-violence and no counter-demonstration has been identified."
+},
+
+{
+  title: "National March to Defend Via Goito Urban Gardens",
+  city: "Livorno",
+  lat: 43.5365,
+  lng: 10.3085,
+  address: "Orti Urbani di Via Goito, Via Goito 83 — march to Piazza del Municipio",
+  postcode: "57127",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T16:00:00",
+  source: "https://attac-italia.org/orti-urbani-a-livorno-contro-il-cemento-corteo-nazionale-sabato-5-settembre/",
+  summary: "A national demonstration in defence of Livorno's Via Goito urban gardens and six-hectare green area is scheduled for Saturday 5 September 2026. ATTAC Livorno confirms that the march will depart the Via Goito green area at 16:00 and proceed to Piazza del Municipio. The mobilisation opposes planned residential development of the site and follows an order requiring the land to be cleared after its sale to a private developer. Activists are also establishing four permanent presidi at entrances to the land and a free camp is planned from 3 to 6 September. Risk assessed as Medium because the moving national demonstration, continuing occupation campaign and anticipated clearance dispute may require significant police liaison and traffic management, although organisers have not announced violent intent."
+},
+
+{
+  title: "Renoize 2026 Antifascist March",
+  city: "Rome",
+  lat: 41.8759,
+  lng: 12.4823,
+  address: "Porta San Paolo / Piramide — antifascist procession through southern Rome; evening programme at Parco Schuster",
+  postcode: "00154",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T17:00:00",
+  source: "https://ionondimentico.noblogs.org/post/2026/08/09/renoize26-5-settembre-corteo-antifascista/",
+  summary: "The Renoize 2026 programme includes an antifascist procession in Rome on Saturday 5 September marking twenty years since the killing of activist Renato Biagetti. Organisers call for mobilisation against fascism, racism, war and rearmament and also reference Palestine, housing struggles, occupied social spaces and opposition to the criminalisation of antifascist activism. The wider published programme confirms the procession at 17:00 from Piramide, followed by concerts at Parco Schuster from approximately 20:00. Risk assessed as Medium because this is an explicitly political moving demonstration likely to attract a visible police presence, traffic controls and enhanced monitoring. No specific counter-demonstration or planned violent activity has currently been confirmed."
+},
+
+{
+  title: "Spin Time National Housing March",
+  city: "Rome",
+  lat: 41.8885,
+  lng: 12.5130,
+  address: "Spin Time Labs, Via Santa Croce in Gerusalemme 55 — planned march toward Investire SGR headquarters",
+  postcode: "00185",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "https://videoembed.ansa.it/lazio/notizie/2026/08/19/attivisti-spin-time-corteo-il-19-settembre-fino-alla-sede-di-investire-sgr_4ea67b6c-b0dd-45b6-b0b7-b34f9ccbac24.html",
+  summary: "Spin Time activists have announced a large national housing march through Rome on Saturday 19 September 2026 following the July fire, evacuation and clearance of the former occupied building at Via Santa Croce in Gerusalemme 55. Organisers state that the procession will begin outside the gates of the former Spin Time building and intends to reach the headquarters of property owner Investire SGR. The mobilisation calls for the building to return to public or cooperative use and forms part of a broader campaign concerning housing policy and property speculation in Rome. No exact start time has yet been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the national mobilisation follows a contentious eviction and will target the offices of the building owner, increasing the likelihood of police deployment, traffic restrictions and access controls, although no violent intent has been announced."
+},
+
+{
+  title: "Aosta Pride 2026 — A cresta alta",
+  city: "Aosta",
+  lat: 45.7392,
+  lng: 7.3281,
+  address: "Piazza Arco d'Augusto — Pride parade through central Aosta",
+  postcode: "11100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:30:00",
+  source: "https://aostasera.it/notizie/societa/aosta-pride-2026-date-programma-tutti-gli-eventi/",
+  summary: "Aosta Pride 2026 will conclude its Pride Week with a public parade on Saturday 26 September under the theme \"A cresta alta\". Organisers have confirmed a 14:30 assembly at Piazza Arco d'Augusto, while the detailed procession route and final programme are due to be announced in September. The wider Pride Week runs from 19 to 25 September and includes cultural, educational and political events centred on transfeminism, antifascism and intersectionality. Risk assessed as Medium because the moving procession through central Aosta is likely to require temporary traffic restrictions, stewarding and police liaison. No specific counter-demonstration or disorder threat has been identified."
+},
+
+{
+  title: "Giugliano Pride 2026 — Nessun territorio escluso",
+  city: "Giugliano in Campania",
+  lat: 40.9282,
+  lng: 14.2017,
+  address: "Giugliano in Campania city centre — Piazza Matteotti used as operational map anchor; final assembly point and route TBC",
+  postcode: "80014",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.giuglianopride.it/adesione-pride",
+  summary: "Giugliano in Campania is scheduled to host its first Pride mobilisation on Saturday 26 September 2026 under the platform \"Nessun territorio escluso. Nessun corpo escluso\". The organising document connects LGBTQIA+ rights with peace, social justice, environmental protection, the Terra dei Fuochi, public services, inclusion and wider human-rights issues. The event has been developed through public assemblies and participation by civil-society organisations. A final assembly point, route and exact start time have not yet been published, so CityIntel's standard 12:00 timestamp is used pending an organiser update. Risk assessed as Medium because this is a first-time moving political demonstration in a densely populated metropolitan municipality and is likely to require road management, stewarding and police liaison. No counter-demonstration or disorder has been announced."
+},
+
+{
+  title: "AMT Genoa Urban and Provincial Transport Strike",
+  city: "Genoa",
+  lat: 44.40669,
+  lng: 8.94692,
+  address: "AMT urban and provincial transport network — map anchor: Genova Brignole, Piazza Giuseppe Verdi 2",
+  postcode: "16121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T09:30:00",
+  source: "https://www.ilfattoquotidiano.it/2026/08/17/scioperi-settembre-treni-aerei-trasporti-notizie/8480960/",
+  summary: "CUB Trasporti has called an eight-hour strike involving AMT public-transport personnel in Genoa on Friday 4 September 2026. Current transport reporting gives the urban and extraurban stoppage window as approximately 09:30 to 17:00, while the Ministry of Infrastructure and Transport records the action as eight hours with varying operating modalities. Bus, metro, provincial services and interchange journeys may experience cancellations, reduced frequencies and increased waiting times. Risk assessed as Medium because the action covers much of the working day and may increase congestion and pressure on alternative transport across Genoa. No associated public demonstration has been announced."
+},
+
+{
+  title: "Nationwide Railway Strike — FS Group and Rail Operators",
+  city: "Nationwide",
+  lat: 41.8719,
+  lng: 12.5674,
+  address: "National railway network across Italy — no single physical assembly point confirmed",
+  postcode: "",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-07T21:18:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "Multiple railway-sector organisations have confirmed overlapping nationwide industrial action from 21:18 on Monday 7 September until 21:17 on Tuesday 8 September 2026. The mobilisation includes machine and onboard personnel of the Ferrovie dello Stato Italiane group together with workers at other railway undertakings represented by CUB Trasporti, SGB, CAT and associated groups. Passenger rail, regional services, long-distance trains and rail-freight operations may experience cancellations, delays and altered timetables. Certain local public-transport railway operators are also covered on 8 September. Risk assessed as High because the coordinated 24-hour action has national scope and may significantly disrupt passenger and freight mobility across major rail hubs. This national record is operationally distinct from the separate Piedmont-specific Trenitalia strike already recorded."
+},
+
+{
+  title: "Trenitalia Trentino-Alto Adige Mobile Staff Strike",
+  city: "Trento",
+  lat: 46.07216,
+  lng: 11.11941,
+  address: "Trenitalia network across Trentino-Alto Adige — map anchor: Trento railway station, Piazza Dante",
+  postcode: "38122",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T09:01:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL, UILT-UIL, SLM FAST-CONFSAL and ORSA Ferrovie have registered an eight-hour strike involving Trenitalia mobile personnel assigned to the Trentino-Alto Adige Operations and Network Directorate from 09:01 to 17:00 on Monday 7 September 2026. Regional train services may experience cancellations, alterations or reduced staffing during the daytime period. Risk assessed as Medium because the strike affects regional rail mobility through Trento, Bolzano and surrounding areas and occurs before the separate nationwide railway strike begins later that evening. No public rally or station occupation is currently listed."
+},
+
+{
+  title: "Trentino Trasporti Public Transport Strike",
+  city: "Trento",
+  lat: 46.0722,
+  lng: 11.1190,
+  address: "Trentino Trasporti network — map anchor: Trento bus station, Piazza Dante 24",
+  postcode: "38122",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T11:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "USB Lavoro Privato has registered a four-hour strike involving Trentino Trasporti personnel in Trento from 11:00 to 15:00 on Thursday 10 September 2026. Urban and provincial bus services and other operator-managed public transport may experience reduced frequencies or cancellations during the stoppage. The date also coincides with the first day of the 2026–27 school year in Trentino, increasing the potential effect on student and family travel. Risk assessed as Medium because midday public-transport disruption may produce crowding, delays and increased demand for private transport, although no public-order threat has been announced."
+},
+
+{
+  title: "RFI Verona Infrastructure and Engineering Strike",
+  city: "Verona",
+  lat: 45.42864,
+  lng: 10.98274,
+  address: "RFI DOIT Verona South Territorial Unit — map anchor: Verona Porta Nuova, Piazzale XXV Aprile 8",
+  postcode: "37138",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T21:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "ORSA Ferrovie and SLM FAST-CONFSAL have registered a 24-hour strike involving maintenance, administrative and engineering personnel of RFI's Verona DOIT South Territorial Unit from 21:00 on Thursday 10 September until 20:59 on Friday 11 September 2026. Infrastructure-management activity and railway operations within the affected territorial unit may experience reduced staffing and associated delays or operational constraints. Risk assessed as Medium because Verona is an important northern Italian rail junction and prolonged reduced infrastructure staffing can create knock-on effects, although the action does not represent a complete shutdown of passenger rail services and no public demonstration has been announced."
+},
+
+{
+  title: "Arriva Udine Public Transport Strike",
+  city: "Udine",
+  lat: 46.05679,
+  lng: 13.24304,
+  address: "Arriva Udine network — map anchor: Autostazione di Udine, Viale Europa Unita 35/8",
+  postcode: "33100",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T17:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "ASI-AU has registered a four-hour strike involving Arriva Udine personnel on Thursday 10 September 2026. Extraurban employees are scheduled to stop from 17:00 to 21:00, while urban-service personnel are scheduled to stop from 17:45 to 21:45. Bus services across Udine and surrounding municipalities may therefore experience cancellations, reduced frequencies and longer waiting times through the evening travel period. Risk assessed as Medium because the action affects commuter and regional passenger movements around a major Friuli transport interchange, although no demonstration or deliberate road obstruction has been announced."
+},
+
+{
+  title: "Pisa Airport Ground and Operational Staff Strike",
+  city: "Pisa",
+  lat: 43.6828,
+  lng: 10.3956,
+  address: "Galileo Galilei International Airport, Piazzale Corradino d'Ascanio 1",
+  postcode: "56121",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-13T11:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "USB Lavoro Privato and CUB Trasporti have registered four-hour strike action involving personnel of Toscana Aeroporti, GH Toscana and Consulta operating at Pisa and Florence airports from 11:00 to 15:00 on Sunday 13 September 2026. This record represents the Pisa component at Galileo Galilei Airport. Ground handling, passenger processing and other airport operational services may experience reduced staffing, delays or cancellations during the strike window. Risk assessed as High because disruption to airport ground operations can produce flight delays, baggage-processing problems, queueing and knock-on effects for domestic and international passengers. No public demonstration has been announced."
+},
+
+{
+  title: "Florence Airport Ground and Operational Staff Strike",
+  city: "Florence",
+  lat: 43.80964,
+  lng: 11.20268,
+  address: "Amerigo Vespucci Airport, Via del Termine 11",
+  postcode: "50127",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-13T11:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "USB Lavoro Privato and CUB Trasporti have registered four-hour strike action involving Toscana Aeroporti, GH Toscana and Consulta personnel at Florence and Pisa airports from 11:00 to 15:00 on Sunday 13 September 2026. This record represents the Florence component at Amerigo Vespucci Airport. Ground handling, passenger-processing and related airport services may operate with reduced staffing, potentially generating delays, queues or flight disruption. Risk assessed as High because Florence has a compact terminal operation where reduced staffing during an active Sunday travel period may quickly affect passenger processing and aircraft turnaround activity. No related public rally has been announced."
+},
+
+
+{
+  title: "CSIF Correos National Mobilisation — Barcelona",
+  city: "Barcelona",
+  lat: 41.38153,
+  lng: 2.18145,
+  address: "Jefatura Provincial de Correos de Barcelona, Carrer d'Àngel Baixeras, s/n, portal H",
+  postcode: "08002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "CSIF has confirmed the opening day of a nationwide Correos mobilisation on Thursday 3 September 2026, with concentrations outside provincial Correos headquarters across Spain. In Barcelona the provincial headquarters is located in the historic central Correos building at Carrer d'Àngel Baixeras. Employees will protest staffing shortages, widespread part-time employment, failure to implement the agreed 35-hour week, delays to workforce-rejuvenation measures and other alleged breaches of the December 2024 framework agreement. CSIF has not yet published a Barcelona-specific start time, so CityIntel's standard 12:00 timestamp is used pending an update. Risk assessed as Low because this is expected to be a stationary trade-union concentration without a march or deliberate obstruction, although pedestrian activity and routine police or building-access management are possible."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Valencia",
+  city: "Valencia",
+  lat: 39.45832,
+  lng: -0.38339,
+  address: "Jefatura Provincial de Correos de Valencia, Calle San Vicente Mártir 175",
+  postcode: "46007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "Correos employees represented by CSIF are scheduled to concentrate outside provincial Correos headquarters across Spain on Thursday 3 September 2026. The Valencia provincial workplace is at Calle San Vicente Mártir 175. The mobilisation seeks increased staffing, implementation of the 35-hour working week, conversion of part-time contracts to full-time employment, progress on voluntary departures and workforce rejuvenation and compliance with the December 2024 Correos framework agreement. No Valencia-specific start time has been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Low because the action is a stationary workplace-based union concentration with no procession or confrontational activity announced. Minor pavement congestion and access management are possible."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Seville",
+  city: "Seville",
+  lat: 37.38480,
+  lng: -5.99424,
+  address: "Jefatura Provincial de Correos de Sevilla, Avenida de la Constitución 32",
+  postcode: "41001",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/andaluciaentidadespublicasestatales/articulo/94420",
+  summary: "CSIF has confirmed a Correos workers' concentration in Seville on Thursday 3 September 2026 as part of coordinated demonstrations outside provincial Correos headquarters throughout Spain. The union is protesting staffing reductions, reliance on part-time employment, delayed implementation of the 35-hour week and workforce-rejuvenation programme and broader non-compliance with the December 2024 framework agreement. CSIF reports that Correos has lost more than 3,800 jobs in Andalucía over the last decade. No Seville-specific start time has yet been published, so 12:00 is used as the CityIntel default. Risk assessed as Low because the action is a formally organised stationary union concentration, although its prominent central location on Avenida de la Constitución may create local pedestrian congestion and require access management."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Bilbao",
+  city: "Bilbao",
+  lat: 43.25994,
+  lng: -2.93187,
+  address: "Jefatura Provincial de Correos de Bizkaia, Alameda de Urquijo 19",
+  postcode: "48008",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "CSIF's nationwide Correos mobilisation includes a concentration outside the provincial Correos headquarters in Bilbao on Thursday 3 September 2026. Workers will protest reductions in staffing, extensive use of part-time contracts, failure to implement the agreed 35-hour working week, delays to workforce rejuvenation and other unresolved commitments contained in the December 2024 framework agreement. A Bilbao-specific start time has not yet been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Low because the event is expected to remain a stationary workplace protest with no march, blockade or violent activity announced. Localised pedestrian congestion is possible around Alameda de Urquijo."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Barcelona",
+  city: "Barcelona",
+  lat: 41.38153,
+  lng: 2.18145,
+  address: "Jefatura Provincial de Correos de Barcelona, Carrer d'Àngel Baixeras, s/n, portal H",
+  postcode: "08002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "CSIF has scheduled a second nationwide round of Correos concentrations for Thursday 17 September 2026, including outside the provincial Correos headquarters in central Barcelona. The action continues the union campaign over staffing shortages, part-time employment, the delayed 35-hour week, workforce rejuvenation and implementation of the December 2024 framework agreement. No separate Barcelona start time has been announced, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Low because the action is a stationary union gathering with no procession or deliberate obstruction announced, although access management and limited pedestrian congestion may occur around the central postal building."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Valencia",
+  city: "Valencia",
+  lat: 39.45832,
+  lng: -0.38339,
+  address: "Jefatura Provincial de Correos de Valencia, Calle San Vicente Mártir 175",
+  postcode: "46007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "The second scheduled day of CSIF's nationwide Correos campaign will take place on Thursday 17 September 2026, with Valencia workers called to concentrate at the provincial Correos headquarters on Calle San Vicente Mártir. The union continues to demand staffing reinforcement, conversion of part-time employment, implementation of the 35-hour week, workforce rejuvenation and fulfilment of the December 2024 framework agreement. A local start time has not been published, so the CityIntel standard 12:00 timestamp is used pending an organiser update. Risk assessed as Low because this is expected to be a peaceful stationary workplace concentration with limited operational effects beyond local pedestrian activity and building-access management."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Seville",
+  city: "Seville",
+  lat: 37.38480,
+  lng: -5.99424,
+  address: "Jefatura Provincial de Correos de Sevilla, Avenida de la Constitución 32",
+  postcode: "41001",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/andaluciaentidadespublicasestatales/articulo/94420",
+  summary: "CSIF's nationwide Correos mobilisation is scheduled to return on Thursday 17 September 2026, including a concentration outside the provincial Correos headquarters on Avenida de la Constitución in Seville. The dispute concerns staffing shortages, part-time employment, the 35-hour working week, delayed voluntary-departure and rejuvenation measures and wider implementation of the December 2024 framework agreement. No Seville-specific start time is currently available, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Low because the gathering is expected to be stationary and organised, although the prominent central-city location may generate pedestrian congestion and limited access-management requirements."
+},
+
+{
+  title: "CSIF Correos National Mobilisation — Bilbao",
+  city: "Bilbao",
+  lat: 43.25994,
+  lng: -2.93187,
+  address: "Jefatura Provincial de Correos de Bizkaia, Alameda de Urquijo 19",
+  postcode: "48008",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-17T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "A second September concentration by CSIF-represented Correos employees is scheduled outside the provincial Correos headquarters in Bilbao on Thursday 17 September 2026. Workers will continue to demand stronger staffing, progress towards full-time employment for part-time staff, implementation of the 35-hour week and workforce-rejuvenation measures promised under the December 2024 agreement. CSIF has not published a Bilbao-specific start time, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Low because the event is expected to be an organised stationary labour protest without a march or deliberate obstruction. Minor congestion and routine police or building-security monitoring are possible."
+},
+
+{
+  title: "National Correos Workers' Concentration — Madrid",
+  city: "Madrid",
+  lat: 40.42658,
+  lng: -3.67561,
+  address: "Madrid — final national assembly point TBC; Correos headquarters, Calle Conde de Peñalver 19 used as operational map anchor",
+  postcode: "28006",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-30T12:00:00",
+  source: "https://www.csif.es/es/noticia/portada/nacionalentidadespublicasestatales/articulo/94073",
+  summary: "CSIF has confirmed a major national Correos workers' concentration in Madrid on Wednesday 30 September 2026, intended to culminate the union's September mobilisation campaign following provincial demonstrations on 3 and 17 September. Workers from across Spain are expected to participate and will demand increased recruitment, implementation of the 35-hour week, conversion of part-time jobs to full-time employment, progress on workforce rejuvenation and compliance with the December 2024 Correos framework agreement. CSIF has not yet released the final Madrid assembly point or start time, so CityIntel's standard 12:00 timestamp is used and Correos headquarters on Calle Conde de Peñalver is retained only as a transparent operational map anchor. Risk assessed as Medium because the event is explicitly planned as a large nationwide concentration drawing employees into Madrid and may require police liaison, crowd management and temporary access or traffic controls. No violent activity has been announced."
+},
+
+
+{
+  title: "Airbus Spain Indefinite Strike — Getafe September Continuation",
+  city: "Getafe",
+  lat: 40.29917,
+  lng: -3.71167,
+  address: "Airbus Getafe, Paseo John Lennon, s/n",
+  postcode: "28906",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.lanzadigital.com/castilla-la-mancha/la-plantilla-de-airbus-confirma-la-huelga-indefinida-a-partir-de-este-martes/",
+  summary: "Workers at Airbus Getafe have backed continuation of the indefinite Airbus Spain strike beginning on 25 August 2026 after rejecting the company's latest proposal. The dispute involves pay linked to inflation and recovery of lost purchasing power, teleworking, holidays, working-time flexibility, collective transport and wider employment conditions. Negotiations are scheduled to continue while the strike remains indefinite and without a published end date. This record uses 1 September and CityIntel's standard 12:00 timestamp as a transparent September continuation marker rather than the original strike start. Risk assessed as Medium because prolonged industrial action at Airbus's major Getafe aerospace facility may disrupt aircraft production, engineering, maintenance and supply-chain activity, although no public-order threat has been announced. Remove or update this record if a settlement ends the strike before 1 September."
+},
+
+{
+  title: "Airbus Spain Indefinite Strike — Illescas September Continuation",
+  city: "Illescas",
+  lat: 40.15845,
+  lng: -3.82478,
+  address: "Airbus Operations, Ctra. Nacional Madrid-Toledo km 32, Señorío de Illescas - Área Terciaria",
+  postcode: "45200",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.lanzadigital.com/castilla-la-mancha/la-plantilla-de-airbus-confirma-la-huelga-indefinida-a-partir-de-este-martes/",
+  summary: "Workers at the Airbus Illescas facility have voted to continue the indefinite Airbus Spain strike from 25 August 2026. The dispute concerns salaries and recovery of purchasing power together with teleworking, holidays, working-time flexibility, collective transport and other employment conditions. Negotiations between the company and unions will continue during the industrial action. This record represents the strike's expected continuation into September and uses CityIntel's standard 12:00 time because no separate daily strike time exists for the 24-hour indefinite action. Risk assessed as Medium because sustained staffing withdrawals may disrupt aerostructure manufacturing, production schedules and associated supply-chain activity at the Illescas industrial facility. No public-order threat has been announced. Remove or update if a settlement is reached before 1 September."
+},
+
+{
+  title: "Airbus Spain Indefinite Strike — Albacete September Continuation",
+  city: "Albacete",
+  lat: 38.94276,
+  lng: -1.87744,
+  address: "Airbus Helicopters España, Parque Aeronáutico y Logístico, Carretera de las Peñas km 5.3",
+  postcode: "02006",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.lanzadigital.com/castilla-la-mancha/la-plantilla-de-airbus-confirma-la-huelga-indefinida-a-partir-de-este-martes/",
+  summary: "Airbus employees in Albacete have backed participation in the indefinite Spain-wide strike beginning on 25 August 2026. Workers are seeking improvements concerning pay and purchasing power, teleworking, holidays, flexibility and other employment conditions while negotiations with Airbus continue. This record uses 1 September as a continuation marker and CityIntel's standard 12:00 timestamp because the strike is a 24-hour indefinite action rather than a timed public demonstration. Risk assessed as Medium because prolonged industrial action may disrupt helicopter production, maintenance, logistics and related aerospace operations at the Albacete facility. No public-order threat is indicated. Remove or update the record if negotiations result in the strike being suspended before September."
+},
+
+{
+  title: "Airbus Spain Indefinite Strike — Sevilla San Pablo September Continuation",
+  city: "Seville",
+  lat: 37.41021,
+  lng: -5.88086,
+  address: "Airbus Defence and Space San Pablo, Avenida del Aeropuerto, s/n",
+  postcode: "41020",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.lanzadigital.com/castilla-la-mancha/la-plantilla-de-airbus-confirma-la-huelga-indefinida-a-partir-de-este-martes/",
+  summary: "Workers at Airbus San Pablo in Seville have voted to maintain the indefinite Airbus Spain strike from 25 August 2026 after rejecting the latest company proposal. Union demands concern salaries and lost purchasing power, teleworking, holidays, working-time flexibility, collective transport and other employment conditions. Negotiations remain scheduled while the industrial action continues. This entry uses 1 September and CityIntel's standard 12:00 timestamp as a September continuation marker. Risk assessed as Medium because an extended stoppage may disrupt aerospace and defence-aircraft production, support activity and associated supply chains at the strategically important San Pablo facility beside Seville Airport. No public-order threat has been announced. Remove or update if the dispute is settled before September."
+},
+
+{
+  title: "Airbus Spain Indefinite Strike — Sevilla Tablada September Continuation",
+  city: "Seville",
+  lat: 37.36546,
+  lng: -6.00162,
+  address: "Airbus Defence and Space Tablada, Avenida Maestranza Aérea 17",
+  postcode: "41011",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.lanzadigital.com/castilla-la-mancha/la-plantilla-de-airbus-confirma-la-huelga-indefinida-a-partir-de-este-martes/",
+  summary: "Airbus workers at the Tablada facility in Seville have backed continuation of the indefinite company-wide strike from 25 August 2026. The dispute encompasses pay and recovery of lost purchasing power together with teleworking, holidays, flexibility, collective transport and wider working conditions. Daily negotiations are expected to continue while the industrial action remains active. This record uses 1 September and the CityIntel 12:00 default as a transparent September continuation point rather than implying a new strike begins that day. Risk assessed as Medium because sustained industrial action may disrupt aerostructure manufacturing, assembly and associated aerospace supply-chain operations at Tablada. No street demonstration or public-order threat has been announced. Remove or update if a settlement occurs before September."
+},
+
+{
+  title: "Bilbao Pensioners' Monday Rally — Public Pensions and Services",
+  city: "Bilbao",
+  lat: 43.26422,
+  lng: -2.92346,
+  address: "Outside Bilbao City Hall, Plaza Ernesto Erkoreka 1",
+  postcode: "48007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-07T12:00:00",
+  source: "https://www.europapress.es/euskadi/noticia-pensionistas-vascos-protestan-aste-nagusia-contra-perdida-poder-adquisitivo-defensa-sistema-publico-20260824140235.html",
+  summary: "The Movimiento de Pensionistas de Bizkaia has announced that it will resume its established Monday concentrations in Bilbao on 7 September 2026 following the summer break. The regular pre-summer format places the gathering outside Bilbao City Hall at 12:00. Participants campaign for adequate and inflation-protected pensions, defence of the public pension system, improved minimum pensions particularly for women and high-quality public healthcare, care and dependency services. Risk assessed as Low because this is a long-established stationary weekly mobilisation with no deliberate obstruction or violent activity announced. Localised pedestrian congestion and routine police or municipal monitoring are possible around the City Hall."
+},
+
+{
+  title: "Bilbao Pensioners' Monday Rally — Public Pensions and Services",
+  city: "Bilbao",
+  lat: 43.26422,
+  lng: -2.92346,
+  address: "Outside Bilbao City Hall, Plaza Ernesto Erkoreka 1",
+  postcode: "48007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-14T12:00:00",
+  source: "https://www.europapress.es/euskadi/noticia-pensionistas-vascos-protestan-aste-nagusia-contra-perdida-poder-adquisitivo-defensa-sistema-publico-20260824140235.html",
+  summary: "This record represents the Monday 14 September occurrence of the Movimiento de Pensionistas de Bizkaia's resumed weekly Bilbao concentration series. The movement announced on 24 August that its regular Monday mobilisations will resume from 7 September after the summer break; the established format is a 12:00 concentration outside Bilbao City Hall. Participants advocate inflation-protected and sufficient pensions, preservation of the public pension system and stronger publicly provided healthcare, care and dependency services. Risk assessed as Low because the recurring gathering is peaceful and stationary and normally causes only localised pedestrian activity around the City Hall."
+},
+
+{
+  title: "Bilbao Pensioners' Monday Rally — Public Pensions and Services",
+  city: "Bilbao",
+  lat: 43.26422,
+  lng: -2.92346,
+  address: "Outside Bilbao City Hall, Plaza Ernesto Erkoreka 1",
+  postcode: "48007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-21T12:00:00",
+  source: "https://www.europapress.es/euskadi/noticia-pensionistas-vascos-protestan-aste-nagusia-contra-perdida-poder-adquisitivo-defensa-sistema-publico-20260824140235.html",
+  summary: "The Movimiento de Pensionistas de Bizkaia's resumed Monday protest cycle establishes a further concentration in Bilbao on Monday 21 September 2026 under the movement's established 12:00 City Hall format. Campaigners continue to demand adequate pensions, protection against loss of purchasing power, defence of the public pension system and strong healthcare, care and dependency provision. Risk assessed as Low because this is an established stationary civic protest without a march, blockade or hostile counter-mobilisation announced. Routine police observation and limited pedestrian congestion are possible around Plaza Ernesto Erkoreka."
+},
+
+{
+  title: "Bilbao Pensioners' Monday Rally — Public Pensions and Services",
+  city: "Bilbao",
+  lat: 43.26422,
+  lng: -2.92346,
+  address: "Outside Bilbao City Hall, Plaza Ernesto Erkoreka 1",
+  postcode: "48007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-28T12:00:00",
+  source: "https://www.europapress.es/euskadi/noticia-pensionistas-vascos-protestan-aste-nagusia-contra-perdida-poder-adquisitivo-defensa-sistema-publico-20260824140235.html",
+  summary: "This record represents the Monday 28 September occurrence of the Movimiento de Pensionistas de Bizkaia's resumed weekly mobilisation series in Bilbao. The movement has announced the return of its established Monday concentrations from 7 September following its summer pause, with the regular gathering taking place outside Bilbao City Hall at 12:00. Participants campaign for sufficient public pensions, protection of pension purchasing power and well-resourced public healthcare, care and dependency systems. Risk assessed as Low because the action is an established stationary weekly protest with no deliberate obstruction or disorder anticipated. Minor pedestrian congestion and routine police or municipal monitoring are possible."
+},
+
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "UGT, CCOO and Sindicato Libre de Transportes have registered partial strike action across the road-passenger transport sector in Segovia province on Thursday 3 September 2026. Workers are scheduled to stop from 05:00 to 09:30 and again from 14:00 to 18:00. The dispute concerns pay, working-time reduction, recognition of seniority and wider conditions under the provincial collective agreement. The action can affect interurban services, the Madrid-Segovia corridor, metropolitan buses and other provincial passenger routes, subject to legally imposed minimum services. Risk assessed as Medium because significant timetable disruption, longer waits and service reductions are possible during both strike windows, although no public-order threat is indicated. The August phase was suspended for negotiations, but the September calendar remains scheduled and should be removed if a settlement is announced."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "A second September partial strike in Segovia's road-passenger transport sector is scheduled for Monday 7 September 2026. UGT, CCOO and Sindicato Libre de Transportes have called stoppages from 05:00 to 09:30 and 14:00 to 18:00 across workplaces covered by the provincial passenger-transport agreement. Workers are seeking improved pay, shorter working time, improved seniority arrangements and progress in collective bargaining. Risk assessed as Medium because disruption may affect morning commuting, afternoon travel, metropolitan and interurban services and connections between Segovia and Madrid, although statutory minimum services will operate. No disorder is anticipated. Update or remove if negotiations result in suspension."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "Road-passenger transport workers throughout Segovia province are scheduled for partial strike action on Thursday 10 September 2026. The registered stoppages run from 05:00 to 09:30 and from 14:00 to 18:00. The dispute centres on salary updating, progressive reduction of working hours, seniority arrangements and broader collective-agreement conditions. Risk assessed as Medium because reduced staffing may cause cancellations, service gaps, longer waiting times and disruption to provincial, metropolitan and Madrid-bound bus services. Legally mandated minimum services will reduce but not eliminate the operational impact. No public-order threat is indicated."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "UGT, CCOO and Sindicato Libre de Transportes have scheduled another partial strike across Segovia province's road-passenger transport sector on Monday 14 September 2026. Stoppages are registered from 05:00 to 09:30 and 14:00 to 18:00. The action forms part of the continuing dispute over pay, lengthy working days, working-time reduction, seniority and renewal of the provincial collective agreement. Risk assessed as Medium because the morning and afternoon stoppage windows may disrupt commuter, interurban and metropolitan travel and increase waiting times at bus stations and stops. Minimum-service requirements remain applicable and no disorder is expected."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-17T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "Partial strike action by road-passenger transport workers in Segovia province is scheduled for Thursday 17 September 2026. Employees covered by the provincial agreement are called to stop work from 05:00 to 09:30 and 14:00 to 18:00. Union demands include salary improvements, progressive reductions to working time, improved seniority provisions and a satisfactory new collective agreement. Risk assessed as Medium because reduced bus availability may affect provincial travel, metropolitan routes and the Madrid-Segovia corridor during important commuting periods. Minimum services are required and the dispute presents primarily an operational rather than public-order risk."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-21T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "Segovia's continuing road-passenger transport dispute includes partial strike action on Monday 21 September 2026. UGT, CCOO and Sindicato Libre de Transportes have registered stoppages from 05:00 to 09:30 and again from 14:00 to 18:00. Workers are seeking improvements to salaries, working hours, seniority and other collective-agreement conditions. Risk assessed as Medium because reduced staffing during two travel peaks may result in cancellations, delays and longer waits across provincial and metropolitan bus networks, including services linking Segovia with Madrid. Statutory minimum services will operate and no public-order threat has been announced."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-24T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "Road-passenger transport workers across Segovia province are scheduled to conduct partial strike action on Thursday 24 September 2026. The registered work stoppages run from 05:00 to 09:30 and 14:00 to 18:00. The industrial dispute concerns pay, working-time reduction, seniority and negotiation of improved conditions across the provincial sector. Risk assessed as Medium because cancellations and reduced frequencies may affect commuters, regional passengers and connections to Madrid during the strike windows. Legally mandated minimum services should preserve some essential transport capacity. No protest-related disorder is anticipated."
+},
+
+{
+  title: "Segovia Road Passenger Transport Partial Strike",
+  city: "Segovia",
+  lat: 40.94494,
+  lng: -4.12248,
+  address: "Province-wide road passenger transport strike — Segovia Bus Station, Paseo de Ezequiel González 20 used as operational map anchor",
+  postcode: "40002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-28T05:00:00",
+  source: "https://bocyl.jcyl.es/boletines/2026/06/05/pdf/BOCYL-D-05062026-107-17.pdf",
+  summary: "The final currently registered date in the Segovia road-passenger transport strike calendar is Monday 28 September 2026. UGT, CCOO and Sindicato Libre de Transportes have scheduled partial stoppages from 05:00 to 09:30 and 14:00 to 18:00 across the provincial sector. The dispute concerns salary updating, reduction of working hours, seniority and wider collective-bargaining conditions. Risk assessed as Medium because service reductions may cause delays, cancellations and crowding on provincial, metropolitan and Madrid-linked routes during the morning and afternoon peaks. Minimum services remain applicable and no public-order threat is expected. This record should be removed if a negotiated settlement ends the dispute before 28 September."
+},
+
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport's current minimum-services resolution confirms an Outsmart Assistance strike affecting maintenance of the automated baggage-handling system (SATE) across all terminals at Adolfo Suárez Madrid-Barajas Airport on Thursday 3 September 2026. The recurring action is scheduled every Monday, Thursday, Friday, Saturday and Sunday through 30 September, with stoppages from 05:00–07:00 and 13:00–15:00. Approximately 264 Outsmart employees are covered by the dispute and 50% of the normally scheduled SATE maintenance workforce must remain on minimum service. Risk assessed as Medium because reduced maintenance capacity may contribute to baggage-system faults, delays or operational congestion at Spain's busiest airport, although minimum staffing should reduce the likelihood of severe disruption. No public-order threat is indicated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport confirms a scheduled Outsmart Assistance SATE maintenance strike at Madrid-Barajas Airport on Friday 4 September 2026. Stoppages are scheduled from 05:00–07:00 and 13:00–15:00 and affect maintenance of the automated baggage-handling system serving all airport terminals. The ministry requires 50% of the normally scheduled maintenance workforce to remain on minimum service. Risk assessed as Medium because reduced corrective-maintenance capacity could contribute to baggage-system faults, delayed baggage processing, missed connections or wider airport operational congestion. No public demonstration or disorder risk is associated with the action."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Outsmart Assistance employees responsible for SATE baggage-system maintenance at Madrid-Barajas Airport are scheduled to undertake partial strike action on Saturday 5 September 2026. The two stoppage periods run from 05:00–07:00 and 13:00–15:00. The action affects the automated baggage-handling infrastructure serving all terminals, while the Ministry of Transport has imposed 50% minimum staffing for corrective maintenance. Risk assessed as Medium because weekend passenger volumes combined with reduced maintenance capacity could result in baggage delays, system congestion or knock-on flight disruption if technical incidents occur. No public-order threat is anticipated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The continuing Outsmart Assistance industrial dispute includes partial strike action at Madrid-Barajas Airport on Sunday 6 September 2026. SATE maintenance staff are called to stop work from 05:00–07:00 and again from 13:00–15:00, subject to mandatory 50% minimum staffing. The SATE infrastructure handles checked, transfer and arriving baggage throughout all terminals. Risk assessed as Medium because disruption to corrective maintenance during a busy Sunday travel period may increase the risk of baggage-system delays, transfer problems and knock-on operational congestion. No street protest or public-order threat has been announced."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Partial strike action by Outsmart Assistance SATE maintenance workers is scheduled at Madrid-Barajas Airport on Monday 7 September 2026. Employees are called to stop from 05:00–07:00 and 13:00–15:00 as part of the indefinite dispute continuing through September. The Ministry of Transport requires 50% minimum staffing for the airport's critical automated baggage-handling system. Risk assessed as Medium because reduced maintenance capacity during morning and afternoon operating periods could contribute to baggage disruption, delayed transfers and wider airport congestion if faults occur. Public disorder is not expected."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Ministry of Transport's active minimum-services resolution confirms partial strike action by Outsmart Assistance SATE maintenance workers at Madrid-Barajas Airport on Thursday 10 September 2026. Stoppages are scheduled from 05:00–07:00 and 13:00–15:00, with 50% minimum staffing required. Risk assessed as Medium because the SATE system serves baggage operations across every terminal and reduced corrective-maintenance capacity may contribute to baggage delays, missed transfers or operational congestion if technical failures occur. No public-order threat is associated with the action."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Outsmart Assistance employees maintaining Madrid-Barajas Airport's automated baggage-handling system are scheduled for partial strike action on Friday 11 September 2026. The action operates from 05:00–07:00 and 13:00–15:00 and is subject to 50% minimum staffing imposed by the Ministry of Transport. Risk assessed as Medium because technical incidents occurring during reduced staffing could cause baggage-processing delays, transfer disruption or knock-on pressure elsewhere in airport operations. The industrial action is workplace-based and no public-order threat has been announced."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Madrid-Barajas Airport is scheduled to experience another Outsmart Assistance SATE maintenance stoppage on Saturday 12 September 2026. Strike windows run from 05:00–07:00 and 13:00–15:00, with 50% of scheduled maintenance personnel required to remain on minimum service. Risk assessed as Medium because reduced maintenance capacity on the baggage-handling system may contribute to delayed baggage, missed transfers or wider airport congestion during a weekend operating period. No demonstration or disorder is expected."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The recurring Outsmart Assistance SATE maintenance strike at Madrid-Barajas Airport includes Sunday 13 September 2026, with stoppages scheduled from 05:00–07:00 and 13:00–15:00. The automated system manages checked, arriving and transfer baggage across all airport terminals and 50% minimum maintenance staffing has been imposed. Risk assessed as Medium because reduced corrective-maintenance capacity may increase the consequences of baggage-system faults and create passenger-processing or flight-connection disruption. No public-order threat is indicated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Outsmart Assistance SATE maintenance workers at Madrid-Barajas Airport are scheduled to conduct partial strike action on Monday 14 September 2026. The strike operates from 05:00–07:00 and 13:00–15:00 with mandatory 50% minimum staffing. Risk assessed as Medium because reduced technical coverage of the airport-wide baggage system can increase the risk of delayed luggage, missed baggage transfers and secondary operational congestion if faults occur during the strike windows. No public demonstration or disorder is anticipated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-17T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Spanish Ministry of Transport confirms the Outsmart Assistance SATE dispute remains scheduled to affect Madrid-Barajas Airport on Thursday 17 September 2026. Partial stoppages run from 05:00–07:00 and 13:00–15:00, with 50% minimum maintenance staffing. Risk assessed as Medium because the airport depends on SATE for baggage processing across all terminals and reduced corrective-maintenance availability could generate luggage delays, missed connections or operational congestion. No public-order threat is expected."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-18T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "A further partial strike by Outsmart Assistance SATE maintenance staff is scheduled at Madrid-Barajas Airport on Friday 18 September 2026. Workers are called to stop from 05:00–07:00 and 13:00–15:00, while 50% minimum maintenance staffing must remain available. Risk assessed as Medium because reduced baggage-system maintenance capacity during two operating windows may contribute to baggage delays, connection problems and wider airport disruption if technical incidents occur. No public demonstration or security threat is announced."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Outsmart Assistance employees responsible for Madrid-Barajas Airport's SATE baggage infrastructure are scheduled for partial strike action on Saturday 19 September 2026. The stoppages operate from 05:00–07:00 and 13:00–15:00 and are subject to a 50% minimum-service requirement. Risk assessed as Medium because reduced corrective-maintenance capacity during a weekend travel period could aggravate baggage-system faults, create luggage delays and affect passenger connections. No public-order risk is indicated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-20T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Outsmart Assistance SATE maintenance strike at Madrid-Barajas Airport is scheduled to continue on Sunday 20 September 2026 in two periods, 05:00–07:00 and 13:00–15:00. The Ministry of Transport requires 50% minimum staffing for corrective maintenance of the baggage system serving every terminal. Risk assessed as Medium because reduced staffing could increase baggage-processing delays, missed transfers and airport congestion should technical faults arise. The action is workplace-based and no public-order threat has been announced."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-21T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Partial industrial action by Outsmart Assistance SATE maintenance workers is scheduled at Madrid-Barajas Airport on Monday 21 September 2026. Strike windows are 05:00–07:00 and 13:00–15:00, subject to 50% minimum staffing. Risk assessed as Medium because reduced technical capacity across the airport's automated baggage system can contribute to delayed baggage handling, transfer problems or knock-on congestion if faults require urgent intervention. No public protest or disorder threat is expected."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-24T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The Ministry of Transport's active September schedule confirms partial Outsmart Assistance SATE maintenance strike action at Madrid-Barajas Airport on Thursday 24 September 2026. Work stoppages take place from 05:00–07:00 and 13:00–15:00 with 50% mandatory minimum staffing. Risk assessed as Medium because reduced corrective-maintenance coverage may increase the effects of baggage-system incidents, potentially causing delayed luggage, passenger connection problems and airport operational congestion. No public-order threat is associated with the action."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Outsmart Assistance maintenance workers assigned to Madrid-Barajas Airport's SATE baggage-handling infrastructure are scheduled to strike partially on Friday 25 September 2026. Stoppages run from 05:00–07:00 and 13:00–15:00 while 50% of normal scheduled maintenance staffing must remain available. Risk assessed as Medium because reduced maintenance capacity can increase baggage delays or secondary flight and passenger disruption if faults occur during the strike periods. No demonstration or disorder is anticipated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "Madrid-Barajas Airport is scheduled to experience an Outsmart Assistance SATE maintenance stoppage on Saturday 26 September 2026. The strike windows are 05:00–07:00 and 13:00–15:00, with 50% minimum staffing retained for essential corrective maintenance. Risk assessed as Medium because reduced technical capacity during weekend operations may contribute to baggage-system delays, missed baggage connections or wider passenger-processing congestion if faults arise. No public-order threat has been announced."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-27T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The recurring Outsmart Assistance SATE maintenance strike is scheduled at Madrid-Barajas Airport on Sunday 27 September 2026, with stoppages from 05:00–07:00 and 13:00–15:00. The automated baggage-handling system serves all airport terminals and operates under a 50% maintenance minimum-service requirement during the strike. Risk assessed as Medium because reduced corrective-maintenance capacity can increase the operational consequences of system faults, including luggage delays and missed transfers. No public-order threat is indicated."
+},
+
+{
+  title: "Outsmart Madrid-Barajas SATE Maintenance Strike",
+  city: "Madrid",
+  lat: 40.4983,
+  lng: -3.5676,
+  address: "Adolfo Suárez Madrid-Barajas Airport, Avenida de la Hispanidad, s/n",
+  postcode: "28042",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-28T05:00:00",
+  source: "https://cdn.transportes.gob.es/portal-web-transportes/aereo/huelga-servicios-minimos/38_26-07-19_--resolucion_outsmart_-sate-mad_vi.pdf",
+  summary: "The final Monday occurrence of the currently authorised September Outsmart Assistance SATE strike is scheduled at Madrid-Barajas Airport on 28 September 2026. Partial stoppages operate from 05:00–07:00 and 13:00–15:00, with 50% mandatory minimum staffing. Risk assessed as Medium because reduced maintenance coverage of the airport-wide baggage system may contribute to baggage delays, missed transfers and operational congestion if technical incidents occur. The current Ministry resolution remains valid through 30 September 2026 and no public-order threat is anticipated."
+},
+
+
+
+{
+  title: "Groundforce Indefinite Handling Strike — Barcelona-El Prat",
+  city: "Barcelona",
+  lat: 41.2974,
+  lng: 2.0833,
+  address: "Josep Tarradellas Barcelona-El Prat Airport",
+  postcode: "08820",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-01T00:00:00",
+  source: "https://web.gencat.cat/es/inici/actualitat/noticies/2026/08/vaga-aeroport-del-prat-drets-passatger",
+  summary: "CGT's indefinite strike by Groundforce Barcelona ground-handling staff, which began on 4 August 2026, remains active approaching September at Josep Tarradellas Barcelona-El Prat Airport. The dispute affects services including passenger check-in, boarding, baggage handling, aircraft ground assistance and flight coordination for numerous international airlines operating from Terminals 1 and 2. By 18 August, the strike committee reported approximately 6,000 bags failing to reach their destinations and around 270 flight cancellations, while separate minimum-service levels have been established specifically for September operations. This record marks the beginning of September as a continuation point rather than the original strike start. Risk assessed as High because the indefinite industrial action is already causing significant disruption at one of Spain's principal international airports and may affect flights, baggage handling and passenger processing. The rating reflects operational disruption rather than a public-order threat, and the record should be removed if a settlement ends the strike before 1 September."
+},
+
+{
+  title: "Barcelona Critical Mass — September Cycling Mobilisation",
+  city: "Barcelona",
+  lat: 41.39105,
+  lng: 2.18065,
+  address: "Arc de Triomf, Passeig de Lluís Companys — subsequent cycling route decided collectively",
+  postcode: "08003",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T20:00:00",
+  source: "https://barcelona.bicicritica.com/es/preguntas-frecuentes",
+  summary: "Barcelona's Masa Crítica / Critical Mass network has confirmed its September cycling mobilisation at Arc de Triomf at 20:00 on Friday 4 September 2026. Participants will cycle collectively through Barcelona to promote cycling rights, sustainable transport and greater recognition of bicycles as an everyday means of urban mobility. Organisers describe Critical Mass as a decentralised cycling event rather than a formally led demonstration; there is no fixed organiser-controlled route and participants collectively determine their movement. Risk assessed as Medium because a sizeable group of cyclists travelling together on public roads can temporarily occupy traffic lanes, delay vehicles and require police or traffic-management attention. Organisers explicitly promote peaceful interaction with motorists and discourage aggressive or deliberately confrontational behaviour."
+},
+
+{
+  title: "Catalonia Education Strike — First Day of School",
+  city: "Barcelona",
+  lat: 41.395535,
+  lng: 2.157598,
+  address: "Catalonia-wide public-education strike — Departament d'Educació i Formació Professional, Via Augusta 202–226 used as operational anchor; local pickets and actions TBC",
+  postcode: "08021",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-08T12:00:00",
+  source: "https://www.sindicat.net/2026/07/23/el-curs-no-comencara-amb-normalitat-vaga-educativa-el-8-de-setembre/",
+  summary: "USTEC·STEs (IAC) has confirmed a Catalonia-wide education strike on Tuesday 8 September 2026, coinciding with the first day of the 2026–27 school year. The union is demanding education funding equivalent to 6% of GDP, no closure of public-school groups, additional staff and lower pupil ratios, stronger inclusive-education resources, improved school infrastructure, protection of Catalan as the vehicular language and improvements to working time and pay. On 24 August USTEC reiterated that it does not believe the 8 September strike can now be avoided after weeks without substantive negotiations. No universal start time or single central picket has yet been published, so 12:00 and the Education Department headquarters on Via Augusta are used as transparent CityIntel defaults. Risk assessed as High because the action is deliberately scheduled to disrupt the opening day across the Catalan public-education system; the rating reflects expected service and organisational disruption rather than anticipated disorder."
+},
+
+{
+  title: "No to El Prat Airport Expansion — Barcelona Climate Demonstration",
+  city: "Barcelona",
+  lat: 41.39218,
+  lng: 2.16488,
+  address: "Junction of Passeig de Gràcia and Carrer d'Aragó, beside Barcelona-Passeig de Gràcia station — subsequent demonstration route TBC",
+  postcode: "08007",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://www.instagram.com/p/DacnXp_Otvx/",
+  summary: "Zeroport and a broad coalition of environmental, climate, transport, housing and social organisations have confirmed a demonstration beginning at the junction of Passeig de Gràcia and Carrer d'Aragó at 12:00 on Sunday 20 September 2026 under the call 'No a l'ampliació, ni ara ni mai'. Participants will oppose the proposed expansion of Barcelona-El Prat Airport and campaign around protection of the Llobregat Delta, climate emissions, aircraft noise, overtourism, housing pressure and greater investment in rail transport. The final demonstration route has not yet been published. Risk assessed as Medium because the mobilisation will begin at one of Barcelona's principal commercial and transport intersections immediately beside the Passeig de Gràcia rail and Metro interchange and may require substantial traffic controls, police liaison and public-transport management. Organisers promote civic climate mobilisation and no violent activity has been announced."
+},
+
+{
+  title: "La Educación Pública Sale a la Calle — Madrid Education March",
+  city: "Madrid",
+  lat: 40.4088,
+  lng: -3.6925,
+  address: "Atocha / Plaza del Emperador Carlos V — march to Puerta del Sol",
+  postcode: "28012",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-27T12:00:00",
+  source: "https://feccoo-madrid.org/cms.php?cd_cms_conte=765432&cd_cms_elconmaster_to=17&cd_cms_pag=15518&d=2026-09-27",
+  summary: "The Madrid Federation of Education and Socio-Educational Services of CCOO has confirmed a public-education demonstration from Atocha to Puerta del Sol from 12:00 to 14:00 on Sunday 27 September 2026 under the call 'La Educación Pública sale a la calle'. Teachers, families, students and the wider education community are being called to participate in defence of Madrid's public-education system after sustained disputes over staffing, workloads, resources, classroom ratios and employment conditions. Risk assessed as Medium because the moving procession will cross major central Madrid road, pedestrian and public-transport corridors between Atocha and Sol and is likely to require road restrictions, police liaison, stewarding and crowd management. No violent or deliberately obstructive activity has been announced."
+},
+
+
+{
+  title: "Valladolid Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Valladolid",
+  lat: 41.65211,
+  lng: -4.72648,
+  address: "Plaza de Fuente Dorada",
+  postcode: "47002",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.europapress.es/castilla-y-leon/noticia-valladolid-suma-movilizacion-nacional-gatos-tiene-ley-exigir-cumplimiento-ley-colonias-20260824123750.html",
+  summary: "Community-cat caregivers, animal-protection organisations and supporters have confirmed a public concentration at Plaza de Fuente Dorada in Valladolid from 12:00 to 14:00 on Sunday 6 September 2026. The gathering forms part of the nationwide 'Los gatos tienen ley' mobilisation demanding effective municipal implementation of Law 7/2023, including properly funded feline-colony management, stable capture-neuter-return programmes, veterinary treatment, identification and population monitoring, and institutional support for volunteer caregivers. Risk assessed as Low because the action is a stationary and organised animal-welfare rally with no procession, blockade or confrontation announced. Localised pedestrian congestion and routine police or municipal monitoring are possible around the central square."
+},
+
+{
+  title: "Os gat@s tamén teñen lei — Santiago Feline-Colony Law Rally",
+  city: "Santiago de Compostela",
+  lat: 42.88044,
+  lng: -8.54569,
+  address: "Praza do Obradoiro, outside Pazo de Raxoi",
+  postcode: "15705",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.diariodesantiago.es/santiago/santiago-se-suma-a-una-treintena-de-movilizaciones-para-exigir-el-cumplimiento-de-la-ley-sobre-colonias-felinas/",
+  summary: "Galician community-cat caregivers and supporting animal-protection organisations have confirmed a concentration at Praza do Obradoiro, outside Pazo de Raxoi, at 12:00 on Sunday 6 September 2026 under the slogan 'Os gat@s tamén teñen lei'. Participants will demand effective enforcement of Law 7/2023, municipal funding for capture-neuter-return programmes, veterinary treatment, identification and monitoring of community cats and greater recognition and protection for volunteer caregivers. Risk assessed as Low because the action is a stationary civic gathering with no march, blockade or hostile counter-mobilisation announced. Localised crowding and routine security or municipal management are possible in the highly prominent cathedral and city-hall square."
+},
+
+{
+  title: "Azuqueca Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Azuqueca de Henares",
+  lat: 40.56501,
+  lng: -3.26833,
+  address: "Plaza de la Constitución, outside Ayuntamiento de Azuqueca de Henares",
+  postcode: "19200",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.guadalajaradiario.es/provincia/70916-azuqueca-formara-parte-de-una-movilizacion-nacional-a-favor-de-las-colonias-felinas.html",
+  summary: "The Colectivo de Gestoras de Colonias Felinas, supported locally by animal-protection organisations including APA Luna Nueva, has confirmed a public mobilisation outside Azuqueca de Henares Town Hall at 12:00 on Sunday 6 September 2026. Participants will demand that municipalities fulfil their responsibilities under Law 7/2023, including properly resourced capture-neuter-return programmes, veterinary care, controlled feeding, colony monitoring and institutional support for volunteer caregivers. Risk assessed as Low because the published action is centred on the civic square and no blockade, confrontation or disruptive direct action has been announced. Limited pedestrian congestion and routine municipal or police monitoring are possible."
+},
+
+{
+  title: "Cádiz March for Enforcement of Feline-Colony Protection Law",
+  city: "Cádiz",
+  lat: 36.53483,
+  lng: -6.29896,
+  address: "Plaza de San Antonio — march to Plaza de San Juan de Dios",
+  postcode: "11003",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.portaldecadiz.com/cadiz-capital/168276-miau-pero-con-derechos-los-gatos-protagonizaran-una-manifestacion-para-exigir-responsabilidades-en-cadiz-capital",
+  summary: "Community-cat caregivers, animal-welfare organisations and supporters have confirmed a Cádiz demonstration beginning at Plaza de San Antonio at 12:00 on Sunday 6 September 2026. Participants will march through central Cádiz to Plaza de San Juan de Dios as part of the nationwide 'Los gatos tienen ley' campaign demanding effective municipal enforcement of Law 7/2023 and properly funded management of community-cat colonies. Risk assessed as Low because the procession has a peaceful animal-welfare focus and no hostile counter-demonstration or deliberately disruptive activity has been announced. Temporary pedestrian and road controls are nevertheless likely along the central-city route."
+},
+
+{
+  title: "Education-Workers Solidarity Bicycle Demonstration — Aranjuez",
+  city: "Aranjuez",
+  lat: 40.03486,
+  lng: -3.61830,
+  address: "Aranjuez Railway Station, Plaza de la Estación — bicycle demonstration to Plaza de la Constitución",
+  postcode: "28300",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T10:30:00",
+  source: "https://www.cnt-aranjuez.org/2026/08/10/bicicletada-solidaria-el-sabado-12-de-septiembre-de-2026-a-las-1030/",
+  summary: "CNT Aranjuez, CGT and the Plataforma Laboral de Escuelas Infantiles have confirmed a solidarity bicycle demonstration beginning outside Aranjuez railway station at 10:30 on Saturday 12 September 2026. Participants will cycle through Aranjuez to Plaza de la Constitución, where a supporting concentration, information activity and solidarity market are scheduled from approximately 12:00. The action supports nursery-school workers involved in a continuing dispute over staffing ratios, investment, infrastructure, support for additional needs, salaries and working conditions. Risk assessed as Medium because a moving bicycle procession from the railway station through public roads will require traffic management and route supervision, followed by a central civic gathering. No violent or confrontational action has been announced."
+},
+
+
+{
+  title: "Madrid March for Enforcement of Feline-Colony Protection Law",
+  city: "Madrid",
+  lat: 40.41917,
+  lng: -3.69306,
+  address: "Plaza de Cibeles — final procession route TBC",
+  postcode: "28014",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://losgatostienenley.org/",
+  summary: "Animal-welfare organisations, community-cat managers and supporters have confirmed a Madrid mobilisation at Plaza de Cibeles at 12:00 on Sunday 6 September 2026 as part of the nationwide 'Ayuntamientos, cumplid la ley' campaign. Participants will demand effective implementation of Law 7/2023, properly funded feline-colony programmes, continuous capture-neuter-return measures, veterinary treatment, identification and institutional support for volunteer caregivers. Organisers state that a procession is intended but the final Madrid route remains pending official confirmation. Risk assessed as Low because the campaign is peaceful and no blockade or hostile counter-mobilisation has been announced, although temporary traffic and pedestrian management around Plaza de Cibeles is likely."
+},
+
+{
+  title: "Salamanca March for Enforcement of Feline-Colony Protection Law",
+  city: "Salamanca",
+  lat: 40.9663,
+  lng: -5.6598,
+  address: "Plaza de la Constitución — march to Plaza Mayor",
+  postcode: "37001",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.voofla.com/ES/Salamanca/1750431838506468/Luna-Gatuna",
+  summary: "Local animal-protection organisation Luna Gatuna has confirmed a Salamanca demonstration at 12:00 on Sunday 6 September 2026 as part of the nationwide mobilisation demanding enforcement of Law 7/2023. Participants will assemble at Plaza de la Constitución before marching to Plaza Mayor. Campaigners will call for properly funded feline-colony management, sterilisation and identification programmes, veterinary care and greater municipal responsibility for community cats. Risk assessed as Low because the mobilisation is organised as a peaceful animal-welfare march with no blockade or confrontation announced. Temporary pedestrian and traffic restrictions are possible between the two central squares."
+},
+
+{
+  title: "Ibiza Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Ibiza",
+  lat: 38.91132,
+  lng: 1.42577,
+  address: "Plaza de sa Graduada, beside the Ibiza court complex",
+  postcode: "07800",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.periodicodeibiza.es/pitiusas/ibiza/2026/08/22/2693965/ibiza-paso-sus-gatos-comunitarios-ayuntamiento-empieza-facilitar-pienso-cuidadoras-piden-mismo-resto-municipios.html",
+  summary: "The Associació de Colònies Felines d'Eivissa and supporting animal-welfare campaigners have confirmed a public mobilisation at Plaza de sa Graduada in Ibiza Town at 12:00 on Sunday 6 September 2026. The action forms part of the nationwide 'Ayuntamientos, cumplid la ley' campaign and will demand effective municipal implementation of Law 7/2023, including colony registration, sterilisation, microchipping, veterinary care, feeding support and cooperation with accredited caregivers. Risk assessed as Low because the published action is a peaceful gathering with no procession, blockade or confrontation currently announced. Localised pedestrian activity and routine police or court-security monitoring are possible."
+},
+
+{
+  title: "La Palma Rally for Enforcement of Feline-Colony Protection Law",
+  city: "Santa Cruz de La Palma",
+  lat: 28.68772,
+  lng: -17.76125,
+  address: "Plaza de La Alameda",
+  postcode: "38700",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T11:00:00",
+  source: "https://www.diariopalmero.es/texto-diario/mostrar/5983273/palma-moviliza-6-septiembre-exigir-ayuntamientos-cumplimiento-ley-7-2023",
+  summary: "Community-cat caregivers have confirmed a public concentration at Plaza de La Alameda in Santa Cruz de La Palma from 11:00 local Canary time on Sunday 6 September 2026. The mobilisation forms part of the nationwide 'Ayuntamientos, cumplid la ley' campaign and will demand effective municipal implementation of Law 7/2023 and ethical, adequately resourced management of community-cat colonies. Risk assessed as Low because the event is a stationary civic gathering with no march, blockade or confrontation announced. Localised pedestrian congestion and routine municipal or police monitoring are possible around Plaza de La Alameda."
+},
+
+{
+  title: "Misión Abolición 2026 — National Anti-Bullfighting March",
+  city: "Madrid",
+  lat: 40.4169,
+  lng: -3.7035,
+  address: "Puerta del Sol — procession through central Madrid; final 2026 route TBC",
+  postcode: "28013",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T17:30:00",
+  source: "https://pacma.es/notas-de-prensa/pacma-convoca-la-manifestacion-mision-abolicion-2026-para-exigir-en-madrid-el-fin-de-la-tauromaquia/",
+  summary: "PACMA has confirmed its national Misión Abolición 2026 demonstration beginning at Puerta del Sol at 17:30 on Saturday 19 September 2026. Participants and animal-rights organisations from across Spain will march through central Madrid demanding the abolition of bullfighting and other taurine events and opposing institutional and public financial support for the industry. PACMA reports that more than 10,000 people participated in the 2025 edition and hopes to exceed that attendance in 2026. Risk assessed as Medium because a potentially large moving demonstration from Puerta del Sol will require road restrictions, Metro-access management, stewarding and police deployment. The precise 2026 route has not yet been published and no violent action has been announced."
+},
+
+{
+  title: "CSIF National Public-Education Mobilisation — Madrid",
+  city: "Madrid",
+  lat: 40.41824,
+  lng: -3.69746,
+  address: "Ministerio de Educación, Formación Profesional y Deportes, Calle de Alcalá 34",
+  postcode: "28014",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-16T12:00:00",
+  source: "https://www.csif.es/es/articulo/nacional/educacion/93943",
+  summary: "CSIF has confirmed that its autumn campaign in defence of public education will begin with a concentration outside the Ministry of Education, Formación Profesional y Deportes in Madrid on Wednesday 16 September 2026. The union will demand reductions in teacher temporary-employment rates, increased investment in public education, lower classroom ratios, improved staffing and resources, salary equalisation between regions and improved working conditions for teachers. CSIF states that further mobilisation, potentially including strike action, may follow. No start time has yet been published, so CityIntel's standard 12:00 timestamp is used pending an organiser update. Risk assessed as Medium because a national trade-union mobilisation immediately outside a government ministry may require security controls, police liaison and pedestrian management."
+},
+
+{
+  title: "CSIF Tax Agency Staff Protest — Madrid",
+  city: "Madrid",
+  lat: 40.41781,
+  lng: -3.70140,
+  address: "Ministerio de Hacienda, Calle de Alcalá 5–9",
+  postcode: "28014",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-30T12:00:00",
+  source: "https://www.csif.es/es/articulo/nacional/general/93732",
+  summary: "CSIF has confirmed a concentration outside the Ministry of Finance in Madrid on Wednesday 30 September 2026, launching a new national programme of industrial mobilisation among Agencia Estatal de Administración Tributaria employees. The union is demanding progress on professional career arrangements, staff reinforcement, teleworking, salaries and implementation of previously signed agreements. Further demonstrations and partial stoppages are scheduled nationally during October, November and December. No start time for the 30 September concentration has yet been published, so CityIntel's standard 12:00 timestamp is used pending an update. Risk assessed as Medium because the gathering targets a national government ministry in central Madrid and may require security controls, police liaison and pedestrian management, although no disruptive direct action has been announced."
+},
+
+
 {
   title: "CSD Dortmund 2026 — Fight for Pride",
   city: "Dortmund",
