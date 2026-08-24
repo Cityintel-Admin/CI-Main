@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Exercise v9 — Phase 9E.3.1 Sequence Completion State Polish -->
+<!-- CityIntel Training Exercise v10 — Phase 9G.3 Assignment Identity & Target Handoff -->
 <html lang="en">
 <head>
   
@@ -554,7 +554,7 @@ window.CIAccess = {
   var state = {
     scenarios: [], responded: {}, selected: {}, drafts: {}, checks: {}, followup: {}, followupIntervals: {},
     policy: null, busy: false, signature: '', maps: {},
-    sequenceGroups: {}, sequenceResponses: [], sequenceRuns: []
+    sequenceGroups: {}, sequenceResponses: [], sequenceRuns: [], assignmentContext: null
   };
 
   // Verification steps. The action alone says what an operator did; these say
@@ -597,6 +597,40 @@ window.CIAccess = {
 
   function headers(){
     return (window.CIAuth && CIAuth.headers) ? CIAuth.headers() : { 'Content-Type':'application/json' };
+  }
+
+  // Phase 9G.3 — an assignment link carries the authoritative trainee and
+  // target into the exercise page. This is deliberately a presentation/
+  // attribution safeguard only: the Worker still owns assignment completion.
+  async function loadAssignmentContext(){
+    var params = new URLSearchParams(location.search || '');
+    var id = String(params.get('assignment') || '').trim();
+    if (!id) { state.assignmentContext = null; return null; }
+    try {
+      var res = await fetch(API + '/api/org/training-assignments?id=' + encodeURIComponent(id) + '&ts=' + Date.now(), { headers:headers(), cache:'no-store' });
+      var data = await res.json().catch(function(){ return {}; });
+      var row = res.ok && data.ok !== false && Array.isArray(data.data) ? data.data[0] : null;
+      state.assignmentContext = row || null;
+      return state.assignmentContext;
+    } catch (_) {
+      state.assignmentContext = null;
+      return null;
+    }
+  }
+
+  function filterForAssignment(list){
+    var a = state.assignmentContext;
+    if (!a || !Array.isArray(list)) return list || [];
+    var type = String(a.assignment_type || '').toLowerCase();
+    var target = String(a.target_id || '');
+    if (!target) return list;
+    if (type === 'scenario') return list.filter(function(sc){ return String(sc.id || '') === target; });
+    if (type === 'subject') return list.filter(function(sc){ return String(sc.threshold_rule_id || '') === target; });
+    if (type === 'sequence') {
+      var runIds = (state.sequenceRuns || []).filter(function(run){ return String(run.source_template_id || '') === target; }).map(function(run){ return String(run.id || ''); });
+      return list.filter(function(sc){ return runIds.indexOf(String(sc.sequence_id || '')) >= 0 || String(sc.sequence_template_id || '') === target; });
+    }
+    return list;
   }
 
   // Three actions, matching the vocabulary the debrief scores against.
@@ -1224,16 +1258,24 @@ window.CIAccess = {
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || ('Could not load scenarios (' + res.status + ')'));
       next = Array.isArray(data.data) ? data.data : [];
+      // Load the sequence parents before assignment filtering so a saved-sequence
+      // assignment can be matched by its stable source_template_id. Keep the
+      // previous cards separately so a just-submitted result can remain visible.
+      var previousScenarios = state.scenarios.slice();
+      state.scenarios = next;
+      await loadSequenceRuns();
+      next = filterForAssignment(next);
       // Phase 9C clears a scenario server-side as soon as a response is saved so
       // the cross-page banner closes. Keep the just-completed card locally on
       // this page so the operator can still read their score/debrief until they
       // navigate away.
-      var locallyCompleted = state.scenarios.filter(function(oldSc){
+      var locallyCompleted = previousScenarios.filter(function(oldSc){
         return state.responded[oldSc.id] && !next.some(function(n){ return n.id === oldSc.id; });
       });
+      // Only preserve a locally-completed card when it belongs to this assignment.
+      locallyCompleted = filterForAssignment(locallyCompleted);
       if (locallyCompleted.length) next = next.concat(locallyCompleted);
       state.scenarios = next;
-      await loadSequenceRuns();
       await loadSequenceContext(next);
     } catch (e) {
       var wrap = document.getElementById('trScenarios');
@@ -1446,25 +1488,40 @@ window.CIAccess = {
     if (target.id === 'trRefresh') load(true);
   });
 
-  function boot(){
+  async function boot(){
     var nameEl = document.getElementById('trResponderName');
     var who = {};
     try { who = (window.CIAuth && CIAuth.who) ? (CIAuth.who() || {}) : {}; } catch (_) {}
+    var assignment = await loadAssignmentContext();
 
-    // Order of preference: the name on the signed-in account, then whatever
-    // was last typed in this browser. A personal login shouldn't have to type
-    // a name it already knows; a shared desk login has no name to offer, so it
-    // falls back to the last one used and stays editable either way.
+    // Assignment identity takes precedence over the account/local browser name.
+    // This prevents a shared/admin login from accidentally satisfying a plan
+    // under the wrong responder while keeping the field editable for genuine
+    // desk handovers.
+    var assignedName = String((assignment && assignment.trainee_name) || '').trim();
+    var assignedEmail = String((assignment && assignment.trainee_email) || '').trim();
     var accountName = String(who.name || '').trim();
     var saved = '';
     try { saved = localStorage.getItem(NAME_KEY) || ''; } catch (_) {}
-    if (nameEl) nameEl.value = accountName || saved || '';
+    if (nameEl) nameEl.value = assignedName || accountName || saved || '';
 
     var note = document.getElementById('trAccountNote');
-    if (note && who.email) {
-      note.textContent = accountName
-        ? 'Filled in from your account (' + who.email + '). Change it if someone else is responding.'
-        : 'Signed in as ' + who.email + '. If this is a shared desk account, the name above is what identifies you in the record.';
+    if (note) {
+      if (assignment && (assignedName || assignedEmail)) {
+        note.textContent = 'Assigned to ' + (assignedName || assignedEmail) + (assignedEmail && assignedName ? ' (' + assignedEmail + ')' : '') + '. Changing this name records the response against a different operator and may not satisfy this assignment.';
+      } else if (who.email) {
+        note.textContent = accountName
+          ? 'Filled in from your account (' + who.email + '). Change it if someone else is responding.'
+          : 'Signed in as ' + who.email + '. If this is a shared desk account, the name above is what identifies you in the record.';
+      }
+    }
+
+    if (nameEl && assignment && assignedName) {
+      nameEl.addEventListener('input', function(){
+        var changed = String(nameEl.value || '').trim().toLowerCase() !== assignedName.toLowerCase();
+        var field = document.getElementById('trResponderField');
+        if (field) field.classList.toggle('invalid', changed && String(nameEl.value || '').trim().length > 0);
+      });
     }
 
     load(true);
