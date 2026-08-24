@@ -50,10 +50,16 @@
   .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px}
   .kpi-grade-a{color:#4ade80}.kpi-grade-b{color:#a3e635}.kpi-grade-c{color:#fbbf24}.kpi-grade-d{color:#f97316}.kpi-grade-f{color:#f87171}
 
-  /* Sparkline trend */
-  .trend-bar{display:flex;align-items:flex-end;gap:3px;height:36px;margin-top:8px}
-  .trend-bar-item{flex:1;border-radius:3px 3px 0 0;min-height:4px;cursor:default;transition:opacity .15s}
-  .trend-bar-item:hover{opacity:.75}
+  /* Phase 9F.5 — completed-exercise performance trend */
+  .trend-meta{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+  .trend-bar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));align-items:end;gap:6px;height:92px;margin-top:12px;padding:8px 0 4px;border-bottom:1px solid #27313b}
+  .trend-bar-item{position:relative;display:flex;align-items:flex-end;justify-content:center;min-width:0;height:100%;border:0;background:transparent;padding:0;cursor:pointer}
+  .trend-bar-item:hover .trend-column,.trend-bar-item:focus-visible .trend-column{filter:brightness(1.18);transform:translateY(-2px)}
+  .trend-column{width:100%;max-width:54px;min-height:5px;border-radius:6px 6px 2px 2px;transition:transform .15s,filter .15s;display:flex;align-items:flex-start;justify-content:center;padding-top:4px;color:#071015;font-size:10px;font-weight:950}
+  .trend-axis{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;margin-top:6px}
+  .trend-axis span{min-width:0;text-align:center;color:#8795a6;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trend-summary{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .trend-summary-chip{border:1px solid #2c3742;background:#0d1319;border-radius:999px;padding:5px 9px;font-size:11px;color:#bfd0e1}
 
   /* Session list */
   .session-list{display:flex;flex-direction:column;gap:10px}
@@ -181,7 +187,6 @@
   .section-title{display:flex;align-items:center;gap:9px;color:#f4f7fa;font-size:13px;text-transform:none;letter-spacing:-.01em;margin-bottom:12px}
   .section-title:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ci-red);box-shadow:0 0 0 4px rgba(239,35,41,.10)}
   .trend-card{background:radial-gradient(circle at 92% 20%,rgba(208,22,22,.08),transparent 24%),linear-gradient(160deg,#141a21,#0c1116 78%)}
-  .trend-bar{height:44px;padding:4px 0;border-bottom:1px solid #27313b}
   .session-list{gap:8px}
   .session-card{
     position:relative;background:#0b1015;border:1px solid #222c36;border-left:3px solid var(--ci-red);border-radius:12px;padding:13px 14px;
@@ -298,10 +303,13 @@
         <div class="kpi-card"><div class="kpi-value" id="kpiResponseRate">—</div><div class="kpi-label">Decision Accuracy</div></div>
       </div>
 
-      <!-- Score trend -->
+      <!-- Phase 9F.5: scored completed-exercise trend -->
       <div class="card trend-card" id="trendCard" style="display:none">
-        <div class="section-title">Score Trend — Last 10 Sessions</div>
+        <div class="section-title">Performance Trend — Last 10 Completed Exercises</div>
+        <div class="trend-meta" id="trendMeta">Latest completed exercise scores. Select a bar to open that responder's development profile.</div>
         <div class="trend-bar" id="trendBar"></div>
+        <div class="trend-axis" id="trendAxis"></div>
+        <div class="trend-summary" id="trendSummary"></div>
       </div>
 
       <!-- Phase 9E.2: persistent sequence runs currently in progress -->
@@ -401,7 +409,7 @@ async function load(){
   }
 
   renderKPIs();
-  renderTrend();
+  // Phase 9F.5: performance trend is rendered from completed response evidence below.
   renderList();
 }
 
@@ -424,19 +432,8 @@ function renderKPIs(){
 }
 
 function renderTrend(){
-  const trendCard = document.getElementById('trendCard');
-  if(allSessions.length < 2){ trendCard.style.display='none'; return; }
-  trendCard.style.display='';
-
-  const recent = [...allSessions].slice(0,10).reverse();
-  const maxPct = Math.max(...recent.map(s=>s.overall_pct||0), 1);
-  const bar = document.getElementById('trendBar');
-  bar.innerHTML = recent.map(s => {
-    const pct = s.overall_pct || 0;
-    const h = Math.max(4, Math.round((pct/maxPct)*32));
-    const col = pct>=80?'#4ade80':pct>=60?'#fbbf24':'#f87171';
-    return `<div class="trend-bar-item" title="${pct}% · ${fmtDate(s.started_at)}" style="height:${h}px;background:${col};"></div>`;
-  }).join('');
+  // Retained as a compatibility no-op. Phase 9F.5 renders the trend from
+  // completed exercise evidence rather than legacy saved-session rows.
 }
 
 function renderList(){
@@ -867,7 +864,26 @@ document.addEventListener('DOMContentLoaded',function(){
     });
     return standalone;
   }
+  function validActiveSequenceRuns(){
+    return (sequenceRuns||[]).filter(function(run){
+      var status=String(run.status||'').toLowerCase();
+      var done=Math.max(0,Number(run.completed_steps||0)||0);
+      var total=Math.max(1,Number(run.total_steps||1)||1);
+      return ['active','waiting','scheduled','paused'].indexOf(status)!==-1 && done<total;
+    });
+  }
+  function activeSequenceIdsForPerson(name){
+    name=String(name||'').trim().toLowerCase();
+    if(!name)return [];
+    return validActiveSequenceRuns().filter(function(run){
+      var who=String(run.responder_name||run.trainee_name||'').trim().toLowerCase();
+      return who===name;
+    }).map(function(run){return String(run.id||'');}).filter(Boolean);
+  }
   function inProgressSequenceIds(sourceRows){
+    // Compatibility fallback only. The operator profile now uses the
+    // authoritative sequence-run endpoint so historic response rows cannot
+    // create a false "sequence in progress" state after a run has ended.
     var all={}, complete={};
     (sourceRows||[]).forEach(function(r){
       var seq=sequenceIdOfRow(r); if(!seq)return;
@@ -980,14 +996,40 @@ document.addEventListener('DOMContentLoaded',function(){
     var available=dims.filter(function(d){return d.value!==null&&d.value!==undefined&&!isNaN(Number(d.value));});
     var strongest=available.length?available.slice().sort(function(a,b){return b.value-a.value;})[0]:null;
     var weakest=available.length?available.slice().sort(function(a,b){return a.value-b.value;})[0]:null;
+    function qualificationLabel(subject){
+      var c=(subject&&subject.criteria)||{};
+      var bits=[];
+      if(c.minDifficulty==='advanced')bits.push('Advanced');
+      else if(c.minDifficulty==='intermediate')bits.push('Intermediate+');
+      else bits.push('Any difficulty');
+      if(c.requireConditional)bits.push('Conditional / upgrade');
+      return bits.join(' + ');
+    }
+    function qualificationStandard(subject){
+      var c=(subject&&subject.criteria)||{};
+      var bits=['≥'+Number(c.passScore||80)+'%'];
+      bits.push(Number(c.minPasses||1)+' passing exercise'+(Number(c.minPasses||1)===1?'':'s'));
+      if(c.minDifficulty&&c.minDifficulty!=='any')bits.push(c.minDifficulty+'+ evidence');
+      if(c.requireConditional)bits.push('conditional / upgrade evidence');
+      return bits.join(' · ');
+    }
     var next={title:'Build another scenario',reason:'More evidence is needed before CityIntel can recommend a focused progression.',difficulty:'Intermediate',subject:'General threshold practice'};
     if(curriculum && curriculum.enabled){
       var untested=curriculum.subjects.filter(function(x){return x.stage==='not-tested';});
       var developing=curriculum.subjects.filter(function(x){return x.stage==='developing';}).sort(function(a,b){return (a.best||0)-(b.best||0);});
       var competent=curriculum.subjects.filter(function(x){return x.stage==='competent';});
-      if(untested.length) next={title:'Complete an untested readiness subject',subject:untested[0].label,difficulty:'Beginner / Intermediate',reason:'This required policy subject has no scored evidence yet and is the clearest readiness gap.'};
-      else if(developing.length) next={title:'Reinforce a developing subject',subject:developing[0].label,difficulty:'Intermediate',reason:'Attempts exist, but the required pass standard has not yet been achieved.'};
-      else if(competent.length){var c=competent[0],gap=(c.gaps||[])[0]||'additional qualification evidence';next={title:'Convert competence into readiness',subject:c.label,difficulty:c.criteria&&c.criteria.minDifficulty==='advanced'?'Advanced':c.criteria&&c.criteria.requireConditional?'Conditional / Advanced':'Intermediate',reason:'Passing evidence exists, but this subject still requires '+gap+'.'};}
+      if(untested.length){
+        var u=untested[0];
+        next={title:'Establish readiness evidence',subject:u.label,difficulty:qualificationLabel(u),reason:'No scored evidence exists yet. Required evidence: '+qualificationStandard(u)+'.'};
+      }
+      else if(developing.length){
+        var d=developing[0];
+        next={title:'Reach the subject pass standard',subject:d.label,difficulty:qualificationLabel(d),reason:'Attempts exist but none yet satisfy the full subject standard: '+qualificationStandard(d)+'.'};
+      }
+      else if(competent.length){
+        var c=competent[0],gap=(c.gaps||[]).join(', ')||'additional qualification evidence';
+        next={title:'Convert competence into readiness',subject:c.label,difficulty:qualificationLabel(c),reason:'Passing evidence exists, but this subject still requires '+gap+'. Full standard: '+qualificationStandard(c)+'.'};
+      }
       else if(curriculum.ready) next={title:'Increase scenario difficulty',subject:(subjects&&subjects[0]?subjects[0].name:'Readiness maintenance'),difficulty:'Advanced / Conditional',reason:'All required subjects are currently passed. Use escalation conditions or multi-step exercises to maintain and stretch competence.'};
     }
     if(!curriculum || !curriculum.enabled){
@@ -1022,20 +1064,21 @@ document.addEventListener('DOMContentLoaded',function(){
   function renderActiveSequences(){
     var host=document.getElementById('reviewActiveSequenceList');
     var badge=document.getElementById('reviewActiveSequenceCount');
-    if(badge)badge.textContent=String(sequenceRuns.length||0);
+    var activeRuns=validActiveSequenceRuns();
+    if(badge)badge.textContent=String(activeRuns.length||0);
     if(!host)return;
-    if(!sequenceRuns.length){
+    if(!activeRuns.length){
       host.innerHTML='<div class="muted" style="padding:8px 0">No multi-stage exercises are currently in progress.</div>';
       return;
     }
-    host.innerHTML=sequenceRuns.map(function(run){
+    host.innerHTML=activeRuns.map(function(run){
       var completed=Math.max(0,Number(run.completed_steps||0)||0);
       var total=Math.max(1,Number(run.total_steps||0)||1);
       var status=String(run.status||'active').toLowerCase();
       var who=String(run.responder_name||run.trainee_name||'Awaiting first responder');
       var release='';
-      if(status==='waiting'){
-        if(run.next_release_at){
+      if(status==='waiting'||status==='scheduled'){
+        if(run.display_next_release_time&&run.next_release_at){
           release=' · next stage '+esc(when(run.next_release_at));
         }else{
           release=' · next stage time hidden from trainee';
@@ -1045,11 +1088,13 @@ document.addEventListener('DOMContentLoaded',function(){
       }else if(status==='paused'){
         release=' · paused by trainer';
       }
+      var action=status==='active'
+        ? '<a href="training-scenario.html" style="text-decoration:none;border:1px solid #344252;border-radius:9px;padding:7px 10px;color:#cfe1ff;font-weight:800;font-size:12px">Continue exercise</a>'
+        : '<span style="border:1px solid #303843;border-radius:9px;padding:7px 10px;color:#8fa3bd;font-weight:800;font-size:12px">'+esc(status==='paused'?'Paused':'Waiting for release')+'</span>';
       return '<div style="border:1px solid #2b323c;border-radius:12px;padding:11px 12px;margin-top:8px;background:#0d1319">' +
         '<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">' +
           '<div><div style="font-weight:900;color:#f3f6fa">'+esc(run.title||'Multi-stage exercise')+'</div>' +
-          '<div class="muted" style="font-size:12px;margin-top:4px">'+esc(who)+' · '+completed+'/'+total+' stages complete'+release+'</div></div>' +
-          '<a href="training-scenario.html" style="text-decoration:none;border:1px solid #344252;border-radius:9px;padding:7px 10px;color:#cfe1ff;font-weight:800;font-size:12px">Resume exercise</a>' +
+          '<div class="muted" style="font-size:12px;margin-top:4px">'+esc(who)+' · '+completed+'/'+total+' stages complete'+release+'</div></div>' + action +
         '</div></div>';
     }).join('');
   }
@@ -1061,6 +1106,49 @@ document.addEventListener('DOMContentLoaded',function(){
       sequenceRuns=(res.ok&&data.ok&&Array.isArray(data.data))?data.data:[];
     }catch(_){sequenceRuns=[];}
     renderActiveSequences();
+  }
+
+  function renderPerformanceTrend(){
+    var card=document.getElementById('trendCard');
+    var bar=document.getElementById('trendBar');
+    var axis=document.getElementById('trendAxis');
+    var meta=document.getElementById('trendMeta');
+    var summary=document.getElementById('trendSummary');
+    if(!card||!bar||!axis||!summary)return;
+    var units=exerciseUnits(rows).filter(function(u){return u.score!==null&&u.score!==undefined&&!isNaN(Number(u.score));});
+    units.sort(function(a,b){
+      return String((a.latest||{}).responded_at||(a.latest||{}).created_at||'').localeCompare(String((b.latest||{}).responded_at||(b.latest||{}).created_at||''));
+    });
+    var recent=units.slice(-10);
+    if(!recent.length){card.style.display='none';return;}
+    card.style.display='';
+    var avg=Math.round(recent.reduce(function(n,u){return n+Number(u.score||0);},0)/recent.length);
+    var latest=recent[recent.length-1];
+    var delta=null;
+    if(recent.length>=6){
+      var last5=recent.slice(-5), prior=recent.slice(0,-5);
+      var a=Math.round(last5.reduce(function(n,u){return n+Number(u.score||0);},0)/last5.length);
+      var b=Math.round(prior.reduce(function(n,u){return n+Number(u.score||0);},0)/prior.length);
+      delta=a-b;
+    }
+    if(meta)meta.textContent='Latest '+recent.length+' completed scored exercise'+(recent.length===1?'':'s')+' across recorded responders. Select a bar to open that responder\'s development profile.';
+    bar.innerHTML=recent.map(function(u){
+      var pct=Math.max(0,Math.min(100,Number(u.score||0)));
+      var h=Math.max(8,Math.round(pct*.72));
+      var latestRow=u.latest||{};
+      var who=personOf(latestRow);
+      var title=String(u.title||latestRow.scenario_title||'Training exercise');
+      var date=shortDate(latestRow.responded_at||latestRow.created_at);
+      var bg=pct>=80?'#4ade80':pct>=60?'#fbbf24':'#f87171';
+      return '<button type="button" class="trend-bar-item" data-trend-person="'+esc(who)+'" title="'+esc(title)+' · '+esc(who)+' · '+Math.round(pct)+'% · '+esc(date)+'"><span class="trend-column" style="height:'+h+'px;background:'+bg+'">'+Math.round(pct)+'</span></button>';
+    }).join('');
+    axis.innerHTML=recent.map(function(u){var r=u.latest||{};return '<span title="'+esc(shortDate(r.responded_at||r.created_at))+'">'+esc(shortDate(r.responded_at||r.created_at).replace(/ \\d{4}$/,''))+'</span>';}).join('');
+    var chips=[
+      '<span class="trend-summary-chip">10-exercise window average: <strong>'+avg+'%</strong></span>',
+      '<span class="trend-summary-chip">Latest: <strong>'+Math.round(Number(latest.score||0))+'%</strong> · '+esc(personOf(latest.latest||{}))+'</span>'
+    ];
+    if(delta!==null)chips.push('<span class="trend-summary-chip">Recent 5 vs prior: <strong>'+(delta>0?'+':'')+delta+' pts</strong></span>');
+    summary.innerHTML=chips.join('');
   }
 
   function render(){
@@ -1237,7 +1325,7 @@ document.addEventListener('DOMContentLoaded',function(){
     // exercise. It must not alter grades, curriculum readiness or capability
     // metrics until its final stage has been submitted.
     var personRows = completedEvidenceRows(allPersonRows);
-    var activeSequenceIds = inProgressSequenceIds(allPersonRows);
+    var activeSequenceIds = activeSequenceIdsForPerson(name);
     var units = exerciseUnits(personRows);
     var scored = units.filter(function(u){ return u.score !== null && u.score !== undefined && !isNaN(Number(u.score)); });
     var avg = scored.length ? Math.round(scored.reduce(function(n,u){ return n + Number(u.score||0); },0) / scored.length) : null;
@@ -1367,13 +1455,14 @@ document.addEventListener('DOMContentLoaded',function(){
 
   async function load(){
     loadSummary();
-    loadSequenceRuns();
+    await loadSequenceRuns();
     try { var pr=await fetch(API + '/api/org/escalation-policy',{headers:headers()}); var pd=await pr.json().catch(function(){return{};}); policy=(pr.ok&&pd.ok)?(pd.policy||null):null; } catch(_){ policy=null; }
     try {
       var res = await fetch(API + '/api/org/training-responses', { headers: headers() });
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || 'Could not load responses');
       rows = Array.isArray(data.data) ? data.data : [];
+      renderPerformanceTrend();
       render();
     } catch (e) {
       var host = document.getElementById('responseLog');
@@ -1399,6 +1488,12 @@ document.addEventListener('DOMContentLoaded',function(){
     if (person) {
       e.preventDefault();
       openOperatorDetail(person.getAttribute('data-person-profile'));
+      return;
+    }
+    var trend = e.target && e.target.closest ? e.target.closest('[data-trend-person]') : null;
+    if (trend) {
+      e.preventDefault();
+      openOperatorDetail(trend.getAttribute('data-trend-person'));
       return;
     }
     var b = e.target && e.target.closest ? e.target.closest('[data-delete-response]') : null;
