@@ -10,6 +10,67 @@ window.alertsData =[
 
 
 
+{
+  title: "Cagliari Elmas Airport SOGAER Overtime and Supplementary Work Ban",
+  city: "Cagliari",
+  lat: 39.25147,
+  lng: 9.05428,
+  address: "Cagliari Elmas Airport, Via dei Trasvolatori snc",
+  postcode: "09067",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T00:01:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL and UILTrasporti have registered a prolonged industrial action involving personnel of the SOGAER Group at Cagliari Elmas Airport from 00:01 on Sunday 6 September until 23:59 on Wednesday 30 September 2026. Employees are called to abstain from all overtime and supplementary work throughout the period. The action does not constitute a complete withdrawal of labour, but reduced availability of additional staffing may decrease operational resilience during passenger peaks, irregular operations, staff shortages or other periods when overtime would normally be required. Risk assessed as Medium because the month-long action affects personnel associated with the operator of a major regional airport and may contribute to delays or service pressure, although normal scheduled work continues and no public demonstration has been announced."
+},
+
+{
+  title: "Cagliari Elmas Airport SOGAER Personnel Strike",
+  city: "Cagliari",
+  lat: 39.25147,
+  lng: 9.05428,
+  address: "Cagliari Elmas Airport, Via dei Trasvolatori snc",
+  postcode: "09067",
+  country: "Italy",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-11T12:00:00",
+  source: "https://scioperi.mit.gov.it/mit2/public/scioperi",
+  summary: "FILT-CGIL, FIT-CISL and UILTrasporti have registered a four-hour strike involving personnel of the SOGAER Group at Cagliari Elmas Airport from 12:00 to 16:00 on Friday 11 September 2026. The action is separate from the longer overtime and supplementary-work ban running from 6 to 30 September. Reduced staffing may affect airport operations, passenger services and other activities undertaken by companies within the airport-operator group, subject to applicable aviation safeguards and minimum-service requirements. Risk assessed as High because a coordinated daytime stoppage at Sardinia's principal airport may generate queues, processing delays and knock-on disruption to arriving or departing passengers. No associated public demonstration or public-order threat has been announced."
+},
+
+{
+  title: "Bari Anti-Government and Palestine Solidarity March",
+  city: "Bari",
+  lat: 41.13280,
+  lng: 16.86680,
+  address: "Bari city centre — final protest assembly point and route TBC; Port of Bari used only as operational anchor for the coinciding Fratelli d'Italia national event",
+  postcode: "70122",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T12:00:00",
+  source: "https://www.carc.it/2026/08/13/il-4-settembre-a-bari-unita-e-mobilitazione-per-cacciare-il-governo-meloni/",
+  summary: "Partito dei CARC has called organisations, workers, students, trade-union delegates and Palestine-solidarity activists from across Puglia to participate in a march in Bari on Friday 4 September 2026. The mobilisation will oppose the Meloni government, Italian involvement in war and military policies and political, economic and military relations with Israel, while expressing solidarity with Palestinians. The action is deliberately scheduled to coincide with Prime Minister Giorgia Meloni's attendance at the Fratelli d'Italia national event at the Port of Bari, where thousands of party supporters and senior political figures are expected. Organisers have confirmed the date and the intention to hold a corteo but have not yet published a dependable start time, assembly point or route, so CityIntel's standard 12:00 timestamp is used and the Port of Bari is retained only as a transparent operational anchor for the coinciding government event rather than as an asserted protest location. Risk assessed as Medium because the politically opposed mobilisation will occur during a heavily secured national political event and may result in police cordons, traffic restrictions and controlled access, although no violent activity has been announced."
+},
+
+
+{
+  title: "Smog Generation Bike Pride 2026",
+  city: "Verona",
+  lat: 45.43754,
+  lng: 11.01264,
+  address: "Parco della Provianda, Via Santa Marta 8",
+  postcode: "37133",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T14:30:00",
+  source: "https://poliverso.org/community",
+  summary: "Verona environmental and cycling networks have confirmed the 'Smog Generation: Bike Pride' mobilisation for Sunday 13 September 2026, with participants called to gather at Parco della Provianda from 14:30. The public cycling action promotes sustainable urban mobility and reduced dependence on polluting motorised transport. The current event notice originates from Verona's Rebalta activist-events network and is syndicated through Poliverso; a detailed 2026 cycling route has not yet been published, so CityIntel records only the confirmed assembly location and does not infer the subsequent route. Risk assessed as Medium because a collective bicycle mobilisation travelling from a central Verona park is likely to interact with public roads and may require rolling traffic management, although no confrontational or deliberately obstructive activity has been announced."
+},
+
 
 {
   title: "Amazon Group National Logistics Strike — September Continuation",
