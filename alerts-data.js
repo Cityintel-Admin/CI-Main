@@ -7,7 +7,1677 @@ window.alertsData =[
 
 
 
+{
+  title: "Critical Mass Klagenfurt — September Bicycle Demonstration",
+  city: "Klagenfurt am Wörthersee",
+  lat: 46.62430,
+  lng: 14.30876,
+  address: "Neuer Platz / Lindwurm, Klagenfurt am Wörthersee",
+  postcode: "9020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-03T18:00:00",
+  source: "radlobby.at/klagenfurt/2026-09-03/critical-mass-klagenfurt",
+  summary: "Radlobby Kärnten confirms the September Critical Mass in Klagenfurt from 18:00 to 19:30 on 3 September, meeting at the Lindwurm on Neuer Platz. Cyclists will ride together through the city to increase the visibility of cycling and advocate for greater consideration of bicycles in urban transport. The organiser states that the ride generally lasts around 45 minutes and the route is determined during the event. Risk assessed as Low because this is an established monthly peaceful bicycle action, although temporary traffic interaction can be expected along the moving route."
+},
 
+{
+  title: "Gehen gegen Gewalt — Four-Day Solidarity Walk Against Violence",
+  city: "Mistelbach",
+  lat: 48.57030,
+  lng: 16.56940,
+  address: "Stadtpark / StoP-Bank opening point, Mistelbach — route through the Weinviertel to Michelberg",
+  postcode: "2130",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-10T09:30:00",
+  source: "frauenfuerfrauen.at/unsere-veranstaltungen/",
+  summary: "Verein Frauen für Frauen confirms the four-day 'Gehen gegen Gewalt' solidarity walk from 10 to 13 September 2026. The opening takes place in Mistelbach on 10 September before participants proceed through Asparn an der Zaya, Ernstbrunn, Großrußbach, Karnabrunn, Niederhollabrunn, Stockerau and Leobendorf toward the final event at Michelberg. The public action is intended to make violence against women and girls visible and promote solidarity, respect and civil courage. Risk assessed as Low because this is an organised walking campaign using established routes with no indication of confrontation or significant disruption."
+},
+
+{
+  title: "Critical Mass Villach — September Bicycle Demonstration",
+  city: "Villach",
+  lat: 46.61220,
+  lng: 13.84330,
+  address: "Hans-Gasser-Platz",
+  postcode: "9500",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-10T18:00:00",
+  source: "radlobby.at/villach/2026-09-10/critical-mass-villach",
+  summary: "Radlobby Villach confirms its monthly Critical Mass from 18:00 to 19:00 on 10 September at Hans-Gasser-Platz. Cyclists will travel collectively through Villach in a peaceful action designed to increase the visibility of cycling and promote bicycles as a space-efficient, quiet and climate-friendly form of urban transport. Risk assessed as Low because this is an established recurring demonstration with a peaceful format, although short-term traffic disruption is possible along the route."
+},
+
+{
+  title: "Kidical Mass St. Valentin — Children's Bicycle Demonstration",
+  city: "St. Valentin",
+  lat: 48.17387,
+  lng: 14.53317,
+  address: "Hauptplatz, St. Valentin — procession to Freizeitpark Herzograd",
+  postcode: "4300",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T09:30:00",
+  source: "radlobby.org/noe/kidicalmass/",
+  summary: "Radlobby Niederösterreich confirms the autumn Kidical Mass in St. Valentin on 19 September, departing Hauptplatz at 09:30. The bicycle demonstration forms part of the rescheduled Radfest programme and will travel on cycle routes toward Freizeitpark Herzograd. Kidical Mass actions advocate safe and child-friendly cycling infrastructure. Risk assessed as Low because this is a family-oriented bicycle demonstration with no indication of disorder, although the moving group may produce temporary local traffic effects."
+},
+
+{
+  title: "Kidical Mass Mödling — Children's Bicycle Demonstration",
+  city: "Mödling",
+  lat: 48.08737,
+  lng: 16.28772,
+  address: "Museumspark Mödling, Josef Deutsch-Platz 2",
+  postcode: "2340",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T10:00:00",
+  source: "veranstaltungen.niederoesterreich.at/232309/kidical-mass-mdling-2026",
+  summary: "The Lower Austria events register confirms a Kidical Mass bicycle demonstration from 10:00 to 14:00 on 19 September, starting and finishing at Museumspark Mödling. Participants will ride approximately 4.5 kilometres through Mödling and Maria Enzersdorf to call for safer cycling and traffic infrastructure for children. Police will secure the route. Risk assessed as Low because the event is family-focused and police-supported, with temporary road disruption being the main operational consideration."
+},
+
+{
+  title: "8th Krems Kidical Mass — Children's Bicycle Demonstration",
+  city: "Krems an der Donau",
+  lat: 48.41040,
+  lng: 15.60122,
+  address: "Dreifaltigkeitsplatz",
+  postcode: "3500",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T14:30:00",
+  source: "veranstaltungen.niederoesterreich.at/232937/8-kremser-kidical-mass",
+  summary: "The Lower Austria events register and Radlobby Krems confirm the 8th Krems Kidical Mass from 14:30 to 16:30 on 19 September at Dreifaltigkeitsplatz. Children and adults will cycle through the city to advocate better and safer bicycle infrastructure and enable children to travel independently by bicycle. Risk assessed as Low because this is an organised family bicycle demonstration without indications of confrontation, although minor traffic disruption is likely along the route."
+},
+
+{
+  title: "Kidical Mass Salzburg — Children's Bicycle Demonstration",
+  city: "Salzburg",
+  lat: 47.80612,
+  lng: 13.04087,
+  address: "Kurgarten, beside Salzburg Congress",
+  postcode: "5020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T15:00:00",
+  source: "radlobby.at/salzburg/2026-08/kidical-mass-salzburg-19-9-26",
+  summary: "Radlobby Salzburg confirms an officially registered Kidical Mass beginning at 15:00 on 19 September at the Kurgarten beside the Kongresshaus. The approximately five-kilometre bicycle demonstration will be accompanied by police and will advocate child-friendly cycling infrastructure, safe school streets, safer intersections and improved bicycle facilities. Risk assessed as Low because the demonstration is organised, family-oriented and police accompanied, with temporary road disruption expected along the route."
+},
+
+{
+  title: "4th Kidical Mass St. Pölten — Children's Bicycle Demonstration",
+  city: "St. Pölten",
+  lat: 48.20500,
+  lng: 15.62637,
+  address: "Domplatz 1 — procession to Rathausplatz",
+  postcode: "3100",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T15:00:00",
+  source: "veranstaltungen.niederoesterreich.at/231708/4-kidical-mass-st-plten",
+  summary: "The Lower Austria events register confirms the 4th Kidical Mass St. Pölten from 15:00 to 16:00 on 19 September. Participants will meet at Domplatz and cycle approximately three to four kilometres before finishing at Rathausplatz. The action calls for a continuous and safe cycling network enabling children to travel independently. Police will secure the route. Risk assessed as Low because the event is a short, family-oriented and controlled bicycle demonstration."
+},
+
+{
+  title: "Kidical Mass Vienna — Citywide Children's Bicycle Demonstration",
+  city: "Vienna",
+  lat: 48.20223,
+  lng: 16.36082,
+  address: "Platz der Menschenrechte, MuseumsQuartier — procession to Auer-Welsbach-Park",
+  postcode: "1070",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T15:00:00",
+  source: "ots.at/presseaussendung/OTS_20260824_OTS0012/ankuendigung-kidical-mass-wien-19-september-2026",
+  summary: "Kidical Mass Vienna confirms a major bicycle demonstration beginning at 15:00 on 19 September at Platz der Menschenrechte beside MuseumsQuartier and proceeding through Vienna toward Auer-Welsbach-Park. Organisers expect thousands of parents and children and are calling for continuous wide cycle lanes, safer intersections and car-free zones outside schools and kindergartens. Police will accompany the demonstration. Risk assessed as Medium because the expected multi-thousand turnout and moving city-centre route are likely to create material road and transport disruption despite the established peaceful family-oriented format."
+},
+
+{
+  title: "Kidical Mass Purkersdorf — Children's Bicycle Demonstration",
+  city: "Purkersdorf",
+  lat: 48.20760,
+  lng: 16.17800,
+  address: "Hauptplatz",
+  postcode: "3002",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-20T13:45:00",
+  source: "purkersdorf.at/Kidical_Mass_Fahrraddemo_11",
+  summary: "Purkersdorf's official municipal events page confirms a Kidical Mass bicycle demonstration at Hauptplatz from 13:45 to 17:00 on 20 September, organised by Radlobby Purkersdorf. The action calls for good and safe cycle routes allowing children to travel independently and seeks to demonstrate that road space also belongs to cyclists. Risk assessed as Low because the event is a structured family demonstration with no indication of disorder, although temporary traffic disruption may occur during the ride."
+},
+
+{
+  title: "Kidical Mass Ebreichsdorf — Children's Bicycle Demonstration",
+  city: "Ebreichsdorf",
+  lat: 47.96266,
+  lng: 16.39934,
+  address: "Rathausplatz 1",
+  postcode: "2483",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:00:00",
+  source: "radlobby.org/noe/kidicalmass/",
+  summary: "Radlobby Niederösterreich confirms the autumn Kidical Mass in Ebreichsdorf for 14:00 on 26 September, departing from Rathausplatz. The children's bicycle demonstration forms part of the nationwide Kidical Mass campaign advocating safer streets, cycling infrastructure and independent mobility for children. Risk assessed as Low because previous local editions have been organised family bicycle parades with police support and no significant disorder, with short-term road disruption the principal operational impact."
+},
+
+{
+  title: "5th National March for Life — Main Rally and March",
+  city: "Bratislava",
+  lat: 48.15211,
+  lng: 17.11170,
+  address: "Námestie slobody, followed by a march through central Bratislava",
+  postcode: "811 06",
+  country: "Slovakia",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-20T13:30:00",
+  source: "pochodzazivot.sk/program-2/",
+  summary: "The organisers of Slovakia's 5th National March for Life confirm a national pro-life civic gathering in Bratislava on 20 September 2026. The current official programme lists a concert at Námestie slobody from 12:00, the main rally from 13:30 and the street march from 14:30 to 16:30. Participants will publicly advocate stronger legal protection for human life from conception to natural death. Risk assessed as High primarily because this is a nationally mobilised central-city march with substantial crowd and traffic-disruption potential. Previous editions drew approximately 50,000 participants in Bratislava in 2019 and 40,000 in Košice in 2024 according to organisers; no equivalent 2026 turnout forecast has yet been published."
+},
+
+
+
+{
+  title: "Protest Against Faroe Islands Dolphin Hunts",
+  city: "Prague",
+  lat: 50.08590,
+  lng: 14.40530,
+  address: "Maltézské náměstí 5–6, pavement between the Danish and Japanese embassies",
+  postcode: "118 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Prague's official public-assembly register records a demonstration from 13:00 to 16:00 on 1 September at Maltézské náměstí protesting the hunting and killing of dolphins in the Faroe Islands. The notification lists approximately 50 participants and three stewards. Risk assessed as Low because it is a small, stationary animal-rights protest at a defined embassy-area location with no march or disruption announced."
+},
+
+{
+  title: "Falun Gong Human-Rights Vigil at Chinese Embassy — 2 September",
+  city: "Prague",
+  lat: 50.10142,
+  lng: 14.40739,
+  address: "Pelléova 17, pavement opposite the Chinese Embassy",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-02T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Prague's official assembly register records a Falun Gong vigil opposite the Chinese Embassy from 08:00 to 10:00 on 2 September. The action will protest human-rights abuses by the Chinese Communist Party and persecution of Falun Gong practitioners while commemorating victims. The notification lists 2–30 participants and two stewards. Risk assessed as Low due to the small stationary format, although the diplomatic location may attract routine security monitoring."
+},
+
+{
+  title: "Anti-Abortion Advocacy Procession — 2 September",
+  city: "Prague",
+  lat: 50.08711,
+  lng: 14.41783,
+  address: "Mariánské náměstí, proceeding via Platnéřská, Franz Kafka Square, Old Town Square and Celetná",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-02T16:30:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "An officially notified procession will depart Mariánské náměstí at 16:30 on 2 September and travel through the Old Town to Celetná. Its stated purpose is to encourage acceptance of conceived children and oppose abortion. The notification lists 3–15 participants and one steward. Risk assessed as Low because the expected group is very small, although the walking route may create minor pedestrian interaction in the historic centre."
+},
+
+{
+  title: "STOP ČESKÉMU MAJDANU Protest",
+  city: "Prague",
+  lat: 50.08800,
+  lng: 14.40446,
+  address: "Malostranské náměstí, upper section",
+  postcode: "118 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T14:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Prague's public-assembly register confirms a protest titled 'STOP ČESKÉMU MAJDANU!' at the upper section of Malostranské náměstí from 14:00 to 17:00 on 5 September. The notified purpose is opposition to the 'privatisation of the state and democracy'. Approximately 300 participants and five stewards are declared. Risk assessed as Medium because this is a politically charged gathering in a sensitive central-government district with a materially larger crowd than most September assemblies."
+},
+
+{
+  title: "Taiji Dolphin Killing and Capture Protest",
+  city: "Prague",
+  lat: 50.07220,
+  lng: 14.40360,
+  address: "Anděl, Plzeňská 2, area outside KFC",
+  postcode: "150 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T12:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "An animal-rights protest and awareness action is officially notified at Anděl from 12:00 to 16:00 on 5 September, focused on the killing and capture of dolphins in Taiji, Japan. Organisers declare approximately 50 participants and three stewards. Risk assessed as Low because the action is stationary, limited in size and has no associated march or blockade."
+},
+
+{
+  title: "Ukraine Solidarity Demonstration — 6 September",
+  city: "Prague",
+  lat: 50.08794,
+  lng: 14.42147,
+  address: "Staroměstské náměstí, southwest of Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Pražský Majdan has officially notified a demonstration supporting Ukraine against Russian aggression at Old Town Square from 13:00 to 17:00 on 6 September. The register lists approximately 20 participants and two stewards. Risk assessed as Low because this is a small recurring solidarity demonstration at an established central Prague gathering point."
+},
+
+{
+  title: "Disability-Care Accessibility March",
+  city: "Prague",
+  lat: 50.08081,
+  lng: 14.41450,
+  address: "Náměstí Václava Havla, procession to Malostranské náměstí",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-09T16:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "The organisation Žít po svém has notified a march on 9 September highlighting the shortage of accessible, individualised care for people with disabilities. The procession will leave Náměstí Václava Havla at 16:00 and travel via Smetanovo nábřeží, Mánesův most, Klárov, Letenská, Josefská and Mostecká to Malostranské náměstí, ending at 18:00. Approximately 100 participants are declared. Risk assessed as Medium because the central-city procession crosses several busy pedestrian and traffic locations."
+},
+
+{
+  title: "Ukraine Solidarity Demonstration — 13 September",
+  city: "Prague",
+  lat: 50.08794,
+  lng: 14.42147,
+  address: "Staroměstské náměstí, southwest of Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-13T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Pražský Majdan has notified its recurring Ukraine solidarity demonstration at Old Town Square from 13:00 to 17:00 on 13 September. The stated purpose is support for Ukraine against Russian aggression and the notification lists approximately 20 participants. Risk assessed as Low given the small expected attendance and established stationary format."
+},
+
+{
+  title: "Falun Gong Human-Rights Protest at Chinese Embassy — 18 September",
+  city: "Prague",
+  lat: 50.10142,
+  lng: 14.40739,
+  address: "Pelléova 17, opposite the Chinese Embassy",
+  postcode: "160 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-18T17:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "An officially notified Falun Gong demonstration will take place opposite the Chinese Embassy from 17:00 to 19:00 on 18 September. Participants will express support for Falun Dafa and protest persecution of practitioners and wider human-rights abuses by the Chinese Communist Party. The notification lists 100–500 participants. Risk assessed as Medium due to the potentially several-hundred-person crowd and politically sensitive diplomatic location."
+},
+
+{
+  title: "Falun Gong Human-Rights Gatherings and Processions — 19 September",
+  city: "Prague",
+  lat: 50.08951,
+  lng: 14.39674,
+  address: "Hradčanské náměstí, with gatherings and processions through central Prague to Staroměstské náměstí",
+  postcode: "118 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T08:30:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Prague's official register records a coordinated day of Falun Gong activity on 19 September: a morning gathering at Hradčanské náměstí, a long-duration gathering at Old Town Square, and two processions through central Prague. The notified purpose is promotion of Falun Dafa and opposition to persecution and human-rights abuses in China. Individual components declare 500–1,000 participants. They are consolidated here as one operational event to avoid double-counting the same coordinated action. Risk assessed as Medium because of the substantial crowd, two central-city marches and prolonged presence across major tourist areas."
+},
+
+{
+  title: "Ukraine Solidarity Demonstration — 20 September",
+  city: "Prague",
+  lat: 50.08794,
+  lng: 14.42147,
+  address: "Staroměstské náměstí, southwest of Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-20T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Pražský Majdan has officially notified another Ukraine solidarity demonstration at Old Town Square from 13:00 to 17:00 on 20 September. Approximately 20 participants are declared. Risk assessed as Low because the recurring action is small, stationary and has no announced procession or disruptive activity."
+},
+
+{
+  title: "Deaf Rights and Czech Sign Language March",
+  city: "Prague",
+  lat: 50.08830,
+  lng: 14.42847,
+  address: "Náměstí Republiky, procession via Na Příkopě, Národní, Smetanovo nábřeží and Charles Bridge to Malostranské náměstí",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T11:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "A rights march is officially notified from 11:00 to 13:00 on 26 September to increase the visibility of the Deaf community and Czech sign language and promote equality, recognition, accessibility and equal rights. The route begins at Náměstí Republiky and passes through major central pedestrian areas before ending at Malostranské náměstí. Approximately 150 participants and ten stewards are declared. Risk assessed as Medium primarily because of the procession through heavily used central routes rather than any indicated hostility."
+},
+
+{
+  title: "Ukraine Solidarity Demonstration — 27 September",
+  city: "Prague",
+  lat: 50.08794,
+  lng: 14.42147,
+  address: "Staroměstské náměstí, southwest of Jan Hus monument",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-27T13:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Pražský Majdan has notified its recurring demonstration in support of Ukraine against Russian aggression from 13:00 to 17:00 on 27 September at Old Town Square. Approximately 20 participants and two stewards are declared. Risk assessed as Low due to the small, established and stationary format."
+},
+
+{
+  title: "Milion Chvilek Czech Statehood and Political Demonstration",
+  city: "Prague",
+  lat: 50.08794,
+  lng: 14.42147,
+  address: "Staroměstské náměstí",
+  postcode: "110 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-28T16:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Milion chvilek has formally notified a major gathering at Old Town Square from 16:00 to 17:30 on 28 September. Its stated purpose is to mark Czech statehood and assess the current social and political situation. The official notification declares approximately 20,000 participants and 50 stewards. Risk assessed as High because of the very large expected crowd, overt political focus and concentration of participants in one of central Prague's busiest public spaces."
+},
+
+{
+  title: "Anti-Government Protest Outside Czech Government Office — 28 September–2 October",
+  city: "Prague",
+  lat: 50.09245,
+  lng: 14.41242,
+  address: "Nábřeží Edvarda Beneše, outside the Office of the Government of the Czech Republic",
+  postcode: "118 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-28T19:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "Prague's public-assembly register records an anti-government assembly outside the Czech Government Office beginning at 19:00 on 28 September and notified through 16:00 on 2 October. Its stated purpose is opposition to the policies of the Czech Government. The notification declares 100,000 expected participants and 50 stewards; the 100,000 figure is the organiser's declared expectation and should not be interpreted as an independently confirmed turnout forecast. Risk assessed as High because of the sensitive government-site location, multi-day duration and exceptionally large declared attendance."
+},
+
+{
+  title: "Anti-Abortion Prayer and Advocacy Assembly — 30 September",
+  city: "Prague",
+  lat: 50.07547,
+  lng: 14.42102,
+  address: "Church of St Ignatius, Karlovo náměstí / Ječná 505/2, with activity around U nemocnice, Viničná and Apolinářská",
+  postcode: "120 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-30T08:00:00",
+  source: "https://praha.eu/documents/d/praha/aktualni-prehled-oznamenych-shromazdeni-20260821-2-pdf",
+  summary: "An officially notified anti-abortion prayer and advocacy assembly will take place from 08:00 to 09:30 on 30 September around the Church of St Ignatius and nearby streets leading toward the Apolinář area. Its stated purpose is the protection of life from conception to natural death and opposition to abortion. The notification lists only 3–10 participants and one steward. Risk assessed as Low because of the very small expected attendance and short duration."
+},
+
+{
+  title: "Peace and Anti-War Assembly — 4 September",
+  city: "Brno",
+  lat: 49.19749,
+  lng: 16.60710,
+  address: "Moravské náměstí, by the Spravedlnost statue",
+  postcode: "602 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-04T19:00:00",
+  source: "https://www.brno-stred.cz/kalendar-akci/svitime-za-mir-a-proti-valce-ve-svete~cal30784",
+  summary: "Brno-střed's official calendar records the public assembly 'Svítíme za mír a proti válce ve světě' from 19:00 to 21:00 on 4 September at Moravské náměstí beside the Spravedlnost statue. The stated purpose is the struggle for peace in the world. Risk assessed as Low because this is an established stationary peace gathering with no march, blockade or large crowd indicated."
+},
+
+{
+  title: "Peace and Anti-War Assembly — 11 September",
+  city: "Brno",
+  lat: 49.19749,
+  lng: 16.60710,
+  address: "Moravské náměstí, by the Spravedlnost statue",
+  postcode: "602 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-11T19:00:00",
+  source: "https://www.brno-stred.cz/kalendar-akci/svitime-za-mir-a-proti-valce-ve-svete~cal30785",
+  summary: "Brno-střed officially lists a further 'Svítíme za mír a proti válce ve světě' public assembly from 19:00 to 21:00 on 11 September at Moravské náměstí by the Spravedlnost statue. Its stated purpose is peace and opposition to war. Risk assessed as Low because the event is stationary and no significant disruption or elevated attendance is indicated."
+},
+
+{
+  title: "Peace and Anti-War Assembly — 18 September",
+  city: "Brno",
+  lat: 49.19749,
+  lng: 16.60710,
+  address: "Moravské náměstí, by the Spravedlnost statue",
+  postcode: "602 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-18T19:00:00",
+  source: "https://www.brno-stred.cz/kalendar-akci/svitime-za-mir-a-proti-valce-ve-svete~cal30786",
+  summary: "Brno-střed's public-events register confirms another peace and anti-war assembly from 19:00 to 21:00 on 18 September at Moravské náměstí beside the Spravedlnost statue. The municipal listing describes the purpose as the struggle for peace in the world. Risk assessed as Low because the action is a recurring stationary assembly without identified disruption."
+},
+
+{
+  title: "Protest Against Proposed Czech Television Funding Changes",
+  city: "Brno",
+  lat: 49.20623,
+  lng: 16.60668,
+  address: "Park Lužánky, open area directly in front of SVČ Lužánky, Lidická 50",
+  postcode: "602 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T07:00:00",
+  source: "https://www.brno-stred.cz/kalendar-akci/protest-proti-politickym-snaham~cal30964",
+  summary: "Brno-střed officially records a protest from 07:00 to 14:00 on 19 September in front of the SVČ Lužánky building in Lužánky Park. The stated purpose is opposition to political attempts to change the financing of Czech Television that protesters believe would negatively affect the maintenance and independence of regional television broadcasting. No expected attendance is published. Risk assessed as Low because the action is stationary in a park setting and the official listing identifies no procession or other disruptive activity."
+},
+
+{
+  title: "Peace and Anti-War Assembly — 25 September",
+  city: "Brno",
+  lat: 49.19749,
+  lng: 16.60710,
+  address: "Moravské náměstí, by the Spravedlnost statue",
+  postcode: "602 00",
+  country: "Czechia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-25T19:00:00",
+  source: "https://www.brno-stred.cz/kalendar-akci?day=25&month=9&view=month&year=2026",
+  summary: "Brno-střed's official September calendar records the recurring 'Svítíme za mír a proti válce ve světě' public assembly from 19:00 to 21:00 on 25 September. The series is held at Moravské náměstí by the Spravedlnost statue and calls for peace and opposition to war. Risk assessed as Low because it is an established stationary gathering with no identified march or major disruption."
+},
+
+{
+  title: "Ciszej, Proszę — March Against Excessive Urban Noise",
+  city: "Warsaw",
+  lat: 52.2319,
+  lng: 21.0067,
+  address: "Plac Centralny — march to Komenda Stołeczna Policji, Nowolipie 2",
+  postcode: "",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T18:00:00",
+  source: "https://www.miastojestnasze.org/artykuly/ciszej-prosze-marsz-przeciwko-nadmiernemu-halasowi",
+  summary: "Miasto Jest Nasze has confirmed a public march through Warsaw at 18:00 on Friday 4 September 2026 under the slogan 'Ciszej, Proszę'. Participants will assemble at Plac Centralny and march to Warsaw Metropolitan Police Headquarters at Nowolipie 2 demanding stronger enforcement against excessive urban noise, including illegal street racing, excessively loud modified vehicles and disruptive mass-event noise. Risk assessed as Medium because this is a moving central-city demonstration ending at a police facility and will require traffic management, police liaison and pedestrian controls. No violent activity has been announced."
+},
+
+{
+  title: "Animal Liberation March 2026",
+  city: "Warsaw",
+  lat: 52.2380,
+  lng: 21.0182,
+  address: "Pomnik Mikołaja Kopernika, Nowy Świat 69/72 — march through central Warsaw",
+  postcode: "00-330",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:30:00",
+  source: "https://radioactivedog.pl/nadajnik/marsz-wyzwolenia-zwierzat-2026/",
+  summary: "Animal-rights organisations including Stowarzyszenie Empatia have confirmed the 2026 Animal Liberation March in Warsaw for Saturday 5 September. Participants will meet at the Copernicus Monument on Nowy Świat and depart at 13:30 for a public demonstration opposing animal exploitation and speciesism and promoting animal rights and veganism. A related silent action titled 'Jestem zwierzęciem. Myślę, czuję, chcę żyć' will take place at the Copernicus Monument from 15:00 to 16:30 as the closing action of the same mobilisation and is therefore not recorded separately. Risk assessed as Medium because the moving city-centre procession will require road and pedestrian management."
+},
+
+{
+  title: "6th Gorzów Equality March",
+  city: "Gorzów Wielkopolski",
+  lat: 52.7315,
+  lng: 15.2380,
+  address: "Skwer przy dawnej Łaźni Miejskiej, junction of Jagiełły and Drzymały",
+  postcode: "66-400",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T15:00:00",
+  source: "https://kalendarz.gorzow.pl/event/6-marsz-rownosci-w-gorzowie-wielkopolskim-%F0%9F%8F%B3%EF%B8%8F%F0%9F%8C%88/",
+  summary: "TęczArt has confirmed the sixth Gorzów Equality March at 15:00 on Saturday 5 September 2026. Participants will assemble on the square beside the former municipal baths at Jagiełły and Drzymały before undertaking an approximately three-kilometre procession through central Gorzów. The published route uses Drzymały, Łokietka, Dąbrowskiego, Borowskiego, Chrobrego, Estkowskiego, Orląt Lwowskich, Sikorskiego, Warszawska and surrounding junctions before returning to the starting area. Several hundred participants are anticipated. Risk assessed as Medium because police road closures, public-transport disruption and crowd management are expected along the route."
+},
+
+{
+  title: "Katowice Equality March 2026 — Bądźmy głosem dla równości",
+  city: "Katowice",
+  lat: 50.2659,
+  lng: 19.0274,
+  address: "Park Powstańców Śląskich, al. Korfantego",
+  postcode: "40-959",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T13:00:00",
+  source: "https://pik.katowice.pl/marsz-rownosci-w-katowicach/",
+  summary: "Stowarzyszenie Tęczówka and Katowice Equality March organisers have confirmed the city's 2026 Pride mobilisation from Park Powstańców Śląskich at 13:00 on Saturday 5 September under the slogan 'Bądźmy głosem dla równości'. The procession is scheduled through major central streets including Roździeńskiego, Korfantego, Rynek, Jagiellońska, Francuska, Warszawska and Uniwersytecka before returning to the park. An Equality Village operates from 12:00. Risk assessed as Medium because the substantial moving demonstration through central Katowice will require road closures, police liaison and public-transport management. Organisers explicitly require peaceful participation."
+},
+
+{
+  title: "6th Gniezno Polska za Pokojem March",
+  city: "Gniezno",
+  lat: 52.5329,
+  lng: 17.6013,
+  address: "Pomnik Ludziom Morza, Park im. Tadeusza Kościuszki",
+  postcode: "62-200",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T14:30:00",
+  source: "https://bip.gniezno.eu/wiadomosci/11532/lista/1",
+  summary: "Gniezno's official public-assembly register confirms a 'Polska za pokojem' march from 14:30 to 18:00 on Sunday 6 September 2026, with approximately 250 participants declared. Organisers will begin beside the Pomnik Ludziom Morza in Park im. Tadeusza Kościuszki and advocate peace, Polish neutrality and opposition to involvement in foreign armed conflicts. Risk assessed as Medium because the event is a moving political demonstration with several hundred expected participants and may require temporary road restrictions and police management. No violent activity has been announced."
+},
+
+{
+  title: "#poGodność Mental Health Dignity March",
+  city: "Sopot",
+  lat: 54.4438,
+  lng: 18.5628,
+  address: "Kościół św. Jerzego, Bohaterów Monte Cassino / Kościuszki — march to Skwer Kuracyjny",
+  postcode: "81-704",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T11:30:00",
+  source: "https://odmienswojaglowe.org/",
+  summary: "The Pomorska Koalicja na Rzecz Zdrowia Psychicznego has confirmed the #poGodność Mental Health Dignity March in Sopot from 11:30 to 12:00 on Sunday 6 September 2026. Participants will gather beside St George's Church on Monte Cassino before walking to Skwer Kuracyjny near Sopot Pier. The march promotes dignity, solidarity and inclusion for people experiencing mental-health crises and aims to challenge stigma and exclusion. Risk assessed as Medium because the moving demonstration will use one of Sopot's busiest pedestrian corridors. A Tolerance Festival follows at Skwer Kuracyjny from 12:00 to 15:00."
+},
+
+{
+  title: "Suwałki March for Life and Family",
+  city: "Suwałki",
+  lat: 54.1110,
+  lng: 22.9300,
+  address: "Parafia pw. Bożego Ciała, ul. 11 Listopada — march to Park Konstytucji 3 Maja",
+  postcode: "16-400",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T13:00:00",
+  source: "https://radio5.com.pl/2026/08/piata-edycja-marszu-dla-zycia-i-rodziny/amp/",
+  summary: "The fifth Suwałki March for Life and Family is confirmed for Sunday 6 September 2026 under the slogan 'Czas obronić małżeństwo! Czas ochronić życie!'. The programme begins with a 12:00 Mass at the Bożego Ciała parish on ul. 11 Listopada, with the public procession scheduled to depart at approximately 13:00 toward Park Konstytucji 3 Maja for a family event. Organisers promote traditional-family values and opposition to abortion. Risk assessed as Medium because the moving procession will require temporary road and pedestrian management."
+},
+
+{
+  title: "Chełm March for Life and Family",
+  city: "Chełm",
+  lat: 51.1325,
+  lng: 23.4780,
+  address: "Chełm — city-centre operational anchor; final 2026 assembly point and route TBC",
+  postcode: "22-100",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Centrum Życia i Rodziny has confirmed Chełm among the cities holding its autumn March for Life and Family mobilisation on Sunday 6 September 2026. Participants will publicly promote protection of life from conception, traditional-family and marriage values under the national campaign slogan 'Czas obronić małżeństwo. Czas ochronić życie'. A reliable current local assembly time and route have not yet been published, so CityIntel uses its standard 12:00 timestamp and a transparent Chełm operational map anchor. Risk assessed as Medium because the event is explicitly a moving public march, although no disorder threat has been announced."
+},
+
+{
+  title: "Grodzisk Wielkopolski March for Life and Family",
+  city: "Grodzisk Wielkopolski",
+  lat: 52.2272,
+  lng: 16.3652,
+  address: "Rynek, Grodzisk Wielkopolski — operational map anchor; final assembly point and route TBC",
+  postcode: "62-065",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Centrum Życia i Rodziny has confirmed a March for Life and Family in Grodzisk Wielkopolski on Sunday 6 September 2026 as part of its nationwide autumn campaign. The mobilisation will advocate traditional-family values, protection of life from conception and marriage defined by organisers as between a woman and a man. Exact local start time, assembly point and route remain unpublished, so CityIntel's standard 12:00 time and the Rynek map point are transparent operational defaults only. Risk assessed as Medium because a moving public procession is planned."
+},
+
+{
+  title: "Włocławek March for Life and Family",
+  city: "Włocławek",
+  lat: 52.6486,
+  lng: 19.0675,
+  address: "Plac Wolności — operational map anchor; final 2026 assembly point and route TBC",
+  postcode: "87-800",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Włocławek is confirmed by Centrum Życia i Rodziny for a March for Life and Family on Sunday 6 September 2026. The public mobilisation forms part of the autumn campaign supporting traditional-family structures and protection of human life from conception. The organiser has not yet published dependable local 2026 assembly or route details, so CityIntel applies its standard 12:00 timestamp and uses Plac Wolności only as an operational city-centre anchor. Risk assessed as Medium because the action is explicitly organised as a public march and is likely to require temporary traffic management."
+},
+
+{
+  title: "Zamość March for Life and Family",
+  city: "Zamość",
+  lat: 50.716789,
+  lng: 23.269705,
+  address: "Parafia Matki Bożej Królowej Polski, ul. Kard. S. Wyszyńskiego 5 — march to Kościół oo. Franciszkanów",
+  postcode: "22-400",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T16:00:00",
+  source: "https://zamojska24.pl/z-zamoscia/marsz-dla-zycia-i-rodziny-na-ulicach-zamoscia/CW8D715qHXd5AhQyvVIu",
+  summary: "Local organisers have confirmed the Zamość March for Life and Family for Sunday 6 September 2026. The programme begins with a 16:00 Mass at the Matki Bożej Królowej Polski parish on Wyszyńskiego 5, after which participants will march through Zamość to the Franciscan church. Organisers promote traditional-family values and protection of life from conception, with a second Mass and public rosary planned after the procession. The 16:00 timestamp represents the confirmed programme start rather than an assertion that the march departs exactly at 16:00. Risk assessed as Medium because this is a moving public procession requiring road management."
+},
+
+{
+  title: "Warsaw Family and Parental Equality March",
+  city: "Warsaw",
+  lat: 52.2164,
+  lng: 21.0245,
+  address: "Kancelaria Prezesa Rady Ministrów, Aleje Ujazdowskie 1/3 — march to Presidential Palace",
+  postcode: "00-583",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-11T10:00:00",
+  source: "https://krajownik.pl/warszawa/wydarzenia/marsz-rodzin-w-warszawie-list-otwarty-do-prezydenta-i-premiera-rp-249141",
+  summary: "Fundacja Kocham Cię Tato has confirmed a Family March in Warsaw from 10:00 to 15:00 on Friday 11 September 2026 concerning parental equality and family-law reform. Participants will begin outside the Chancellery of the Prime Minister and proceed to the Presidential Palace, delivering open letters at both locations calling for political cooperation on family law and continued relationships between children and both parents after separation. Risk assessed as Medium because the procession links two highly protected national-government sites and will require police liaison, road controls and security management."
+},
+
+{
+  title: "Opole Equality March 2026",
+  city: "Opole",
+  lat: 50.6686,
+  lng: 17.9219,
+  address: "Opole city centre — Rynek used as operational map anchor; final assembly point and route TBC",
+  postcode: "45-015",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "https://queer.pl/artykul/207365/marsze-rownosci-parada-rownosci-2026-mapka-daty-trasy",
+  summary: "The eighth Opole Equality March is confirmed for Saturday 12 September 2026 under the slogan 'Róbmy miłość, a nie wojnę'. The current national Pride calendar confirms the date, while local organisers state that final location and route details will be announced separately. No dependable start time has yet been published, so CityIntel's standard 12:00 timestamp is used and Rynek is retained solely as a transparent city-centre operational anchor. Risk assessed as Medium because this is a moving LGBTQIA+ rights demonstration likely to require road restrictions, stewarding and police liaison."
+},
+
+{
+  title: "Disability Rights Manifestation — My widzimy Was, a Wy czy widzicie nas?",
+  city: "Warsaw",
+  lat: 52.2266,
+  lng: 21.0278,
+  address: "Sejm RP, ul. Wiejska 4/6/8",
+  postcode: "00-902",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T09:30:00",
+  source: "https://www.szansadlaniewidomych.org/pl/1222-znowu-sie-widzimy-reha-for-the-blind-in-poland-2026",
+  summary: "Fundacja Szansa – Jesteśmy Razem has confirmed a disability-rights manifestation outside the Polish Parliament at 09:30 on Monday 14 September 2026 under the slogan 'My widzimy Was, a Wy – czy widzicie nas?'. Participants from the blind, visually impaired and wider disability community will highlight continuing barriers affecting public space, transport, information, technology, education, employment, culture and independent living. The demonstration forms part of REHA FOR THE BLIND IN POLAND 2026. Risk assessed as Medium because the gathering is directly outside Parliament and is likely to require security controls and police liaison."
+},
+
+{
+  title: "Białystok March for Life and Family",
+  city: "Białystok",
+  lat: 53.13257,
+  lng: 23.15975,
+  address: "Rynek Kościuszki — operational map anchor; final assembly point and route TBC",
+  postcode: "15-091",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Centrum Życia i Rodziny has confirmed Białystok participation in the autumn March for Life and Family campaign on Sunday 13 September 2026. Organisers advocate protection of life from conception, traditional-family values and marriage. A current Białystok-specific start time and route have not yet been published, so CityIntel applies its standard 12:00 timestamp and uses Rynek Kościuszki only as an operational map anchor pending an organiser update. Risk assessed as Medium because a moving public procession is planned."
+},
+
+{
+  title: "Ciechanów March for Life and Family",
+  city: "Ciechanów",
+  lat: 52.8810,
+  lng: 20.6193,
+  address: "Plac Jana Pawła II — operational map anchor; final assembly point and route TBC",
+  postcode: "06-400",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Ciechanów is confirmed for a March for Life and Family on Sunday 13 September 2026 within the nationwide autumn programme. Participants will promote traditional-family and anti-abortion advocacy under the campaign's national message. No dependable local 2026 start time, assembly point or procession route has yet been published, so CityIntel uses its standard 12:00 timestamp and Plac Jana Pawła II only as a transparent operational anchor. Risk assessed as Medium because the announced event is a moving public march."
+},
+
+{
+  title: "Gorzyce Wielkie March for Life and Family",
+  city: "Gorzyce Wielkie",
+  lat: 51.6370,
+  lng: 17.7360,
+  address: "Gorzyce Wielkie village centre — operational map anchor; local route TBC",
+  postcode: "63-410",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Centrum Życia i Rodziny confirms Gorzyce Wielkie among the locations holding an autumn March for Life and Family on Sunday 13 September 2026. The mobilisation will publicly advocate traditional-family structures, marriage and protection of life from conception. Local assembly, route and start-time details remain pending, so CityIntel's standard 12:00 timestamp and a village-centre operational anchor are used transparently. Risk assessed as Medium because the action is organised as a public procession, although significant public-order problems are not currently anticipated."
+},
+
+{
+  title: "Chełmża March for Life and Family",
+  city: "Chełmża",
+  lat: 53.1845,
+  lng: 18.6045,
+  address: "Chełmża city centre — Rynek / basilica area used as operational anchor; final route TBC",
+  postcode: "87-140",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Chełmża is confirmed for an autumn March for Life and Family on Sunday 20 September 2026. The nationwide organiser describes the series as a peaceful public mobilisation promoting protection of life from conception and traditional-family and marriage values. The final Chełmża assembly point, route and time have not yet been published, so CityIntel uses its standard 12:00 timestamp and a central operational map anchor only. Risk assessed as Medium because the event is an announced moving public procession."
+},
+
+{
+  title: "Katowice March for Life and Family",
+  city: "Katowice",
+  lat: 50.2596,
+  lng: 19.0219,
+  address: "Rynek, Katowice — operational map anchor; final assembly point and route TBC",
+  postcode: "40-001",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Centrum Życia i Rodziny confirms a separate Katowice March for Life and Family on Sunday 20 September 2026. The mobilisation promotes traditional-family structures, marriage and protection of life from conception and is operationally separate from the Katowice Equality March scheduled on 5 September. Current local assembly, route and start-time details remain pending, so CityIntel uses its standard 12:00 timestamp and Rynek only as an operational map anchor. Risk assessed as Medium because a moving ideological demonstration through Katowice is expected."
+},
+
+{
+  title: "Ostróda March for Life and Family",
+  city: "Ostróda",
+  lat: 53.6965,
+  lng: 19.9643,
+  address: "Ostróda city centre — operational map anchor; final assembly point and route TBC",
+  postcode: "14-100",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Ostróda is confirmed by Centrum Życia i Rodziny for a March for Life and Family on Sunday 20 September 2026. Participants will publicly advocate protection of life from conception and the organiser's traditional conception of marriage and family. Current local logistics have not yet been published, so CityIntel applies its standard 12:00 timestamp and uses a city-centre operational anchor rather than inferring a route. Risk assessed as Medium because the mobilisation is explicitly a public march and may require temporary traffic and pedestrian controls."
+},
+
+{
+  title: "Sokołów Podlaski March for Life and Family",
+  city: "Sokołów Podlaski",
+  lat: 52.4067,
+  lng: 22.2531,
+  address: "Sokołów Podlaski city centre — operational map anchor; final assembly point and route TBC",
+  postcode: "08-300",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://czir.org/rusza-jesienny-sezon-marszowy-wesprzyj-ich-organizacje/",
+  summary: "Centrum Życia i Rodziny confirms Sokołów Podlaski among its 20 September 2026 autumn March for Life and Family locations. The public procession will promote protection of life from conception, traditional-family values and the organiser's definition of marriage. No dependable local 2026 time, start location or route has yet been published, so CityIntel uses its standard 12:00 timestamp and a transparent city-centre operational anchor. Risk assessed as Medium because the announced action is a moving public demonstration."
+},
+
+
+{
+  title: "Antikriegstag Peace and Neutrality Rally — Vienna",
+  city: "Vienna",
+  lat: 48.1979,
+  lng: 16.3995,
+  address: "Kardinal-Nagl-Platz",
+  postcode: "1030",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T17:00:00",
+  source: "Partei der Arbeit Österreichs / Jugendfront",
+  summary: "Partei der Arbeit Österreichs, Jugendfront and supporting peace and solidarity initiatives have confirmed an Antikriegstag rally at Kardinal-Nagl-Platz in Vienna from 17:00 on Tuesday 1 September 2026. Participants will oppose military rearmament, militarisation and war policy while advocating peace, Austrian neutrality and greater allocation of public resources to health, education and social provision rather than military expenditure. Risk assessed as Low because the announced action is a stationary political rally with no procession, blockade or violent activity announced. Localised pedestrian activity and routine police monitoring are possible."
+},
+
+{
+  title: "Antikriegstag Peace and Neutrality Rally — Linz",
+  city: "Linz",
+  lat: 48.3010,
+  lng: 14.2900,
+  address: "Martin-Luther-Platz",
+  postcode: "4020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T18:00:00",
+  source: "Partei der Arbeit Österreichs / Jugendfront",
+  summary: "PdA, Jugendfront and supporting peace organisations have confirmed an Antikriegstag gathering at Martin-Luther-Platz in Linz from 18:00 on Tuesday 1 September 2026. The mobilisation will oppose rearmament, militarisation and contemporary war policy while calling for peace, neutrality and prioritisation of social spending. Risk assessed as Low because the published programme is a stationary central-city rally and no march or direct-action mechanism has been announced. Temporary pedestrian congestion is possible around the square."
+},
+
+{
+  title: "Antikriegstag Peace and Neutrality Rally — Salzburg",
+  city: "Salzburg",
+  lat: 47.8023,
+  lng: 13.0430,
+  address: "Ferdinand-Hanusch-Platz",
+  postcode: "5020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T18:00:00",
+  source: "Partei der Arbeit Österreichs / Jugendfront",
+  summary: "Peace and political organisations including PdA and Jugendfront have confirmed an Antikriegstag rally at Ferdinand-Hanusch-Platz in Salzburg at 18:00 on Tuesday 1 September 2026. Participants will campaign against military rearmament and militarisation and for peace and Austrian neutrality. Risk assessed as Low because the action is advertised as a stationary rally and no procession, blockade or confrontational activity has been announced. Localised pedestrian and public-transport effects are possible around the central square."
+},
+
+{
+  title: "Antikriegstag Peace and Neutrality Rally — Innsbruck",
+  city: "Innsbruck",
+  lat: 47.2584,
+  lng: 11.3940,
+  address: "Wiltener Platzl",
+  postcode: "6020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-01T18:30:00",
+  source: "Partei der Arbeit Österreichs / Jugendfront",
+  summary: "PdA, Jugendfront and supporting peace and solidarity initiatives have confirmed an Antikriegstag rally at Wiltener Platzl in Innsbruck from 18:30 on Tuesday 1 September 2026. The mobilisation will oppose military escalation, rearmament and militarisation and advocate peace, neutrality and social investment. Risk assessed as Low because the action is currently announced as a stationary political gathering without a procession or deliberate obstruction. Routine police observation and localised pedestrian activity are possible."
+},
+
+{
+  title: "WTF Animal Agriculture Diamond Demonstration — 5 September",
+  city: "Vienna",
+  lat: 48.2188,
+  lng: 16.3921,
+  address: "Praterstern",
+  postcode: "1020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T14:30:00",
+  source: "We The Free",
+  summary: "We The Free Vienna has confirmed an animal-rights street demonstration at Praterstern from 14:30 to 17:30 on Saturday 5 September 2026. Activists will form the organisation's 'Diamond' formation and display screens showing footage from animal agriculture while outreach volunteers discuss veganism and animal exploitation with members of the public. Risk assessed as Low because this is a stationary advocacy demonstration with no march, blockade or confrontational action announced. The use of graphic imagery may attract public attention, but only localised pedestrian effects are expected."
+},
+
+{
+  title: "Vienna Horse-Drawn Carriage Animal-Rights Demonstration",
+  city: "Vienna",
+  lat: 48.2086,
+  lng: 16.3718,
+  address: "Stephansplatz 10",
+  postcode: "1010",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T14:30:00",
+  source: "We The Free",
+  summary: "We The Free Vienna has confirmed a demonstration against the use of horse-drawn carriages at Stephansplatz from 14:30 to 16:30 on Saturday 12 September 2026. Organisers are calling for an end to Vienna's horse-carriage industry on animal-welfare grounds and will conduct public advocacy at the central square. Risk assessed as Low because the demonstration is stationary and organisers have not announced a march, blockade or confrontational direct action. Increased pedestrian activity and interaction with carriage operators or visitors are possible around Stephansplatz."
+},
+
+{
+  title: "Vienna Kidical Mass Safe-Streets Cycling Demonstration",
+  city: "Vienna",
+  lat: 48.2023,
+  lng: 16.3598,
+  address: "Platz der Menschenrechte, MuseumsQuartier — cycling demonstration through central Vienna",
+  postcode: "1070",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T15:00:00",
+  source: "Radlobby / Kidical Mass Wien",
+  summary: "Kidical Mass Wien has confirmed a major family cycling demonstration beginning at Platz der Menschenrechte beside the MuseumsQuartier at 15:00 on Saturday 19 September 2026. Thousands of parents and children are expected to cycle through central Vienna demanding safe routes to schools and kindergartens, continuous protected cycling infrastructure, safer crossings and reduced motor-vehicle dominance around educational facilities. Organised feeder rides from several districts will converge on the main assembly point and parts of the mobilisation will receive police escort. Risk assessed as Medium because a large moving bicycle procession involving families and children will require substantial temporary road management and police coordination, although organisers promote a peaceful, family-oriented event."
+},
+
+{
+  title: "WTF Animal Agriculture Diamond Demonstration — 26 September",
+  city: "Vienna",
+  lat: 48.2188,
+  lng: 16.3921,
+  address: "Praterstern",
+  postcode: "1020",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T14:30:00",
+  source: "We The Free",
+  summary: "We The Free Vienna has scheduled a second September 'Diamond' animal-rights street demonstration at Praterstern from 14:30 to 17:30 on Saturday 26 September 2026. Activists will use a stationary human formation and video screens displaying animal-agriculture footage while outreach volunteers engage members of the public on animal exploitation and veganism. This is a separately scheduled occurrence and is therefore retained independently under CityIntel's recurring-action methodology. Risk assessed as Low because no march, blockade or confrontational activity has been announced."
+},
+
+{
+  title: "Justice 4 Nzoy Police-Accountability Demonstration",
+  city: "Zurich",
+  lat: 47.3790,
+  lng: 8.5403,
+  address: "Landesmuseum Zürich, Museumstrasse 2",
+  postcode: "8001",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T14:00:00",
+  source: "Bewegung für den Sozialismus / Justice 4 Nzoy",
+  summary: "Justice 4 Nzoy supporters have confirmed a public demonstration beginning at the Landesmuseum in Zurich from 14:00 on Saturday 12 September 2026. The mobilisation concerns the death of Nzoy following a police intervention and forms part of a continuing campaign demanding accountability and justice in the case and raising wider concerns around policing and institutional racism. The published action runs approximately from 14:00 to 17:00. Risk assessed as Medium because the politically sensitive police-accountability mobilisation begins immediately beside Zurich Hauptbahnhof and may require police liaison, pedestrian management and temporary traffic controls. No violent action has been announced."
+},
+
+{
+  title: "Pas d'étés à 50°C Climate Demonstration — Geneva",
+  city: "Geneva",
+  lat: 46.2044,
+  lng: 6.1432,
+  address: "Geneva city centre — final assembly point and route TBC",
+  postcode: "1200",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T14:00:00",
+  source: "Keine 50°C-Sommer / Pas d'étés à 50°C coalition",
+  summary: "A coalition of more than 70 Swiss civil-society, environmental, health, agricultural and trade-union organisations has confirmed a climate and heat-protection mobilisation in Geneva from 14:00 on Saturday 19 September 2026 under the campaign 'Pas d'étés à 50°C'. Participants will demand immediate protection against extreme heat, climate-resilient public infrastructure, stronger workplace protections, support for affected agriculture and a rapid transition away from fossil fuels. The final Geneva assembly point and procession arrangements have not yet been published, so the city-centre coordinate is retained only as an operational map anchor. Risk assessed as Medium because a broad multi-organisation mobilisation in central Geneva is likely to require traffic management and police liaison. No violent activity has been announced."
+},
+
+{
+  title: "Pas d'étés à 50°C Climate Demonstration — Lausanne",
+  city: "Lausanne",
+  lat: 46.5197,
+  lng: 6.6323,
+  address: "Lausanne city centre — final assembly point and route TBC",
+  postcode: "1003",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T14:00:00",
+  source: "Keine 50°C-Sommer / Pas d'étés à 50°C coalition",
+  summary: "The nationwide 'Pas d'étés à 50°C' coalition has confirmed a Lausanne climate mobilisation from 14:00 on Saturday 19 September 2026. More than 70 participating organisations are demanding urgent adaptation to increasingly severe heatwaves alongside accelerated emissions reductions and an end to dependence on fossil energy. Measures sought include urban greening, heat-resilient schools and public buildings, protection for workers during extreme heat and stronger assistance for vulnerable people and farmers. Final Lausanne assembly and route details remain pending, so the central-city coordinate is an operational anchor only. Risk assessed as Medium because a substantial moving or centrally concentrated mobilisation may require road controls and police liaison."
+},
+
+{
+  title: "Keine 50°C-Sommer Climate Mobilisation — Zurich",
+  city: "Zurich",
+  lat: 47.3769,
+  lng: 8.5417,
+  address: "Zurich city centre — final assembly point and route TBC",
+  postcode: "8001",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T17:00:00",
+  source: "Keine 50°C-Sommer coalition",
+  summary: "The national 'Keine 50°C-Sommer!' climate coalition has confirmed Zurich participation in the German-speaking Swiss mobilisation on Friday 25 September 2026. Participants will demand immediate measures against increasingly severe heat and drought together with stronger climate mitigation, urban greening, resilient buildings, workplace heat protections and accelerated abandonment of fossil fuels. Current organiser material confirms the city and mobilisation date but states that the final meeting point and route will be announced separately. Risk assessed as Medium because the evening city-centre mobilisation may require traffic restrictions, public-transport management and police liaison."
+},
+
+{
+  title: "Keine 50°C-Sommer Climate Mobilisation — Bern",
+  city: "Bern",
+  lat: 46.9480,
+  lng: 7.4474,
+  address: "Bern city centre — final assembly point and route TBC",
+  postcode: "3011",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T17:00:00",
+  source: "Keine 50°C-Sommer coalition",
+  summary: "Bern will host a demonstration under the nationwide 'Keine 50°C-Sommer!' campaign from 17:00 on Friday 25 September 2026. The broad alliance is demanding urgent measures to protect the population from extreme heat and drought and a stronger transition away from fossil fuels. The Bern mobilisation is currently advertised from approximately 17:00 into the evening, while the final meeting point and procession route remain pending. CityIntel therefore uses a transparent central-Bern operational anchor. Risk assessed as Medium because the mobilisation may affect central roads, public transport and pedestrian movement and is likely to require police liaison."
+},
+
+{
+  title: "Keine 50°C-Sommer Climate Mobilisation — Basel",
+  city: "Basel",
+  lat: 47.5596,
+  lng: 7.5886,
+  address: "Basel city centre — final assembly point and route TBC",
+  postcode: "4001",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T17:00:00",
+  source: "Keine 50°C-Sommer coalition",
+  summary: "Basel is included in the German-speaking Swiss climate mobilisation planned for Friday 25 September 2026 under the campaign 'Keine 50°C-Sommer!'. The coalition of environmental, health, agricultural, trade-union and civil-society organisations is demanding immediate heat-protection measures, rapid climate action and reduced dependence on fossil fuels. Final Basel assembly and procession details are still to be published, so CityIntel records a city-centre operational anchor rather than asserting a specific protest point. Risk assessed as Medium because a centrally located evening climate demonstration may require temporary traffic management and police coordination."
+},
+
+{
+  title: "Keine 50°C-Sommer Climate Mobilisation — Lucerne",
+  city: "Lucerne",
+  lat: 47.0502,
+  lng: 8.3093,
+  address: "Lucerne city centre — final assembly point and route TBC",
+  postcode: "6003",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T17:00:00",
+  source: "Keine 50°C-Sommer coalition",
+  summary: "Climate organisations have confirmed Lucerne among the German-speaking Swiss cities participating in the 'Keine 50°C-Sommer!' mobilisation on Friday 25 September 2026. Participants will campaign for stronger protection against extreme heat and drought, climate-resilient infrastructure and buildings, protection of workers and vulnerable groups and a rapid transition away from fossil fuels. Detailed Lucerne meeting-point and route information remains pending, so the coordinate is used only as a city-centre operational anchor. Risk assessed as Medium because the mobilisation may affect central pedestrian and vehicle movements."
+},
+
+{
+  title: "Zwischen uns keine Grenzen National Migration-Rights Demonstration",
+  city: "Bern",
+  lat: 46.9562,
+  lng: 7.4448,
+  address: "Schützenmatte, Bern",
+  postcode: "3014",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "Solidarité sans frontières / Unia",
+  summary: "Migration-rights organisations, trade unions and solidarity groups have confirmed the national 'Zwischen uns keine Grenzen' demonstration beginning at Schützenmatte in Bern at 14:00 on Saturday 26 September 2026. Participants will demand a humane migration and asylum policy, freedom of movement, regularisation opportunities, an end to deportation detention and stronger access to healthcare, education, employment, legal protection and democratic participation irrespective of migration status. Risk assessed as Medium because the national demonstration is expected to draw participants from across Switzerland and will require police liaison, pedestrian management and likely road restrictions around central Bern. No violent action has been announced."
+},
+
+
+{
+  title: "INEM Emergency Medical Technicians Nationwide Strike — 14 September",
+  city: "Nationwide",
+  lat: 39.3999,
+  lng: -8.2245,
+  address: "INEM emergency medical services across Portugal — national operational action; no single assembly point confirmed",
+  postcode: "",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-14T12:00:00",
+  source: "RTP / STEPH",
+  summary: "The Sindicato dos Técnicos de Emergência Pré-Hospitalar (STEPH) has called a nationwide strike by INEM pre-hospital emergency technicians for Monday 14 September 2026. The dispute concerns the restructuring of Portugal's emergency-medical system, including proposals affecting INEM ambulances, conversion of Immediate Life Support ambulances into lighter vehicles and the future configuration of the emergency ambulance network. The union is demanding retention of all 56 existing AEM emergency ambulances and changes to the proposed restructuring. No precise daily start time has been published in the current public notices, so CityIntel's standard 12:00 timestamp is used and does not imply that the stoppage lasts only from noon. Risk assessed as High because the industrial action involves the national pre-hospital emergency-medical system and may affect response capacity, although legally required minimum and emergency services are expected to remain protected. No associated national street demonstration has been announced."
+},
+
+{
+  title: "INEM Emergency Medical Technicians Nationwide Strike — 28 September",
+  city: "Nationwide",
+  lat: 39.3999,
+  lng: -8.2245,
+  address: "INEM emergency medical services across Portugal — national operational action; no single assembly point confirmed",
+  postcode: "",
+  country: "Portugal",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-28T12:00:00",
+  source: "RTP / STEPH",
+  summary: "STEPH has confirmed a second nationwide strike by INEM pre-hospital emergency technicians for Monday 28 September 2026. The action forms part of the same dispute over restructuring of the Instituto Nacional de Emergência Médica, including ambulance-network changes, conversion of Immediate Life Support ambulances and concerns that the proposed model could weaken INEM's emergency-response capacity. The union states that the September stoppages will only be withdrawn if the Government formally reverses the contested measures. No exact daily start time has been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as High because disruption to emergency-medical staffing may have national operational consequences despite statutory minimum-service protections. No associated public-order threat has been announced."
+},
+
+{
+  title: "Rennes Anti-Speciesism March Against Animal Exploitation",
+  city: "Rennes",
+  lat: 48.10985,
+  lng: -1.67895,
+  address: "Place de la République — village followed by city-centre march",
+  postcode: "35000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T14:00:00",
+  source: "Expansive / Démosphère Rennes",
+  summary: "AG antispéciste Rennes has confirmed a mobilisation against animal exploitation at Place de la République on Saturday 5 September 2026. An association and campaign village will operate from 14:00, with the moving demonstration scheduled to depart at approximately 15:30 and activity continuing until around 17:00. Participants will campaign against animal exploitation and speciesism and promote animal-rights and vegan advocacy. Risk assessed as Medium because the action includes a moving city-centre procession and will overlap at Place de la République with the separately confirmed weekly Palestine-solidarity gathering beginning at 15:00, increasing pedestrian density and the likelihood of short-duration traffic management. No violent or deliberately obstructive activity has been announced."
+},
+
+{
+  title: "Arles Feria du Riz Anti-Corrida Demonstration",
+  city: "Arles",
+  lat: 43.67479,
+  lng: 4.631921,
+  address: "Outside Commissariat de Police d'Arles, 1 Boulevard des Lices",
+  postcode: "13200",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T13:30:00",
+  source: "No Corrida / Parole d'Animaux",
+  summary: "No Corrida and supporting animal-rights organisations have confirmed an anti-corrida demonstration outside the Arles police station on Boulevard des Lices on Saturday 12 September 2026 during the Feria du Riz. The published action window is approximately 13:30 to 17:30, with the principal gathering from around 14:00. Organisers plan a peaceful happening and a protest presence along the route used by spectators travelling toward the 17:00 Goyesque corrida at the Arènes d'Arles. Risk assessed as Medium because the demonstration will operate directly alongside a major taurine festival and spectator movement, creating potential for verbal confrontation, crowd separation measures and enhanced police management. Organisers explicitly state that the action is declared and peaceful."
+},
+
+{
+  title: "Bordeaux Mobilisation for Animal Protection",
+  city: "Bordeaux",
+  lat: 44.84569,
+  lng: -0.57553,
+  address: "Place des Quinconces — planned march toward the Préfecture",
+  postcode: "33000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T14:00:00",
+  source: "Association Vénus / Parole d'Animaux",
+  summary: "Association Vénus and participating animal-protection groups have announced a major mobilisation in Bordeaux from 14:00 on Saturday 26 September 2026 as part of a wider national animal-rights campaign. Organisers are calling on shelters, sanctuaries, foster networks, veterinarians, independent volunteers and members of the public to mobilise against abandonment, animal cruelty, trafficking and harm to wildlife. The currently proposed plan is to assemble at Place des Quinconces, where an information stand will operate, before marching toward the Préfecture. The organiser describes the Quinconces departure as envisaged rather than final, so CityIntel should retain the square as the confirmed operational anchor while treating the complete procession route as subject to update. Risk assessed as Medium because organisers hope for hundreds or potentially thousands of participants in a moving central-Bordeaux demonstration, requiring stewarding and traffic management. The mobilisation is explicitly promoted as peaceful."
+},
+
+{
+  title: "Seine-Maritime Territorial Public Services Strike — 29 September",
+  city: "Rouen",
+  lat: 49.44265,
+  lng: 1.083661,
+  address: "Territorial public services across Seine-Maritime — Hôtel du Département, Quai Jean-Moulin, Rouen used as administrative operational anchor; no single demonstration point confirmed",
+  postcode: "76000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-29T00:00:00",
+  source: "Fédération CGT des Services publics — CSD CGT Seine-Maritime",
+  summary: "The Seine-Maritime departmental CGT coordination has filed a 24-hour strike notice for Tuesday 29 September 2026 covering territorial public-service employees across the department, including personnel working for municipalities, departmental and regional bodies, public establishments, metropolitan authorities, social-housing organisations and relevant water and other service-sector operations within the federation's scope. The action forms part of the broader nationwide public-service mobilisation over pay, careers, staffing, public-service resources and working conditions, but the departmental notice independently establishes strike coverage in Seine-Maritime. No confirmed Rouen demonstration rendezvous or route has yet been published, so the Hôtel du Département is used only as an administrative map anchor and must not be interpreted as a picket or assembly point. Risk assessed as Medium because service availability may be reduced across multiple territorial functions, while the local street-protest footprint remains unconfirmed."
+},
+
+{
+  title: "Dijon Weekly Palestine Solidarity Rally — 5 September",
+  city: "Dijon",
+  lat: 47.32354,
+  lng: 5.03411,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T15:00:00",
+  source: "https://www.manifs.fr/?country=fr&region2=C%C3%B4te-d%27Or",
+  summary: "The Collectif 21 pour une paix juste et durable en Palestine has confirmed continuation of its established Saturday Palestine-solidarity mobilisation at Place Darcy in Dijon at 15:00 on 5 September 2026. Participants will call for protection of Palestinian civilians, humanitarian access, an end to violence and occupation and a just and lasting peace. Organiser-linked material states that the group continues to assemble every Saturday at 15:00 at Place Darcy. Risk assessed as Low because the action is an established stationary gathering with no blockade, confrontation or hostile counter-demonstration announced. Place Darcy is a major central pedestrian and public-transport hub, so limited localised crowding and routine police observation are possible."
+},
+
+{
+  title: "Dijon Weekly Palestine Solidarity Rally — 12 September",
+  city: "Dijon",
+  lat: 47.32354,
+  lng: 5.03411,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T15:00:00",
+  source: "https://www.manifs.fr/?country=fr&region2=C%C3%B4te-d%27Or",
+  summary: "The established weekly Dijon Palestine-solidarity gathering is confirmed at Place Darcy from 15:00 on Saturday 12 September 2026. The Collectif 21 mobilisation advocates a just and lasting peace, protection of Palestinian civilians, humanitarian access and opposition to continuing occupation and violence. Current protest listings separately publish the 12 September occurrence as part of the continuing Saturday series. Risk assessed as Low because the action is peaceful and stationary and no deliberate transport obstruction or hostile counter-mobilisation has been announced. Minor pedestrian congestion is possible around Place Darcy."
+},
+
+{
+  title: "Dijon Weekly Palestine Solidarity Rally — 19 September",
+  city: "Dijon",
+  lat: 47.32354,
+  lng: 5.03411,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T15:00:00",
+  source: "https://www.manifs.fr/?country=fr&region2=C%C3%B4te-d%27Or",
+  summary: "Dijon's recurring Palestine-solidarity mobilisation is confirmed at Place Darcy at 15:00 on Saturday 19 September 2026. Participants will continue calls for civilian protection, humanitarian access and a just and durable settlement while maintaining public opposition to occupation and continuing violence affecting Palestinians. Risk assessed as Low because this is an established weekly stationary demonstration with no blockade or confrontation announced. Place Darcy's position beside major tram, bus and pedestrian routes means some temporary crowding may occur around the square."
+},
+
+{
+  title: "Dijon Weekly Palestine Solidarity Rally — 26 September",
+  city: "Dijon",
+  lat: 47.32354,
+  lng: 5.03411,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T15:00:00",
+  source: "https://www.manifs.fr/?country=fr&region2=C%C3%B4te-d%27Or",
+  summary: "The final currently scheduled September occurrence of Dijon's weekly Palestine-solidarity mobilisation is confirmed at Place Darcy from 15:00 on Saturday 26 September 2026. Participants will continue campaigning for civilian protection, humanitarian access, Palestinian rights and a just and lasting peace. Risk assessed as Low because the recurring mobilisation is stationary and peaceful and no deliberate obstruction or hostile counter-demonstration is announced. This gathering occurs on the same date as France's wider climate, peace and solidarity mobilisation, so central-Dijon pedestrian activity should be monitored for any overlap if a separate Dijon climate event is subsequently confirmed."
+},
+
+
+{
+  title: "Breton Reunification and Right-to-Decide March — Nantes",
+  city: "Nantes",
+  lat: 47.2177,
+  lng: -1.5590,
+  address: "Place Bretagne — march route TBC",
+  postcode: "44000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-26T15:00:00",
+  source: "https://44breizh.com/2026/07/28/construisons-un-vrai-pouvoir-politique-breton-divizomp-e-breizh-manif-a-nantes-naoned-le-26-09/",
+  summary: "The Coordination démocratique de Bretagne has confirmed a demonstration in Nantes at 15:00 on Saturday 26 September 2026 calling for the reunification of Brittany and greater political self-determination and decision-making powers. Participants will assemble at Place Bretagne and campaign around territorial democracy, regional political authority, social justice, ecological transformation, solidarity and recognition of Loire-Atlantique within a reunited Brittany. The final procession route has not yet been published. Risk assessed as Medium because the action is explicitly organised as a city-centre march and is likely to require traffic management, police liaison and stewarding as participants move from Place Bretagne. This mobilisation is separate from the climate, peace and solidarity action already scheduled elsewhere in Nantes on the same date."
+},
+
+{
+  title: "Privas Health and Social-Care Strike Demonstration",
+  city: "Privas",
+  lat: 44.7346,
+  lng: 4.59888,
+  address: "Préfecture de l'Ardèche, 5 Rue Pierre-Filliat",
+  postcode: "07000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T10:30:00",
+  source: "https://www.cgt-cnpe-cruas.fr/amp/actus-locales/i/47a809ac19740a032a9e550b1092bfb2/jeudi-15-septembre-2026-ne-vous-laisse-pas-tomber-mais-nos-etablissements-craquent-et-nous-aussi-en-greve-pour-gagner",
+  summary: "The USDSAS CGT de l'Ardèche has called health and social-care workers to strike and demonstrate outside the Ardèche Prefecture in Privas at 10:30 on Tuesday 15 September 2026. The mobilisation forms part of the wider national health and social-care action already recorded by CityIntel and will demand increased healthcare and social-service funding, staffing and hospital-bed capacity, protection of the Sécurité Sociale, improved working conditions and opposition to further spending reductions in the proposed 2027 social-security budget. Risk assessed as Medium because the demonstration will take place directly outside the departmental prefecture and may require police liaison and temporary access management. The source-page headline incorrectly calls 15 September a Thursday, but the body of the CGT notice correctly specifies Tuesday 15 September and gives the 10:30 Privas rendezvous."
+},
+
+{
+  title: "Tours Rally for Abortion Rights",
+  city: "Tours",
+  lat: 47.39568,
+  lng: 0.68543,
+  address: "Centre de création contemporaine Olivier Debré (CCC OD), 1 Parvis Jean Germain",
+  postcode: "37000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-28T18:00:00",
+  source: "https://actionpopulaire.fr/evenements/liste/?page=4",
+  summary: "A current local mobilisation listing confirms a public gathering in Tours at 18:00 on Monday 28 September 2026 under the message 'Pour le droit à l'IVG', coinciding with the International Day for Safe Abortion. Participants are expected to defend access to abortion and reproductive rights. The published rendezvous is the Centre de création contemporaine Olivier Debré in central Tours. Risk assessed as Low because the currently published action is a stationary rights rally with no march, blockade or confrontational activity announced. CityIntel should update the record if organisers subsequently publish a wider coalition, procession route or additional operational details."
+},
+
+{
+  title: "Strasbourg Cercle de Silence Migrant-Rights Protest — September",
+  city: "Strasbourg",
+  lat: 48.5836,
+  lng: 7.7458,
+  address: "Place Kléber",
+  postcode: "67000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-30T18:00:00",
+  source: "https://strasbourgfurieuse.demosphere.net/rv/8923",
+  summary: "Strasbourg's longstanding Cercle de Silence migrant-rights protest is scheduled at Place Kléber from 18:00 to 19:00 on Wednesday 30 September 2026 under its explicitly published recurring timetable of the 30th of every month. Participants hold a silent demonstration and distribute information opposing administrative detention, violent deportations, deaths at borders and at sea and what organisers describe as degrading treatment of migrants and undocumented people. Risk assessed as Low because this is an established one-hour stationary and non-violent protest with no march or obstruction announced. Only localised pedestrian activity around Place Kléber is expected."
+},
+
+{
+  title: "269Life Human Slaughterhouse Anti-Speciesism Demonstration",
+  city: "Strasbourg",
+  lat: 48.5836,
+  lng: 7.7458,
+  address: "Place Kléber",
+  postcode: "67000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T13:00:00",
+  source: "https://strasbourgfurieuse.demosphere.net/rv/9592",
+  summary: "269Life France has confirmed a large-scale anti-speciesism street action at Place Kléber in Strasbourg from 13:00 on Saturday 12 September 2026 for the World Day for the End of Speciesism. Activists will stage a theatrical 'human slaughterhouse' using reversed human-animal roles, speeches and performance to highlight animal slaughter and oppose speciesism. Organisers advise that the action will last approximately two to three hours and are recruiting volunteers for acting, speeches and logistics. The 12 September date replaces an earlier 29 August date. Risk assessed as Medium because the visually graphic staged demonstration will occupy Strasbourg's principal central square and may attract significant public attention, requiring normal public-space and crowd management. No march, blockade or violent activity has been announced."
+},
+
+{
+  title: "Lille Vélorution Critical Mass — September 2026",
+  city: "Lille",
+  lat: 50.6368,
+  lng: 3.0631,
+  address: "Grand'Place / Place du Général-de-Gaulle",
+  postcode: "59000",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-25T19:00:00",
+  source: "https://lille.demosphere.net/rv/11439",
+  summary: "Vélorution Lille has confirmed its September Critical Mass cycling mobilisation for Friday 25 September 2026. Participants will gather on Lille's Grand'Place from 19:00 before departing at approximately 19:15 for an urban cycle procession lasting around one hour. The action promotes cyclists' rights, safer cycling infrastructure, less dependence on motorised transport and more inclusive use of public streets. Organisers explicitly describe the Critical Mass as creating a non-polluting traffic slowdown rather than a blockade and coordinate participants to manage junctions and the moving column safely. Risk assessed as Medium because a sizeable moving bicycle demonstration through central Lille may cause temporary traffic delays and require junction management, although the event is promoted as peaceful and convivial."
+},
+
+{
+  title: "Rennes Weekly Palestine Solidarity Rally — 5 September",
+  city: "Rennes",
+  lat: 48.10985,
+  lng: -1.67895,
+  address: "Place de la République",
+  postcode: "35000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T15:00:00",
+  source: "https://rennes.demosphere.net/",
+  summary: "The Association France Palestine Solidarité and local Palestine-solidarity supporters have confirmed continuation of the established weekly Saturday gathering at Place de la République in Rennes at 15:00 on 5 September 2026. Local mobilisation listings describe the recurring action as running approximately from 15:00 to 16:30 and expressing solidarity with Palestinians and Lebanese civilians. Participants will maintain public visibility around civilian protection, humanitarian conditions and Palestinian rights. Risk assessed as Low because this is an established peaceful and stationary gathering with no march, blockade or confrontational activity announced."
+},
+
+{
+  title: "Rennes Weekly Palestine Solidarity Rally — 12 September",
+  city: "Rennes",
+  lat: 48.10985,
+  lng: -1.67895,
+  address: "Place de la République",
+  postcode: "35000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T15:00:00",
+  source: "https://rennes.demosphere.net/",
+  summary: "The weekly Rennes Palestine-solidarity gathering is confirmed at Place de la République from 15:00 on Saturday 12 September 2026. AFPS and local supporters are maintaining the recurring public mobilisation in solidarity with Palestinians and Lebanese civilians and around civilian protection, humanitarian conditions and Palestinian rights. Local listings give the usual gathering window as approximately 15:00 to 16:30. Risk assessed as Low because the action is peaceful, stationary and established, with no procession or deliberate obstruction announced."
+},
+
+{
+  title: "Rennes Social Security Defence Rally",
+  city: "Rennes",
+  lat: 48.10588,
+  lng: -1.67469,
+  address: "CPAM d'Ille-et-Vilaine, 7 Cours des Alliés",
+  postcode: "35000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-15T13:00:00",
+  source: "https://expansive.info/Agenda-Lutte-une-liste-d-evenements-complementaire-a-celle-d-Expansive-6079",
+  summary: "The CGT at Rennes University Hospital has called a public mobilisation outside the CPAM social-security offices on Cours des Alliés at 13:00 on Tuesday 15 September 2026 under a campaign to defend and strengthen France's Sécurité Sociale. The rally gives Rennes a specific physical action in addition to the wider national health and social-sector mobilisation already recorded by CityIntel for the same date. Risk assessed as Low because the published action is a stationary trade-union gathering outside the social-security offices with no procession, occupation or deliberate obstruction currently announced. Localised pedestrian activity and temporary pressure on access to the CPAM building are possible."
+},
+
+{
+  title: "Rennes Weekly Palestine Solidarity Rally — 19 September",
+  city: "Rennes",
+  lat: 48.10985,
+  lng: -1.67895,
+  address: "Place de la République",
+  postcode: "35000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T15:00:00",
+  source: "https://rennes.demosphere.net/",
+  summary: "AFPS and Palestine-solidarity supporters have confirmed the recurring Rennes gathering at Place de la République from 15:00 on Saturday 19 September 2026. The weekly mobilisation will continue to highlight Palestinian civilian protection, humanitarian conditions and solidarity with Palestinians and Lebanese civilians. Local organisers normally maintain the gathering until approximately 16:30. Risk assessed as Low because the event is an established stationary demonstration with no road blockade, procession or hostile counter-mobilisation announced."
+},
+
+{
+  title: "Rennes Weekly Palestine Solidarity Rally — 26 September",
+  city: "Rennes",
+  lat: 48.10985,
+  lng: -1.67895,
+  address: "Place de la République",
+  postcode: "35000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T15:00:00",
+  source: "https://rennes.demosphere.net/",
+  summary: "The final currently published September occurrence of Rennes' weekly Palestine-solidarity gathering is confirmed at Place de la République from 15:00 on Saturday 26 September 2026. AFPS and local participants will maintain public solidarity activity concerning Palestinian civilians, humanitarian conditions and Palestinian rights. Risk assessed as Low because the recurring action is peaceful and stationary and no disruptive mechanism or hostile counter-demonstration has been announced."
+},
+
+{
+  title: "Marseille Public-Service Strike and Mobilisation — 29 September",
+  city: "Marseille",
+  lat: 43.2965,
+  lng: 5.3698,
+  address: "Marseille city centre — local mobilisation confirmed; final assembly point and demonstration route TBC",
+  postcode: "",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-29T12:00:00",
+  source: "https://www.cgt-cd13.org/",
+  summary: "The CGT du Conseil Départemental des Bouches-du-Rhône has explicitly confirmed Marseille participation in the nationwide public-service strike and mobilisation scheduled for Tuesday 29 September 2026. The wider inter-union action involves public servants across state, territorial and hospital services and focuses on pay, the value of the civil-service index point, career progression, sick-pay protections, staffing and working conditions. A national strike notice covers the full 00:00 to 24:00 period, but the Marseille CGT has not yet published the city's demonstration assembly point, route or start time. CityIntel therefore uses its standard 12:00 timestamp and a transparent central-Marseille map anchor pending the local logistics notice. Risk assessed as Medium for the city-specific mobilisation because demonstrations and service disruption are expected but the final Marseille protest footprint remains unknown. The separate nationwide record already held by CityIntel captures the broader national operational impact."
+},
+
+
+
+{
+  title: "Lyon Palestine Solidarity Rally for Prosecuted Activist",
+  city: "Lyon",
+  lat: 45.76043,
+  lng: 4.84783,
+  address: "Tribunal judiciaire de Lyon, 67 Rue Servient",
+  postcode: "69003",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T12:00:00",
+  source: "https://www.couleurspalestine69.fr/2026/08/16/harc%C3%A8lement-d-un-militant-pro-palestinien/",
+  summary: "Couleurs Palestine 69 has called for a solidarity rally outside the Tribunal judiciaire de Lyon from 12:00 on Monday 14 September 2026 in support of Alex, a Lyon-based pro-Palestinian activist facing criminal proceedings. Organisers describe the case as part of wider repression of Palestine-solidarity speech and are calling for his acquittal and support for others facing related prosecutions. Risk assessed as Medium because the politically sensitive gathering will take place directly outside an active courthouse and may require police liaison, courthouse security measures and controlled pedestrian access. No violent or deliberately obstructive activity has been announced."
+},
+
+{
+  title: "Sabra and Shatila Palestine Solidarity Vigil",
+  city: "Nîmes",
+  lat: 43.83805,
+  lng: 4.35504,
+  address: "Outside Carré d'Art, Place de la Maison Carrée",
+  postcode: "30000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-16T19:30:00",
+  source: "https://www.france-palestine.org/Veillee-pour-commemorer-les-massacres-de-Sabra-et-Chatila",
+  summary: "AFPS Nîmes has confirmed a public vigil outside Carré d'Art from 19:30 to 22:00 on Wednesday 16 September 2026 commemorating the victims of the 1982 Sabra and Shatila massacres. The gathering will combine remembrance with Palestine-solidarity messaging. Risk assessed as Low because the published action is a stationary evening vigil with no procession, blockade or confrontational activity announced. Localised pedestrian activity and routine police observation are possible around Place de la Maison Carrée."
+},
+
+{
+  title: "Tulle Weekly Gaza Ceasefire Rally — 5 September",
+  city: "Tulle",
+  lat: 45.26669,
+  lng: 1.77043,
+  address: "Place Gambetta, beside Tulle Cathedral",
+  postcode: "19000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2846",
+  summary: "Palestine-solidarity activists in Corrèze have confirmed continuation of their established Saturday-morning Gaza ceasefire rallies in September 2026. The Tulle gathering will take place at Place Gambetta beside the cathedral from 10:30 on Saturday 5 September. Participants will call for a ceasefire, protection of Palestinian civilians and humanitarian access. Risk assessed as Low because this is an established stationary gathering with no march or deliberate obstruction announced."
+},
+
+{
+  title: "Brive Weekly Gaza Ceasefire Rally — 5 September",
+  city: "Brive-la-Gaillarde",
+  lat: 45.16402,
+  lng: 1.53532,
+  address: "Place de la Guierle, outside the municipal theatre",
+  postcode: "19100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2846",
+  summary: "The established weekly Corrèze mobilisation for a ceasefire in Gaza will continue in Brive-la-Gaillarde on Saturday 5 September 2026. Participants will gather at 10:30 outside the municipal theatre on Place de la Guierle. The action calls for a ceasefire, protection of civilians and humanitarian access in Gaza. Risk assessed as Low because the recurring gathering is peaceful and stationary and normally produces only localised pedestrian activity."
+},
+
+{
+  title: "Ussel Weekly Gaza Ceasefire Rally — 5 September",
+  city: "Ussel",
+  lat: 45.54574,
+  lng: 2.30633,
+  address: "Place Voltaire, beside the Roman eagle monument",
+  postcode: "19200",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-05T11:00:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2846",
+  summary: "Palestine-solidarity campaigners have confirmed continuation of the weekly Ussel Gaza ceasefire gathering on Saturday 5 September 2026. Participants will assemble at Place Voltaire behind the Roman eagle monument from 11:00. Risk assessed as Low because this is an established small stationary solidarity action with no march, blockade or confrontational activity announced."
+},
+
+{
+  title: "Tulle Weekly Gaza Ceasefire Rally — 12 September",
+  city: "Tulle",
+  lat: 45.26669,
+  lng: 1.77043,
+  address: "Place Gambetta, beside Tulle Cathedral",
+  postcode: "19000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2847",
+  summary: "The recurring Saturday Palestine-solidarity rally at Place Gambetta in Tulle is confirmed for 10:30 on 12 September 2026. Participants will continue calls for a ceasefire in Gaza, protection of civilians and humanitarian access. Risk assessed as Low because the mobilisation is established, stationary and peaceful, with no deliberate disruption announced."
+},
+
+{
+  title: "Brive Weekly Gaza Ceasefire Rally — 12 September",
+  city: "Brive-la-Gaillarde",
+  lat: 45.16402,
+  lng: 1.53532,
+  address: "Place de la Guierle, outside the municipal theatre",
+  postcode: "19100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2847",
+  summary: "The established Brive-la-Gaillarde Saturday rally calling for a Gaza ceasefire will take place outside the municipal theatre on Place de la Guierle from 10:30 on 12 September 2026. Risk assessed as Low because the action is a recurring stationary demonstration without a procession, blockade or announced counter-mobilisation."
+},
+
+{
+  title: "Ussel Weekly Gaza Ceasefire Rally — 12 September",
+  city: "Ussel",
+  lat: 45.54574,
+  lng: 2.30633,
+  address: "Place Voltaire, beside the Roman eagle monument",
+  postcode: "19200",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-12T11:00:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2847",
+  summary: "The recurring Ussel Palestine-solidarity gathering is confirmed at Place Voltaire from 11:00 on Saturday 12 September 2026. Participants will call for a ceasefire, civilian protection and humanitarian access in Gaza. Risk assessed as Low because this is an established stationary gathering with limited operational impact."
+},
+
+{
+  title: "Tulle Weekly Gaza Ceasefire Rally — 19 September",
+  city: "Tulle",
+  lat: 45.26669,
+  lng: 1.77043,
+  address: "Place Gambetta, beside Tulle Cathedral",
+  postcode: "19000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2848",
+  summary: "Tulle's established weekly Gaza ceasefire mobilisation will continue at Place Gambetta from 10:30 on Saturday 19 September 2026. Participants will advocate a ceasefire, protection of Palestinian civilians and humanitarian access. Risk assessed as Low because this is a peaceful and stationary recurring public gathering."
+},
+
+{
+  title: "Brive Weekly Gaza Ceasefire Rally — 19 September",
+  city: "Brive-la-Gaillarde",
+  lat: 45.16402,
+  lng: 1.53532,
+  address: "Place de la Guierle, outside the municipal theatre",
+  postcode: "19100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2848",
+  summary: "The weekly Palestine-solidarity gathering in Brive-la-Gaillarde is confirmed outside the theatre at Place de la Guierle from 10:30 on Saturday 19 September 2026. The mobilisation will continue calls for a Gaza ceasefire and civilian protection. Risk assessed as Low because no march, obstruction or hostile counter-presence has been announced."
+},
+
+{
+  title: "Ussel Weekly Gaza Ceasefire Rally — 19 September",
+  city: "Ussel",
+  lat: 45.54574,
+  lng: 2.30633,
+  address: "Place Voltaire, beside the Roman eagle monument",
+  postcode: "19200",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-19T11:00:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2848",
+  summary: "The established Saturday Gaza ceasefire gathering at Place Voltaire in Ussel will continue from 11:00 on 19 September 2026. Participants will express solidarity with Palestinians and demand civilian protection, humanitarian access and a ceasefire. Risk assessed as Low because this is a small, peaceful and stationary mobilisation."
+},
+
+{
+  title: "Tulle Weekly Gaza Ceasefire Rally — 26 September",
+  city: "Tulle",
+  lat: 45.26669,
+  lng: 1.77043,
+  address: "Place Gambetta, beside Tulle Cathedral",
+  postcode: "19000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2849",
+  summary: "The final September occurrence of Tulle's established Saturday Gaza ceasefire rally is confirmed at Place Gambetta from 10:30 on 26 September 2026. Participants will continue calls for a ceasefire, humanitarian access and protection of civilians. Risk assessed as Low because the gathering is established, stationary and peaceful."
+},
+
+{
+  title: "Brive Weekly Gaza Ceasefire Rally — 26 September",
+  city: "Brive-la-Gaillarde",
+  lat: 45.16402,
+  lng: 1.53532,
+  address: "Place de la Guierle, outside the municipal theatre",
+  postcode: "19100",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T10:30:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2849",
+  summary: "The recurring Brive Gaza ceasefire rally will take place outside the municipal theatre on Place de la Guierle from 10:30 on Saturday 26 September 2026. Participants will call for protection of Palestinian civilians, humanitarian access and a ceasefire. Risk assessed as Low because this is an established stationary mobilisation with no disruptive activity announced."
+},
+
+{
+  title: "Ussel Weekly Gaza Ceasefire Rally — 26 September",
+  city: "Ussel",
+  lat: 45.54574,
+  lng: 2.30633,
+  address: "Place Voltaire, beside the Roman eagle monument",
+  postcode: "19200",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-26T11:00:00",
+  source: "https://citoyliens.fr/%C3%A9v%C3%A8nement/rassemblements-pour-un-cessez-le-feu-a-gaza/?instance_id=2849",
+  summary: "The established Ussel Gaza ceasefire mobilisation is confirmed at Place Voltaire from 11:00 on Saturday 26 September 2026. Participants will continue Palestine-solidarity campaigning around civilian protection, humanitarian access and a ceasefire. Risk assessed as Low because the action is peaceful, stationary and expected to have only limited local operational impact."
+},
+
+{
+  title: "National Climate Emergency Mobilisation at Bercy",
+  city: "Paris",
+  lat: 48.84035,
+  lng: 2.37777,
+  address: "Ministère de l'Économie et des Finances, 139 Rue de Bercy",
+  postcode: "75012",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-15T19:30:00",
+  source: "https://fondationdaniellemitterrand.org/agenda/mobilisation-canicules-secheresses-incendies-mobilisons-nous-ensemble/",
+  summary: "France Nature Environnement, Union syndicale Solidaires, Médecins du Monde, Nous Toutes, Greenpeace, Fondation pour le Logement, the Syndicat des Sapeurs Pompiers Volontaires de France, nursing representatives and student organisations have called for a major climate-emergency mobilisation outside the Ministry of the Economy at Bercy from 19:30 to 21:00 on Tuesday 15 September 2026. The action follows an extreme summer of heatwaves, destructive fires and drought and will demand increased government resources for climate adaptation, mitigation, health protection, housing resilience and emergency response. Risk assessed as Medium because the multi-sector coalition may attract a substantial evening crowd directly outside a major national ministry and is likely to require police liaison, pedestrian controls and protection of government-building access. No blockade, occupation or violent activity has been announced."
+},
+
+{
+  title: "Nationwide Health, Social and Medico-Social Sector Strike",
+  city: "Nationwide",
+  lat: 46.603354,
+  lng: 1.888334,
+  address: "Health, social-care and medico-social facilities across France — local demonstrations and workplace actions nationwide",
+  postcode: "",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-15T00:00:00",
+  source: "https://www.cgtservicespublics.fr/les-luttes/actualite-des-luttes-2026/preavis-de-greve-federaux/article/medico-social-la-federation-cgt-des-services-publics-depose-un-preavis-de-greve",
+  summary: "The CGT public-services and health/social-care federations have called a nationwide strike and mobilisation on Tuesday 15 September 2026 covering workers in social and medico-social services, home-care services, elderly-care residences and EHPAD facilities, early-years services, child protection, PMI services, ATSEM roles and related public and private-sector activities. The formal strike notice covers 00:00 to 24:00 and also protects personnel whose shifts overlap the preceding and following nights. Demands include pay increases, extension of the Complément de traitement indiciaire, improved staffing and working conditions, recognition of qualifications, equal pay, repeal of measures reducing ordinary sick-pay and opposition to pension reforms. Risk assessed as High because the action affects nationally distributed health and social-care services and may result in reduced staffing, cancelled non-essential activity and local demonstrations across France. Essential and urgent services are expected to remain protected."
+},
+
+{
+  title: "Paris Cercle de Silence Migrant-Rights Protest",
+  city: "Paris",
+  lat: 48.86250,
+  lng: 2.33667,
+  address: "Place du Palais-Royal, outside the Conseil d'État",
+  postcode: "75001",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-18T18:30:00",
+  source: "https://cercledesilence-paris.org/evenements/",
+  summary: "The Cercle de silence de Paris has confirmed its September migrant-rights gathering at Place du Palais-Royal from 18:30 to 19:30 on Friday 18 September 2026. Participants will protest detention, deportation and treatment of undocumented migrants and asylum seekers, including conditions in administrative detention centres and obstacles to obtaining legal status. The Paris circle has operated as a recurring non-violent protest since 2008 and deliberately uses silence as its principal form of demonstration. Risk assessed as Low because the action is peaceful, stationary and established, with no march, blockade or hostile counter-mobilisation announced. Minor pedestrian activity and routine security monitoring are possible because the gathering takes place outside the Conseil d'État."
+},
+
+{
+  title: "National Transport Accessibility and Safety Rally",
+  city: "Paris",
+  lat: 48.83142,
+  lng: 2.35556,
+  address: "Place d'Italie, outside Mairie du 13e arrondissement",
+  postcode: "75013",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-19T13:00:00",
+  source: "https://www.agendamilitant.org/Manifestation-pour-le-respect-de-la-loi-du-11-fevrier-2005.html",
+  summary: "A collective of young blind and visually impaired citizens has called a national mobilisation at Place d'Italie in Paris at 13:00 on Saturday 19 September 2026 demanding implementation of transport-accessibility and safety obligations under the law of 11 February 2005. The mobilisation follows the deaths of two visually impaired people who fell onto metro tracks in Paris and Lyon. Campaigners are demanding platform safety measures including wider use of platform screen doors, a published timetable for making stations accessible, reliable accessible passenger information, maintenance of accessibility equipment and improved provision in rural and peri-urban areas. Risk assessed as Medium because the gathering will take place at a major Paris road and Metro interchange and may generate substantial pedestrian activity and transport-management requirements, although organisers describe the mobilisation as peaceful."
+},
+
+{
+  title: "National March Against Police Presumption-of-Self-Defence Law",
+  city: "Paris",
+  lat: 48.8566,
+  lng: 2.3522,
+  address: "Paris — final assembly point and march route TBC",
+  postcode: "",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-20T13:00:00",
+  source: "https://stopauxviolencesdetat.fr/actions/permis-de-tuer",
+  summary: "SAVE and the Comité Justice pour Adama, supported by Flagrant Déni, the Syndicat des Avocat·es de France, Amnesty International, the Ligue des droits de l'Homme and other legal and civil-rights organisations, have confirmed a major national march in Paris on Sunday 20 September 2026 opposing proposed legislation creating a presumption of legitimate self-defence for police and gendarmes using firearms. Organisers argue that the measure would weaken accountability for lethal police force and are calling for protection of the right to life and the rule of law. The mobilisation was initially advertised for 19 September but the organiser's current official material confirms that it has been moved to Sunday 20 September. The final Paris assembly point and route remain pending, so CityIntel uses a central Paris map anchor rather than implying a confirmed starting location. Risk assessed as High because this is a nationally promoted and politically sensitive march directly concerning police use of lethal force, which is likely to require a substantial police deployment, road restrictions and protected movement arrangements. Organisers have not called for violent action."
+},
 
 
 {
