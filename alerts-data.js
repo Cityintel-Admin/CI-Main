@@ -7,6 +7,433 @@ window.alertsData =[
 
 
 
+
+
+{
+  title: "Gozo Pride March 2026",
+  city: "Victoria",
+  lat: 36.04479,
+  lng: 14.23922,
+  address: "Pjazza Indipendenza / It-Tokk — march to Villa Rundle, Victoria, Gozo",
+  postcode: "VCT 1012",
+  country: "Malta",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T18:30:00",
+  source: "LGBTI+ Gozo — official Gozo Pride 2026 programme",
+  summary: "LGBTI+ Gozo confirms the Gozo Pride March in Victoria on 5 September 2026. Participants will congregate at Pjazza Indipendenza, locally known as It-Tokk, from 18:30 before the march departs at 19:00 toward Villa Rundle. The demonstration promotes love, acceptance, tolerance, equality and solidarity with the LGBTQIA+ community, with performances following the march. Risk assessed as Medium because the politically visible moving procession will require pedestrian and local traffic management through central Victoria and may require monitoring for hostile counter-presence, although no opposing demonstration or violent threat has been announced."
+},
+
+{
+  title: "Malta Pride March 2026",
+  city: "Valletta",
+  lat: 35.89558,
+  lng: 14.50827,
+  address: "Triton Fountain, Triton Square — procession through central Valletta",
+  postcode: "FRN",
+  country: "Malta",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-12T17:00:00",
+  source: "VisitMalta / Malta Pride — official 2026 programme",
+  summary: "Malta Pride confirms its principal 2026 Pride March for 12 September, beginning with speeches at Triton Fountain at 17:00 before several thousand participants proceed through central Valletta. The published route passes the War Memorial, Triq Girolamo Cassar and Castille before continuing through Merchants Street, St George's Square and Republic Street toward the Parliament area. The march promotes LGBTQIA+ equality, dignity, visibility and human rights, with activity returning to Triton Square later in the evening. Risk assessed as Medium because the large moving procession through the historic capital will require road restrictions, crowd management and security coordination, although the event is formally organised and no violent threat has been identified."
+},
+
+
+{
+  title: "Education Support Programme Workers Protest and March to Presidential Palace",
+  city: "Nicosia",
+  lat: 35.15539,
+  lng: 33.34725,
+  address: "Presidential Palace, 1400 Nicosia — march from PASYDY headquarters, 3 Dimostheni Severi Avenue",
+  postcode: "1400",
+  country: "Cyprus",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T09:30:00",
+  source: "Cyprus News Agency — 24 August 2026 workers' mobilisation announcement",
+  summary: "Workers employed in support programmes operated by Cyprus's Ministry of Education, Sport and Youth have voted to hold a protest mobilisation in Nicosia on 3 September 2026. Participants will gather at PASYDY headquarters at 09:30 before marching to the Presidential Palace. The action was agreed by the workers' General Assembly and announced through the PASEY–PEO and OEKDY–SEK trade unions. Risk assessed as Medium because an organised labour procession will move through central Nicosia toward the Presidency and may require temporary traffic and access controls, although no violence or disruptive direct action has been announced."
+},
+
+
+{
+  title: "DETH 2026 Anti-State and Anti-Capitalist Demonstration",
+  city: "Thessaloniki",
+  lat: 40.63223,
+  lng: 22.95178,
+  address: "Kamara / Arch of Galerius, Egnatia",
+  postcode: "546 35",
+  country: "Greece",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-05T18:00:00",
+  source: "Anarchist Political Organisation / Land & Freedom — DETH 2026 mobilisation",
+  summary: "The Anarchist Political Organisation–Federation of Collectives and supporting activists have confirmed an anti-state and anti-capitalist demonstration at Kamara in Thessaloniki at 18:00 on 5 September 2026, coinciding with the opening of the Thessaloniki International Fair. A pre-gathering is scheduled at the No Pasaran libertarian centre from 17:30. Mobilisation material opposes government and employer policies, war, nationalism, racism and environmental degradation and calls for an independent militant labour and social movement. Risk assessed as High operationally because the demonstration will occur alongside several other large DETH protests in central Thessaloniki during an extensive police and government security operation. Significant road closures, crowd convergence and potential friction with security personnel are possible, although organisers have not explicitly called for violence."
+},
+
+{
+  title: "National Pensioners Rally and March at Thessaloniki International Fair",
+  city: "Thessaloniki",
+  lat: 40.63357,
+  lng: 22.94619,
+  address: "Pedestrianised area of Agia Sofia Square — march toward the Vellidio Conference Centre / TIF",
+  postcode: "546 23",
+  country: "Greece",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-05T18:00:00",
+  source: "Coordinating Committee of Pensioners' Organisations / PESEK — DETH 2026 mobilisation",
+  summary: "The Coordinating Committee of cooperating pensioners' organisations has called a nationwide pensioners' rally at the pedestrianised area of Agia Sofia Square in Thessaloniki at 18:00 on 5 September 2026, followed by a protest march toward the Thessaloniki International Fair and Vellidio Conference Centre. Pensioner organisations from across Greece are arranging coach transport to Thessaloniki and will demonstrate over pension income, healthcare, living costs and social protections. Risk assessed as High operationally because the nationwide mobilisation will add another substantial moving crowd to several simultaneous demonstrations around the opening of the international fair, increasing the likelihood of extensive road closures, congestion and security restrictions. No violent intent has been announced."
+},
+
+
+{
+  title: "Divjakë Residents Protest Against Municipal Merger — 1 September",
+  city: "Divjakë",
+  lat: 40.99690,
+  lng: 19.52470,
+  address: "Main square outside Bashkia Divjakë",
+  postcode: "9022",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T19:00:00",
+  source: "https://www.balkanweb.com/en/Day-26-of-the-protest-in-Divjake--residents-against-the-merger-of-the-municipality-call-on-deputies-not-to-vote-on-the-draft-law/",
+  summary: "Residents of Divjakë are continuing a nightly civic protest against proposals under Albania's administrative-territorial reform to dissolve Divjakë municipality and merge it with Lushnjë. The movement had reached its 26th consecutive evening by 25 August, with organisers declaring that resistance will continue until the proposed abolition of the municipality is stopped. Gatherings take place in the square outside the municipality and conclude with marches through the main streets. Risk assessed as Medium because the issue is directly tied to legislation returning to the parliamentary agenda in September and the sustained local mobilisation may intensify as parliamentary consideration approaches, although the existing actions have remained predominantly peaceful."
+},
+
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 1 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The Flamingo Revolution civic movement maintains a daily evening mobilisation in Tirana, gathering at Skanderbeg Square before marching toward the Prime Minister's Office. The movement began over opposition to development affecting the Vjosa-Narta protected area and has expanded into broader demands including Prime Minister Edi Rama's resignation, a transitional government, political reform and stronger protection of public and environmental interests. Current movement material lists the gathering every day at 18:00 and organisers have stated that protests will continue until their demands are met. Risk assessed as Medium because the established demonstrations involve moving marches through central Tirana and organisers have warned that September may bring larger participation and escalation toward civil disobedience and road disruption."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 2 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-02T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The recurring Flamingo Revolution protest is scheduled to continue in central Tirana on 2 September, beginning at Skanderbeg Square before moving toward the Prime Minister's Office. Participants continue to demand the resignation of the government, political-system reform and action over environmental and corruption concerns. Independent reporting confirms more than 80 consecutive days of mobilisation immediately before September. Risk assessed as Medium because the protest includes a moving central-city march and September organisers have warned of increased participation and potentially more disruptive civil-disobedience tactics."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 3 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The Flamingo Revolution's daily mobilisation is scheduled to continue at 18:00 on 3 September at Skanderbeg Square. Protesters typically proceed toward the Prime Minister's Office for speeches before continuing through central Tirana. Their demands include the resignation of Prime Minister Edi Rama, formation of a transitional government and wider political and environmental reforms. Risk assessed as Medium due to repeated marches along major central roads and explicit September warnings that the campaign may move toward road blockades or other forms of civil disobedience."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 4 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "A further daily Flamingo Revolution gathering is scheduled in Tirana on 4 September. Participants assemble at Skanderbeg Square and have consistently marched along the central boulevard to the Prime Minister's Office, where speeches and anti-government slogans are delivered. Organisers say the protest will continue until their political and civic demands are addressed. Risk assessed as Medium because of sustained mobilisation, central-road interaction and indications that participation and disruptive tactics may increase during September."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 5 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The daily Flamingo Revolution anti-government mobilisation is scheduled to continue at Skanderbeg Square on 5 September before proceeding toward the Prime Minister's Office. The grassroots campaign combines political, anti-corruption and environmental grievances and continues to demand government resignation and a transitional political process. Risk assessed as Medium because the prolonged campaign includes central-city marches and September has been identified by participants as a period for renewed mass mobilisation."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 6 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The Flamingo Revolution is scheduled to hold its recurring evening protest in central Tirana on 6 September, gathering at Skanderbeg Square before marching toward government buildings. Protesters remain focused on demands for Prime Minister Edi Rama's departure, a transitional government and political and environmental reform. Risk assessed as Medium because central road disruption is inherent in the moving protest and participants have publicly discussed stronger forms of civil resistance during September."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 7 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The daily Flamingo Revolution mobilisation is scheduled to continue in Tirana on 7 September. Participants assemble at Skanderbeg Square and normally proceed toward the Prime Minister's Office before marching through central streets. The date falls immediately before the reopening of Albania's parliamentary session, a period protesters have specifically identified for stronger mobilisation. Risk assessed as Medium due to the potential for increased turnout, central-city disruption and political tension, although no specific violent action has been announced."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — Parliamentary Reopening Day",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej / central government and parliamentary district",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-08T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The Flamingo Revolution's recurring daily demonstration falls on 8 September, the confirmed opening date of Albania's new parliamentary session. Protesters have repeatedly announced that mobilisation will strengthen when Parliament returns and reporting immediately before September notes warnings of continued protest activity around Parliament. The established gathering begins at Skanderbeg Square before moving through the central government district. Risk assessed as Medium with elevated disruption potential because the parliamentary reopening creates an additional focal point for an already prolonged anti-government movement. This record should be refreshed if organisers announce a separate daytime Parliament protest or altered assembly point."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 9 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-09T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "The Flamingo Revolution's daily anti-government protest is scheduled to continue at 18:00 on 9 September. The movement gathers in Skanderbeg Square before proceeding toward the Prime Minister's Office and central Tirana. Its demands include resignation of the government, establishment of a transitional administration and broader political and environmental reforms. Risk assessed as Medium because of prolonged mobilisation, recurring central-city marches and the possibility of stronger protest activity during the opening weeks of the parliamentary session."
+},
+
+{
+  title: "Flamingo Revolution — Daily Anti-Government Protest — 10 September",
+  city: "Tirana",
+  lat: 41.32791,
+  lng: 19.81846,
+  address: "Sheshi Skënderbej — march toward the Prime Minister's Office, Bulevardi Dëshmorët e Kombit",
+  postcode: "1001",
+  country: "Albania",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T18:00:00",
+  source: "https://shqiperi.org/",
+  summary: "A further daily Flamingo Revolution protest is scheduled at Skanderbeg Square on 10 September, continuing the movement's uninterrupted anti-government campaign. Participants are expected to proceed toward the Prime Minister's Office and may continue marching through central roads after speeches. Organisers and activists have stated that the September phase should involve renewed participation and potentially more assertive civil resistance. Risk assessed as Medium because significant central transport disruption is possible even though no specific violent action is announced."
+},
+
+
+{
+  title: "Kosovo Municipalities Protest Over Budgets and Local Autonomy",
+  city: "Pristina",
+  lat: 42.66369,
+  lng: 21.16385,
+  address: "Sheshi Skënderbeu, opposite the Government of Kosovo",
+  postcode: "10000",
+  country: "Kosovo",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T11:00:00",
+  source: "koha.net/arberi/asociacioni-i-komunave-proteston-me-1-shtator-para-qeverise",
+  summary: "The Association of Kosovo Municipalities has announced a protest at Skanderbeg Square opposite the Government in Pristina at 11:00 on 1 September 2026. Municipal representatives will demand protection of municipal budgets, property and competences; reimbursement of obligations arising from collective agreements; compensation for flood damage; fairer municipal financing; and an end to what they describe as central-government interference in local autonomy. Organisers explicitly describe the protest as peaceful, institutional and non-partisan. Risk assessed as Medium because the dispute involves a significant institutional confrontation between municipal and central authorities at the national government complex, although no disorder or disruptive direct action has been announced."
+},
+
+{
+  title: "Zenica Miners Protest Over Unpaid Wages",
+  city: "Sarajevo",
+  lat: 43.85707,
+  lng: 18.39083,
+  address: "Vlada Federacije Bosne i Hercegovine, Hamdije Čemerlića 2",
+  postcode: "71000",
+  country: "Bosnia and Herzegovina",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "zenicainfo.ba/2026/08/25/zenicki-rudari-zakazali-proteste-za-2-septembar-u-sarajevu/",
+  summary: "Approximately 200 workers from the Zenica brown-coal mine have voted to protest outside the Federation of Bosnia and Herzegovina Government building in Sarajevo on 2 September 2026. The miners cite their unresolved employment status, continued delays affecting three outstanding salaries and dissatisfaction with conclusions reached by the responsible federal ministry. Union president Nedžad Duraković confirmed the mobilisation. No reliable start time has yet been published, so 12:00 is used as the CityIntel default placeholder and should be refreshed when final logistics are released. Risk assessed as Medium because the action involves a sizeable organised labour group directly outside an operating government headquarters, although no violence or blockade has been announced."
+},
+
+{
+  title: "First in Defence, Last in Rights — Veterans and Resistance Organisers Protest",
+  city: "Sarajevo",
+  lat: 43.85707,
+  lng: 18.39083,
+  address: "Vlada Federacije Bosne i Hercegovine, Hamdije Čemerlića 2",
+  postcode: "71000",
+  country: "Bosnia and Herzegovina",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T11:00:00",
+  source: "oslobodjenje.ba/vijesti/bih/bivsi-pripadnici-armije-rbih-hvo-a-i-hos-a-na-istoj-strani-zakazan-protest-u-sarajevu-1138011/",
+  summary: "Veterans, volunteers and organisers of wartime resistance from several former military components have announced a peaceful protest outside the Federation of Bosnia and Herzegovina Government building at 11:00 on 7 September 2026. The gathering seeks resolution of the long-running legal status of resistance organisers and completion of the process for awarding the Medalja otpora recognition. Organisers expect approximately 500 to 1,000 participants, with support reported from numerous veterans' associations across the Federation and Brčko District. Risk assessed as Medium because of the potentially sizeable attendance, sensitive veterans' issues and government-site location, although the gathering has been formally described as peaceful."
+},
+
+{
+  title: "International Critical Mass for Climate Justice — COP31 Bike Ride",
+  city: "Ljubljana",
+  lat: 46.05137,
+  lng: 14.50595,
+  address: "Prešernov trg — bicycle procession through Ljubljana to Trnovska Špica",
+  postcode: "1000",
+  country: "Slovenia",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-08T17:00:00",
+  source: "lkm.kolesarji.org/2026/08/22/mednarodna-kriticna-masa-za-podnebno-pravicnost-cop-31-bike-ride-prihaja-v-ljubljano-international-critical-mass-for-climate-justice-cop31-bike-ride-is-coming-to-ljubljana/",
+  summary: "Ljubljanska kolesarska mreža confirms an International Critical Mass for Climate Justice in Ljubljana on 8 September as part of the COP31 Bike Ride. Participants will gather at Prešeren Square from 16:00 before departing at 17:00 for a bicycle procession through Ljubljana, with the ride ending at approximately 18:30 at Trnovska Špica and an accompanying programme continuing into the evening. The action promotes climate justice, sustainable mobility and stronger walking and cycling policies. Risk assessed as Low because this is a peaceful organised bicycle action, although temporary traffic disruption can be expected while the moving group passes through the city."
+},
+
+{
+  title: "Hodaj za Liku, hodaj za Hrvatsku — Hazardous Waste Protest",
+  city: "Zagreb",
+  lat: 45.80610,
+  lng: 15.97870,
+  address: "Trg kralja Tomislava — proceeding to Trg bana Josipa Jelačića",
+  postcode: "10000",
+  country: "Croatia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T11:00:00",
+  source: "snh.hr/sindikat-novinara-uz-gospic-i-liku/",
+  summary: "The civic initiative opposing hazardous-waste contamination in Gospić and the wider Lika region will hold the national protest 'Hodaj za Liku, hodaj za Hrvatsku' in Zagreb on 5 September 2026. Supporters are instructed to gather at Trg kralja Tomislava at 11:00, with the central protest taking place at Trg bana Josipa Jelačića from 12:00. The mobilisation calls for accountability, protection of public health and remediation of hazardous waste affecting Lika, and has attracted support from trade unions, civil-society organisations and participants travelling from outside Zagreb. Risk assessed as Medium because the nationally mobilised central-city gathering may produce significant pedestrian and traffic disruption, although organisers present it as a peaceful non-party civic protest."
+},
+
+{
+  title: "Belgrade Pride 2026 — Pride Protest March",
+  city: "Belgrade",
+  lat: 44.80482,
+  lng: 20.46384,
+  address: "Manjež Park, central Belgrade",
+  postcode: "11000",
+  country: "Serbia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T16:00:00",
+  source: "prajd.rs/en/pride-week-programme/",
+  summary: "Belgrade Pride confirms its 2026 Pride Protest March for 5 September, with the current Pride Week programme listing activity at Manjež Park from 16:00 to 23:00. Organisers describe the march as the protest and activist centrepiece of Pride Week and an opportunity to demand equality, legal recognition and stronger action against discrimination and violence affecting LGBTI+ people. Risk assessed as Medium because Pride marches in Belgrade require significant security planning and take place in a politically and socially sensitive environment, although organisers explicitly promote non-violence and no specific threat or planned disorder has currently been identified."
+},
+
+{
+  title: "National Protest Against Wind and Solar Developments on Agricultural Land",
+  city: "Dobrich",
+  lat: 43.56973,
+  lng: 27.82911,
+  address: "Ploshtad Svoboda, with vehicle convoys and road actions on approaches to Dobrich",
+  postcode: "9300",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-12T13:00:00",
+  source: "https://www.bta.bg/bg/news/bulgaria/regional-news/oblast-dobrich/1187342-natsionalen-protest-sreshtu-izgrazhdaneto-na-vetrogeneratori-v-dobrudzha-obyavi-",
+  summary: "National Civic Initiative 'Byalata Lyastovitsa' has announced a national protest in Dobrich on 12 September 2026 against construction of wind turbines and photovoltaic parks on agricultural land. The announced programme includes vehicle convoys travelling toward Dobrich from the Varna, Silistra and Shumen regions, temporary blockades of principal approach roads and a rally at Svoboda Square from approximately 13:00. Organisers argue that planned renewable-energy developments threaten agricultural land and communities across Dobruja. The organiser initially described 12 September as an indicative date that could change depending on circumstances, so the scheduling should continue to be monitored. Risk assessed as High because planned vehicle convoys and intentional road blockades have significant potential to disrupt access to Dobrich and surrounding regional routes."
+},
+
+{
+  title: "We Have Not Forgotten You — Animal Cruelty Trial Protest No. 6",
+  city: "Sofia",
+  lat: 42.69510,
+  lng: 23.34970,
+  address: "Sofia City Court criminal building, 90 Cherkovna Street",
+  postcode: "1505",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-14T09:30:00",
+  source: "https://stayhappening.com/e/%D0%9D%D0%98%D0%95-%D0%9D%D0%95-%D0%A1%D0%9C%D0%95-%D0%92%D0%98-%D0%97%D0%90%D0%91%D0%A0%D0%90%D0%92%D0%98%D0%9B%D0%98-%D0%9F%D1%80%D0%BE%D1%82%D0%B5%D1%81%D1%82-%D0%BD%D0%BE%D0%BC%D0%B5%D1%80-6-1409-E2ISYTV2E3W",
+  summary: "Animal-rights organisation 'Mecho i Priyateli' has announced the sixth 'We Have Not Forgotten You' protest from 09:30 on 14 September outside the Sofia City Court criminal building on Cherkovna Street. The demonstration coincides with the next hearing in the criminal case against Gabriela Sashova and Krasimir Georgiev and calls for effective and maximum sentences over alleged extreme cruelty to animals. Similar demonstrations have taken place before each previous hearing on 16 January, 10 March, 23 April, 12 June and 7 July. Risk assessed as Medium because the case generates strong public emotion and the gathering occurs immediately outside an operating criminal court, although the previous protests have remained controlled and no violence is currently announced."
+},
+
+{
+  title: "Masa Critică 2.0 — Bicycle Visibility Demonstration",
+  city: "Iași",
+  lat: 47.16175,
+  lng: 27.58420,
+  address: "Palatul Roznovanu, Bulevardul Ștefan cel Mare și Sfânt 11",
+  postcode: "700259",
+  country: "Romania",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-09-06T11:11:00",
+  source: "Orașul Bicicletelor — Masa Critică 2.0 event announcement",
+  summary: "Orașul Bicicletelor confirms the first edition of 'Masa Critică 2.0 – Duminica în Familia Bicicliștilor' for 11:11 on 6 September 2026, meeting and departing from Palatul Roznovanu in Iași. The moving bicycle demonstration is intended to show that city streets should serve people rather than only motor vehicles and advocates greater recognition of cycling as a form of urban transport. Organisers describe bicycles as symbols of freedom, health and respect for the city and explicitly prohibit political insignia. Risk assessed as Low because this is a peaceful cycling demonstration, although temporary disruption is possible as participants move through the city."
+},
+
+{
+  title: "National Farmers and Livestock Producers Protest at Government",
+  city: "Bucharest",
+  lat: 44.45278,
+  lng: 26.08722,
+  address: "Piața Victoriei 1, outside Palatul Victoria",
+  postcode: "011791",
+  country: "Romania",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-09-15T12:00:00",
+  source: "Ionică Sterp national farmers' mobilisation announcement",
+  summary: "Farmers and livestock producers from across Romania are being mobilised for a national protest outside the Government at Palatul Victoria in Bucharest on 15 September 2026. The call extends beyond sheep farmers to livestock producers, arable farmers and vegetable growers and encourages participants to arrive visibly with tractors, hay bales and potentially livestock. Protesters cite rising costs, taxation, animal-health measures, blocked agricultural markets and government support failures. No confirmed start time has yet been published, so 12:00 is used as the CityIntel default placeholder and should be refreshed when final logistics are released. Risk assessed as High because agricultural vehicles and livestock could materially disrupt central Bucharest and because a related sheep-farmers' protest on 30 July involved attempts to force police barriers, objects being thrown at officers and police use of irritant spray before protesters marched to Piața Victoriei."
+},
+
+{
+  title: "Ne féljetek! 2.0 — Működő Szeretetország Demonstration",
+  city: "Budapest",
+  lat: 47.50707,
+  lng: 19.04724,
+  address: "Kossuth Lajos tér, outside the Hungarian Parliament",
+  postcode: "1055",
+  country: "Hungary",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T18:00:00",
+  source: "https://index.hu/belfold/2026/08/25/tuntetes-koztar-kossuth-ter-ne-feljetek-2-skrabski-fruzsina-huth-gergely/",
+  summary: "KözTér has announced 'Ne féljetek! 2.0 – Működő Szeretetország' for Kossuth Lajos tér on 5 September 2026. Current organiser messaging describes the event as both a demonstration and a large open, interactive community workshop focused on Hungary's future, social cohesion and community action rather than a conventional party rally. Organiser material gives an 18:00 start. Risk assessed as Medium because of the political character of the gathering and its location immediately outside the Hungarian Parliament, although no violence or disruptive direct action has been announced."
+},
+
+{
+  title: "A Szabadság Menete — Freedom, Justice and Peace March",
+  city: "Budapest",
+  lat: 47.50472,
+  lng: 19.05028,
+  address: "Szabadság tér — route via Deák tér, Astoria, Kálvin tér and Fővám tér to Szabadság híd",
+  postcode: "1054",
+  country: "Hungary",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-13T16:00:00",
+  source: "https://www.police.hu/hu/hirek-es-informaciok/gyulekezesi-hatarozatok/eloiro-korlatozo-hatarozat-64",
+  summary: "The Budapest Police Headquarters has authorised a moving assembly titled 'A Szabadság Menete' from 16:00 to 20:00 on 13 September 2026. The march will travel from Szabadság tér through Deák tér, Astoria, Kálvin tér and Fővám tér to Szabadság híd. Its stated purpose is to demonstrate for freedom, justice and peace worldwide, with particular solidarity toward people in African states including Congo and Sudan. Approximately 150 participants and 15 stewards are declared. The organiser originally notified the action for 11 September, but the operative police decision permits it on 13 September; this database record therefore uses the authorised date. Risk assessed as Medium because the moving demonstration crosses several major central-Budapest transport and pedestrian corridors and begins close to the US Embassy, although no violent intent is indicated."
+},
+
 {
   title: "Critical Mass Klagenfurt — September Bicycle Demonstration",
   city: "Klagenfurt am Wörthersee",
