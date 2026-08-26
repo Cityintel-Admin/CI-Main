@@ -9,6 +9,2748 @@ window.alertsData =[
 
 
 
+
+
+
+
+{
+  title: "Paris LGBTQIA+ Pride March 2026",
+  city: "Paris",
+  lat: 48.83142,
+  lng: 2.35556,
+  address: "Place d'Italie",
+  postcode: "75013",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-03T13:30:00",
+  source: "https://www.inter-lgbt.org/marche-des-fiertes/",
+  summary: "The Paris and Île-de-France LGBTQIA+ Pride March, postponed from June because of extreme heat, has been rescheduled for Saturday 3 October 2026. Participants are expected to gather at Place d'Italie from approximately 13:30 before the march departs at 14:00 towards Place de la Bastille via Avenue des Gobelins, Rue Monge, Boulevard Saint-Germain, Pont de Sully and Boulevard Henri IV. Risk assessed as Medium because this is a major moving demonstration expected to attract substantial attendance and require road closures, traffic diversions and policing across central Paris, although the event is primarily peaceful and celebratory."
+},
+
+{
+  title: "Stop Pesticides — Syngenta Mobilisation",
+  city: "Saint-Pierre-la-Garenne",
+  lat: 49.16039,
+  lng: 1.39334,
+  address: "Syngenta Production France SAS, 55 Rue du Fond du Val",
+  postcode: "27600",
+  country: "France",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-10-03T12:00:00",
+  source: "https://cancercolere.org/stop-pesticides/",
+  summary: "The Confédération paysanne, Cancer Colère, CSVPO and Les Soulèvements de la Terre are calling for a large mobilisation at the Syngenta pesticide-production site in Saint-Pierre-la-Garenne on Saturday 3 October 2026. Organisers intend to demand an end to production they consider harmful and have called for participants from across France and abroad to converge on the facility, followed by an evening farmers' gathering. Risk assessed as High because the demonstration directly targets an operating Seveso high-threshold chemical facility, organisers anticipate a major convergence, and the campaign explicitly focuses on stopping or 'disarming' pesticide-production infrastructure. Significant security controls, access disruption and police deployment are possible."
+},
+
+{
+  title: "Dijon Palestine Solidarity Rally — 3 October",
+  city: "Dijon",
+  lat: 47.323541,
+  lng: 5.034109,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-03T15:00:00",
+  source: "https://site.ldh-france.org/dijon/agenda/",
+  summary: "The Côte-d'Or collective campaigning for a just and lasting peace between Palestinians and Israelis continues to call supporters to gather every Saturday at 15:00 at Place Darcy in Dijon. The 3 October gathering forms part of this established recurring mobilisation. Risk assessed as Low because these are established regular gatherings and no blockade or significant disorder is announced, although localised pedestrian activity and occasional short processions remain possible."
+},
+
+{
+  title: "Marseille Gaza Solidarity Demonstration — 4 October",
+  city: "Marseille",
+  lat: 43.301861,
+  lng: 5.374722,
+  address: "Porte d'Aix, Place Jules-Guesde",
+  postcode: "13002",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-04T14:00:00",
+  source: "https://www.manifs.fr/?country=all&region2=bouches-du-rh%C3%B4ne",
+  summary: "A recurring Gaza solidarity demonstration is scheduled at Porte d'Aix in Marseille at 14:00 on Sunday 4 October 2026. The long-running mobilisation calls for an end to the conflict and continued solidarity with Palestinians. Risk assessed as Low because the gathering is an established recurring action; localised crowding, police monitoring and possible short-term traffic impacts around Porte d'Aix are the principal operational concerns."
+},
+
+{
+  title: "Dijon Palestine Solidarity Rally — 10 October",
+  city: "Dijon",
+  lat: 47.323541,
+  lng: 5.034109,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T15:00:00",
+  source: "https://site.ldh-france.org/dijon/agenda/",
+  summary: "The Côte-d'Or collective campaigning for a just and lasting peace between Palestinians and Israelis is scheduled to continue its weekly Saturday mobilisation at Place Darcy at 15:00 on 10 October 2026. Risk assessed as Low because this is an established recurring demonstration with no deliberate obstruction or disorder announced. Localised pedestrian activity around Place Darcy is possible."
+},
+
+{
+  title: "Des Semis Contre le CRA — Anti-Detention Centre Mobilisation",
+  city: "Vigneux-de-Bretagne",
+  lat: 47.3338,
+  lng: -1.69627,
+  address: "La Paquelais",
+  postcode: "44360",
+  country: "France",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-10T12:00:00",
+  source: "https://zadforever.blog/2026/08/13/des-semis-contre-le-cra-%C2%B7-10-octobre-26-%C2%B7-la-paquelais/",
+  summary: "Residents and farmers associated with the former Notre-Dame-des-Landes ZAD, together with organisations opposed to immigration detention centres, have called for a public mobilisation at La Paquelais on Saturday 10 October 2026. Participants are invited to demonstrate, hold a picnic and carry out autumn sowing on land that organisers say could be used for ecological compensation linked to the proposed Nantes detention centre. Risk assessed as Medium because the action concerns a contested development project and includes organised activity on affected land intended to obstruct or complicate implementation. Police presence and local access disruption are possible."
+},
+
+{
+  title: "Marseille Gaza Solidarity Demonstration — 11 October",
+  city: "Marseille",
+  lat: 43.301861,
+  lng: 5.374722,
+  address: "Porte d'Aix, Place Jules-Guesde",
+  postcode: "13002",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-11T14:00:00",
+  source: "https://www.manifs.fr/?country=all&region2=bouches-du-rh%C3%B4ne",
+  summary: "The recurring Gaza solidarity demonstration at Porte d'Aix is scheduled to continue at 14:00 on Sunday 11 October 2026. Participants are expected to call for an end to the conflict and express solidarity with Palestinians. Risk assessed as Low because this is a longstanding recurring mobilisation with no specific disruptive action announced. Localised pedestrian congestion and police monitoring are possible."
+},
+
+{
+  title: "Dijon Palestine Solidarity Rally — 17 October",
+  city: "Dijon",
+  lat: 47.323541,
+  lng: 5.034109,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-17T15:00:00",
+  source: "https://site.ldh-france.org/dijon/agenda/",
+  summary: "The Côte-d'Or collective campaigning for a just and lasting peace between Palestinians and Israelis is scheduled to hold its regular Saturday gathering at Place Darcy at 15:00 on 17 October 2026. Risk assessed as Low because the action is part of an established peaceful protest series and no blockade or significant disruption has been announced."
+},
+
+{
+  title: "Marseille Gaza Solidarity Demonstration — 18 October",
+  city: "Marseille",
+  lat: 43.301861,
+  lng: 5.374722,
+  address: "Porte d'Aix, Place Jules-Guesde",
+  postcode: "13002",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-18T14:00:00",
+  source: "https://www.libertaire.net/discussion/manifestation-de-soutien-a-gaza.41649/",
+  summary: "A Gaza solidarity demonstration is scheduled at Porte d'Aix in Marseille at 14:00 on Sunday 18 October 2026 as part of the city's long-running weekly mobilisation. Risk assessed as Low because the action is well established and no deliberate blockade or disorder is announced. Localised crowding, traffic impacts and routine police monitoring remain possible."
+},
+
+{
+  title: "Dijon Palestine Solidarity Rally — 24 October",
+  city: "Dijon",
+  lat: 47.323541,
+  lng: 5.034109,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-24T15:00:00",
+  source: "https://site.ldh-france.org/dijon/agenda/",
+  summary: "The recurring Palestine solidarity gathering organised by the Côte-d'Or collective is scheduled at Place Darcy in Dijon at 15:00 on Saturday 24 October 2026. Risk assessed as Low because the established action is normally peaceful and stationary. Localised pedestrian congestion and occasional movement through the city centre remain possible."
+},
+
+{
+  title: "Marseille Gaza Solidarity Demonstration — 25 October",
+  city: "Marseille",
+  lat: 43.301861,
+  lng: 5.374722,
+  address: "Porte d'Aix, Place Jules-Guesde",
+  postcode: "13002",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-25T14:00:00",
+  source: "https://www.libertaire.net/discussion/manifestation-de-soutien-a-gaza.41654/",
+  summary: "A further Gaza solidarity demonstration is scheduled at Porte d'Aix at 14:00 on Sunday 25 October 2026. The event is part of the continuing Marseille mobilisation that has met regularly at the location. Risk assessed as Low because no planned blockade or disorder is indicated, although temporary crowding, traffic effects and police observation are possible."
+},
+
+{
+  title: "Dijon Palestine Solidarity Rally — 31 October",
+  city: "Dijon",
+  lat: 47.323541,
+  lng: 5.034109,
+  address: "Place Darcy",
+  postcode: "21000",
+  country: "France",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-31T15:00:00",
+  source: "https://site.ldh-france.org/dijon/agenda/",
+  summary: "The Côte-d'Or collective campaigning for a just and lasting peace between Palestinians and Israelis is scheduled to continue its weekly Saturday gathering at Place Darcy at 15:00 on 31 October 2026. Risk assessed as Low because the protest series is longstanding and generally peaceful, with localised pedestrian activity around the square the primary expected operational impact."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest — 1 October",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-01T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/royal-air-force-careers-office/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed a demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 1 October 2026. Campaigners will oppose UK military cooperation with Israel and distribute information concerning British military activity associated with the conflict affecting Palestinians in Gaza. Risk assessed as Low because this is an established stationary protest and leafleting action with no procession or blockade announced. Localised pedestrian activity and routine security monitoring are possible."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Palestine Protest — 2 October",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-02T11:00:00",
+  source: "https://www.scottishpsc.org.uk/events/list/page/9/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed its recurring Friday demonstration outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on Friday 2 October 2026. Participants will leaflet the public while protesting UK military cooperation with Israel and highlighting the conflict affecting Palestinians in Gaza. Risk assessed as Low because the action is an established stationary demonstration with no march, blockade or deliberate obstruction announced."
+},
+
+{
+  title: "Glasgow Barclays Palestine Protest — 3 October",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-03T09:30:00",
+  source: "https://www.scottishpsc.org.uk/events/list/page/5/",
+  summary: "Scottish Palestine Solidarity Campaign organisers have confirmed their recurring demonstration outside Barclays Bank on Argyle Street from 09:30 to 13:00 on Saturday 3 October 2026. Campaigners will protest the bank's financial relationships connected to companies involved with Israel and promote boycott and divestment demands. Risk assessed as Low because this is an established stationary bank-front protest without a procession or deliberate road obstruction announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest — 3 October",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10-15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-03T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/tag/edinburgh-branch/2026-09/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed a Palestine-solidarity protest outside Barclays on Princes Street from 10:30 to 12:30 on Saturday 3 October 2026. Campaigners will protest the bank's financial relationships connected to companies involved with Israel. Risk assessed as Low because this is an established stationary demonstration. Localised pedestrian congestion and branch-access management are possible."
+},
+
+{
+  title: "Battle of Cable Street 90th Anniversary March and Rally",
+  city: "London",
+  lat: 51.5186,
+  lng: -0.0601,
+  address: "Tower Hamlets Town Hall, 160 Whitechapel Road",
+  postcode: "E1 1BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-04T12:00:00",
+  source: "https://www.unitetheunion.org/news-events/events/the-battle-of-cable-street-90th-anniversary",
+  summary: "Trade union and anti-racism organisations are supporting a major march and rally in East London marking the 90th anniversary of the Battle of Cable Street on Sunday 4 October 2026. Participants are scheduled to assemble outside Tower Hamlets Town Hall from 12:00, with the march beginning at 13:00. Risk assessed as Medium because a sizeable moving demonstration is expected through a dense urban area, creating potential traffic, pedestrian and public-transport disruption, although no disorder or opposing demonstration has currently been announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest — 7 October",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10-15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-07T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/category/branch-location/page/75/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed its recurring demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Wednesday 7 October 2026. Participants will campaign over Barclays' financial relationships connected to Israel. Risk assessed as Low because the event is a stationary demonstration with no march or deliberate obstruction announced."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Palestine Protest — 7 October",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-07T11:30:00",
+  source: "https://www.scottishpsc.org.uk/venue/armed-forces-careers-office-glasgow/",
+  summary: "Organisers have confirmed a demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 7 October 2026. Campaigners will distribute information and protest UK military cooperation with Israel. Risk assessed as Low because this is an established stationary protest with no procession, blockade or deliberate disruption announced."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest — 8 October",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-08T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/royal-air-force-careers-office/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed a demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 8 October 2026. Campaigners will oppose UK military cooperation with Israel and leaflet members of the public. Risk assessed as Low because the action is stationary and no march or blockade is announced."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Palestine Protest — 9 October",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-09T11:00:00",
+  source: "https://www.scottishpsc.org.uk/event/glasgow-recruitment/2026-10-09/",
+  summary: "The Gaza Genocide Emergency Committee Glasgow has confirmed its Friday protest outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on 9 October 2026. Participants will leaflet the public while protesting UK military cooperation with Israel. Risk assessed as Low because the action is an established stationary demonstration without a procession or blockade."
+},
+
+{
+  title: "Glasgow Barclays Palestine Protest — 10 October",
+  city: "Glasgow",
+  lat: 55.85765,
+  lng: -4.25281,
+  address: "Barclays Bank, 83 Argyle Street",
+  postcode: "G2 8BJ",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T09:30:00",
+  source: "https://www.scottishpsc.org.uk/event/barclays-protest-glasgow/2026-10-10/",
+  summary: "The Scottish Palestine Solidarity Campaign Glasgow branch and Gaza Genocide Emergency Committee Glasgow have confirmed their weekly demonstration outside Barclays Bank on Argyle Street from 09:30 to 13:00 on Saturday 10 October 2026. Campaigners will promote boycott and divestment demands relating to Barclays' financial relationships connected to Israel. Risk assessed as Low because the protest is stationary and no march or deliberate obstruction is announced."
+},
+
+{
+  title: "Edinburgh Barclays Palestine Solidarity Protest — 10 October",
+  city: "Edinburgh",
+  lat: 55.95331,
+  lng: -3.19026,
+  address: "Barclays, Unit 2, 10-15 Princes Street",
+  postcode: "EH2 2AN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T10:30:00",
+  source: "https://www.scottishpsc.org.uk/events/category/branch-location/edinburgh/map/page/4/",
+  summary: "The Scottish Palestine Solidarity Campaign Edinburgh branch has confirmed its recurring Palestine-solidarity demonstration outside Barclays on Princes Street from 10:30 to 12:30 on Saturday 10 October 2026. Risk assessed as Low because this is a stationary bank-front demonstration with no procession or deliberate obstruction announced. Localised pedestrian congestion is possible."
+},
+
+{
+  title: "National March for Palestine — End the Genocide: 3 Years",
+  city: "London",
+  lat: 51.5074,
+  lng: -0.1278,
+  address: "Central London — assembly point TBC",
+  postcode: "N/A",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-10-10T12:00:00",
+  source: "https://www.pcs.org.uk/news-events/events/national-march-palestine-end-genocide-3-years",
+  summary: "A national demonstration for Palestine has been confirmed for central London from 12:00 on Saturday 10 October 2026 as part of an international day of mobilisation. Palestine Solidarity Campaign and supporting organisations are calling for UK government action concerning the conflict in Gaza. The final assembly point and march route remain to be announced. Risk assessed as High because this is a major national moving demonstration expected to draw substantial attendance into central London, with significant policing, traffic, pedestrian and public-transport implications even if the event remains peaceful."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Palestine Protest — 14 October",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-14T11:30:00",
+  source: "https://www.scottishpsc.org.uk/venue/armed-forces-careers-office-glasgow/",
+  summary: "Organisers have confirmed a recurring demonstration outside the Armed Forces Careers Office on Queen Street from 11:30 to 13:00 on Wednesday 14 October 2026. Participants will protest UK military cooperation with Israel and distribute information to members of the public. Risk assessed as Low because this is an established stationary action with no procession or blockade announced."
+},
+
+{
+  title: "Edinburgh Armed Forces Recruitment Office Palestine Protest — 15 October",
+  city: "Edinburgh",
+  lat: 55.94914,
+  lng: -3.20978,
+  address: "Armed Forces Careers Office, 67 Shandwick Place",
+  postcode: "EH2 4SD",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-15T11:00:00",
+  source: "https://www.scottishpsc.org.uk/venue/royal-air-force-careers-office/",
+  summary: "The Scottish Palestine Solidarity Campaign has confirmed its recurring demonstration outside the Armed Forces Careers Office on Shandwick Place from 11:00 to 13:00 on Thursday 15 October 2026. Campaigners will oppose UK military cooperation with Israel and distribute information concerning Gaza. Risk assessed as Low because the event is a stationary protest and no procession or blockade has been announced."
+},
+
+{
+  title: "Glasgow Armed Forces Recruitment Office Palestine Protest — 16 October",
+  city: "Glasgow",
+  lat: 55.85969,
+  lng: -4.25188,
+  address: "Armed Forces Careers Office, Charlotte House, 82 Queen Street",
+  postcode: "G1 3DN",
+  country: "United Kingdom",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-16T11:00:00",
+  source: "https://www.scottishpsc.org.uk/events/map/page/59/",
+  summary: "Scottish Palestine solidarity organisers have confirmed a demonstration outside the Armed Forces Careers Office on Queen Street from 11:00 to 14:00 on Friday 16 October 2026. Campaigners will distribute information while protesting UK military cooperation with Israel. Risk assessed as Low because this is a stationary recurring protest with no march, blockade or deliberate obstruction announced."
+},
+
+{
+  title: "March for Nature — Hands Off Conservation Land",
+  city: "Auckland",
+  lat: -36.85222,
+  lng: 174.76306,
+  address: "Aotea Square, 291-297 Queen Street",
+  postcode: "1010",
+  country: "New Zealand",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-09-19T13:00:00",
+  source: "https://community.greenpeace.org.nz/events/march-for-nature-1",
+  summary: "Greenpeace Aotearoa, Forest & Bird and a broad coalition of environmental and community groups have confirmed the March for Nature from Aotea Square in central Auckland at 13:00 on Saturday 19 September 2026. Organisers say tens of thousands of people are expected to join the peaceful protest opposing provisions that could enable greater exploitation or sale of conservation land, mining on protected land, new oil and gas exploration and seabed mining. Participants will advocate stronger protection of forests, wetlands, rivers, coastlines, native wildlife and public conservation areas. Risk assessed as Medium because a crowd potentially numbering in the tens of thousands and a moving central-Auckland procession will require significant road closures, public-transport adjustments, police liaison, stewarding and pedestrian management. Organisers explicitly describe the mobilisation as peaceful."
+},
+
+
+{
+  title: "National Day of Action Against AUKUS — Rockingham",
+  city: "Rockingham",
+  lat: -32.27491,
+  lng: 115.73017,
+  address: "Rockingham — final assembly point TBC; map anchor: Churchill Park, Rockingham Beach Road",
+  postcode: "6168",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://moraleconomy.au/2026/08/26/national-day-of-action-against-aukus/",
+  summary: "Stop AUKUS WA supporters have announced a National Day of Action against AUKUS in Rockingham on Sunday 20 September 2026, coinciding with the International Day of Peace mobilisation. The action will oppose the AUKUS nuclear-submarine programme, Australian integration with United States military strategy and expansion of military infrastructure associated with the agreement. The final Rockingham assembly point and start time have not yet been publicly confirmed, so Churchill Park is used transparently as a map anchor based on its use for previous Rockingham peace and anti-AUKUS activity rather than being asserted as the confirmed 2026 venue. CityIntel's standard 12:00 timestamp is applied pending further organiser information. Risk assessed as Medium because Rockingham is closely associated with HMAS Stirling and the AUKUS submarine programme, meaning an anti-AUKUS mobilisation may attract visible police or defence-security monitoring even if the action remains peaceful."
+},
+
+{
+  title: "National Day of Action — Stop Backing US and Israel's Wars",
+  city: "Sydney",
+  lat: -33.87321,
+  lng: 151.20621,
+  address: "Sydney Town Hall, 483 George Street",
+  postcode: "2000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-09-20T14:00:00",
+  source: "https://stopwaronpalestine.info/events/",
+  summary: "Stop the War on Palestine has confirmed a national day of action rally at Sydney Town Hall at 14:00 on Sunday 20 September 2026 under the call 'Stop backing US and Israel's wars'. The mobilisation is expected to combine Palestine solidarity with opposition to Australian involvement in US military strategy and AUKUS. The demonstration coincides with International Day of Peace campaigning and targets Australian foreign and defence policy. Risk assessed as Medium because the politically sensitive city-centre rally may attract significant attendance, police deployment, temporary access restrictions and counter-protest activity. No violent tactics have been announced."
+},
+
+{
+  title: "Sydney Walk for Life 2026",
+  city: "Sydney",
+  lat: -33.87117,
+  lng: 151.21334,
+  address: "Hyde Park opposite St Mary's Cathedral, College Street",
+  postcode: "2000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-09-19T14:00:00",
+  source: "https://www.trybooking.com/events/landing/1480876",
+  summary: "Love Sydney has confirmed its 2026 Walk for Life for Saturday 19 September from 14:00 to 16:00, assembling in Hyde Park opposite St Mary's Cathedral on College Street. The anti-abortion mobilisation is intended as a peaceful public walk advocating protection of unborn life and support for women experiencing crisis pregnancies. Organisers have instructed participants not to engage with people expressing opposition and state that trained marshals, professional security personnel and police will be present. Risk assessed as Medium because the politically and socially contentious issue creates potential for counter-protest activity and requires organised security and police liaison, although the organisers explicitly require peaceful conduct."
+},
+
+{
+  title: "Free Palestine — Sanction Israel Now Rally",
+  city: "Perth",
+  lat: -31.95210,
+  lng: 115.85943,
+  address: "Forrest Place, Perth CBD",
+  postcode: "6000",
+  country: "Australia",
+  continent: "Oceania",
+  risk: "Medium",
+  time: "2026-09-05T12:00:00",
+  source: "https://moraleconomy.au/2026/08/19/rally-free-palestine-sanction-israel-now/",
+  summary: "Palestine solidarity activists have called a rally at Forrest Place in central Perth at 12:00 on Saturday 5 September 2026. Organisers are demanding Australian sanctions against Israel, cancellation of arms-related agreements and stronger Australian government action over the conflict in Gaza and violence in the occupied West Bank. The protest targets national foreign policy rather than a specific local institution. Risk assessed as Medium because Palestine-related demonstrations in major Australian city centres can draw substantial attendance, police deployments and occasional counter-protest activity, while Forrest Place is a major pedestrian and transport-adjacent public space. No violent tactics have been announced."
+},
+
+{
+  title: "ADP Cabral One-Hour Education Protest — 4 September",
+  city: "Cabral",
+  lat: 18.24573,
+  lng: -71.21863,
+  address: "Schools across Distrito Educativo 01-04 Cabral — map anchor: Distrito Educativo 01-04, Calle San Andrés, Cabral",
+  postcode: "",
+  country: "Dominican Republic",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-04T12:00:00",
+  source: "https://gilbertymas.com/nacionales/adp-de-cabral-anuncia-plan-de-lucha-por-mejoras-en-centros-educativos/",
+  summary: "The Cabral branch of the Asociación Dominicana de Profesores has announced the first of a series of one-hour institutional protest recesses for Friday 4 September 2026 as part of a peaceful and sustained campaign over conditions in local public schools. The union says the 2026-2027 academic year has begun with overcrowding, improvised classrooms, insufficient school expansion and unresolved infrastructure demands affecting Cabral, La Lista, El Naranjo and surrounding communities. Teachers are also seeking payment of rights arising from performance evaluations. Students will otherwise be received normally and the action is limited to a one-hour institutional protest period. No precise hour has been announced, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Low because disruption should remain limited to participating schools and no street mobilisation is planned on this date."
+},
+
+{
+  title: "ADP Cabral One-Hour Education Protest — 11 September",
+  city: "Cabral",
+  lat: 18.24573,
+  lng: -71.21863,
+  address: "Schools across Distrito Educativo 01-04 Cabral — map anchor: Distrito Educativo 01-04, Calle San Andrés, Cabral",
+  postcode: "",
+  country: "Dominican Republic",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-11T12:00:00",
+  source: "https://gilbertymas.com/nacionales/adp-de-cabral-anuncia-plan-de-lucha-por-mejoras-en-centros-educativos/",
+  summary: "Teachers affiliated with the Cabral branch of the Asociación Dominicana de Profesores are scheduled to conduct the second one-hour institutional protest recess of their September action plan on Friday 11 September 2026. The campaign demands construction and expansion of classrooms and schools, including a proposed polytechnic secondary school in Cabral, additional facilities in El Majagual, El Brisal and El Naranjo, transparent use of education-infrastructure funding and settlement of outstanding teacher entitlements. Normal schooling is otherwise intended to continue. A specific protest hour has not been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Low because the action is a limited workplace and education-sector protest without an announced march, blockade or confrontation."
+},
+
+{
+  title: "ADP Cabral Peaceful Education March",
+  city: "Cabral",
+  lat: 18.24573,
+  lng: -71.21863,
+  address: "Cabral town — march to Distrito Educativo 01-04, Calle San Andrés, Cabral",
+  postcode: "",
+  country: "Dominican Republic",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-17T12:00:00",
+  source: "https://gilbertymas.com/nacionales/adp-de-cabral-anuncia-plan-de-lucha-por-mejoras-en-centros-educativos/",
+  summary: "The Cabral branch of the Asociación Dominicana de Profesores has confirmed a peaceful march on Thursday 17 September 2026 toward the Distrito Educativo 01-04 office. Teachers are demanding action on overcrowded and improvised classrooms, construction and expansion of school facilities, a new polytechnic secondary school for Cabral, improvements affecting El Majagual, El Brisal and El Naranjo, transparent management of education-infrastructure resources and payment of outstanding teacher rights following performance evaluations. The organiser has not published a reliable assembly point, route or start time, so the district office on Calle San Andrés is used as the destination and CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the moving demonstration may cause temporary road and pedestrian disruption around central Cabral and the education administration office, although organisers explicitly describe the campaign as peaceful."
+},
+
+{
+  title: "ADP Cabral One-Hour Education Protest — 18 September",
+  city: "Cabral",
+  lat: 18.24573,
+  lng: -71.21863,
+  address: "Schools across Distrito Educativo 01-04 Cabral — map anchor: Distrito Educativo 01-04, Calle San Andrés, Cabral",
+  postcode: "",
+  country: "Dominican Republic",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-18T12:00:00",
+  source: "https://gilbertymas.com/nacionales/adp-de-cabral-anuncia-plan-de-lucha-por-mejoras-en-centros-educativos/",
+  summary: "The Cabral teachers' union has scheduled another one-hour institutional protest recess for Friday 18 September 2026, one day after its planned march to the local education-district office. The action forms part of the ADP branch's sustained September campaign seeking adequate classrooms and school construction, improved educational infrastructure and settlement of teacher entitlements. Students are otherwise expected to attend classes normally, making this a limited-duration protest rather than a full school strike. No exact hour has been announced, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Low because the action should remain confined primarily to participating education facilities and no separate street demonstration is announced for this date."
+},
+
+{
+  title: "ADP Cabral One-Hour Education Protest — 25 September",
+  city: "Cabral",
+  lat: 18.24573,
+  lng: -71.21863,
+  address: "Schools across Distrito Educativo 01-04 Cabral — map anchor: Distrito Educativo 01-04, Calle San Andrés, Cabral",
+  postcode: "",
+  country: "Dominican Republic",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-25T12:00:00",
+  source: "https://gilbertymas.com/nacionales/adp-de-cabral-anuncia-plan-de-lucha-por-mejoras-en-centros-educativos/",
+  summary: "Friday 25 September 2026 is the final Friday covered by the Cabral ADP branch's announced programme of one-hour institutional protest recesses throughout September. The campaign concerns inadequate education infrastructure, overcrowding, delayed classroom and school construction, demands for transparent expenditure of infrastructure funding and outstanding rights owed to teachers following performance evaluations. The union has characterised its campaign as peaceful and sustained and has indicated that students will otherwise continue to be received normally. No specific protest hour has been published, so the CityIntel standard 12:00 timestamp is applied. Risk assessed as Low because disruption is expected to be short-duration and restricted primarily to participating schools."
+},
+
+{
+  title: "Correios Workers' Planned National Strike — Conditional",
+  city: "Nationwide",
+  lat: -15.78806,
+  lng: -47.88440,
+  address: "Correios headquarters, SBN Quadra 1 Bloco A, Asa Norte, Brasília — action planned across postal workplaces nationwide",
+  postcode: "70002-900",
+  country: "Brazil",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-10T12:00:00",
+  source: "https://www.sintect-sp.org.br/sao-paulo-rejeita-proposta-correios",
+  summary: "Postal workers represented by SINTECT-SP have approved an indication for nationwide strike action from Thursday 10 September 2026 following rejection of Correios' proposed 0.87 percent wage adjustment. The São Paulo assembly voted overwhelmingly against the company offer, citing insufficient pay progression, staff shortages, workload pressure and deteriorating workplace conditions. Union reporting states that mobilisation is intended to be coordinated with all 36 Correios worker unions across Brazil. This remains a formally approved strike indication and could still be avoided or modified if negotiations produce an acceptable settlement before 10 September; the record should therefore be refreshed close to the date. No national start time has been announced, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because a nationwide postal stoppage could disrupt mail, parcel and logistics services across Brazil without an announced violent or street-protest component."
+},
+
+{
+  title: "CONADU Histórica Nationwide University Strike — Day 1",
+  city: "Nationwide",
+  lat: -34.6210,
+  lng: -58.3915,
+  address: "National universities across Argentina — map anchor: CONADU Histórica headquarters, Sarandí 1226, Buenos Aires",
+  postcode: "C1251",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://conaduhistorica.org.ar/prensa/ante-el-creciente-malestar-por-el-recorte-salarial-conadu-historica-llama-a-un-nuevo-paro-de-48-horas-para-el-1-y-2-de-septiembre/",
+  summary: "CONADU Histórica has called a nationwide 48-hour strike by teaching staff at Argentina's national universities beginning Tuesday 1 September 2026. The federation says university lecturers face continuing loss of purchasing power and rejects the salary agreement accepted by other organisations, while also opposing approximately 70 billion pesos in government education-budget reductions affecting school infrastructure, Conectar Igualdad and educational equipment. University associations are expected to suspend teaching and undertake local visibility actions according to their respective campuses. No single national start time applies to the stoppage, so CityIntel's standard 12:00 timestamp is used. The CONADU Histórica headquarters in Buenos Aires is used transparently as the national map anchor rather than implying that the strike is confined to the capital. Risk assessed as Medium because the nationwide action may significantly disrupt classes and university operations, although no violent tactics have been announced."
+},
+
+{
+  title: "CONADU Histórica Nationwide University Strike — Day 2",
+  city: "Nationwide",
+  lat: -34.6210,
+  lng: -58.3915,
+  address: "National universities across Argentina — map anchor: CONADU Histórica headquarters, Sarandí 1226, Buenos Aires",
+  postcode: "C1251",
+  country: "Argentina",
+  continent: "South America",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "https://conaduhistorica.org.ar/prensa/ante-el-creciente-malestar-por-el-recorte-salarial-conadu-historica-llama-a-un-nuevo-paro-de-48-horas-para-el-1-y-2-de-septiembre/",
+  summary: "Wednesday 2 September 2026 is the second scheduled day of CONADU Histórica's nationwide 48-hour university strike over salaries and education funding. The federation says lecturers remain dissatisfied with the government's salary policy and with cuts to education programmes and university-related resources. Associations affiliated with the federation may combine the withdrawal of teaching with assemblies and other local awareness actions. The date also coincides with Argentina's Industry Day mobilisation already recorded separately in the CityIntel dataset, meaning Buenos Aires and other major cities could experience overlapping labour activity. No fixed national start time applies to the strike, so the standard CityIntel 12:00 timestamp is used. Risk assessed as Medium because university teaching and associated academic activity may be widely disrupted, while the action remains primarily industrial rather than a public-order threat."
+},
+
+{
+  title: "BRP Independence Day Opposition March",
+  city: "San Salvador",
+  lat: 13.70087,
+  lng: -89.20422,
+  address: "Outside Hospital Nacional Rosales — onward march route TBC",
+  postcode: "",
+  country: "El Salvador",
+  continent: "North America",
+  risk: "High",
+  time: "2026-09-15T08:00:00",
+  source: "https://diario.elmundo.sv/politica/brp-convoca-a-marcha-el-15-de-septiembre-y-reitera-no-respaldaran-candidaturas-en-elecciones-2027-por-reeleccion-inconstitucional",
+  summary: "The Bloque de Resistencia y Rebeldía Popular has confirmed an opposition march in San Salvador for Tuesday 15 September 2026, assembling outside Hospital Rosales at 08:00. Under the slogan 'For true independence, let us march to liberate the homeland,' organisers intend to protest what they describe as unconstitutional presidential re-election, authoritarian government practices, continued use of the state of exception and erosion of institutional checks and balances. The final procession route has not yet been published. Risk assessed as High because this is a direct anti-government mobilisation on Independence Day during an extended state of exception, creating a substantial likelihood of heavy security deployments, checkpoints, road closures, surveillance and possible detentions or confrontation if authorities restrict the march."
+},
+
+{
+  title: "Public Universities March in Defence of Public Education",
+  city: "San José",
+  lat: 9.93292,
+  lng: -84.05616,
+  address: "Fuente de la Hispanidad, San Pedro de Montes de Oca — march to Asamblea Legislativa",
+  postcode: "",
+  country: "Costa Rica",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-01T15:00:00",
+  source: "https://crhoy.com/nacionales/universitarios-convocan-a-marcha-en-defensa-de-la-educacion-publica/",
+  summary: "Student federations representing four of Costa Rica's public universities have called a march in defence of public education for Tuesday 1 September 2026. The mobilisation will depart the Fuente de la Hispanidad in San Pedro at 15:00 and proceed to the Legislative Assembly as the government's 2027 national budget is formally presented. Organisers from the University of Costa Rica, National University, UNED and Tecnológico de Costa Rica are demanding sufficient financing and protection of public education. Risk assessed as Medium because the moving student procession will travel from the university district toward the national legislature and is likely to produce road closures, police deployment and congestion along the route, although no violent tactics have been announced."
+},
+
+{
+  title: "Nationwide Faroleada por la Democracia",
+  city: "Nationwide",
+  lat: 9.93279,
+  lng: -84.07222,
+  address: "Regional actions across Costa Rica — map anchor: Plaza de la Democracia, San José",
+  postcode: "",
+  country: "Costa Rica",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-14T16:00:00",
+  source: "https://www.teletica.com/politica/colectivo-que-organizo-planton-convoca-a-faroleada-por-la-democracia-en-setiembre_415871",
+  summary: "The Colectiva Autónoma por la Resistencia Social has called a nationwide 'Faroleada por la Democracia' from 16:00 on Monday 14 September 2026, with actions intended to take place in communities throughout Costa Rica. Around 40 organisations, including trade unions, associations and student federations, support the mobilisation. Organisers frame the protest around defence of democratic institutions, separation of powers and judicial independence and describe it as peaceful and democratic. Individual regional assembly points remain pending, so Plaza de la Democracia in San José is used transparently as the national map anchor based on the movement's previous central mobilisation. Risk assessed as Medium because simultaneous actions across multiple regions may cause local traffic and public-space disruption, although no violent or blockade tactics have been announced."
+},
+
+{
+  title: "Ottawa Rally for Healthcare — Bruyère Saint-Vincent Hospital",
+  city: "Ottawa",
+  lat: 45.41405,
+  lng: -75.70889,
+  address: "Bruyère Health Saint-Vincent Hospital, 60 Cambridge Street North",
+  postcode: "K1R 7A5",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-10T12:00:00",
+  source: "https://cupe1974.ca/event/",
+  summary: "CUPE Local 1974 has listed a Rally for Healthcare at Bruyère Health Saint-Vincent Hospital in Ottawa on Thursday 10 September 2026. The union represents hospital workers and has been campaigning around hospital capacity, staffing levels, privatisation and enforceable nurse-to-patient ratios. The organiser currently publishes the date and hospital location but not a reliable start time, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the action targets an operating healthcare facility and may draw union participation and media attention, although no strike, blockade or violent activity has been announced."
+},
+
+{
+  title: "Crash Carney's Summit — Many vs. The Money Mass Rally and March",
+  city: "Toronto",
+  lat: 43.65264,
+  lng: -79.38385,
+  address: "Nathan Phillips Square, 100 Queen Street West",
+  postcode: "M5H 2N1",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-14T18:00:00",
+  source: "https://www.manyvsmoneysummit.ca/",
+  summary: "The Many vs. The Money coalition has confirmed a mass rally, march and protest beginning at Nathan Phillips Square at 18:00 on Monday 14 September 2026 as Prime Minister Mark Carney's global investment summit opens in downtown Toronto. The coalition includes labour, Indigenous-sovereignty, tenant, climate, anti-war, migrant-rights and Palestine-solidarity organisers and opposes proposed privatisation of public infrastructure and large corporate investment projects. The protest follows a two-day counter-summit at OCAD University. Risk assessed as Medium because a sizeable cross-movement procession targeting a high-profile prime-ministerial and international investor event is likely to prompt road closures, police deployment and security perimeters in central Toronto, although organisers describe the mobilisation as a public political protest rather than a violent action."
+},
+
+{
+  title: "Le Communautaire à boutte National Demonstration",
+  city: "Trois-Rivières",
+  lat: 46.34300,
+  lng: -72.54300,
+  address: "Trois-Rivières — final demonstration site TBC; city-centre map anchor",
+  postcode: "",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-15T10:30:00",
+  source: "https://www.cdcdrummond.ca/fr/formations-et-evenements/146/rassemblement-national-a-trois-rivieres-pour-le-mouvement-le-communautaire-a-boutte",
+  summary: "The Quebec-wide Le Communautaire à boutte movement has confirmed a national demonstration in Trois-Rivières on Tuesday 15 September 2026. Participating community organisations are mobilising over chronic underfunding, precarious employment conditions and demands for durable government financial commitments to autonomous community organisations. Regional organisations are arranging buses into Trois-Rivières, with the national gathering scheduled approximately 10:30 to 14:00. The precise rally site remains to be announced, so a transparent Trois-Rivières city-centre map anchor is used. Risk assessed as Medium because organisers expect a province-wide mobilisation during Quebec's election campaign, with possible traffic and access impacts around the eventual rally location, although the action is organised as a peaceful demonstration."
+},
+
+{
+  title: "All Out Against ALL IN Artificial Intelligence Summit",
+  city: "Montreal",
+  lat: 45.50333,
+  lng: -73.56120,
+  address: "Place Jean-Paul-Riopelle, opposite Palais des congrès de Montréal",
+  postcode: "H2Z 2B3",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-16T16:30:00",
+  source: "https://www.cobp.resist.ca/en/node/25783",
+  summary: "Anti-capitalist, environmental and social-justice activists have called a mass demonstration against Montreal's ALL IN artificial-intelligence summit for Wednesday 16 September 2026. Participants will gather at Place Jean-Paul-Riopelle at 16:30 before marching from approximately 17:30. Organisers oppose the environmental impact of data centres, workplace automation and surveillance, military applications of artificial intelligence and the influence of major corporations participating in the summit. The ALL IN conference at the adjacent Palais des congrès expects thousands of technology executives and delegates. Risk assessed as Medium because the demonstration directly targets a major corporate summit and organisers encourage wider autonomous protest activity, creating potential for significant police presence, security cordons and local traffic disruption."
+},
+
+{
+  title: "Hamilton Take Back the Night Rally and March",
+  city: "Hamilton",
+  lat: 43.25550,
+  lng: -79.87329,
+  address: "Hamilton City Hall Forecourt, 71 Main Street West",
+  postcode: "L8P 4Y5",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-17T18:00:00",
+  source: "https://sacha.ca/blog/tbtn2026",
+  summary: "Hamilton's Sexual Assault Centre has confirmed Take Back the Night for Thursday 17 September 2026 at Hamilton City Hall. Community activities and survivor-support programming begin at 18:00, followed by speeches and chants from approximately 20:00 and a street march from 20:15 to 21:15. The mobilisation campaigns against sexual violence, gender-based violence and street harassment and supports survivors and community advocates. Organisers state that roads will be closed during the march. Risk assessed as Medium because the evening procession will temporarily affect central Hamilton streets and require traffic management and stewarding, while the action itself is explicitly peaceful and survivor-focused."
+},
+
+{
+  title: "Ottawa-Gatineau Climate March 2026",
+  city: "Gatineau / Ottawa",
+  lat: 45.43700,
+  lng: -75.70799,
+  address: "Jacques-Cartier Park, Gatineau — march via downtown Ottawa to Ottawa City Hall",
+  postcode: "",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-19T09:30:00",
+  source: "https://www.fridaysforfutureottawa.org/",
+  summary: "Fridays for Future Ottawa has confirmed the 2026 Ottawa-Gatineau Climate March for Saturday 19 September. Participants will gather at Jacques-Cartier Park in Gatineau at 09:30 before marching into downtown Ottawa, with an additional assembly at Major's Hill Park at 10:30 and a final rally at Ottawa City Hall around noon. Demands include ending fossil-fuel subsidies, reversing climate-policy rollbacks, enforcing existing emissions rules and accelerating municipal climate action. Risk assessed as Medium because the cross-river procession will affect major pedestrian and road corridors in two municipalities and require traffic management and police liaison, although organisers are promoting peaceful climate advocacy."
+},
+
+{
+  title: "Community Sector Rally at Quebec Leaders' Debate",
+  city: "Montreal",
+  lat: 45.52063,
+  lng: -73.55005,
+  address: "Maison de Radio-Canada, 1000 Avenue Papineau",
+  postcode: "H2K 0C2",
+  country: "Canada",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-23T18:30:00",
+  source: "https://rq-aca.org/mobilisations-en-cours/",
+  summary: "Quebec community organisations, unions, students and environmental groups have confirmed a popular rally outside Radio-Canada in Montreal at 18:30 on Wednesday 23 September 2026 while the provincial party leaders hold their televised election debate. The mobilisation forms part of the Le Communautaire à boutte and autonomous-community-sector campaign demanding adequate public funding, stronger social programmes and concrete commitments from parties during the provincial election. Organisers describe the action as a convergence of social movements intended to place community needs at the centre of the political debate. Risk assessed as Medium because several organised sectors may converge outside an operating national broadcaster during a high-profile leaders' debate, prompting police barriers, media-security measures and local road or pedestrian restrictions."
+},
+
+{
+  title: "Truth Tuesdays at Fox News Headquarters — 1 September",
+  city: "New York City",
+  lat: 40.758464,
+  lng: -73.981806,
+  address: "News Corp Building, 1211 Avenue of the Americas",
+  postcode: "10036",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-01T10:00:00",
+  source: "https://actionnetwork.org/event_campaigns/fox-takedown",
+  summary: "Fox Takedown organisers have scheduled a recurring Truth Tuesdays protest outside the News Corp and Fox headquarters in Midtown Manhattan at 10:00 on Tuesday 1 September 2026. Participants accuse Fox of promoting misinformation and supporting anti-democratic government policies and are calling for peaceful public pressure on the network and its ownership. The action is organised as a lawful stationary demonstration. Risk assessed as Low because no march, blockade or violent tactic has been announced, although pedestrian congestion and routine security activity are possible immediately outside the high-profile media headquarters."
+},
+
+{
+  title: "Brooklyn Against War Picket for Nicolás Maduro and Cilia Flores",
+  city: "New York City",
+  lat: 40.659735,
+  lng: -74.003587,
+  address: "Metropolitan Detention Center Brooklyn, 80 29th Street",
+  postcode: "11232",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-03T18:00:00",
+  source: "https://www.javiersoriano.com/2026/08/21/protests-september-2026/",
+  summary: "Brooklyn Against War has announced a monthly picket outside the Metropolitan Detention Center in Brooklyn at 18:00 on Thursday 3 September 2026. Organisers are demanding the release of Venezuelan President Nicolás Maduro and Cilia Flores and opposing United States military intervention and war spending. The demonstration targets an operating federal detention facility and therefore may attract federal security monitoring and controlled pedestrian access around the prison perimeter. Risk assessed as Medium because of the politically sensitive federal location and foreign-policy focus, although organisers are calling for a protest rather than violent action."
+},
+
+{
+  title: "Trump Takedown — Tesla Boston Labor Day Weekend Protest",
+  city: "Boston",
+  lat: 42.34808,
+  lng: -71.08278,
+  address: "Tesla Boston Boylston Street, 888 Boylston Street",
+  postcode: "02116",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-05T12:00:00",
+  source: "https://actionnetwork.org/event_campaigns/teslatakedown",
+  summary: "Tesla Takedown organisers have confirmed a Labor Day weekend protest outside the Tesla showroom at 888 Boylston Street in Boston at 12:00 on Saturday 5 September 2026. The campaign calls for economic pressure on Tesla and Elon Musk over what organisers describe as his support for anti-democratic politics and the Trump administration. Tesla Takedown publicly states that its demonstrations are peaceful and rejects vandalism and property destruction. Risk assessed as Low because this is a stationary corporate-target protest with no announced march or disruptive direct action, although local security and pedestrian congestion are likely."
+},
+
+{
+  title: "Chicago Labor Day March and Rally — Eddie Fest",
+  city: "Chicago",
+  lat: 41.73729,
+  lng: -87.53008,
+  address: "Steelworkers Park, 87th Street at South Lake Shore Drive",
+  postcode: "60617",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-05T11:00:00",
+  source: "https://actionnetwork.org/event_campaigns/labor-day-host-an-event-or-solidarity-school",
+  summary: "The May Day Coalition has confirmed a Chicago Labor Day march and rally at Steelworkers Park from 11:00 on Saturday 5 September 2026 as part of a wider national Labor Day week of action. Organisers are promoting labour solidarity, worker rights, protection of democratic institutions and nonviolent organising against policies they believe favour corporations and wealthy interests. Risk assessed as Medium because the march and rally may attract substantial union and activist participation and require traffic, pedestrian and police coordination around the South Chicago lakefront, although organisers explicitly emphasise nonviolent action."
+},
+
+{
+  title: "Feds Out — Take Back DC March",
+  city: "Washington, D.C.",
+  lat: 38.920705,
+  lng: -77.035709,
+  address: "Malcolm X Park / Meridian Hill Park, 16th Street NW between W Street and Euclid Street",
+  postcode: "20009",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-09-06T11:00:00",
+  source: "https://www.wearealldc.com/",
+  summary: "The We Are All DC coalition has called a major demonstration at Malcolm X Park on Sunday 6 September 2026 opposing the federal deployment of troops in Washington and federal control of the Metropolitan Police Department. Participants are asked to arrive at 11:00, with the march scheduled to begin at 12:00. Organisers demand withdrawal of federal forces, restoration of local control over policing and permanent protection of District self-government. The event is explicitly promoted as peaceful and nonviolent. Risk assessed as High operationally because the mobilisation directly challenges an active federal security deployment and could encounter extensive police, federal or military security measures, road closures and access restrictions."
+},
+
+{
+  title: "Truth Tuesdays at Fox News Headquarters — 8 September",
+  city: "New York City",
+  lat: 40.758464,
+  lng: -73.981806,
+  address: "News Corp Building, 1211 Avenue of the Americas",
+  postcode: "10036",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-08T10:00:00",
+  source: "https://actionnetwork.org/event_campaigns/fox-takedown",
+  summary: "Fox Takedown has scheduled its second September Truth Tuesdays demonstration outside the News Corp and Fox headquarters at 10:00 on Tuesday 8 September 2026. Participants intend to protest Fox's political coverage and what organisers describe as misinformation and support for authoritarian government policies. The campaign uses peaceful stationary demonstrations outside the corporate headquarters. Risk assessed as Low because no disruptive march, blockade or confrontation has been announced."
+},
+
+{
+  title: "Protest and March on Republican Midterm Convention",
+  city: "Dallas",
+  lat: 32.790508,
+  lng: -96.810272,
+  address: "American Airlines Center, 2500 Victory Avenue",
+  postcode: "75219",
+  country: "United States",
+  continent: "North America",
+  risk: "High",
+  time: "2026-09-10T13:00:00",
+  source: "https://actionnetwork.org/events/rally-march-on-the-republican-midterm-convention",
+  summary: "The Dallas Against the Trump Agenda Coalition has confirmed a protest and march outside the Republican Party's national midterm convention at the American Airlines Center from 13:00 on Thursday 10 September 2026. Organisers say the action will oppose President Donald Trump's immigration, domestic and foreign policies and specifically cite deaths associated with federal immigration enforcement. President Trump, Vice President JD Vance and numerous senior Republican officials are expected at the convention. Risk assessed as High because the protest directly targets a nationally significant political event attended by senior federal officials, meaning extensive Secret Service, police, transport and perimeter restrictions should be expected and confrontation risk will rise if demonstrators approach secured zones."
+},
+
+{
+  title: "No Kings Protest — Hyannis Airport Rotary",
+  city: "Hyannis",
+  lat: 41.66512,
+  lng: -70.28732,
+  address: "Hyannis Airport Rotary, junction of Iyannough Road / Route 132, Falmouth Road / Route 28 and Barnstable Road",
+  postcode: "02601",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-12T12:00:00",
+  source: "https://indivisible.org/events/no-kings-protest-hyannis-airport-rotary-september-12-12-1-pm/",
+  summary: "A local Indivisible group has confirmed a No Kings demonstration at the Hyannis Airport Rotary from 12:00 to 13:00 on Saturday 12 September 2026. Organisers describe the recurring gathering as a peaceful protest against the Trump administration and invite participants to bring signs and join a one-hour roadside demonstration. Risk assessed as Low because the event is static and explicitly nonviolent, although its location at a busy Cape Cod rotary may create driver distraction, increased pedestrian activity and limited traffic-management requirements."
+},
+
+{
+  title: "Truth Tuesdays at Fox News Headquarters — 15 September",
+  city: "New York City",
+  lat: 40.758464,
+  lng: -73.981806,
+  address: "News Corp Building, 1211 Avenue of the Americas",
+  postcode: "10036",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-15T10:00:00",
+  source: "https://actionnetwork.org/event_campaigns/fox-takedown",
+  summary: "Fox Takedown organisers have confirmed another Truth Tuesdays demonstration outside Fox and News Corp headquarters at 10:00 on Tuesday 15 September 2026. The recurring campaign protests Fox's political influence and alleged dissemination of misinformation. The gathering is designed as a peaceful stationary public demonstration. Risk assessed as Low because no march or deliberate obstruction is announced, with impacts expected to remain limited to the immediate Midtown pavement and building frontage."
+},
+
+{
+  title: "ICE Out For Good — Beverly Rally",
+  city: "Beverly",
+  lat: 42.54715,
+  lng: -70.88469,
+  address: "Odell Veterans Memorial Park, 56–98 Broadway",
+  postcode: "01915",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-19T11:00:00",
+  source: "https://www.mobilize.us/northernindivisible/event/909409/",
+  summary: "Indivisible organisers have confirmed an ICE Out For Good rally at Odell Veterans Memorial Park in Beverly, Massachusetts from 11:00 to 12:00 on Saturday 19 September 2026. The demonstration will oppose Immigration and Customs Enforcement practices and call attention to deaths and alleged abuses associated with federal immigration enforcement. Organisers explicitly require nonviolence, lawful conduct and no civil disobedience or weapons. Risk assessed as Low because this is a one-hour static rally in a public park with clear de-escalation rules and no hostile counter-demonstration currently announced."
+},
+
+{
+  title: "Free Iran — No to Executions UN Rally",
+  city: "New York City",
+  lat: 40.752483,
+  lng: -73.969059,
+  address: "Dag Hammarskjöld Plaza, East 47th Street and Second Avenue",
+  postcode: "10017",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-22T12:00:00",
+  source: "https://oiac.org/nyrally/",
+  summary: "The Organization of Iranian American Communities has confirmed a major Free Iran rally at Dag Hammarskjöld Plaza opposite the United Nations on Tuesday 22 September 2026. Organisers say thousands are expected to demonstrate against executions in Iran and in support of democratic political change and human rights. The organiser has not yet publicly released a start time, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the rally coincides with the United Nations General Assembly period and will take place inside a heavily secured diplomatic district where police barriers, road closures, protected delegations and competing demonstrations may create substantial operational disruption."
+},
+
+{
+  title: "Survivors' Solidarity March — National Day of Action",
+  city: "Washington, D.C.",
+  lat: 38.90720,
+  lng: -77.03690,
+  address: "Washington, D.C. anchor event — final venue and route TBC",
+  postcode: "",
+  country: "United States",
+  continent: "North America",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "https://www.survivorssolidaritymarch.org/toolkit",
+  summary: "The Survivors' Solidarity March has confirmed a nationwide day of action for Saturday 26 September 2026 supporting survivors of sexual assault, abuse and harassment. Organisers state that Washington, D.C. will host the national anchor event while satellite marches, walks, vigils and gatherings are being developed across the United States, with participation sought in all 50 states. The exact Washington assembly location, route and start time have not yet been published, so central Washington is used transparently as the map anchor and CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the anchor march may attract significant national participation and require road, crowd and police management, although the mobilisation is advocacy-focused and no violence is announced."
+},
+
+{
+  title: "NYC Climate Day of Action",
+  city: "New York City",
+  lat: 40.70531,
+  lng: -74.01812,
+  address: "Wagner Park Pavilion, 20 Battery Place",
+  postcode: "10280",
+  country: "United States",
+  continent: "North America",
+  risk: "Low",
+  time: "2026-09-27T16:00:00",
+  source: "https://www.climateweeknyc.org/event-search/nyc-climate-day-of-action",
+  summary: "NYC2030 and Good Standing have confirmed a public Climate Day of Action at Wagner Park Pavilion from 16:00 to 19:00 on Sunday 27 September 2026, concluding Climate Week NYC. The programme includes speakers, music, a teach-in and tables promoting direct climate actions focused on power-grid resilience, peaker plants and community environmental action. Risk assessed as Low because the event is an organised public civic-action gathering within Wagner Park rather than a disruptive march or blockade. Increased pedestrian activity is expected in Battery Park City, but no hostile counter-event or deliberate transport disruption has been announced."
+},
+
+{
+  title: "Platform Komun Sindikal Pension Reform Civil Disobedience Day",
+  city: "Port Louis",
+  lat: -20.16360,
+  lng: 57.50195,
+  address: "Mauritius-wide mobilisation — operational details TBC; map anchor: Jardin de la Compagnie, Port Louis",
+  postcode: "",
+  country: "Mauritius",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-18T12:00:00",
+  source: "https://www.lemauricien.com/actualites/societe/budget-aftermath-platform-komun-sindikal-pension-desobeissance-civile-annoncee-pour-le-18-septembre/715715/",
+  summary: "The Platform Komun Sindikal has formally announced a day of civil disobedience for Friday 18 September 2026 as part of its escalating campaign against the government's pension reforms and changes to the welfare system. The trade-union platform opposes the replacement of the Basic Retirement Pension with the State Age Pension and the progressive increase in pension eligibility age. Organisers say the date deliberately coincides with the anniversary of the birth of Sir Seewoosagur Ramgoolam, whom they associate with the development of Mauritius's welfare state and National Pensions Fund. PKS is calling on the wider population to mobilise and says campaigning will take place both online and on the ground. The precise form, participating locations and operational timetable for the civil-disobedience action have not yet been released and are due to be announced later, so Port Louis and Jardin de la Compagnie are used transparently as the national mobilisation map anchor and CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because a nationally promoted civil-disobedience campaign could result in workplace disruption, demonstrations, sit-ins or traffic impacts depending on the tactics ultimately announced, although organisers have not called for violence."
+},
+
+{
+  title: "CTSP Private Preschool Workers' Hunger Strike",
+  city: "Port Louis",
+  lat: -20.16360,
+  lng: 57.50195,
+  address: "Port Louis — final hunger-strike site TBC; map anchor: Jardin de la Compagnie",
+  postcode: "",
+  country: "Mauritius",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-16T12:00:00",
+  source: "https://lexpress.mu/s/la-ctsp-entamera-une-greve-de-la-faim-le-16-septembre-561681",
+  summary: "The Confédération des travailleurs des secteurs public et privé has fixed Wednesday 16 September 2026 for the start of a hunger strike involving union leaders and employees from Mauritius's private pre-primary education sector if negotiations with the government fail to produce satisfactory written guarantees beforehand. The dispute concerns proposed changes to the Grant-in-Aid scheme, uncertainty over continued free preschool provision, working conditions and fears that posts including managers and assistant teachers could be eliminated. A further government-union meeting is scheduled for 28 August, meaning the action remains conditional on the outcome of negotiations, but the union has formally established the 16 September date. The final hunger-strike location and start time have not yet been published. Jardin de la Compagnie is used transparently as the map anchor because it hosted the CTSP mobilisation at which the decision to proceed toward hunger strike was approved. CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because prolonged hunger strike activity could attract supporting union gatherings and political attention in central Port Louis, although no violent tactics have been announced."
+},
+
+{
+  title: "/Khomani Community Mass Demonstration Over Traditional Leadership and Audit",
+  city: "Windhoek",
+  lat: -22.55350,
+  lng: 17.08406,
+  address: "Ministry of Urban and Rural Development, Government Office Park, Luther Street",
+  postcode: "",
+  country: "Namibia",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://observer24.com.na/khomani-community-threatens-mass-protest-over-chief-missing-audit-report/",
+  summary: "Approximately 1,000 members of the /Khomani traditional community have notified Namibia's Ministry of Urban and Rural Development that they intend to demonstrate outside the ministry's Windhoek offices on Tuesday 1 September 2026 unless satisfactory written responses are received beforehand. The dispute concerns demands for the removal of Chief Juliane Gawanas and release of the results of a financial audit covering approximately 15 years of the /Khomani Traditional Authority. Community representatives say repeated requests for information have gone unanswered and question how funds intended for the community have been managed. The protest notice includes participants from several /Khomani communities and landless community members. No reliable start time has been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because the expected turnout is sizeable and the demonstration directly targets an operating government ministry amid a contentious traditional-leadership dispute, although no violent or disruptive tactics have been announced."
+},
+
+
+{
+  title: "March and March Second Nationwide Anti-Immigration Day of Action",
+  city: "Nationwide",
+  lat: -26.20410,
+  lng: 28.04730,
+  address: "Nationwide South Africa — map anchor: Johannesburg CBD; individual city assembly points and routes TBC",
+  postcode: "",
+  country: "South Africa",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-09-30T12:00:00",
+  source: "https://www.citizen.co.za/berea-mail/news-headlines/local-news/2026/08/22/march-and-march-threatens-second-wave-of-action/",
+  summary: "The March and March Movement has announced a second nationwide day of action for Wednesday 30 September 2026 as part of its campaign demanding the removal and deportation of undocumented foreign nationals from South Africa. The movement announced the September deadline during its August mobilisation around the SADC summit and says the new action will be larger, more coordinated and organisationally stronger than its 30 June nationwide campaign. Exact participating cities, assembly points, routes and a reliable national start time have not yet been published, so Johannesburg CBD is used transparently as the map anchor and CityIntel's standard 12:00 timestamp is applied. Risk assessed as High because previous March and March-linked mobilisations have generated substantial police deployments, business closures, intimidation of migrants and traders, confrontation and arrests. The immigration focus also creates an elevated risk of xenophobic harassment or localised disorder even if organisers describe the formal action as a protest."
+},
+
+{
+  title: "Inongo Teachers' Indefinite School Strike — September Start",
+  city: "Inongo",
+  lat: -1.92530,
+  lng: 18.28640,
+  address: "Schools across Inongo, Mai-Ndombe Province — map anchor: Inongo town centre",
+  postcode: "",
+  country: "Democratic Republic of the Congo",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://actualite.cd/2026/08/25/mai-ndombe-pas-de-rentree-sans-paie-des-arrieres-les-enseignants-annoncent-une-greve",
+  summary: "Teachers in Inongo have announced a full strike from the beginning of the 2026-2027 school year on Tuesday 1 September unless outstanding salaries are paid. The Intersyndicale of Mai-Ndombe 1 says teachers are owed two months of salary arrears, including unpaid December 2025 and January 2026 wages, and is also demanding registration numbers for teachers who remain outside the formal payroll and improved remuneration. The strike threat followed a 25 August protest march in Inongo during which teachers publicly declared that there would be no school reopening without payment. No daily start time applies to the education stoppage, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because the action could disrupt the start of the academic year across the provincial capital, although no violent activity has been announced."
+},
+
+{
+  title: "Popokabaka Teachers' Conditional School Boycott",
+  city: "Popokabaka",
+  lat: -5.69242,
+  lng: 16.58554,
+  address: "Schools across Popokabaka, Kwango Province — map anchor: Popokabaka town centre",
+  postcode: "",
+  country: "Democratic Republic of the Congo",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://actualite.cd/2026/08/23/kwango-impayes-les-enseignants-de-popokabaka-menacent-de-boycotter-la-rentree-scolaire",
+  summary: "Teachers in Popokabaka have voted to condition their return to classrooms on settlement of accumulated salary arrears when the new school year begins on Tuesday 1 September 2026. The teachers say they are owed approximately three months of wages dating from June and have experienced repeated payment delays exceeding 60 days. Their general assembly declared that the school reopening would be jeopardised if the outstanding salaries were not paid. This remains a conditional industrial action and should be removed if payment is completed and teachers formally confirm they will resume work before 1 September. No start time applies to the threatened school boycott, so 12:00 is used as CityIntel's standard timestamp. Risk assessed as Medium because disruption could affect education across the locality but no street violence or blockade has been announced."
+},
+
+{
+  title: "FENAMO-RDC Motorcycle Taxi Drivers' Civic March",
+  city: "Kinshasa",
+  lat: -4.33220,
+  lng: 15.30310,
+  address: "Kinshasa — final assembly point and march route TBC; map anchor: Palais du Peuple",
+  postcode: "",
+  country: "Democratic Republic of the Congo",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-04T12:00:00",
+  source: "https://actualite.cd/2026/08/24/kinshasa-la-fenamo-rdc-fixe-au-4-septembre-une-marche-pour-porter-les-revendications-des",
+  summary: "The Fédération nationale des associations des motocyclistes taximen et propriétaires de motos de la RDC has rescheduled its planned civic march in Kinshasa for Friday 4 September 2026. FENAMO-RDC says the additional preparation period will allow it to finalise a memorandum for the Presidency covering taxation of motorcycle-taxi operators, required documentation, collection of fees and fines, alleged payments without official receipts, operation of impound facilities, motorcycle identification, designated parking areas and proposals for national talks on regulation of the motorcycle-taxi sector. Organisers describe the mobilisation as disciplined, responsible and compliant with legal procedures. The final assembly point, route and reliable start time have not yet been published, so Palais du Peuple is used transparently as a central Kinshasa map anchor and 12:00 as the CityIntel default. Risk assessed as Medium because participation by motorcycle-taxi operators could cause significant local traffic disruption even if the march remains peaceful."
+},
+
+{
+  title: "Pro-Constitutional-Change March — RCTCPS",
+  city: "Kinshasa",
+  lat: -4.33220,
+  lng: 15.30310,
+  address: "Kinshasa — final march route TBC; map anchor: Palais du Peuple",
+  postcode: "",
+  country: "Democratic Republic of the Congo",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-14T12:00:00",
+  source: "https://www.ouragan.cd/2026/08/constitution-les-compagnons-detienne-tshisekedi-dans-la-rue-en-soutien-au-changement",
+  summary: "The Rassemblement des Compagnons d'Étienne Tshisekedi pour le Changement et le Progrès Social has announced a peaceful march in Kinshasa on Monday 14 September 2026. Coordinator Jean-Pierre Lisanga Bonganga says the mobilisation will demonstrate support for the institutions of the Republic, President Félix Tshisekedi and the proposed process of constitutional change, while also expressing support for the government's position regarding conflict in eastern DR Congo. The precise assembly point, route and start time have not yet been published, so Palais du Peuple is used as a transparent central political map anchor and CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because this is a politically sensitive constitutional mobilisation taking place one day before a major opposition march on the same issue, although organisers have described their action as peaceful."
+},
+
+{
+  title: "C64 National March Against Constitutional Change",
+  city: "Kinshasa",
+  lat: -4.33220,
+  lng: 15.30310,
+  address: "Multiple Kinshasa assembly points — convergence toward Palais du Peuple",
+  postcode: "",
+  country: "Democratic Republic of the Congo",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-09-15T12:00:00",
+  source: "https://actualite.cd/2026/08/15/rdc-la-coalition-c64-annonce-une-marche-pacifique-le-15-septembre-contre-un-projet-de",
+  summary: "The opposition Coalition Article 64 has confirmed a nationwide peaceful mobilisation for Tuesday 15 September 2026 opposing any revision or replacement of the Democratic Republic of the Congo's Constitution that could weaken presidential term limits or enable a third term for President Félix Tshisekedi. The coalition includes political figures and parties associated with Martin Fayulu, Jean-Marc Kabund, Moïse Katumbi, Augustin Matata and Delly Sesanga. In Kinshasa, several assembly points are expected to feed separate processions converging on the Palais du Peuple, where Parliament will be opening its September session. Final assembly locations and a reliable start time have not yet been released, so 12:00 is used as the CityIntel default. Risk assessed as High operationally because this is a nationwide opposition mobilisation focused on Parliament and a highly contentious constitutional issue, with substantial potential for police cordons, road closures, arrests or confrontation if authorities restrict access to the parliamentary district."
+},
+
+{
+  title: "Port Sudan Detainees' Indefinite Hunger Strike — September Continuation",
+  city: "Port Sudan",
+  lat: 19.61920,
+  lng: 37.21170,
+  address: "Port Sudan Central Prison — precise prison coordinates not reliably published; map anchor: Port Sudan city centre",
+  postcode: "",
+  country: "Sudan",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.dabangasudan.org/en/all-news/article/port-sudan-detainees-launch-hunger-strike-over-endless-trial-delays-2",
+  summary: "At least 83 detainees at Port Sudan Central Prison are expected to enter September continuing the indefinite hunger strike they began at 06:00 on 25 August 2026. The detainees say some have spent almost two years in custody while their cases are repeatedly delayed, with one judge reportedly responsible for all 83 proceedings. Their memorandum demands fair and expeditious trials, additional judicial panels and dedicated judges, urgent medical intervention for prisoners in poor health and consideration of a general amnesty for people held for extended periods without final convictions. Because the hunger strike is continuous rather than a newly commencing September event, CityIntel's standard 1 September 12:00 continuation marker is used. Risk assessed as Medium because the action remains confined to a highly sensitive detention facility but prolonged fasting, inadequate medical provision and deteriorating prisoner health could create an escalating humanitarian and political issue."
+},
+
+{
+  title: "PLU March to Turkish Embassy Over Fred Lumbuye Extradition Demand",
+  city: "Kampala",
+  lat: 0.33419,
+  lng: 32.59781,
+  address: "PLU Secretariat, Plot 7 Sadler Lane, Naguru — march to Embassy of Türkiye, 23 Prince Charles Drive (Ibis Vale), Kololo",
+  postcode: "",
+  country: "Uganda",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-09-01T08:00:00",
+  source: "https://tndnewsuganda.com/2026/08/plu-is-going-to-shake-kampala-on-1st-of-september-2026-the-turks-have-been-given-enough-time-to-produce-lumbuye-but-they-have-deliberately-refused-daudi-kabanda-assures-gen-muhoozi/",
+  summary: "The Patriotic League of Uganda has confirmed a demonstration in Kampala on Tuesday 1 September 2026 targeting the Turkish Embassy. PLU General Secretary Twalla Fadil has instructed members to assemble at the organisation's Plot 7 Sadler Lane headquarters in Naguru at 08:00 before marching together to the Turkish diplomatic mission in Kololo. PLU chairman and Uganda Chief of Defence Forces Gen Muhoozi Kainerugaba has publicly called for a very large mobilisation. The immediate demand is that Turkish authorities hand over Ugandan government critic and blogger Fred Kajubi Lumbuye. Risk assessed as High operationally because a potentially large politically backed procession will move through Kampala to an operating foreign embassy, where diplomatic security, police cordons, traffic restrictions and controlled access should be expected. No explicit violent action has been announced."
+},
+
+{
+  title: "Move for Integrity 2026 — Anti-Corruption Walk and Run",
+  city: "Nairobi",
+  lat: -1.28787,
+  lng: 36.81613,
+  address: "Freedom Corner, Uhuru Park, Kenyatta Avenue",
+  postcode: "",
+  country: "Kenya",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-19T07:00:00",
+  source: "https://integritywalk.tikenya.org/",
+  summary: "Transparency International Kenya has confirmed Move for Integrity 2026 at Freedom Corner in Uhuru Park from 07:00 on Saturday 19 September 2026. The national anti-corruption civic mobilisation includes an eight-kilometre Integrity Walk and ten-kilometre Integrity Run and promotes transparency, accountability, access to information, ethical leadership and collective action against corruption. Organisers invite thousands of citizens, families, corporate teams, civil-society participants and campaigners to take part. Risk assessed as Medium because the large organised moving event from central Nairobi's Uhuru Park is likely to require traffic management, stewarding and police or municipal coordination along the walking and running routes, although the event is peaceful and family-oriented with no confrontation announced."
+},
+
+{
+  title: "UASA Nationwide Public Tertiary Education Strike",
+  city: "Nationwide",
+  lat: 8.46901,
+  lng: -13.23717,
+  address: "Public universities and tertiary institutions across Sierra Leone — map anchor: Ministry of Technical and Higher Education, Sababu Building, New England Ville, Freetown",
+  postcode: "",
+  country: "Sierra Leone",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-15T12:00:00",
+  source: "https://www.sierraleonemonitor.com/university-lecturers-issue-strike-notice/",
+  summary: "The Union of Academic Staff Associations has formally notified the Government of Sierra Leone that academic staff at public tertiary institutions will commence full industrial action on Tuesday 15 September 2026 if their demands remain unresolved. UASA issued a 21-day notice effective from 14 August following approximately three years of engagement with the Ministry of Technical and Higher Education, Ministry of Finance, Tertiary Education Commission, Office of the Chief Minister and Wages and Compensation Commission. Principal demands include immediate implementation of reviewed Conditions of Service and government consideration of a 100 percent salary increase for academic staff. UASA states that it remains open to dialogue, meaning the strike could still be avoided if an agreement is reached before 15 September. No national daily start time has been published, so CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because a nationwide university shutdown would materially affect teaching, research and tertiary education operations, while no street demonstrations or violent tactics have been announced."
+},
+
+{
+  title: "And Gueusseum Nationwide Health-Sector Strike — Day 1",
+  city: "Nationwide",
+  lat: 14.69330,
+  lng: -17.46880,
+  address: "Health and social-service facilities across Senegal — map anchor: Ministry of Health, Fann Résidence, Rue Aimé Césaire, Dakar",
+  postcode: "",
+  country: "Senegal",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-09-03T12:00:00",
+  source: "https://www.xibaaru.sn/and-gueusseum-une-pause-pendant-le-gamou-avant-une-nouvelle-greve-de-48-heures-en-septembre/",
+  summary: "The And Gueusseum alliance of autonomous health-sector unions has confirmed the first day of a 48-hour nationwide strike across Senegal for Thursday 3 September 2026 under its 14th action plan. The mobilisation follows an August strike that the alliance says achieved participation rates of 90 to 100 percent. Workers are protesting salary deductions imposed on strikers, unresolved social and employment liabilities and what unions describe as continued government failure to address longstanding commitments. And Gueusseum has announced that this phase will proceed without its traditional voluntary provision of emergency and minimum services and will be accompanied by continued withholding of health and social data. No single assembly point or start time applies to the nationwide stoppage, so the Ministry of Health in Dakar is used as the map anchor and 12:00 as CityIntel's standard timestamp. Risk assessed as High because withdrawal of emergency and minimum-service coverage may materially affect healthcare delivery nationwide even in the absence of street disorder."
+},
+
+{
+  title: "And Gueusseum Nationwide Health-Sector Strike — Day 2",
+  city: "Nationwide",
+  lat: 14.69330,
+  lng: -17.46880,
+  address: "Health and social-service facilities across Senegal — map anchor: Ministry of Health, Fann Résidence, Rue Aimé Césaire, Dakar",
+  postcode: "",
+  country: "Senegal",
+  continent: "Africa",
+  risk: "High",
+  time: "2026-09-04T12:00:00",
+  source: "https://www.xibaaru.sn/and-gueusseum-une-pause-pendant-le-gamou-avant-une-nouvelle-greve-de-48-heures-en-septembre/",
+  summary: "Friday 4 September 2026 is the second scheduled day of And Gueusseum's 48-hour nationwide health and social-services strike. The alliance is maintaining pressure over salary deductions affecting striking personnel, outstanding social obligations and the government's handling of the prolonged labour dispute. The unions have also announced continued retention of health and social data and say they will not provide the emergency and minimum-service arrangements they historically maintained voluntarily during previous industrial actions. No individual assembly point or fixed daily start time has been announced, so CityIntel uses the national Ministry of Health in Dakar as a geographic anchor and its standard 12:00 timestamp. Risk assessed as High because a second consecutive day without normal emergency or minimum-service arrangements could create significant disruption to patient access and health-system operations."
+},
+
+{
+  title: "Ghana Mineworkers' Nationwide Red-Armband Protest Campaign",
+  city: "Nationwide",
+  lat: 5.55561,
+  lng: -0.20483,
+  address: "Mining workplaces across Ghana — map anchor: Hall of Trade Unions, Barnes Road, Accra",
+  postcode: "",
+  country: "Ghana",
+  continent: "Africa",
+  risk: "Low",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.myjoyonline.com/ghana-mineworkers-union-demand-suspension-of-contract-mining-directive-threaten-industrial-action/",
+  summary: "The Ghana Mineworkers' Union of the Trades Union Congress has announced a nationwide workplace protest campaign beginning Tuesday 1 September 2026. Mineworkers across Ghana's mining sites are instructed to wear red armbands as a visible demonstration against the Minerals Commission directive requiring major operators to transition core activities from owner-mining to contract mining. The union argues that outsourcing and contract mining are accelerating casualisation, reducing wages and benefits, weakening collective bargaining and increasing job insecurity. The campaign follows an August petition to the government and is intended to continue while authorities consider the union's demands. GMWU has warned that broader industrial action may follow later in September if the directive is not suspended or reversed. No specific start time has been announced, so CityIntel's standard 12:00 timestamp is used for the opening day. Risk assessed as Low because the confirmed first phase consists of symbolic workplace protest rather than a work stoppage or street blockade, although escalation should be monitored closely."
+},
+
+{
+  title: "Plateau State University ASUU Indefinite Strike — September Continuation",
+  city: "Bokkos",
+  lat: 9.31267,
+  lng: 8.98670,
+  address: "Plateau State University, Diram Village, Butura-Tarangol Road, Bokkos",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://punchng.com/plateau-varsity-lecturers-declare-indefinite-strike-over-unmet-demands/",
+  summary: "Academic staff at Plateau State University are expected to enter September continuing the total, comprehensive and indefinite strike declared on 26 August 2026. ASUU-PLASU says its six-point demands remain unresolved, including implementation of the 2025 Federal Government-ASUU agreement, salary arrears from January 2026, commencement of the contributory pension scheme, payment of 22 months of wage-award arrears, improved staff security and an end to alleged intimidation of union officials. Members have been directed to suspend academic activities until further notice. Because the action has no fixed daily start time, 1 September at 12:00 is used as CityIntel's September continuation marker. Risk assessed as Medium because teaching, examinations and university operations may remain materially disrupted, although no street demonstration or violent action has been announced."
+},
+
+{
+  title: "Ambrose Alli University ASUU Indefinite Strike — September Continuation",
+  city: "Ekpoma",
+  lat: 6.74472,
+  lng: 6.08472,
+  address: "Ambrose Alli University, KM 70 Benin-Auchi Road, Ekpoma",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://guardian.ng/breakingnews/asuu-shuts-down-aau-ekpoma-over-unpaid-allowances/",
+  summary: "Ambrose Alli University lecturers are expected to enter September on the indefinite strike that began on 25 August 2026 following expiry of a 14-day ultimatum. ASUU is demanding implementation of the 2025 Federal Government-ASUU agreement and payment of allowances accruing from January 2026. The withdrawal covers teaching, examinations, supervision of research projects and other statutory academic duties. The university administration has acknowledged that the strike concerns implementation of the national agreement. No end date has been announced, so 1 September at 12:00 is used as CityIntel's continuation marker. Risk assessed as Medium due to substantial disruption of university operations rather than a public-order threat."
+},
+
+{
+  title: "Adekunle Ajasin University ASUU Indefinite Strike — September Continuation",
+  city: "Akungba-Akoko",
+  lat: 7.48389,
+  lng: 5.74417,
+  address: "Adekunle Ajasin University, P.M.B. 01, Akungba-Akoko",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://guardian.ng/news/asuu-declares-indefinite-strike-in-ondo-varsities/",
+  summary: "ASUU members at Adekunle Ajasin University are expected to continue their indefinite strike into September unless the Ondo State Government implements the applicable 2025 Federal Government-ASUU agreement and clears arrears dating from January 2026. The branch has stated that lecturers will not return to classrooms on the basis of promises alone and requires actual implementation and payment. Current reporting on 26 August continued to identify AAUA among universities affected by the ASUU strike wave. With no announced settlement or expiry date, 1 September at 12:00 is used as CityIntel's continuation marker. Risk assessed as Medium because teaching, examinations and academic schedules may remain suspended, with no associated street violence announced."
+},
+
+{
+  title: "Olusegun Agagu University ASUU Indefinite Strike — September Continuation",
+  city: "Okitipupa",
+  lat: 6.45358,
+  lng: 4.77279,
+  address: "Olusegun Agagu University of Science and Technology, Km 6 Okitipupa-Igbokoda Road",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://guardian.ng/news/asuu-declares-indefinite-strike-in-ondo-varsities/",
+  summary: "Academic staff at Olusegun Agagu University of Science and Technology are expected to enter September continuing the indefinite industrial action declared alongside other Ondo State-owned universities. The dispute centres on implementation of the Federal Government-ASUU agreement and payment of related salary adjustments and arrears. Current 26 August reporting continues to list OAUSTECH among institutions where lecturers have withdrawn their services. No termination date has been published, so 1 September at 12:00 is used as CityIntel's continuation marker. Risk assessed as Medium because academic and administrative operations may be materially disrupted, although there is no announced protest march or public-order action."
+},
+
+{
+  title: "Nasarawa State University ASUU Indefinite Strike — September Continuation",
+  city: "Keffi",
+  lat: 8.84710,
+  lng: 7.87760,
+  address: "Nasarawa State University, Keffi Main Campus, P.M.B. 1022",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.premiumtimesng.com/regional/north-central/902047-asuu-declares-indefinite-strike-at-nasarawa-varsity.html",
+  summary: "Lecturers at Nasarawa State University are expected to enter September continuing the total and indefinite strike begun on 10 August 2026. ASUU-NSUK cites continued non-implementation of the 2025 Federal Government-ASUU agreement together with unresolved local welfare and employment issues. The union says it exhausted available dialogue before withdrawing services and has placed responsibility for restoring industrial harmony on government and university authorities. Current national reporting continues to identify NSUK among affected universities. No end date has been announced, so 1 September at 12:00 serves as CityIntel's continuation marker. Risk assessed as Medium because prolonged academic shutdown may affect students and university operations but is not presently associated with street disorder."
+},
+
+{
+  title: "Imo State University ASUU Indefinite Strike — September Continuation",
+  city: "Owerri",
+  lat: 5.50531,
+  lng: 7.04445,
+  address: "Imo State University, Owerri, P.M.B. 2000",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://punchng.com/asuu-shuts-imo-varsity-over-unpaid-entitlements-begins-strike/",
+  summary: "Imo State University lecturers are expected to continue their total and indefinite strike into September. ASUU-IMSU began the action on 10 August over non-implementation of agreed welfare improvements, unpaid promotion and salary arrears, withheld union dues, earned academic allowances and wider concerns over university autonomy. The union stated that members would not return until the agreement was fully implemented, and no subsequent suspension has been confirmed in the current sweep. The university has already postponed scheduled activity amid the disruption. CityIntel therefore uses 1 September at 12:00 as the continuation marker. Risk assessed as Medium because the indefinite shutdown can materially disrupt teaching, examinations and admissions-related operations without constituting a public-order threat."
+},
+
+{
+  title: "Ibrahim Badamasi Babangida University ASUU Indefinite Strike — September Continuation",
+  city: "Lapai",
+  lat: 9.06738,
+  lng: 6.56978,
+  address: "Ibrahim Badamasi Babangida University, Lapai",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.vanguardngr.com/2026/08/asuu-state-varsities-in-plateau-edo-ondo-others-begin-strike/",
+  summary: "Academic staff at Ibrahim Badamasi Babangida University in Lapai are expected to enter September on indefinite strike after ASUU withdrew services over the Niger State Government's failure to implement provisions of the 2025 Federal Government-ASUU agreement. Fresh reporting on 26 August confirms IBBU among state universities participating in the industrial action. The dispute concerns salary implementation and related arrears and entitlements. No fixed end date has been announced, so CityIntel records 1 September at 12:00 as a continuation marker rather than asserting a new strike start. Risk assessed as Medium because the action can halt teaching and academic administration across the institution, while no public demonstration or violence has been announced."
+},
+
+{
+  title: "University of Medical Sciences ASUU Indefinite Strike — September Continuation",
+  city: "Ondo",
+  lat: 7.08122,
+  lng: 4.80709,
+  address: "University of Medical Sciences, Laje Road, Ondo City",
+  postcode: "351103",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.vanguardngr.com/2026/08/asuu-state-varsities-in-plateau-edo-ondo-others-begin-strike/",
+  summary: "The University of Medical Sciences in Ondo is among state universities where ASUU members have withdrawn academic services over non-implementation of the national salary and conditions agreement. Current reporting on 26 August identifies UNIMED among institutions affected by the industrial action. The dispute forms part of the broader Ondo State university confrontation over implementation of the 2025 Federal Government-ASUU agreement and arrears dating from January 2026. No confirmed resolution or return-to-work date has been published, so 1 September at 12:00 is used as CityIntel's continuation marker. Risk assessed as Medium because prolonged action at a specialist medical university could disrupt education, examinations and associated academic administration, although no violent protest is announced."
+},
+
+{
+  title: "Niger Delta University ASUU Indefinite Strike — September Continuation",
+  city: "Amassoma",
+  lat: 4.97471,
+  lng: 6.10464,
+  address: "Niger Delta University, Wilberforce Island, Amassoma",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.vanguardngr.com/2026/08/asuu-declares-indefinite-strike-at-bayelsa-varsities-over-cba-19%E2%80%91month-arrears/",
+  summary: "Niger Delta University lecturers are expected to enter September continuing their indefinite strike over the Bayelsa State Government's alleged failure to implement a Collective Bargaining Agreement signed in December 2025 and settle outstanding wage entitlements. ASUU cites 19 months of unpaid 25 and 35 per cent wage-award arrears and implementation of the new academic salary and allowance structure among its demands. Although the state government approved additional allowances on 21 August and urged lecturers to resume work, no confirmed ASUU suspension has been identified as of 26 August. CityIntel therefore records a 1 September continuation marker subject to refresh if the union formally calls off the action. Risk assessed as Medium because the primary effect is prolonged academic disruption."
+},
+
+{
+  title: "Bayelsa Medical University ASUU Indefinite Strike — September Continuation",
+  city: "Yenagoa",
+  lat: 4.93449,
+  lng: 6.27884,
+  address: "Bayelsa Medical University, Imgbi Road, Yenagoa",
+  postcode: "",
+  country: "Nigeria",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.vanguardngr.com/2026/08/asuu-declares-indefinite-strike-at-bayelsa-varsities-over-cba-19%E2%80%91month-arrears/",
+  summary: "Academic staff at Bayelsa Medical University are expected to continue their indefinite industrial action into September alongside colleagues at Niger Delta University. The strike concerns implementation of the 2025 Collective Bargaining Agreement, unpaid wage-award arrears and salary and allowance provisions. The Bayelsa Government subsequently approved CATA and related allowances and asked unions to call off their action, but no formal ASUU suspension has been confirmed during the 26 August sweep. CityIntel therefore uses 1 September at 12:00 as the continuation marker and should remove or update the record if a settlement is announced before that date. Risk assessed as Medium because academic and medical-training activities may remain disrupted, while no associated street protest or violence has been announced."
+},
+
+{
+  title: "Moroccan Lawyers' Open-Ended Nationwide Strike — September Continuation",
+  city: "Nationwide",
+  lat: 34.02088,
+  lng: -6.84165,
+  address: "Courts and legal services across Morocco — map anchor: Rabat",
+  postcode: "",
+  country: "Morocco",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://en.le360.ma/politics/moroccan-lawyers-extend-nationwide-strike_LPHRSZDCXFCSZN5CJZGW53RR74/",
+  summary: "Moroccan lawyers are expected to enter September 2026 continuing the open-ended nationwide strike maintained by the Association of Moroccan Bar Associations. On 18 August the association formally decided to continue the protest movement after the Constitutional Court said it could not rule on the constitutionality of the proposed law governing the legal profession. The stoppage covers legal services nationwide, including legal aid, and has already caused repeated postponement of court proceedings. Lawyers argue that the proposed legislation threatens the independence of the profession and have scheduled an extraordinary national council meeting in Rabat on 5 September to consider possible further escalation. Because the action is continuous rather than tied to a daily start time, 1 September at 12:00 is used as CityIntel's September continuation marker and should be refreshed if a settlement ends the strike beforehand. Risk assessed as Medium because prolonged nationwide disruption may materially affect courts, detainees, hearings and access to legal representation, while the campaign itself is an industrial and professional action rather than a violent street protest."
+},
+
+{
+  title: "Compagnie des Phosphates de Gafsa Three-Day General Strike — Day 1",
+  city: "Gafsa",
+  lat: 34.42918,
+  lng: 8.85507,
+  address: "Compagnie des Phosphates de Gafsa, Cité Bayech — strike applies across all CPG work sites",
+  postcode: "2100",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://echaabnews.tn/2026/08/17/%D8%A3%D8%B9%D9%88%D8%A7%D9%86-%D9%81%D8%B3%D9%81%D8%A7%D8%B7-%D9%82%D9%81%D8%B5%D8%A9-%D9%8A%D8%B5%D8%B9%D9%91%D8%AF%D9%88%D9%86-%D8%A5%D8%B6%D8%B1%D8%A7%D8%A8-%D8%B4%D8%A7%D9%85%D9%84-%D8%A8/",
+  summary: "Employees and management-grade staff of the state-owned Compagnie des Phosphates de Gafsa are scheduled to begin a complete three-day strike on Tuesday 1 September 2026 across all company workplaces unless their outstanding demands are resolved beforehand. The UGTT strike notice cites failure to implement previous agreements, delayed wage increases and arrears, exceptional advances, career-end allowances, a 4% compensation allowance, employment-status issues and concerns over the company's financial sustainability. The action affects Tunisia's strategically important phosphate sector and may halt or materially reduce mining and processing activity across the Gafsa basin. No specific daily start time has been published, so CityIntel's standard 12:00 timestamp is used for this all-day strike. Risk assessed as Medium because the principal impact is industrial and economic disruption rather than public disorder."
+},
+
+{
+  title: "Compagnie des Phosphates de Gafsa Three-Day General Strike — Day 2",
+  city: "Gafsa",
+  lat: 34.42918,
+  lng: 8.85507,
+  address: "Compagnie des Phosphates de Gafsa, Cité Bayech — strike applies across all CPG work sites",
+  postcode: "2100",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "https://echaabnews.tn/2026/08/17/%D8%A3%D8%B9%D9%88%D8%A7%D9%86-%D9%81%D8%B3%D9%81%D8%A7%D8%B7-%D9%82%D9%81%D8%B5%D8%A9-%D9%8A%D8%B5%D8%B9%D9%91%D8%AF%D9%88%D9%86-%D8%A5%D8%B6%D8%B1%D8%A7%D8%A8-%D8%B4%D8%A7%D9%85%D9%84-%D8%A8/",
+  summary: "The second day of the announced complete Compagnie des Phosphates de Gafsa strike is scheduled for Wednesday 2 September 2026. UGTT structures representing CPG workers have declared that the stoppage will cover all company work sites in support of demands involving implementation of signed agreements, wage increases and arrears, allowances, employment conditions and the financial future of the company. Continued shutdown of phosphate extraction, washing and associated operations may have cumulative effects on production and downstream transport. No specific start time is published because this is an all-day strike; CityIntel therefore uses its standard 12:00 timestamp. Risk assessed as Medium because the strike could significantly affect a strategic national industry without an announced street demonstration or violent component."
+},
+
+{
+  title: "Compagnie des Phosphates de Gafsa Three-Day General Strike — Day 3",
+  city: "Gafsa",
+  lat: 34.42918,
+  lng: 8.85507,
+  address: "Compagnie des Phosphates de Gafsa, Cité Bayech — strike applies across all CPG work sites",
+  postcode: "2100",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-03T12:00:00",
+  source: "https://echaabnews.tn/2026/08/17/%D8%A3%D8%B9%D9%88%D8%A7%D9%86-%D9%81%D8%B3%D9%81%D8%A7%D8%B7-%D9%82%D9%81%D8%B5%D8%A9-%D9%8A%D8%B5%D8%B9%D9%91%D8%AF%D9%88%D9%86-%D8%A5%D8%B6%D8%B1%D8%A7%D8%A8-%D8%B4%D8%A7%D9%85%D9%84-%D8%A8/",
+  summary: "Thursday 3 September 2026 is the final scheduled day of the three-day complete strike by Compagnie des Phosphates de Gafsa employees and executives. The industrial action follows unresolved negotiations over previous agreements, salaries and allowances, employee benefits, internal regulations and the financial sustainability of the phosphate company. If all three days proceed, phosphate production and related industrial activity across the mining basin may experience significant cumulative disruption. No daily start time has been published, so the standard CityIntel 12:00 timestamp is used for the all-day stoppage. Risk assessed as Medium because the primary threat is operational disruption to a strategically important mining sector rather than civil disorder."
+},
+
+{
+  title: "Tataouine Desert Catering and Supply Workers' Strike",
+  city: "El Borma",
+  lat: 31.69151,
+  lng: 9.20548,
+  address: "El Borma and El Kamour oil and energy sites, Tataouine desert — map anchor: El Borma industrial area",
+  postcode: "",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "Medium",
+  time: "2026-09-10T12:00:00",
+  source: "https://echaabnews.tn/2026/08/03/%D8%A5%D8%B6%D8%B1%D8%A7%D8%A8-%D9%85%D8%B1%D8%AA%D9%82%D8%A8-%D9%84%D8%A3%D8%B9%D9%88%D8%A7%D9%86-%D8%A7%D9%84%D8%A5%D8%B9%D8%A7%D8%B4%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D9%85%D9%88%D9%8A%D9%86-%D8%A8/",
+  summary: "The Tataouine Regional Labour Union has issued notice of a full-day strike by catering and supply workers employed at energy-sector sites in the Tataouine desert on Thursday 10 September 2026. The action covers personnel employed through SITEP, OMVENI, SODEPS and TENDE and workers supporting operations at the El Borma and El Kamour sites. The dispute concerns implementation of government Circular No. 09 of 21 May 2025 governing employment contracts and subcontracting, with workers demanding integration into the principal companies rather than continued subcontracted status. No start time has been published, so CityIntel's standard 12:00 timestamp is used for the all-day stoppage. Risk assessed as Medium because reduced catering and logistical support at remote oil and energy installations may affect operations and personnel sustainment, although no associated public demonstration or violent activity has been announced."
+},
+
+{
+  title: "BFPME Employees' One-Day Strike",
+  city: "Tunis",
+  lat: 36.84700,
+  lng: 10.19236,
+  address: "Banque de Financement des Petites et Moyennes Entreprises, 34 Rue Hédi Karray, Centre Urbain Nord, El Menzah IV",
+  postcode: "1004",
+  country: "Tunisia",
+  continent: "Africa",
+  risk: "Low",
+  time: "2026-09-23T12:00:00",
+  source: "https://echaabnews.tn/2026/08/13/%D8%A5%D8%B6%D8%B1%D8%A7%D8%A8-%D8%A8%D9%8A%D9%88%D9%85-%D9%88%D8%A7%D8%AD%D8%AF-%D9%84%D9%85%D9%88%D8%B8%D9%81%D9%8A-%D8%A8%D9%86%D9%83-%D8%AA%D9%85%D9%88%D9%8A%D9%84-%D8%A7%D9%84%D9%85%D8%A4%D8%B3%D8%B3/",
+  summary: "Employees of Tunisia's Banque de Financement des Petites et Moyennes Entreprises are scheduled to conduct a one-day strike on Wednesday 23 September 2026. The basic union says the action concerns protection of employee rights and the long-term viability of the state-backed SME financing institution, including healthcare coverage and financial entitlements for retirees, implementation of signed agreements, remote-working rules, application of Article 412 of the Commercial Code and demands for a strategic rescue programme for the bank. The BFPME operates a national network of regional offices, so some financing and administrative services may be unavailable during the stoppage. No start time has been published, so 12:00 is used as the CityIntel default for the full-day strike. Risk assessed as Low because the principal consequence is temporary banking-service disruption and no street mobilisation or disorder has been announced."
+},
+
+{
+  title: "Our Right to Learn Weekly Education Protest — 1 September",
+  city: "As-Suwayda",
+  lat: 32.70937,
+  lng: 36.56923,
+  address: "Suwayda city centre — recurring campaign assembly point may vary; map anchor: Sultan Pasha al-Atrash Square opposite the Education Directorate",
+  postcode: "",
+  country: "Syria",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.syriahr.com/%D8%A7%D8%B3%D8%AA%D9%85%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D9%88%D9%82%D9%81%D8%A7%D8%AA-%D8%A7%D9%84%D8%A3%D8%B3%D8%A8%D9%88%D8%B9%D9%8A%D8%A9-%D9%84%D8%AD%D9%85%D9%84%D8%A9-%D8%AD%D9%82%D9%86%D8%A7/",
+  summary: "Activists, students and families associated with Suwayda's 'Our Right to Learn' campaign are scheduled to continue their explicitly reported weekly Tuesday protest on 1 September 2026. The campaign is demanding that students from the governorate be allowed to sit their extraordinary basic- and secondary-education examinations at safe centres within Suwayda, with sufficient preparation time, equal educational opportunities and neutral oversight. The dispute remains active immediately before September: campaign organisers objected on 25 August to the government's decision to locate examination centres in northern rural areas, and further student protests took place on 26 August. The extraordinary examination period is scheduled from 29 August to 10 September. The weekly campaign has used several locations in Suwayda, so Sultan Pasha al-Atrash Square outside the Education Directorate is retained transparently as a recurring campaign map anchor rather than asserted as the final 1 September assembly point. No dependable start time has been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the protest is peaceful but occurs amid significant political, security and freedom-of-movement tensions surrounding education and access within Suwayda."
+},
+
+{
+  title: "Our Right to Learn Weekly Education Protest — 8 September",
+  city: "As-Suwayda",
+  lat: 32.70937,
+  lng: 36.56923,
+  address: "Suwayda city centre — recurring campaign assembly point may vary; map anchor: Sultan Pasha al-Atrash Square opposite the Education Directorate",
+  postcode: "",
+  country: "Syria",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-08T12:00:00",
+  source: "https://www.syriahr.com/%D8%A7%D8%B3%D8%AA%D9%85%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D9%88%D9%82%D9%81%D8%A7%D8%AA-%D8%A7%D9%84%D8%A3%D8%B3%D8%A8%D9%88%D8%B9%D9%8A%D8%A9-%D9%84%D8%AD%D9%85%D9%84%D8%A9-%D8%AD%D9%82%D9%86%D8%A7/",
+  summary: "Suwayda's continuing 'Our Right to Learn' campaign is scheduled for its recurring Tuesday protest on 8 September 2026, during the final days of the extraordinary examination period. Students, parents and civil-society activists have demanded safe examination centres within the governorate, adequate preparation time, protection of the right to education and equal treatment compared with students elsewhere in Syria. The campaign was explicitly described in current reporting as holding protests every Tuesday and remained active immediately before September despite the government's decision to authorise an extraordinary examination session. The examination programme itself continues until 10 September, leaving the central dispute unresolved on this date. The exact weekly protest location can vary, so Sultan Pasha al-Atrash Square beside the Education Directorate is used as a transparent map anchor based on previous campaign demonstrations. A reliable start time has not been published and CityIntel's standard 12:00 timestamp is therefore applied. Risk assessed as Medium because the demonstration remains peaceful but takes place in a politically and security-sensitive governorate where disagreement over examination access has already generated protests, movement restrictions and wider local tensions."
+},
+
+{
+  title: "Southern Army Day Mass Rally — Aden",
+  city: "Aden",
+  lat: 12.80853,
+  lng: 45.03050,
+  address: "Sahat Al-Uroudh (Parade Square), Khormaksar District",
+  postcode: "",
+  country: "Yemen",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-01T12:00:00",
+  source: "https://www.aden-tm.net/news/372609",
+  summary: "The Southern Transitional Council has confirmed a major public mobilisation at Sahat Al-Uroudh in Aden's Khormaksar district on Tuesday 1 September 2026, marking the 55th anniversary of the founding of the Southern Army. STC leadership says organisational, media and security preparations are being completed and is calling for large-scale public participation. The mobilisation also carries an explicitly political message supporting the continued cohesion of southern armed formations and opposing Saudi-backed attempts to restructure or dismantle STC-aligned forces, foreign political guardianship and what organisers describe as deteriorating public services and exclusion of southern interests. No reliable start time has yet been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as High because the event is being promoted as a mass mobilisation during a period of acute political and military tension, with substantial crowd concentrations, security deployment, road restrictions and possible confrontation if authorities attempt to constrain the gathering."
+},
+
+{
+  title: "Southern Army Day Mass Rally — Mukalla",
+  city: "Mukalla",
+  lat: 14.54248,
+  lng: 49.12424,
+  address: "Main street outside the Hadramout Governor's Palace / Governorate headquarters, Mukalla",
+  postcode: "",
+  country: "Yemen",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-01T12:00:00",
+  source: "https://south24.net/news/newse.php?nid=5689",
+  summary: "The Hadramout branch of the Southern Transitional Council has formally approved a large public rally outside the Governor's Palace in Mukalla on Tuesday 1 September 2026 for the 55th anniversary of the Southern Army. Organisers say the mobilisation will also protest local-authority policies, political exclusion, deteriorating public services and what they describe as Saudi interference in Hadramout. Tensions have risen sharply ahead of the rally: security forces entered parts of the STC headquarters in Mukalla on 25 August following an attempted storming and overnight cordon, while STC officials have warned that authorities may try to obstruct participation. No dependable start time has yet been published, so CityIntel's standard 12:00 timestamp is used. The exact Governor's Palace coordinate is not reliably published, so central Mukalla is used transparently as the map anchor. Risk assessed as High because of the expected large turnout, recent security confrontation involving STC facilities, politically sensitive government-site location and potential for road closures or clashes if security forces attempt to prevent or restrict the mobilisation."
+},
+
+{
+  title: "Social Security Retirees' Sunday Protest — 6 September",
+  city: "Tehran",
+  lat: 35.70141,
+  lng: 51.36750,
+  address: "Social Security Organization national headquarters, 345 Azadi Street, between North Khosh Street and Behbudi Street",
+  postcode: "1457965595",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-06T12:00:00",
+  source: "https://www.asianewsiran.com/fa/newsagency/40807/iran-social-security-retirees-protest",
+  summary: "Social Security retirees are expected to continue their established Sunday protest in Tehran on 6 September 2026. The recurring campaign was active again on Sunday 23 August, when retirees and pensioners gathered over declining living standards, inflation, inadequate pensions, unpaid arrears, healthcare costs and incomplete implementation of pension-equalisation measures. Current labour reporting explicitly identifies the campaign as the retirees' 'Sunday protests'. A reliable September start time has not been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because socioeconomic demonstrations in Tehran are politically sensitive and may attract security monitoring or intervention, although the current retiree gatherings are principally peaceful labour-rights actions."
+},
+
+{
+  title: "Social Security Retirees' Sunday Protest — 13 September",
+  city: "Tehran",
+  lat: 35.70141,
+  lng: 51.36750,
+  address: "Social Security Organization national headquarters, 345 Azadi Street, between North Khosh Street and Behbudi Street",
+  postcode: "1457965595",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-13T12:00:00",
+  source: "https://www.asianewsiran.com/fa/newsagency/40807/iran-social-security-retirees-protest",
+  summary: "Tehran's established Sunday mobilisation by Social Security retirees is expected to continue on 13 September 2026. Participants are campaigning for pensions that reflect inflation, payment of outstanding entitlements, implementation of pension-adjustment legislation, improved healthcare provision and protection of Social Security funds. Recent consecutive Sunday actions and organiser terminology confirm an ongoing weekly campaign rather than a one-off demonstration. No dependable start time has been announced, so 12:00 is used as the CityIntel default. Risk assessed as Medium because demonstrations involving economic grievances and criticism of state institutions can receive close security attention, although the retiree campaign is organised around socioeconomic demands."
+},
+
+{
+  title: "Social Security Retirees' Sunday Protest — 20 September",
+  city: "Tehran",
+  lat: 35.70141,
+  lng: 51.36750,
+  address: "Social Security Organization national headquarters, 345 Azadi Street, between North Khosh Street and Behbudi Street",
+  postcode: "1457965595",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-20T12:00:00",
+  source: "https://www.hra-news.org/2026/hranews/a-3deaedd2/",
+  summary: "Social Security retirees are expected to maintain their recurring Sunday protest outside the organisation's Tehran headquarters on 20 September 2026. Current demonstrations call for adequate pensions, payment of arrears, free or affordable healthcare, implementation of statutory pension adjustments and government repayment of obligations owed to Social Security funds. The series was continuing immediately before September in Tehran and multiple other Iranian cities. As organisers have not published a reliable September start time, CityIntel's standard 12:00 timestamp is used. Risk assessed as Medium because authorities may closely monitor organised socioeconomic protests, although no violent action forms part of the current retiree campaign."
+},
+
+{
+  title: "Social Security Retirees' Sunday Protest — 27 September",
+  city: "Tehran",
+  lat: 35.70141,
+  lng: 51.36750,
+  address: "Social Security Organization national headquarters, 345 Azadi Street, between North Khosh Street and Behbudi Street",
+  postcode: "1457965595",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-27T12:00:00",
+  source: "https://www.hra-news.org/2026/hranews/a-3deaedd2/",
+  summary: "The recurring Sunday Social Security retirees' mobilisation is expected to continue in Tehran on 27 September 2026. Retirees have repeatedly protested deteriorating purchasing power, inflation, medical costs, unpaid entitlements and incomplete implementation of pension and welfare obligations. Current reporting confirms that the Sunday protest cycle remains active immediately before September. No reliable start time is currently available, so 12:00 is used as CityIntel's standard placeholder. Risk assessed as Medium due to the politically sensitive environment surrounding organised labour and pensioner protest activity, while the present demonstrations themselves remain predominantly peaceful."
+},
+
+{
+  title: "Telecommunications Retirees' Monday Protest — 7 September",
+  city: "Tehran",
+  lat: 35.73488,
+  lng: 51.44612,
+  address: "Ministry of Information and Communications Technology central building, Shariati Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-07T12:00:00",
+  source: "https://www.iranintl.com/202606228768",
+  summary: "Retired employees of Iran's telecommunications sector are expected to continue their established 'Monday protests' in Tehran on 7 September 2026. Recent nationwide Monday demonstrations have demanded full implementation of the 1989/90 employment and welfare regulations, payment of outstanding financial and welfare entitlements, proper pension equalisation, improved supplementary health insurance and accountability from the principal shareholders of the Telecommunications Company of Iran. The campaign remained active on 24 August and has been explicitly described as a weekly Monday series. A reliable start time has not been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because the gathering targets a central government ministry and includes criticism of powerful state-linked organisations, although the current retiree demonstrations have generally remained peaceful."
+},
+
+{
+  title: "Telecommunications Retirees' Monday Protest — 14 September",
+  city: "Tehran",
+  lat: 35.73488,
+  lng: 51.44612,
+  address: "Ministry of Information and Communications Technology central building, Shariati Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-14T12:00:00",
+  source: "https://www.iranintl.com/202606228768",
+  summary: "Tehran telecommunications retirees are expected to continue their weekly Monday protest on 14 September 2026. Participants are demanding implementation of longstanding employment and welfare regulations, payment of arrears, increased welfare benefits, pension equalisation and improvements to supplementary medical insurance. Demonstrations remained active nationwide immediately before September, including a significant Tehran mobilisation on 24 August. No final start time is available, so 12:00 is used as the CityIntel default. Risk assessed as Medium because the protest occurs outside a government ministry and criticism of state-linked telecommunications shareholders may generate close security monitoring, while no deliberate violent action is associated with the campaign."
+},
+
+{
+  title: "Telecommunications Retirees' Monday Protest — 21 September",
+  city: "Tehran",
+  lat: 35.73488,
+  lng: 51.44612,
+  address: "Ministry of Information and Communications Technology central building, Shariati Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-21T12:00:00",
+  source: "https://www.iranintl.com/202606228768",
+  summary: "The established telecommunications retirees' Monday protest campaign is expected to return to Tehran on 21 September 2026. Retirees continue to demand implementation of the sector's employment and welfare regulations, payment of unpaid benefits and arrears, effective pension adjustment and stronger health-insurance coverage. Multiple current sources document the nationwide campaign continuing weekly on Mondays. A dependable September start time has not been published, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because of the government-site location and wider restrictions affecting organised protest activity, although the demonstrators' stated objectives are socioeconomic and labour-related."
+},
+
+{
+  title: "Telecommunications Retirees' Monday Protest — 28 September",
+  city: "Tehran",
+  lat: 35.73488,
+  lng: 51.44612,
+  address: "Ministry of Information and Communications Technology central building, Shariati Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-28T12:00:00",
+  source: "https://www.iranintl.com/202606228768",
+  summary: "Iranian telecommunications retirees are expected to maintain their recurring Monday protest outside the communications ministry in Tehran on 28 September 2026. The campaign concerns unpaid financial and welfare entitlements, pension equalisation, medical insurance and implementation of the sector's longstanding employment regulations. Recent protesters have explicitly pledged to maintain Monday demonstrations until their demands are met. No confirmed start time is available, so 12:00 is used as the CityIntel default. Risk assessed as Medium because labour mobilisation outside a national ministry may result in security monitoring, access controls or intervention, although recent demonstrations have principally involved peaceful assemblies and slogans."
+},
+
+{
+  title: "Kermanshah Telecommunications Retirees' Monday Protest — 7 September",
+  city: "Kermanshah",
+  lat: 34.30956,
+  lng: 47.06016,
+  address: "Kermanshah Province Telecommunications General Directorate, Shahid Madani Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-07T12:00:00",
+  source: "https://ir.voanews.com/a/iran-telecom-retirees-protest/8189760.html",
+  summary: "Telecommunications retirees in Kermanshah are expected to continue their established Monday protest outside the provincial telecommunications administration on 7 September 2026. Kermanshah retirees demonstrated again on 24 August as part of a nationwide weekly campaign demanding implementation of the 1989/90 employment and welfare regulations, payment of outstanding entitlements, pension adjustment and improved supplementary health insurance. The current series has repeatedly included Kermanshah and organisers have pledged to maintain Monday actions until demands are addressed. No verified start time is available, so CityIntel's standard 12:00 timestamp is applied. Risk assessed as Medium because organised labour protests may receive close security attention, although the current Kermanshah gatherings have been principally peaceful."
+},
+
+{
+  title: "Kermanshah Telecommunications Retirees' Monday Protest — 14 September",
+  city: "Kermanshah",
+  lat: 34.30956,
+  lng: 47.06016,
+  address: "Kermanshah Province Telecommunications General Directorate, Shahid Madani Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-14T12:00:00",
+  source: "https://ir.voanews.com/a/iran-telecom-retirees-protest/8189760.html",
+  summary: "The recurring Kermanshah telecommunications retirees' protest is expected to continue on Monday 14 September 2026. Participants seek payment of arrears and welfare benefits, implementation of employment regulations, genuine pension equalisation and improvements to supplementary medical insurance. Recent reporting confirms Kermanshah as one of the cities participating in the nationwide Monday campaign immediately before September. With no dependable start time published, 12:00 is used as CityIntel's default placeholder. Risk assessed as Medium because the gathering criticises state-linked telecommunications management and may attract security monitoring, although no violent tactics are associated with the current campaign."
+},
+
+{
+  title: "Kermanshah Telecommunications Retirees' Monday Protest — 21 September",
+  city: "Kermanshah",
+  lat: 34.30956,
+  lng: 47.06016,
+  address: "Kermanshah Province Telecommunications General Directorate, Shahid Madani Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-21T12:00:00",
+  source: "https://www.iranintl.com/202606228768",
+  summary: "Kermanshah's telecommunications retirees are expected to maintain their weekly Monday protest on 21 September 2026. The nationwide retirees' campaign focuses on unpaid benefits, implementation of the 1989/90 employment and welfare regulations, pension equalisation and health-insurance shortcomings. Kermanshah has appeared repeatedly in current Monday mobilisation reporting and unresolved demands continue to drive the demonstrations. No specific start time has been announced, so the CityIntel 12:00 default is applied. Risk assessed as Medium due to the potential for security monitoring of organised public protest, while current actions remain socioeconomic and predominantly peaceful."
+},
+
+{
+  title: "Kermanshah Telecommunications Retirees' Monday Protest — 28 September",
+  city: "Kermanshah",
+  lat: 34.30956,
+  lng: 47.06016,
+  address: "Kermanshah Province Telecommunications General Directorate, Shahid Madani Street",
+  postcode: "",
+  country: "Iran",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-28T12:00:00",
+  source: "https://www.iranintl.com/202606228768",
+  summary: "The continuing telecommunications retirees' Monday campaign is expected at the Kermanshah provincial telecommunications headquarters on 28 September 2026. Protesters continue to demand unpaid entitlements, improved pensions and medical insurance and implementation of the sector's employment and welfare regulations. Current campaign slogans state that Monday protests will continue until retirees obtain their rights, providing a strong recurring basis for the September record. No verified start time is currently available, so 12:00 is used as the CityIntel standard timestamp. Risk assessed as Medium because organised demonstrations remain subject to security oversight, although recent Kermanshah retiree actions have not been reported as violent."
+},
+
+{
+  title: "Weekly Anti-Government and State Commission of Inquiry Protest — 5 September",
+  city: "Tel Aviv",
+  lat: 32.072364,
+  lng: 34.779723,
+  address: "Habima Square, central Tel Aviv",
+  postcode: "",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-05T20:00:00",
+  source: "https://www.timesofisrael.com/liveblog-august-22-2026/",
+  summary: "Tel Aviv's established weekly Saturday anti-government and pro-democracy demonstration is expected to continue at Habima Square on 5 September 2026. The current campaign demands establishment of a statutory state commission of inquiry into the failures surrounding the 7 October 2023 attack and raises wider concerns involving government accountability, rule of law, democratic institutions and military-service exemptions. The series remained active on 22 August and has operated continuously through the summer. Risk assessed as Medium because the politically charged gathering takes place in central Tel Aviv during an active pre-election period and can involve police deployment, surrounding marches and local road restrictions, although recent Habima rallies have remained predominantly peaceful."
+},
+
+{
+  title: "Weekly Anti-Government and State Commission of Inquiry Protest — 12 September",
+  city: "Tel Aviv",
+  lat: 32.072364,
+  lng: 34.779723,
+  address: "Habima Square, central Tel Aviv",
+  postcode: "",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-12T20:00:00",
+  source: "https://www.timesofisrael.com/liveblog-august-22-2026/",
+  summary: "The established Saturday anti-government demonstration at Habima Square is expected to continue on 12 September 2026. Protesters have been demanding a formal state commission of inquiry into the October 7 failures while campaigning over democratic governance, rule of law, political accountability and equality in military service. Recent consecutive August gatherings confirm the continuing weekly cadence. Risk assessed as Medium because the central-city protest may produce police cordons, pedestrian congestion and temporary road restrictions, although serious disorder is not currently anticipated."
+},
+
+{
+  title: "Weekly Anti-Government and State Commission of Inquiry Protest — 19 September",
+  city: "Tel Aviv",
+  lat: 32.072364,
+  lng: 34.779723,
+  address: "Habima Square, central Tel Aviv",
+  postcode: "",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-19T20:00:00",
+  source: "https://www.timesofisrael.com/liveblog-august-22-2026/",
+  summary: "Tel Aviv's recurring Saturday anti-government and pro-democracy rally is expected at Habima Square on 19 September 2026. Families affected by the October 7 attack, democracy campaigners and opposition activists continue to demand an independent statutory commission of inquiry and government accountability. Risk assessed as Medium because the demonstration occurs during an increasingly politically active period ahead of national elections and may require police deployment and traffic management. The underlying movement remains organised and predominantly peaceful."
+},
+
+{
+  title: "Basimta Café Shabbat Protest and Counter-Protest — 5 September",
+  city: "Jerusalem",
+  lat: 31.783088,
+  lng: 35.216897,
+  address: "Café Basimta, inner courtyard at 6 Agripas Street",
+  postcode: "9430103",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-05T10:00:00",
+  source: "https://www.jpost.com/israel-news/crime-in-israel/article-906249",
+  summary: "Ultra-Orthodox activists are expected to continue their recurring Saturday protest outside Café Basimta in central Jerusalem on 5 September 2026 over the café's decision to operate on Shabbat. Secular activists have simultaneously been attending as a counter-protest in support of the business and freedom from religious restrictions. The dispute reached its eighth consecutive Saturday on 22 August and the café owner has stated that Saturday opening will continue. Risk assessed as Medium because previous gatherings have included protesters breaching or moving police barriers, attempting to approach or enter the café, confrontations with patrons and counter-protesters and police use of force. The crowds themselves are generally limited to dozens, keeping the disruption highly localised."
+},
+
+{
+  title: "Basimta Café Shabbat Protest and Counter-Protest — 12 September",
+  city: "Jerusalem",
+  lat: 31.783088,
+  lng: 35.216897,
+  address: "Café Basimta, inner courtyard at 6 Agripas Street",
+  postcode: "9430103",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-12T10:00:00",
+  source: "https://www.jpost.com/israel-news/crime-in-israel/article-906249",
+  summary: "The established Shabbat protest and counter-protest surrounding Café Basimta is expected to continue on Saturday 12 September 2026. Haredi demonstrators oppose the café's Saturday operation while secular campaigners attend in support of the owners and the right of businesses to operate on Shabbat. Risk assessed as Medium because the small courtyard and alley environment concentrates two opposing groups in close proximity and recent demonstrations have required substantial police separation, barriers and intervention after physical confrontations."
+},
+
+{
+  title: "Basimta Café Shabbat Protest and Counter-Protest — 19 September",
+  city: "Jerusalem",
+  lat: 31.783088,
+  lng: 35.216897,
+  address: "Café Basimta, inner courtyard at 6 Agripas Street",
+  postcode: "9430103",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-19T10:00:00",
+  source: "https://www.jpost.com/israel-news/crime-in-israel/article-906249",
+  summary: "Ultra-Orthodox protesters and secular counter-protesters are expected to return to Café Basimta on 19 September 2026 as the continuing dispute over the café's Shabbat opening enters another Saturday. The protest began in early July and remained uninterrupted through at least eight consecutive weekends in August. Risk assessed as Medium because previous incidents have involved attempts to obstruct or approach the café entrance, physical friction between opposing groups and police intervention. Disruption should remain concentrated around the Agripas Street courtyard and adjoining pedestrian approaches."
+},
+
+{
+  title: "Horev Center Weekly Anti-Government Protest — 5 September",
+  city: "Haifa",
+  lat: 32.78462,
+  lng: 34.98727,
+  address: "Horev Center / Horev Junction, 15 Horev Street",
+  postcode: "3434119",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-05T19:30:00",
+  source: "https://yg.co.il/category/%D7%97%D7%99%D7%A4%D7%94/",
+  summary: "Haifa's established weekly Saturday anti-government demonstration is expected to continue at Horev Center on 5 September 2026. The protest movement campaigns against Prime Minister Benjamin Netanyahu and his government while demanding accountability for the October 7 failures, a state commission of inquiry, protection of democratic institutions and fair elections. Current reporting documents the Horev protest as a continuing weekly fixture through August. Risk assessed as Medium because hundreds of participants can gather around a major urban intersection and previous actions have generated traffic disruption, counter-protest activity and police intervention, although the principal demonstration remains organised and largely peaceful."
+},
+
+{
+  title: "Horev Center Weekly Anti-Government Protest — 12 September",
+  city: "Haifa",
+  lat: 32.78462,
+  lng: 34.98727,
+  address: "Horev Center / Horev Junction, 15 Horev Street",
+  postcode: "3434119",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-12T19:30:00",
+  source: "https://yg.co.il/category/%D7%97%D7%99%D7%A4%D7%94/",
+  summary: "The recurring anti-government protest at Haifa's Horev Center is expected to continue on Saturday 12 September 2026. Participants regularly campaign for government accountability, a statutory investigation of the October 7 attack, protection of democratic institutions and political change ahead of national elections. Risk assessed as Medium because the Horev junction is a major traffic node and sizeable demonstrations may lead to congestion, road-management measures and interaction with opposing protesters. No organised violent activity has been announced."
+},
+
+{
+  title: "Horev Center Weekly Anti-Government Protest — 19 September",
+  city: "Haifa",
+  lat: 32.78462,
+  lng: 34.98727,
+  address: "Horev Center / Horev Junction, 15 Horev Street",
+  postcode: "3434119",
+  country: "Israel",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-19T19:30:00",
+  source: "https://yg.co.il/category/%D7%97%D7%99%D7%A4%D7%94/",
+  summary: "Haifa's weekly anti-government mobilisation is expected at Horev Center again on 19 September 2026. The established campaign opposes the Netanyahu government's policies and handling of the October 7 failures and calls for a state commission of inquiry, democratic accountability and political change. Risk assessed as Medium because the gathering takes place directly around the busy Horev intersection and may result in temporary traffic controls, police deployment and counter-protest activity, although the current weekly series has generally remained peaceful."
+},
+
+{
+  title: "Freedom Is Not a Crime — Joshua Wong Solidarity Action",
+  city: "Taipei",
+  lat: 25.04333,
+  lng: 121.52009,
+  address: "Outside Legislative Yuan Qunxian Building, Jinan Road Section 1, Zhongzheng District",
+  postcode: "100",
+  country: "Taiwan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-02T10:00:00",
+  source: "https://www.civilmedia.tw/event/%E3%80%90%E6%8E%A1%E8%A8%AA%E9%80%9A%E7%9F%A5%E3%80%91%E8%87%AA%E7%94%B1%E4%B8%8D%E6%98%AF%E7%BD%AA%EF%BC%8C%E5%8F%B0%E7%81%A3%E6%B2%92%E6%9C%89%E5%BF%98%E8%A8%98%E3%80%80%E9%BB%83%E4%B9%8B%E9%8B%92",
+  summary: "Hong Kong and Taiwanese civil-society organisations have confirmed a solidarity action outside the Legislative Yuan's Qunxian Building in Taipei from 10:00 to 10:30 on Wednesday 2 September 2026, timed to coincide with Hong Kong democracy activist Joshua Wong's scheduled national-security case plea and sentencing hearing in Hong Kong. Joint organisers include the Hong Kong Human Rights Front, Judicial Reform Foundation, Taiwan Association for Human Rights, Hong Kong Outlanders, New School for Democracy, Economic Democracy Union, Better Generations Association and Amnesty International Taiwan. Participants will demand withdrawal of all charges against Wong and his unconditional release, an end to the use of Hong Kong national-security legislation against peaceful political and human-rights activity, release of political prisoners and a clear response from Taiwan's government and legislature to deteriorating human-rights conditions in Hong Kong. Risk assessed as Low because this is a confirmed 30-minute stationary press-conference-style solidarity action with no march, blockade or hostile counter-demonstration announced, although routine security and pedestrian management can be expected outside the legislature."
+},
+
+
+{
+  title: "Financial Industry Union General Strike and Gwanghwamun Rally",
+  city: "Seoul",
+  lat: 37.5724,
+  lng: 126.9769,
+  address: "Gwanghwamun Square / Sejong-daero, central Seoul",
+  postcode: "03154",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-04T12:00:00",
+  source: "https://www.mt.co.kr/en/finance/2026/08/26/2026082615380428039",
+  summary: "The Korean Financial Industry Union has confirmed a general strike on 4 September 2026, with a major strike rally planned in the Gwanghwamun area. The union secured industrial-action authority after 96.1% of voting members supported collective action, representing a federation covering commercial banks, regional banks, policy banks and several major financial public institutions. Principal demands include introduction of a 4.5-day working week, real-wage increases and opposition to forced regional relocation of financial institutions. A dependable rally start time has not yet been published, so 12:00 is used as the CityIntel default pending final logistics. Risk assessed as High operationally because a large financial-sector strike combined with a central-Seoul rally may cause banking-service disruption, major crowd concentrations, police deployment and road restrictions around Gwanghwamun."
+},
+
+{
+  title: "KCTU Second-Half Struggle Declaration Rally and March",
+  city: "Seoul",
+  lat: 37.56709,
+  lng: 126.98719,
+  address: "Seoul Regional Employment and Labor Office, 363 Samil-daero, Jung-gu",
+  postcode: "04541",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-05T15:00:00",
+  source: "https://nodong.org/notice/7943019",
+  summary: "The Korean Confederation of Trade Unions has confirmed its second-half struggle declaration rally outside the Seoul Regional Employment and Labor Office at 15:00 on Saturday 5 September 2026, followed by a march through central Seoul. Workers from the Seoul metropolitan region, Chungcheong and Gangwon are being concentrated into the Seoul mobilisation while parallel rallies take place elsewhere nationally. Demands include stronger public-service budgets, abolition of discrimination against irregular workers, direct bargaining with principal contractors, labour protections for platform and specially employed workers, reform of the Labor Standards Act and a just transition as artificial intelligence and automation expand. Risk assessed as High because the concentrated multi-region labour mobilisation includes a central-city march and is likely to require substantial police deployment and rolling road restrictions."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 2 September",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, 25 Yulgok-ro 2-gil, Jongno-gu",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-02T12:00:00",
+  source: "https://womenandwar.net/activity-eng",
+  summary: "The Korean Council for Justice and Remembrance for the Issues of Military Sexual Slavery by Japan is scheduled to continue its longstanding Wednesday Demonstration beside the Statue of Peace at 12:00 on 2 September 2026. Participants demand acknowledgement of Japan's wartime military sexual-slavery system, disclosure of official documents, an official apology, reparations, accountability, historical education and memorialisation. Risk assessed as Medium because the diplomatically sensitive gathering regularly operates amid nationalist counter-presence, amplified sound and police separation, although the principal protest remains peaceful."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 9 September",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, 25 Yulgok-ro 2-gil, Jongno-gu",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-09T12:00:00",
+  source: "https://womenandwar.net/activity-eng",
+  summary: "The established Wednesday Demonstration for resolution of Japan's wartime military sexual-slavery issue is scheduled outside the former Japanese Embassy at 12:00 on 9 September 2026. Survivors' advocates and supporting civic groups will continue demands for formal acknowledgement, apology, reparations, accountability and accurate historical education. Risk assessed as Medium because opposing nationalist activists and police barriers may be present around the Statue of Peace even though the principal demonstration itself is organised and non-violent."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 16 September",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, 25 Yulgok-ro 2-gil, Jongno-gu",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-16T12:00:00",
+  source: "https://womenandwar.net/activity-eng",
+  summary: "The Korean Council's weekly Wednesday Demonstration is scheduled to continue beside the Statue of Peace at noon on 16 September 2026. Participants will campaign for a just resolution of Japan's wartime military sexual-slavery system and protection of survivors' dignity and historical memory. Risk assessed as Medium because the former-embassy area remains a recurring focal point for competing demonstrations, police cordons and verbal confrontation, while serious disorder is not currently anticipated."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 23 September",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, 25 Yulgok-ro 2-gil, Jongno-gu",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-23T12:00:00",
+  source: "https://womenandwar.net/activity-eng",
+  summary: "The longstanding Wednesday Demonstration outside the former Japanese Embassy is scheduled for 12:00 on 23 September 2026. The action continues demands that Japan recognise its wartime military sexual-slavery system as a war crime, disclose historical documentation, provide an official apology and reparations and ensure accountability and remembrance. Risk assessed as Medium because hostile counter-presence and police separation remain possible at this diplomatically sensitive site."
+},
+
+{
+  title: "Wednesday Demonstration for Wartime Sexual-Slavery Justice — 30 September",
+  city: "Seoul",
+  lat: 37.5737,
+  lng: 126.9811,
+  address: "Peace Road and Statue of Peace, 25 Yulgok-ro 2-gil, Jongno-gu",
+  postcode: "03143",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-30T12:00:00",
+  source: "https://womenandwar.net/activity-eng",
+  summary: "The Korean Council is scheduled to hold its final regular September Wednesday Demonstration beside the Statue of Peace at 12:00 on 30 September 2026. Participants will continue campaigning for acknowledgement, apology, reparations, accountability and accurate remembrance of victims of Japan's wartime military sexual-slavery system. Risk assessed as Medium because the embassy-area protest remains politically sensitive and can attract opposing activists, amplified sound and substantial police management."
+},
+
+{
+  title: "SADD Wednesday Disability-Rights Bus Protest — 2 September",
+  city: "Seoul",
+  lat: 37.58618,
+  lng: 127.00178,
+  address: "Hyehwa-dong Rotary, Jongno-gu",
+  postcode: "",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-02T08:00:00",
+  source: "https://rki.kbs.co.kr/service/news_view.htm?Seq_Code=203774&lang=e",
+  summary: "Solidarity Against Disability Discrimination is scheduled to continue its Wednesday morning bus protest at Hyehwa-dong Rotary at 08:00 on 2 September 2026. The group has formally ended its subway-boarding protest campaign following an agreement concerning disability mobility and employment measures, but confirmed that Wednesday bus actions will continue. The campaign seeks improved accessibility, expansion of low-floor buses, reinstatement of rights-centred employment programmes and broader guarantees of mobility and labour rights. Risk assessed as Medium because attempted bus boarding or obstruction during the morning travel period can produce short-term service and roadway disruption even though the action is non-violent."
+},
+
+{
+  title: "SADD Wednesday Disability-Rights Bus Protest — 9 September",
+  city: "Seoul",
+  lat: 37.58618,
+  lng: 127.00178,
+  address: "Hyehwa-dong Rotary, Jongno-gu",
+  postcode: "",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-09T08:00:00",
+  source: "https://rki.kbs.co.kr/service/news_view.htm?Seq_Code=203774&lang=e",
+  summary: "Solidarity Against Disability Discrimination is scheduled to maintain its recurring Wednesday bus-boarding demonstration at Hyehwa-dong Rotary at 08:00 on 9 September 2026. The action focuses on disability mobility rights, universal low-floor bus provision and restoration of employment programmes for people with severe disabilities. Risk assessed as Medium because the morning action may delay buses and create short-duration congestion around the Hyehwa junction, although the organisation has ended its more disruptive subway campaign."
+},
+
+{
+  title: "SADD Wednesday Disability-Rights Bus Protest — 16 September",
+  city: "Seoul",
+  lat: 37.58618,
+  lng: 127.00178,
+  address: "Hyehwa-dong Rotary, Jongno-gu",
+  postcode: "",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-16T08:00:00",
+  source: "https://rki.kbs.co.kr/service/news_view.htm?Seq_Code=203774&lang=e",
+  summary: "The continuing SADD Wednesday disability-rights bus demonstration is scheduled at Hyehwa-dong Rotary from approximately 08:00 on 16 September 2026. Activists continue seeking stronger mobility guarantees and employment rights despite reaching a compromise that ended their subway-boarding campaign. Risk assessed as Medium because protest interaction with scheduled buses during the morning commuter period may produce temporary transport disruption and police or municipal intervention."
+},
+
+{
+  title: "SADD Wednesday Disability-Rights Bus Protest — 23 September",
+  city: "Seoul",
+  lat: 37.58618,
+  lng: 127.00178,
+  address: "Hyehwa-dong Rotary, Jongno-gu",
+  postcode: "",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-23T08:00:00",
+  source: "https://rki.kbs.co.kr/service/news_view.htm?Seq_Code=203774&lang=e",
+  summary: "Solidarity Against Disability Discrimination is scheduled to continue its weekly Wednesday morning bus protest at Hyehwa-dong Rotary on 23 September 2026. Participants are campaigning for accessible public transport, restoration of disability-focused public employment and stronger mobility and labour rights. Risk assessed as Medium because previous bus actions have involved attempts to board or delay services and may cause localised disruption during the morning commute."
+},
+
+{
+  title: "SADD Wednesday Disability-Rights Bus Protest — 30 September",
+  city: "Seoul",
+  lat: 37.58618,
+  lng: 127.00178,
+  address: "Hyehwa-dong Rotary, Jongno-gu",
+  postcode: "",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-30T08:00:00",
+  source: "https://rki.kbs.co.kr/service/news_view.htm?Seq_Code=203774&lang=e",
+  summary: "SADD's recurring Wednesday disability-rights bus campaign is scheduled to continue at Hyehwa-dong Rotary at 08:00 on 30 September 2026. The action remains focused on full low-floor-bus accessibility, mobility rights and public employment protections for people with severe disabilities. Risk assessed as Medium because morning bus operations and road movement around Hyehwa may experience temporary disruption, although the organisation's separate subway campaign has now been discontinued."
+},
+
+{
+  title: "National Migrant Workers' Rally and March to Cheong Wa Dae",
+  city: "Seoul",
+  lat: 37.56709,
+  lng: 126.98719,
+  address: "Seoul Regional Employment and Labor Office, 363 Samil-daero — march toward Cheong Wa Dae",
+  postcode: "04541",
+  country: "South Korea",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-13T14:00:00",
+  source: "https://newscham.net/articles/117069",
+  summary: "KCTU, the Korean Metal Workers' Union, the Migrants' Trade Union and migrant-rights organisations have confirmed a National Migrant Workers' Rally outside the Seoul Regional Employment and Labor Office at 14:00 on Sunday 13 September 2026, followed by a march toward Cheong Wa Dae. Principal demands include freedom for migrant workers to change workplaces, abolition of forced-labour conditions, protection of labour and human rights, reform of the Employment Permit System and implementation of a labour-permit model centred on workers' rights. Risk assessed as Medium because this is a nationwide organised mobilisation followed by a central-Seoul march requiring traffic controls, police liaison and pedestrian management, although no violence has been announced."
+},
+
+{
+  title: "Kanto Earthquake Massacre 103rd-Anniversary Anti-War Demonstration",
+  city: "Tokyo",
+  lat: 35.69660,
+  lng: 139.81403,
+  address: "JR Kinshicho Station South Exit, Kotobashi 3-chome, Sumida City",
+  postcode: "130-0022",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-01T18:30:00",
+  source: "https://stop-kaiken.blog.jp/archives/40682623.html",
+  summary: "The Anti-Constitutional Revision and War Grand March organising network has confirmed an anti-war demonstration at the south exit of Kinshicho Station in Tokyo at 18:30 on 1 September 2026. The mobilisation marks the 103rd anniversary of the killings of Korean and Chinese residents following the 1923 Great Kanto Earthquake and links remembrance of those events with the organisers' contemporary anti-war campaign. Risk assessed as Medium because this is a politically charged evening demonstration beginning at a heavily used central Tokyo transport hub and may require police presence, pedestrian management and temporary traffic controls. No violent action has been announced."
+},
+
+{
+  title: "NO WAR Standing Fukushima — 1 September",
+  city: "Fukushima",
+  lat: 37.75444,
+  lng: 140.45861,
+  address: "Fukushima Station East Exit intersection, 1-1 Sakaemachi",
+  postcode: "960-8031",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-01T18:00:00",
+  source: "https://www.democalendar.jp/",
+  summary: "NO WAR Standing Fukushima has confirmed a peace and anti-war standing action near the intersection outside Fukushima Station's East Exit from 18:00 to 18:45 on Tuesday 1 September 2026. Organisers state that participants may join or leave during the action and that light rain will not automatically cancel the gathering. Risk assessed as Low because this is a short stationary demonstration with no march, blockade or disruptive direct action announced. Minor pedestrian congestion may occur around the station entrance during the evening period."
+},
+
+{
+  title: "Palestine Solidarity Standing — Kashiwa Station",
+  city: "Kashiwa",
+  lat: 35.86230,
+  lng: 139.97130,
+  address: "Kashiwa Station South Exit, 1-1-1 Kashiwa",
+  postcode: "277-0005",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-01T19:00:00",
+  source: "https://www.democalendar.jp/",
+  summary: "Palestine-solidarity activists have confirmed a standing action at the south exit of Kashiwa Station from 19:00 to 20:00 on 1 September 2026. Organisers plan to conduct street fundraising and distribute campaign material while welcoming participants carrying placards. Risk assessed as Low because this is a one-hour stationary demonstration with no procession or deliberate transport obstruction announced. The marker uses Kashiwa Station as the operational map anchor for the confirmed south-exit gathering."
+},
+
+{
+  title: "War No! Rock Action Midosuji Demonstration",
+  city: "Osaka",
+  lat: 34.67808,
+  lng: 135.49507,
+  address: "Shinmachi Kita Park, 1-15 Shinmachi, Nishi Ward",
+  postcode: "550-0013",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-06T16:00:00",
+  source: "https://www.democalendar.jp/",
+  summary: "The War No! Rock Action campaign has confirmed a rally and Midosuji demonstration beginning at Shinmachi Kita Park in Osaka at 16:00 on Sunday 6 September 2026. A roughly 30-minute assembly will precede departure of the demonstration, with organisers encouraging musical instruments and confirming that the action will proceed in rain. Risk assessed as Medium because the event includes a moving demonstration through central Osaka and is likely to require police liaison, rolling traffic controls and pedestrian management along the route. No violent action has been announced."
+},
+
+{
+  title: "Anti-Arms-Exhibition Standing — Chiba Station",
+  city: "Chiba",
+  lat: 35.61286,
+  lng: 140.11434,
+  address: "JR Chiba Station East Exit, in front of Bic Camera, Shin-Chiba, Chuo Ward",
+  postcode: "260-0031",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-06T16:00:00",
+  source: "https://www.democalendar.jp/",
+  summary: "Activists opposing the arms exhibition at Makuhari Messe have confirmed a standing protest outside JR Chiba Station's East Exit, in front of Bic Camera, from 16:00 to 17:00 on 6 September 2026. Participants will campaign against the arms exhibition and collect signatures relating to the issue. Risk assessed as Low because the planned action is stationary, limited to approximately one hour and has no announced blockade or procession. Temporary pedestrian crowding may occur around the busy station frontage."
+},
+
+{
+  title: "Nuclear Phase-Out and Renewables Action — Hibiya Park",
+  city: "Tokyo",
+  lat: 35.67371,
+  lng: 139.75618,
+  address: "Hibiya Park Kasumimon Gate, 1-6 Hibiyakoen, Chiyoda City",
+  postcode: "100-0012",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-06T17:00:00",
+  source: "https://www.democalendar.jp/",
+  summary: "The Nuclear Phase-Out and Renewable Energy Promotion Action Committee has confirmed an action departing from Hibiya Park's Kasumimon Gate at 17:00 on 6 September 2026 and continuing until approximately 17:45. The mobilisation advocates nuclear phase-out and expansion of renewable energy. Risk assessed as Medium because the listing identifies Hibiya Park as a departure point, indicating moving protest activity within Tokyo's central government and business district. Police monitoring, pedestrian controls and short-duration traffic effects are possible, although no violent action has been announced."
+},
+
+{
+  title: "99th Moritomo Case Accountability Demonstration",
+  city: "Osaka",
+  lat: 34.68508,
+  lng: 135.52305,
+  address: "World Federation Peace Statue forecourt, Osaka Castle Park, Chuo Ward",
+  postcode: "540-0002",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-10T18:00:00",
+  source: "https://labornetjp2.org/events/event/%E6%A3%AE%E5%8F%8B%E4%BA%8B%E4%BB%B6%E3%81%AF%E6%9C%AA%E8%A7%A3%E6%B1%BA%E3%81%A0%EF%BC%81%E6%80%92%E3%82%8A%E3%81%AE%E3%83%87%E3%83%A2%E3%82%92%EF%BC%81%E7%AC%AC99%E5%9B%9E%EF%BC%889-10-1800/",
+  summary: "Campaigners seeking further accountability over the Moritomo Gakuen scandal have confirmed their 99th protest in Osaka on Thursday 10 September 2026. Participants will assemble at 18:00 in the forecourt of the World Federation Peace Statue inside Osaka Castle Park, diagonally opposite the Osaka Prefectural Government offices, before the demonstration departs at 18:40. Risk assessed as Medium because this is a moving political protest beside a major government complex and may require police presence and traffic management. The map coordinates represent the adjacent Otemon-side forecourt used to anchor the named statue assembly area."
+},
+
+{
+  title: "Sing for Peace — Shimokitazawa Station",
+  city: "Tokyo",
+  lat: 35.66169,
+  lng: 139.66764,
+  address: "Shimokitazawa Station East Exit plaza, Kitazawa 2-chome, Setagaya City",
+  postcode: "155-0031",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-12T15:00:00",
+  source: "https://www.democalendar.jp/",
+  summary: "The Peace Cappella Project has confirmed its 'Sing for Peace' public action at the East Exit plaza of Shimokitazawa Station from 15:00 to 16:00 on Saturday 12 September 2026. The gathering will use collective singing as a public peace and anti-war action and organisers state that it will proceed in rain. Risk assessed as Low because this is a stationary one-hour gathering in a pedestrian plaza with no march, road occupation or confrontational direct action announced. Some temporary pedestrian congestion is possible around the station."
+},
+
+{
+  title: "Tokyo High Court Demonstration — Masaki Osaka Support Campaign",
+  city: "Tokyo",
+  lat: 35.67371,
+  lng: 139.75618,
+  address: "Hibiya Park Kasumimon Gate, 1-6 Hibiyakoen, Chiyoda City",
+  postcode: "100-0012",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-17T12:00:00",
+  source: "https://stop-kaiken.blog.jp/",
+  summary: "The Hoshino-Osaka support network has scheduled a demonstration connected to its campaign concerning Masaki Osaka and proceedings at the Tokyo High Court for 12:00 on Thursday 17 September 2026. The confirmed assembly point is Hibiya Park's Kasumimon Gate. The current organiser schedule does not publish a detailed procession route, so the record is anchored at the confirmed starting point rather than assuming a final route. Risk assessed as Medium because a moving political demonstration in the Hibiya and judicial-government district may require police deployment, traffic management and access controls, although no violent intent has been announced."
+},
+
+{
+  title: "Protest Against Proposed Flag-Desecration Offence — Prime Minister's Office",
+  city: "Tokyo",
+  lat: 35.67306,
+  lng: 139.74306,
+  address: "Prime Minister's Office, 2-3-1 Nagatacho, Chiyoda City",
+  postcode: "100-8968",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-17T19:30:00",
+  source: "https://www.democalendar.jp/",
+  summary: "The liaison group opposing creation of a criminal offence covering damage to the Japanese flag has confirmed its recurring monthly protest outside the Prime Minister's Office at 19:30 on Thursday 17 September 2026. Organisers are campaigning against proposals to introduce what they describe as a flag-desecration offence. Risk assessed as Medium because the gathering directly targets the Prime Minister's Office, where police barriers, security cordons and controlled pedestrian access should be expected even for relatively small peaceful demonstrations. No violent action has been announced."
+},
+
+{
+  title: "Anti-War Yokosuka Mobilisation — Yokosuka-Chuo Station",
+  city: "Yokosuka",
+  lat: 35.27854,
+  lng: 139.67040,
+  address: "Keikyu Yokosuka-Chuo Station plaza, 2-25 Wakamatsucho",
+  postcode: "238-0007",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-23T14:00:00",
+  source: "https://stop-kaiken.blog.jp/archives/40744380.html",
+  summary: "The Anti-Constitutional Revision and War Grand March network and its Kanagawa branch have confirmed a mobilisation at the plaza outside Keikyu Yokosuka-Chuo Station at 14:00 on Wednesday 23 September 2026. Organisers frame the action as opposition to expanding Japanese and US military preparations and the prospect of conflict involving China, with Yokosuka's major naval facilities forming the wider context for the campaign. Risk assessed as Medium because anti-base and military-policy demonstrations in central Yokosuka can attract significant police monitoring and may affect pedestrian or road movement if the mobilisation proceeds beyond the station plaza. The currently published schedule does not provide a final march route."
+},
+
+{
+  title: "World Climate Action in Osaka — Climate March",
+  city: "Osaka",
+  lat: 34.69353,
+  lng: 135.50401,
+  address: "Osaka City Central Public Hall, 1-1-27 Nakanoshima, Kita Ward — march to Nishi-Umeda Park",
+  postcode: "530-0005",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-27T16:15:00",
+  source: "https://no-war.sakura.ne.jp/annai1.html",
+  summary: "World Climate Action in Osaka has confirmed a climate march departing from Osaka City Central Public Hall at 16:15 on Sunday 27 September 2026 and proceeding to Nishi-Umeda Park. The march follows an indoor climate programme beginning at 13:30 at the Central Public Hall. Participants will campaign for stronger action on climate change and related environmental issues. Risk assessed as Medium because the confirmed moving demonstration will cross central Osaka and may require rolling traffic restrictions, police liaison, stewarding and pedestrian management. No violent action has been announced."
+},
+
+
+{
+  title: "Aksi Kamisan Surabaya Weekly Human-Rights Protest — 3 September",
+  city: "Surabaya",
+  lat: -7.26381,
+  lng: 112.74279,
+  address: "Taman Apsari, Jalan Gubernur Suryo, opposite Gedung Negara Grahadi",
+  postcode: "60271",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-03T15:00:00",
+  source: "projectarek.id/reportase/kamisan-siapa-yang-merdeka",
+  summary: "Aksi Kamisan Surabaya is scheduled to continue its established weekly Thursday demonstration at Taman Apsari opposite Gedung Negara Grahadi on 3 September 2026. The movement campaigns for justice and accountability over historic and contemporary human-rights violations while regularly incorporating local civil-rights, land and social-justice issues. Consecutive August gatherings confirm that the series remains active immediately before September. Risk assessed as Low because recent events have involved relatively small peaceful crowds remaining around the pavement and park area, although police monitoring is common because the gathering faces a major provincial government building."
+},
+
+{
+  title: "Aksi Kamisan Surabaya Weekly Human-Rights Protest — 10 September",
+  city: "Surabaya",
+  lat: -7.26381,
+  lng: 112.74279,
+  address: "Taman Apsari, Jalan Gubernur Suryo, opposite Gedung Negara Grahadi",
+  postcode: "60271",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-10T15:00:00",
+  source: "projectarek.id/reportase/kamisan-siapa-yang-merdeka",
+  summary: "The established Surabaya Aksi Kamisan is scheduled to continue outside Gedung Negara Grahadi on Thursday 10 September 2026. Participants use speeches, posters and black symbolic imagery to demand resolution of human-rights abuses and wider accountability while providing space for current local justice campaigns. Risk assessed as Low because the recurring demonstration is normally small and peaceful, with modest pavement congestion and routine police monitoring the main operational effects."
+},
+
+{
+  title: "Aksi Kamisan Surabaya Weekly Human-Rights Protest — 17 September",
+  city: "Surabaya",
+  lat: -7.26381,
+  lng: 112.74279,
+  address: "Taman Apsari, Jalan Gubernur Suryo, opposite Gedung Negara Grahadi",
+  postcode: "60271",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-17T15:00:00",
+  source: "projectarek.id/reportase/kamisan-siapa-yang-merdeka",
+  summary: "Aksi Kamisan Surabaya's weekly human-rights protest is scheduled to continue at Taman Apsari opposite Grahadi on 17 September 2026. The action maintains public attention on unresolved serious human-rights violations, impunity and contemporary social-justice concerns. Risk assessed as Low because the current series has remained controlled and non-violent, although the prominent government-site location can result in visible police presence and temporary pedestrian management."
+},
+
+{
+  title: "Aksi Kamisan Surabaya Weekly Human-Rights Protest — 24 September",
+  city: "Surabaya",
+  lat: -7.26381,
+  lng: 112.74279,
+  address: "Taman Apsari, Jalan Gubernur Suryo, opposite Gedung Negara Grahadi",
+  postcode: "60271",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-24T15:00:00",
+  source: "projectarek.id/reportase/kamisan-siapa-yang-merdeka",
+  summary: "The recurring Aksi Kamisan Surabaya demonstration is scheduled outside Gedung Negara Grahadi on Thursday 24 September 2026. Participants will continue advocating justice for victims of human-rights violations and raising contemporary civil-rights and social-justice concerns. Risk assessed as Low because the established gathering is peaceful and normally limited in size, with police observation and minor local pavement congestion the principal operational effects."
+},
+
+{
+  title: "Aksi Kamisan Weekly Human-Rights Protest — 3 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Merdeka Palace, Jalan Medan Merdeka Barat",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-03T15:00:00",
+  source: "daerah.sindonews.com/read/1741095/6/fathimah-azzahra-dijadwalkan-hadiri-aksi-kamisan-di-depan-istana-1787209729",
+  summary: "Aksi Kamisan is scheduled to continue its established Thursday human-rights protest opposite Merdeka Palace on 3 September 2026. Victims' families, students and civil-society activists gather in black clothing with black umbrellas to demand accountability for unresolved serious human-rights violations and wider protection of democracy, rule of law and civil liberties. The movement remains active immediately before September, with its 920th and 921st gatherings documented on 13 and 20 August and the current format operating from approximately 15:00 to 17:00. Risk assessed as Low because this is an established peaceful and stationary demonstration, although police monitoring and palace-perimeter controls are possible."
+},
+
+{
+  title: "Aksi Kamisan Weekly Human-Rights Protest — 10 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Merdeka Palace, Jalan Medan Merdeka Barat",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-10T15:00:00",
+  source: "daerah.sindonews.com/read/1741095/6/fathimah-azzahra-dijadwalkan-hadiri-aksi-kamisan-di-depan-istana-1787209729",
+  summary: "The established Aksi Kamisan weekly human-rights gathering is scheduled to continue opposite Merdeka Palace on Thursday 10 September 2026. Participants use a peaceful stationary protest to demand justice for unresolved human-rights abuses, accountability and stronger protection of democratic and constitutional rights. Current August gatherings confirm the weekly series remains active and normally operates during the late afternoon. Risk assessed as Low because the demonstration is normally small, organised and peaceful, with palace security and limited pedestrian controls being the principal operational considerations."
+},
+
+{
+  title: "Aksi Kamisan Weekly Human-Rights Protest — 17 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Merdeka Palace, Jalan Medan Merdeka Barat",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-17T15:00:00",
+  source: "daerah.sindonews.com/read/1741095/6/fathimah-azzahra-dijadwalkan-hadiri-aksi-kamisan-di-depan-istana-1787209729",
+  summary: "Aksi Kamisan's long-running Thursday protest is scheduled to continue opposite the presidential palace on 17 September 2026. Families of victims and supporting activists will maintain demands for resolution of historic and contemporary human-rights cases, an end to impunity and stronger democratic accountability. Risk assessed as Low because the established format is peaceful and stationary, although the politically sensitive location directly opposite the palace means routine police monitoring should be expected."
+},
+
+{
+  title: "Aksi Kamisan Weekly Human-Rights Protest — 24 September",
+  city: "Jakarta",
+  lat: -6.1702,
+  lng: 106.8240,
+  address: "Opposite Merdeka Palace, Jalan Medan Merdeka Barat",
+  postcode: "10110",
+  country: "Indonesia",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-24T15:00:00",
+  source: "daerah.sindonews.com/read/1741095/6/fathimah-azzahra-dijadwalkan-hadiri-aksi-kamisan-di-depan-istana-1787209729",
+  summary: "The recurring Aksi Kamisan human-rights protest is scheduled opposite Merdeka Palace on Thursday 24 September 2026 as part of the movement's continuing weekly campaign. Participants traditionally wear black, carry black umbrellas and demand truth, justice and accountability for unresolved human-rights violations. Risk assessed as Low because recent actions have remained peaceful and static, with limited security restrictions around the presidential district the main operational consideration."
+},
+
+
+{
+  title: "11-Party Alliance Dhaka–Chattogram Long March",
+  city: "Dhaka",
+  lat: 23.72662,
+  lng: 90.42166,
+  address: "Shapla Chattar, Motijheel — road convoy to Laldighi Maidan, Chattogram",
+  postcode: "1000",
+  country: "Bangladesh",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-05T07:00:00",
+  source: "bdnews24.com/politics/9a5510411857",
+  summary: "The Jamaat-e-Islami-led 11-party opposition alliance has confirmed a major road long march from Shapla Chattar in Dhaka to Chattogram on 5 September 2026, departing at 07:00. At least 1,000 vehicles are expected to join the initial convoy, with additional participants joining along the route and roadside rallies planned at several locations. The march will ultimately conclude at Laldighi Maidan in Chattogram. Its demands include implementation of the referendum mandate, justice over the July mass killings, resolution of electricity, fuel, gas and fertiliser shortages, lower essential-goods prices, improved law and order and an end to partisan influence in government administration. Organisers have coordinated with police and say one side of the highway will remain available to ordinary traffic. Risk assessed as High because the large intercity vehicle convoy and repeated roadside rallies are likely to cause material disruption along the Dhaka–Chattogram corridor despite the organisers' stated intention to operate peacefully."
+},
+
+
+{
+  title: "Jharkhand Congress Protest Against MMDR Amendment",
+  city: "Ranchi",
+  lat: 23.38130,
+  lng: 85.31753,
+  address: "Lok Bhavan, Ranchi",
+  postcode: "834001",
+  country: "India",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-07T12:00:00",
+  source: "theprint.in/india/mines-bill-restricting-states-powers-to-levy-taxes-jkhand-cong-to-launch-protest-from-aug-27/3021651/",
+  summary: "The Jharkhand Pradesh Congress Committee has announced a day-long protest at Lok Bhavan in Ranchi on 7 September 2026 as part of a phased campaign opposing the Mines and Minerals (Development and Regulation) Amendment Act. The party argues that the legislation restricts states' taxation powers over mineral rights and mineral-bearing land and threatens Jharkhand's financial interests. The Ranchi protest follows district-headquarters actions on 27 August and will be followed by sit-ins at block headquarters between 9 and 16 September. No dependable start time has yet been published, so 12:00 is used as the CityIntel default. Risk assessed as Medium because the gathering targets the Governor's official residence and is part of a statewide political mobilisation, with police access controls and local traffic disruption likely, although no violence has been announced."
+},
+
+{
+  title: "CJP Youth Protest March — India Gate to Delhi Police Headquarters",
+  city: "New Delhi",
+  lat: 28.61293,
+  lng: 77.22949,
+  address: "India Gate — march to New Delhi Police Headquarters",
+  postcode: "110001",
+  country: "India",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-05T12:00:00",
+  source: "indianexpress.com/article/india/cockroach-janta-party-cjp-delhi-march-september-5-india-gate-police-neet-10847453/",
+  summary: "The Cockroach Janta Party has confirmed a youth protest march in New Delhi on 5 September 2026 from India Gate to the New Delhi Police Headquarters. The demonstration will be led by families of deceased NEET aspirants and people whom the movement identifies as victims of police brutality. Organisers accuse the government of failing to fulfil commitments made when the previous student agitation was suspended on 25 July, including withdrawal of FIRs, protection from punitive action and assistance for bereaved families. No dependable start time has yet been published, so 12:00 is used as the CityIntel default placeholder. Risk assessed as High because CJP's previous major Delhi march on 20 July resulted in serious clashes, tear gas and baton use, extensive security deployment and approximately 180 combined protester and police injuries. A substantial police operation should be expected even though organisers describe the 5 September march as peaceful."
+},
+
+{
+  title: "PTI September 27 Long March to Islamabad",
+  city: "Islamabad",
+  lat: 33.68440,
+  lng: 73.04790,
+  address: "Islamabad — long-march destination; final assembly point and route TBC",
+  postcode: "44000",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "High",
+  time: "2026-09-27T12:00:00",
+  source: "dawn.com/news/2024190",
+  summary: "Pakistan Tehreek-e-Insaf has retained its plan for a major long march toward Islamabad on 27 September 2026, with party and allied leaders mobilising supporters nationally. The campaign centres on demands concerning imprisoned former prime minister Imran Khan, including implementation of court orders, access for his family, lawyers and doctors, expedited legal proceedings and his release. PTI has also announced protest mobilisation across cities and districts. The exact Islamabad termination point, route and start time have not yet been published, so Islamabad is used as the destination marker and 12:00 as the CityIntel default placeholder. Risk assessed as High because this is a national opposition mobilisation toward the federal capital with strong potential for extensive road closures, police cordons, transport disruption, arrests and confrontation. Authorities have already strengthened security arrangements in the Rawalpindi-Islamabad area ahead of the march."
+},
+
+{
+  title: "Jamaat-e-Islami Rally Against Petroleum Levy and Fuel Taxes",
+  city: "Mingora",
+  lat: 34.77610,
+  lng: 72.36110,
+  address: "Mingora, Swat — final rally venue TBC",
+  postcode: "19130",
+  country: "Pakistan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-04T12:00:00",
+  source: "thepublicpurview.com/mingora-set-for-fuel-levy-protest/",
+  summary: "Jamaat-e-Islami Pakistan Emir Hafiz Naeem-ur-Rehman is scheduled to address a public rally in Mingora on 4 September 2026 against the petroleum levy and taxes imposed on petroleum products. The mobilisation forms part of Jamaat-e-Islami's continuing campaign against higher fuel costs and taxation, with party leaders stating that sit-ins and protests will continue until their demands are addressed. A final assembly venue and start time have not yet been published, so central Mingora is used as the map anchor and 12:00 as the CityIntel default placeholder. Risk assessed as Medium because this is a politically mobilised city-centre protest capable of producing significant crowd and traffic effects, although no violence or blockade has been announced."
+},
+
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 1 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-01T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "Georgia's continuous pro-European protest movement is expected to continue outside Parliament in Tbilisi on 1 September. The movement had reached its 636th consecutive day by 25 August 2026, with participants continuing to demand Georgia's return to its Euro-Atlantic course, release of political prisoners, repeal of restrictive measures and free and fair elections. Daily gatherings have traditionally begun around 19:00. Risk assessed as Medium because the protest takes place beside Parliament in a politically sensitive environment with continuing police and legal restrictions, although recent daily gatherings have generally remained peaceful and relatively small."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 2 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-02T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "The established nightly pro-European and anti-government gathering is expected to continue outside the Georgian Parliament on 2 September. Protesters are campaigning for new free and fair elections, release of political prisoners, repeal of restrictive measures and restoration of Georgia's Euro-Atlantic trajectory. The movement remains active every day after more than 600 consecutive days. Risk assessed as Medium because of the sensitive parliamentary location and history of police enforcement around the protest movement, although no specific violent action is announced."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 3 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-03T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "Supporters of Georgia's European integration are expected to continue their nightly protest outside Parliament on 3 September. The continuous movement opposes the government's political direction and calls for free elections, the release of detained activists and opposition figures, repeal of repressive legislation and renewed Euro-Atlantic integration. Risk assessed as Medium because police monitoring and assembly restrictions remain possible around the parliamentary district, while current daily actions themselves remain predominantly peaceful."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 4 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-04T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "The continuing Tbilisi pro-European protest movement is expected to assemble outside Parliament again on 4 September as part of its established daily campaign. Participants continue to demand political prisoners' release, free and fair elections and restoration of Georgia's European integration course. Risk assessed as Medium because the government-site location, ongoing restrictions on protest activity and potential police intervention create an elevated operational environment despite the recent peaceful format."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 5 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-05T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "Georgia's continuous pro-European anti-government campaign is expected to continue outside Parliament on Saturday 5 September. Weekend mobilisations have periodically been larger than ordinary weekday gatherings, with separate Saturday marches also occurring during the current protest cycle. Core demands remain free elections, release of political prisoners and restoration of Georgia's Euro-Atlantic course. Risk assessed as Medium because weekend turnout and moving protest activity may increase pedestrian and security impacts, although no separate 5 September march route has yet been announced."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 6 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-06T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "The long-running nightly protest supporting Georgia's European integration is expected to continue at Parliament on 6 September. Demonstrators remain opposed to the Georgian Dream government's political course and continue demanding free elections, release of political prisoners and reversal of restrictive measures against dissent. Risk assessed as Medium due to continuing police monitoring and the politically sensitive location rather than any currently announced violent intent."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 7 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-07T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "Supporters of Georgia's pro-European protest movement are expected to maintain their recurring evening presence outside Parliament on 7 September. The campaign has continued without interruption since November 2024 and centres on demands for European integration, new free elections and release of those described by protesters as political prisoners. Risk assessed as Medium because restrictions, police presence and politically charged interactions remain possible around the government district."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 8 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-08T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "The established daily pro-European and anti-government demonstration is expected to continue outside the Georgian Parliament at approximately 19:00 on 8 September. Protesters continue demanding free elections, release of political prisoners, repeal of restrictive legislation and a return to Georgia's Euro-Atlantic path. Risk assessed as Medium because the protest remains subject to close law-enforcement management and assembly restrictions, although recent nightly gatherings have been largely peaceful."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 9 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-09T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "Tbilisi's continuing pro-European protest movement is expected to assemble outside Parliament again on 9 September. The campaign remains active after more than 600 consecutive days and continues to focus on democratic elections, political-prisoner releases and Georgia's European political orientation. Risk assessed as Medium because of the government-site setting and history of enforcement actions against demonstrators, while no event-specific disorder has been announced."
+},
+
+{
+  title: "Daily Pro-European Anti-Government Protest — 10 September",
+  city: "Tbilisi",
+  lat: 41.69677,
+  lng: 44.79803,
+  address: "Parliament of Georgia, 8 Shota Rustaveli Avenue",
+  postcode: "0118",
+  country: "Georgia",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-09-10T19:00:00",
+  source: "Caucasian Knot — 25 August 2026, 636th consecutive protest day",
+  summary: "The nightly pro-European anti-government protest outside Parliament is expected to continue on 10 September as part of Georgia's uninterrupted protest movement. Participants continue to demand free and fair elections, release of political prisoners, removal of restrictive measures and restoration of Georgia's Euro-Atlantic course. Risk assessed as Medium because the central parliamentary location remains subject to police controls and politically sensitive enforcement, although the established daily gathering is currently predominantly peaceful."
+},
+
+{
+  title: "World Peace Day — Altınoluk Peace March",
+  city: "Altınoluk",
+  lat: 39.56466,
+  lng: 26.74756,
+  address: "Altınoluk town centre, Edremit — exact 2026 assembly point and route TBC",
+  postcode: "10870",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-01T12:00:00",
+  source: "Edremit Municipality — official 2026 World Peace Day programme",
+  summary: "Edremit Municipality has confirmed a World Peace Day peace march in Altınoluk on 1 September 2026, followed by a concert featuring Ali Altay and Greek artists. The municipality describes the action as part of its official programme promoting peace, friendship and cross-border cultural solidarity. The exact 2026 march starting point, route and start time have not yet been published, so the marker represents central Altınoluk rather than a confirmed assembly point and 12:00 is used as the CityIntel default placeholder. Risk assessed as Low because this is a municipality-supported peaceful civic march with no indication of confrontation or disruptive direct action."
+},
+
+{
+  title: "Yüksekova Missing Persons Weekly Justice Action — 5 September",
+  city: "Yüksekova",
+  lat: 37.57050,
+  lng: 44.28205,
+  address: "Sanat Sokağı / Kültür Sanat Caddesi, central Yüksekova",
+  postcode: "30300",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-05T12:00:00",
+  source: "İHD Hakkari and missing-persons families — recurring weekly Yüksekova action",
+  summary: "İHD Hakkari and relatives of missing persons are scheduled to continue their weekly justice action at Sanat Sokağı in Yüksekova at 12:00 on 5 September 2026. The campaign calls for unresolved disappearances and killings from the 1990s to be investigated, the fate of victims to be established and those responsible to face judicial accountability. The series was held at the same location and time on 8, 15 and 22 August, reaching its 241st week. Risk assessed as Low because recent actions have consisted of controlled press statements and short sit-ins without disorder."
+},
+
+{
+  title: "Yüksekova Missing Persons Weekly Justice Action — 12 September",
+  city: "Yüksekova",
+  lat: 37.57050,
+  lng: 44.28205,
+  address: "Sanat Sokağı / Kültür Sanat Caddesi, central Yüksekova",
+  postcode: "30300",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-12T12:00:00",
+  source: "İHD Hakkari and missing-persons families — recurring weekly Yüksekova action",
+  summary: "The established İHD Hakkari and missing-persons families' weekly human-rights action is scheduled to continue at Sanat Sokağı at 12:00 on 12 September 2026. Participants display photographs of missing or killed relatives and call for truth, investigation and an end to impunity. Recent consecutive August actions confirm the continuing weekly cadence. Risk assessed as Low because the activity is small, stationary and peaceful."
+},
+
+{
+  title: "Yüksekova Missing Persons Weekly Justice Action — 19 September",
+  city: "Yüksekova",
+  lat: 37.57050,
+  lng: 44.28205,
+  address: "Sanat Sokağı / Kültür Sanat Caddesi, central Yüksekova",
+  postcode: "30300",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-19T12:00:00",
+  source: "İHD Hakkari and missing-persons families — recurring weekly Yüksekova action",
+  summary: "İHD Hakkari and relatives of the disappeared are scheduled to hold their recurring Saturday justice gathering at Sanat Sokağı in Yüksekova at 12:00 on 19 September 2026. The campaign focuses on unresolved disappearance, extrajudicial-killing and accountability cases and has continued consistently through August. Risk assessed as Low because no disruptive action or disorder has been associated with the current weekly gatherings."
+},
+
+{
+  title: "Yüksekova Missing Persons Weekly Justice Action — 26 September",
+  city: "Yüksekova",
+  lat: 37.57050,
+  lng: 44.28205,
+  address: "Sanat Sokağı / Kültür Sanat Caddesi, central Yüksekova",
+  postcode: "30300",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-26T12:00:00",
+  source: "İHD Hakkari and missing-persons families — recurring weekly Yüksekova action",
+  summary: "The Yüksekova weekly missing-persons justice campaign is scheduled to continue at Sanat Sokağı at 12:00 on 26 September 2026. İHD representatives and victims' relatives will continue demanding investigation of unresolved disappearances and killings and prosecution of responsible parties. Risk assessed as Low based on the established peaceful press-statement and sit-in format."
+},
+
+{
+  title: "Missing Persons Families Weekly Justice Sit-In — 5 September",
+  city: "Diyarbakır",
+  lat: 37.92383,
+  lng: 40.21433,
+  address: "Yaşam Hakkı Anıtı, Koşuyolu Parkı, Sunay Caddesi, Bağlar",
+  postcode: "21090",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-05T12:00:00",
+  source: "İHD Diyarbakır and missing-persons families — established weekly Saturday action",
+  summary: "İHD Diyarbakır and families of missing persons are scheduled to continue their weekly 'Kayıplar Bulunsun, Failler Yargılansın' justice action at the Yaşam Hakkı Anıtı in Koşuyolu Parkı at 12:00 on 5 September 2026. The campaign seeks disclosure of the fate of people forcibly disappeared or killed in unresolved cases and prosecution of those responsible. Consecutive actions were documented on 8, 15 and 22 August, reaching the 915th week. Risk assessed as Low because recent gatherings have been small, stationary and peaceful, with no disruptive action announced."
+},
+
+{
+  title: "Missing Persons Families Weekly Justice Sit-In — 12 September",
+  city: "Diyarbakır",
+  lat: 37.92383,
+  lng: 40.21433,
+  address: "Yaşam Hakkı Anıtı, Koşuyolu Parkı, Sunay Caddesi, Bağlar",
+  postcode: "21090",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-12T12:00:00",
+  source: "İHD Diyarbakır and missing-persons families — established weekly Saturday action",
+  summary: "The established İHD Diyarbakır and missing-persons families' weekly justice gathering is scheduled to continue at Koşuyolu Parkı's Yaşam Hakkı Anıtı at 12:00 on 12 September 2026. Participants carry photographs of disappeared relatives and demand truth, effective investigations and accountability for unresolved disappearances and extrajudicial killings. Risk assessed as Low because the established sit-in has continued peacefully through recent weeks without identified disorder."
+},
+
+{
+  title: "Missing Persons Families Weekly Justice Sit-In — 19 September",
+  city: "Diyarbakır",
+  lat: 37.92383,
+  lng: 40.21433,
+  address: "Yaşam Hakkı Anıtı, Koşuyolu Parkı, Sunay Caddesi, Bağlar",
+  postcode: "21090",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-19T12:00:00",
+  source: "İHD Diyarbakır and missing-persons families — established weekly Saturday action",
+  summary: "İHD Diyarbakır and relatives of the disappeared are scheduled to hold their recurring Saturday justice action at the Yaşam Hakkı Anıtı in Koşuyolu Parkı at 12:00 on 19 September 2026. Each week the campaign highlights an unresolved disappearance or killing and reiterates demands that responsible authorities establish the truth and prosecute perpetrators. Risk assessed as Low because this is an established stationary human-rights sit-in with no announced disruptive mechanism."
+},
+
+{
+  title: "Missing Persons Families Weekly Justice Sit-In — 26 September",
+  city: "Diyarbakır",
+  lat: 37.92383,
+  lng: 40.21433,
+  address: "Yaşam Hakkı Anıtı, Koşuyolu Parkı, Sunay Caddesi, Bağlar",
+  postcode: "21090",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-09-26T12:00:00",
+  source: "İHD Diyarbakır and missing-persons families — established weekly Saturday action",
+  summary: "The long-running weekly disappearance-justice sit-in organised by İHD Diyarbakır and missing-persons families is scheduled at Koşuyolu Parkı at 12:00 on 26 September 2026. Participants will continue demanding information on disappeared relatives, accountability and an end to impunity. Risk assessed as Low because the current series has remained small and peaceful, although routine local monitoring can be expected."
+},
+
+
+{
+  title: "Saturday Mothers Weekly Disappearance Justice Sit-In — 5 September",
+  city: "Istanbul",
+  lat: 41.03343,
+  lng: 28.97721,
+  address: "Galatasaray Meydanı, İstiklal Caddesi, Beyoğlu",
+  postcode: "34433",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-05T12:00:00",
+  source: "Cumartesi Anneleri/İnsanları — established weekly schedule; current reporting through 22 August 2026",
+  summary: "Cumartesi Anneleri/İnsanları are scheduled to continue their long-running Saturday sit-in at Galatasaray Square at 12:00 on 5 September 2026. Families of people forcibly disappeared in custody and human-rights defenders gather every Saturday to demand disclosure of the fate of missing relatives, effective investigations and prosecution of those responsible. The series reached its 1117th consecutive weekly mobilisation on 22 August 2026. Risk assessed as Medium because the demonstration is small and peaceful but remains politically sensitive and recent gatherings have taken place amid police barriers around Galatasaray Square. This record is generated from the established weekly Saturday cadence and should be refreshed if authorities announce a restriction or location change."
+},
+
+{
+  title: "Saturday Mothers Weekly Disappearance Justice Sit-In — 12 September",
+  city: "Istanbul",
+  lat: 41.03343,
+  lng: 28.97721,
+  address: "Galatasaray Meydanı, İstiklal Caddesi, Beyoğlu",
+  postcode: "34433",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-12T12:00:00",
+  source: "Cumartesi Anneleri/İnsanları — established weekly schedule; current reporting through 22 August 2026",
+  summary: "The established Saturday Mothers human-rights sit-in is scheduled to continue at Galatasaray Square at 12:00 on 12 September 2026. Participants seek truth and accountability for enforced disappearances and unresolved political killings and traditionally read the story of an individual disappearance before issuing a public statement. The action has continued weekly through August 2026. Risk assessed as Medium because the peaceful stationary gathering remains subject to close police management and barriers in one of Istanbul's busiest pedestrian areas. Refresh if authorities announce any access restriction."
+},
+
+{
+  title: "Saturday Mothers Weekly Disappearance Justice Sit-In — 19 September",
+  city: "Istanbul",
+  lat: 41.03343,
+  lng: 28.97721,
+  address: "Galatasaray Meydanı, İstiklal Caddesi, Beyoğlu",
+  postcode: "34433",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-19T12:00:00",
+  source: "Cumartesi Anneleri/İnsanları — established weekly schedule; current reporting through 22 August 2026",
+  summary: "Cumartesi Anneleri/İnsanları are scheduled to hold their recurring Saturday gathering at Galatasaray Square at 12:00 on 19 September 2026. The decades-long protest demands information on people forcibly disappeared in custody and accountability for those responsible. Recent August gatherings confirm that the weekly campaign remains active. Risk assessed as Medium because the group itself remains peaceful but police barriers and restrictions around the square create some potential for access disruption and confrontation over assembly rights."
+},
+
+{
+  title: "Saturday Mothers Weekly Disappearance Justice Sit-In — 26 September",
+  city: "Istanbul",
+  lat: 41.03343,
+  lng: 28.97721,
+  address: "Galatasaray Meydanı, İstiklal Caddesi, Beyoğlu",
+  postcode: "34433",
+  country: "Turkey",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-09-26T12:00:00",
+  source: "Cumartesi Anneleri/İnsanları — established weekly schedule; current reporting through 22 August 2026",
+  summary: "The Saturday Mothers' established weekly justice sit-in is scheduled at Galatasaray Square at 12:00 on 26 September 2026. Families and human-rights defenders continue to demand disclosure of the fate of people forcibly disappeared and prosecution of responsible officials. The campaign remains active after more than 1,100 weekly gatherings. Risk assessed as Medium due to continuing police management and politically sensitive use of Galatasaray Square rather than any announced violent intent."
+},
+
 {
   title: "Gozo Pride March 2026",
   city: "Victoria",
