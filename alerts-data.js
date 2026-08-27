@@ -12,6 +12,850 @@ window.alertsData =[
 
 
 
+{
+  title: "Hiratsuka Anti-War and Constitutional Rights Standing — 3 October",
+  city: "Hiratsuka",
+  lat: 35.32741,
+  lng: 139.34923,
+  address: "JR Hiratsuka Station North Exit, LUSCA frontage, 1-1 Takaracho",
+  postcode: "254-0034",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-10-03T16:00:00",
+  source: "Demo Calendar Japan",
+  summary: "Hiratsuka Article 9 and civil-society campaigners have confirmed a public standing action outside the north exit of JR Hiratsuka Station from 16:00 to 17:00 on Saturday 3 October 2026. Participants will campaign against war and in support of constitutional protections and the abolition of Japan's secrecy legislation. Risk assessed as Low because this is an established one-hour stationary street action with no march, blockade or deliberate disruption announced."
+},
+
+{
+  title: "Yokodai Anti-War Standing — 6 October",
+  city: "Yokohama",
+  lat: 35.37869,
+  lng: 139.59650,
+  address: "Yokodai Station Square, 3-14-1 Yokodai, Isogo-ku",
+  postcode: "235-0045",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-10-06T18:00:00",
+  source: "Demo Calendar Japan",
+  summary: "The Isogo-ku civic coalition has confirmed an anti-war standing action at Yokodai Station Square from 18:00 to 19:00 on Tuesday 6 October 2026. The mobilisation forms part of continuing local opposition to war and militarisation. Risk assessed as Low because this is a short stationary demonstration and organisers have announced no procession, blockade or other deliberate disruption. Localised pedestrian activity around the station is possible."
+},
+
+{
+  title: "Stop the War — 10.11 Kyoto Anti-War Rally and March",
+  city: "Kyoto",
+  lat: 35.002424,
+  lng: 135.780859,
+  address: "Maruyama Park Music Hall, Maruyamacho, Higashiyama-ku — march to Kyoto City Hall",
+  postcode: "605-0071",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-10-11T14:30:00",
+  source: "Kansai Joint Action",
+  summary: "The October International Anti-War Day organising committee has confirmed a major anti-war rally at Maruyama Park Music Hall in Kyoto from 14:30 on Sunday 11 October 2026. Following speeches and presentations opposing war and military expansion, participants are scheduled to march through central Kyoto to Kyoto City Hall. Risk assessed as Medium because this is a moving city-centre demonstration likely to require traffic and pedestrian management, although no disorder has been announced."
+},
+
+{
+  title: "National Rally Against Nuclear Dry Storage — Takahama",
+  city: "Takahama",
+  lat: 35.48587,
+  lng: 135.54140,
+  address: "Takahama Town Cultural Center, 12-1 Tateishi",
+  postcode: "919-2226",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-10-18T13:30:00",
+  source: "Kansai Joint Action",
+  summary: "Anti-nuclear organisations have confirmed a national rally at Takahama Town Cultural Center from 13:30 to 15:00 on Sunday 18 October 2026 opposing dry-storage facilities intended to support continued operation of ageing nuclear reactors. A public demonstration will follow the rally, with organisers expecting the mobilisation to conclude at approximately 16:00. Risk assessed as Medium because the event combines a regional nuclear-policy protest with a moving demonstration and may require police and traffic management."
+},
+
+{
+  title: "Ittoku Festival 2026 — Freedom, Equality, No War",
+  city: "Tokyo",
+  lat: 35.67583,
+  lng: 139.74472,
+  address: "National Diet Building Front Gate to National Diet Library frontage, 1-7-1 Nagatacho, Chiyoda",
+  postcode: "100-0014",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-10-18T11:45:00",
+  source: "Demo Calendar Japan / Ittoku Festival",
+  summary: "The tenth Ittoku Festival is confirmed outside Japan's National Diet from 11:45 to 20:30 on Sunday 18 October 2026. The politically focused protest festival was established in opposition to secrecy, surveillance and conspiracy legislation and promotes freedom of expression, equality and anti-war campaigning through speeches and live music. Organisers state that the 2026 edition will explicitly oppose the current government's policies. Risk assessed as Medium because this is a long-duration political mobilisation immediately outside the national parliament, creating potential crowd-management and security requirements despite no disorder being announced."
+},
+
+{
+  title: "Hiratsuka Anti-War and Constitutional Rights Standing — 19 October",
+  city: "Hiratsuka",
+  lat: 35.32741,
+  lng: 139.34923,
+  address: "JR Hiratsuka Station North Exit, LUSCA frontage, 1-1 Takaracho",
+  postcode: "254-0034",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Low",
+  time: "2026-10-19T16:00:00",
+  source: "Demo Calendar Japan",
+  summary: "Hiratsuka civil-society campaigners have confirmed a further public standing action outside JR Hiratsuka Station's north exit from 16:00 to 17:00 on Monday 19 October 2026. Participants will campaign against war and legislation they consider harmful to constitutional rights and civil liberties. Risk assessed as Low because the action is an established one-hour stationary demonstration with no procession or deliberate obstruction announced."
+},
+
+{
+  title: "10.21 International Anti-War Day Penlight Demonstration",
+  city: "Osaka",
+  lat: 34.69306,
+  lng: 135.50643,
+  address: "Nakanoshima Park, Women's Statue, south side of Osaka City Hall — march towards Nishiumeda Park",
+  postcode: "530-0005",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-10-21T18:30:00",
+  source: "10.21 Anti-War Demonstration Organising Committee",
+  summary: "Peace and anti-militarisation organisations have confirmed an International Anti-War Day mobilisation in Osaka on Wednesday 21 October 2026. Participants will gather at the Women's Statue in Nakanoshima Park from 18:30 before a planned penlight demonstration departs at 19:00 towards Nishiumeda Park. Organisers are campaigning against war, military expansion and current national and Osaka political policies. Risk assessed as Medium because this is a moving evening demonstration through central Osaka and may require temporary traffic and pedestrian controls. The route remains marked as planned and should be refreshed closer to the event."
+},
+
+{
+  title: "No Missiles at Fuji — Autumn Rally and Parade",
+  city: "Shizuoka",
+  lat: 34.970955,
+  lng: 138.386155,
+  address: "Shizuoka Concert Hall AOI, 7F Auditorium, 1-9 Kuroganecho, Aoi-ku",
+  postcode: "420-0851",
+  country: "Japan",
+  continent: "Asia",
+  risk: "Medium",
+  time: "2026-10-24T13:30:00",
+  source: "Demo Calendar Japan",
+  summary: "The 'No Missiles at Fuji' campaign has confirmed an autumn rally and public parade beginning at Shizuoka Concert Hall AOI at 13:30 on Saturday 24 October 2026. Campaigners oppose missile deployment and military expansion associated with the Fuji area and wider Japanese defence policy. A parade is scheduled following the rally, although the detailed street route has not yet been published. Risk assessed as Medium because the event includes a moving political demonstration likely to require local traffic and pedestrian management. No disorder has been announced."
+},
+
+
+{
+  title: "XV World Roma Congress Public Street Mobilisation — 29 October",
+  city: "Sofia",
+  lat: 42.69438,
+  lng: 23.26715,
+  address: "Fakulteta District — detailed assembly point and route TBC",
+  postcode: "1373",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-29T12:00:00",
+  source: "https://www.ogiromengo.com/en",
+  summary: "OGI E ROMENGO, organiser of the XV World Roma Congress Sofia 2026, has confirmed public celebrations, marches and manifestations on the streets of Sofia across 29-31 October 2026. The organisation states that the World Roma Congress will begin from the Fakulteta district and has held discussions with Sofia Municipality concerning permits for the street activities. This record represents the first day of the three-day public mobilisation. Exact daily route and timing details remain to be published. Risk assessed as Medium because international delegates and public street marches may require traffic management, policing and crowd control, although no disorder has been announced."
+},
+
+{
+  title: "XV World Roma Congress Public Street Mobilisation — 30 October",
+  city: "Sofia",
+  lat: 42.69438,
+  lng: 23.26715,
+  address: "Fakulteta District / Sofia — detailed route TBC",
+  postcode: "1373",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-30T12:00:00",
+  source: "https://www.ogiromengo.com/en",
+  summary: "The XV World Roma Congress organising committee has confirmed that public celebrations, marches and manifestations will continue on the streets of Sofia on Friday 30 October 2026 as part of the three-day international Roma congress. OGI E ROMENGO is coordinating the event and has engaged Sofia Municipality regarding permits. Exact activities, assembly locations and routes for this individual day have not yet been published. Risk assessed as Medium because moving public gatherings involving international participants may cause temporary traffic and pedestrian disruption. No violence or disorder is announced."
+},
+
+{
+  title: "XV World Roma Congress Public Street Mobilisation — 31 October",
+  city: "Sofia",
+  lat: 42.69438,
+  lng: 23.26715,
+  address: "Fakulteta District / Sofia — detailed route TBC",
+  postcode: "1373",
+  country: "Bulgaria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-31T12:00:00",
+  source: "https://www.ogiromengo.com/en",
+  summary: "Public celebrations, marches and manifestations associated with the XV World Roma Congress are confirmed to continue in Sofia on Saturday 31 October 2026, the final day of the congress. The event is organised by OGI E ROMENGO with participation anticipated from Roma organisations and delegates from multiple countries. Detailed daily routing and assembly information remains outstanding and should be refreshed closer to the event. Risk assessed as Medium because the planned street mobilisation may require traffic management and police liaison, while no disruptive or violent activity has been announced."
+},
+
+{
+  title: "VII Lublin Equality March",
+  city: "Lublin",
+  lat: 51.24650,
+  lng: 22.56840,
+  address: "Central Lublin — assembly point and route TBC",
+  postcode: "N/A",
+  country: "Poland",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-17T12:00:00",
+  source: "https://spottedlublin.pl/marsz-rownosci-wraca-do-lublina-po-roku-przerwy-organizatorzy-nie-ma-zgody-na-mowe-nienawisci/",
+  summary: "Stowarzyszenie Unia Równości has confirmed that the seventh Lublin Equality March will return to the streets of central Lublin on Saturday 17 October 2026 following a one-year break. The LGBTQ+ rights demonstration will campaign for equality, dignity and opposition to hate speech, intimidation and social division. The exact assembly point, march route and event programme have not yet been published and should be updated when organisers release further details. Risk assessed as Medium because this will be a moving city-centre demonstration requiring policing and temporary traffic management; no specific disorder or counter-demonstration is currently announced."
+},
+
+{
+  title: "March for Life Vienna 2026",
+  city: "Vienna",
+  lat: 48.19919,
+  lng: 16.37000,
+  address: "Karlsplatz",
+  postcode: "1040",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-10T13:30:00",
+  source: "https://gocath.org/en/event/marsch-fuers-leben-wien-2026",
+  summary: "Austria's annual March for Life will take place in Vienna on Saturday 10 October 2026. Following an 11:00 church service at Karlskirche, the public rally is scheduled to begin at Karlsplatz at 13:30, with the march departing at 14:00 and a closing rally planned for approximately 16:00. Participants will campaign against abortion and in support of the organisers' pro-life objectives. Risk assessed as Medium because this is a moving demonstration through central Vienna on a socially contentious issue and will require traffic and crowd management. No specific counter-demonstration or disorder is assumed."
+},
+
+{
+  title: "National Day Rally for Austrian Neutrality and Peace",
+  city: "Vienna",
+  lat: 48.20839,
+  lng: 16.37250,
+  address: "Stephansplatz",
+  postcode: "1010",
+  country: "Austria",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-26T15:00:00",
+  source: "https://www.stimmenfuerneutralitaet.at/",
+  summary: "Stimmen für Neutralität has confirmed a public rally at Stephansplatz in Vienna at 15:00 on Austrian National Day, Monday 26 October 2026. Organisers will campaign for continued Austrian neutrality, diplomacy, adherence to international law and opposition to Austrian involvement in international military conflicts. Risk assessed as Low because the published action is a stationary rally with no procession, blockade or deliberate disruption announced."
+},
+
+{
+  title: "Mad Pride Switzerland 2026 — Mental Health Mobilisation",
+  city: "Bern",
+  lat: 46.94702,
+  lng: 7.44416,
+  address: "Bundesplatz",
+  postcode: "3011",
+  country: "Switzerland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T15:00:00",
+  source: "https://madpride.ch/de/",
+  summary: "Mad Pride Switzerland will hold its fourth national public mobilisation at Bundesplatz in Bern from 15:00 to 18:00 on Saturday 10 October 2026. The event aims to make psychological and mental-health diversity visible, challenge stigma and bring together local and national organisations working in mental health. Risk assessed as Low because the currently confirmed activity is centred on Bundesplatz and no disruptive direct action or road blockade has been announced."
+},
+
+{
+  title: "National Commemoration — UN International Day for the Eradication of Poverty",
+  city: "Dublin",
+  lat: 53.34800,
+  lng: -6.24935,
+  address: "Human Rights and Poverty Stone, Famine Memorial Statues, Custom House Quay",
+  postcode: "D01",
+  country: "Ireland",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-17T11:00:00",
+  source: "https://17october.ie/",
+  summary: "Ireland's national commemoration for the UN International Day for the Eradication of Poverty will take place at the Human Rights and Poverty Stone on Custom House Quay in Dublin from 11:00 to 12:30 on Saturday 17 October 2026. The 2026 mobilisation is themed 'Uniting communities to end poverty and guarantee everyone an adequate home' and will include testimonies from people with lived experience of poverty together with music and public advocacy. Risk assessed as Low because this is a structured stationary gathering with no march, blockade or disruptive activity announced."
+},
+
+
+{
+  title: "Anti-Colonialism, Anti-Fascism and Anti-War Rally — 6 October",
+  city: "Brussels",
+  lat: 50.84556,
+  lng: 4.35694,
+  address: "Brussels Central Station, Carrefour de l'Europe",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-06T18:00:00",
+  source: "https://bxl.demosphere.net/rv/18754",
+  summary: "A recurring anti-war rally is confirmed outside Brussels Central Station at 18:00 on Tuesday 6 October 2026. Participants are campaigning against colonialism, fascism, militarisation, authoritarian governments and ongoing international conflicts, with organisers calling for an end to hostilities and support for popular resistance movements. Risk assessed as Low because the action is an established stationary gathering with no procession, blockade or deliberate disruption announced. Localised pedestrian congestion and routine police monitoring are possible."
+},
+
+{
+  title: "Back to la Bourse for Palestine Rally — 7 October",
+  city: "Brussels",
+  lat: 50.848618,
+  lng: 4.349256,
+  address: "Place de la Bourse",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-07T19:00:00",
+  source: "https://bxl.demosphere.net/rv/18792",
+  summary: "A Palestine-solidarity gathering is confirmed at Place de la Bourse at 19:00 on Wednesday 7 October 2026. Organisers invite participants to bring flags, banners and signs and to express solidarity with Palestinians and populations affected by conflicts elsewhere including Sudan, Congo and Yemen. Risk assessed as Low because this is an established stationary weekly gathering with no march or deliberate obstruction announced. Localised crowding around the Bourse is possible."
+},
+
+{
+  title: "Anti-Colonialism, Anti-Fascism and Anti-War Rally — 13 October",
+  city: "Brussels",
+  lat: 50.84556,
+  lng: 4.35694,
+  address: "Brussels Central Station, Carrefour de l'Europe",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-13T18:00:00",
+  source: "https://bxl.demosphere.net/rv/18755",
+  summary: "The recurring Tuesday rally against colonialism, fascism, war and militarisation is confirmed outside Brussels Central Station at 18:00 on 13 October 2026. Participants are expected to use speeches, chants and banners to oppose ongoing international conflicts and authoritarianism. Risk assessed as Low because the event is a stationary recurring mobilisation with no announced march or deliberate disruption."
+},
+
+{
+  title: "Back to la Bourse for Palestine Rally — 14 October",
+  city: "Brussels",
+  lat: 50.848618,
+  lng: 4.349256,
+  address: "Place de la Bourse",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-14T19:00:00",
+  source: "https://bxl.demosphere.net/rv/18793",
+  summary: "A further Palestine-solidarity rally is confirmed at Place de la Bourse from 19:00 on Wednesday 14 October 2026. Participants are invited to bring flags, banners and other campaign material and to call for an end to ongoing conflicts and greater international solidarity. Risk assessed as Low because this is an established stationary weekly action, although temporary crowding and police observation are possible around the Bourse."
+},
+
+{
+  title: "Brussels Climate March 2026",
+  city: "Brussels",
+  lat: 50.86034,
+  lng: 4.36086,
+  address: "Brussels-North Station / Boulevard Roi Albert II — march towards Cinquantenaire",
+  postcode: "1030",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-11T14:00:00",
+  source: "https://klimaatcoalitie-coalitionclimat.be/fr/marche-climat/",
+  summary: "Belgium's Climate Coalition has confirmed a major Climate March in Brussels on Sunday 11 October 2026. Participants will gather outside Brussels-North Station from 14:00 before joining a moving demonstration beginning along Boulevard Roi Albert II. Organisers are demanding a concrete national plan to phase out fossil fuels and accelerate a socially just energy transition. More than 30,000 people reportedly participated in the previous edition. Risk assessed as Medium because thousands of participants are expected in a major moving demonstration requiring road closures, crowd management and police deployment, although organisers explicitly describe the march as peaceful and family-friendly."
+},
+
+{
+  title: "Anti-Colonialism, Anti-Fascism and Anti-War Rally — 20 October",
+  city: "Brussels",
+  lat: 50.84556,
+  lng: 4.35694,
+  address: "Brussels Central Station, Carrefour de l'Europe",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-20T18:00:00",
+  source: "https://bxl.demosphere.net/rv/18756",
+  summary: "The weekly rally opposing colonialism, fascism, militarisation and war is confirmed outside Brussels Central Station from 18:00 on Tuesday 20 October 2026. Organisers call for an end to international hostilities and support for populations affected by war and authoritarian repression. Risk assessed as Low because this is an established stationary action with no procession, blockade or other disruptive activity announced."
+},
+
+{
+  title: "Back to la Bourse for Palestine Rally — 21 October",
+  city: "Brussels",
+  lat: 50.848618,
+  lng: 4.349256,
+  address: "Place de la Bourse",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-21T19:00:00",
+  source: "https://bxl.demosphere.net/rv/18794",
+  summary: "The recurring Palestine-solidarity gathering at Place de la Bourse is confirmed for 19:00 on Wednesday 21 October 2026. Campaigners will continue calls relating to Gaza and wider international conflicts and encourage participants to bring flags, signs and banners. Risk assessed as Low because the action is stationary and recurring with no deliberate road obstruction or procession announced."
+},
+
+{
+  title: "Anti-Colonialism, Anti-Fascism and Anti-War Rally — 27 October",
+  city: "Brussels",
+  lat: 50.84556,
+  lng: 4.35694,
+  address: "Brussels Central Station, Carrefour de l'Europe",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-27T18:00:00",
+  source: "https://bxl.demosphere.net/rv/18757",
+  summary: "A further weekly rally against colonialism, fascism, militarisation and war is confirmed outside Brussels Central Station at 18:00 on Tuesday 27 October 2026. Participants are expected to use speeches, banners and chants to oppose international conflict and authoritarianism. Risk assessed as Low because this remains an established stationary gathering with no announced procession or disruptive direct action."
+},
+
+{
+  title: "Back to la Bourse for Palestine Rally — 28 October",
+  city: "Brussels",
+  lat: 50.848618,
+  lng: 4.349256,
+  address: "Place de la Bourse",
+  postcode: "1000",
+  country: "Belgium",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-28T19:00:00",
+  source: "https://bxl.demosphere.net/rv/18795",
+  summary: "The weekly Palestine-solidarity rally at Place de la Bourse is confirmed for 19:00 on Wednesday 28 October 2026. Participants will continue campaigning over Gaza and other international conflicts through speeches, flags, banners and public solidarity activity. Risk assessed as Low because the gathering is stationary and well-established, with localised pedestrian congestion the principal anticipated operational impact."
+},
+
+
+{
+  title: "Women in Black Palestine Solidarity Vigil — Amsterdam",
+  city: "Amsterdam",
+  lat: 52.36878,
+  lng: 4.88909,
+  address: "Spui, beside Het Lieverdje",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-02T12:45:00",
+  source: "The Rights Forum",
+  summary: "Women in Black have confirmed their monthly public Palestine-solidarity vigil at Spui beside the Het Lieverdje statue in central Amsterdam from 12:45 to 13:45 on Friday 2 October 2026. Participants will protest Israeli actions affecting Palestinians. Risk assessed as Low because this is an established stationary vigil with no procession, blockade or deliberate disruption announced. Localised pedestrian activity around Spui is possible."
+},
+
+{
+  title: "Women in Black Palestine Solidarity Vigil — Maastricht",
+  city: "Maastricht",
+  lat: 50.85173,
+  lng: 5.69037,
+  address: "Markt, beside the J.P. Minckelers statue, Boschstraat side",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-03T16:00:00",
+  source: "The Rights Forum",
+  summary: "Women in Black have confirmed their monthly Palestine-solidarity vigil at Markt in Maastricht beside the J.P. Minckelers statue from 16:00 to 17:00 on Saturday 3 October 2026. Risk assessed as Low because the action is a short stationary public vigil and no march, blockade or disruptive activity has been announced. Localised pedestrian clustering is possible around Markt."
+},
+
+{
+  title: "Haarlem Palestine Solidarity Demonstration — 4 October",
+  city: "Haarlem",
+  lat: 52.38139,
+  lng: 4.63609,
+  address: "Grote Markt",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-04T14:00:00",
+  source: "The Rights Forum",
+  summary: "Breed Platform Palestina and Women in Black have confirmed their weekly demonstration at Grote Markt in Haarlem from 14:00 to 15:00 on Sunday 4 October 2026. Participants will protest Israeli actions affecting Palestinians. Risk assessed as Low because this is an established one-hour recurring demonstration with no deliberate obstruction or disorder announced."
+},
+
+{
+  title: "Amsterdam Climate Alarm Die-In — 5 October",
+  city: "Amsterdam",
+  lat: 52.36761,
+  lng: 4.89929,
+  address: "Ir. B. Bijvoetbrug / Spinoza Monument, Amstel 1",
+  postcode: "1011 JH",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-05T11:30:00",
+  source: "Extinction Rebellion Nederland",
+  summary: "Extinction Rebellion Amsterdam has confirmed a Climate Alarm demonstration at the Ir. B. Bijvoetbrug beside the Spinoza Monument from 11:30 to 12:30 on Monday 5 October 2026. Participants will conduct a peaceful die-in when the monthly civil-defence siren sounds at 12:00, followed by speeches and songs. The October theme opposes sea-cruise ships. Organisers explicitly describe the action as low risk and state that nothing will be blocked. Risk assessed as Low."
+},
+
+{
+  title: "Utrecht Climate Alarm Die-In — 5 October",
+  city: "Utrecht",
+  lat: 52.08939,
+  lng: 5.10982,
+  address: "Stationsplein, beneath the Bollendak beside Utrecht Centraal",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-05T11:45:00",
+  source: "Extinction Rebellion Nederland",
+  summary: "Extinction Rebellion Utrecht has confirmed its Climate Alarm action at Stationsplein beneath the Bollendak beside Utrecht Centraal from 11:45 to 12:30 on Monday 5 October 2026. Participants will conduct a die-in at 12:00 followed by a short speech. Risk assessed as Low because the action is explicitly organised as a short peaceful climate demonstration, although temporary pedestrian clustering is possible at the busy railway-station entrance."
+},
+
+{
+  title: "Haarlem Climate Alarm Die-In — 5 October",
+  city: "Haarlem",
+  lat: 52.38828,
+  lng: 4.63675,
+  address: "Stationsplein, Haarlem railway station — bus station side",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-05T11:30:00",
+  source: "Extinction Rebellion Nederland",
+  summary: "Extinction Rebellion Haarlem has confirmed its monthly Climate Alarm demonstration at Haarlem railway station from 11:30 to 12:30 on Monday 5 October 2026. Participants are expected to conduct a die-in at noon, distribute leaflets, display protest signs and sing climate protest songs. Risk assessed as Low because this is an established short-duration peaceful action with no blockade announced."
+},
+
+{
+  title: "Delft Climate Alarm Die-In — 5 October",
+  city: "Delft",
+  lat: 52.01228,
+  lng: 4.36080,
+  address: "Markt",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-05T11:45:00",
+  source: "Extinction Rebellion Nederland",
+  summary: "Extinction Rebellion Delft has confirmed its Climate Alarm action at Markt from 11:45 to 12:15 on Monday 5 October 2026. Participants will stage a short die-in when the monthly alarm sounds at noon to draw attention to the climate and ecological crises. Organisers explicitly describe the demonstration as low risk and open to the public. No obstruction or disruptive direct action is announced."
+},
+
+{
+  title: "Silent Red Line Peace Vigil — Zaltbommel",
+  city: "Zaltbommel",
+  lat: 51.81484,
+  lng: 5.24862,
+  address: "Waalkade",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-09T19:00:00",
+  source: "The Rights Forum",
+  summary: "A Silent Red Line vigil is scheduled at Waalkade in Zaltbommel from 19:00 to 19:30 on Friday 9 October 2026. The recurring action commemorates victims in Gaza and the West Bank as well as victims of violence in Sudan, Syria, Iran and Ukraine. Risk assessed as Low because this is a thirty-minute stationary silent vigil with no procession or disruption announced."
+},
+
+{
+  title: "National Housing Protest — Amsterdam",
+  city: "Amsterdam",
+  lat: 52.37312,
+  lng: 4.89261,
+  address: "Dam Square",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-10T14:00:00",
+  source: "Woonbond / Woonopstand",
+  summary: "The Woonopstand coalition, with Woonbond as a co-organiser, has confirmed a major national housing demonstration at Dam Square in Amsterdam from 14:00 on Saturday 10 October 2026. The mobilisation will focus on housing shortages, high rents, homelessness and the treatment of housing as an investment commodity rather than a social right. Risk assessed as Medium because organisers intend to mobilise nationally and a sizeable crowd is expected at one of Amsterdam's busiest central locations, potentially affecting pedestrian movement, traffic and public transport. No disorder has been announced."
+},
+
+{
+  title: "Women in Black Palestine Solidarity Vigil — Groningen",
+  city: "Groningen",
+  lat: 53.21849,
+  lng: 6.56666,
+  address: "Waagplein",
+  postcode: "9712 JZ",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T13:00:00",
+  source: "The Rights Forum",
+  summary: "Women in Black have confirmed their fortnightly Palestine-solidarity vigil at Waagplein in Groningen from 13:00 to 14:00 on Saturday 10 October 2026. Risk assessed as Low because the action is an established stationary public vigil lasting approximately one hour, with no march or deliberate disruption announced."
+},
+
+{
+  title: "Haarlem Palestine Solidarity Demonstration — 11 October",
+  city: "Haarlem",
+  lat: 52.38139,
+  lng: 4.63609,
+  address: "Grote Markt",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-11T14:00:00",
+  source: "The Rights Forum",
+  summary: "Breed Platform Palestina and Women in Black have confirmed their weekly Palestine-solidarity demonstration at Grote Markt from 14:00 to 15:00 on Sunday 11 October 2026. Risk assessed as Low because the established action is stationary and no blockade, procession or significant disruptive activity is announced."
+},
+
+{
+  title: "People in Black Palestine Solidarity Vigil — Nijmegen",
+  city: "Nijmegen",
+  lat: 51.84419,
+  lng: 5.86709,
+  address: "Koningsplein / Mariënburg",
+  postcode: "N/A",
+  country: "Netherlands",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-31T14:00:00",
+  source: "The Rights Forum",
+  summary: "People in Black have confirmed their monthly public Palestine-solidarity vigil at Koningsplein and Mariënburg in Nijmegen from 14:00 to 16:00 on Saturday 31 October 2026. Participants are expected to stand in a line displaying individual protest signs. Risk assessed as Low because the action is an established peaceful stationary vigil with no procession or deliberate obstruction announced."
+},
+
+
+{
+  title: "Milan ATM Public Transport Strike — 9 October",
+  city: "Milan",
+  lat: 45.4642,
+  lng: 9.1900,
+  address: "ATM public transport network — Milan metropolitan area",
+  postcode: "N/A",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-09T00:00:00",
+  source: "Italian Ministry of Infrastructure and Transport — Strike Observatory",
+  summary: "Workers across companies in the ATM Milan group are scheduled to undertake a 24-hour local public-transport strike on Friday 9 October 2026. Separate strike notices have been lodged by AL-COBAS and CONFIAL Trasporti, both covering ATM group personnel under varying operational modalities. Risk assessed as Medium because the action could disrupt metro, tram and bus services across Milan for significant portions of the day. The rating reflects transport and commuter disruption rather than any expectation of disorder."
+},
+
+{
+  title: "RFI Sicily Infrastructure Strike — 12–13 October",
+  city: "Palermo",
+  lat: 38.1157,
+  lng: 13.3615,
+  address: "RFI Infrastrutture Sicilia / DOIT Palermo — Sicily regional rail network",
+  postcode: "N/A",
+  country: "Italy",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-12T21:01:00",
+  source: "Italian Ministry of Infrastructure and Transport — Strike Observatory",
+  summary: "UILT-UIL has called a 24-hour strike involving RFI Infrastrutture Sicilia / DOIT Palermo personnel from 21:01 on Monday 12 October until 21:00 on Tuesday 13 October 2026. The industrial action is regional in scope, with the Palermo infrastructure operating division specifically identified in the official strike notice. Risk assessed as Medium because disruption to rail infrastructure operations could affect passenger and freight services across Sicily. No public disorder is anticipated from the industrial action."
+},
+
+{
+  title: "FCC Municipal Cleaning and Waste Services Indefinite Strike",
+  city: "Zaragoza",
+  lat: 41.6488,
+  lng: -0.8891,
+  address: "Citywide — Zaragoza municipal cleaning, waste collection, recycling points and workshop services",
+  postcode: "N/A",
+  country: "Spain",
+  continent: "Europe",
+  risk: "High",
+  time: "2026-10-07T12:00:00",
+  source: "https://cadenaser.com/aragon/2026/06/30/la-plantilla-de-fcc-respalda-una-huelga-indefinida-desde-el-7-de-octubre-tras-20-meses-de-negociacion-sin-acuerdo-radio-zaragoza/",
+  summary: "Workers employed by FCC in Zaragoza's street-cleaning, waste-collection, recycling-point and workshop services have approved an indefinite strike beginning on Wednesday 7 October 2026. The action follows more than 20 months of unresolved collective-agreement negotiations and was supported in a workforce referendum by 474 votes to 24. The strike is deliberately timed to overlap with the Fiestas del Pilar period. Risk assessed as High because prolonged interruption of municipal cleaning and refuse collection during one of Zaragoza's largest annual periods of public activity could generate significant sanitation, waste-accumulation and operational impacts across the city. No violence or public disorder is implied by the industrial action."
+},
+
+{
+  title: "Madrid Public Education Indefinite Strike",
+  city: "Madrid",
+  lat: 40.4168,
+  lng: -3.7038,
+  address: "Community of Madrid — public non-university education centres",
+  postcode: "N/A",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-14T12:00:00",
+  source: "https://www.europapress.es/madrid/noticia-huelga-indefinida-educacion-publica-madrilena-arrancara-14-octubre-20260624212146.html",
+  summary: "Teachers and education organisations across the Community of Madrid have called an indefinite strike in public non-university education beginning on Wednesday 14 October 2026. The mobilisation is supported by multiple unions, teacher organisations, families and student groups and seeks reduced teaching hours and class sizes, additional staffing and resources, salary improvements and other reforms to the public education system. Risk assessed as Medium because the region-wide indefinite action could cause substantial disruption to schools, families and education services and may be accompanied by further demonstrations. No specific central demonstration route has yet been confirmed."
+},
+
+{
+  title: "National Demonstration for Public Pensions",
+  city: "Madrid",
+  lat: 40.4075,
+  lng: -3.6917,
+  address: "Atocha — march to Puerta del Sol",
+  postcode: "28012",
+  country: "Spain",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-24T12:00:00",
+  source: "https://cgt.es/cgt-llama-a-movilizarse-en-defensa-de-unas-pensiones-dignas-y-suficientes-el-proximo-24-de-octubre/",
+  summary: "Pensioner and retiree organisations from across Spain have called a national demonstration in Madrid on Saturday 24 October 2026. Participants are scheduled to assemble from 12:00 at Atocha and march to Puerta del Sol under the demand for a strong public pension system for current and future generations. Campaign demands include adequate minimum pensions, protection of purchasing power, an audit of Social Security finances and measures addressing pension inequality. Risk assessed as Medium because this is a national moving demonstration expected to attract participants travelling from multiple regions and will affect major central Madrid streets between Atocha and Puerta del Sol. No disorder has been announced."
+},
+
+{
+  title: "Frieden statt NATO — Protest Against Westphalian Peace Prize",
+  city: "Münster",
+  lat: 51.961845,
+  lng: 7.627379,
+  address: "Michaelisplatz, beside the Historic Rathaus",
+  postcode: "48143",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-01T09:30:00",
+  source: "Friedensbündnis Norddeutschland",
+  summary: "A protest has been called at Michaelisplatz in Münster from 09:30 to 15:00 on 1 October 2026 opposing the presentation of the Westphalian Peace Prize to NATO. The demonstration is intended to take place within sight and hearing of the historic Rathaus during the award ceremony. Risk assessed as Medium because the action coincides with a high-profile event involving senior political and NATO figures, increasing the likelihood of substantial security measures, controlled access and localised disruption despite no violence being announced."
+},
+
+{
+  title: "Unzwingbar — Kein Bock auf Krieg und Wehrpflicht",
+  city: "Berlin",
+  lat: 52.51628,
+  lng: 13.37770,
+  address: "Brandenburg Gate / Platz des 18. März",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-02T16:00:00",
+  source: "Netzwerk Friedenskooperative / Berlin Police",
+  summary: "Peace organisations, youth activists, trade union youth groups and supporting civil-society organisations have called a major rally against conscription and militarisation at the Brandenburg Gate from 16:00 to 20:00 on Friday 2 October 2026. Speeches and live music are planned. Risk assessed as Medium because organisers describe the event as a major rally at one of Berlin's highest-footfall locations, with crowd management, policing and traffic impacts possible, although no march or disorder is announced."
+},
+
+{
+  title: "Nationwide Peace Demonstration — Berlin",
+  city: "Berlin",
+  lat: 52.51628,
+  lng: 13.37770,
+  address: "Platz des 18. März / Brandenburg Gate",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-03T13:00:00",
+  source: "Friedensdemo0310 / Berlin Police",
+  summary: "A nationwide peace mobilisation is scheduled in Berlin on 3 October 2026 under demands opposing rearmament, conscription and war. The public opening rally begins at 13:00 at the Brandenburg Gate before a procession through central Berlin and a closing rally. Police registration covers the wider period from 12:00 to 17:00. Risk assessed as Medium because this is a major moving demonstration through the government and central tourist districts, requiring traffic restrictions and significant crowd management."
+},
+
+{
+  title: "Nationwide Peace Demonstration — Stuttgart",
+  city: "Stuttgart",
+  lat: 48.77850,
+  lng: 9.17989,
+  address: "Schlossplatz",
+  postcode: "70173",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-03T13:00:00",
+  source: "pax christi / Netzwerk Friedenskooperative",
+  summary: "A parallel nationwide peace demonstration will begin with a rally at Schlossplatz in Stuttgart at 13:00 on Saturday 3 October 2026. Organisers plan to begin a march through the city centre at approximately 14:00 before returning to Schlossplatz for a closing rally at around 15:00. Risk assessed as Medium because the moving central-city procession is likely to require temporary traffic controls and police liaison, although no disorder has been announced."
+},
+
+{
+  title: "Fake Fashion Parade",
+  city: "Berlin",
+  lat: 52.515839,
+  lng: 13.454215,
+  address: "Frankfurter Tor — march via Frankfurter Allee and Karl-Marx-Allee",
+  postcode: "10243",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-03T15:00:00",
+  source: "Berlin Police Assembly Register",
+  summary: "A moving protest against the fast-fashion industry is registered in Berlin from 15:00 to 18:00 on 3 October 2026. The procession will begin at Frankfurter Tor and travel along Frankfurter Allee and Karl-Marx-Allee before finishing near the Haus der Statistik. Campaigners will focus on overproduction, textile waste and implementation of the EU textile strategy. Risk assessed as Medium because the procession uses major arterial roads and may produce temporary traffic and public-transport disruption."
+},
+
+{
+  title: "Zusammenhalt für Köln — Protest Against Budget Cuts",
+  city: "Cologne",
+  lat: 50.93861,
+  lng: 6.96000,
+  address: "Alter Markt",
+  postcode: "50667",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-08T14:30:00",
+  source: "Allerweltshaus Köln / Zusammenhalt für Köln",
+  summary: "The Zusammenhalt für Köln alliance has called a demonstration at Alter Markt at 14:30 on Thursday 8 October 2026 opposing proposed municipal funding cuts affecting social services, culture and sport. The action coincides with the final city council meeting before a key finance committee decision on the 2027-28 budget. Risk assessed as Low because the published action is a stationary civic demonstration with no procession or disruptive direct action announced."
+},
+
+{
+  title: "Renewable Energy Expansion Demonstration",
+  city: "Berlin",
+  lat: 52.529497,
+  lng: 13.376179,
+  address: "Invalidenpark — march to Platz der Republik",
+  postcode: "10115",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-09T12:00:00",
+  source: "Berlin Police Assembly Register",
+  summary: "A demonstration calling for expansion of renewable energy is registered in Berlin from 12:00 to 17:00 on Friday 9 October 2026. Participants will march from Invalidenpark through Luisenstraße and the government district before finishing at Platz der Republik. Risk assessed as Medium because the moving demonstration crosses politically sensitive and heavily trafficked areas around the Bundestag, with temporary road restrictions and police management likely."
+},
+
+{
+  title: "ProjektM1llion — Federal Government Resignation Demonstration",
+  city: "Berlin",
+  lat: 52.51628,
+  lng: 13.37770,
+  address: "Platz des 18. März — central Berlin circular route",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-10T09:00:00",
+  source: "Berlin Police Assembly Register",
+  summary: "ProjektM1llion has registered a demonstration in central Berlin from 09:00 to 18:00 on Saturday 10 October 2026 calling for the resignation of the federal government and Chancellor Friedrich Merz. The procession begins at Platz des 18. März and passes through multiple central government and commercial streets before returning to the Brandenburg Gate area. Risk assessed as Medium because of the nine-hour duration, moving route and potential traffic and policing requirements. No disorder is assumed or announced."
+},
+
+{
+  title: "United4Palestine — No Peace on Stolen Land",
+  city: "Berlin",
+  lat: 52.51628,
+  lng: 13.37770,
+  address: "Brandenburg Gate — Government District to Potsdamer Platz",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Medium",
+  time: "2026-10-10T12:00:00",
+  source: "Berlin Police Assembly Register",
+  summary: "A Palestine-solidarity demonstration titled 'United4Palestine — No Peace on Stolen Land' is registered in Berlin from 12:00 until 23:59 on Saturday 10 October 2026. The route begins at the Brandenburg Gate, passes through the government district and Friedrichstraße, and continues via Leipziger Platz to Potsdamer Platz. Risk assessed as Medium because this is a long-duration political procession through high-profile central locations with significant potential for crowd, traffic and police-management impacts. No violent activity has been announced."
+},
+
+{
+  title: "PRÜF Berlin — Demokratie schützen",
+  city: "Berlin",
+  lat: 52.51629,
+  lng: 13.37868,
+  address: "Pariser Platz",
+  postcode: "10117",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T14:00:00",
+  source: "Berlin Police Assembly Register",
+  summary: "PRÜF has registered a democracy-focused demonstration at Pariser Platz from 14:00 to 16:00 on Saturday 10 October 2026. The campaign calls for parties classified by constitutional-protection authorities as suspected or confirmed right-wing extremist organisations to be reviewed by the Federal Constitutional Court. Risk assessed as Low because the published action is a short stationary gathering with no procession or deliberate disruption announced."
+},
+
+{
+  title: "PRÜF Hamburg — Demokratie schützen",
+  city: "Hamburg",
+  lat: 53.5531,
+  lng: 9.9930,
+  address: "Jungfernstieg",
+  postcode: "20354",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T14:00:00",
+  source: "Hamburg Tourism / PRÜF",
+  summary: "PRÜF has confirmed its monthly Hamburg democracy demonstration at Jungfernstieg at 14:00 on Saturday 10 October 2026. The campaign advocates constitutional review of political parties classified by domestic intelligence authorities as suspected or confirmed right-wing extremist organisations. Risk assessed as Low because this is an established scheduled mobilisation with no disruptive action announced."
+},
+
+{
+  title: "PRÜF Hannover — Demokratie schützen",
+  city: "Hannover",
+  lat: 52.37333,
+  lng: 9.74083,
+  address: "Opernplatz",
+  postcode: "30159",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T14:00:00",
+  source: "PRÜF Niedersachsen / Catholic Church Hannover",
+  summary: "The PRÜF Niedersachsen organising team has confirmed a democracy demonstration at Opernplatz in Hannover from 14:00 to 16:00 on Saturday 10 October 2026. Organisers describe the mobilisation as a colourful and family-friendly action supporting constitutional review of parties classified as suspected or confirmed right-wing extremist organisations. Risk assessed as Low because no blockade or significant disruptive activity is announced."
+},
+
+{
+  title: "PRÜF Munich — Demokratie schützen",
+  city: "Munich",
+  lat: 48.150744,
+  lng: 11.580625,
+  address: "Geschwister-Scholl-Platz",
+  postcode: "80539",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-10T14:00:00",
+  source: "PRÜF München / Kalinka",
+  summary: "A PRÜF democracy demonstration is scheduled at Geschwister-Scholl-Platz in Munich from 14:00 to 16:00 on Saturday 10 October 2026. The mobilisation forms part of the nationwide campaign advocating Federal Constitutional Court review of parties classified by constitutional-protection authorities as suspected or confirmed right-wing extremist organisations. Risk assessed as Low because the published event is a short public gathering with no deliberate disruption announced."
+},
+
+{
+  title: "Fridays for Future Climate Vigil — 30 October",
+  city: "Berlin",
+  lat: 52.5186,
+  lng: 13.3762,
+  address: "Platz der Republik",
+  postcode: "10557",
+  country: "Germany",
+  continent: "Europe",
+  risk: "Low",
+  time: "2026-10-30T10:00:00",
+  source: "Berlin Police Assembly Register",
+  summary: "A Fridays for Future climate vigil is registered at Platz der Republik from 10:00 to 12:00 on Friday 30 October 2026, campaigning for compliance with the Paris Agreement and broader climate action. Risk assessed as Low because this is an established stationary vigil with no march or deliberate obstruction announced, although localised pedestrian activity is possible around the Bundestag."
+},
+
 
 {
   title: "Paris LGBTQIA+ Pride March 2026",
