@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Scenario Admin v32 — Phase 9G.3 Assignment Launch & Plan Handoff -->
+<!-- CityIntel Training Scenario Admin v34 — Final Training UI Polish + Location Picker before Phase 9H -->
 <!-- CityIntel Training Phase 9B.1 — editable factual scenario draft summaries -->
 <html lang="en">
 <head>
@@ -30,6 +30,10 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="theme-color" content="#9d2b2b" />
+
+<!-- Scenario location picker — same Leaflet stack used by Neighbourhood Intel -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- Browser favicon -->
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -241,6 +245,26 @@
     }
 
     .card-body { padding: 16px; }
+    .ci-collapsible-card{padding:0}
+    .ci-collapsible-card > summary.card-head{cursor:pointer;list-style:none;user-select:none}
+    .ci-collapsible-card > summary.card-head::-webkit-details-marker{display:none}
+    .ci-collapsible-card > summary.card-head::after{content:'▾';color:#8fa0b5;font-size:12px;line-height:1;transition:transform .15s ease;margin-left:6px}
+    .ci-collapsible-card[open] > summary.card-head::after{transform:rotate(180deg)}
+    .ci-collapsible-card > summary.card-head:hover{background:rgba(255,255,255,.018)}
+    .scenario-location-search{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;align-items:center}
+    .scenario-location-map{height:300px;margin-top:10px;border:1px solid var(--gray-600);border-radius:12px;overflow:hidden;background:#0b0d10}
+    .scenario-location-map .leaflet-control-zoom a{background:#171a1f;color:#eef3f7;border-color:#303844}
+    .scenario-location-map .leaflet-control-zoom a:hover{background:#242a31}
+    .scenario-location-status{margin-top:7px;font-size:11px;color:var(--muted);line-height:1.45}
+    .scenario-location-status.ready{color:#bfe3ff}
+    .scenario-location-status.warn{color:#fde68a}
+    .coordinate-override{border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(255,255,255,.025);padding:8px 10px}
+    .coordinate-override summary{cursor:pointer;color:#b8c6d6;font-size:11px;font-weight:800;list-style:none}
+    .coordinate-override summary::-webkit-details-marker{display:none}
+    .coordinate-override summary::after{content:' ▾';color:#8190a2}
+    .coordinate-override[open] summary::after{content:' ▴'}
+    @media(max-width:720px){.scenario-location-search{grid-template-columns:1fr}.scenario-location-search .btn{width:100%;justify-content:center}.scenario-location-map{height:250px}}
+
 
     /* ===== FORM ===== */
     .form-grid {
@@ -1878,28 +1902,28 @@
       <div style="display:flex;flex-direction:column;gap:16px;">
 
         <!-- Quick Preset Scenarios -->
-        <div class="card">
-          <div class="card-head">
+        <details class="card ci-collapsible-card" id="quickPresetCard">
+          <summary class="card-head">
             <div class="card-head-left">
               <div class="card-title">Quick Scenario Presets</div>
               <div class="card-sub">Select a preset to auto-fill the builder, or create from scratch below.</div>
             </div>
-          </div>
+          </summary>
           <div class="card-body">
             <div class="scenario-list" id="presetList">
               <!-- injected by JS -->
             </div>
           </div>
-        </div>
+        </details>
 
         <!-- Scenario Builder -->
-        <div class="card">
-          <div class="card-head">
+        <details class="card ci-collapsible-card" id="scenarioBuilderCard">
+          <summary class="card-head">
             <div class="card-head-left">
               <div class="card-title">Scenario Builder</div>
               <div class="card-sub">Configure and inject a training alert into the live operator feed.</div>
             </div>
-          </div>
+          </summary>
           <div class="card-body">
             <div class="form-grid">
               <div class="form-field full">
@@ -1960,18 +1984,17 @@
                 <div class="form-hint">Linked scenarios are now scored against the immutable rule snapshot. For radius rules, the scenario distance is evaluated automatically; use the condition selector when the rule's escalation or exception wording is part of the exercise.</div>
               </div>
 
-              <div class="form-field">
-                <label>Location detail</label>
-                <input type="text" id="scLocation" placeholder="Street, venue, postcode, or area">
-              </div>
-
-              <div class="form-field">
-                <label>Lat / Lng <span style="font-weight:400;color:var(--muted);">(optional — pins alert on map)</span></label>
-                <div style="display:flex;gap:6px;">
-                  <input type="number" id="scLat" step="any" placeholder="e.g. 51.5007" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none;width:50%;transition:border-color 0.15s;" onfocus="this.style.borderColor='rgba(208,22,22,0.7)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
-                  <input type="number" id="scLng" step="any" placeholder="e.g. -0.1246" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none;width:50%;transition:border-color 0.15s;" onfocus="this.style.borderColor='rgba(208,22,22,0.7)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+              <div class="form-field full">
+                <label>Incident location <span style="font-weight:400;color:var(--muted);">(street, landmark, postcode or map point)</span></label>
+                <div class="scenario-location-search">
+                  <input type="text" id="scLocation" placeholder="e.g. Bank Station, London or EC3V 3LA">
+                  <button type="button" class="btn" id="scLocationSearchBtn">⌕ Find location</button>
+                  <button type="button" class="btn" id="scLocationClearBtn">Clear marker</button>
                 </div>
-                <div class="form-hint">Coordinates place a map pin on the exercise page, drawn with your escalation radius so the trainee can see the incident against your own threshold.</div>
+                <div id="scLocationMap" class="scenario-location-map" aria-label="Scenario incident location map"></div>
+                <div id="scLocationStatus" class="scenario-location-status">Search for a street, landmark or postcode, or click the map to place the incident marker. Drag the marker to fine-tune the position.</div>
+                <input type="hidden" id="scLat">
+                <input type="hidden" id="scLng">
               </div>
 
               <div class="form-field full">
@@ -2098,22 +2121,22 @@
               ⚡ Inject training scenario
             </button>
           </div>
-        </div>
+        </details>
 
 
 
         <!-- Escalation thresholds — Phase 9B link-ready policy -->
-        <div class="card" id="thresholdCard" style="margin-top:16px">
-          <div class="card-head">
+        <details class="card ci-collapsible-card" id="thresholdCard" style="margin-top:16px">
+          <summary class="card-head">
             <div>
               <div class="card-title">⚖️ Escalation thresholds</div>
               <div class="card-sub">Configure a simple risk fallback or build an advanced organisation threshold matrix by event, exposure, action and operational conditions.</div>
             </div>
             <div class="row" style="gap:8px">
               <span class="field-hint" id="thresholdStatus">Loading…</span>
-              <button type="button" class="btn" id="thresholdSaveBtn">Save policy</button>
+              <button type="button" class="btn" id="thresholdSaveBtn" onclick="event.stopPropagation()">Save policy</button>
             </div>
-          </div>
+          </summary>
 
           <div class="card-body threshold-policy-shell">
             <div class="threshold-meta-grid">
@@ -2217,7 +2240,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </details>
 
         <!-- Scenario Sequencer -->
         <div class="card" id="sequencerCard">
@@ -2313,29 +2336,29 @@
         </div>
 
         <!-- Operator Response Log -->
-        <div class="card">
-          <div class="card-head">
+        <details class="card ci-collapsible-card" id="operatorResponseCard">
+          <summary class="card-head">
             <div class="card-head-left">
               <div class="card-title">Operator Response Log</div>
               <div class="card-sub">Actions taken by operators on training alerts.</div>
             </div>
-            <button class="btn-outline-pill" style="font-size:11px;" onclick="clearResponseLog()">Clear</button>
-          </div>
+            <button class="btn-outline-pill" style="font-size:11px;" onclick="event.stopPropagation();clearResponseLog()">Clear</button>
+          </summary>
           <div class="card-body">
             <div class="response-log" id="responseLog">
               <div style="font-size:12px;color:var(--muted);padding:8px 0;">Waiting for operator responses…</div>
             </div>
           </div>
-        </div>
+        </details>
 
         <!-- Training Notes -->
-        <div class="card">
-          <div class="card-head">
+        <details class="card ci-collapsible-card" id="sessionDetailsCard">
+          <summary class="card-head">
             <div class="card-head-left">
               <div class="card-title">Session Details</div>
               <div class="card-sub">Trainees, observer, and internal notes — saved with each session record.</div>
             </div>
-          </div>
+          </summary>
           <div class="card-body">
             <div class="form-field" style="margin-bottom:10px;">
               <label>Trainees / Observer</label>
@@ -2347,7 +2370,7 @@
               <textarea id="sessionNotes" rows="3" placeholder="e.g. Focus: HIGH alert escalation under time pressure. Difficulty: Intermediate."></textarea>
             </div>
           </div>
-        </div>
+        </details>
 
       </div>
 
@@ -2541,8 +2564,12 @@
           <input type="text" id="seqStepLocation" placeholder="Street, venue, postcode or area">
         </div>
         <div class="form-field">
-          <label>Lat / Lng <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-          <div style="display:flex;gap:6px"><input type="number" id="seqStepLat" step="any" placeholder="51.5007"><input type="number" id="seqStepLng" step="any" placeholder="-0.1246"></div>
+          <label>Stage map position</label>
+          <details class="coordinate-override">
+            <summary>Manual coordinate override</summary>
+            <div style="display:flex;gap:6px;margin-top:8px"><input type="number" id="seqStepLat" step="any" placeholder="Latitude"><input type="number" id="seqStepLng" step="any" placeholder="Longitude"></div>
+          </details>
+          <div class="form-hint">Normally set the incident point with the main Scenario Builder map, then use “Copy current builder settings” for the stage. Open the override only when a stage needs a different precise point.</div>
         </div>
         <div class="form-field">
           <label>Distance / nearest site</label>
@@ -3015,6 +3042,163 @@ let selectedThresholdConditionState = 'baseline';
 let seqThresholdRuleId = '';
 let seqThresholdConditionState = 'baseline';
 
+let scenarioLocationMap = null;
+let scenarioLocationMarker = null;
+let scenarioLocationRadius = null;
+
+function scenarioLinkedRadiusKm() {
+  try {
+    const rule = thresholdRuleById(selectedThresholdRuleId);
+    const km = rule && rule.proximity_km !== null && rule.proximity_km !== undefined && rule.proximity_km !== '' ? Number(rule.proximity_km) : null;
+    return Number.isFinite(km) && km > 0 ? km : null;
+  } catch (_) { return null; }
+}
+
+function setScenarioLocationStatus(message, cls='') {
+  const el = document.getElementById('scLocationStatus');
+  if (!el) return;
+  el.className = 'scenario-location-status' + (cls ? ' ' + cls : '');
+  el.textContent = message;
+}
+
+function updateScenarioLocationRadius() {
+  if (!scenarioLocationMap || !scenarioLocationMarker || !window.L) return;
+  if (scenarioLocationRadius) {
+    try { scenarioLocationMap.removeLayer(scenarioLocationRadius); } catch (_) {}
+    scenarioLocationRadius = null;
+  }
+  const km = scenarioLinkedRadiusKm();
+  if (!km) return;
+  scenarioLocationRadius = L.circle(scenarioLocationMarker.getLatLng(), {
+    radius: km * 1000,
+    color: '#D01616',
+    weight: 2,
+    opacity: .9,
+    dashArray: '8,6',
+    fillColor: '#D01616',
+    fillOpacity: .07,
+    interactive: false
+  }).addTo(scenarioLocationMap);
+}
+
+function setScenarioLocation(lat, lng, opts={}) {
+  lat = Number(lat); lng = Number(lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+  const latEl = document.getElementById('scLat'), lngEl = document.getElementById('scLng');
+  if (latEl) latEl.value = String(Number(lat.toFixed(7)));
+  if (lngEl) lngEl.value = String(Number(lng.toFixed(7)));
+  ensureScenarioLocationMap();
+  if (!scenarioLocationMap || !window.L) return;
+  const ll = L.latLng(lat, lng);
+  if (!scenarioLocationMarker) {
+    scenarioLocationMarker = L.marker(ll, { draggable:true }).addTo(scenarioLocationMap);
+    scenarioLocationMarker.on('dragend', () => {
+      const moved = scenarioLocationMarker.getLatLng();
+      if (latEl) latEl.value = String(Number(moved.lat.toFixed(7)));
+      if (lngEl) lngEl.value = String(Number(moved.lng.toFixed(7)));
+      updateScenarioLocationRadius();
+      const km = scenarioLinkedRadiusKm();
+      setScenarioLocationStatus('Incident marker adjusted. Drag again or click the map to refine it' + (km ? ' · linked threshold radius ' + km + ' km.' : '.'), 'ready');
+    });
+  } else {
+    scenarioLocationMarker.setLatLng(ll);
+  }
+  updateScenarioLocationRadius();
+  if (opts.center !== false) scenarioLocationMap.setView(ll, Number(opts.zoom || 15));
+  const km = scenarioLinkedRadiusKm();
+  setScenarioLocationStatus((opts.message || 'Incident marker set.') + ' Drag the marker or click the map to refine it' + (km ? ' · linked threshold radius ' + km + ' km.' : '.'), 'ready');
+}
+
+function clearScenarioLocation() {
+  const latEl=document.getElementById('scLat'), lngEl=document.getElementById('scLng');
+  if(latEl)latEl.value=''; if(lngEl)lngEl.value='';
+  if(scenarioLocationMap && scenarioLocationMarker){try{scenarioLocationMap.removeLayer(scenarioLocationMarker)}catch(_){}}
+  if(scenarioLocationMap && scenarioLocationRadius){try{scenarioLocationMap.removeLayer(scenarioLocationRadius)}catch(_){}}
+  scenarioLocationMarker=null; scenarioLocationRadius=null;
+  setScenarioLocationStatus('No incident marker set. Search for a place or click the map to add one.');
+}
+
+function ensureScenarioLocationMap() {
+  const host=document.getElementById('scLocationMap');
+  if (!host || !window.L) {
+    if(host && !window.L) setScenarioLocationStatus('Map library could not be loaded. Location text will still be saved; try refreshing before injecting if a map point is required.','warn');
+    return null;
+  }
+  if (!scenarioLocationMap) {
+    scenarioLocationMap=L.map(host,{zoomControl:true}).setView([51.5074,-0.1278],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,
+      attribution:'&copy; OpenStreetMap contributors'
+    }).addTo(scenarioLocationMap);
+    scenarioLocationMap.on('click', ev => {
+      setScenarioLocation(ev.latlng.lat, ev.latlng.lng, {center:false,message:'Incident marker placed from the map.'});
+    });
+  }
+  window.setTimeout(()=>{try{scenarioLocationMap.invalidateSize(false)}catch(_){}},80);
+  return scenarioLocationMap;
+}
+
+function syncScenarioLocationFromInputs(center=true) {
+  const latRaw=String(document.getElementById('scLat')?.value||'').trim();
+  const lngRaw=String(document.getElementById('scLng')?.value||'').trim();
+  const lat=latRaw===''?NaN:Number(latRaw), lng=lngRaw===''?NaN:Number(lngRaw);
+  if(Number.isFinite(lat)&&Number.isFinite(lng)) setScenarioLocation(lat,lng,{center,message:'Saved incident marker restored.'});
+  else if(scenarioLocationMarker) clearScenarioLocation();
+}
+
+async function searchScenarioLocation() {
+  const input=document.getElementById('scLocation');
+  let q=String(input?.value||'').trim();
+  if(!q) q=[document.getElementById('scCity')?.value,document.getElementById('scCountry')?.value].filter(Boolean).join(', ').trim();
+  if(!q){setScenarioLocationStatus('Enter a street, landmark, postcode or area before searching.','warn');return;}
+  const btn=document.getElementById('scLocationSearchBtn');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Searching…';}
+    setScenarioLocationStatus('Searching for '+q+'…');
+    let data=null;
+    const urls=[
+      `https://geocode.maps.co/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`
+    ];
+    for(const url of urls){
+      try{
+        const res=await fetch(url,{headers:{Accept:'application/json'}});
+        if(!res.ok)continue;
+        const tmp=await res.json();
+        if(Array.isArray(tmp)&&tmp.length){data=tmp;break;}
+      }catch(_){}
+    }
+    if(!data||!data.length){setScenarioLocationStatus('Location not found. Try a more specific street, landmark or postcode.','warn');return;}
+    const r=data[0], lat=Number(r.lat), lng=Number(r.lon ?? r.lng);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)){setScenarioLocationStatus('The location service returned an invalid map point. Try another search.','warn');return;}
+    if(input && !input.value.trim()) input.value=String(r.display_name||q);
+    setScenarioLocation(lat,lng,{center:true,zoom:15,message:'Location found: '+String(r.display_name||q)+'.'});
+    if(scenarioLocationMap && Array.isArray(r.boundingbox)&&r.boundingbox.length===4){
+      try{
+        const b=L.latLngBounds([Number(r.boundingbox[0]),Number(r.boundingbox[2])],[Number(r.boundingbox[1]),Number(r.boundingbox[3])]);
+        if(b.isValid())scenarioLocationMap.fitBounds(b.pad(.25));
+      }catch(_){}
+    }
+  }catch(err){
+    console.warn('Scenario location search failed',err);
+    setScenarioLocationStatus('Map search failed. Try again or place the marker directly on the map.','warn');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='⌕ Find location';}
+  }
+}
+
+function openScenarioBuilder(opts={}) {
+  const card=document.getElementById('scenarioBuilderCard');
+  if(card) card.open=true;
+  window.setTimeout(()=>{
+    ensureScenarioLocationMap();
+    if(!scenarioLocationMarker) syncScenarioLocationFromInputs(true);
+    if(opts.focusLocation) document.getElementById('scLocation')?.focus();
+  },40);
+}
+window.openScenarioBuilder=openScenarioBuilder;
+
+
 // Phase 9G.3 — launch Scenario Admin from an assignment without making the
 // trainer re-select the trainee or target. This does not mark anything complete;
 // the normal response/sequence reconciliation remains authoritative.
@@ -3063,8 +3247,11 @@ async function loadAssignmentLaunchContext() {
       if (rule) toast(`🎯 Readiness subject selected for ${traineeName || 'trainee'} — build the qualifying exercise`, 'success');
       else toast('⚠️ Assigned readiness rule is no longer available in the current policy', 'warn');
       switchTab('session');
+      openScenarioBuilder();
     } else if (type === 'scenario') {
       toast(`🎯 Exercise assignment loaded for ${traineeName || 'trainee'}`, 'success');
+      switchTab('session');
+      openScenarioBuilder();
     }
     return a;
   } catch (e) {
@@ -3084,6 +3271,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   setRisk('high');
   setSeqRisk('high');
   setDifficulty('intermediate');
+  const builderCard=document.getElementById('scenarioBuilderCard');
+  if(builderCard) builderCard.addEventListener('toggle',()=>{ if(builderCard.open) ensureScenarioLocationMap(); });
+  document.getElementById('scLocationSearchBtn')?.addEventListener('click',searchScenarioLocation);
+  document.getElementById('scLocationClearBtn')?.addEventListener('click',clearScenarioLocation);
+  document.getElementById('scLocation')?.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();searchScenarioLocation();} });
+  if(String(location.hash||'').toLowerCase()==='#builder') openScenarioBuilder();
   await refreshScenariosFromApi();
   renderFeedLog();
   renderStats();
@@ -3209,6 +3402,8 @@ function applyPreset(idx) {
   if(document.getElementById('scFollowupTarget')) document.getElementById('scFollowupTarget').value = p.followupTargetMin ?? p.followup_target_min ?? 0;
   if (document.getElementById('scLat'))  document.getElementById('scLat').value  = p.lat  !== undefined && p.lat  !== null ? p.lat  : '';
   if (document.getElementById('scLng'))  document.getElementById('scLng').value  = p.lng  !== undefined && p.lng  !== null ? p.lng  : '';
+  openScenarioBuilder();
+  syncScenarioLocationFromInputs(true);
   document.getElementById('scConfidence').value = p.confidence || 'Open source report';
   document.getElementById('scSummary').value = p.summary;
   document.getElementById('scExpectedResponse').value = p.expectedResponse;
@@ -3488,6 +3683,7 @@ function renderScenarioThresholdPreview() {
   if (!host) return;
 
   const rule = thresholdRuleById(selectedThresholdRuleId);
+  updateScenarioLocationRadius();
   if (!selectedThresholdRuleId) {
     host.className = 'threshold-link-preview empty';
     host.innerHTML = 'No advanced threshold linked. This scenario will use the simple fallback policy or its manual expected-response guidance.';
@@ -5434,6 +5630,8 @@ async function loadFromLibrary(id) {
     if (document.getElementById('scAffectedPersonnel')) document.getElementById('scAffectedPersonnel').value = p.affectedPersonnelState ?? p.affected_personnel_state ?? 'unknown';
     if (document.getElementById('scLat') && p.lat != null) document.getElementById('scLat').value = p.lat;
     if (document.getElementById('scLng') && p.lng != null) document.getElementById('scLng').value = p.lng;
+    openScenarioBuilder();
+    syncScenarioLocationFromInputs(true);
     if (p.difficulty) setDifficulty(p.difficulty);
     setRisk(p.risk || 'med');
     if (p.category) setCategory(p.category);
