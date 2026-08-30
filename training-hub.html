@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Hub v22 — Phase 9G.5 Plan Administration & Campaign Archive -->
+<!-- CityIntel Training Hub v23 — Final Training UI Polish before Phase 9H -->
 <html lang="en">
 <head>
   
@@ -210,6 +210,11 @@
     /* Phase 9D.1 — dashboard-first Hub: compact trainee summary + collapsed data sections. */
     .readiness-context{margin-top:8px;color:#b9c7d8;font-size:12px;font-weight:700}
     .trainee-summary-card{padding:15px 16px}
+    .readiness-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .readiness-card-head h2{margin:0}
+    .readiness-view-control{display:flex;align-items:center;gap:8px;min-width:220px;justify-content:flex-end}
+    .readiness-view-control label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    .readiness-view-control .select{min-width:170px;padding:7px 9px}
     .trainee-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
     .trainee-stat{background:#0b1015;border:1px solid #26313b;border-radius:13px;padding:13px 14px}
     .trainee-stat .n{font-size:25px;font-weight:950;color:#f8fafc}.trainee-stat .l{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#8fa3bd;font-weight:900;margin-top:4px}
@@ -337,9 +342,30 @@
         <div class="kpi blue"><div class="label">Active Injects</div><div class="value" id="kpiActive">—</div><div class="note">Training scenarios in feed</div></div>
       </section>
 
+      <section class="card trainee-summary-card admin-only">
+        <h2>Trainee Overview</h2>
+        <div class="small">Current development population derived from recorded responder names and completed exercises.</div>
+        <div class="trainee-summary-grid">
+          <div class="trainee-stat"><div class="n" id="traineeTracked">—</div><div class="l">Operators tracked</div></div>
+          <div class="trainee-stat"><div class="n" id="traineeReady">—</div><div class="l">Ready operators</div></div>
+          <div class="trainee-stat"><div class="n" id="traineeCoaching">—</div><div class="l">Operators in coaching</div></div>
+          <div class="trainee-stat"><div class="n" id="traineeRemediation">—</div><div class="l">Operators in remediation</div></div>
+        </div>
+        <div class="trainee-baseline-note" id="traineeBaselineNote"></div>
+        <div class="readiness-standard-summary" id="readinessStandardSummary">Loading readiness curriculum…</div>
+      </section>
+
       <section class="hub-grid readiness-grid">
         <div class="card readiness-card">
-          <h2>Training Readiness</h2>
+          <div class="readiness-card-head">
+            <h2>Training Readiness</h2>
+            <div class="readiness-view-control admin-only">
+              <label for="readinessOperatorSelect">Viewing</label>
+              <select class="select" id="readinessOperatorSelect" aria-label="Select operator readiness view">
+                <option value="">All operators</option>
+              </select>
+            </div>
+          </div>
           <div class="readiness">
             <div class="score-ring" id="readinessRing" style="--score:0"><div class="ring-inner"><b id="readinessScore">—</b><br><span>Readiness</span></div></div>
             <div>
@@ -355,18 +381,7 @@
         </div>
       </section>
 
-      <section class="card trainee-summary-card admin-only">
-        <h2>Trainee Overview</h2>
-        <div class="small">Current development population derived from recorded responder names and completed exercises.</div>
-        <div class="trainee-summary-grid">
-          <div class="trainee-stat"><div class="n" id="traineeTracked">—</div><div class="l">Operators tracked</div></div>
-          <div class="trainee-stat"><div class="n" id="traineeReady">—</div><div class="l">Ready operators</div></div>
-          <div class="trainee-stat"><div class="n" id="traineeCoaching">—</div><div class="l">Operators in coaching</div></div>
-          <div class="trainee-stat"><div class="n" id="traineeRemediation">—</div><div class="l">Operators in remediation</div></div>
-        </div>
-        <div class="trainee-baseline-note" id="traineeBaselineNote"></div>
-        <div class="readiness-standard-summary" id="readinessStandardSummary">Loading readiness curriculum…</div>
-      </section>
+
 
       <details class="card hub-accordion team-curriculum-card admin-only" id="teamCurriculumSection">
         <summary><span class="accordion-title"><span>Organisation Readiness Curriculum</span><span class="section-count" id="teamCurriculumCountBadge">0</span></span></summary>
@@ -472,7 +487,7 @@
   const fmtTime = v => { const d = new Date(v); return Number.isFinite(d.getTime()) ? d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '—'; };
 
   const PAGE_SIZE = 10;
-  const state = { scenarios:[], sessions:[], responses:[], sequenceRuns:[], library:[], assignments:[], plans:[], policy:null, admin:false, me:{}, pages:{ scenarios:1, exercises:1, operators:1, assignments:1, plans:1 } };
+  const state = { scenarios:[], sessions:[], responses:[], sequenceRuns:[], library:[], assignments:[], plans:[], policy:null, admin:false, me:{}, readinessOperator:'', pages:{ scenarios:1, exercises:1, operators:1, assignments:1, plans:1 } };
 
   function who(){ try { if (window.CIAuth && CIAuth.who) return CIAuth.who() || {}; } catch(_){} try { return JSON.parse(localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}'); } catch(_) { return {}; } }
   function isAdmin(){ try { return !!(window.CIAuth && (CIAuth.isMasterAdmin?.() || CIAuth.isOrgAdmin?.())); } catch(_) { return false; } }
@@ -530,8 +545,8 @@
     });
     return out;
   }
-  function responseStats(){
-    const rows=completedEvidenceRows(state.responses||[]);
+  function responseStats(sourceRows){
+    const rows=completedEvidenceRows(Array.isArray(sourceRows)?sourceRows:(state.responses||[]));
     const units=exerciseUnits(rows);
     const scored=units.filter(u=>u.score!==null&&u.score!==undefined&&Number.isFinite(Number(u.score)));
     const avg=scored.length?Math.round(scored.reduce((a,u)=>a+Number(u.score||0),0)/scored.length):0;
@@ -777,9 +792,6 @@
     $('kpiAverage').textContent=st.scored.length?st.avg+'%':'—';
     $('kpiRemediation').textContent=st.remediation;
     $('kpiActive').textContent=active;
-    $('readinessScore').textContent=readiness+'%';
-    $('readinessRing').style.setProperty('--score',readiness);
-    if($('readinessContext')) $('readinessContext').textContent=readiness+'% readiness · '+groups.length+' operator'+(groups.length===1?'':'s')+' · '+st.units.length+' completed exercise'+(st.units.length===1?'':'s');
     const ready=groups.filter(g=>g.status==='ready').length, coaching=groups.filter(g=>g.status==='coaching').length, remediation=groups.filter(g=>g.status==='remediation').length, baseline=groups.filter(g=>g.status==='baseline').length;
     if($('traineeTracked')) $('traineeTracked').textContent=groups.length;
     if($('traineeReady')) $('traineeReady').textContent=ready;
@@ -792,11 +804,45 @@
       : '<b>Readiness curriculum:</b> no advanced threshold subjects are marked as required yet. Status currently falls back to the score-based readiness model.';
   }
 
+  function selectedReadinessGroup(){
+    const wanted=String(state.readinessOperator||'').trim().toLowerCase();
+    if(!wanted)return null;
+    return operatorGroups().find(g=>String(g.name||'').trim().toLowerCase()===wanted)||null;
+  }
+
+  function renderReadinessSelector(){
+    const sel=$('readinessOperatorSelect'); if(!sel)return;
+    const groups=operatorGroups();
+    const current=String(state.readinessOperator||'');
+    sel.innerHTML='<option value="">All operators</option>'+groups.map(g=>'<option value="'+esc(g.name)+'">'+esc(g.name)+'</option>').join('');
+    if(current && groups.some(g=>String(g.name)===current)) sel.value=current;
+    else { sel.value=''; state.readinessOperator=''; }
+  }
+
   function renderCompetency(){
-    const st=responseStats(), groups=operatorGroups(), cfg=readinessConfig();
-    const coverage=cfg.rules.length
-      ? (groups.length?Math.round(groups.reduce((n,g)=>n+Number(g.curriculum.coveragePct||0),0)/groups.length):0)
-      : Math.min(100,st.categories.size*20);
+    renderReadinessSelector();
+    const allGroups=operatorGroups(), selected=selectedReadinessGroup(), cfg=readinessConfig();
+    const scopedRows=selected?selected.list:null;
+    const st=responseStats(scopedRows);
+    let readiness=0, coverage=0, context='';
+    if(selected){
+      readiness=cfg.rules.length
+        ? Number(selected.readinessPct||0)
+        : (!st.scored.length?0:pct((st.avg*.60)+(st.accuracy*.25)+(st.avgTiming*.15)));
+      coverage=cfg.rules.length ? Number(selected.curriculum.coveragePct||0) : Math.min(100,st.categories.size*20);
+      context=cfg.rules.length
+        ? selected.name+' · '+selected.units.length+' completed exercise'+(selected.units.length===1?'':'s')+' · '+selected.curriculum.passed+'/'+selected.curriculum.total+' readiness subjects qualified'
+        : selected.name+' · '+selected.units.length+' completed exercise'+(selected.units.length===1?'':'s')+' · score-based readiness view';
+    } else {
+      readiness=computeReadiness();
+      coverage=cfg.rules.length
+        ? (allGroups.length?Math.round(allGroups.reduce((n,g)=>n+Number(g.curriculum.coveragePct||0),0)/allGroups.length):0)
+        : Math.min(100,st.categories.size*20);
+      context=readiness+'% readiness · '+allGroups.length+' operator'+(allGroups.length===1?'':'s')+' · '+st.units.length+' completed exercise'+(st.units.length===1?'':'s');
+    }
+    $('readinessScore').textContent=pct(readiness)+'%';
+    $('readinessRing').style.setProperty('--score',pct(readiness));
+    if($('readinessContext')) $('readinessContext').textContent=context;
     const rows=[['Decision quality',st.accuracy],['Process discipline',st.avgProcess],['Response speed',st.avgTiming],[cfg.rules.length?'Readiness coverage':'Scenario coverage',coverage],['Exercise quality',st.avg]];
     $('competencyMatrix').innerHTML=rows.map(([label,val])=>`<div class="matrix-row"><b>${esc(label)}</b><div class="bar-track"><div class="bar-fill" style="width:${pct(val)}%"></div></div><span class="small">${pct(val)}%</span></div>`).join('');
   }
@@ -1147,7 +1193,7 @@
     const strengthMeta=intelligence.strongest?`Average ${fmtPct(intelligence.strongest.value)} · ${intelligence.strongest.state.label}`:'Complete more scored exercises to establish a reliable strength profile.';
     const gapTitle=curriculum.enabled?`${curriculum.passed}/${curriculum.total} subjects passed`:'Curriculum not configured';
     const gapMeta=curriculum.enabled?`${intelligence.gap} required subject${intelligence.gap===1?'':'s'} remain before curriculum completion.`:'Mark advanced threshold rules as readiness subjects to activate coverage-based readiness.';
-    html+=`<div class="detail-section">Development Intelligence</div><div class="dev-intel-grid"><div class="dev-intel-card"><div class="dev-intel-label">Current strength</div><div class="dev-intel-title">${esc(strengthTitle)}</div><div class="dev-intel-meta">${esc(strengthMeta)}</div></div><div class="dev-intel-card priority"><div class="dev-intel-label">Development priority</div><div class="dev-intel-title">${esc(intelligence.priority)}</div><div class="dev-intel-meta">${esc(intelligence.priorityMeta)}</div></div><div class="dev-intel-card"><div class="dev-intel-label">Readiness gap</div><div class="dev-intel-title">${esc(gapTitle)}</div><div class="dev-intel-meta">${esc(gapMeta)}</div></div><div class="dev-intel-card recommend"><div class="dev-intel-label">Recommended next exercise</div><div class="dev-intel-title">${esc(intelligence.next.subject)}</div><div class="dev-intel-meta"><strong>${esc(intelligence.next.title)}</strong> · ${esc(intelligence.next.difficulty)}<br>${esc(intelligence.next.reason)}</div><div class="dev-intel-actions"><a href="training-scenario-admin.html">Build recommended exercise →</a></div></div></div><div class="dimension-list">${intelligence.dims.map(d=>`<div class="dimension-card"><div class="dimension-name">${esc(d.name)}</div><div class="dimension-value">${fmtPct(d.value)}</div><div class="dimension-state state-${esc(d.state.cls)}">${esc(d.state.label)}</div></div>`).join('')}</div>`;
+    html+=`<div class="detail-section">Development Intelligence</div><div class="dev-intel-grid"><div class="dev-intel-card"><div class="dev-intel-label">Current strength</div><div class="dev-intel-title">${esc(strengthTitle)}</div><div class="dev-intel-meta">${esc(strengthMeta)}</div></div><div class="dev-intel-card priority"><div class="dev-intel-label">Development priority</div><div class="dev-intel-title">${esc(intelligence.priority)}</div><div class="dev-intel-meta">${esc(intelligence.priorityMeta)}</div></div><div class="dev-intel-card"><div class="dev-intel-label">Readiness gap</div><div class="dev-intel-title">${esc(gapTitle)}</div><div class="dev-intel-meta">${esc(gapMeta)}</div></div><div class="dev-intel-card recommend"><div class="dev-intel-label">Recommended next exercise</div><div class="dev-intel-title">${esc(intelligence.next.subject)}</div><div class="dev-intel-meta"><strong>${esc(intelligence.next.title)}</strong> · ${esc(intelligence.next.difficulty)}<br>${esc(intelligence.next.reason)}</div><div class="dev-intel-actions"><a href="training-scenario-admin.html#builder">Build recommended exercise →</a></div></div></div><div class="dimension-list">${intelligence.dims.map(d=>`<div class="dimension-card"><div class="dimension-name">${esc(d.name)}</div><div class="dimension-value">${fmtPct(d.value)}</div><div class="dimension-state state-${esc(d.state.cls)}">${esc(d.state.label)}</div></div>`).join('')}</div>`;
     html+=`<div class="detail-section">Capability by Subject</div><div class="subject-grid">${subjects.map(x=>`<div class="subject-card"><div class="subject-head"><div><div class="subject-title">${esc(x.name)}</div><div class="subject-meta">${x.responses} exercise${x.responses===1?'':'s'} · Decision accuracy ${fmtPct(x.accuracy)}</div></div><div class="subject-grade" style="color:${scoreColour(x.average)}">${gradeFor(x.average)}</div></div><div class="subject-bar"><span style="width:${pct(x.average||0)}%"></span></div><div class="subject-meta" style="margin-top:6px">Average score ${fmtPct(x.average)}</div></div>`).join('')}</div>`;
     html+=`<div class="detail-section">Exercise Breakdown</div><div class="op-exercise-list">${units.slice().sort((a,b)=>Date.parse(b.latest?.responded_at||0)-Date.parse(a.latest?.responded_at||0)).map(u=>u.isSequence?`<div class="development-note"><strong>🔗 ${esc(u.title)}</strong> · ${u.rows.length} stages · final ${fmtPct(u.score)} (${gradeFor(u.score)})</div>`+u.rows.slice().sort((a,b)=>sequenceStepOfRow(a)-sequenceStepOfRow(b)).map(r=>exerciseCardHtml(r)).join(''):exerciseCardHtml(u.rows[0])).join('')}</div>`;
     const guidance=[]; const ranked=subjects.filter(x=>x.average!==null).slice().sort((a,b)=>(b.average||0)-(a.average||0)); if(ranked.length)guidance.push(`Strongest subject so far: <strong>${esc(ranked[0].name)}</strong> at ${fmtPct(ranked[0].average)} (${gradeFor(ranked[0].average)}).`); if(ranked.length>1){const low=ranked[ranked.length-1];if(low.average<90||low.average<ranked[0].average)guidance.push(`Development focus: <strong>${esc(low.name)}</strong> at ${fmtPct(low.average)} (${gradeFor(low.average)}).`);} const wrong=assessed.length-correct;if(wrong)guidance.push(`${wrong} exercise${wrong===1?'':'s'} had a decision that differed from the required threshold outcome.`); const miss={};personRows.forEach(r=>{const m=(feedbackOf(r).process||{}).missing||[];(Array.isArray(m)?m:[]).forEach(k=>miss[k]=(miss[k]||0)+1)});const mk=Object.keys(miss).sort((a,b)=>miss[b]-miss[a]);if(mk.length)guidance.push(`Most frequently missed verification step: <strong>${esc(CHECK_LABEL[mk[0]]||mk[0])}</strong> (${miss[mk[0]]} time${miss[mk[0]]===1?'':'s'}).`); const extra={};personRows.forEach(r=>{const u=(feedbackOf(r).process||{}).unnecessaryCompleted||[];(Array.isArray(u)?u:[]).forEach(k=>extra[k]=(extra[k]||0)+1)});const ek=Object.keys(extra).sort((a,b)=>extra[b]-extra[a]);if(ek.length)guidance.push(`Most frequent unnecessary check: <strong>${esc(CHECK_LABEL[ek[0]]||ek[0])}</strong> (${extra[ek[0]]} time${extra[ek[0]]===1?'':'s'}).`);const fmiss={},fextra={};personRows.forEach(r=>{const fol=feedbackOf(r).followup||{};(Array.isArray(fol.missing)?fol.missing:[]).forEach(k=>fmiss[k]=(fmiss[k]||0)+1);(Array.isArray(fol.unnecessaryCompleted)?fol.unnecessaryCompleted:[]).forEach(k=>fextra[k]=(fextra[k]||0)+1)});const fmk=Object.keys(fmiss).sort((a,b)=>fmiss[b]-fmiss[a]),fek=Object.keys(fextra).sort((a,b)=>fextra[b]-fextra[a]);if(fmk.length)guidance.push(`Most frequently missed follow-up action: <strong>${esc(FOLLOWUP_LABEL[fmk[0]]||fmk[0])}</strong> (${fmiss[fmk[0]]} time${fmiss[fmk[0]]===1?'':'s'}).`);if(fek.length)guidance.push(`Most frequent unnecessary follow-up action: <strong>${esc(FOLLOWUP_LABEL[fek[0]]||fek[0])}</strong> (${fextra[fek[0]]} time${fextra[fek[0]]===1?'':'s'}).`);if(curriculum.enabled&&!curriculum.ready)guidance.push(`Readiness coverage is <strong>${curriculum.passed}/${curriculum.total} required subjects</strong>. Complete the remaining threshold subjects at ${curriculum.passScore}% or above.`);if(!wrong&&!mk.length&&!ek.length&&!fmk.length&&!fek.length&&avg!==null&&avg>=90)guidance.push('Performance is consistently strong. Use advanced, conditional or multi-step scenarios to increase difficulty while preserving subject coverage.');
@@ -1158,7 +1204,7 @@
   function renderActions(){
     const readiness=computeReadiness(), st=responseStats(), active=state.scenarios.filter(s=>norm(s.status||'active')==='active').length;
     const actions=[];
-    if(!st.rows.length)actions.push(['Run baseline exercise','Create a short starter scenario to establish training readiness.','training-scenario-admin.html','Start']);
+    if(!st.rows.length)actions.push(['Run baseline exercise','Create a short starter scenario to establish training readiness.','training-scenario-admin.html#builder','Start']);
     if(st.remediation)actions.push(['Review remediation cases',`${st.remediation} exercise${st.remediation===1?'':'s'} scored below target. Re-run focused drills.`,'training-review.html','Review']);
     if(st.scored.length&&st.avg<70)actions.push(['Improve decision quality','Average exercise score is under 70%. Review threshold decisions and process checks.','training-review.html','Open Records']);
     const groups=operatorGroups(), cfg=readinessConfig();
@@ -1169,14 +1215,20 @@
     }
     const processIssues=(state.responses||[]).reduce((n,r)=>{const p=feedbackOf(r).process||{};return n+(Array.isArray(p.missing)?p.missing.length:0)+(Array.isArray(p.unnecessaryCompleted)?p.unnecessaryCompleted.length:0);},0);
     if(processIssues>=2) actions.push(['Coach process discipline',`${processIssues} missed or unnecessary verification actions are recorded across completed exercises. Use focused drills to improve selective checking.`,'training-review.html','Coach']);
-    if(!active&&state.admin)actions.push(['Inject a training scenario','No active training exercises are currently visible in the training feed.','training-scenario-admin.html','Inject']);
+    if(!active&&state.admin)actions.push(['Inject a training scenario','No active training exercises are currently visible in the training feed.','training-scenario-admin.html#builder','Inject']);
     if(active>6)actions.push(['Clear stale injects','Several active scenarios are present. Clear older items to keep the training queue realistic.','training-scenario-admin.html','Manage']);
-    if(readiness>=80)actions.push(['Maintain readiness','Training posture is healthy. Rotate threshold categories and use conditional scenarios.','training-scenario-admin.html','Rotate']);
+    if(readiness>=80)actions.push(['Maintain readiness','Training posture is healthy. Rotate threshold categories and use conditional scenarios.','training-scenario-admin.html#builder','Rotate']);
     if(!actions.length)actions.push(['Keep practising','Use Scenario Admin to run exercises and Training Record to review development.','training-review.html','Open']);
     $('priorityActions').innerHTML=actions.slice(0,5).map(a=>`<div class="item"><div class="item-head"><div><div class="item-title">${esc(a[0])}</div><div class="item-meta">${esc(a[1])}</div></div><a class="btn" href="${esc(a[2])}">${esc(a[3])}</a></div></div>`).join('');
   }
 
   function renderAll(){ renderKpis(); renderCompetency(); renderTeamCurriculum(); renderPlans(); renderAssignments(); renderActiveSequences(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
+  document.addEventListener('change',e=>{
+    if(e.target && e.target.id==='readinessOperatorSelect'){
+      state.readinessOperator=e.target.value||'';
+      renderCompetency();
+    }
+  });
   document.addEventListener('click',e=>{
     const pageBtn=e.target.closest('[data-page-key]');
     if(pageBtn && !pageBtn.disabled){
