@@ -119,7 +119,7 @@
         // but has no matching page — likely folded into Scenario Admin per
         // your note. Omitted.
         { href: 'training-review.html',         label: 'Training Review', module: 'training_review' },
-        { href: 'training-scenario-admin.html', label: 'Scenario Admin',  module: 'training_scenario_admin' },
+        { href: 'training-scenario-admin.html', label: 'Scenario Admin',  module: 'training_scenario_admin', role: 'orgAdmin' },
         { href: 'training-scenario.html',       label: 'Training Scenario',  module: 'training_scenario' },
         { href: 'training-governance.html',     label: 'Training Governance', role: 'orgAdmin' },
       ]
