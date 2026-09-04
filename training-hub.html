@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- CityIntel Training Hub v24 — Phase 9H.1 Governance navigation -->
+<!-- CityIntel Training Hub v25 — Training Reminder Inbox -->
 <html lang="en">
 <head>
   
@@ -286,6 +286,7 @@
   .assignment-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 12px}
   .assignment-stat{border:1px solid #28333d;border-radius:10px;background:#0b1015;padding:9px 10px}.assignment-stat b{display:block;font-size:17px;color:#eef3f7}.assignment-stat span{display:block;margin-top:2px;font-size:9px;color:#91a4ba;text-transform:uppercase;letter-spacing:.06em;font-weight:900}
   .assignment-progress{margin-top:8px;padding:7px 9px;border-radius:8px;border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.04);font-size:10px;color:#c7dcff}
+  .training-reminder-list{display:grid;gap:8px;margin-top:10px}.training-reminder-card{border:1px solid #26313b;border-left:3px solid #60a5fa;border-radius:12px;padding:12px;background:#0a1016}.training-reminder-card.overdue{border-left-color:#ef2329;background:rgba(208,22,22,.045)}.training-reminder-card.due_1d{border-left-color:#f0b429;background:rgba(240,180,41,.04)}.training-reminder-card.read{opacity:.72}.training-reminder-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.training-reminder-title{font-size:13px;font-weight:950}.training-reminder-meta{font-size:10px;color:#8fa0b5;line-height:1.5;margin-top:4px}.training-reminder-message{margin-top:8px;color:#cbd7e4;font-size:11px;line-height:1.55}.training-reminder-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:9px}
   /* Phase 9G.5 — cohort plan administration, duplication and archive lifecycle. */
   .plan-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0 12px}
   .plan-stat{border:1px solid #28333d;border-radius:10px;background:#0b1015;padding:9px 10px}.plan-stat b{display:block;font-size:17px;color:#eef3f7}.plan-stat span{display:block;margin-top:2px;font-size:9px;color:#91a4ba;text-transform:uppercase;letter-spacing:.06em;font-weight:900}
@@ -396,6 +397,14 @@
         </div>
       </details>
 
+      <details class="card hub-accordion operator-only" id="trainingReminderSection">
+        <summary><span class="accordion-title"><span>My Training Reminders</span><span class="section-count" id="trainingReminderCountBadge">0</span></span></summary>
+        <div class="accordion-body">
+          <div class="accordion-intro">Due-soon, 24-hour and overdue reminders generated from your training assignments. Reminder delivery does not change your readiness score or evidence.</div>
+          <div class="training-reminder-list" id="trainingReminderList"><div class="item"><div class="item-meta">No training reminders.</div></div></div>
+        </div>
+      </details>
+
       <details class="card hub-accordion" id="trainingPlanSection">
         <summary><span class="accordion-title"><span id="planSectionTitle">Training Plans &amp; Campaigns</span><span class="section-count" id="planCountBadge">0</span></span></summary>
         <div class="accordion-body">
@@ -488,7 +497,7 @@
   const fmtTime = v => { const d = new Date(v); return Number.isFinite(d.getTime()) ? d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '—'; };
 
   const PAGE_SIZE = 10;
-  const state = { scenarios:[], sessions:[], responses:[], sequenceRuns:[], library:[], assignments:[], plans:[], policy:null, admin:false, me:{}, readinessOperator:'', pages:{ scenarios:1, exercises:1, operators:1, assignments:1, plans:1 } };
+  const state = { scenarios:[], sessions:[], responses:[], sequenceRuns:[], library:[], assignments:[], plans:[], reminders:[], policy:null, admin:false, me:{}, readinessOperator:'', pages:{ scenarios:1, exercises:1, operators:1, assignments:1, plans:1 } };
 
   function who(){ try { if (window.CIAuth && CIAuth.who) return CIAuth.who() || {}; } catch(_){} try { return JSON.parse(localStorage.getItem('ci_user') || localStorage.getItem('ci_profile') || '{}'); } catch(_) { return {}; } }
   function isAdmin(){ try { return !!(window.CIAuth && (CIAuth.isMasterAdmin?.() || CIAuth.isOrgAdmin?.())); } catch(_) { return false; } }
@@ -733,6 +742,7 @@
     state.admin = isAdmin();
     document.querySelectorAll('.admin-only').forEach(el=>el.style.display = state.admin ? '' : 'none');
     document.querySelectorAll('.admin-only-nav').forEach(el=>el.style.display = state.admin ? 'flex' : 'none');
+    document.querySelectorAll('.operator-only').forEach(el=>el.style.display = state.admin ? 'none' : '');
     $('roleNote').className = state.admin ? 'status-note' : 'status-note warn';
     $('roleNote').textContent = state.admin
       ? 'Admin view: manage training readiness, active injects, operator performance, responses and scenario administration.'
@@ -750,7 +760,7 @@
   }
 
   async function loadData(){
-    let scenarios=[], sessions=[], responses=[], sequenceRuns=[], library=[], assignments=[], plans=[];
+    let scenarios=[], sessions=[], responses=[], sequenceRuns=[], library=[], assignments=[], plans=[], reminders=[];
     try { scenarios = (await api('/api/org/training-scenarios')).data || []; } catch(e){ scenarios = localList(['ci_admin_training_feed','ci_training_feed_v1','ci_training_scenarios_v1']); }
     try { sequenceRuns = (await api('/api/org/training-sequence-runs?status=in_progress')).data || []; } catch(e){ sequenceRuns = []; }
     if (state.admin) {
@@ -764,6 +774,7 @@
     try { responses = (await api('/api/org/training-responses')).data || []; } catch(e){ responses = localList(['ci_training_responses_v1']); }
     try { assignments = (await api('/api/org/training-assignments')).data || []; } catch(e){ assignments = []; }
     try { plans = (await api('/api/org/training-plans')).data || []; } catch(e){ plans = []; }
+    if (!state.admin) { try { reminders = (await api('/api/org/training-reminders?channel=in_app&limit=50')).data || []; } catch(e){ reminders = []; } }
     try { const pd=await api('/api/org/escalation-policy'); state.policy=(pd&&pd.policy)||null; } catch(e){ state.policy=null; }
     state.scenarios = Array.isArray(scenarios) ? scenarios : [];
     state.sessions = Array.isArray(sessions) ? sessions : [];
@@ -772,6 +783,7 @@
     state.library = Array.isArray(library) ? library : [];
     state.assignments = Array.isArray(assignments) ? assignments : [];
     state.plans = Array.isArray(plans) ? plans : [];
+    state.reminders = Array.isArray(reminders) ? reminders : [];
   }
 
   function computeReadiness(){
@@ -1025,6 +1037,17 @@
     }catch(e){alert(e.message||String(e));}
   }
 
+  function reminderTypeLabel(v){return v==='overdue'?'Overdue':v==='due_1d'?'Due within 24 hours':'Due soon';}
+  function renderTrainingReminders(){
+    const section=$('trainingReminderSection'),host=$('trainingReminderList'),badge=$('trainingReminderCountBadge');
+    if(!section||!host||state.admin)return;
+    const rows=(state.reminders||[]).filter(x=>norm(x.channel)==='in_app'&&['delivered','sent'].includes(norm(x.delivery_status))).sort((a,b)=>{const au=!String(a.read_at||''),bu=!String(b.read_at||'');return Number(bu)-Number(au)||Date.parse(b.created_at||0)-Date.parse(a.created_at||0);});
+    const unread=rows.filter(x=>!String(x.read_at||'')).length; if(badge)badge.textContent=unread||rows.length;
+    if(unread>0)section.setAttribute('open','');
+    host.innerHTML=rows.length?rows.slice(0,20).map(x=>{const type=norm(x.reminder_type||'due_soon'),read=!!String(x.read_at||'');const pill=type==='overdue'?'high':type==='due_1d'?'warn':'info';return `<div class="training-reminder-card ${esc(type)}${read?' read':''}"><div class="training-reminder-head"><div><div class="training-reminder-title">${esc(x.target_label||'Training requirement')}</div><div class="training-reminder-meta">Target ${esc(fmtDateTime(x.due_at))} · reminder ${esc(fmtDateTime(x.created_at))}</div></div><span class="pill ${pill}">${esc(reminderTypeLabel(type))}</span></div><div class="training-reminder-message">${esc(x.message||'Open your Training Hub assignments to review this requirement.')}</div><div class="training-reminder-actions"><button class="btn" type="button" data-reminder-open-assignment="${esc(String(x.assignment_id||''))}" data-reminder-target="${esc(x.target_label||'')}">Open assignment</button>${read?'':`<button class="btn good" type="button" data-reminder-read="${esc(String(x.id||''))}">Mark read</button>`}</div></div>`;}).join(''):'<div class="item"><div class="item-title">No training reminders</div><div class="item-meta">Due-date reminders will appear here when your organisation enables Training Governance reminder automation.</div></div>';
+  }
+  async function markTrainingReminderRead(id){try{await apiWrite('/api/org/training-reminders','PUT',{id});const row=(state.reminders||[]).find(x=>String(x.id||'')===String(id||''));if(row)row.read_at=new Date().toISOString();renderTrainingReminders();}catch(e){alert(e.message||String(e));}}
+
   function assignmentDerivedStatus(a){
     const st=norm(a.status||'assigned'); if(st==='complete'||st==='cancelled')return st;
     const due=Date.parse(a.due_at||'');
@@ -1223,7 +1246,7 @@
     $('priorityActions').innerHTML=actions.slice(0,5).map(a=>`<div class="item"><div class="item-head"><div><div class="item-title">${esc(a[0])}</div><div class="item-meta">${esc(a[1])}</div></div><a class="btn" href="${esc(a[2])}">${esc(a[3])}</a></div></div>`).join('');
   }
 
-  function renderAll(){ renderKpis(); renderCompetency(); renderTeamCurriculum(); renderPlans(); renderAssignments(); renderActiveSequences(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
+  function renderAll(){ renderKpis(); renderCompetency(); renderTeamCurriculum(); renderTrainingReminders(); renderPlans(); renderAssignments(); renderActiveSequences(); renderScenarios(); renderSessions(); renderOperatorBoard(); renderActions(); }
   document.addEventListener('change',e=>{
     if(e.target && e.target.id==='readinessOperatorSelect'){
       state.readinessOperator=e.target.value||'';
@@ -1231,6 +1254,8 @@
     }
   });
   document.addEventListener('click',e=>{
+    const reminderRead=e.target.closest('[data-reminder-read]'); if(reminderRead){ markTrainingReminderRead(reminderRead.getAttribute('data-reminder-read')); return; }
+    const reminderOpen=e.target.closest('[data-reminder-open-assignment]'); if(reminderOpen){ const sec=$('trainingAssignmentSection'); if(sec)sec.setAttribute('open',''); const search=$('assignmentSearch'); if(search){search.value=reminderOpen.getAttribute('data-reminder-target')||'';state.pages.assignments=1;renderAssignments();} setTimeout(()=>sec?.scrollIntoView({behavior:'smooth',block:'start'}),20); return; }
     const pageBtn=e.target.closest('[data-page-key]');
     if(pageBtn && !pageBtn.disabled){
       const key=pageBtn.getAttribute('data-page-key'), dir=Number(pageBtn.getAttribute('data-page-dir')||0), direct=Number(pageBtn.getAttribute('data-page-value')||0);
