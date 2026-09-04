@@ -121,6 +121,7 @@
         { href: 'training-review.html',         label: 'Training Review', module: 'training_review' },
         { href: 'training-scenario-admin.html', label: 'Scenario Admin',  module: 'training_scenario_admin' },
         { href: 'training-scenario.html',       label: 'Training Scenario',  module: 'training_scenario' },
+        { href: 'training-governance.html',     label: 'Training Governance', role: 'orgAdmin' },
       ]
     },
   ];
@@ -333,7 +334,7 @@
         if (moduleAllowed(modules, currentGroup.hub.module)) {
           parts.push(linkHtml(currentGroup.hub, here));
           currentGroup.members.forEach(member => {
-            if (moduleAllowed(modules, member.module)) parts.push(linkHtml(member, here, 'nav-sub'));
+            if (roleOk(member) && moduleAllowed(modules, member.module)) parts.push(linkHtml(member, here, 'nav-sub'));
           });
         }
       }
