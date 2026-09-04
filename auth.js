@@ -170,6 +170,47 @@
 
   // ------------- Cloudflare Worker API -------------
   const API_BASE = 'https://api.cityintelapi.com'; // your Worker URL
+
+  // ── Expired or invalid session handling ─────────────────────────────
+  // Rotating SESSION_SECRET, revoking a user, or an expired token all make
+  // the API reject the stored token — but the browser still holds ci_user
+  // and ci_token, so isLoggedIn() stays true and the pages simply render as
+  // though nothing is enabled. That looks like a billing problem rather than
+  // a sign-in problem, and it leaves stale identity data sitting in the
+  // browser. Catching the rejection centrally turns it back into a login.
+  let sessionExpiryHandled = false;
+
+  function handleSessionExpired(reason) {
+    if (sessionExpiryHandled) return;
+    sessionExpiryHandled = true;
+    try {
+      const page = (location.pathname.split('/').pop() || '').toLowerCase();
+      // Never bounce from the pages that are meant to be reachable signed out.
+      if (['login.html', 'index.html', 'subscribe.html', 'set-password.html', ''].includes(page)) return;
+      const next = encodeURIComponent(page || 'index.html');
+      try { CIAuth.logout({ silent: true }); } catch (_) {}
+      location.replace(`login.html?next=${next}&reason=${encodeURIComponent(reason || 'expired')}`);
+    } catch (_) {}
+  }
+
+  // Wrap fetch once, so every page inherits this without changing its own
+  // code. Only responses from our own API are considered, and only 401 —
+  // a 403 is a permissions or module decision, not a broken session.
+  (function interceptAuthFailures() {
+    if (typeof window === 'undefined' || !window.fetch || window.__ciAuthIntercept) return;
+    window.__ciAuthIntercept = true;
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async function (input, init) {
+      const res = await nativeFetch(input, init);
+      try {
+        const url = typeof input === 'string' ? input : (input && input.url) || '';
+        if (res.status === 401 && url.startsWith(API_BASE) && !url.includes('/api/auth/login')) {
+          handleSessionExpired('expired');
+        }
+      } catch (_) {}
+      return res;
+    };
+  })();
   const APP_HOME = 'executive-dashboard.html';
   // Shared canonical authenticated landing page. Exposed for pages that
   // need a safe default without duplicating the legacy dashboard.html path.
@@ -498,7 +539,7 @@
   return profile;
 },
 
-    logout() {
+    logout(options = {}) {
       LS.del('ci_user');
       LS.del('ci_token');
 
